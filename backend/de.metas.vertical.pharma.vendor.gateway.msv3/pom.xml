@@ -29,6 +29,26 @@
 			<artifactId>spring-ws-core</artifactId>
 		</dependency>
 
+		<!--
+			java25 / Spring Boot 3 JAXB split. The MSV3 schema types (schema.v1 / schema.v2) are
+			xjc-generated against the javax.xml.bind namespace. The SOAP client marshals them through a
+			javax JAXB context (MSV3JavaxJaxbMarshaller), the same way msv3.server's JAXBUtils does, so
+			it needs a javax JAXB API + runtime impl on the classpath: jaxb-api 2.3.1 and
+			com.sun.xml.bind:jaxb-impl 2.3.3. (Spring OXM's own Jaxb2Marshaller is NOT used here: under
+			Spring Boot 3 it binds through the jakarta.xml.bind runtime, which cannot marshal the
+			javax.xml.bind-annotated schema types.)
+		-->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.3.3</version>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.vendor.gateway</groupId>
 			<artifactId>de.metas.vendor.gateway.api</artifactId>
