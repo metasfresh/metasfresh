@@ -166,8 +166,7 @@ public class HUQtyService
 
 	/**
 	 * Creates ONE new HU for the given product, with the given quantity and attributes, at the given locator, by booking and
-	 * completing a single-HU inventory with a count of the quantity and a book quantity of zero. The line is created directly,
-	 * like {@code InventoryService#createInventoryForMissingQty}, because a new HU has no HU id / HU QR code to key a draft line on.
+	 * completing a single-HU inventory with a count of the quantity and a book quantity of zero.
 	 * The line is marked {@link HUAggregationType#SINGLE_HU}, like the draft lines of {@link #updateQty(UpdateHUQtyRequest)}.
 	 * The HU is a virtual HU (a CU): the inventory line carries no packing instructions.
 	 *
