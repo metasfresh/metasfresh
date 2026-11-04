@@ -2,6 +2,7 @@ package de.metas.material.dispo.service.event.handler;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
+import de.metas.inout.InOutAndLineId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -17,6 +18,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.material.event.transactions.TransactionDeletedEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -115,6 +117,40 @@ public class TransactionEventHandlerTest
 		assertThat(result.get(0).getId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getParentId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getQuantity()).isEqualByComparingTo("23");
+	}
+
+	@Test
+	public void handleEvent_shipmentTransactionDeleted_noExistingCandidate_isNoOp()
+	{
+		// When a shipment is reversed in the same event cycle it was booked, the transaction-event factory
+		// reads isReversal from the now-reversal-linked original line and emits a TransactionDeletedEvent
+		// for a shipment line that never received a SHIPMENT candidate. A deleted-transaction event with no
+		// matching candidate means "nothing to undo" -> it must be a clean no-op, not an exception.
+		final CandidateChangeService candidateChangeHandler = Mockito.mock(CandidateChangeService.class);
+		final CandidateRepositoryRetrieval candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
+		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any())).thenReturn(null);
+
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(
+				candidateChangeHandler,
+				candidateRepository,
+				Mockito.mock(PostMaterialEventService.class));
+
+		final TransactionDeletedEvent event = TransactionDeletedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.transactionId(1000155)
+				.shipmentId(InOutAndLineId.ofRepoId(1000101, 1000122))
+				.huOnHandQtyChangeDescriptors(ImmutableList.of())
+				.build();
+
+		// net dispo effect must be nil: no candidate is produced (so ATP is left unchanged),
+		// not merely "no exception thrown".
+		assertThat(transactionEventHandler.createCandidatesForTransactionEvent(event)).isEmpty();
+
+		// and the full event-handling path is a clean no-op: no throw, and nothing dispatched to the ATP chain
+		assertThatCode(() -> transactionEventHandler.handleEvent(event)).doesNotThrowAnyException();
+		// (this module's Mockito predates verifyNoInteractions; verifyZeroInteractions is the same assertion)
+		Mockito.verifyZeroInteractions(candidateChangeHandler);
 	}
 
 	@Test

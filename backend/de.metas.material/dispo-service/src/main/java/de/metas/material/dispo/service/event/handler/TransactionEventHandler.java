@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -240,10 +241,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@NonNull
 	private List<Candidate> prepareCandidatesForShipmentScheduleIds(@NonNull final AbstractTransactionEvent event)
 	{
-		return ImmutableList.of(createCandidateForShipmentSchedule(event));
+		final Candidate candidate = createCandidateForShipmentSchedule(event);
+		return candidate != null ? ImmutableList.of(candidate) : ImmutableList.of();
 	}
 
-	@NonNull
+	@Nullable
 	private Candidate createCandidateForShipmentSchedule(@NonNull final AbstractTransactionEvent event)
 	{
 		final TransactionDetail changedTransactionDetail = createTransactionDetail(event);
@@ -308,7 +310,21 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else
 		{
-			throw createExceptionForUnexpectedEvent(event);
+			// A TransactionDeletedEvent means "undo this transaction's shipment effect". If no SHIPMENT
+			// candidate records that effect, there is nothing to undo, so this is a clean no-op (net dispo
+			// effect zero) rather than a fatal "unexpected type and not-yet-existing candidate".
+			// This legitimately happens when a shipment is reversed within the same event cycle it was booked:
+			// by the time the events are posted (after commit) the original shipment line is already
+			// reversal-linked, so the transaction-event factory classifies BOTH the original and the reversal
+			// transaction as reversals and emits only TransactionDeletedEvents -- no candidate is ever created.
+			// The event carries no reversal signal at this layer (AbstractTransactionEvent has no isReversal;
+			// the classification lives in the handlingunits transaction-event factory via M_InOutLine.ReversalLine_ID),
+			// so we cannot narrow the no-op to only-reversals here without a cross-module change. We therefore
+			// log at WARN instead of swallowing silently, so a genuinely-missing candidate (e.g. a lost
+			// TransactionCreatedEvent) stays visible rather than being hidden by this no-op.
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"No SHIPMENT candidate to undo for a TransactionDeletedEvent; treating as no-op (expected for a same-cycle shipment reversal). event={}", event);
+			return null;
 		}
 	}
 
