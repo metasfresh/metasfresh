@@ -41,6 +41,8 @@ import de.metas.currency.Amount;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
@@ -58,6 +60,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.MPeriod;
 import org.springframework.stereotype.Service;
 
@@ -73,6 +76,7 @@ public class BankStatementBL implements IBankStatementBL
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
@@ -377,6 +381,13 @@ public class BankStatementBL implements IBankStatementBL
 			bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
 			bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
 		}
+	}
+
+	@Override
+	public void updateLineFromOrder(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final OrderId orderId)
+	{
+		final I_C_Order order = orderDAO.getById(orderId);
+		bankStatementLine.setC_BPartner_ID(order.getBill_BPartner_ID());
 	}
 
 	@Override

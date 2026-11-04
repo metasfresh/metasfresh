@@ -1,6 +1,8 @@
 package de.metas.handlingunits.qrcodes.custom;
 
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.model.ProductLabelCodes;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -33,6 +35,8 @@ public class CustomHUQRCode implements IHUQRCode
 
 	public Optional<String> getProductNo() {return Optional.ofNullable(parsedScannedCode.getProductNo());}
 
+	public Optional<GTIN> getGTIN() {return Optional.ofNullable(parsedScannedCode.getGtin());}
+
 	@Override
 	public Optional<BigDecimal> getWeightInKg()
 	{
@@ -55,5 +59,14 @@ public class CustomHUQRCode implements IHUQRCode
 	public Optional<String> getLotNumber()
 	{
 		return Optional.ofNullable(parsedScannedCode.getLotNo());
+	}
+
+	@Override
+	public Optional<ProductLabelCodes> getProductLabelCodes()
+	{
+		return Optional.of(ProductLabelCodes.builder()
+				.productNo(parsedScannedCode.getProductNo())
+				.gtin(parsedScannedCode.getGtin())
+				.build());
 	}
 }
