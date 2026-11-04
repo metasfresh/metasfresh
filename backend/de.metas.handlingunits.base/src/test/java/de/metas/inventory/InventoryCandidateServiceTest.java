@@ -29,7 +29,7 @@ public class InventoryCandidateServiceTest
 	}
 
 	@Test
-	public void getInventoryCandidatesByHUId_returnsOnlyActiveCandidatesOfThatHU()
+	public void getInventoryCandidatesByHUId_returnsTheActiveCandidatesOfThatHU_processedOrNot()
 	{
 		final HuId huId = HuId.ofRepoId(101);
 		final HuId otherHuId = HuId.ofRepoId(102);
@@ -37,12 +37,15 @@ public class InventoryCandidateServiceTest
 		final I_M_Inventory_Candidate active = createCandidate(huId, true);
 		createCandidate(huId, false);
 		createCandidate(otherHuId, true);
+		final I_M_Inventory_Candidate processed = createCandidate(huId, true);
+		processed.setProcessed(true);
+		saveRecord(processed);
 
 		final List<I_M_Inventory_Candidate> result = service.getInventoryCandidatesByHUId(huId);
 
 		assertThat(result)
 				.extracting(I_M_Inventory_Candidate::getM_Inventory_Candidate_ID)
-				.containsExactly(active.getM_Inventory_Candidate_ID());
+				.containsExactlyInAnyOrder(active.getM_Inventory_Candidate_ID(), processed.getM_Inventory_Candidate_ID());
 	}
 
 	private static I_M_Inventory_Candidate createCandidate(final HuId huId, final boolean active)
