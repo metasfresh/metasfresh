@@ -64,8 +64,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City   |
       | creditorLoc              | DE          | Musterstrasse 1 | 53111      | Testhausen |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y        | Y               |
     # the org info is needed for the invoice tax lookup (country of the org)
     And metasfresh contains AD_OrgInfo:
       | AD_OrgInfo_ID.Identifier | AD_Org_ID.Identifier | Org_BPartner_ID.Identifier | OrgBP_Location_ID.Identifier |
@@ -542,9 +542,9 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | noBicLoc                 | DE          | Hauptstraße 5    | 50667      | Köln     |
       | usedLaterLoc             | CH          | Bahnhofstrasse 1 | 8001       | Zürich   |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier   | C_BPartner_ID   | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | noBicBPL     | noBicDebtor     | noBicLoc                     | Y            | Y                   |
-      | usedLaterBPL | usedLaterDebtor | usedLaterLoc                 | Y            | Y                   |
+      | Identifier   | C_BPartner_ID   | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
+      | noBicBPL     | noBicDebtor     | noBicLoc                     | Y        | Y               |
+      | usedLaterBPL | usedLaterDebtor | usedLaterLoc                 | Y        | Y               |
     And metasfresh contains C_Bank:
       | C_Bank_ID | Name                 | RoutingNo | SwiftCode   |
       | b2bBank   | SEPA Debtor Bank B2B | 20000000  | TESTDEB2XXX |
@@ -1133,8 +1133,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City |
       | euroCityLoc              | DE          | Musterstrasse 3 | 53111      | €€       |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP    | euroCityLoc                  | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | euroCityLoc                  | Y        | Y               |
     When the SEPA export process is run for pay selection "euroCityPaySelection"
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme B2B is:
@@ -1229,8 +1229,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
     # 2. back to the Background's location, with a city
     Given metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y        | Y               |
     When the SEPA export process is run for pay selection "withCityPaySelection"
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme B2B is:
@@ -1334,8 +1334,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal |
       | noCityLoc                | DE          | Musterstrasse 2 | 53111      |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP    | noCityLoc                    | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | noCityLoc                    | Y        | Y               |
     When the SEPA export process is run for pay selection "noCityPaySelection"
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme B2B is:

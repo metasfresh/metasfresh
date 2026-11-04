@@ -214,10 +214,10 @@ public class SEPA_Export_StepDef
 	 * <ul>
 	 *   <li>Whitespace between elements (indentation, line breaks) is ignored; the text of an element is compared exactly, including its spaces.</li>
 	 *   <li>XML comments are ignored, so the expected file may explain its elements with {@code <!-- ... -->}.</li>
-	 *   <li>The comparison is for similarity: a namespace prefix, the order of sibling elements, the {@code xsi:schemaLocation} and the {@code standalone} flag may differ.</li>
+	 *   <li>The comparison is for similarity: a namespace prefix, the order of differently named sibling elements, the {@code xsi:schemaLocation} and the {@code standalone} flag may differ.</li>
 	 *   <li>{@code ${ignore}} as the whole text of an element accepts any text (the element must still exist).
 	 *   Use it for the values that differ from run to run: {@code MsgId} (the SEPA_Export DocumentNo), and {@code PmtInfId} and {@code EndToEndId}, which are derived from it.</li>
-	 *   <li>The transactions ({@code PmtInf} blocks) are compared in file order, which is the invoice order of the pay selection lines.</li>
+	 *   <li>The transactions ({@code PmtInf} blocks) are compared in file order, i.e. the order of the pay selection lines.</li>
 	 * </ul>
 	 * On a mismatch, the step fails with all differences, the actual file and the expected file.
 	 *

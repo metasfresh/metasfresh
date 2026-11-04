@@ -347,7 +347,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		sql += buildSelectSQL_InvoiceMatchRequirement();
 
-		// a fixed order: the pay selection lines (and so e.g. the transactions of a SEPA file) are created in invoice order
+		// a fixed order, so that the pay selection lines (and everything exported from them) are in invoice order
 		sql += " ORDER BY i.C_Invoice_ID";
 		return sql;
 	}

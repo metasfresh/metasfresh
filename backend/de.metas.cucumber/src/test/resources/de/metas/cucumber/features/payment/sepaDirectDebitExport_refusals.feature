@@ -64,8 +64,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City   |
       | creditorLoc              | DE          | Musterstrasse 1 | 53111      | Testhausen |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y        | Y               |
     # the org info is needed for the invoice tax lookup (country of the org)
     And metasfresh contains AD_OrgInfo:
       | AD_OrgInfo_ID.Identifier | AD_Org_ID.Identifier | Org_BPartner_ID.Identifier | OrgBP_Location_ID.Identifier |
@@ -456,7 +456,10 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | MatchRequirement | C_BPartner_ID | PayDate    |
       | CDD              | debtor        | 2026-11-02 |
     And the pay selection identified by paySelection is completed
-    # no check of the pay selection lines: the line order of two invoices of one partner is not defined; the message asserts 2 lines
+    And the Pay selection identified by paySelection has exactly the following lines
+      | C_Invoice_ID | OpenAmt | PayAmt | C_BP_BankAccount_ID |
+      | invoice1     | 10.00   | 10.00  | debtorAcct          |
+      | invoice2     | 20.00   | 20.00  | debtorAcct          |
 
     When the SEPA export process is run for pay selection "paySelection"
 
@@ -556,8 +559,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | C_Location_ID.Identifier | CountryCode | OPT.Address1     | OPT.Postal |
       | debtorLoc                | CH          | Bahnhofstrasse 1 | 8001       |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | debtorBPL  | debtor        | debtorLoc                    | Y            | Y                   |
+      | Identifier | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
+      | debtorBPL  | debtor        | debtorLoc                    | Y        | Y               |
     And metasfresh contains C_Bank:
       | C_Bank_ID  | Name                | RoutingNo | SwiftCode   |
       | debtorBank | SEPA Debtor Bank CH | 50000000  | TESTCHZZXXX |

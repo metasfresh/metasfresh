@@ -183,7 +183,7 @@ public class C_PaySelection_StepDef
 	 * <ul>
 	 *   <li>If every row has a <b>C_Invoice_ID</b> identifier (not the null placeholder), each row is matched to the line of that invoice, independent of the line order.
 	 *   Each row must match exactly one line and each line exactly one row; otherwise the step fails and lists the unmatched rows and lines.
-	 *   Use this when the line order is not defined, e.g. for several invoices of one partner selected by one "Create from..." run.</li>
+	 *   Use this to compare the lines independent of their order.</li>
 	 *   <li>Otherwise row N is compared with line N (ordered by Line, then C_PaySelectionLine_ID).</li>
 	 * </ul>
 	 * Only the columns present in the table are compared.
