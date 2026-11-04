@@ -39,7 +39,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.exception.MissingResourceException;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -314,19 +314,19 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 	@PostMapping("/{externalSystemCode}/{externalHeaderId}/attachments")
 	@Override
 	public ResponseEntity<JsonAttachment> attachFile(
-			@ApiParam(required = true, value = "Identifier of the `ExternalSystem` record that tells where this OLCand came from") //
+			@Parameter(required = true, description = "Identifier of the `ExternalSystem` record that tells where this OLCand came from") //
 			@PathVariable("externalSystemCode") final String externalSystemCode,
 
-			@ApiParam(required = true, value = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
+			@Parameter(required = true, description = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
 			@PathVariable("externalHeaderId") final String externalHeaderId,
 
-			@ApiParam(value = "List with an even number of items;\n"
+			@Parameter(description = "List with an even number of items;\n"
 					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
 					+ "If the number of items is odd, the last item is discarded.", allowEmptyValue = true) //
 			@RequestParam("tags") //
 			@Nullable final List<String> tagKeyValuePairs,
 
-			@ApiParam(required = true, value = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
+			@Parameter(required = true, description = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
 			@RequestBody @NonNull final MultipartFile file) throws IOException
 	{
 		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);
