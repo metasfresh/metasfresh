@@ -29,6 +29,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
+import de.metas.handlingunits.CreatedHU;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.UpdateHUQtyRequest;
@@ -41,8 +42,10 @@ import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrateg
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inventory.AggregationType;
@@ -51,6 +54,9 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -64,6 +70,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -73,8 +80,11 @@ public class HUQtyService
 {
 	@NonNull
 	private final InventoryService inventoryService;
+	@NonNull
+	private final HUQRCodesService huQRCodesService;
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -169,11 +179,12 @@ public class HUQtyService
 	 * completing a single-HU inventory with a count of the quantity and a book quantity of zero.
 	 * The line is marked {@link HUAggregationType#SINGLE_HU}, like the draft lines of {@link #updateQty(UpdateHUQtyRequest)}.
 	 * The HU is a virtual HU (a CU): the inventory line carries no packing instructions.
+	 * A given weight is set on the CU after the inventory completed (the inventory's attribute key drops weight attributes).
 	 *
-	 * @return the created HU
+	 * @return the created HU with its HU QR code (created if missing, so the standard HU actions work on it)
 	 */
 	@NonNull
-	public HuId createHUFromInventory(@NonNull final CreateHUFromInventoryRequest request)
+	public CreatedHU createHUFromInventory(@NonNull final CreateHUFromInventoryRequest request)
 	{
 		final LocatorId locatorId = request.getLocatorId();
 		final ClientAndOrgId clientAndOrgId = warehouseDAO.getClientAndOrgIdByLocatorId(locatorId);
@@ -194,7 +205,22 @@ public class HUQtyService
 				.build());
 
 		inventoryService.completeDocument(inventoryHeader.getId());
-		return CollectionUtils.singleElement(inventoryService.getById(inventoryHeader.getId()).getHuIds());
+		final HuId huId = CollectionUtils.singleElement(inventoryService.getById(inventoryHeader.getId()).getHuIds());
+
+		setWeightNet(huId, request.getProductId(), request.getWeightInKg());
+		return new CreatedHU(huId, huQRCodesService.getQRCodeByHuId(huId));
+	}
+
+	private void setWeightNet(@NonNull final HuId cuId, @NonNull final ProductId productId, @Nullable final BigDecimal weightInKg)
+	{
+		if (weightInKg == null)
+		{
+			return;
+		}
+
+		final Quantity weight = Quantitys.of(weightInKg, X12DE355.KILOGRAM);
+		new PackedHUWeightNetUpdater(uomConversionBL, handlingUnitsBL.createMutableHUContextForProcessing(), productId, weight)
+				.updatePackToHU(handlingUnitsBL.getById(cuId));
 	}
 
 	@NonNull

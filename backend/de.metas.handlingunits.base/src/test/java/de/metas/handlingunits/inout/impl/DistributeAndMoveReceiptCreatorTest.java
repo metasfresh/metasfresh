@@ -88,7 +88,7 @@ public class DistributeAndMoveReceiptCreatorTest
 								new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 										new PPOrderIssueScheduleService(
 												new PPOrderIssueScheduleRepository(),
-												new HUQtyService(InventoryService.newInstanceForUnitTesting())
+												new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting())
 										)),
 								HUQRCodesService.newInstanceForUnitTesting()
 						)

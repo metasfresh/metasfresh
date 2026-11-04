@@ -9,6 +9,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import javax.annotation.Nullable;
@@ -19,6 +20,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.X_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -36,14 +39,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-/** The resolver is stateless: its services come through the constructor, the client through {@code resolve(...)}. */
-class LabelProductResolverTest
+/**
+ * Everything a scanned label yields: the product, its label values and the quantity / weight rule.
+ * The service is stateless: its services come through the constructor, the client through {@code resolve(...)}.
+ */
+class LabelValuesServiceTest
 {
 	private static final String GTIN_VALUE = "02001234567817";
 	/** an invented variable-weight EAN-13 (GS1 does not accept it, so the parser falls through to the EAN-13 reader) */
 	private static final String EAN13_VALUE = "2859414004825";
 
-	private LabelProductResolver resolver;
+	private static final BigDecimal LABEL_WEIGHT = new BigDecimal("12.345");
+
+	private LabelValuesService service;
 	private I_M_Product product;
 
 	@BeforeEach
@@ -62,17 +70,18 @@ class LabelProductResolverTest
 		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		uom.setX12DE355(X12DE355.EACH.getCode());
 		uom.setName("Each");
+		uom.setUOMType(X_C_UOM.UOMTYPE_Other);
 		InterfaceWrapperHelper.saveRecord(uom);
 
 		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		product.setIsActive(true);
 		product.setValue("P1");
-		product.setName("P1");
+		product.setName("P1 name");
 		product.setGTIN(GTIN_VALUE);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.saveRecord(product);
 
-		resolver = new LabelProductResolver(HUQRCodesService.newInstanceForUnitTesting(), Services.get(IProductBL.class));
+		service = new LabelValuesService(HUQRCodesService.newInstanceForUnitTesting(), Services.get(IProductBL.class), Services.get(IUOMDAO.class));
 	}
 
 	private I_M_Product createEAN13Product()
@@ -89,7 +98,7 @@ class LabelProductResolverTest
 	@Test
 	void pickOnTheFlyCode_isNotAProductLabel()
 	{
-		assertThatThrownBy(() -> resolver.resolve(ScannedCode.ofString("PICK_ON_THE_FLY"), ClientId.METASFRESH))
+		assertThatThrownBy(() -> service.resolve(ScannedCode.ofString("PICK_ON_THE_FLY"), ClientId.METASFRESH))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.NOT_A_PRODUCT_LABEL);
 	}
@@ -97,9 +106,9 @@ class LabelProductResolverTest
 	@Test
 	void gs1CodeWithGtinOfOneProduct_returnsThatProduct()
 	{
-		final LabelProduct labelProduct = resolver.resolve(ScannedCode.ofString("01" + GTIN_VALUE), ClientId.METASFRESH);
+		final LabelValues labelValues = service.resolve(ScannedCode.ofString("01" + GTIN_VALUE), ClientId.METASFRESH);
 
-		assertThat(labelProduct.getProductId()).isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
+		assertThat(labelValues.getProductId()).isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
 	}
 
 	@Test
@@ -109,9 +118,9 @@ class LabelProductResolverTest
 
 		assertThat(HUQRCodesService.newInstanceForUnitTesting().parse(ScannedCode.ofString(EAN13_VALUE))).isInstanceOf(EAN13HUQRCode.class);
 
-		final LabelProduct labelProduct = resolver.resolve(ScannedCode.ofString(EAN13_VALUE), ClientId.METASFRESH);
+		final LabelValues labelValues = service.resolve(ScannedCode.ofString(EAN13_VALUE), ClientId.METASFRESH);
 
-		assertThat(labelProduct.getProductId()).isEqualTo(ProductId.ofRepoId(ean13Product.getM_Product_ID()));
+		assertThat(labelValues.getProductId()).isEqualTo(ProductId.ofRepoId(ean13Product.getM_Product_ID()));
 	}
 
 	@Test
@@ -119,7 +128,7 @@ class LabelProductResolverTest
 	{
 		assertThat(HUQRCodesService.newInstanceForUnitTesting().parse(ScannedCode.ofString(EAN13_VALUE))).isInstanceOf(EAN13HUQRCode.class);
 
-		assertThatThrownBy(() -> resolver.resolve(ScannedCode.ofString(EAN13_VALUE), ClientId.METASFRESH))
+		assertThatThrownBy(() -> service.resolve(ScannedCode.ofString(EAN13_VALUE), ClientId.METASFRESH))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.PRODUCT_NOT_FOUND_FOR_GTIN);
 	}
@@ -141,7 +150,7 @@ class LabelProductResolverTest
 		final Throwable parserException = catchThrowable(() -> HUQRCodesService.newInstanceForUnitTesting().parse(locatorCode));
 		assertThat(parserException).isNotNull();
 
-		assertThatThrownBy(() -> resolver.resolve(locatorCode, ClientId.METASFRESH))
+		assertThatThrownBy(() -> service.resolve(locatorCode, ClientId.METASFRESH))
 				.isNotInstanceOf(LabelRejectionException.class)
 				.isExactlyInstanceOf(parserException.getClass())
 				.hasMessage(parserException.getMessage());
@@ -150,7 +159,7 @@ class LabelProductResolverTest
 	@Test
 	void unparseableString_isLabelNotRecognized()
 	{
-		assertThatThrownBy(() -> resolver.resolve(ScannedCode.ofString("hello"), ClientId.METASFRESH))
+		assertThatThrownBy(() -> service.resolve(ScannedCode.ofString("hello"), ClientId.METASFRESH))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.LABEL_NOT_RECOGNIZED);
 	}
@@ -161,12 +170,13 @@ class LabelProductResolverTest
 	{
 		@Nullable private final ProductLabelCodes productLabelCodes;
 		@Nullable private final LocalDate expirationDate;
+		@Nullable private final BigDecimal weightKg;
 
 		@Override
 		public String getAsString() {return "TEST";}
 
 		@Override
-		public Optional<BigDecimal> getWeightInKg() {return Optional.empty();}
+		public Optional<BigDecimal> getWeightInKg() {return Optional.ofNullable(weightKg);}
 
 		@Override
 		public Optional<LocalDate> getBestBeforeDate() {return Optional.empty();}
@@ -181,9 +191,9 @@ class LabelProductResolverTest
 		public Optional<LocalDate> getExpirationDate() {return Optional.ofNullable(expirationDate);}
 	}
 
-	private LabelProduct resolve(final IHUQRCode code)
+	private LabelValues resolve(final IHUQRCode code)
 	{
-		return resolver.resolve(code, ScannedCode.ofString(code.getAsString()), ClientId.METASFRESH);
+		return service.resolve(code, ScannedCode.ofString(code.getAsString()), ClientId.METASFRESH);
 	}
 
 	@Test
@@ -191,7 +201,7 @@ class LabelProductResolverTest
 	{
 		final ProductLabelCodes codes = ProductLabelCodes.builder().gtin(GTIN.ofString(GTIN_VALUE)).build();
 
-		assertThat(resolve(new TestCode(codes, null)).getProductId()).isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
+		assertThat(resolve(new TestCode(codes, null, null)).getProductId()).isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
 	}
 
 	@Test
@@ -199,13 +209,13 @@ class LabelProductResolverTest
 	{
 		final LocalDate date = LocalDate.of(2031, 5, 17);
 
-		assertThat(LabelValues.of(new TestCode(null, date)).getBestBeforeDate()).isEqualTo(date);
+		assertThat(resolve(new TestCode(gtinCodes(), date, null)).getBestBeforeDate()).isEqualTo(date);
 	}
 
 	@Test
 	void codeWithoutProductLabelCodes_isNotAProductLabel()
 	{
-		assertThatThrownBy(() -> resolve(new TestCode(null, null)))
+		assertThatThrownBy(() -> resolve(new TestCode(null, null, null)))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.NOT_A_PRODUCT_LABEL);
 	}
@@ -213,7 +223,7 @@ class LabelProductResolverTest
 	@Test
 	void productLabelCodesWithoutAnyCode_isLabelHasNoProduct()
 	{
-		assertThatThrownBy(() -> resolve(new TestCode(ProductLabelCodes.builder().build(), null)))
+		assertThatThrownBy(() -> resolve(new TestCode(ProductLabelCodes.builder().build(), null, null)))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.LABEL_HAS_NO_PRODUCT);
 	}
@@ -223,7 +233,7 @@ class LabelProductResolverTest
 	{
 		final ProductLabelCodes codes = ProductLabelCodes.builder().productNo("NO-SUCH-PRODUCT").gtin(GTIN.ofString(GTIN_VALUE)).build();
 
-		assertThatThrownBy(() -> resolve(new TestCode(codes, null)))
+		assertThatThrownBy(() -> resolve(new TestCode(codes, null, null)))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE);
 	}
@@ -234,7 +244,7 @@ class LabelProductResolverTest
 		final I_M_Product ean13Product = createEAN13Product();
 		final ProductLabelCodes codes = ProductLabelCodes.builder().ean13(EAN13.ofString(EAN13_VALUE).orElseThrow()).build();
 
-		assertThat(resolve(new TestCode(codes, null)).getProductId()).isEqualTo(ProductId.ofRepoId(ean13Product.getM_Product_ID()));
+		assertThat(resolve(new TestCode(codes, null, null)).getProductId()).isEqualTo(ProductId.ofRepoId(ean13Product.getM_Product_ID()));
 	}
 
 	@Test
@@ -244,7 +254,7 @@ class LabelProductResolverTest
 		final ClientId otherClientId = ClientId.ofRepoId(ClientId.METASFRESH.getRepoId() + 1);
 
 		// P1 belongs to the ambient client (Env), not to the given one
-		assertThatThrownBy(() -> resolver.resolve(new TestCode(codes, null), ScannedCode.ofString("TEST"), otherClientId))
+		assertThatThrownBy(() -> service.resolve(new TestCode(codes, null, null), ScannedCode.ofString("TEST"), otherClientId))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE);
 
@@ -258,7 +268,7 @@ class LabelProductResolverTest
 		InterfaceWrapperHelper.saveRecord(otherClientProduct);
 		final ProductLabelCodes otherCodes = ProductLabelCodes.builder().productNo("P-OTHER").build();
 
-		assertThat(resolver.resolve(new TestCode(otherCodes, null), ScannedCode.ofString("TEST"), otherClientId).getProductId())
+		assertThat(service.resolve(new TestCode(otherCodes, null, null), ScannedCode.ofString("TEST"), otherClientId).getProductId())
 				.isEqualTo(ProductId.ofRepoId(otherClientProduct.getM_Product_ID()));
 	}
 
@@ -274,11 +284,105 @@ class LabelProductResolverTest
 		InterfaceWrapperHelper.saveRecord(otherOrgProduct);
 		final ProductLabelCodes codes = ProductLabelCodes.builder().productNo(product.getValue()).build();
 
-		final Throwable thrown = catchThrowable(() -> resolve(new TestCode(codes, null)));
+		final Throwable thrown = catchThrowable(() -> resolve(new TestCode(codes, null, null)));
 
 		assertThat(thrown)
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.BARCODE_FITS_SEVERAL_PRODUCTS);
 		assertThat(((LabelRejectionException)thrown).getMessageParams()).anyMatch(v -> String.valueOf(v).contains("P1 of the other organisation"));
+	}
+
+	private static ProductLabelCodes gtinCodes() {return ProductLabelCodes.builder().gtin(GTIN.ofString(GTIN_VALUE)).build();}
+
+	@Test
+	void productValueAndName_areTheProducts()
+	{
+		final LabelValues labelValues = resolve(new TestCode(gtinCodes(), null, null));
+
+		assertThat(labelValues.getProductValue()).isEqualTo("P1");
+		assertThat(labelValues.getProductName()).isEqualTo("P1 name");
+	}
+
+	//
+	// The four weight rules of a label: kg product, catch-weight product, other product, no weight on the label.
+	//
+
+	private LabelValues resolveWithWeight(final I_M_Product labelProduct, @Nullable final BigDecimal weightKg)
+	{
+		return resolve(new TestCode(ProductLabelCodes.builder().productNo(labelProduct.getValue()).build(), null, weightKg));
+	}
+
+	private static I_C_UOM newKgUom()
+	{
+		final I_C_UOM kg = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		kg.setX12DE355(X12DE355.KILOGRAM.getCode());
+		kg.setName(X12DE355.KILOGRAM.getCode());
+		kg.setUOMType(X_C_UOM.UOMTYPE_Weigth);
+		kg.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(kg);
+		return kg;
+	}
+
+	private I_M_Product newProduct(final String value, final I_C_UOM stockUom)
+	{
+		final I_M_Product newProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		newProduct.setIsActive(true);
+		newProduct.setValue(value);
+		newProduct.setName(value);
+		newProduct.setC_UOM_ID(stockUom.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(newProduct);
+		return newProduct;
+	}
+
+	@Test
+	void kgProduct_labelWeightIsTheQuantity()
+	{
+		final LabelValues result = resolveWithWeight(newProduct("P-KG", newKgUom()), LABEL_WEIGHT);
+
+		assertThat(result.getQty()).isEqualByComparingTo(LABEL_WEIGHT);
+		assertThat(result.getStockUom()).isEqualTo(X12DE355.KILOGRAM);
+		assertThat(result.getWeightKgForCU()).isNull();
+		assertThat(result.isWeightIgnored()).isFalse();
+	}
+
+	@Test
+	void catchWeightProduct_quantityOne_weightForCU()
+	{
+		final I_M_Product catchWeightProduct = newProduct("P-CW", InterfaceWrapperHelper.load(product.getC_UOM_ID(), I_C_UOM.class));
+		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
+		conversion.setM_Product_ID(catchWeightProduct.getM_Product_ID());
+		conversion.setC_UOM_ID(catchWeightProduct.getC_UOM_ID());
+		conversion.setC_UOM_To_ID(newKgUom().getC_UOM_ID());
+		conversion.setMultiplyRate(BigDecimal.TEN);
+		conversion.setDivideRate(new BigDecimal("0.1"));
+		conversion.setIsCatchUOMForProduct(true);
+		conversion.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(conversion);
+
+		final LabelValues result = resolveWithWeight(catchWeightProduct, LABEL_WEIGHT);
+
+		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(result.getWeightKgForCU()).isEqualByComparingTo(LABEL_WEIGHT);
+		assertThat(result.isWeightIgnored()).isFalse();
+	}
+
+	@Test
+	void otherProduct_weightIsIgnored()
+	{
+		final LabelValues result = resolveWithWeight(product, LABEL_WEIGHT);
+
+		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(result.getWeightKgForCU()).isNull();
+		assertThat(result.isWeightIgnored()).isTrue();
+	}
+
+	@Test
+	void noWeightOnLabel_quantityOne()
+	{
+		final LabelValues result = resolveWithWeight(newProduct("P-KG2", newKgUom()), null);
+
+		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(result.getWeightKgForCU()).isNull();
+		assertThat(result.isWeightIgnored()).isFalse();
 	}
 }

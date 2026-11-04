@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * The stateless label resolvers and the label quantity / weight service as beans: all their services are constructor parameters; the ones that are no Spring beans
+ * The stateless label values service and target locator resolver as beans: all their services are constructor parameters; the ones that are no Spring beans
  * ({@code Services.get}) are resolved here once and handed in.
  */
 @Configuration
@@ -24,20 +24,14 @@ class CreateFromLabelConfiguration
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Bean
-	LabelProductResolver labelProductResolver(@NonNull final HUQRCodesService huQRCodesService)
+	LabelValuesService labelValuesService(@NonNull final HUQRCodesService huQRCodesService)
 	{
-		return new LabelProductResolver(huQRCodesService, productBL);
+		return new LabelValuesService(huQRCodesService, productBL, uomDAO);
 	}
 
 	@Bean
 	LabelTargetLocatorResolver labelTargetLocatorResolver(@NonNull final WorkplaceService workplaceService)
 	{
 		return new LabelTargetLocatorResolver(workplaceService, warehouseDAO, orgDAO);
-	}
-
-	@Bean
-	LabelQtyAndWeightService labelQtyAndWeightService()
-	{
-		return new LabelQtyAndWeightService(productBL, uomDAO);
 	}
 }

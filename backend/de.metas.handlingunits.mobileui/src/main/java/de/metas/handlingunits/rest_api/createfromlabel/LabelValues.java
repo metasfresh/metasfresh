@@ -1,72 +1,72 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
+import java.util.function.Predicate;
 
-/** The values a label carries (lot, best-before, production date, weight), read from the parsed code. Shared by the proposal and the create command. */
+/**
+ * Everything a scanned product label yields, as computed by {@link LabelValuesService}: the product, the values the label carries
+ * (lot, best-before, production date) and the quantity / weight of the new CU. Shared by the proposal and the create command.
+ */
 @Value
 @Builder
 class LabelValues
 {
+	@NonNull ProductId productId;
+	/** {@code M_Product.Value} */
+	@NonNull String productValue;
+	/** {@code M_Product.Name} */
+	@NonNull String productName;
+
 	@Nullable String lotNo;
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable LocalDate productionDate;
-	@Nullable BigDecimal weightKg;
 
+	@NonNull UomId stockUomId;
+	/** {@link #stockUomId} as code, for the JSON */
+	@NonNull X12DE355 stockUom;
+	/** the proposed quantity, in {@link #stockUomId} */
+	@NonNull BigDecimal qty;
+	/** set only when the label weight becomes the CU's net weight (catch-weight product) */
+	@Nullable BigDecimal weightKgForCU;
+	/** the label carries a weight that this product does not use */
+	boolean isWeightIgnored;
+
+	/**
+	 * The attribute values the label carries, in display order (lot, best-before, production date), without the attributes for which
+	 * {@code isActiveAttribute} is false: the preview does not show them and the booking does not store them (one rule for both steps,
+	 * so OK never fails on a value the preview left out).
+	 */
 	@NonNull
-	static LabelValues of(@NonNull final IHUQRCode code)
-	{
-		// a label's use-by date (e.g. GS1 AI 17) is stored as the best-before date (working default)
-		final LocalDate bestBeforeDate = code.getBestBeforeDate().orElseGet(() -> code.getExpirationDate().orElse(null));
-
-		return builder()
-				.lotNo(code.getLotNumber().orElse(null))
-				.bestBeforeDate(bestBeforeDate)
-				.productionDate(code.getProductionDate().orElse(null))
-				.weightKg(code.getWeightInKg().orElse(null))
-				.build();
-	}
-
-	/** the attribute values the label carries, in display order (lot, best-before, production date) */
-	@NonNull
-	ImmutableMap<AttributeCode, Object> getAttributeValues()
+	ImmutableMap<AttributeCode, Object> getAttributeValues(@NonNull final Predicate<AttributeCode> isActiveAttribute)
 	{
 		final ImmutableMap.Builder<AttributeCode, Object> result = ImmutableMap.builder();
-		if (lotNo != null)
-		{
-			result.put(AttributeConstants.ATTR_LotNumber, lotNo);
-		}
-		if (bestBeforeDate != null)
-		{
-			result.put(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-		}
-		if (productionDate != null)
-		{
-			result.put(AttributeConstants.ProductionDate, productionDate);
-		}
+		putIfActive(result, AttributeConstants.ATTR_LotNumber, lotNo, isActiveAttribute);
+		putIfActive(result, AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate, isActiveAttribute);
+		putIfActive(result, AttributeConstants.ProductionDate, productionDate, isActiveAttribute);
 		return result.build();
 	}
 
-	/**
-	 * {@link #getAttributeValues()} without the attributes this installation does not define: the preview does not show them and the
-	 * booking does not store them (one rule for both steps, so OK never fails on a value the preview left out).
-	 */
-	@NonNull
-	ImmutableMap<AttributeCode, Object> getAttributeValuesDefinedHere(@NonNull final IAttributeDAO attributeDAO)
+	private static void putIfActive(
+			@NonNull final ImmutableMap.Builder<AttributeCode, Object> result,
+			@NonNull final AttributeCode attributeCode,
+			@Nullable final Object value,
+			@NonNull final Predicate<AttributeCode> isActiveAttribute)
 	{
-		return getAttributeValues().entrySet().stream()
-				.filter(entry -> attributeDAO.getAttributeDisplayNameByValue(entry.getKey()).isPresent())
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+		if (value != null && isActiveAttribute.test(attributeCode))
+		{
+			result.put(attributeCode, value);
+		}
 	}
 }

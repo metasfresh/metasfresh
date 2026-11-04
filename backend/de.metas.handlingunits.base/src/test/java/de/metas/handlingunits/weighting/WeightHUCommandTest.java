@@ -1,5 +1,6 @@
 package de.metas.handlingunits.weighting;
 
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.DocBaseType;
@@ -97,7 +98,7 @@ public class WeightHUCommandTest
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
-		this.huQtyService = new HUQtyService(inventoryService);
+		this.huQtyService = new HUQtyService(inventoryService, HUQRCodesService.newInstanceForUnitTesting());
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}

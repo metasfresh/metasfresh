@@ -1,5 +1,6 @@
 package de.metas.handlingunits.impl;
 
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -10,6 +11,8 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
+import de.metas.handlingunits.CreatedHU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -78,7 +81,7 @@ class HUQtyServiceTest
 		singleHUDocTypeId = InventoryTestHelper.createDocType(AggregationType.SINGLE_HU.getDocBaseAndSubType());
 
 		inventoryService = Mockito.spy(InventoryService.newInstanceForUnitTesting());
-		huQtyService = new HUQtyService(inventoryService);
+		huQtyService = new HUQtyService(inventoryService, HUQRCodesService.newInstanceForUnitTesting());
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -133,7 +136,15 @@ class HUQtyServiceTest
 			return null;
 		}).when(inventoryService).completeDocument(any());
 
-		final HuId huId = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
+		// the new HU's QR code (generating one needs packing instructions, which this test does not set up)
+		final HUQRCode createdHUQRCode = HUQRCode.builder()
+				.id(HUQRCodeUniqueId.random())
+				.packingInfo(HUQRCodePackingInfo.builder().huUnitType(HUQRCodeUnitType.VHU).packingInstructionsId(HuPackingInstructionsId.VIRTUAL).caption("CU").build())
+				.attributes(ImmutableList.of())
+				.build();
+		new HUQRCodesRepository().createNew(createdHUQRCode, createdHUId);
+
+		final CreatedHU created = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
 				.date(MOVEMENT_DATE)
 				.productId(ProductId.ofRepoId(12345))
 				.qty(Quantity.of("12.345", uomRecord))
@@ -142,7 +153,8 @@ class HUQtyServiceTest
 				.description("created from label")
 				.build());
 
-		assertThat(huId).isEqualTo(createdHUId);
+		assertThat(created.getHuId()).isEqualTo(createdHUId);
+		assertThat(created.getQrCode()).isEqualTo(createdHUQRCode);
 
 		final I_M_InventoryLine line = Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class).create().firstOnlyNotNull(I_M_InventoryLine.class);
 		assertThat(line.getM_Product_ID()).isEqualTo(12345);

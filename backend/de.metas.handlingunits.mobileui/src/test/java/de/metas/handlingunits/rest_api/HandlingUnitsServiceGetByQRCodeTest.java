@@ -49,7 +49,7 @@ class HandlingUnitsServiceGetByQRCodeTest
 
 		service = new HandlingUnitsService(
 				HUQRCodesService.newInstanceForUnitTesting(),
-				new HUQtyService(InventoryService.newInstanceForUnitTesting()),
+				new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting()),
 				HULabelService.newInstanceForUnitTesting(),
 				new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()), new InventoryCandidateRepository()),
 				new HUGraiService(new HUPIGraiRepository()));

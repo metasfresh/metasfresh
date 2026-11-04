@@ -35,10 +35,10 @@ class ProposeHUFromScannedCodeCommandTest
 	void rejectionWithoutErrorCode_isAnsweredAsRejectionWithMessage()
 	{
 		// AdempiereException.getErrorCode() is @Nullable
-		final LabelProductResolver resolverRejectingWithoutErrorCode = new LabelProductResolver(HUQRCodesService.newInstanceForUnitTesting(), Services.get(IProductBL.class))
+		final LabelValuesService serviceRejectingWithoutErrorCode = new LabelValuesService(HUQRCodesService.newInstanceForUnitTesting(), Services.get(IProductBL.class), Services.get(IUOMDAO.class))
 		{
 			@Override
-			public LabelProduct resolve(@NonNull final ScannedCode scannedCode, @NonNull final ClientId clientId)
+			public LabelValues resolve(@NonNull final ScannedCode scannedCode, @NonNull final ClientId clientId)
 			{
 				throw new LabelRejectionException(CreateFromLabelMessages.NOT_A_PRODUCT_LABEL, "X")
 				{
@@ -49,15 +49,13 @@ class ProposeHUFromScannedCodeCommandTest
 		};
 
 		final JsonHUProposal proposal = ProposeHUFromScannedCodeCommand.builder()
-				.productBL(Services.get(IProductBL.class))
 				.attributeDAO(Services.get(IAttributeDAO.class))
 				.warehouseDAO(Services.get(IWarehouseDAO.class))
-				.labelProductResolver(resolverRejectingWithoutErrorCode)
+				.labelValuesService(serviceRejectingWithoutErrorCode)
 				.labelTargetLocatorResolver(new LabelTargetLocatorResolver(
 						new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()),
 						Services.get(IWarehouseDAO.class),
 						Services.get(IOrgDAO.class)))
-				.labelQtyAndWeightService(new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class)))
 				.clientId(ClientId.METASFRESH)
 				.userId(UserId.ofRepoId(1_000_001))
 				.orgId(OrgId.ofRepoId(1_000_010))

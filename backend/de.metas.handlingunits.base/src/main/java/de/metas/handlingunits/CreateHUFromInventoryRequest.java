@@ -9,6 +9,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 /** Request to create one new HU (a CU) of a product by a single-HU inventory, see {@code HUQtyService#createHUFromInventory} */
@@ -24,4 +25,6 @@ public class CreateHUFromInventoryRequest
 	@NonNull @Builder.Default ImmutableAttributeSet attributes = ImmutableAttributeSet.EMPTY;
 	/** the description of the inventory document */
 	@Nullable String description;
+	/** the net weight (kg) to set on the new CU after the inventory completed; {@code null}: the weight is not touched */
+	@Nullable BigDecimal weightInKg;
 }

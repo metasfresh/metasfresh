@@ -92,7 +92,7 @@ public class HUAssignmentBLTest
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 										   new PPOrderIssueScheduleService(
 												   new PPOrderIssueScheduleRepository(),
-												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+												   new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting())
 										   )), huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);

@@ -1,20 +1,11 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.CreatedHU;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.X12DE355;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -37,20 +28,16 @@ import java.time.ZonedDateTime;
  * weight rule always come from the re-parse of the scanned code (never trusted from the client); a re-parse that yields several
  * products is refused, e.g. when a second product got the GTIN between the preview and OK.
  * <p>
- * {@link #execute()} runs in the thread's transaction (a new one if none is running): the weight is set on the completed CU, and all of it commits or none of it.
+ * {@link #execute()} runs in the thread's transaction (a new one if none is running): all of it commits or none of it.
  */
 public class CreateHUFromScannedCodeCommand
 {
 	// services
 	@NonNull private final ITrxManager trxManager;
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
-	@NonNull private final IUOMConversionBL uomConversionBL;
 	@NonNull private final IWarehouseDAO warehouseDAO;
 	@NonNull private final IAttributeDAO attributeDAO;
 	@NonNull private final HUQtyService huQtyService;
-	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final LabelProductResolver labelProductResolver;
-	@NonNull private final LabelQtyAndWeightService labelQtyAndWeightService;
+	@NonNull private final LabelValuesService labelValuesService;
 
 	// params
 	@NonNull private final ClientId clientId;
@@ -63,14 +50,10 @@ public class CreateHUFromScannedCodeCommand
 	@Builder
 	private CreateHUFromScannedCodeCommand(
 			@NonNull final ITrxManager trxManager,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
-			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IWarehouseDAO warehouseDAO,
 			@NonNull final IAttributeDAO attributeDAO,
 			@NonNull final HUQtyService huQtyService,
-			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final LabelProductResolver labelProductResolver,
-			@NonNull final LabelQtyAndWeightService labelQtyAndWeightService,
+			@NonNull final LabelValuesService labelValuesService,
 			@NonNull final ClientId clientId,
 			@NonNull final String adLanguage,
 			@NonNull final ScannedCode scannedCode,
@@ -79,14 +62,10 @@ public class CreateHUFromScannedCodeCommand
 			@NonNull final ZonedDateTime date)
 	{
 		this.trxManager = trxManager;
-		this.handlingUnitsBL = handlingUnitsBL;
-		this.uomConversionBL = uomConversionBL;
 		this.warehouseDAO = warehouseDAO;
 		this.attributeDAO = attributeDAO;
 		this.huQtyService = huQtyService;
-		this.huQRCodesService = huQRCodesService;
-		this.labelProductResolver = labelProductResolver;
-		this.labelQtyAndWeightService = labelQtyAndWeightService;
+		this.labelValuesService = labelValuesService;
 		this.clientId = clientId;
 		this.adLanguage = adLanguage;
 		this.scannedCode = scannedCode;
@@ -110,25 +89,18 @@ public class CreateHUFromScannedCodeCommand
 		}
 		final LocatorId verifiedLocatorId = getVerifiedLocatorId();
 
-		final LabelProduct labelProduct = labelProductResolver.resolve(scannedCode, clientId);
-		final ProductId productId = labelProduct.getProductId();
-		final LabelValues labelValues = LabelValues.of(labelProduct.getCode());
-		final LabelQtyAndWeight qtyAndWeight = labelQtyAndWeightService.compute(productId, labelValues.getWeightKg());
+		final LabelValues labelValues = labelValuesService.resolve(scannedCode, clientId);
 
-		final HuId huId = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
+		return huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
 				.date(date)
-				.productId(productId)
-				.qty(Quantitys.of(qty, qtyAndWeight.getStockUomId()))
+				.productId(labelValues.getProductId())
+				.qty(Quantitys.of(qty, labelValues.getStockUomId()))
 				.locatorId(verifiedLocatorId)
 				.attributes(toInventoryAttributes(labelValues))
 				// origin marker on the inventory document, in the language of the creating user; "Change Qty" books the same inventory sub-type
 				.description(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate(adLanguage))
+				.weightInKg(labelValues.getWeightKgForCU())
 				.build());
-
-		// the weight cannot go through the inventory (its attribute key drops weight attributes): set it on the completed CU
-		setWeight(handlingUnitsBL.getById(huId), productId, qtyAndWeight);
-		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId); // creates the QR code if missing, like the HU lookup by value does
-		return new CreatedHU(huId, qrCode);
 	}
 
 	/**
@@ -152,25 +124,12 @@ public class CreateHUFromScannedCodeCommand
 	/**
 	 * The lot, best-before date and production date of the label as the inventory line's attributes: the inventory document and the
 	 * stock carry them, and the new CU inherits them when the inventory completes. Same route as "Change Qty" of an HU without an HU.
-	 * An attribute this installation does not define is skipped, like in the preview.
+	 * An attribute that is not active here is skipped, like in the preview.
 	 */
 	private ImmutableAttributeSet toInventoryAttributes(@NonNull final LabelValues labelValues)
 	{
 		final ImmutableAttributeSet.Builder result = ImmutableAttributeSet.builder();
-		labelValues.getAttributeValuesDefinedHere(attributeDAO).forEach((attributeCode, value) -> result.attributeValue(attributeCode, value));
+		labelValues.getAttributeValues(attributeDAO::isActive).forEach(result::attributeValue);
 		return result.build();
-	}
-
-	private void setWeight(@NonNull final I_M_HU cu, @NonNull final ProductId productId, @NonNull final LabelQtyAndWeight qtyAndWeight)
-	{
-		final BigDecimal weightKg = qtyAndWeight.getWeightKgForCU();
-		if (weightKg == null)
-		{
-			return;
-		}
-
-		final Quantity weight = Quantitys.of(weightKg, X12DE355.KILOGRAM);
-		new PackedHUWeightNetUpdater(uomConversionBL, handlingUnitsBL.createMutableHUContextForProcessing(), productId, weight)
-				.updatePackToHU(cu);
 	}
 }

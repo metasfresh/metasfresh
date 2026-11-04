@@ -7,8 +7,6 @@ import de.metas.handlingunits.rest_api.createfromlabel.JsonHUProposal.JsonProduc
 import de.metas.handlingunits.rest_api.createfromlabel.JsonHUProposal.JsonRejection;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
@@ -19,7 +17,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
-import org.compiere.model.I_M_Product;
 
 import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMessages.WEIGHT_NOT_USED;
 
@@ -27,17 +24,15 @@ import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMes
  * The proposal for the HU Manager "New HU" preview: what the scanned product label would create. Reads only, writes nothing
  * (the preview can be cancelled and every repeat scan proposes again).
  * <p>
- * Quantity and weight: see {@link LabelQtyAndWeightService}.
+ * Product, label values, quantity and weight: see {@link LabelValuesService}.
  */
 public class ProposeHUFromScannedCodeCommand
 {
 	// services
-	@NonNull private final IProductBL productBL;
 	@NonNull private final IAttributeDAO attributeDAO;
 	@NonNull private final IWarehouseDAO warehouseDAO;
-	@NonNull private final LabelProductResolver labelProductResolver;
+	@NonNull private final LabelValuesService labelValuesService;
 	@NonNull private final LabelTargetLocatorResolver labelTargetLocatorResolver;
-	@NonNull private final LabelQtyAndWeightService labelQtyAndWeightService;
 
 	// params
 	@NonNull private final ClientId clientId;
@@ -48,24 +43,20 @@ public class ProposeHUFromScannedCodeCommand
 
 	@Builder
 	private ProposeHUFromScannedCodeCommand(
-			@NonNull final IProductBL productBL,
 			@NonNull final IAttributeDAO attributeDAO,
 			@NonNull final IWarehouseDAO warehouseDAO,
-			@NonNull final LabelProductResolver labelProductResolver,
+			@NonNull final LabelValuesService labelValuesService,
 			@NonNull final LabelTargetLocatorResolver labelTargetLocatorResolver,
-			@NonNull final LabelQtyAndWeightService labelQtyAndWeightService,
 			@NonNull final ClientId clientId,
 			@NonNull final UserId userId,
 			@NonNull final OrgId orgId,
 			@NonNull final ScannedCode scannedCode,
 			@NonNull final String adLanguage)
 	{
-		this.productBL = productBL;
 		this.attributeDAO = attributeDAO;
 		this.warehouseDAO = warehouseDAO;
-		this.labelProductResolver = labelProductResolver;
+		this.labelValuesService = labelValuesService;
 		this.labelTargetLocatorResolver = labelTargetLocatorResolver;
-		this.labelQtyAndWeightService = labelQtyAndWeightService;
 		this.clientId = clientId;
 		this.userId = userId;
 		this.orgId = orgId;
@@ -87,12 +78,7 @@ public class ProposeHUFromScannedCodeCommand
 
 	private JsonHUProposal propose()
 	{
-		final LabelProduct labelProduct = labelProductResolver.resolve(scannedCode, clientId);
-		final ProductId productId = labelProduct.getProductId();
-		final LabelValues labelValues = LabelValues.of(labelProduct.getCode());
-
-		final I_M_Product product = productBL.getById(productId);
-		final LabelQtyAndWeight qtyAndWeight = labelQtyAndWeightService.compute(productId, labelValues.getWeightKg());
+		final LabelValues labelValues = labelValuesService.resolve(scannedCode, clientId);
 
 		final LocatorQRCode locatorQRCode = labelTargetLocatorResolver.resolve(userId, orgId)
 				.map(locatorId -> LocatorQRCode.ofLocator(warehouseDAO.getLocatorById(locatorId)))
@@ -100,25 +86,25 @@ public class ProposeHUFromScannedCodeCommand
 
 		return JsonHUProposal.builder()
 				.product(JsonProduct.builder()
-						.productId(productId.getRepoId())
-						.value(product.getValue())
-						.name(product.getName())
+						.productId(labelValues.getProductId().getRepoId())
+						.value(labelValues.getProductValue())
+						.name(labelValues.getProductName())
 						.build())
-				.qty(qtyAndWeight.getQty())
-				.uom(qtyAndWeight.getStockUom().getCode())
+				.qty(labelValues.getQty())
+				.uom(labelValues.getStockUom().getCode())
 				.attributes(toJsonAttributes(labelValues))
-				.weightKg(qtyAndWeight.getWeightKgForCU())
+				.weightKg(labelValues.getWeightKgForCU())
 				.locatorQRCode(locatorQRCode != null ? locatorQRCode.toScannedCode() : null)
 				.locatorCaption(locatorQRCode != null ? locatorQRCode.getCaption() : null)
-				.weightNote(qtyAndWeight.isWeightIgnored() ? TranslatableStrings.adMessage(WEIGHT_NOT_USED).translate(adLanguage) : null)
+				.weightNote(labelValues.isWeightIgnored() ? TranslatableStrings.adMessage(WEIGHT_NOT_USED).translate(adLanguage) : null)
 				.build();
 	}
 
 	private ImmutableList<JsonAttribute> toJsonAttributes(@NonNull final LabelValues labelValues)
 	{
 		final ImmutableList.Builder<JsonAttribute> result = ImmutableList.builder();
-		// only attributes this installation defines: the same ones the booking stores
-		labelValues.getAttributeValuesDefinedHere(attributeDAO).forEach((attributeCode, value) -> {
+		// only the active attributes: the same ones the booking stores
+		labelValues.getAttributeValues(attributeDAO::isActive).forEach((attributeCode, value) -> {
 			final ITranslatableString caption = attributeDAO.getAttributeDisplayNameByValue(attributeCode)
 					.orElseThrow(() -> new AdempiereException("Attribute not found: " + attributeCode));
 

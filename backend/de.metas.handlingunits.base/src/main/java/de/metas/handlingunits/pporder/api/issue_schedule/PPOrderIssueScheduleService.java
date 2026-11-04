@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api.issue_schedule;
 
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -64,7 +65,7 @@ public class PPOrderIssueScheduleService
 				PPOrderIssueScheduleService.class,
 				() -> new PPOrderIssueScheduleService(
 						new PPOrderIssueScheduleRepository(),
-						new HUQtyService(InventoryService.newInstanceForUnitTesting())
+						new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting())
 				)
 		);
 	}

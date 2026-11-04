@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
+import de.metas.handlingunits.CreatedHU;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -28,7 +28,6 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -49,6 +48,8 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -147,7 +148,7 @@ class CreateHUFromScannedCodeCommandTest
 
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request, final String adLanguage)
 	{
-		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)), new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class)));
+		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQtyService, newLabelValuesService(), new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)));
 		return service.create()
 				.scannedCode(request.getScannedCode())
 				.qty(request.getQty())
@@ -160,23 +161,24 @@ class CreateHUFromScannedCodeCommandTest
 				.getHuId();
 	}
 
-	/** The command takes every service and the label resolver as builder parameters (it builds and looks up nothing itself). */
+	private LabelValuesService newLabelValuesService()
+	{
+		return new LabelValuesService(huQRCodesService, Services.get(IProductBL.class), Services.get(IUOMDAO.class));
+	}
+
+	/** The command takes every service as builder parameter (it builds and looks up nothing itself). */
 	@Test
-	void commandBuiltWithItsServicesAndResolver_booksTheLabelProduct()
+	void commandBuiltWithItsServices_booksTheLabelProduct()
 	{
 		product2.setGTIN("02001234567893");
 		InterfaceWrapperHelper.saveRecord(product2);
 
 		final CreatedHU created = CreateHUFromScannedCodeCommand.builder()
 				.trxManager(Services.get(ITrxManager.class))
-				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
-				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.warehouseDAO(Services.get(IWarehouseDAO.class))
 				.attributeDAO(Services.get(IAttributeDAO.class))
 				.huQtyService(huQtyService)
-				.huQRCodesService(huQRCodesService)
-				.labelProductResolver(new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)))
-				.labelQtyAndWeightService(new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class)))
+				.labelValuesService(newLabelValuesService())
 				.clientId(ClientId.METASFRESH)
 				.adLanguage("en_US")
 				.scannedCode(ScannedCode.ofString("01" + SHARED_GTIN))
@@ -421,17 +423,70 @@ class CreateHUFromScannedCodeCommandTest
 		assertThat(huQtyService.requests).isEmpty();
 	}
 
+	/**
+	 * Failure scenario: an attribute that exists but is inactive must be skipped like an undefined one (it is neither shown in the preview
+	 * nor stored), the active ones are booked.
+	 */
+	@Test
+	void inactiveAttribute_skipped_restBooked() throws IOException
+	{
+		newAttribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
+		newAttribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date);
+		final I_M_Attribute productionDate = newAttribute(AttributeConstants.ProductionDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date);
+		productionDate.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(productionDate);
+		newCustomLabelFormat();
+
+		create(requestOf("P1LOT001271231251101"));
+
+		final ImmutableAttributeSet attributes = huQtyService.requests.get(0).getAttributes();
+		assertThat(attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)).isTrue();
+		assertThat(attributes.hasAttribute(AttributeConstants.ProductionDate)).isFalse();
+	}
+
+	/** The label weight of a catch-weight product goes with the request to the HU creation, which sets it on the new CU. */
+	@Test
+	void catchWeightLabel_weightGoesWithTheRequest() throws IOException
+	{
+		final I_C_UOM kg = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		kg.setX12DE355(X12DE355.KILOGRAM.getCode());
+		kg.setName("kg");
+		kg.setUOMType(X_C_UOM.UOMTYPE_Weigth);
+		InterfaceWrapperHelper.saveRecord(kg);
+		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
+		conversion.setM_Product_ID(product1.getM_Product_ID());
+		conversion.setC_UOM_ID(product1.getC_UOM_ID());
+		conversion.setC_UOM_To_ID(kg.getC_UOM_ID());
+		conversion.setMultiplyRate(BigDecimal.TEN);
+		conversion.setDivideRate(new BigDecimal("0.1"));
+		conversion.setIsCatchUOMForProduct(true);
+		conversion.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(conversion);
+		ScannableCodeFormatService.newInstanceForUnitTesting().create(ScannableCodeFormatCreateRequest.builder()
+				.name("weight label")
+				.parts(ImmutableList.of(
+						ScannableCodeFormatCreateRequest.Part.builder().startPosition(1).endPosition(2).type(ScannableCodeFormatPartType.ProductCode).build(),
+						ScannableCodeFormatCreateRequest.Part.builder().startPosition(3).endPosition(8).type(ScannableCodeFormatPartType.WeightInKg).build()))
+				.build());
+
+		create(requestOf("P1012345"));
+
+		assertThat(huQtyService.requests).hasSize(1);
+		assertThat(huQtyService.requests.get(0).getWeightInKg()).isEqualByComparingTo("12.345");
+		assertThat(huQtyService.requests.get(0).getQty().toBigDecimal()).isEqualByComparingTo("1");
+	}
+
 	private static class RecordingHUQtyService extends HUQtyService
 	{
 		final List<CreateHUFromInventoryRequest> requests = new ArrayList<>();
 
 		RecordingHUQtyService()
 		{
-			super(InventoryService.newInstanceForUnitTesting());
+			super(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting());
 		}
 
 		/** the service reads the new HU's QR code afterwards; attach one so it does not need a full HU (packing instructions) to generate it */
-		private static void attachQRCode(final HuId huId)
+		private static HUQRCode attachQRCode(final HuId huId)
 		{
 			final HUQRCode qrCode = HUQRCode.builder()
 					.id(HUQRCodeUniqueId.random())
@@ -439,17 +494,17 @@ class CreateHUFromScannedCodeCommandTest
 					.attributes(ImmutableList.of())
 					.build();
 			new HUQRCodesRepository().createNew(qrCode, huId);
+			return qrCode;
 		}
 
 		@Override
-		public HuId createHUFromInventory(final CreateHUFromInventoryRequest request)
+		public CreatedHU createHUFromInventory(final CreateHUFromInventoryRequest request)
 		{
 			requests.add(request);
 			final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class); // the service reads its QR code afterwards
 			InterfaceWrapperHelper.saveRecord(hu);
 			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-			attachQRCode(huId);
-			return huId;
+			return new CreatedHU(huId, attachQRCode(huId));
 		}
 	}
 }

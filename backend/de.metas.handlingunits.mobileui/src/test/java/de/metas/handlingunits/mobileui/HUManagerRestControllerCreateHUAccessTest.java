@@ -16,8 +16,7 @@ import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.createfromlabel.CreateHUFromLabelService;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonCreateHUFromScannedCodeRequest;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonProposeHUFromScannedCodeRequest;
-import de.metas.handlingunits.rest_api.createfromlabel.LabelProductResolver;
-import de.metas.handlingunits.rest_api.createfromlabel.LabelQtyAndWeightService;
+import de.metas.handlingunits.rest_api.createfromlabel.LabelValuesService;
 import de.metas.handlingunits.rest_api.createfromlabel.LabelTargetLocatorResolver;
 import de.metas.inventory.InventoryCandidateRepository;
 import de.metas.inventory.InventoryCandidateService;
@@ -111,7 +110,7 @@ class HUManagerRestControllerCreateHUAccessTest
 		disposeAction = newAction(HUManagerAction.Dispose.getInternalName());
 
 		final HUQRCodesService huQRCodesService = HUQRCodesService.newInstanceForUnitTesting();
-		final HUQtyService huQtyService = new HUQtyService(InventoryService.newInstanceForUnitTesting());
+		final HUQtyService huQtyService = new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting());
 		final InventoryCandidateService inventoryCandidateService = new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()), new InventoryCandidateRepository());
 		controller = new HUManagerRestController(
 				new MobileApplicationService(new MobileApplicationInfoRepository(), Optional.empty()),
@@ -123,7 +122,7 @@ class HUManagerRestControllerCreateHUAccessTest
 						inventoryCandidateService,
 						new HUGraiService(new HUPIGraiRepository())),
 				inventoryCandidateService,
-				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)), new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class))));
+				new CreateHUFromLabelService(huQtyService, new LabelValuesService(huQRCodesService, Services.get(IProductBL.class), Services.get(IUOMDAO.class)), new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class))));
 	}
 
 	private I_Mobile_Application_Action newAction(final String internalName)

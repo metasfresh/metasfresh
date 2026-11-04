@@ -595,7 +595,7 @@ public class HUTestHelper
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 						new PPOrderIssueScheduleService(
 								new PPOrderIssueScheduleRepository(),
-								new HUQtyService(InventoryService.newInstanceForUnitTesting())
+								new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting())
 						)),
 				huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
