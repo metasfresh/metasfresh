@@ -10,6 +10,7 @@ import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.inventory.InventoryCandidateRepository;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.scannable_code.ScannedCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -50,7 +51,7 @@ class HandlingUnitsServiceGetByQRCodeTest
 				HUQRCodesService.newInstanceForUnitTesting(),
 				new HUQtyService(InventoryService.newInstanceForUnitTesting()),
 				HULabelService.newInstanceForUnitTesting(),
-				new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked())),
+				new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()), new InventoryCandidateRepository()),
 				new HUGraiService(new HUPIGraiRepository()));
 	}
 

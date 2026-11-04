@@ -19,6 +19,7 @@ import de.metas.handlingunits.rest_api.createfromlabel.JsonProposeHUFromScannedC
 import de.metas.handlingunits.rest_api.createfromlabel.LabelProductResolver;
 import de.metas.handlingunits.rest_api.createfromlabel.LabelQtyAndWeightService;
 import de.metas.handlingunits.rest_api.createfromlabel.LabelTargetLocatorResolver;
+import de.metas.inventory.InventoryCandidateRepository;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
@@ -111,7 +112,7 @@ class HUManagerRestControllerCreateHUAccessTest
 
 		final HUQRCodesService huQRCodesService = HUQRCodesService.newInstanceForUnitTesting();
 		final HUQtyService huQtyService = new HUQtyService(InventoryService.newInstanceForUnitTesting());
-		final InventoryCandidateService inventoryCandidateService = new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
+		final InventoryCandidateService inventoryCandidateService = new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()), new InventoryCandidateRepository());
 		controller = new HUManagerRestController(
 				new MobileApplicationService(new MobileApplicationInfoRepository(), Optional.empty()),
 				new HUManagerProfileRepository(),

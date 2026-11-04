@@ -35,7 +35,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inventory.InventoryCandidateRepository;
+import de.metas.inventory.InventoryCandidateService;
 import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -117,7 +117,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final InventoryService inventoryService;
-	@NonNull private final InventoryCandidateRepository inventoryCandidateRepository;
+	@NonNull private final InventoryCandidateService inventoryCandidateService;
 	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -301,7 +301,7 @@ public class AssertExpectationsCommandServices
 
 	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
 	{
-		return inventoryCandidateRepository.getByHuId(huId);
+		return inventoryCandidateService.getInventoryCandidatesByHUId(huId);
 	}
 
 	public int countActiveHUsByProductId(@NonNull final ProductId productId)

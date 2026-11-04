@@ -24,6 +24,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Service
 public class InventoryCandidateService
@@ -31,12 +32,24 @@ public class InventoryCandidateService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ADReferenceService adReferenceService;
+	private final InventoryCandidateRepository inventoryCandidateRepository;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-	public InventoryCandidateService(final ADReferenceService adReferenceService)
+	public InventoryCandidateService(
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final InventoryCandidateRepository inventoryCandidateRepository)
 	{
 		this.adReferenceService = adReferenceService;
+		this.inventoryCandidateRepository = inventoryCandidateRepository;
+	}
+
+	/**
+	 * @return the active {@code M_Inventory_Candidate} records of the given HU, regardless of their {@code Processed} state.
+	 */
+	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
+	{
+		return inventoryCandidateRepository.getByHuId(huId);
 	}
 
 	public ADRefList getDisposalReasons()
