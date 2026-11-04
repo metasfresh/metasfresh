@@ -115,6 +115,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
@@ -133,9 +134,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -191,6 +195,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 @RequiredArgsConstructor
 public class C_Order_StepDef
 {
+	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@]+@");
 	private static final String COLUMNNAME_Exclude_C_Order_ID = "Exclude_" + COLUMNNAME_C_Order_ID;
 
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
@@ -464,6 +469,7 @@ public class C_Order_StepDef
 		}
 
 		tableRow.getAsOptionalString(COLUMNNAME_DocumentNo)
+				.map(documentNo -> PLACEHOLDER.matcher(documentNo).find() ? restTestContext.resolveVariables(documentNo) : documentNo)
 				.ifPresent(order::setDocumentNo);
 
 		tableRow.getAsOptionalString(COLUMNNAME_ExternalId)
@@ -1753,6 +1759,39 @@ public class C_Order_StepDef
 
 		orderTable.putOrReplace(orderIdentifier, orderRecord);
 		return true;
+	}
+
+	/**
+	 * Generates a random 5-digit document number per row and stores it in the REST context variable named in the row, so a scenario
+	 * gets numbers that no earlier run left in the database, instead of hard-coded ones.
+	 * A number is never used twice and never matches an existing {@code C_Order.DocumentNo} or {@code C_Invoice.DocumentNo}.
+	 * The variables are used as {@code @name@} in {@code C_Orders}/{@code C_Invoice} {@code DocumentNo} and in the CAMT doc string.
+	 * <pre>{@code
+	 * Given generate unique 5-digit document numbers into the REST context variables:
+	 *   | REST.Context |
+	 *   | om_no_1      |
+	 * }</pre>
+	 */
+	@Given("generate unique 5-digit document numbers into the REST context variables:")
+	public void generateUniqueDocumentNumbers(@NonNull final DataTable dataTable)
+	{
+		final Set<String> usedInThisCall = new HashSet<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String variableName = row.getAsString("REST.Context");
+			String documentNo;
+			do
+			{
+				documentNo = String.valueOf(ThreadLocalRandom.current().nextInt(10_000, 100_000));
+			}
+			while (!usedInThisCall.add(documentNo) || isDocumentNoInUse(documentNo));
+			restTestContext.setVariable(variableName, documentNo);
+		});
+	}
+
+	private boolean isDocumentNoInUse(@NonNull final String documentNo)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class).addEqualsFilter(COLUMNNAME_DocumentNo, documentNo).create().anyMatch()
+				|| queryBL.createQueryBuilder(I_C_Invoice.class).addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo).create().anyMatch();
 	}
 
 	@And("store order-values in TestContext")

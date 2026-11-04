@@ -58,6 +58,9 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @Id:S32606_OM1
   Scenario: Credit line naming a waiting prepay order: order and partner on the line; completing the statement creates the payment with the order and releases the order
     # reference-case shape: pure-numeric zero-padded document number, 2 lines of 51.90 EUR net + 19 % VAT on a tax-excluded price list = 123.52 EUR gross
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om01 |
 
     And metasfresh contains M_Products:
       | Identifier |
@@ -84,7 +87,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | l_OM1      | 0203111110011 | bp_OM1                   | true                | true         |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_1        | true    | bp_OM1        | 2026-11-03  | SOO         | PR         | 0021       |
+      | o_1        | true    | bp_OM1        | 2026-11-03  | SOO         | PR         | @no_om01@       |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_1a     | o_1        | p_OM1a       | 1          |
@@ -152,7 +155,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse 0021 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om01@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -186,17 +189,21 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM2
   Scenario: Two waiting orders named in the text, both totalling the line amount: no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om02_0001 |
+      | no_om02_0002 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_2a       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM02-0001  |
+      | o_2a       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om02_0001@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_2a     | o_2a       | p_OM         | 1          |
     And the order identified by o_2a is completed and waits for payment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_2b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM02-0002  |
+      | o_2b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om02_0002@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_2b     | o_2b       | p_OM         | 1          |
@@ -260,7 +267,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM02-0001 und OM02-0002</Ustrd>
+							<Ustrd>Vorauskasse @no_om02_0001@ und @no_om02_0002@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -290,17 +297,21 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM3
   Scenario: Text names an unpaid invoice and a waiting order: the invoice is matched, no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om03_inv |
+      | no_om03_0003 |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo |
-      | inv_3      | bp_OM                    | Ausgangsrechnung        | 2026-11-03   | Spot                     | true    | EUR                 | OM03-INV       |
+      | inv_3      | bp_OM                    | Ausgangsrechnung        | 2026-11-03   | Spot                     | true    | EUR                 | @no_om03_inv@       |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | il_inv_3   | inv_3                   | p_OM                    | 1           | PCE               |
     And the invoice identified by inv_3 is completed
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_3        | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM03-0003  |
+      | o_3        | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om03_0003@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_3      | o_3        | p_OM         | 1          |
@@ -364,7 +375,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Zahlung OM03-INV und OM03-0003</Ustrd>
+							<Ustrd>Zahlung @no_om03_inv@ und @no_om03_0003@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -391,17 +402,22 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM4
   Scenario: Text names a completed standard order and a prepay order already released by a hand payment: no order, no partner, the payment stays unlinked
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om04_std |
+      | no_om04_pre |
+      | no_om04_dra |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_4a       | true    | bp_OM         | 2026-11-03  | SOO         | SO         | OM04-STD   |
+      | o_4a       | true    | bp_OM         | 2026-11-03  | SOO         | SO         | @no_om04_std@   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_4a     | o_4a       | p_OM         | 1          |
     And the order identified by o_4a is completed
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_4b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM04-PRE   |
+      | o_4b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om04_pre@   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_4b     | o_4b       | p_OM         | 1          |
@@ -412,7 +428,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And the payment identified by p_4 is completed
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_4c       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM04-DRA   |
+      | o_4c       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om04_dra@   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_4c     | o_4c       | p_OM         | 1          |
@@ -479,7 +495,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Zahlung OM04-STD und OM04-PRE und OM04-DRA</Ustrd>
+							<Ustrd>Zahlung @no_om04_std@ und @no_om04_pre@ und @no_om04_dra@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -508,10 +524,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM5
   Scenario: A completed same-partner same-amount payment without order is not linked to a line with an order: a new payment with the order is created
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om05_0005 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_5        | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM05-0005  |
+      | o_5        | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om05_0005@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_5      | o_5        | p_OM         | 1          |
@@ -579,7 +598,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM05-0005 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om05_0005@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -620,17 +639,21 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM5b
   Scenario: A completed same-partner same-amount payment that carries another order is not linked to a line with an order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om05b_0001 |
+      | no_om05b_0002 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_5b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM05B-0001 |
+      | o_5b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om05b_0001@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_5b     | o_5b       | p_OM         | 1          |
     And the order identified by o_5b is completed and waits for payment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_5b_other | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM05B-0002 |
+      | o_5b_other | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om05b_0002@ |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_5b_other | o_5b_other | p_OM         | 1          |
@@ -667,10 +690,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM6a
   Scenario: Prepay order is not matched on a line with the wrong amount (partial amount, import not matching amounts): only full prepayments are matched
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om06a_0006 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_6a       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM06a-0006 |
+      | o_6a       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om06a_0006@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_6a     | o_6a       | p_OM         | 1          |
@@ -734,7 +760,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM06a-0006 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om06a_0006@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -761,10 +787,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM6b
   Scenario: Prepay order is not matched on a line with the wrong amount (partial amount, import matching amounts): only full prepayments are matched
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om06b_0006 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_6b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM06b-0006 |
+      | o_6b       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om06b_0006@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_6b     | o_6b       | p_OM         | 1          |
@@ -828,7 +857,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM06b-0006 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om06b_0006@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -855,10 +884,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM6c
   Scenario: Prepay order is not matched on a line with the wrong amount (over-payment, import not matching amounts): only full prepayments are matched
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om06c_0006 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_6c       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM06c-0006 |
+      | o_6c       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om06c_0006@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_6c     | o_6c       | p_OM         | 1          |
@@ -922,7 +954,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM06c-0006 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om06c_0006@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -949,10 +981,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM7
   Scenario: Order released by the bank-file payment and invoiced afterwards: the payment is allocated to the invoice
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om07_0007 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_7        | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM07-0007  |
+      | o_7        | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om07_0007@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_7      | o_7        | p_OM         | 1          |
@@ -1016,7 +1051,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM07-0007 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om07_0007@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -1059,10 +1094,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM8c
   Scenario: Order picked by hand on a bank statement line: completing the statement creates the payment with the order and releases the order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om08c_0008 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_8c       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM08C-0008 |
+      | o_8c       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om08c_0008@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_8c     | o_8c       | p_OM         | 1          |
@@ -1092,10 +1130,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM10
   Scenario: Debit line naming a waiting order with the same absolute amount: no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om10_0010 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_10       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM10-0010  |
+      | o_10       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om10_0010@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_10     | o_10       | p_OM         | 1          |
@@ -1159,7 +1200,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM10-0010 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om10_0010@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -1186,10 +1227,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM11
   Scenario: Debit line with a hand-picked order: the payment is outgoing and carries no order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om11_0011 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_11       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM11-0011  |
+      | o_11       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om11_0011@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_11     | o_11       | p_OM         | 1          |
@@ -1219,10 +1263,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM12
   Scenario: 0.00 line with a hand-picked order: the payment carries no order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om12_0012 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_12       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM12-0012  |
+      | o_12       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om12_0012@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_12     | o_12       | p_OM         | 1          |
@@ -1252,10 +1299,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM13a
   Scenario: Batch entry: the 0.00 detail lines get no order, even when the text of the first transaction names one
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om13_0013 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_13a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM13-0013  |
+      | o_13a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om13_0013@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_13a    | o_13a      | p_OM         | 1          |
@@ -1319,7 +1369,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM13-0013</Ustrd>
+							<Ustrd>Vorauskasse @no_om13_0013@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 					<TxDtls>
@@ -1363,10 +1413,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM13b
   Scenario: Batch entry: the money line (batch total) carries the order; completing creates one payment with the order for the batch total
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om13b_0013 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_13b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM13B-0013 |
+      | o_13b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om13b_0013@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_13b    | o_13b      | p_OM         | 1          |
@@ -1430,7 +1483,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM13B-0013</Ustrd>
+							<Ustrd>Vorauskasse @no_om13b_0013@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 					<TxDtls>
@@ -1484,17 +1537,21 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM17a
   Scenario: Payment-reservation order (standard order waiting for payment) and prepay order with the same total: only the prepay order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om17_pre |
+      | no_om17_pay |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_17a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM17-PRE   |
+      | o_17a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om17_pre@   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_17a    | o_17a      | p_OM         | 1          |
     And the order identified by o_17a is completed and waits for payment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo | OPT.PaymentRule |
-      | o_17b      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | OM17-PAY   | L               |
+      | o_17b      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | @no_om17_pay@   | L               |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_17b    | o_17b      | p_OM         | 1          |
@@ -1559,7 +1616,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Zahlung OM17-PRE und OM17-PAY</Ustrd>
+							<Ustrd>Zahlung @no_om17_pre@ und @no_om17_pay@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -1586,10 +1643,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM17b
   Scenario: Payment-reservation order with the same total, only its number in the text: no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om17_only |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo | OPT.PaymentRule |
-      | o_17c      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | OM17-ONLY  | L               |
+      | o_17c      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | @no_om17_only@  | L               |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_17c    | o_17c      | p_OM         | 1          |
@@ -1654,7 +1714,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Zahlung OM17-ONLY</Ustrd>
+							<Ustrd>Zahlung @no_om17_only@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -1681,10 +1741,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM20a
   Scenario: Entry in another currency than the order (CHF vs EUR), import matching amounts: no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om20a_0020 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_20a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM20a-0020 |
+      | o_20a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om20a_0020@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_20a    | o_20a      | p_OM         | 1          |
@@ -1748,7 +1811,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM20a-0020 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om20a_0020@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -1775,10 +1838,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM20b
   Scenario: Entry in another currency than the order (CHF vs EUR), import not matching amounts: no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om20b_0020 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_20b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM20b-0020 |
+      | o_20b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om20b_0020@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_20b    | o_20b      | p_OM         | 1          |
@@ -1842,7 +1908,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM20b-0020 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om20b_0020@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -1869,24 +1935,29 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM21
   Scenario: Three waiting orders named in the text, only the last one totals the line amount: exactly that order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om21_a |
+      | no_om21_b |
+      | no_om21_c |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_21a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM21-A     |
+      | o_21a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om21_a@     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_21a    | o_21a      | p_OM         | 2          |
     And the order identified by o_21a is completed and waits for payment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_21b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM21-B     |
+      | o_21b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om21_b@     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_21b    | o_21b      | p_OM         | 3          |
     And the order identified by o_21b is completed and waits for payment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_21c      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM21-C     |
+      | o_21c      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om21_c@     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_21c    | o_21c      | p_OM         | 1          |
@@ -1950,7 +2021,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Zahlung OM21-A OM21-B OM21-C</Ustrd>
+							<Ustrd>Zahlung @no_om21_a@ @no_om21_b@ @no_om21_c@</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -1974,10 +2045,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM22
   Scenario: Partner of a line with an order is changed to another partner: completing the statement fails
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om22_0022 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_22       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM22-0022  |
+      | o_22       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om22_0022@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_22     | o_22       | p_OM         | 1          |
@@ -2041,7 +2115,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM22-0022 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om22_0022@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2067,10 +2141,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM23
   Scenario: Inactive prepay order named in the text: no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om23_0023 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_23       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM23-0023  |
+      | o_23       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om23_0023@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_23     | o_23       | p_OM         | 1          |
@@ -2135,7 +2212,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM23-0023 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om23_0023@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2159,10 +2236,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM24
   Scenario: Hand-picked order with a partial amount: completing the statement fails, the order stays waiting
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om24_0024 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_24       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM24-0024  |
+      | o_24       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om24_0024@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_24     | o_24       | p_OM         | 1          |
@@ -2188,10 +2268,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM25
   Scenario: Hand-picked order with another currency than the order: completing the statement fails, the order stays waiting
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om25_0025 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_25       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM25-0025  |
+      | o_25       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om25_0025@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_25     | o_25       | p_OM         | 1          |
@@ -2217,10 +2300,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM33a
   Scenario: Hand-picked payment-reservation order (standard order waiting for payment): completing the statement fails, the order stays waiting
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om33a_0033 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo | OPT.PaymentRule |
-      | o_33a      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | OM33A-0033 | L               |
+      | o_33a      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | @no_om33a_0033@ | L               |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_33a   | o_33a      | p_OM         | 1          |
@@ -2247,10 +2333,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM33b
   Scenario: Hand-picked inactive prepay order: completing the statement fails, the order stays waiting
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om33b_0033 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_33b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM33B-0033 |
+      | o_33b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om33b_0033@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_33b   | o_33b      | p_OM         | 1          |
@@ -2277,10 +2366,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM33c
   Scenario: Hand-picked prepay order that is flagged as no sales order: completing the statement fails, the order stays waiting
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om33c_0033 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_33c      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM33C-0033 |
+      | o_33c      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om33c_0033@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_33c   | o_33c      | p_OM         | 1          |
@@ -2307,10 +2399,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM33d
   Scenario: Hand-picked prepay order that does not wait for payment any more and that no payment carries: completing the statement fails with the not-waiting message, no payment is created
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om33d_0033 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_33d      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM33D-0033 |
+      | o_33d      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om33d_0033@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_33d   | o_33d      | p_OM         | 1          |
@@ -2334,10 +2429,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM26
   Scenario: Same order named in two imported files before either is completed: only the first line gets the order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om26_0026 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_26       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM26-0026  |
+      | o_26       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om26_0026@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_26     | o_26       | p_OM         | 1          |
@@ -2401,7 +2499,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM26-0026 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om26_0026@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2469,7 +2567,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM26-0026 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om26_0026@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2499,10 +2597,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM27
   Scenario: Same order named by two entries of one file: only the first entry's line gets the order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om27_0027 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_27       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM27-0027  |
+      | o_27       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om27_0027@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_27     | o_27       | p_OM         | 1          |
@@ -2566,7 +2667,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM27-0027 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om27_0027@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2597,7 +2698,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM27-0027 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om27_0027@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2627,10 +2728,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM28
   Scenario: Prepay order already carried by a completed payment: no order is set
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om28_0028 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_28       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM28-0028  |
+      | o_28       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om28_0028@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_28     | o_28       | p_OM         | 1          |
@@ -2698,7 +2802,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM28-0028 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om28_0028@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2723,10 +2827,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM31a
   Scenario: Order released by a hand payment of another amount after the line was matched: completing the statement fails, no second payment
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om31a_0031 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_31a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM31A-0031 |
+      | o_31a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om31a_0031@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_31a    | o_31a      | p_OM         | 1          |
@@ -2790,7 +2897,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM31A-0031 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om31a_0031@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2821,10 +2928,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM31b
   Scenario: Hand payment for the order only saved as a draft after the line was matched: a draft payment does not carry the order, completing the statement creates the payment with the order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om31b_0031 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_31b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM31B-0031 |
+      | o_31b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om31b_0031@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_31b    | o_31b      | p_OM         | 1          |
@@ -2888,7 +2998,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM31B-0031 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om31b_0031@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -2923,10 +3033,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM31c
   Scenario: Hand payment of the full amount for the order completed after the line was matched: the line is linked to it, no new payment
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om31c_0031 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_31c      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM31C-0031 |
+      | o_31c      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om31c_0031@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_31c    | o_31c      | p_OM         | 1          |
@@ -2990,7 +3103,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM31C-0031 Danke</Ustrd>
+							<Ustrd>Vorauskasse @no_om31c_0031@ Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -3023,10 +3136,13 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM32a
   Scenario: Debit line with a hand-picked completed order: the payment carries no order, no error
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om32a_std |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_32a      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | OM32A-STD  |
+      | o_32a      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | @no_om32a_std@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_32a    | o_32a      | p_OM         | 1          |
@@ -3053,17 +3169,21 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM32b
   Scenario: Line with an invoice and a hand-picked completed order: the payment carries the invoice, not the order, no error
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om32b_std |
+      | no_om32b_inv |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_32b      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | OM32B-STD  |
+      | o_32b      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | @no_om32b_std@  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_32b    | o_32b      | p_OM         | 1          |
     And the order identified by o_32b is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo |
-      | inv_32b    | bp_OM                    | Ausgangsrechnung        | 2026-11-03   | Spot                     | true    | EUR                 | OM32B-INV      |
+      | inv_32b    | bp_OM                    | Ausgangsrechnung        | 2026-11-03   | Spot                     | true    | EUR                 | @no_om32b_inv@      |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | il_inv_32b | inv_32b                 | p_OM                    | 1           | PCE               |
