@@ -357,6 +357,12 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public boolean isActive(@NonNull final AttributeCode attributeCode)
+	{
+		return retrieveActiveAttributeIdByValueOrNull(attributeCode) != null;
+	}
+
+	@Override
 	@Nullable
 	public AttributeId retrieveActiveAttributeIdByValueOrNull(final AttributeCode attributeCode)
 	{

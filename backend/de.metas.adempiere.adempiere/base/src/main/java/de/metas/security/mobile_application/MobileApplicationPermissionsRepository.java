@@ -2,6 +2,7 @@ package de.metas.security.mobile_application;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.mobile.application.MobileApplicationActionId;
@@ -11,9 +12,12 @@ import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.I_Mobile_Application_Action_Access;
+
+import java.util.Map;
 
 public class MobileApplicationPermissionsRepository
 {
@@ -100,8 +104,56 @@ public class MobileApplicationPermissionsRepository
 		}
 
 		accessRecord.setIsActive(true);
+		if (request.getIsAllowAllActions() != null)
+		{
+			accessRecord.setIsAllowAllActions(request.getIsAllowAllActions());
+		}
 
 		InterfaceWrapperHelper.save(accessRecord);
+		createActionAccessIfMissing(request);
+	}
+
+	private void createActionAccessIfMissing(@NonNull final CreateMobileApplicationAccessRequest request)
+	{
+		final ImmutableSet<MobileApplicationActionId> actionIds = request.getAllowedActionIds();
+		if (actionIds.isEmpty())
+		{
+			return;
+		}
+
+		// one query for all the action-access rows of the role
+		final Map<MobileApplicationActionId, I_Mobile_Application_Action_Access> existingByActionId = queryBL
+				.createQueryBuilder(I_Mobile_Application_Action_Access.class)
+				.addEqualsFilter(I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID, request.getRoleId())
+				.addInArrayFilter(I_Mobile_Application_Action_Access.COLUMNNAME_Mobile_Application_Action_ID, actionIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						row -> MobileApplicationActionId.ofRepoId(row.getMobile_Application_Action_ID()),
+						row -> row,
+						// duplicate rows of one role+action are a data error: fail loud
+						(row1, row2) -> {
+							throw new DBMoreThanOneRecordsFoundException("More than one " + I_Mobile_Application_Action_Access.Table_Name
+									+ " row for " + I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID + "=" + request.getRoleId().getRepoId()
+									+ ", " + I_Mobile_Application_Action_Access.COLUMNNAME_Mobile_Application_Action_ID + "=" + row1.getMobile_Application_Action_ID());
+						}));
+
+		for (final MobileApplicationActionId actionId : actionIds)
+		{
+			I_Mobile_Application_Action_Access actionAccess = existingByActionId.get(actionId);
+			if (actionAccess == null)
+			{
+				actionAccess = InterfaceWrapperHelper.newInstance(I_Mobile_Application_Action_Access.class);
+				InterfaceWrapperHelper.setValue(actionAccess, I_Mobile_Application_Action_Access.COLUMNNAME_AD_Client_ID, request.getClientId().getRepoId());
+				actionAccess.setAD_Org_ID(request.getOrgId().getRepoId());
+				actionAccess.setAD_Role_ID(request.getRoleId().getRepoId());
+				actionAccess.setMobile_Application_ID(request.getApplicationId().getRepoId());
+				actionAccess.setMobile_Application_Action_ID(actionId.getRepoId());
+			}
+
+			actionAccess.setIsActive(true);
+			InterfaceWrapperHelper.save(actionAccess);
+		}
 	}
 
 	public void deleteMobileApplicationAccess(@NonNull final MobileApplicationRepoId applicationId)
