@@ -41,7 +41,6 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.order.OrderLineId;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.logging.LogManager;
@@ -59,6 +58,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -75,6 +75,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -108,11 +109,6 @@ public abstract class ReceiptScheduleTestBase
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
 		SpringContextHolder.registerJUnitBean(new ReceiptScheduleDeliveryStopGuard());
-		
-		//
-		// Mimic ModelValidator behaviour
-		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
-		InOutCandidateValidator.registerSSAggregationKeyDependencies();
 	}
 
 	protected IReceiptScheduleBL receiptScheduleBL;
@@ -248,6 +244,16 @@ public abstract class ReceiptScheduleTestBase
 	protected Properties getCtx()
 	{
 		return ctx;
+	}
+
+	/**
+	 * {@link IAggregationKeyRegistry} keeps its handlers in static state that {@link AdempiereTestHelper#init()} does not reset,
+	 * so the handlers registered in {@link #init()} would otherwise leak into every later test class of the same JVM.
+	 */
+	@AfterEach
+	public final void clearAggregationKeyHandlers()
+	{
+		Services.get(IAggregationKeyRegistry.class).clearHandlers(ReceiptScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
 	}
 
 	public BPartnerLocationId createBPartner(final String name)
