@@ -53,7 +53,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:
 
 -- DirectDebitMandateOneOffUsed
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545971 /*From ID Server*/,0,TO_TIMESTAMP('2026-10-28 11:30:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa','Y','{0}, Mandat {1}: einmaliges Mandat, bereits genutzt am {2}. Ein neues Mandat erfassen oder die Zeile aus der Zahlungsauswahl entfernen.','E',TO_TIMESTAMP('2026-10-28 11:30:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa.DirectDebitMandateOneOffUsed');
+VALUES (0,545971 /*From ID Server*/,0,TO_TIMESTAMP('2026-10-28 11:30:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa','Y','{0}, Mandat {1}: einmaliges Mandat, bereits genutzt am {2}. Ein neues Mandat erfassen oder die Zeile aus der Zahlungsauswahl entfernen. Wurde die Lastschrift von der Bank abgelehnt oder zurückgegeben, das Datum „Letzte Nutzung“ am Mandat leeren und erneut exportieren.','E',TO_TIMESTAMP('2026-10-28 11:30:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa.DirectDebitMandateOneOffUsed');
 
 UPDATE AD_Message SET ErrorCode='DD_MANDATE_ONEOFF_USED', Updated=TO_TIMESTAMP('2026-10-28 11:30:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545971;
 
@@ -63,7 +63,7 @@ FROM AD_Language l, AD_Message t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=545971
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID);
 
-UPDATE AD_Message_Trl SET MsgText='{0}, mandate {1}: one-off mandate, already used on {2}. Enter a new mandate, or remove the line from the pay selection.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:30:15','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545971;
+UPDATE AD_Message_Trl SET MsgText='{0}, mandate {1}: one-off mandate, already used on {2}. Enter a new mandate, or remove the line from the pay selection. If the bank rejected or returned the collection, clear the date "Last Used" on the mandate and export again.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:30:15','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545971;
 
 UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:30:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language IN ('de_DE','de_CH') AND AD_Message_ID=545971;
 

@@ -411,16 +411,17 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | dd_tc23_oneoff_                    |
-      | MREF-TC23-ONEOFF                   |
-      | einmaliges Mandat, bereits genutzt |
-      | 15.01.2026                         |
-      | dd_tc23_missing_                   |
-      | DE02120300000000202051             |
-      | kein aktives Lastschriftmandat     |
-      | dd_tc23_expired_                   |
-      | MREF-TC23-EXPIRED                  |
-      | abgelaufen                         |
+      | dd_tc23_oneoff_                             |
+      | MREF-TC23-ONEOFF                            |
+      | einmaliges Mandat, bereits genutzt          |
+      | 15.01.2026                                  |
+      | das Datum „Letzte Nutzung“ am Mandat leeren |
+      | dd_tc23_missing_                            |
+      | DE02120300000000202051                      |
+      | kein aktives Lastschriftmandat              |
+      | dd_tc23_expired_                            |
+      | MREF-TC23-EXPIRED                           |
+      | abgelaufen                                  |
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
