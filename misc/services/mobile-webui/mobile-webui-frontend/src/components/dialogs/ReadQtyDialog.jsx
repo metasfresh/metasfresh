@@ -15,14 +15,11 @@ const ReadQtyDialog = ({
   submitButtonTrlKey,
   cancelButtonTrlKey,
   isReadOnly = false,
-  initialQty = 1,
-  uom,
-  testId,
   //
   onSubmit,
   onCloseDialog,
 }) => {
-  const [nrOfCopies, setNrOfCopies] = useState(qtyInfos.invalidOfNumber(initialQty));
+  const [nrOfCopies, setNrOfCopies] = useState(qtyInfos.invalidOfNumber(1));
 
   const onQtyEntered = (qtyInfo) => setNrOfCopies(qtyInfo);
 
@@ -41,15 +38,13 @@ const ReadQtyDialog = ({
 
   return (
     <div>
-      <Dialog className="get-qty-dialog" testId={testId}>
+      <Dialog className="get-qty-dialog">
         <table className="table">
           <tbody>
             <tr>
               <th>{trl(qtyLabelTrlKey || 'general.Qty')}</th>
               <td>
                 <QtyInputField
-                  testId="qty-input"
-                  uom={uom}
                   readonly={isReadOnly}
                   qty={qtyInfos.toNumberOrString(nrOfCopies)}
                   onQtyChange={onQtyEntered}
@@ -61,14 +56,12 @@ const ReadQtyDialog = ({
         </table>
         <div className="buttons is-centered">
           <DialogButton
-            testId={testId ? 'cancel-button' : undefined}
             captionKey={cancelButtonTrlKey || 'general.cancelText'}
             disabled={isReadOnly}
             className="is-danger"
             onClick={onCloseDialog}
           />
           <DialogButton
-            testId={testId ? 'ok-button' : undefined}
             captionKey={submitButtonTrlKey || 'general.okText'}
             disabled={isReadOnly}
             className="is-success"
@@ -85,10 +78,6 @@ ReadQtyDialog.propTypes = {
   submitButtonTrlKey: PropTypes.string,
   cancelButtonTrlKey: PropTypes.string,
   isReadOnly: PropTypes.bool,
-  initialQty: PropTypes.number,
-  uom: PropTypes.string,
-  // when set, the dialog and its buttons get stable test ids (ok-button / cancel-button); otherwise the buttons keep their caption-derived ids
-  testId: PropTypes.string,
   // Callbacks
   onCloseDialog: PropTypes.func,
   onSubmit: PropTypes.func.isRequired,
