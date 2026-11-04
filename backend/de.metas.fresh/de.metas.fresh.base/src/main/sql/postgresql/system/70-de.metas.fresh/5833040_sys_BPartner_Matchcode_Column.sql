@@ -1,4 +1,4 @@
--- Introduce a dedicated C_BPartner.Matchcode column (VARCHAR 60).
+-- Introduce a dedicated C_BPartner.Matchcode column (VARCHAR 255).
 -- Background: AD_Element 'Matchcode' (584301) was previously used to RELABEL the Name3 field
 -- (migration 5779010). That is replaced here: Matchcode becomes its own column, and the Name3
 -- field is reverted to "Name3" so Name3 can hold a real third name again.
@@ -21,7 +21,7 @@ INSERT INTO AD_Column (
   PersonalDataCategory,Updated,UpdatedBy,Version
 ) VALUES (
   0,593769,584301,0,10,291,'XX','Matchcode',
-  TO_TIMESTAMP('2026-11-04 14:30','YYYY-MM-DD HH24:MI'),100,'N',NULL,'D',0,60,'Y','N',
+  TO_TIMESTAMP('2026-11-04 14:30','YYYY-MM-DD HH24:MI'),100,'N',NULL,'D',0,255,'Y','N',
   'Y','N','N','N','N','N',
   'N','N','N','N','N',
   'N','N','N','N','N','N','N',
@@ -31,7 +31,7 @@ INSERT INTO AD_Column (
 )
 ;
 
-/* DDL */ SELECT public.db_alter_table('C_BPartner','ALTER TABLE public.C_BPartner ADD COLUMN Matchcode VARCHAR(60)')
+/* DDL */ SELECT public.db_alter_table('C_BPartner','ALTER TABLE public.C_BPartner ADD COLUMN Matchcode VARCHAR(255)')
 ;
 
 -- 2) Field for Matchcode in the Business Partner window (AD_Tab 220), same UI group as Name3 (1000010).
@@ -52,7 +52,7 @@ INSERT INTO AD_UI_Element (
 ) VALUES (
   0,788125,0,220,1000010,656441,'F',
   TO_TIMESTAMP('2026-11-04 14:30','YYYY-MM-DD HH24:MI'),100,NULL,'Y','N','N','Y','N',
-  'N','N',0,'Matchcode',30,0,0,TO_TIMESTAMP('2026-11-04 14:30','YYYY-MM-DD HH24:MI'),100
+  'N','N',0,'Matchcode',26,0,0,TO_TIMESTAMP('2026-11-04 14:30','YYYY-MM-DD HH24:MI'),100
 )
 ;
 
