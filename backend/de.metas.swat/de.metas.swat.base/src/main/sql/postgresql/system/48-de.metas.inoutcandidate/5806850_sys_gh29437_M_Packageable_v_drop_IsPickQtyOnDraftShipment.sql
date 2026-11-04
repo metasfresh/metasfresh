@@ -169,12 +169,20 @@ FROM (SELECT
 ;
 
 
+-- Guard (only deep_tundra_release applies this script late): if m_packageable_v is already newer than this script's
+-- view (it has c_country_id, which this view lacks and M_Picking_Job_Schedule_view depends on), do not replace it,
+-- or db_alter_view fails with "column s.c_country_id does not exist". The later scripts 5809700 and 5819530
+-- recreate the complete view anyway.
 SELECT db_alter_view(
                'm_packageable_v',
                (SELECT view_definition
                 FROM information_schema.views
                 WHERE lower(views.table_name) = lower('m_packageable_v$new'))
        )
+WHERE NOT EXISTS (SELECT 1
+                  FROM information_schema.columns c
+                  WHERE lower(c.table_name) = 'm_packageable_v'
+                    AND lower(c.column_name) = 'c_country_id')
 ;
 
 DROP VIEW IF EXISTS m_packageable_v$new
