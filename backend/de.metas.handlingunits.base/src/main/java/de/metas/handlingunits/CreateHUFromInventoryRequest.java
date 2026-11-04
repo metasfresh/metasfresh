@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 @Builder
 public class CreateHUFromInventoryRequest
 {
-	/** the movement date of the inventory document: the caller owns the time source */
+	/** the movement date of the inventory document (mandatory, no default) */
 	@NonNull ZonedDateTime date;
 	@NonNull ProductId productId;
 	@NonNull Quantity qty;

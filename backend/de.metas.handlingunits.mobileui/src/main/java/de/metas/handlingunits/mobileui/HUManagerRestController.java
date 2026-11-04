@@ -185,7 +185,7 @@ public class HUManagerRestController
 		inventoryCandidateService.createDisposeCandidates(huId, reasonCode);
 	}
 
-	/** Called after {@link #retrieveHUManagerConfig} found no HU for the scanned code: what would the label create? Writes nothing. */
+	/** The proposal for a scanned product label (product, quantity, label values, target location) or its rejection. Writes nothing. */
 	@PostMapping("/proposeFromScannedCode")
 	public JsonHUProposal proposeFromScannedCode(@RequestBody @NonNull final JsonProposeHUFromScannedCodeRequest request)
 	{

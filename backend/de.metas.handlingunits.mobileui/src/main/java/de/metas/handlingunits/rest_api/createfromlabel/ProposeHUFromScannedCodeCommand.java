@@ -27,9 +27,7 @@ import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMes
  * The proposal for the HU Manager "New HU" preview: what the scanned product label would create. Reads only, writes nothing
  * (the preview can be cancelled and every repeat scan proposes again).
  * <p>
- * Quantity and weight (a design default): the preview proposes 1 in the product's stock unit; a product stocked in kg
- * takes the label weight as the quantity; a catch-weight product keeps quantity 1 and the weight becomes the CU's net weight; for any
- * other product the label weight is not used and the preview says so.
+ * Quantity and weight: see {@link LabelQtyAndWeightService}.
  */
 public class ProposeHUFromScannedCodeCommand
 {

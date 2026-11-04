@@ -308,8 +308,8 @@ public interface IProductBL extends ISingletonService
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
 	/**
-	 * Plural counterpart of {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)} (no partner): it exposes ambiguity,
-	 * so a caller can reject a GTIN that fits several products instead of getting one of them picked.
+	 * Plural counterpart of {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)} (no partner): returns every match
+	 * and never picks one of several products sharing the GTIN.
 	 * <ol>
 	 * <li>All active products of the client whose {@code M_Product.GTIN} equals the given GTIN exactly (ordered by {@code M_Product_ID}).</li>
 	 * <li>Only if step 1 finds none: the single product found by {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)}, if any.</li>
