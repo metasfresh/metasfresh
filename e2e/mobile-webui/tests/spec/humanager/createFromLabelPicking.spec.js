@@ -129,12 +129,11 @@ test('label that is also the external barcode of an existing HU opens that HU (e
     const gtin = uniqueGtin14('8');
     const label = bracketedLabel(gtin); // a complete, valid label of product P1 - but also the external barcode of the existing HU1
     const masterdata = await createMasterdata({ gtin, externalBarcode: label });
-    let proposeCalls = 0;
-    page.on('request', (r) => { if (r.url().includes('proposeFromScannedCode') && r.method() === 'POST') proposeCalls++; });
+    const proposeCalls = NewHUPreviewScreen.countProposeCalls();
     await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
 
     await HUManagerScreen.scanHUQRCode({ huQRCode: label });
     await HUManagerScreen.expectHUQty('80 PCE');
     await NewHUPreviewScreen.expectNotDisplayed();
-    expect(proposeCalls).toBe(0);
+    expect(proposeCalls.count).toBe(0);
 });

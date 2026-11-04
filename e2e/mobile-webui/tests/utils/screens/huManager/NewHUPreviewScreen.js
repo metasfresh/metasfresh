@@ -39,6 +39,9 @@ export const NewHUPreviewScreen = {
     /** counts the create calls (OK click) from now on: `{ count }` */
     countCreateCalls: () => countPostCalls('createFromScannedCode'),
 
+    /** counts the propose calls (preview of a scanned label) from now on: `{ count }` */
+    countProposeCalls: () => countPostCalls('proposeFromScannedCode'),
+
     /** counts the propose and the create calls (preview and OK click) from now on: `{ count }` */
     countProposeAndCreateCalls: () => countPostCalls('proposeFromScannedCode', 'createFromScannedCode'),
 
