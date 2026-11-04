@@ -1,4 +1,5 @@
-import { parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQRCode';
+import { parseCustomQRCode, parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQRCode';
+import { ATTR_GTIN } from '../../../utils/qrCode/common';
 
 describe('parseNumber', () => {
   test('should return the number as is if decimalPoint is 0', () => {
@@ -96,5 +97,16 @@ describe('parseLocalDate', () => {
   test('should parse if the input string is in the same format as the output', () => {
     const result = parseLocalDate({ string: '2025-06-11', dateFormat: 'yyyy-MM-dd' });
     expect(result).toBe('2025-06-11');
+  });
+});
+
+describe('parseCustomQRCode', () => {
+  test('GTIN part sets ATTR_GTIN', () => {
+    const result = parseCustomQRCode({
+      string: '02001234567893',
+      format: { name: 'Test', parts: [{ type: 'GTIN', startPosition: 1, endPosition: 14 }] },
+    });
+    expect(result.error).toBeUndefined();
+    expect(result[ATTR_GTIN]).toBe('02001234567893');
   });
 });
