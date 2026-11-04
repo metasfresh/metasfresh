@@ -327,7 +327,6 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_BPartner_Location_ID} — bill-to location identifier</li>
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
-	 *   <li>{@code Description} — invoice description (e.g. the SEPA remittance text)</li>
 	 *   <li>{@code DateAcct} — accounting date; defaults to today</li>
 	 *   <li>{@code DocumentNo} — the document number; a {@code @name@} placeholder is replaced with the {@link TestContext} variable of that name,
 	 *   e.g. {@code INV-@runId@}, any other value is taken literally. The validation steps (e.g. {@code validate created invoices}) resolve it the same way.</li>
@@ -945,13 +944,6 @@ public class C_Invoice_StepDef
 				.map(this::resolveDocumentNo)
 				.ifPresent(invoice::setDocumentNo);
 		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
-		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_Description)
-				.ifPresent(description -> {
-					// MInvoice.beforeSave derives a missing C_DocTypeTarget_ID and then overwrites the description
-					// with the doc type's one; resolve the doc type first so the explicit description survives the save
-					invoiceBL.setDocTypeTargetIdIfNotSet(invoice);
-					invoice.setDescription(description);
-				});
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
 				.map(dataSourceTable::getId)
@@ -974,30 +966,40 @@ public class C_Invoice_StepDef
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
+	/**
+	 * Updates the given (typically still draft) invoices; only the columns that are present are changed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) identifier of the invoice to update<br>
+	 *   <b>DateInvoiced</b> — (optional) the new invoice date<br>
+	 *   <b>Description</b> — (optional) the new invoice description<br>
+	 *   <b>C_PaymentTerm_ID</b> — (optional, identifier-ref) the new payment term<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice:
+	 *   | Identifier | Description |
+	 *   | inv_1      | Invoice 1   |
+	 * </pre>
+	 */
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			updateInvoice(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateInvoice);
 	}
 
-	private void updateInvoice(@NonNull final Map<String, String> row)
+	private void updateInvoice(@NonNull final DataTableRow row)
 	{
-		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
-
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier();
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
-		if (dateInvoiced != null)
-		{
-			invoice.setDateInvoiced(dateInvoiced);
-		}
+		row.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateInvoiced).ifPresent(invoice::setDateInvoiced);
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_Description).ifPresent(invoice::setDescription);
 
 		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
 		// resolve correctly even when the DB record has a unique timestamped Value.
-		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
+		paymentTermStepDef.extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);

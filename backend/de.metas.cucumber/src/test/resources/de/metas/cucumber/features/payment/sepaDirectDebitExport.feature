@@ -106,17 +106,23 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | AD_Org_ID |
       | oneOffMandate                          | oneOffAcct          | CORE        | MREF-OOFF-001    | 2026-10-01  | N           | sellerOrg |
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | OPT.Description | AD_Org_ID |
-      | b2bInv1    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice B2B 1   | sellerOrg |
-      | b2bInv2    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice B2B 2   | sellerOrg |
-      | coreInv    | coreDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice CORE 1  | sellerOrg |
-      | oneOffInv  | oneOffDebtor  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice OOFF 1  | sellerOrg |
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
+      | b2bInv1    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | b2bInv2    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | coreInv    | coreDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | oneOffInv  | oneOffDebtor  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
       | b2bInvL1   | b2bInv1      | product      | 1 PCE       | 100.00 | zeroTax  |
       | b2bInvL2   | b2bInv2      | product      | 1 PCE       | 50.00  | zeroTax  |
       | coreInvL   | coreInv      | product      | 1 PCE       | 80.00  | zeroTax  |
       | oneOffInvL | oneOffInv    | product      | 1 PCE       | 30.00  | zeroTax  |
+    And update C_Invoice:
+      | Identifier | Description    |
+      | b2bInv1    | Invoice B2B 1  |
+      | b2bInv2    | Invoice B2B 2  |
+      | coreInv    | Invoice CORE 1 |
+      | oneOffInv  | Invoice OOFF 1 |
     And the invoice identified by b2bInv1 is completed
     And the invoice identified by b2bInv2 is completed
     And the invoice identified by coreInv is completed
@@ -555,14 +561,14 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | inactiveMandate                        | orgStarAcct         | B2B         | MREF-INACTIVE-001 | 2019-02-03  | Y           | 2025-09-04   | sellerOrg | N        |
       | usedLaterMandate                       | usedLaterAcct       | B2B         | MREF-LATER-001    | 2013-09-23  | Y           | 2026-12-01   | sellerOrg | Y        |
     And metasfresh contains C_Invoice:
-      | Identifier   | C_BPartner_ID   | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | OPT.Description                                                                                                                                               | AD_Org_ID |
-      | longInv      | longDebtor      | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Rechnung „Nr. 1“ YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY | sellerOrg |
-      | orgStarInv   | orgStarDebtor   | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice OrgStarMandate                                                                                                                                        | sellerOrg |
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
+      | longInv    | longDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | orgStarInv | orgStarDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
     # bill-to locations with a full address; the price list is given because the Swiss location has no price list of its country
     And metasfresh contains C_Invoice:
-      | Identifier   | C_BPartner_ID   | C_BPartner_Location_ID.Identifier | M_PriceList_ID.Identifier | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | OPT.Description          | AD_Org_ID |
-      | noBicInv     | noBicDebtor     | noBicBPL                          | pl_sales                  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice NoBIC            | sellerOrg |
-      | usedLaterInv | usedLaterDebtor | usedLaterBPL                      | pl_sales                  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice MandateUsedLater | sellerOrg |
+      | Identifier   | C_BPartner_ID   | C_BPartner_Location_ID.Identifier | M_PriceList_ID.Identifier | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
+      | noBicInv     | noBicDebtor     | noBicBPL                          | pl_sales                  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | usedLaterInv | usedLaterDebtor | usedLaterBPL                      | pl_sales                  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
     # no description
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
@@ -574,6 +580,12 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | longInvL      | longInv      | product      | 1 PCE       | 30.00 | zeroTax  |
       | orgStarInvL   | orgStarInv   | product      | 1 PCE       | 50.00 | zeroTax  |
       | usedLaterInvL | usedLaterInv | product      | 1 PCE       | 60.00 | zeroTax  |
+    And update C_Invoice:
+      | Identifier   | Description                                                                                                                                                   |
+      | longInv      | Rechnung „Nr. 1“ YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY |
+      | orgStarInv   | Invoice OrgStarMandate                                                                                                                                        |
+      | noBicInv     | Invoice NoBIC                                                                                                                                                 |
+      | usedLaterInv | Invoice MandateUsedLater                                                                                                                                      |
     And the invoice identified by noBicInv is completed
     And the invoice identified by noDescInv is completed
     And the invoice identified by longInv is completed
@@ -1064,15 +1076,20 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | noCityMandate                          | noCityAcct          | B2B         | MREF-NOCITY-001   | 2013-09-23  | Y           | 2025-09-04   | sellerOrg |
       | euroCityMandate                        | euroCityAcct        | B2B         | MREF-EUROCITY-001 | 2013-09-23  | Y           | 2025-09-04   | sellerOrg |
     And metasfresh contains C_Invoice:
-      | Identifier  | C_BPartner_ID  | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | OPT.Description  | AD_Org_ID |
-      | withCityInv | withCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice WithCity | sellerOrg |
-      | noCityInv   | noCityDebtor   | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice NoCity   | sellerOrg |
-      | euroCityInv | euroCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice EuroCity | sellerOrg |
+      | Identifier  | C_BPartner_ID  | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
+      | withCityInv | withCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | noCityInv   | noCityDebtor   | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | euroCityInv | euroCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
     And metasfresh contains C_InvoiceLines
       | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
       | withCityInvL | withCityInv  | product      | 1 PCE       | 100.00 | zeroTax  |
       | noCityInvL   | noCityInv    | product      | 1 PCE       | 200.00 | zeroTax  |
       | euroCityInvL | euroCityInv  | product      | 1 PCE       | 300.00 | zeroTax  |
+    And update C_Invoice:
+      | Identifier  | Description      |
+      | withCityInv | Invoice WithCity |
+      | noCityInv   | Invoice NoCity   |
+      | euroCityInv | Invoice EuroCity |
     And the invoice identified by withCityInv is completed
     And the invoice identified by noCityInv is completed
     And the invoice identified by euroCityInv is completed
