@@ -5,6 +5,7 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.mandate.DirectDebitMandate;
 import de.metas.banking.mandate.DirectDebitMandateId;
 import de.metas.banking.mandate.DirectDebitMandateType;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAExportLineId;
@@ -33,6 +34,8 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -70,9 +73,13 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 	private static final String XSD_RESOURCE = "/pain.008.001.08_GBIC_5.xsd";
 	private static final String PMT_INF = "Document/CstmrDrctDbtInitn/PmtInf";
 	private static final String CDTR_PSTL_ADR = PMT_INF + "/Cdtr/PstlAdr";
+	private static final String DBTR_PSTL_ADR = PMT_INF + "/DrctDbtTxInf/Dbtr/PstlAdr";
+	private static final String IBAN_DE = "DE02120300000000202051";
+	private static final String IBAN_CH = "CH9300762011623852957";
 
 	private OrgId orgId;
 	private int nextMandateId = 1;
+	private final Map<SEPAExportLineId, LocationId> debtorLocationIds = new HashMap<>();
 
 	@BeforeEach
 	public void beforeTest()
@@ -244,6 +251,79 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 	}
 
 	@Test
+	public void debtorAddress_addressOfTheLine() throws Exception
+	{
+		createLocation(createOrgPartner(), "Berlin", true, true, true);
+
+		final Document doc = marshalOneLineExport();
+
+		assertThat(text(doc, DBTR_PSTL_ADR + "/StrtNm")).isEqualTo("Debitorenweg 5");
+		assertThat(text(doc, DBTR_PSTL_ADR + "/PstCd")).isEqualTo("20095");
+		assertThat(text(doc, DBTR_PSTL_ADR + "/TwnNm")).isEqualTo("Hamburg");
+		assertThat(text(doc, DBTR_PSTL_ADR + "/Ctry")).isEqualTo("DE");
+	}
+
+	@Test
+	public void eeaDebtorWithoutTown_noPostalAddress() throws Exception
+	{
+		createLocation(createOrgPartner(), "Berlin", true, true, true);
+		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
+		final I_SEPA_Export_Line line = createLine(sepaExport, "Debtor GmbH", IBAN_DE, "BYLADEM1001", "Rechnung 1", "DE", null);
+
+		final byte[] xml = marshal(sepaExport, SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-1", true)).build());
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(text(doc, PMT_INF + "/DrctDbtTxInf/Dbtr/Nm")).isEqualTo("Debtor GmbH");
+		assertThat(count(doc, DBTR_PSTL_ADR)).isZero();
+	}
+
+	@Test
+	public void nonEeaDebtorWithTown_postalAddress() throws Exception
+	{
+		createLocation(createOrgPartner(), "Berlin", true, true, true);
+		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
+		final I_SEPA_Export_Line line = createLine(sepaExport, "Swiss Debtor AG", IBAN_CH, "UBSWCHZH80A", "Rechnung 1", "CH", "Basel");
+
+		final byte[] xml = marshal(sepaExport, SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-1", true)).build());
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(text(doc, DBTR_PSTL_ADR + "/TwnNm")).isEqualTo("Basel");
+		assertThat(text(doc, DBTR_PSTL_ADR + "/Ctry")).isEqualTo("CH");
+	}
+
+	@Test
+	public void nonEeaDebtorWithoutTown_fails()
+	{
+		createLocation(createOrgPartner(), "Berlin", true, true, true);
+		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
+		final I_SEPA_Export_Line line = createLine(sepaExport, "Swiss Debtor AG", IBAN_CH, "UBSWCHZH80A", "Rechnung 1", "CH", null);
+		final SEPAExportContext exportContext = SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-1", true)).build();
+
+		assertThatThrownBy(() -> marshal(sepaExport, exportContext))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SepaDebtorAddressWithoutTown")
+				.hasMessageContaining("Swiss Debtor AG");
+	}
+
+	@Test
+	public void nonEeaCreditorAndDebtorWithoutTown_fails()
+	{
+		createLocation(createOrgPartner(), "Basel", true, true, true);
+		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
+		sepaExport.setIBAN(IBAN_CH);
+		save(sepaExport);
+		final I_SEPA_Export_Line line = createLine(sepaExport, "Debtor GmbH", IBAN_DE, "BYLADEM1001", "Rechnung 1", "DE", null);
+		final SEPAExportContext exportContext = SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-1", true)).build();
+
+		assertThatThrownBy(() -> marshal(sepaExport, exportContext))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SepaDebtorAddressWithoutTown")
+				.hasMessageContaining("Debtor GmbH");
+	}
+
+	@Test
 	public void noLineToExport_fails()
 	{
 		createLocation(createOrgPartner(), "Berlin", true, true, true);
@@ -263,16 +343,24 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 	private Document marshalOneLineExport() throws Exception
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
-		final I_SEPA_Export_Line line = createLine(sepaExport, "Debtor GmbH", "DE02120300000000202051", "BYLADEM1001", "Rechnung 1");
+		final I_SEPA_Export_Line line = createLine(sepaExport, "Debtor GmbH", IBAN_DE, "BYLADEM1001", "Rechnung 1");
 		final byte[] xml = marshal(sepaExport, SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-1", true)).build());
 		assertValidAgainstXsd(xml);
 		return parse(xml);
 	}
 
-	private static byte[] marshal(@NonNull final I_SEPA_Export sepaExport, @NonNull final SEPAExportContext exportContext)
+	/**
+	 * @param exportContext the mandates of the lines; the debtor addresses of the lines created by {@link #createLine} are added, as the export command does
+	 */
+	private byte[] marshal(@NonNull final I_SEPA_Export sepaExport, @NonNull final SEPAExportContext exportContext)
 	{
+		final SEPAExportContext exportContextWithDebtorLocations = SEPAExportContext.builder()
+				.referenceAsEndToEndId(exportContext.isReferenceAsEndToEndId())
+				.directDebitMandates(exportContext.getDirectDebitMandates())
+				.debtorLocationIds(debtorLocationIds)
+				.build();
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		new SEPACustomerDirectDebitMarshaler_Pain_008_001_08(exportContext).marshal(sepaExport, out);
+		new SEPACustomerDirectDebitMarshaler_Pain_008_001_08(exportContextWithDebtorLocations).marshal(sepaExport, out);
 		return out.toByteArray();
 	}
 
@@ -329,21 +417,11 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 			final boolean billToDefault,
 			final boolean active)
 	{
-		final I_C_Country country = newInstance(I_C_Country.class);
-		country.setCountryCode("DE");
-		country.setName("DE");
-		save(country);
-
-		final I_C_Location location = newInstance(I_C_Location.class);
-		location.setAddress1("Teststraße 1");
-		location.setPostal("10115");
-		location.setCity(city);
-		location.setC_Country_ID(country.getC_Country_ID());
-		save(location);
+		final LocationId locationId = createC_Location("DE", "Teststraße 1", "10115", city);
 
 		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
 		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bpLocation.setC_Location_ID(location.getC_Location_ID());
+		bpLocation.setC_Location_ID(locationId.getRepoId());
 		bpLocation.setName(city);
 		bpLocation.setIsBillTo(billTo);
 		bpLocation.setIsBillToDefault(billToDefault);
@@ -351,12 +429,47 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 		save(bpLocation);
 	}
 
-	private static I_SEPA_Export_Line createLine(
+	private static LocationId createC_Location(
+			@NonNull final String countryCode,
+			@NonNull final String street,
+			@NonNull final String postal,
+			@Nullable final String city)
+	{
+		final I_C_Country country = newInstance(I_C_Country.class);
+		country.setCountryCode(countryCode);
+		country.setName(countryCode);
+		save(country);
+
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setAddress1(street);
+		location.setPostal(postal);
+		location.setCity(city);
+		location.setC_Country_ID(country.getC_Country_ID());
+		save(location);
+		return LocationId.ofRepoId(location.getC_Location_ID());
+	}
+
+	/**
+	 * @return a line whose debtor has an address in Hamburg, Germany
+	 */
+	private I_SEPA_Export_Line createLine(
 			@NonNull final I_SEPA_Export sepaExport,
 			@NonNull final String debtorName,
 			@NonNull final String iban,
 			@Nullable final String swiftCode,
 			@Nullable final String description)
+	{
+		return createLine(sepaExport, debtorName, iban, swiftCode, description, "DE", "Hamburg");
+	}
+
+	private I_SEPA_Export_Line createLine(
+			@NonNull final I_SEPA_Export sepaExport,
+			@NonNull final String debtorName,
+			@NonNull final String iban,
+			@Nullable final String swiftCode,
+			@Nullable final String description,
+			@NonNull final String debtorCountryCode,
+			@Nullable final String debtorTown)
 	{
 		final I_C_BPartner debtor = createBPartner(debtorName);
 
@@ -370,6 +483,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 		line.setIsActive(true);
 		line.setIsError(false);
 		save(line);
+
+		debtorLocationIds.put(lineId(line), createC_Location(debtorCountryCode, "Debitorenweg 5", "20095", debtorTown));
 		return line;
 	}
 

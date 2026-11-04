@@ -24,6 +24,7 @@ package de.metas.payment.sepa.api;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.banking.mandate.DirectDebitMandate;
+import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -47,5 +48,21 @@ public class SEPAExportContext
 			throw new AdempiereException("No direct debit mandate for SEPA_Export_Line_ID=" + sepaExportLineId.getRepoId());
 		}
 		return mandate;
+	}
+
+	/**
+	 * The debtor address of each direct debit export line: the bill-to address captured on the line's invoice.
+	 */
+	@Singular
+	ImmutableMap<SEPAExportLineId, LocationId> debtorLocationIds;
+
+	public LocationId getDebtorLocationId(@NonNull final SEPAExportLineId sepaExportLineId)
+	{
+		final LocationId locationId = debtorLocationIds.get(sepaExportLineId);
+		if (locationId == null)
+		{
+			throw new AdempiereException("No debtor address for SEPA_Export_Line_ID=" + sepaExportLineId.getRepoId());
+		}
+		return locationId;
 	}
 }

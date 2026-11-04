@@ -24,6 +24,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -183,6 +184,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		linesByScheme.forEach((scheme, lines) -> {
 			final I_SEPA_Export header = createExportHeader(source);
 			final ImmutableMap.Builder<SEPAExportLineId, DirectDebitMandate> mandatesBySepaExportLineId = ImmutableMap.builder();
+			final ImmutableMap.Builder<SEPAExportLineId, LocationId> debtorLocationIdsBySepaExportLineId = ImmutableMap.builder();
 			for (final I_C_PaySelectionLine line : lines)
 			{
 				final DirectDebitMandate mandate = getMandate(mandatesByLineId, line);
@@ -192,7 +194,9 @@ class CreateSEPAExportFromPaySelectionCommand
 				exportLine.setSEPA_MandateRefNo(mandate.getReference());
 				sepaDocumentDAO.save(exportLine);
 
-				mandatesBySepaExportLineId.put(SEPAExportLineId.ofRepoId(exportLine.getSEPA_Export_Line_ID()), mandate);
+				final SEPAExportLineId exportLineId = SEPAExportLineId.ofRepoId(exportLine.getSEPA_Export_Line_ID());
+				mandatesBySepaExportLineId.put(exportLineId, mandate);
+				debtorLocationIdsBySepaExportLineId.put(exportLineId, getDebtorLocationId(line));
 				usedMandates.add(mandate);
 			}
 
@@ -200,6 +204,7 @@ class CreateSEPAExportFromPaySelectionCommand
 					.export(header)
 					.scheme(scheme)
 					.mandatesBySepaExportLineId(mandatesBySepaExportLineId.build())
+					.debtorLocationIdsBySepaExportLineId(debtorLocationIdsBySepaExportLineId.build())
 					.build());
 		});
 
@@ -297,6 +302,15 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		return mandatesByLineId.build();
+	}
+
+	/**
+	 * @return the bill-to address captured on the line's (completed) invoice, so that later changes of the partner's master data do not change it
+	 */
+	private LocationId getDebtorLocationId(@NonNull final I_C_PaySelectionLine line)
+	{
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
+		return LocationId.ofRepoId(Check.assumeGreaterThanZero(invoice.getC_BPartner_Location_Value_ID(), I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID));
 	}
 
 	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line)

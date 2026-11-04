@@ -7,6 +7,7 @@
 Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 ## The export of a direct debit pay selection is refused as a whole when a line has no valid mandate (missing, expired,
 ## one-off already used, one-off on several lines) or when the org bank account has no SEPA creditor identifier.
+## It is also refused when the debtor address has no town although it is mandatory (the creditor's or the debtor's bank is in a SEPA country outside the EEA).
 ## A refused export creates no SEPA_Export and does not touch any mandate.
 ##
 ## Expected texts are the German AD_Message texts (cucumber runs in de_DE); dates in the messages are dd.MM.yyyy.
@@ -540,4 +541,52 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | MREF-Ä&001                             |
       | dd_noseparef_                          |
       | Leerzeichen und + ? / - : ( ) . , '    |
+    And the pay selection "paySelection" has no SEPA_Export
+
+  # A Swiss debtor (CH IBAN, a SEPA country outside the EEA) must be collected with its address including the town;
+  # the address captured on the invoice has no town, so the export is refused naming the partner.
+  @from:cucumber
+  @Id:S32708_TC26
+  Scenario: Swiss debtor whose address has no town: export refused naming the partner, no SEPA_Export
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | Name                | Value              | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
+      | debtor     | Debtor Swiss NoTown | dd_chnotown_@Date@ | Y          | pricingSystem                 | D               |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1     | OPT.Postal |
+      | debtorLoc                | CH          | Bahnhofstrasse 1 | 8001       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | debtorBPL  | debtor                   | debtorLoc                    | Y            | Y                   |
+    And metasfresh contains C_Bank:
+      | C_Bank_ID.Identifier | Name                | RoutingNo | SwiftCode   |
+      | debtorBank           | SEPA Debtor Bank CH | 50000000  | TESTCHZZXXX |
+    And metasfresh contains C_BP_BankAccount
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                  | C_Bank_ID.Identifier |
+      | debtorAcct | debtor        | EUR           | CH9300762011623852957 | debtorBank           |
+    And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | AD_Org_ID |
+      | mandate                                | debtorAcct          | B2B         | MREF-CH-001      | 2026-10-01  | Y           | sellerOrg |
+    # the price list is given because the Swiss location has no price list of its country
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | M_PriceList_ID.Identifier | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
+      | invoice    | debtor        | debtorBPL                         | pl_sales                  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID |
+      | invoiceL   | invoice      | product      | 1 PCE       | 10.00 | zeroTax  |
+    And the invoice identified by invoice is completed
+    And metasfresh contains Pay Selection
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
+      | paySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
+      | MatchRequirement | C_BPartner_ID | PayDate    |
+      | CDD              | debtor        | 2026-11-02 |
+    And the pay selection identified by paySelection is completed
+
+    When the SEPA export process is run for pay selection "paySelection"
+
+    Then the SEPA export process fails with a message containing:
+      | SEPA-Lastschrift-Export nicht erstellt                |
+      | dd_chnotown_                                          |
+      | hat keinen Ort                                        |
+      | den Ort in der Adresse des Geschäftspartners erfassen |
     And the pay selection "paySelection" has no SEPA_Export

@@ -105,7 +105,7 @@ import static java.math.BigDecimal.ZERO;
 /**
  * Direct debit export in the format pain.008.001.08 of the German banks (DK, {@code pain.008.001.08_GBIC_5.xsd}), for the CORE and B2B schemes.
  * <p>
- * One payment information block per export line. The creditor is the exporting organisation (its linked business partner's bill-to address); the mandate data come from the {@link SEPAExportContext}.
+ * One payment information block per export line. The creditor is the exporting organisation (its linked business partner's bill-to address); the mandate data and the debtor address come from the {@link SEPAExportContext}.
  * <p>
  * Note on the JAXB types: the generated {@code *SDD} classes are the XSD's restrictions of the ISO base types. The XSD already binds each element to its restriction,
  * so we instantiate the ISO base types; using the {@code *SDD} subclasses would make JAXB emit superfluous {@code xsi:type} attributes. Only the root is a {@link DocumentSDD}.
@@ -122,11 +122,13 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 	private static final String END_TO_END_ID_SUFFIX = "-0001";
 
+	private static final AdMessageKey MSG_TextWithoutSepaCharacters = AdMessageKey.of("de.metas.payment.sepa.SepaTextWithoutSepaCharacters");
+	private static final AdMessageKey MSG_MandateReferenceNotSepa = AdMessageKey.of("de.metas.payment.sepa.SepaMandateReferenceNotSepa");
+	private static final AdMessageKey MSG_DebtorAddressWithoutTown = AdMessageKey.of("de.metas.payment.sepa.SepaDebtorAddressWithoutTown");
+
 	/**
 	 * Maximum lengths of the GBIC_5 types (Max140Text_SDD for names, Max140Text, Max70Text, Max16Text, Max35Text).
 	 */
-	private static final AdMessageKey MSG_TextWithoutSepaCharacters = AdMessageKey.of("de.metas.payment.sepa.SepaTextWithoutSepaCharacters");
-	private static final AdMessageKey MSG_MandateReferenceNotSepa = AdMessageKey.of("de.metas.payment.sepa.SepaMandateReferenceNotSepa");
 	private static final int MAX_LENGTH_NAME = 70;
 	private static final int MAX_LENGTH_REMITTANCE_INFO = 140;
 	private static final int MAX_LENGTH_STREET_NAME = 70;
@@ -288,7 +290,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		pmtInf.setChrgBr(ChargeBearerType1Code.SLEV);
 		pmtInf.setCdtrSchmeId(createCreditorSchemeIdOrNull(sepaHdr.getSEPA_CreditorIdentifier()));
 
-		final DirectDebitTransactionInformation23 drctDbtTxInf = createDirectDebitTransactionInformation(pmtInf.getPmtInfId() + END_TO_END_ID_SUFFIX, line, mandate);
+		final DirectDebitTransactionInformation23 drctDbtTxInf = createDirectDebitTransactionInformation(pmtInf.getPmtInfId() + END_TO_END_ID_SUFFIX, sepaHdr, line, mandate);
 		pmtInf.getDrctDbtTxInf().add(drctDbtTxInf);
 		pmtInf.setCtrlSum(drctDbtTxInf.getInstdAmt().getValue());
 
@@ -297,6 +299,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 
 	private DirectDebitTransactionInformation23 createDirectDebitTransactionInformation(
 			@NonNull final String endToEndId,
+			@NonNull final I_SEPA_Export sepaHdr,
 			@NonNull final I_SEPA_Export_Line line,
 			@NonNull final DirectDebitMandate mandate)
 	{
@@ -328,6 +331,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		final String debtorName = SepaTextConverter.toText(originalDebtorName, MAX_LENGTH_NAME);
 		Check.assumeNotNull(originalDebtorName, "Debtor of {} has a name", line);
 		dbtr.setNm(toMandatoryText(debtorName, originalDebtorName, "Name", toPartnerLabel(line)));
+		dbtr.setPstlAdr(createDebtorPstlAdrOrNull(sepaHdr, line));
 		drctDbtTxInf.setDbtr(dbtr);
 
 		drctDbtTxInf.setDbtrAcct(createCashAccount(line.getIBAN()));
@@ -452,6 +456,27 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		pstlAdr.setTwnNm(SepaTextConverter.toOptionalText(location.getCity(), MAX_LENGTH_TOWN_NAME));
 		pstlAdr.setCtry(StringUtils.trimBlankToNull(countryDAO.getCountryCode(CountryId.ofRepoId(location.getC_Country_ID()))));
 		return pstlAdr;
+	}
+
+	/**
+	 * @return the debtor address of the line; {@code null} if it has no town or country, which the format requires for an address
+	 * @throws AdempiereException if the address has no town although it is mandatory, because the creditor's or the debtor's bank is outside the EEA
+	 */
+	@Nullable
+	private PostalAddress24 createDebtorPstlAdrOrNull(@NonNull final I_SEPA_Export sepaHdr, @NonNull final I_SEPA_Export_Line line)
+	{
+		final LocationId debtorLocationId = exportContext.getDebtorLocationId(SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID()));
+		final PostalAddress24 pstlAdr = createPstlAdr(locationDAO.getById(debtorLocationId));
+		if (isCompleteAddress(pstlAdr))
+		{
+			return pstlAdr;
+		}
+
+		if (SepaUtils.isNonEeaSepaCountryIban(sepaHdr.getIBAN()) || SepaUtils.isNonEeaSepaCountryIban(line.getIBAN()))
+		{
+			throw new AdempiereException(MSG_DebtorAddressWithoutTown, SepaUtils.escapeAtSignsForParseTranslation(toPartnerLabel(line)));
+		}
+		return null;
 	}
 
 	// copied from SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03#isCompleteAddress

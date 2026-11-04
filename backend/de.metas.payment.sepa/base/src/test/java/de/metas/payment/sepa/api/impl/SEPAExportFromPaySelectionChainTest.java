@@ -84,6 +84,7 @@ public class SEPAExportFromPaySelectionChainTest
 	private BankRepository bankRepository;
 	private CurrencyId chf;
 	private I_C_BPartner vendor;
+	private I_C_Location vendorLocation;
 
 	@BeforeEach
 	void beforeEach()
@@ -138,7 +139,7 @@ public class SEPAExportFromPaySelectionChainTest
 	}
 
 	@Test
-	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_001_08()
+	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_001_08() throws Exception
 	{
 		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
 		final I_C_BP_BankAccount vendorBankAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
@@ -148,6 +149,8 @@ public class SEPAExportFromPaySelectionChainTest
 		final byte[] xml = exportAsProcessDoes(paySelection, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
 
 		assertThat(rootNamespace(xml)).isEqualTo(NAMESPACE_PAIN_008_001_08);
+		// the debtor address is the one captured on the invoice
+		assertThat(text(parse(xml), "Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr/PstlAdr/TwnNm")).isEqualTo("Zuerich");
 	}
 
 	/**
@@ -289,13 +292,14 @@ public class SEPAExportFromPaySelectionChainTest
 	}
 
 	/**
-	 * Same export context as the process: the mandates of the created export are handed to the writer.
+	 * Same export context as the process: the mandates and debtor addresses of the created export are handed to the writer.
 	 */
 	private static byte[] exportXml(@NonNull final CreatedSEPAExport createdExport)
 	{
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(false)
 				.directDebitMandates(createdExport.getMandatesBySepaExportLineId())
+				.debtorLocationIds(createdExport.getDebtorLocationIdsBySepaExportLineId())
 				.build();
 		return Services.get(ISEPADocumentBL.class).exportCreditTransferXML(createdExport.getExport(), exportContext).getContent();
 	}
@@ -395,6 +399,7 @@ public class SEPAExportFromPaySelectionChainTest
 		final I_C_Invoice purchaseInvoice = newInstance(I_C_Invoice.class);
 		purchaseInvoice.setIsSOTrx(false);
 		purchaseInvoice.setC_BPartner_ID(vendor.getC_BPartner_ID());
+		purchaseInvoice.setC_BPartner_Location_Value_ID(vendorLocation.getC_Location_ID());
 		purchaseInvoice.setC_Currency_ID(chf.getRepoId());
 		purchaseInvoice.setDocumentNo("1001");
 		purchaseInvoice.setDescription("Invoice 1001");
@@ -412,7 +417,7 @@ public class SEPAExportFromPaySelectionChainTest
 		save(line);
 	}
 
-	private static I_C_BPartner createVendorWithBillToLocation()
+	private I_C_BPartner createVendorWithBillToLocation()
 	{
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
 		vendor.setName("Test Creditor AG");
@@ -430,6 +435,7 @@ public class SEPAExportFromPaySelectionChainTest
 		location.setCity("Zuerich");
 		location.setC_Country_ID(country.getC_Country_ID());
 		save(location);
+		vendorLocation = location;
 
 		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
 		bpLocation.setC_BPartner_ID(vendor.getC_BPartner_ID());

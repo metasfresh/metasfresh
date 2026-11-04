@@ -73,6 +73,7 @@ class SEPAExportFilesZipTest
 				.export(export)
 				.scheme(scheme)
 				.mandatesBySepaExportLineId(ImmutableMap.of())
+				.debtorLocationIdsBySepaExportLineId(ImmutableMap.of())
 				.build();
 		final SEPACreditTransferXML xml = SEPACreditTransferXML.builder()
 				.filename(documentNo + ".xml")

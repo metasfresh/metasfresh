@@ -97,6 +97,21 @@ class SepaUtilsTest
 	}
 
 	@Test
+	void isNonEeaSepaCountryIban()
+	{
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("CH93 0076 2011 6238 5295 7")).isTrue();
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("GB29 NWBK 6016 1331 9268 19")).isTrue(); // also Guernsey, Jersey and the Isle of Man
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("RS35260005601001611379")).isTrue();
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("ch9300762011623852957")).isTrue(); // lower case
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("DE62007620110623852957")).isFalse();
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("LI21 0881 0000 2324 013A A")).isFalse(); // EEA
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("TR330006100519786457841326")).isFalse(); // not SEPA at all
+		assertThat(SepaUtils.isNonEeaSepaCountryIban("C")).isFalse();
+		assertThat(SepaUtils.isNonEeaSepaCountryIban(" ")).isFalse();
+		assertThat(SepaUtils.isNonEeaSepaCountryIban(null)).isFalse();
+	}
+
+	@Test
 	void getBankAccountInfo()
 	{
 		// the ID is always there; the number only if the account has one, so that the message never shows an empty gap

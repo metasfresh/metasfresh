@@ -107,6 +107,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		return SEPAExportContext.builder()
 				.referenceAsEndToEndId(referenceAsEndToEndId)
 				.directDebitMandates(createdExport.getMandatesBySepaExportLineId())
+				.debtorLocationIds(createdExport.getDebtorLocationIdsBySepaExportLineId())
 				.build();
 	}
 

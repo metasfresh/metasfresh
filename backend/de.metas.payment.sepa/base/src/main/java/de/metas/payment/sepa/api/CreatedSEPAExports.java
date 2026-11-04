@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.banking.mandate.DirectDebitMandate;
 import de.metas.banking.mandate.DirectDebitMandateType;
+import de.metas.location.LocationId;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import lombok.Builder;
 import lombok.NonNull;
@@ -62,7 +63,12 @@ public class CreatedSEPAExports
 		@NonNull ImmutableMap<SEPAExportLineId, DirectDebitMandate> mandatesBySepaExportLineId;
 
 		/**
-		 * @return an export without scheme and without mandates, i.e. a credit transfer or a direct debit without exportable lines
+		 * The debtor address of each direct debit export line, i.e. the bill-to address captured on its invoice; empty for a credit transfer.
+		 */
+		@NonNull ImmutableMap<SEPAExportLineId, LocationId> debtorLocationIdsBySepaExportLineId;
+
+		/**
+		 * @return an export without scheme, mandates and debtor addresses, i.e. a credit transfer or a direct debit without exportable lines
 		 */
 		@NonNull
 		public static CreatedSEPAExport withoutMandates(@NonNull final I_SEPA_Export export)
@@ -71,6 +77,7 @@ public class CreatedSEPAExports
 					.export(export)
 					.scheme(null)
 					.mandatesBySepaExportLineId(ImmutableMap.of())
+					.debtorLocationIdsBySepaExportLineId(ImmutableMap.of())
 					.build();
 		}
 	}

@@ -110,7 +110,7 @@ public class SEPATestHelper
 		ungroupedLocation.setAddress2("addr2_2");
 		ungroupedLocation.setCity("city_2");
 		ungroupedLocation.setPostal("postal_2");
-		save(location);
+		save(ungroupedLocation);
 
 		bPartner = newInstance(I_C_BPartner.class);
 		bPartner.setName("bpName");
@@ -165,24 +165,28 @@ public class SEPATestHelper
 		firstInvoice = newInstance(I_C_Invoice.class);
 		firstInvoice.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		firstInvoice.setC_BPartner_Location_ID(ungroupedPartnerLocation.getC_BPartner_Location_ID());
+		firstInvoice.setC_BPartner_Location_Value_ID(ungroupedPartnerLocation.getC_Location_ID());
 		firstInvoice.setDescription("firstInvoiceDescription");
 		save(firstInvoice);
 
 		firstInvoice = newInstance(I_C_Invoice.class);
 		firstInvoice.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		firstInvoice.setC_BPartner_Location_ID(ungroupedPartnerLocation.getC_BPartner_Location_ID());
+		firstInvoice.setC_BPartner_Location_Value_ID(ungroupedPartnerLocation.getC_Location_ID());
 		firstInvoice.setDescription("firstInvoiceDescription");
 		save(firstInvoice);
 
 		secondInvoice = newInstance(I_C_Invoice.class);
 		secondInvoice.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		secondInvoice.setC_BPartner_Location_ID(ungroupedPartnerLocation.getC_BPartner_Location_ID());
+		secondInvoice.setC_BPartner_Location_Value_ID(ungroupedPartnerLocation.getC_Location_ID());
 		secondInvoice.setDescription("secondInvoiceDescription");
 		save(secondInvoice);
 
 		ungroupedInvoice = newInstance(I_C_Invoice.class);
 		ungroupedInvoice.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		ungroupedInvoice.setC_BPartner_Location_ID(ungroupedPartnerLocation.getC_BPartner_Location_ID());
+		ungroupedInvoice.setC_BPartner_Location_Value_ID(ungroupedPartnerLocation.getC_Location_ID());
 		ungroupedInvoice.setDescription("ungroupedInvoiceDescription");
 		save(ungroupedInvoice);
 
@@ -463,12 +467,14 @@ public class SEPATestHelper
 		qrIbanFirstInvoice = newInstance(I_C_Invoice.class);
 		qrIbanFirstInvoice.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
 		qrIbanFirstInvoice.setC_BPartner_Location_ID(qrIbanPartnerLocation.getC_BPartner_Location_ID());
+		qrIbanFirstInvoice.setC_BPartner_Location_Value_ID(qrIbanPartnerLocation.getC_Location_ID());
 		qrIbanFirstInvoice.setDescription("qrIbanFirstInvoiceDescription");
 		save(qrIbanFirstInvoice);
 
 		qrIbanSecondInvoice = newInstance(I_C_Invoice.class);
 		qrIbanSecondInvoice.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
 		qrIbanSecondInvoice.setC_BPartner_Location_ID(qrIbanPartnerLocation.getC_BPartner_Location_ID());
+		qrIbanSecondInvoice.setC_BPartner_Location_Value_ID(qrIbanPartnerLocation.getC_Location_ID());
 		qrIbanSecondInvoice.setDescription("qrIbanSecondInvoiceDescription");
 		save(qrIbanSecondInvoice);
 

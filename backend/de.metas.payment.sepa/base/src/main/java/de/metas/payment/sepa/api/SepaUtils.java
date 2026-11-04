@@ -106,6 +106,12 @@ public class SepaUtils
 			"AD", "AL", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GI", "GR", "HR", "HU", "IE", "IS",
 			"IT", "LI", "LT", "LU", "LV", "MC", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SE", "SI", "SK", "SM", "VA");
 
+	/**
+	 * The IBAN country codes of the SEPA countries outside the EEA, from chapter 2 of the same list; Guernsey, Jersey and the Isle of Man use GB.
+	 * If the creditor's or the debtor's bank is in one of them, a direct debit needs the debtor address (EPC SDD Rulebooks, AT-P005).
+	 */
+	private static final ImmutableSet<String> NON_EEA_SEPA_IBAN_COUNTRY_CODES = ImmutableSet.of("AD", "AL", "CH", "GB", "MC", "MD", "ME", "MK", "RS", "SM", "VA");
+
 	private final static Map<String, String> SEPA_REPLACEMENT_MAP = new HashMap<>();
 
 	static
@@ -238,12 +244,25 @@ public class SepaUtils
 	 */
 	public static boolean isSepaSchemeCountryIban(@Nullable final String iban)
 	{
+		return hasIbanCountryCode(iban, SEPA_SCHEME_IBAN_COUNTRY_CODES);
+	}
+
+	/**
+	 * @return {@code true} if the given IBAN's country code (its first two characters, case-insensitive) is one of {@link #NON_EEA_SEPA_IBAN_COUNTRY_CODES}
+	 */
+	public static boolean isNonEeaSepaCountryIban(@Nullable final String iban)
+	{
+		return hasIbanCountryCode(iban, NON_EEA_SEPA_IBAN_COUNTRY_CODES);
+	}
+
+	private static boolean hasIbanCountryCode(@Nullable final String iban, @NonNull final ImmutableSet<String> countryCodes)
+	{
 		final String ibanNorm = StringUtils.trimBlankToNull(iban);
 		if (ibanNorm == null || ibanNorm.length() < 2)
 		{
 			return false;
 		}
-		return SEPA_SCHEME_IBAN_COUNTRY_CODES.contains(ibanNorm.substring(0, 2).toUpperCase());
+		return countryCodes.contains(ibanNorm.substring(0, 2).toUpperCase());
 	}
 
 	/**

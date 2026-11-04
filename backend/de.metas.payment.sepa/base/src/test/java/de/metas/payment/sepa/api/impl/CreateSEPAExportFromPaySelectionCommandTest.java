@@ -11,6 +11,7 @@ import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.location.LocationId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.CreatedSEPAExports;
 import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
@@ -30,6 +31,7 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.X_AD_OrgInfo;
 import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,6 +156,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 			final List<I_SEPA_Export_Line> lines = sepaDocumentDAO.retrieveLines(export);
 			assertThat(lines).hasSize(createdExport.getScheme() == DirectDebitMandateType.B2B ? 2 : 1);
 			assertThat(createdExport.getMandatesBySepaExportLineId()).hasSize(lines.size());
+			assertThat(createdExport.getDebtorLocationIdsBySepaExportLineId()).hasSize(lines.size());
 			for (final I_SEPA_Export_Line line : lines)
 			{
 				final I_C_BP_BankAccount_DirectDebitMandate mandateRecord = mandatesByBankAccountId.get(line.getC_BP_BankAccount_ID());
@@ -161,6 +164,12 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 				assertThat(line.getSEPA_MandateRefNo()).isEqualTo(mandateRecord.getMandateReference());
 				assertThat(createdExport.getMandatesBySepaExportLineId().get(SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID())).getReference())
 						.isEqualTo(mandateRecord.getMandateReference());
+
+				final I_C_PaySelectionLine paySelectionLine = InterfaceWrapperHelper.load(line.getRecord_ID(), I_C_PaySelectionLine.class);
+				final I_C_Invoice invoice = InterfaceWrapperHelper.load(paySelectionLine.getC_Invoice_ID(), I_C_Invoice.class);
+				assertThat(createdExport.getDebtorLocationIdsBySepaExportLineId().get(SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID())))
+						.as("the bill-to address captured on the invoice")
+						.isEqualTo(LocationId.ofRepoId(invoice.getC_BPartner_Location_Value_ID()));
 			}
 		}
 
