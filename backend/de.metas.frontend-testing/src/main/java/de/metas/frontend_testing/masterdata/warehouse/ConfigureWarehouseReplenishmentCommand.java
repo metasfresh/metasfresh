@@ -24,7 +24,7 @@ public class ConfigureWarehouseReplenishmentCommand
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final MasterdataContext context;
 	@NonNull private final Map<String, JsonWarehouseRequest> requests;
-	@NonNull private final WarehouseRepository warehouseReplenishmentRepository;
+	@NonNull private final WarehouseRepository warehouseRepository;
 
 	public void execute()
 	{
@@ -46,7 +46,7 @@ public class ConfigureWarehouseReplenishmentCommand
 				? createNetwork(warehouseIdentifier, warehouseId, replenishment)
 				: null;
 
-		warehouseReplenishmentRepository.updateReplenishment(warehouseId, networkId, request.isAutoDistributionOrder());
+		warehouseRepository.updateReplenishment(warehouseId, networkId, request.isAutoDistributionOrder());
 	}
 
 	private DistributionNetworkId createNetwork(

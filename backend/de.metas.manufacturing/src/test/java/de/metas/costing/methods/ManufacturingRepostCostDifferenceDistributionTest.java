@@ -30,18 +30,23 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
-import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CostingService;
 import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -85,28 +90,26 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Reposting a manufacturing cost collector must recover the FULL posting:
+ * A manufacturing {@code CostDifferenceDistribution} collector persists THREE cost-detail legs
+ * (MAIN + ADJUSTMENT + ALREADY_SHIPPED — see {@link PPOrderCostDifferenceDistributor#createCostDetails})
+ * for AveragePO, LastPOPrice and MovingAverageInvoice alike. Reposting it must recover the FULL posting:
  * {@code CostingMethodHandler.createOrUpdateCost} short-circuits an existing posting through
  * {@code CostingMethodHandlerUtils.getExistingCostDetails(request)} →
  * {@link CostDetailService#getExistingCostDetails(CostDetailCreateRequest)}, which must NOT filter by the
  * request's default {@code amtType = MAIN}.
  * <p>
- * Backport note ({@code deep_tundra_release}): on the source branch this test drives a {@code CostDifferenceDistribution}
- * collector, which persists three legs via {@code PPOrderCostDifferenceDistributor}. Both the collector type and the
- * distributor come with https://github.com/metasfresh/metasfresh/pull/25466, which is not on this branch. Only the
- * steps that need them are dropped (the distributor's own three-leg posting); the post / repost / compare of the cost
- * collector is kept, here on the order's main-product receipt collector. The ADJUSTMENT and ALREADY_SHIPPED legs the
- * distributor would have written are persisted directly on the same collector after the first posting, so the repost
- * still fails if the recovery is truncated to MAIN. The class name is kept so a later merge up to new_dawn_uat meets
- * the same file.
+ * Pre-fix that filter truncated the recovery to the MAIN leg, so the aggregated amount lost the ADJUSTMENT
+ * and ALREADY_SHIPPED shares — the same defect {@code MatchInvRepostCostDetailTest} pins for the MAI MatchInv.
+ * This test drives the real repost path end-to-end (post the collector, then repost it) and fails if the
+ * amtType filter is reintroduced.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class ManufacturingRepostCostDifferenceDistributionTest
 {
 	private static final Instant DATE = Instant.parse("2026-08-29T00:00:00Z");
 
-	// issued 100 (= price 10 x qty 10) - received 60 (= price 6 x qty 10) => residual 40, of which the distributor
-	// would capitalize 32 (8 of 10 still in stock) and spill 8 to COGS: the two non-MAIN legs seeded below.
+	// issued 100 (= price 10 x qty 10) - received 60 (= price 6 x qty 10) => residual 40.
+	// 8 of the 10 manufactured are still in stock at cost price 30 => capitalize 40 x 8/10 = 32, spill 8 to COGS.
 	private static final String ISSUED_PRICE = "10";
 	private static final String ISSUED_QTY = "-10";
 	private static final String RECEIVED_PRICE = "6";
@@ -114,8 +117,9 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	private static final String MAIN_CURRENT_QTY = "8";
 	private static final String MAIN_CURRENT_COST_PRICE = "30";
 
-	private static final String SEEDED_ADJUSTMENT = "32";
-	private static final String SEEDED_ALREADY_SHIPPED = "8";
+	private static final String EXPECTED_RESIDUAL = "40";
+	private static final String EXPECTED_CAPITALIZED = "32";
+	private static final String EXPECTED_ALREADY_SHIPPED = "8";
 
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
@@ -126,26 +130,31 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	private ProductId componentProductId;
 
 	private CostElementRepository costElementRepo;
-	private CostDetailService costDetailService;
+	private ICostDetailService costDetailService;
+	private ICurrentCostsRepository currentCostsRepo;
 	private CostingMethodHandlerUtils utils;
+	private PPOrderCostDifferenceDistributor distributor;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	// per-test, set up by setupOrderFor(..)
 	private AcctSchemaId acctSchemaId;
 	private CostElement costElement;
 	private CostingMethodHandler handler;
+	private CostingService costingService;
 	private PPOrderId orderId;
-	private PPCostCollectorId receiptCollectorId;
+	private PPCostCollectorId distributionCollectorId;
 
-	/** The three manufacturing handlers; each accumulates into {@code PP_Order_Cost}. */
+	/** The multi-leg producers: each accumulates into {@code PP_Order_Cost} and can emit a CostDifferenceDistribution. */
 	private enum ManufacturingHandlerUnderTest
 	{
 		AveragePO(CostingMethod.AveragePO)
 				{
 					@Override
-					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils)
+					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils, final PPOrderCostDifferenceDistributor distributor)
 					{
 						return new ManufacturingAveragePOCostingMethodHandler(
 								utils,
+								distributor,
 								new AveragePOCostingMethodHandler(
 										utils,
 										MatchInvoiceService.newInstanceForUnitTesting(),
@@ -155,18 +164,19 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		LastPO(CostingMethod.LastPOPrice)
 				{
 					@Override
-					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils)
+					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils, final PPOrderCostDifferenceDistributor distributor)
 					{
-						return new ManufacturingLastPOCostingMethodHandler(utils);
+						return new ManufacturingLastPOCostingMethodHandler(utils, distributor);
 					}
 				},
 		MovingAverageInvoice(CostingMethod.MovingAverageInvoice)
 				{
 					@Override
-					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils)
+					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils, final PPOrderCostDifferenceDistributor distributor)
 					{
 						return new ManufacturingMovingAverageInvoiceCostingMethodHandler(
 								utils,
+								distributor,
 								new MovingAverageInvoiceCostingMethodHandler(
 										utils,
 										MatchInvoiceService.newInstanceForUnitTesting(),
@@ -179,7 +189,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 
 		ManufacturingHandlerUnderTest(@NonNull final CostingMethod costingMethod) {this.costingMethod = costingMethod;}
 
-		abstract CostingMethodHandler createHandler(CostingMethodHandlerUtils utils);
+		abstract CostingMethodHandler createHandler(CostingMethodHandlerUtils utils, PPOrderCostDifferenceDistributor distributor);
 	}
 
 	@BeforeEach
@@ -197,32 +207,27 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
+		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
 		costDetailService = new CostDetailService(new CostDetailRepository(), costElementRepo);
-		utils = new CostingMethodHandlerUtils(
-				new CurrencyRepository(),
-				new CurrentCostsRepository(costElementRepo),
-				costDetailService);
+		utils = new CostingMethodHandlerUtils(new CurrencyRepository(), currentCostsRepo, costDetailService);
+		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
 	}
 
 	@ParameterizedTest
 	@EnumSource(ManufacturingHandlerUnderTest.class)
-	void costCollector_repost_recoversAllThreeLegs_notJustMain(final ManufacturingHandlerUnderTest handlerUnderTest)
+	void costDifferenceDistribution_repost_recoversAllThreeLegs_notJustMain(final ManufacturingHandlerUnderTest handlerUnderTest)
 	{
 		setupOrderFor(handlerUnderTest);
 
-		final CostDetailCreateRequest request = receiptRequest();
-		final AcctSchema as = utils.getAcctSchemaById(acctSchemaId);
+		final CostDetailCreateRequest request = distributionRequest();
 
-		// first posting
-		final CostAmountDetailed posted = handler.createOrUpdateCost(request).getTotalAmountToPost(as);
-		assertThat(posted.getMainAmt().toBigDecimal())
-				.as("the receipt is valued (a non-zero MAIN amount)")
-				.isNotZero();
+		// first posting: the collector routes to the distributor, which persists MAIN + ADJUSTMENT + ALREADY_SHIPPED
+		handler.createOrUpdateCost(request);
 
-		// the two further legs a multi-leg collector persists (on the source branch: PPOrderCostDifferenceDistributor)
-		seedNonMainLegs(request);
+		// the three legs really are persisted for this collector (i.e. the scenario genuinely is multi-leg)
 		assertThat(utils.getExistingCostDetails(request))
-				.as("the collector now carries all three legs")
+				.as("a CostDifferenceDistribution posting persists all three legs")
 				.extracting(CostDetail::getAmtType)
 				.containsExactlyInAnyOrder(
 						CostAmountType.MAIN,
@@ -230,28 +235,78 @@ class ManufacturingRepostCostDifferenceDistributionTest
 						CostAmountType.ALREADY_SHIPPED);
 
 		// the repost: the exact recovery path CostingMethodHandler.createOrUpdateCost takes when the details exist
-		final CostAmountDetailed recovered = handler.createOrUpdateCost(request).getTotalAmountToPost(as);
+		final CostDetailCreateResultsList repost = handler.createOrUpdateCost(request);
 
+		final AcctSchema as = utils.getAcctSchemaById(acctSchemaId);
+		final CostAmountDetailed recovered = repost.getTotalAmountToPost(as);
+
+		// leg-complete: pre-fix the recovery truncated to MAIN, so ADJUSTMENT + ALREADY_SHIPPED came back zero
 		assertThat(recovered.getMainAmt().toBigDecimal())
-				.as("MAIN leg = the first posting")
-				.isEqualByComparingTo(posted.getMainAmt().toBigDecimal());
+				.as("MAIN leg")
+				.isEqualByComparingTo(EXPECTED_RESIDUAL);
 		assertThat(recovered.getCostAdjustmentAmt().toBigDecimal())
 				.as("ADJUSTMENT leg must survive the repost (not truncated to MAIN)")
-				.isEqualByComparingTo(SEEDED_ADJUSTMENT);
+				.isEqualByComparingTo(EXPECTED_CAPITALIZED);
 		assertThat(recovered.getAlreadyShippedAmt().toBigDecimal())
 				.as("ALREADY_SHIPPED leg must survive the repost (not truncated to MAIN)")
-				.isEqualByComparingTo(SEEDED_ALREADY_SHIPPED);
+				.isEqualByComparingTo(EXPECTED_ALREADY_SHIPPED);
 	}
 
-	private void seedNonMainLegs(@NonNull final CostDetailCreateRequest request)
+	// drives CostingService.createReversalCostDetailsOrEmpty directly - the actual entry point
+	// DocLine_CostCollector calls when the reversal document itself is posted - not the manufacturing
+	// handler in isolation, so this also exercises CostingService's own (costElementId, amtType) lookup.
+	@ParameterizedTest
+	@EnumSource(ManufacturingHandlerUnderTest.class)
+	void costDifferenceDistribution_reversal_recreatesAllThreeLegs_notJustMain(final ManufacturingHandlerUnderTest handlerUnderTest)
 	{
-		final CostDetailPreviousAmounts prev = CostDetailPreviousAmounts.of(utils.getCurrentCostForUpdate(request));
-		costDetailService.createCostDetailRecordNoCostsChanged(
-				request.withAmountAndType(CostAmount.of(new BigDecimal(SEEDED_ADJUSTMENT), currencyId), CostAmountType.ADJUSTMENT).withQtyZero(),
-				prev);
-		costDetailService.createCostDetailRecordNoCostsChanged(
-				request.withAmountAndType(CostAmount.of(new BigDecimal(SEEDED_ALREADY_SHIPPED), currencyId), CostAmountType.ALREADY_SHIPPED).withQtyZero(),
-				prev);
+		setupOrderFor(handlerUnderTest);
+
+		final CostDetailCreateRequest request = distributionRequest();
+		handler.createOrUpdateCost(request);
+		assertThat(currentCostPriceOf(request)).isEqualByComparingTo("34"); // (30 x 8 + 32) / 8
+
+		final PPCostCollectorId reversalCollectorId = createCostDifferenceDistributionCollector();
+		final CostDetailReverseRequest reversalRequest = CostDetailReverseRequest.builder()
+				.acctSchemaId(acctSchemaId)
+				.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(distributionCollectorId))
+				.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(reversalCollectorId))
+				.date(request.getDate())
+				.build();
+
+		final CostDetailCreateResultsList reversalResults = costingService.createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+
+		assertThat(currentCostPriceOf(request)).isEqualByComparingTo(MAIN_CURRENT_COST_PRICE); // moved back
+
+		final CostAmountDetailed reversed = reversalResults.getTotalAmountToPost(utils.getAcctSchemaById(acctSchemaId));
+
+		assertThat(reversed.getMainAmt().toBigDecimal())
+				.as("MAIN leg reversed")
+				.isEqualByComparingTo("-" + EXPECTED_RESIDUAL);
+		assertThat(reversed.getCostAdjustmentAmt().toBigDecimal())
+				.as("ADJUSTMENT leg must be recreated by its own call, not collapsed into MAIN")
+				.isEqualByComparingTo("-" + EXPECTED_CAPITALIZED);
+		assertThat(reversed.getAlreadyShippedAmt().toBigDecimal())
+				.as("ALREADY_SHIPPED leg must be recreated by its own call, not collapsed into MAIN")
+				.isEqualByComparingTo("-" + EXPECTED_ALREADY_SHIPPED);
+
+		// repost of the SAME reversal document: existingCostDetailsList (CostingService.java) is now
+		// fetched with all 3 legs already persisted, sharing one costElementId - the exact shape that
+		// crashed a costElementId-keyed ImmutableMap.toImmutableMap build (IllegalArgumentException:
+		// Multiple entries with same key) before the fix. Must recover, not crash or duplicate.
+		final CostDetailCreateResultsList repostResults = costingService.createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+
+		assertThat(utils.getExistingCostDetails(request.toBuilder().documentRef(reversalRequest.getReversalDocumentRef()).build()))
+				.as("repost recovers the 3 existing legs, does not duplicate them")
+				.hasSize(3);
+		final CostAmountDetailed reversedAfterRepost = repostResults.getTotalAmountToPost(utils.getAcctSchemaById(acctSchemaId));
+		assertThat(reversedAfterRepost.getMainAmt().toBigDecimal()).isEqualByComparingTo(reversed.getMainAmt().toBigDecimal());
+		assertThat(reversedAfterRepost.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo(reversed.getCostAdjustmentAmt().toBigDecimal());
+		assertThat(reversedAfterRepost.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo(reversed.getAlreadyShippedAmt().toBigDecimal());
+	}
+
+	private BigDecimal currentCostPriceOf(final CostDetailCreateRequest request)
+	{
+		return utils.getCurrentCostForUpdate(request).getCostPrice().toBigDecimal();
 	}
 
 	//
@@ -268,12 +323,13 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.currencyId(currencyId)
 				.build();
 		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, handlerUnderTest.costingMethod);
-		handler = handlerUnderTest.createHandler(utils);
+		handler = handlerUnderTest.createHandler(utils, distributor);
+		costingService = new CostingService(utils, costDetailService, costElementRepo, currentCostsRepo, ImmutableList.of(handler));
 
 		orderId = createCompletedPPOrder();
-		receiptCollectorId = createMainProductReceiptCollector();
+		distributionCollectorId = createCostDifferenceDistributionCollector();
 
-		seedOrderCosts();
+		seedOrderCostsWithResidual();
 		saveMainProductCurrentCost();
 	}
 
@@ -288,18 +344,18 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		return PPOrderId.ofRepoId(order.getPP_Order_ID());
 	}
 
-	private PPCostCollectorId createMainProductReceiptCollector()
+	private PPCostCollectorId createCostDifferenceDistributionCollector()
 	{
 		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class);
-		cc.setCostCollectorType(CostCollectorType.MaterialReceipt.getCode());
+		cc.setCostCollectorType(CostCollectorType.CostDifferenceDistribution.getCode());
 		cc.setPP_Order_ID(orderId.getRepoId());
-		cc.setMovementQty(new BigDecimal(RECEIVED_QTY));
+		cc.setMovementQty(BigDecimal.ZERO);
 		InterfaceWrapperHelper.saveRecord(cc);
 		return PPCostCollectorId.ofRepoId(cc.getPP_Cost_Collector_ID());
 	}
 
-	/** The {@code PP_Order_Cost} rows a completed order carries: an issue and a main-product receipt. */
-	private void seedOrderCosts()
+	/** The {@code PP_Order_Cost} rows a completed order carries: an issue and a main-product receipt, leaving a residual. */
+	private void seedOrderCostsWithResidual()
 	{
 		final BigDecimal issuedQty = new BigDecimal(ISSUED_QTY);
 		final BigDecimal receivedQty = new BigDecimal(RECEIVED_QTY);
@@ -327,10 +383,11 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.costs(ImmutableList.of(materialIssue, mainProduct))
 				.build();
 
-		// what every costing-method handler does after an issue or a receipt
+		// what every costing-method handler does after an issue or a receipt; the seed carries no co-products, so the
+		// post-calculation only reflects the main-product residual.
 		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
 
-		Services.get(IPPOrderCostBL.class).save(orderCosts);
+		ppOrderCostBL.save(orderCosts);
 	}
 
 	private void saveMainProductCurrentCost()
@@ -358,8 +415,8 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.build();
 	}
 
-	/** What the manufacturing handler is handed for the main-product receipt collector: the main product, no amount. */
-	private CostDetailCreateRequest receiptRequest()
+	/** What the manufacturing handler is handed for the CostDifferenceDistribution collector: the main product, no amount. */
+	private CostDetailCreateRequest distributionRequest()
 	{
 		return requestFor(mainProductId, new BigDecimal(RECEIVED_QTY));
 	}
@@ -373,7 +430,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.costElement(costElement)
-				.documentRef(CostingDocumentRef.ofCostCollectorId(receiptCollectorId))
+				.documentRef(CostingDocumentRef.ofCostCollectorId(distributionCollectorId))
 				.qty(Quantity.of(qty, uomEach))
 				.amt(CostAmount.zero(currencyId))
 				.date(DATE)

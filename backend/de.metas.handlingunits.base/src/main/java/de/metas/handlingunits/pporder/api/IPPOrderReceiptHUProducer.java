@@ -61,6 +61,13 @@ public interface IPPOrderReceiptHUProducer
 
 	IPPOrderReceiptHUProducer bestBeforeDate(@Nullable LocalDate bestBeforeDate);
 
+	/**
+	 * If no {@link #bestBeforeDate(LocalDate)} is given and a received HU has no best-before date yet,
+	 * set it to the receipt day (movement date in the order's org time zone) + <code>M_Product.BestBeforeDays</code>;
+	 * nothing if the product has no <code>BestBeforeDays</code>.
+	 */
+	IPPOrderReceiptHUProducer defaultBestBeforeDateFromProduct();
+
 	IPPOrderReceiptHUProducer productionDate(@Nullable LocalDate productionDate);
 
 	Set<PPCostCollectorId> getCreatedCostCollectorIds();

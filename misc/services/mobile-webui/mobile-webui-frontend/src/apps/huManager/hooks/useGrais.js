@@ -53,7 +53,7 @@ export const useGrais = ({ huId }) => {
       .finally(() => setLoading(false));
   }, [huId, setGraiCodes]);
 
-  const addGrais = useCallback((newGrais) => editGrais((prev) => mergeGraiArrays(prev, newGrais)), [editGrais]);
+  const addGrais = useCallback((newGrais) => editGrais((prev) => mergeGraiArrays(prev, newGrais).merged), [editGrais]);
 
   const removeGrai = useCallback(
     (graiToRemove) =>

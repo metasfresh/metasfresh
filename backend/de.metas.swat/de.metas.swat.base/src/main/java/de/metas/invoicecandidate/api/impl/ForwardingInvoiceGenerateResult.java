@@ -32,6 +32,7 @@ import com.google.common.collect.ForwardingObject;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 
 /**
@@ -97,6 +98,12 @@ public abstract class ForwardingInvoiceGenerateResult extends ForwardingObject i
 	public void addNotifications(final List<I_AD_Note> notifications)
 	{
 		delegate().addNotifications(notifications);
+	}
+
+	@Override
+	public void addFailedCandidates(final List<I_C_Invoice_Candidate> failedCandidates, final Throwable error)
+	{
+		delegate().addFailedCandidates(failedCandidates, error);
 	}
 
 	@Override

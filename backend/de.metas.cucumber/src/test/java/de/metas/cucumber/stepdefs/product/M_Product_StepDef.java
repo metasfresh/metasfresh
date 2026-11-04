@@ -33,17 +33,19 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.order.C_CompensationGroup_Schema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -111,6 +113,7 @@ public class M_Product_StepDef
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final de.metas.cucumber.stepdefs.customstariff.M_CustomsTariff_StepDefData customsTariffTable;
+	@NonNull private final C_CompensationGroup_Schema_StepDefData compensationGroupSchemaTable;
 	@NonNull private final TestContext restTestContext;
 
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -120,28 +123,26 @@ public class M_Product_StepDef
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
 	/**
-	 * Creates or updates {@code M_Product} records (upsert by {@code Value}).
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
-	 *   <b>Name</b> / <b>Value</b> — (optional) auto-generated (unique) when omitted<br>
-	 *   <b>ProductType</b> — (optional) e.g. {@code I} (item), {@code S} (service)<br>
-	 *   <b>IsSold</b> / <b>IsPurchased</b> — (optional) capability flags, default {@code true}<br>
-	 *   <b>ProductLifeCycleStatus</b> — (optional) BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}<br>
-	 *   <b>M_Product_Category_ID</b> — (optional, identifier-ref)<br>
-	 *   <b>GTIN</b> / <b>UPC</b> / <b>EAN13_ProductCode</b> — (optional) product codes<br>
-	 *   <b>WeightNet</b> / <b>WeightGross</b> — (optional) quantity+UOM (kg)<br>
-	 *   <b>LengthInCm</b> / <b>WidthInCm</b> / <b>HeightInCm</b> — (optional)<br>
-	 *   <b>OPT.M_AttributeSet_ID.Identifier</b> — (optional, identifier-ref)<br>
-	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Product_Category_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And metasfresh contains M_Products:
-	 *   | Identifier | ProductLifeCycleStatus |
-	 *   | blocked    | G                      |
-	 *   | ok         | O                      |
-	 * </pre>
+	 * Creates (or updates, if a matching {@code Value} already exists) {@link I_M_Product} records.
+	 * <p>
+	 * Frequently used DataTable columns (full handling is in {@link #createM_Product(DataTableRow)}):
+	 * <ul>
+	 *     <li>{@code Identifier} (required) — identifier for later reference.</li>
+	 *     <li>{@code Name} / {@code Value} (optional) — auto-generated unique when omitted.</li>
+	 *     <li>{@code OPT.M_Product_Category_ID.Identifier}, {@code OPT.C_UOM_ID.X12DE355},
+	 *         {@code OPT.M_AttributeSetInstance_ID.Identifier} — the common optional links.</li>
+	 *     <li>{@code OPT.C_CompensationGroup_Schema_ID.Identifier} (optional) — identifier of a
+	 *         {@link I_C_CompensationGroup_Schema} (created via
+	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
+	 *         compensation-group schema.</li>
+	 *     <li>{@code GroupCompensationAmtType} (optional) — {@code P} (percent) or {@code Q} (fixed amount) of a compensation-group discount product.</li>
+	 *      <li>{@code ProductLifeCycleStatus} — (optional) BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}</li>
+	 * </ul>
+	 * <pre>{@code
+	 * Given metasfresh contains M_Products:
+	 *   | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
+	 *   | schemaProduct | schemaProduct | compGroupSchema | ProductLifeCycleStatus |                            |
+	 * }</pre>
 	 */
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
@@ -304,7 +305,11 @@ public class M_Product_StepDef
 	 *   <b>M_Product_ID.Identifier</b> — identifier of a product created/loaded earlier in the scenario<br>
 	 * Optional columns (only the ones present are written):<br>
 	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
-	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}
+	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N},
+	 *   <b>CoProductCostDistributionPercent</b> — the co-product's cost distribution percent read live at
+	 *   production post-calculation (blank = the co-product carries zero cost, the main/finished product absorbs
+	 *   the entire total inbound costs — there is no fallback to a quantity-based distribution; the sum across a co-product's
+	 *   siblings must not exceed 100%, see the guard on {@code PPOrderCosts})
 	 *
 	 * <pre>{@code
 	 * When update M_Product:
@@ -397,6 +402,13 @@ public class M_Product_StepDef
 			final AttributeSetId attributeSetId = attributeSetTable.getId(asIdentifier);
 			productRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		}
+
+		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID)
+				.map(identifier -> identifier.lookupNotNullIn(compensationGroupSchemaTable))
+				.ifPresent(schema -> productRecord.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID()));
+
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_GroupCompensationAmtType)
+				.ifPresent(productRecord::setGroupCompensationAmtType);
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
@@ -509,6 +521,9 @@ public class M_Product_StepDef
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
 				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
+		// Co-product cost distribution percent (blank = zero cost carve; the main product absorbs the rest).
+		row.getAsOptionalBigDecimal(I_M_Product.COLUMNNAME_CoProductCostDistributionPercent)
+				.ifPresent(productRecord::setCoProductCostDistributionPercent);
 
 		saveRecord(productRecord);
 		productTable.putOrReplace(row.getAsIdentifier(), productRecord);

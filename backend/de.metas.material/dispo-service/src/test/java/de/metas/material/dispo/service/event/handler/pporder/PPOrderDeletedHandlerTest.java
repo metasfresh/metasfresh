@@ -31,6 +31,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -144,7 +145,8 @@ public class PPOrderDeletedHandlerTest
 						stockCandidateService,
 						supplyCandidateHandler,
 						Mockito.mock(MaterialPlanningContextHelper.class),
-						new PPOrderCandidateDemandMatcher())));
+						new PPOrderCandidateDemandMatcher(),
+						new PPOrderCandidateRepository())));
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(candidateChangeService, new MainDataRequestHandler(), candidateRepositoryRetrieval);
 		ppOrderChangedHandler = new PPOrderChangedHandler(candidateRepositoryRetrieval, candidateChangeService);

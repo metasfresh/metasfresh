@@ -287,15 +287,18 @@ public class M_ShipmentSchedule
 			return;
 		}
 
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+
 		if (shipmentSchedule.isClosed())
 		{
 			orderBL.closeLine(orderLine);
-			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			// if nothing was delivered, IsDeliveryClosed=Y makes the candidates processed - see InvoiceCandBL.updateProcessedFlag
+			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
 		}
 		else
 		{
 			orderBL.reopenLine(orderLine);
-			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
 		}
 	}
 

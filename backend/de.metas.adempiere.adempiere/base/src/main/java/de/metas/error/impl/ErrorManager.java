@@ -136,14 +136,13 @@ public class ErrorManager implements IErrorManager
 				int count = 0;
 				for (final StackTraceElement element : throwable.getStackTrace())
 				{
-					final String s = element.toString();
-					if (s.contains("adempiere"))
+					if (isMetasfreshFrame(element))
 					{
-						errorTrace.append(s).append("\n");
+						errorTrace.append(element).append("\n");
 						if (count == 0)
 						{
 							issue.setSourceClassName(element.getClassName());
-							issue.setSourceClassName(element.getMethodName());
+							issue.setSourceMethodName(element.getMethodName());
 							issue.setLineNo(element.getLineNumber());
 						}
 						count++;
@@ -202,6 +201,22 @@ public class ErrorManager implements IErrorManager
 		return adIssueId;
 	}
 
+	/**
+	 * Tells whether the frame belongs to a metasfresh package root, and is therefore worth reporting as the origin of
+	 * the error. The other production roots are third-party namespaces, c3p0's included — a few metasfresh helpers
+	 * live there, but matching that root would pull in every c3p0 frame.
+	 */
+	private static boolean isMetasfreshFrame(@NonNull final StackTraceElement element)
+	{
+		final String className = element.getClassName();
+		return className.startsWith("de.metas.")
+				|| className.startsWith("de.adempiere.")
+				|| className.startsWith("de.schaeffer.")
+				|| className.startsWith("org.adempiere.")
+				|| className.startsWith("org.compiere.")
+				|| className.startsWith("org.eevolution.");
+	}
+
 	private static String buildIssueSummary(final IssueCreateRequest request)
 	{
 		String summary = request.getSummary();
@@ -211,7 +226,9 @@ public class ErrorManager implements IErrorManager
 		{
 			final String throwableMessage = AdempiereException.extractMessage(throwable);
 
-			summary = Check.isNotBlank(summary)
+			// A caller that logged the throwable's own message (every REST error does) must not get it stored twice;
+			// that message can be large, e.g. when it embeds the rejected request payload.
+			summary = Check.isNotBlank(summary) && !summary.equals(throwableMessage)
 					? throwableMessage + " " + summary
 					: throwableMessage;
 		}

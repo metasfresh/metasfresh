@@ -3,6 +3,8 @@ package de.metas.frontend_testing.masterdata.sales_order;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.DocTypeId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
@@ -49,6 +51,7 @@ public class SalesOrderCreateCommand
 	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderCreateCommand.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
@@ -62,7 +65,8 @@ public class SalesOrderCreateCommand
 	private transient OrderFactory salesOrderFactory;
 	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
-	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(30);
+	/** Upper bound for both {@link #createSchedules()} and {@link #waitForShipmentSchedulesToBeValid()} — schedules are written by an async workpackage, measured past 40s on a cold stack. */
+	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(60);
 	private static final Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
 	public JsonSalesOrderCreateResponse execute()
@@ -102,7 +106,8 @@ public class SalesOrderCreateCommand
 		this.salesOrderFactory = OrderFactory.newSalesOrder()
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
-				.datePromised(request.getDatePromised());
+				.datePromised(request.getDatePromised())
+				.poReference(request.getPoReference());
 
 		if (request.getShipper() != null)
 		{
@@ -123,6 +128,7 @@ public class SalesOrderCreateCommand
 		return JsonSalesOrderCreateResponse.builder()
 				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))
 				.documentNo(salesOrderRecord.getDocumentNo())
+				.docTypeName(docTypeBL.getNameById(DocTypeId.ofRepoId(salesOrderRecord.getC_DocType_ID())).translate(context.getAdLanguage()))
 				.build();
 	}
 
@@ -195,9 +201,6 @@ public class SalesOrderCreateCommand
 	 * self-packed orders' schedules valid before the test scanned. The new launcher-based flow skips that,
 	 * so without this wait the schedules may still be flagged when {@code MassPrintingService} queries
 	 * {@code M_Packageable_V} and no packageable lines are found (boxesPacked=0).
-	 *
-	 * <p>Reuses the existing {@link #JOB_SCHEDULE_CREATE_TIMEOUT} / {@link #JOB_SCHEDULE_CREATE_SLEEP_BETWEEN}
-	 * constants and {@link #sleep(Duration)} helper to keep the polling budget consistent.
 	 */
 	private void waitForShipmentSchedulesToBeValid()
 	{

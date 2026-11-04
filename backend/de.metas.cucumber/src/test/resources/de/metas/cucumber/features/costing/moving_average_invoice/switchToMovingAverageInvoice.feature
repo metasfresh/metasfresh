@@ -2,7 +2,7 @@
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
 @allure.label.feature:F1514_Cost_Type_Moving_Average_Invoice
-@ghActions:run_on_executor6
+@ghActions:run_on_executor10
 Feature: Switch to Moving Average Invoice
 ## F1500: Costing
 # A customer used a prior costing method (AveragePO) until a cut-off date.
@@ -15,9 +15,11 @@ Feature: Switch to Moving Average Invoice
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2025-12-31T13:30:13+01:00[Europe/Berlin]
+    # Pinned: which cost element's facts are postable follows the schema's costing method, and the GL
+    # assertions below are AveragePO ones.
     And load and update C_AcctSchema:
       | C_AcctSchema_ID | Name                  | CostingMethod |
-      | acctSchema      | metas fresh UN/34 CHF | M             |
+      | acctSchema      | metas fresh UN/34 CHF | A             |
     And cost elements for material costing methods AveragePO,MovingAverageInvoice are active
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |

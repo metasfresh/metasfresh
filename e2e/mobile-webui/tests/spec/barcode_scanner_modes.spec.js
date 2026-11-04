@@ -5,6 +5,7 @@ import { ApplicationsListScreen } from '../utils/screens/ApplicationsListScreen'
 import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 import { allure } from 'allure-playwright';
+import { expectErrorToast } from '../utils/common';
 
 
 // Mode-engine sysconfigs (new per-mode knobs introduced by the BarcodeScannerModes redesign).
@@ -25,55 +26,33 @@ const modeSysconfigs = ({
     ...(hardwareInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly': hardwareInputReadOnly }),
 });
 
-// The tests below write GLOBAL AD_SysConfig scanner knobs (e.g. the CT60 test sets
-// mode.hardware.input.readOnly=Y, the manual-typing test sets defaultMode=manual). The backend's
-// reset-to-defaults (SysconfigCommand) does not cover the mode.hardware.*, mode.manual.* and
-// defaultMode keys on this branch, so without a restore a knob leaks into every later test, spec
-// and run on the same DB — e.g. a second run of this spec fails the "readOnly absent" test on the
-// readOnly=Y left behind by the CT60 test.
-// So each test's masterdata call remembers the sysconfig values it found (previousSysconfigs) and
-// afterEach writes them back, also when the test failed. Only a masterdata call that itself fails
-// returns no previousSysconfigs, so nothing can be restored for that test.
-let sysconfigsToRestore = null;
-
-const createMasterdataAndRememberSysconfigs = async (request) => {
-    const masterdata = await Backend.createMasterdata({ language: 'en_US', request });
-    // keep the values from BEFORE the test's first masterdata call
-    if (sysconfigsToRestore == null) {
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? {};
-    }
-    return masterdata;
-};
-
-test.afterEach(async () => {
-    const sysconfigs = sysconfigsToRestore;
-    sysconfigsToRestore = null;
-    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
-        await Backend.setSysconfigs(sysconfigs);
-    }
-});
-
 // Minimal masterdata: login only, no HU/orders. Used by the attribute-guard tests,
 // which only need the barcode input to render — so they run in seconds.
 const createLoginMasterdata = async ({ extraSysconfigs } = {}) => {
-    return await createMasterdataAndRememberSysconfigs({
-        sysconfigs: { ...extraSysconfigs },
-        login: { user: { language: 'en_US' } },
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            sysconfigs: { ...extraSysconfigs },
+            login: { user: { language: 'en_US' } },
+        },
     });
 };
 
 // Full masterdata: login + a handling unit, so scanning its QR code navigates to the HU Manager.
 const createMasterdataWithHU = async ({ extraSysconfigs } = {}) => {
-    return await createMasterdataAndRememberSysconfigs({
-        sysconfigs: { ...extraSysconfigs },
-        login: { user: { language: 'en_US' } },
-        products: { P1: {} },
-        warehouses: { wh1: {} },
-        packingInstructions: {
-            PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
-        },
-        handlingUnits: {
-            HU1: { product: 'P1', warehouse: 'wh1', qty: 80 },
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            sysconfigs: { ...extraSysconfigs },
+            login: { user: { language: 'en_US' } },
+            products: { P1: {} },
+            warehouses: { wh1: {} },
+            packingInstructions: {
+                PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                HU1: { product: 'P1', warehouse: 'wh1', qty: 80 },
+            },
         },
     });
 };
@@ -127,8 +106,9 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 //   no <video> element    — mode.camera.enabled=N → device camera should never render
 //
 // Asserts on HU Manager so BarcodeScannerComponent renders from SysConfig (no hardcoded prop) —
-// ApplicationsListScreen hardcodes both isShowInputText={false} and isShowVideo={false}, which
-// would short-circuit the sysconfig path and make readOnly + camera-absent checks vacuously pass.
+// ApplicationsListScreen hardcodes `invisible` (headless hardware variant: off-screen input only,
+// no footer, no video), which would short-circuit the sysconfig path and make readOnly +
+// camera-absent checks vacuously pass.
 //
 // IF THIS TEST FAILS after a change to BarcodeScannerComponent.jsx: the CODE broke the contract.
 // Fix the code, do NOT relax these expected values. Any change to readOnly / inputMode / type /
@@ -173,8 +153,9 @@ test.describe('Scan paths', () => {
     // editable, and BarcodeScannerComponent.type() would then double-insert characters
     // (see e2e/mobile-webui/CLAUDE.md "Barcode Scanner Testing"), breaking unrelated picking scans.
     //
-    // The afterEach at the top of this file restores the sysconfigs each test changed, so no
-    // test (and no later spec) inherits another test's scanner mode.
+    // No explicit reset is needed here: SysconfigCommand resets the scanner sysconfigs to their
+    // mobile defaults at the start of every createMasterdata call, and the page fixture restores
+    // every sysconfig a test changed after the test.
 
     // noinspection JSUnusedLocalSymbols
     test('DataWedge IME — InputConnection injection forwards barcode', async ({ page }) => {
@@ -243,8 +224,9 @@ test.describe('Scan paths', () => {
         const masterdata = await createMasterdataWithHU({
             // manual mode: mode.manual.enabled=Y + defaultMode=manual renders a visible editable
             // input so Playwright can locate and fill it. inputMode attribute is absent (keyboard enabled).
+            // hardware stays enabled (the handheld's scanner is always present in real deployments).
             extraSysconfigs: modeSysconfigs({
-                hardwareEnabled: 'N',
+                hardwareEnabled: 'Y',
                 cameraEnabled: 'N',
                 manualEnabled: 'Y',
                 defaultMode: 'manual',
@@ -255,7 +237,7 @@ test.describe('Scan paths', () => {
         await ApplicationsListScreen.expectVisible();
 
         // Navigate to HU Manager so the barcode scanner renders from SysConfig (no hardcoded prop).
-        // The ApplicationsListScreen hardcodes isShowInputText={false}, which would override the
+        // The ApplicationsListScreen hardcodes `invisible`, which would override the
         // SysConfig and make the attribute assertion below meaningless.
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
@@ -376,10 +358,13 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectFooterAbsent();
     });
 
-    // manual mode: mode.manual.enabled=Y + defaultMode=manual →
+    // manual mode: mode.manual.enabled=Y + defaultMode=manual, hardware always enabled →
     //   • visible editable input (data-testid="manual-entry-input") IS rendered
     //   • off-screen #input-text IS still present (keyboard listener stays mounted)
     //   • manual-entry-input has no readOnly attribute (keyboard must be enabled)
+    //   • the "Use hardware scanner" button IS shown (hardware is an enabled scanner mode to
+    //     return to) — this mirrors the real deployment, where the handheld's hardware scanner
+    //     is always present, so manual mode always offers a way back to it.
     // noinspection JSUnusedLocalSymbols
     test('manual mode — visible editable input rendered, off-screen input present, no readOnly', async ({ page }) => {
         await allure.epic('E0295: Frontend MobileUI');
@@ -389,7 +374,7 @@ test.describe('Modes', () => {
 
         const masterdata = await createLoginMasterdata({
             extraSysconfigs: modeSysconfigs({
-                hardwareEnabled: 'N',
+                hardwareEnabled: 'Y',
                 cameraEnabled: 'N',
                 manualEnabled: 'Y',
                 defaultMode: 'manual',
@@ -407,6 +392,9 @@ test.describe('Modes', () => {
         // The manual-entry input must NOT be readOnly — the user must be able to type.
         await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
         await BarcodeScannerComponent.expectCameraModeInactive();
+        // Hardware scanner is enabled → manual mode offers the "Use hardware scanner" button
+        // (testId barcode-scanner-back-to-scanner) so the operator can return to the scanner.
+        await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-back-to-scanner');
     });
 
     // camera toggle: hardware + camera both enabled →
@@ -418,6 +406,11 @@ test.describe('Modes', () => {
         await allure.feature('F12000: Frontend MobileUI');
         await allure.story('Barcode scanning modes');
         await allure.severity('critical');
+
+        // Must run BEFORE login so the getUserMedia stub is installed before the app's first camera
+        // request. Stabilises this camera-toggle test against a flaky panel teardown — mechanism in
+        // BarcodeScannerComponent.stubCameraStream.
+        await BarcodeScannerComponent.stubCameraStream();
 
         const masterdata = await createLoginMasterdata({
             extraSysconfigs: modeSysconfigs({
@@ -440,4 +433,132 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectCameraModeActive();
     });
 
+    // THE canonical hardware-handheld deployment: hardware scanner is the default, manual typing is
+    // an available fallback, the device camera is OFF, and the off-screen input is readOnly
+    // (keyboard-suppress for firmware that ignores inputMode=none). The footer must therefore offer
+    // the manual-entry fallback but NOT a camera toggle, and the manual fallback must actually
+    // forward a typed barcode.
+    test('hardware default + manual fallback, camera off — footer shows manual, hides camera toggle', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled: 'Y',
+                defaultMode: 'hardware',
+                hardwareInputMode: 'none',
+                hardwareInputReadOnly: 'Y',
+            }),
+        });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+
+        // Boots in hardware mode: off-screen scan input present, camera mode not active.
+        await BarcodeScannerComponent.expectAttached({});
+        await BarcodeScannerComponent.expectCameraModeInactive();
+
+        // Footer contract for this deployment: manual-entry fallback shown, camera toggle hidden
+        // (camera toggle needs BOTH hardware and camera enabled).
+        await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectButtonAbsent('barcode-scanner-toggle-hw-camera');
+
+        // Manual fallback works: tap "enter manually" → visible editable input → type + Enter forwards.
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
+        await BarcodeScannerComponent.typeManually(masterdata.handlingUnits.HU1.qrCode);
+
+        await HUManagerScreen.waitForHUInfoPanel();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    });
+
+});
+
+// "Scanning…" indicator of the visible hardware scan prompt. It is driven by the reader hook's explicit
+// isReadInProgress state (not by text in the off-screen input), so it must appear for every scan, never
+// write the scan into the input, and disappear on EVERY way a scan ends.
+test.describe('Scan in progress indicator', () => {
+
+    const huManagerInHardwareMode = async ({ manualEnabled = 'N' } = {}) => {
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled,
+                defaultMode: 'hardware',
+            }),
+        });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+        return masterdata;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    test('shows "scanning" while an HU QR code streams in, without writing it into the input', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await huManagerInHardwareMode();
+        const qrCode = masterdata.handlingUnits.HU1.qrCode;
+        const splitAt = 20; // inside the JSON payload, so the first part is an incomplete (still streaming) HU QR code
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(0, splitAt));
+        await BarcodeScannerComponent.expectScanInProgressShown(true);
+        await BarcodeScannerComponent.expectHardwareInputEmpty();
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(splitAt));
+        await HUManagerScreen.waitForHUInfoPanel();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('"scanning" does not stay after switching to manual and back mid-scan', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('normal');
+
+        const masterdata = await huManagerInHardwareMode({ manualEnabled: 'Y' });
+        const qrCode = masterdata.handlingUnits.HU1.qrCode;
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(0, 20));
+        await BarcodeScannerComponent.expectScanInProgressShown(true);
+
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-back-to-scanner');
+
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('"scanning" disappears when an incomplete scan ends with an error', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('normal');
+
+        const masterdata = await huManagerInHardwareMode();
+        const truncatedQrCode = masterdata.handlingUnits.HU1.qrCode.substring(0, 40);
+
+        await expectErrorToast('Truncated HU QR code is rejected', async () => {
+            await BarcodeScannerComponent.typePartial(truncatedQrCode);
+            await BarcodeScannerComponent.expectScanInProgressShown(true);
+            await BarcodeScannerComponent.typeTerminator('Enter');
+        });
+
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+    });
 });

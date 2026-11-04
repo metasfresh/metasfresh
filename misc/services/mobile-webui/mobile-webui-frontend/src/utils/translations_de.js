@@ -17,6 +17,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Erneut versuchen',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Bitte auswählen...',
+    },
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
@@ -83,6 +88,14 @@ const translations = {
       appName: 'Picken',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Arbeitsplatz/Arbeitsstation derzeit nicht verfügbar',
+        retry: 'Erneut versuchen',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -117,6 +130,9 @@ const translations = {
           scanTargetPlaceholder: 'Ziellagerplatz scannen',
         },
       },
+    },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'Die verbleibende Menge %(qty)s wird abgeschrieben und die HU geleert. Fortfahren?',
     },
     picking: {
       PickingLine: 'Packzeile',
@@ -155,6 +171,10 @@ const translations = {
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        invalidQRCode: 'Der gescannte QR-Code ist nicht lesbar!',
+        missingLotNo: 'Der gescannte QR-Code enthält keine Lot-Nr!',
+        missingBestBeforeDate: 'Der gescannte QR-Code enthält kein Mindesthaltbarkeitsdatum!',
+        invalidBestBeforeDate: 'Der gescannte QR-Code enthält ein ungültiges Mindesthaltbarkeitsdatum!',
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Packzeile überein',
       },
       pickingTarget: {
@@ -172,6 +192,17 @@ const translations = {
       graiScan: {
         multipleScanned:
           'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+        count: '%(scanned)s / %(total)s GRAIs gescannt',
+        countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s übersprungen — bereits auf dieser Ladeeinheit)',
+        skippedNotice: '%(count)s Kiste(n) waren bereits auf dieser Ladeeinheit und wurden übersprungen',
+        save: {
+          buttonCaption: 'Speichern',
+        },
+        clearAll: {
+          buttonCaption: 'Alle löschen',
+          confirmQuestion: 'Alle %(count)s GRAIs entfernen?',
+        },
       },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
@@ -189,6 +220,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
+      rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
       adviseCarrier: 'Lieferweg-Abfrage',
     },
     distribution: {

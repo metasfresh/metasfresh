@@ -146,7 +146,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
-	private static final AdMessageKey MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = AdMessageKey.of("ShipmentScheduleAlreadyProcessed");
 	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_ALREADY_EXPORTED = AdMessageKey.of("salesorder.shipmentschedule.exported");
 	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING = AdMessageKey.of("salesorder.shipmentschedule.cannotReactivateBecauseScheduledForPicking");
 
@@ -331,9 +330,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);
-
-		shipmentScheduleRecord.setIsClosed(false);
+		// Tolerate a processed-but-not-closed schedule: "open" means active + not-processed,
+		// independent of the close flag. Un-close only if closed; always un-process and flag for recompute.
+		if (shipmentScheduleRecord.isClosed())
+		{
+			shipmentScheduleRecord.setIsClosed(false);
+		}
+		shipmentScheduleRecord.setProcessed(false);
 		save(shipmentScheduleRecord);
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
@@ -639,12 +642,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				continue;
 			}
-			if (record.isProcessed())
-			{
-				throw new AdempiereException(
-						MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID())
-						.markAsUserValidationError();
-			}
+			// A processed-but-not-closed schedule reaches here only on order reactivation, where the
+			// BEFORE_REACTIVATE guard (reactivateIfNoActiveShipment) already ensured there are no active
+			// shipments — so it has no real delivery work (e.g. auto-processed from a 0-qty line). Close it
+			// so the subsequent re-completion can reopen + recompute it.
 			closeShipmentSchedule(record);
 		}
 	}
@@ -1102,6 +1103,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		else
 		{
 			value = null;
+		}
+
+		if (value == null
+				&& !attributeSetInstanceBL.getImmutableAttributeSetById(asiId).hasAttribute(AttributeConstants.ATTR_Project))
+		{
+			// No ProjectValue instance on this ASI and no project on the schedule: nothing to clear.
+			// Creating one here would materialize an empty attribute (and clone the ASI)
+			// on every project-less shipment schedule.
+			return;
 		}
 
 		final AttributeSetInstanceId newAsiId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, value);

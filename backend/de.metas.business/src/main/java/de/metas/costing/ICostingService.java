@@ -1,7 +1,10 @@
 package de.metas.costing;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
@@ -40,6 +43,17 @@ public interface ICostingService
 	CostDetailCreateResultsList createCostDetail(CostDetailCreateRequest request);
 
 	ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
+
+	/**
+	 * The detailed amount to post for each product that has a {@code CostDetail} row on the given document, keyed by
+	 * product. Each product's rows form their own single cost segment, so this is safe where
+	 * {@link CostDetailCreateResultsList#toAggregatedCostAmount()} (which requires a single segment) is not - it is
+	 * how a document that posts several products (e.g. a manufacturing CostDifferenceDistribution with co-products)
+	 * gets each product's own amount without mixing segments.
+	 */
+	ImmutableMap<ProductId, CostAmountDetailed> getCostDetailAmountsToPostByProduct(
+			@NonNull CostingDocumentRef documentRef,
+			@NonNull AcctSchema as);
 
 	CostDetailCreateResultsList createReversalCostDetails(CostDetailReverseRequest request);
 

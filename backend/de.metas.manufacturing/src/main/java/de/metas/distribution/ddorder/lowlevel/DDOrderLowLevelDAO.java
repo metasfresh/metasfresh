@@ -3,6 +3,7 @@ package de.metas.distribution.ddorder.lowlevel;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -21,13 +22,16 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -72,7 +76,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 /**
- * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative
+ * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative, PP_MRP, PP_MRP_Alloc
  * Repository Cluster: DDOrderLowLevelDAO
  */
 @Repository
@@ -502,16 +506,30 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
-		// Locator To
-		if (query.getLocatorToIds() != null)
+		// Workplace visibility: ships FROM the workplace warehouse, OR delivers TO it
+		// (the destination side optionally narrowed to the workplace's pick-from locator).
+		final WarehouseId workplaceWarehouseId = query.getWorkplaceWarehouseId();
+		if (workplaceWarehouseId != null)
 		{
-			queryBuilder.addInSubQueryFilter()
-					.matchingColumnNames(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_Order.COLUMNNAME_DD_Order_ID)
-					.subQuery(queryBL.createQueryBuilder(I_DD_OrderLine.class)
-							.addOnlyActiveRecordsFilter()
-							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getLocatorToIds())
-							.create())
-					.end();
+			final ICompositeQueryFilter<I_DD_Order> workplaceFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+
+			// source side: order ships FROM the workplace warehouse (not gated by the pick-from locator)
+			workplaceFilter.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, workplaceWarehouseId);
+
+			// destination side: order delivers TO the workplace warehouse...
+			final ICompositeQueryFilter<I_DD_Order> toSide = workplaceFilter.addCompositeQueryFilter().setJoinAnd();
+			toSide.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, workplaceWarehouseId);
+
+			// ...and, when the workplace has a pick-from locator, only orders with a line delivering to that locator
+			final LocatorId workplacePickFromLocatorId = query.getWorkplacePickFromLocatorId();
+			if (workplacePickFromLocatorId != null)
+			{
+				final IQuery<I_DD_OrderLine> linesDeliveredToLocator = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, workplacePickFromLocatorId)
+						.create();
+				toSide.addFilter(InSubQueryFilter.of(I_DD_Order.COLUMN_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, linesDeliveredToLocator));
+			}
 		}
 
 		//
@@ -682,6 +700,43 @@ public class DDOrderLowLevelDAO
 				.create()
 				.update(ddOrder -> {
 					ddOrder.setForward_PP_Order_ID(PPOrderId.toRepoId(newPPOrderId));
+					return IQueryUpdater.MODEL_UPDATED;
+				});
+	}
+
+	public ImmutableSetMultimap<PPOrderBOMLineId, DDOrderId> getIdsByForwardPPOrderBOMLineIds(@NonNull final Collection<PPOrderBOMLineId> ppOrderBOMLineIds)
+	{
+		if (ppOrderBOMLineIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, ppOrderBOMLineIds)
+				.create()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						ddOrder -> PPOrderBOMLineId.ofRepoId(ddOrder.getForward_PP_Order_BOMLine_ID()),
+						ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID())));
+	}
+
+	/**
+	 * Re-points the given DD_Orders to a (re-created) PP_Order_BOMLine.
+	 *
+	 * @return number of updated DD_Orders
+	 */
+	public int updateForwardPPOrderBOMLineByIds(@NonNull final Set<DDOrderId> ddOrderIds, @NonNull final PPOrderBOMLineId newPPOrderBOMLineId)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return 0;
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.create()
+				.update(ddOrder -> {
+					ddOrder.setForward_PP_Order_BOMLine_ID(newPPOrderBOMLineId.getRepoId());
 					return IQueryUpdater.MODEL_UPDATED;
 				});
 	}

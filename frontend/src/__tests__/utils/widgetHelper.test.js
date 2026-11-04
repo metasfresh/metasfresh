@@ -8,7 +8,9 @@ import {
   getFormattedDate,
   getClassNames,
   getWidgetField,
+  shouldPatch,
 } from '../../utils/widgetHelpers';
+import { initNumeralLocales } from '../../utils/locale';
 import {
   DATE_FORMAT,
   TIME_FORMAT,
@@ -16,6 +18,13 @@ import {
 } from '../../constants/Constants';
 
 describe('Widget helpers', () => {
+  afterEach(() => {
+    initNumeralLocales('en', {
+      numberDecimalSeparator: '.',
+      numberGroupingSeparator: ',',
+    });
+  });
+
   describe('getClassNames', () => {
     class Widget {
       constructor(props) {
@@ -165,19 +174,21 @@ describe('Widget helpers', () => {
 
   describe('validatePrecision function', () => {
     it('works correctly', () => {
+      // both the comma and the dot are read as the decimal separator, so '223,544334' has six decimal places:
+      // too many for a Quantity (precision forced to 0) or for precision 2
       const resultToCheckOne = validatePrecision({
         widgetValue: '223,544334',
         widgetType: 'Quantity',
         precision: 2,
       });
-      expect(resultToCheckOne).toBe(true);
+      expect(resultToCheckOne).toBe(false);
 
       const resultToCheckTwo = validatePrecision({
         widgetValue: '223,544334',
         widgetType: 'Quantity',
         precision: 0,
       });
-      expect(resultToCheckTwo).toBe(true);
+      expect(resultToCheckTwo).toBe(false);
 
       const resultToCheckThree = validatePrecision({
         widgetValue: '223.544334',
@@ -194,6 +205,41 @@ describe('Widget helpers', () => {
         fieldName: 'qtyToDeliverCatchOverride',
       });
       expect(resultToCheckFour).toBe(true);
+    });
+
+    it('counts the digits after a decimal comma in a German user session', () => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+
+      expect(
+        validatePrecision({
+          widgetValue: '3,579',
+          widgetType: 'Amount',
+          precision: 2,
+        })
+      ).toBe(false);
+      expect(
+        validatePrecision({
+          widgetValue: '3,57',
+          widgetType: 'Amount',
+          precision: 2,
+        })
+      ).toBe(true);
+    });
+
+    it('treats a decimal comma like a decimal point for a quantity (precision 0 while typing)', () => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+
+      expect(
+        validatePrecision({ widgetValue: '2,5', widgetType: 'Quantity' })
+      ).toBe(
+        validatePrecision({ widgetValue: '2.5', widgetType: 'Quantity' })
+      );
     });
 
     it('test null and empty object as value', () => {
@@ -248,6 +294,165 @@ describe('Widget helpers', () => {
       ];
 
       expect(getWidgetField({ fields, filterWidget: true })).toEqual('Name');
+    });
+  });
+
+  describe('shouldPatch', () => {
+    const widgetData = (value, widgetType) => [
+      { field: 'Description', value, widgetType },
+    ];
+
+    describe('an empty cell left without typing sends nothing', () => {
+      it.each(['Text', 'LongText'])(
+        '%s: stored null, editor left with "" -> no patch',
+        (widgetType) => {
+          expect(
+            shouldPatch({
+              property: 'Description',
+              value: '',
+              cachedValue: null,
+              widgetData: widgetData(null, widgetType),
+            })
+          ).toBe(false);
+        }
+      );
+
+      it('Text: stored null, store already holds "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: null,
+            widgetData: widgetData('', 'Text'),
+          })
+        ).toBe(false);
+      });
+
+      it('Text: stored "", editor left with "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: '',
+            widgetData: widgetData('', 'Text'),
+          })
+        ).toBe(false);
+      });
+
+      it('Text: never loaded (undefined), editor left with "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: undefined,
+            widgetData: widgetData(undefined, 'Text'),
+          })
+        ).toBe(false);
+      });
+
+      it('Number: stored null, editor left with "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Qty',
+            value: '',
+            cachedValue: null,
+            widgetData: [{ field: 'Qty', value: null, widgetType: 'Number' }],
+          })
+        ).toBe(false);
+      });
+    });
+
+    describe('other widget types: real changes still patch, empty vs empty does not', () => {
+      const patchOf = ({ field, widgetType, stored, value }) =>
+        shouldPatch({
+          property: field,
+          value,
+          cachedValue: stored,
+          widgetData: [{ field, value: stored, widgetType }],
+        });
+
+      it.each([
+        ['Quantity: 3 -> 5', 'QtyEntered', 'Quantity', '3', '5'],
+        ['Quantity: 3 -> cleared', 'QtyEntered', 'Quantity', '3', ''],
+        ['Number: 1.5 -> cleared', 'Qty', 'Number', '1.5', ''],
+        [
+          'Lookup: value -> cleared',
+          'M_Product_ID',
+          'Lookup',
+          { key: '1', caption: 'A' },
+          null,
+        ],
+        [
+          'Lookup: empty -> value',
+          'M_Product_ID',
+          'Lookup',
+          null,
+          { key: '1', caption: 'A' },
+        ],
+        ['Checkbox: false -> true', 'IsActive', 'YesNo', false, true],
+        ['Checkbox: false -> cleared', 'IsActive', 'YesNo', false, ''],
+        ['Checkbox: true -> cleared', 'IsActive', 'YesNo', true, ''],
+      ])('%s patches', (name, field, widgetType, stored, value) => {
+        expect(patchOf({ field, widgetType, stored, value })).toBe(true);
+      });
+
+      it.each([
+        ['Quantity: empty (null) left with ""', 'QtyEntered', 'Quantity'],
+        ['Lookup: empty (null) left with ""', 'M_Product_ID', 'Lookup'],
+        ['Checkbox: empty (null) cleared with ""', 'IsActive', 'YesNo'],
+      ])('%s does not patch', (name, field, widgetType) => {
+        expect(patchOf({ field, widgetType, stored: null, value: '' })).toBe(
+          false
+        );
+      });
+    });
+
+    describe('real changes still patch', () => {
+      it('Text: clearing a filled cell ("abc" -> "") patches', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: 'abc',
+            widgetData: widgetData('abc', 'Text'),
+          })
+        ).toBe(true);
+      });
+
+      it('Text: typing into an empty cell patches', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: 'x',
+            cachedValue: null,
+            widgetData: widgetData(null, 'Text'),
+          })
+        ).toBe(true);
+      });
+
+      it('keeps the explicit null -> null clear case', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: null,
+            cachedValue: null,
+            widgetData: widgetData(null, 'Text'),
+          })
+        ).toBe(true);
+      });
+
+      it('Button with a null value: a click (value undefined) still patches', () => {
+        expect(
+          shouldPatch({
+            property: 'Processing',
+            value: undefined,
+            cachedValue: null,
+            widgetData: [
+              { field: 'Processing', value: null, widgetType: 'Button' },
+            ],
+          })
+        ).toBe(true);
+      });
     });
   });
 });

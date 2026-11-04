@@ -378,6 +378,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Carrier Material Assignment.
+	 * The goods type assigned to the carrier product for shipment handling.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -387,6 +388,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Carrier Material Assignment.
+	 * The goods type assigned to the carrier product for shipment handling.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -403,6 +405,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Carrier Product.
+	 * The carrier product for shipment handling.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -412,6 +415,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Carrier Product.
+	 * The carrier product for shipment handling.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -2195,7 +2199,7 @@ public interface I_C_Order
 	 * Set Pre-Advice Required.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false (lazy loading)
 	 */
 	void setIsPreAdviceRequired (boolean IsPreAdviceRequired);
@@ -2204,7 +2208,7 @@ public interface I_C_Order
 	 * Get Pre-Advice Required.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false (lazy loading)
 	 */
 	boolean isPreAdviceRequired();
@@ -2234,6 +2238,29 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsPrinted = new ModelColumn<>(I_C_Order.class, "IsPrinted", null);
 	String COLUMNNAME_IsPrinted = "IsPrinted";
+
+	/**
+	 * Set Reprint Order Checkup.
+	 * Controls whether the order checkup is reprinted when this order is reactivated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReprintOrderCheckup (boolean IsReprintOrderCheckup);
+
+	/**
+	 * Get Reprint Order Checkup.
+	 * Controls whether the order checkup is reprinted when this order is reactivated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReprintOrderCheckup();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsReprintOrderCheckup = new ModelColumn<>(I_C_Order.class, "IsReprintOrderCheckup", null);
+	String COLUMNNAME_IsReprintOrderCheckup = "IsReprintOrderCheckup";
 
 	/**
 	 * Set Sales partner required.
@@ -3001,6 +3028,48 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_ProcessStatusColor_ID = new ModelColumn<>(I_C_Order.class, "ProcessStatusColor_ID", null);
 	String COLUMNNAME_ProcessStatusColor_ID = "ProcessStatusColor_ID";
+
+	/**
+	 * Set Public Procurement Commitment No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPublicProcurementCommitmentNo (@Nullable java.lang.String PublicProcurementCommitmentNo);
+
+	/**
+	 * Get Public Procurement Commitment No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPublicProcurementCommitmentNo();
+
+	ModelColumn<I_C_Order, Object> COLUMN_PublicProcurementCommitmentNo = new ModelColumn<>(I_C_Order.class, "PublicProcurementCommitmentNo", null);
+	String COLUMNNAME_PublicProcurementCommitmentNo = "PublicProcurementCommitmentNo";
+
+	/**
+	 * Set Public Procurement Market No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPublicProcurementMarketNo (@Nullable java.lang.String PublicProcurementMarketNo);
+
+	/**
+	 * Get Public Procurement Market No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPublicProcurementMarketNo();
+
+	ModelColumn<I_C_Order, Object> COLUMN_PublicProcurementMarketNo = new ModelColumn<>(I_C_Order.class, "PublicProcurementMarketNo", null);
+	String COLUMNNAME_PublicProcurementMarketNo = "PublicProcurementMarketNo";
 
 	/**
 	 * Set Qty without Trading Unit.

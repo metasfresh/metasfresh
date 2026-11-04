@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.time.SystemTime;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 
@@ -40,6 +41,16 @@ public class SystemTime_StepDef
 	public void metasfresh_has_current_date_and_time()
 	{
 		SystemTime.setFixedTimeSource(ZonedDateTime.now());
+	}
+
+	/**
+	 * A scenario that froze the time must not leave it frozen for the next scenarios, also not when one of its steps failed
+	 * (Cucumber skips the remaining steps then). A scenario that needs a frozen time sets it itself, or in its feature's Background.
+	 */
+	@After
+	public void resetTimeSourceAfterScenario()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	@And("we wait for {int} ms")

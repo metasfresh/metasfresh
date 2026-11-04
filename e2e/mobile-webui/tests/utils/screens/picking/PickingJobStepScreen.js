@@ -19,10 +19,17 @@ export const PickingJobStepScreen = {
         await PickingJobLineScreen.waitForScreen();
     }),
 
-    unpick: async () => await test.step(`${NAME} - Click unpick`, async () => {
+    // Whole-step unpick. With no argument the target-HU scan is skipped (the goods drop to loose
+    // top-level TUs). Passing { targetHUQRCode } instead scans a target HU, so the unpicked goods
+    // are moved onto that scanned HU. No-arg behaviour is preserved for existing callers.
+    unpick: async ({ targetHUQRCode } = {}) => await test.step(`${NAME} - Click unpick`, async () => {
         await page.locator(`#unpick-button`).tap();
         await UnpickDialog.waitForDialog();
-        await UnpickDialog.clickSkipScanningTargetHUButton();
+        if (targetHUQRCode) {
+            await UnpickDialog.scanTargetHU(targetHUQRCode);
+        } else {
+            await UnpickDialog.clickSkipScanningTargetHUButton();
+        }
         await PickingJobLineScreen.waitForScreen();
     }),
 };

@@ -32,6 +32,7 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
@@ -109,10 +110,10 @@ public class MobileUIPickingUserProfile_StepDef
 			final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
 			row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(defaultPickingJobOptionsBuilder::isAllowPickingAnyHU);
 			row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
-			row.getAsOptionalString("PickingJobAggregationType").map(PickingJobAggregationType::valueOf).ifPresent(defaultPickingJobOptionsBuilder::aggregationType);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowCompletingPartialPickingJob).ifPresent(defaultPickingJobOptionsBuilder::isAllowCompletingPartialPickingJob);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsCatchWeightTUPickingEnabled).ifPresent(defaultPickingJobOptionsBuilder::isCatchWeightTUPickingEnabled);
+			row.getAsOptionalEnum("PickingJobAggregationType", PickingJobAggregationType.class).ifPresent(defaultPickingJobOptionsBuilder::aggregationType);
 
 			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder profileBuilder = profile.toBuilder()
 					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build());

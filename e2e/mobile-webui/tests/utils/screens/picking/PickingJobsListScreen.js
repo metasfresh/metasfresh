@@ -8,6 +8,8 @@ import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
 import { captionHasField } from '../../launcherCaption';
 import { MassPrintingScanScreen } from './MassPrintingScanScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { OperatorContextErrorPanel } from '../../components/OperatorContextErrorPanel';
 // Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen), shared
 // with the distribution job-start helper. Small attempt count with explicit per-step timeouts so the
 // retry cost stays modest: only the first attempt pays the full slow-action settle budget; retries
@@ -31,6 +33,39 @@ export const PickingJobsListScreen = {
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    // Wait until a specific job launcher is visible in the list. The list is websocket-driven and
+    // populates a moment after the screen renders, so callers that act on the list (e.g. opening the
+    // filter, whose facets are computed from the listed jobs) must wait for the job to be present first.
+    // Locate by an exact data attribute (e.g. customerId) — never by a documentNo substring, which
+    // collides with other jobs in a shared/full-suite run.
+    waitForJobVisible: async ({ documentNo, salesOrderId, customerId, customerLocationId } = {}) => await test.step(`${NAME} - Wait for job visible`, async () => {
+        await locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Reads a single job launcher's caption (the " | "-joined display fields) and asserts on it.
+     * Locate the job by an exact data attribute (customerId / salesOrderId / customerLocationId) —
+     * documentNo is only a caption substring and collides with other jobs in a full-suite run.
+     * @param contains - substrings that must all be present in the caption
+     * @param fieldCount - if set, the expected number of non-empty " | "-separated caption fields
+     * @returns the caption text (also logged, to aid assertion tuning)
+     */
+    expectJobCaption: async ({ documentNo, salesOrderId, customerId, customerLocationId, contains = [], fieldCount } = {}) => await test.step(`${NAME} - Expect job caption`, async () => {
+        const button = locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId });
+        await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toHaveCount(1);
+        const caption = (await button.innerText()).trim();
+        console.log(`${NAME} - job caption = ${JSON.stringify(caption)}`);
+        for (const text of contains) {
+            expect(caption, `caption should contain "${text}"`).toContain(text);
+        }
+        if (fieldCount != null) {
+            const fields = caption.split('|').map(s => s.trim()).filter(s => s.length > 0);
+            expect(fields.length, `expected ${fieldCount} non-empty caption fields, caption was: ${caption}`).toBe(fieldCount);
+        }
+        return caption;
     }),
 
     clickFilterButton: async () => await test.step(`${NAME} - Click filter button`, async () => {
@@ -92,6 +127,17 @@ export const PickingJobsListScreen = {
         }
     },
 
+    // Start a job by dispatching the click event directly on the launcher (by document number),
+    // bypassing hit-testing. Use ONLY when a foreground `.loading` overlay would intercept a normal
+    // tap yet the launcher itself is the intended target — e.g. a test that deliberately holds a
+    // launchers refresh in flight while starting the job. Waits for the job (WF-process) screen.
+    startJobByDispatchClick: async ({ documentNo }) => await test.step(`${NAME} - Start job by dispatched click (documentNo ${documentNo})`, async () => {
+        const launcher = locateJobButtons({ documentNo });
+        await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await launcher.dispatchEvent('click');
+        await PickingJobScreen.waitForScreen();
+    }),
+
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
         await test.step(`Wait for all expected buttons to be attached`, async () => {
             for (const expectation of expectationsArray) {
@@ -126,6 +172,34 @@ export const PickingJobsListScreen = {
 
     expectMassPrintingButtonHidden: async () => await test.step(`${NAME} - Expect Mass Printing button hidden`, async () => {
         await page.getByTestId('massPrinting-button').waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
+    }),
+
+    // The jobs list itself asks for a workplace when the picking profile requires an active one and
+    // the operator has none assigned yet: the screen renders its own scanner instead of the job list.
+    expectAsksForWorkplace: async () => await test.step(`${NAME} - Expect the screen to ask for a workplace`, async () => {
+        await PickingJobsListScreen.expectVisible();
+        await BarcodeScannerComponent.expectAttached({});
+    }),
+
+    // Scan without asserting the job list takes over — for scenarios where the assign is expected to
+    // fail (e.g. the connection dropped), so the scanner does NOT give way to the job list.
+    typeWorkplaceQRCode: async (qrCode) => await test.step(`${NAME} - Scan workplace QR '${qrCode}'`, async () => {
+        await BarcodeScannerComponent.type(qrCode);
+    }),
+
+    // When the operator's workplace cannot be read — or assigned from a scan — because the connection
+    // dropped, the screen must say so and offer a retry, instead of silently showing no workplace.
+    expectConnectionErrorPanel: async () => await test.step(`${NAME} - Expect operator-context connection error panel`, async () => {
+        await OperatorContextErrorPanel.expectVisible();
+    }),
+
+    expectNoConnectionErrorPanel: async () => await test.step(`${NAME} - Expect no operator-context connection error panel`, async () => {
+        await OperatorContextErrorPanel.expectNotVisible();
+    }),
+
+    retryLoadingOperatorContext: async () => await test.step(`${NAME} - Retry loading workplace/workstation`, async () => {
+        await OperatorContextErrorPanel.tapRetry();
+        await PickingJobsListScreen.waitForScreen();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
@@ -204,6 +278,9 @@ const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDe
     let selector = '.wflauncher-button';
     if (salesOrderId != null) {
         selector += `[data-salesorderid="${salesOrderId}"]`;
+    }
+    if (customerId != null) {
+        selector += `[data-customerid="${customerId}"]`;
     }
     if (qtyToDeliver != null) {
         selector += `[data-qtytodeliver="${qtyToDeliver}"]`;

@@ -29,11 +29,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -480,6 +482,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.isSetSerialNos(json.isSetSerialNos())
 				.serialNos(json.getSerialNos() != null ? SerialNoSet.parseStrings(json.getSerialNos()) : null)
 				.isCloseTarget(json.isCloseTarget())
+				.isSetGrais(json.isSetGrais())
+				// Parse the raw scanned strings (canonical or GS1 AI 8003) into a GRAISet once, here at the
+				// REST→domain boundary, so the picking command works with a typed GRAISet instead of re-parsing.
+				.graiCodes(json.getGraiCodes() != null ? GRAISet.parseStrings(json.getGraiCodes()) : null)
+				.isShelfLifeConfirmed(json.isShelfLifeConfirmed())
 				//
 				// Any supported HU label may identify the unpack target - a metasfresh global QR code, a
 				// configured scannable code format, or the plain M_HU.Value / ExternalBarcode printed on the
@@ -580,6 +587,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 						.map(JsonTUPickingTarget::of)
 						.collect(ImmutableList.toImmutableList()))
 				.graiScanEnabled(pickingJobRestService.isGraiScanEnabled(pickingJob))
+				.existingLuGrais(pickingJobRestService.getExistingLuGrais(pickingJob, lineId))
 				.build();
 	}
 
@@ -726,5 +734,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final PickingJobId pickingJobId = toPickingJobId(WFProcessId.ofString(request.getWfProcessId()));
 		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId, adLanguage);
+	}
+
+	public HUInfo resolvePickFromHU(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		return pickingJobRestService.resolvePickFromHU(toPickingJobId(wfProcessId), lineId, scannedCode, callerId);
 	}
 }

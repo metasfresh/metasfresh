@@ -723,6 +723,10 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			// itself must stay open for editing. Undo the closeLine side-effect.
 			InterfaceWrapperHelper.refresh(orderLine);
 			orderBL.reopenLine(orderLine);
+
+			// Undo the close's IsDeliveryClosed=Y on the candidates too: with nothing received, it would make them processed
+			// (see InvoiceCandBL.updateProcessedFlag), but the reactivated order's candidates must stay invoiceable.
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 	}
 
