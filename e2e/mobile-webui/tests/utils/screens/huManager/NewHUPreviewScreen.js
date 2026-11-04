@@ -8,10 +8,21 @@ const NAME = 'NewHUPreviewScreen';
 const containerElement = () => page.locator('#NewHUPreviewScreen');
 const changeLocatorDialog = () => page.getByTestId('ChangeCurrentLocatorDialog');
 
+const expectRowText = async ({ label, testId, expectedValue }) => await test.step(`${NAME} - Expect ${label} to be "${expectedValue}"`, async () => {
+    await expect(containerElement().getByTestId(testId)).toHaveText(expectedValue);
+});
+
+/** The new HU as the server answered the create call (same JSON as scanning an existing HU: id + qrCode) */
+const toCreatedHU = async (response) => {
+    const hu = (await response.json()).result; // JsonGetSingleHUResponse { result: JsonHU }
+    // displayName = M_HU.Value + the packing instruction in brackets (HUDisplayNameBuilder.build()); the toast shows the display name
+    return { huId: hu.id, huQRCode: hu.qrCode?.code, huValue: hu.displayName.split(' ')[0], displayName: hu.displayName, locatorValue: hu.locatorValue };
+};
+const waitForCreateResponse = () => page.waitForResponse((r) => r.url().includes('createFromScannedCode') && r.request().method() === 'POST', { timeout: SLOW_ACTION_TIMEOUT });
+
 /**
  * The "New HU" preview of the HU Manager: shown after a scanned product label found no existing HU.
- * Rows use the same `<name>-value` test ids as the HU info table: product-value, qty-value, locator-value,
- * attribute-<code>-value (e.g. attribute-Lot-Nummer-value), weight-value (the label weight, or the "not used for this product" text).
+ * One expect function per row (product, quantity, location, lot number, best-before date, production date, weight); specs never see the test ids.
  * Location: button change-locator-button opens the dialog ChangeCurrentLocatorDialog (scan a location; the preview has no scanner of its own).
  * Quantity: an inline field (qty-input) in the quantity row; the unit is shown in the field. Buttons: ok-button, cancel-button.
  */
@@ -24,19 +35,28 @@ export const NewHUPreviewScreen = {
         await expect(containerElement()).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    expectValue: async ({ name, expectedValue }) => await test.step(`${NAME} - Expect "${name}" to be "${expectedValue}"`, async () => {
-        await expect(containerElement().getByTestId(name)).toHaveText(expectedValue);
-    }),
-
     /** The product row contains the product name (the row may carry more than the name, e.g. the product value). */
     expectProductContains: async (productName) => await test.step(`${NAME} - Expect the product to contain "${productName}"`, async () => {
         await expect(containerElement().getByTestId('product-value')).toContainText(productName);
     }),
 
-    /** An attribute row is exactly the given display text (e.g. a date as the screen renders it). */
-    expectAttributeValue: async ({ code, expectedValue }) => await test.step(`${NAME} - Expect attribute "${code}" to be "${expectedValue}"`, async () => {
-        await expect(containerElement().getByTestId(`attribute-${code}-value`)).toHaveText(expectedValue);
-    }),
+    /** The location (the code of the locator) shown on the preview. */
+    expectLocator: async (locatorCode) => await expectRowText({ label: 'location', testId: 'locator-value', expectedValue: locatorCode }),
+
+    /** The lot number row is exactly the given text. */
+    expectLotNumber: async (lot) => await expectRowText({ label: 'lot number', testId: 'attribute-Lot-Nummer-value', expectedValue: lot }),
+
+    /** The best-before date (MHD) row is exactly the given display text (a date as the screen renders it: en_US MM/DD/YYYY). */
+    expectBestBeforeDate: async (displayText) => await expectRowText({ label: 'best-before date', testId: 'attribute-HU_BestBeforeDate-value', expectedValue: displayText }),
+
+    /** The production date row is exactly the given display text (a date as the screen renders it: en_US MM/DD/YYYY). */
+    expectProductionDate: async (displayText) => await expectRowText({ label: 'production date', testId: 'attribute-ProductionDate-value', expectedValue: displayText }),
+
+    /** The label weight row, e.g. '12.345 KGM'. */
+    expectWeight: async (weightText) => await expectRowText({ label: 'weight', testId: 'weight-value', expectedValue: weightText }),
+
+    /** The weight row tells that the weight on the label is not used for this product. */
+    expectWeightNotUsed: async () => await expectRowText({ label: 'weight', testId: 'weight-value', expectedValue: 'The weight on the label is not used for this product' }),
 
     /**
      * The proposed location is not hard-coded by tests that log in a user without a workplace: for such a user the location rule
@@ -112,9 +132,6 @@ export const NewHUPreviewScreen = {
         expect(ok.y + ok.height, 'OK bottom edge vs top of the bottom navigation bar').toBeLessThanOrEqual(bottomBar.y);
     }),
 
-    /** the OK button of the preview (scoped: the clearance dialog in the HU Manager uses the same test ids) */
-    okButton: () => containerElement().getByTestId('ok-button'),
-
     /** the preview itself has no scanner: a location is scanned in the dialog of the Change locator button */
     expectNoScanner: async () => await test.step(`${NAME} - Expect no scanner on the preview`, async () => {
         await BarcodeScannerComponent.expectNotAttached({});
@@ -149,6 +166,18 @@ export const NewHUPreviewScreen = {
 
     clickOK: async () => await test.step(`${NAME} - Click OK`, async () => {
         await containerElement().getByTestId('ok-button').tap();
+    }),
+
+    /** Presses OK and returns the new HU as the server answered the create call: { huId, huQRCode, huValue, displayName, locatorValue } */
+    clickOKAndGetCreatedHU: async () => await test.step(`${NAME} - Click OK and read the created HU`, async () => {
+        const [response] = await Promise.all([waitForCreateResponse(), NewHUPreviewScreen.clickOK()]);
+        return await toCreatedHU(response);
+    }),
+
+    /** Double click on OK (a nervous user): returns the HU of the first create call */
+    doubleClickOKAndGetCreatedHU: async () => await test.step(`${NAME} - Double click OK and read the created HU`, async () => {
+        const [response] = await Promise.all([waitForCreateResponse(), containerElement().getByTestId('ok-button').dblclick()]);
+        return await toCreatedHU(response);
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Click Cancel`, async () => {

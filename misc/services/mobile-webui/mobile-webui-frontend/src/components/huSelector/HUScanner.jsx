@@ -114,7 +114,7 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode, onHUNotF
       <BarcodeScannerComponent
         resolveScannedBarcode={resolveHUScannedBarcode}
         onResolvedResult={onResolvedHUScannedResult}
-        isUniqueErrorToastIds={!!onHUNotFound}
+        singleErrorToast={!!onHUNotFound}
       />
     );
   }

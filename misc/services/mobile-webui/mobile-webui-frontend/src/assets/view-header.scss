@@ -25,11 +25,11 @@
 
     // compact rows: the preview has up to 7 rows (product, qty, lot, best-before, production date, weight, locator) and OK must stay above the fold of a 640-700 px high handheld screen
     tbody {
-      font-size: 1.1rem;
+      font-size: $compact-font-size;
 
       tr th,
       tr td {
-        padding: 0.3rem 0.5rem;
+        padding: $compact-cell-padding;
       }
     }
 
