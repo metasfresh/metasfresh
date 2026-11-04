@@ -162,7 +162,7 @@ public class C_BankStatement_StepDef
 	 *
 	 * @cucumber.example
 	 * <pre>
-	 * Then the C_BankStatement identified by bs_1 is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID naming the payment identified by p_1
+	 * Then the C_BankStatement identified by bs_1 is completed expecting error code BANKSTATEMENT_ORDER_NOT_WAITING naming the payment identified by p_1
 	 * </pre>
 	 * @cucumber.depends {@link C_Payment_StepDefData}
 	 */

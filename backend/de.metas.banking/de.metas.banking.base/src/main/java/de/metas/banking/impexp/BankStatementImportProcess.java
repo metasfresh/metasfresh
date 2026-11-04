@@ -65,8 +65,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -76,6 +78,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final BankStatementImportInvoiceResolver invoiceResolver = new BankStatementImportInvoiceResolver();
 	private final BankStatementPrepayOrderResolver prepayOrderResolver = new BankStatementPrepayOrderResolver();
+	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 	/**
 	 * The import process is instantiated by reflection (see {@code IImportProcessFactory}), not by Spring, so the bean cannot be injected.
 	 * Lazy, because it is only needed for a line that references an invoice.
@@ -200,16 +203,16 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
 		// the lookup is one read-only query per line with a reference (so N queries for N such lines), also for customers without a payment bonus;
-		// the bonus gate decides whether its result is used
+		// the bonus gate decides whether its result is used as the line's invoice, while any found invoice suppresses the order lookup below
 		final ReferencedInvoice resolvedInvoice = invoiceResolver.resolve(importRecord).orElse(null);
 		final ReferencedInvoice referencedInvoice = resolvedInvoice != null && hasPaymentBonusDeduction(resolvedInvoice, currencyId)
 				? resolvedInvoice
 				: null;
+		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
 		// like the CAMT import: order matching is only the fallback of the invoice matching, for a credit line
 		final I_C_Order referencedOrder = resolvedInvoice == null && importRecord.getStmtAmt().signum() > 0
-				? findPrepayOrder(importRecord, currencyId)
+				? findPrepayOrder(importRecord, currencyId, importedBPartnerId)
 				: null;
-		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
 		final BPartnerId referencedBPartnerId = referencedInvoice != null ? referencedInvoice.getBpartnerId()
 				: referencedOrder != null ? BPartnerId.ofRepoId(referencedOrder.getBill_BPartner_ID())
 				: null;
@@ -266,17 +269,23 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	/**
-	 * The waiting prepay sales order that is named in the document number / memo / description of the line and totals exactly its amount,
-	 * the same lookup as of the CAMT import ({@link BankStatementPrepayOrderResolver}); the texts are the ones of the invoice lookup.
+	 * The waiting prepay sales order whose document number is a separate word of the document number / memo / description of the line and that totals exactly its amount,
+	 * the same lookup as of the CAMT import ({@link BankStatementPrepayOrderResolver}); the texts are the ones of the invoice lookup, split into words like the CAMT texts.
+	 *
+	 * @param importedBPartnerId the partner of the line, if imported; then only that partner's orders are found
 	 */
 	@Nullable
-	private I_C_Order findPrepayOrder(@NonNull final I_I_BankStatement importRecord, @NonNull final CurrencyId currencyId)
+	private I_C_Order findPrepayOrder(
+			@NonNull final I_I_BankStatement importRecord,
+			@NonNull final CurrencyId currencyId,
+			@Nullable final BPartnerId importedBPartnerId)
 	{
-		final ImmutableSet<String> documentNos = Stream.of(importRecord.getInvoiceDocumentNo(), importRecord.getMemo(), importRecord.getLineDescription())
+		final ImmutableSet<String> words = Stream.of(importRecord.getInvoiceDocumentNo(), importRecord.getMemo(), importRecord.getLineDescription())
 				.map(StringUtils::trimBlankToNull)
 				.filter(Objects::nonNull)
+				.flatMap(text -> Arrays.stream(WHITESPACE.split(text)))
 				.collect(ImmutableSet.toImmutableSet());
-		return prepayOrderResolver.findOrder(documentNos, Money.of(importRecord.getStmtAmt(), currencyId), "I_BankStatement_ID=" + importRecord.getI_BankStatement_ID())
+		return prepayOrderResolver.findOrder(words, Money.of(importRecord.getStmtAmt(), currencyId), importedBPartnerId, "I_BankStatement_ID=" + importRecord.getI_BankStatement_ID())
 				.orElse(null);
 	}
 

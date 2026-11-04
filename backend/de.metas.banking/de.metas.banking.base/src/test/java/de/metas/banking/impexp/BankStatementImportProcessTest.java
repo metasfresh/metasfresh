@@ -72,8 +72,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.I_I_BankStatement;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -174,11 +174,13 @@ public class BankStatementImportProcessTest
 			@Nullable final String debitOrCreditAmt,
 			@Nullable final String debitStmtAmt,
 			@Nullable final String creditStmtAmt,
-			@Nullable final String invoiceDocumentNo)
+			@Nullable final String invoiceDocumentNo,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_I_BankStatement record = newInstance(I_I_BankStatement.class);
 		record.setC_BankStatement_ID(bankStatementId != null ? bankStatementId.getRepoId() : -1);
 		record.setInvoiceDocumentNo(invoiceDocumentNo);
+		record.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 
 		record.setC_Currency_ID(CurrencyId.toRepoId(currencyId));
 		record.setStmtAmt(amtOrNull(trxAmt));
@@ -506,12 +508,18 @@ public class BankStatementImportProcessTest
 
 		private I_C_BankStatementLine importSingleLine(@NonNull final String trxAmt, @NonNull final String text)
 		{
+			return importSingleLine(trxAmt, text, null);
+		}
+
+		private I_C_BankStatementLine importSingleLine(@NonNull final String trxAmt, @NonNull final String text, @Nullable final BPartnerId importedBPartnerId)
+		{
 			importRecords(record()
 					.bankStatementId(bankStatementId)
 					.statementLineDate("2020-03-22")
 					.currencyId(euroCurrencyId)
 					.trxAmt(trxAmt)
 					.lineDescription(text)
+					.bpartnerId(importedBPartnerId)
 					.build());
 			final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
 			assertThat(lines).hasSize(1);
@@ -535,6 +543,48 @@ public class BankStatementImportProcessTest
 			createPrepayOrder("1000123", "250.00");
 
 			assertThat(importSingleLine("100.00", "1000123").getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		void theLineGetsTheOrder_ifTheOrderNumberIsASeparateWordOfTheText()
+		{
+			final I_C_Order order = createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("250.00", "Vorauskasse 1000123 Muster").getC_Order_ID()).as("C_Order_ID").isEqualTo(order.getC_Order_ID());
+		}
+
+		@Test
+		void noOrder_ifTheOrderNumberIsOnlyPartOfAWord()
+		{
+			createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("250.00", "Vorauskasse X1000123 Muster").getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		void noOrder_ifTheImportedPartnerIsNotThePartnerOfTheOrder()
+		{
+			createPrepayOrder("1000123", "250.00");
+			final BPartnerId otherPartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("other").getC_BPartner_ID());
+
+			final I_C_BankStatementLine line = importSingleLine("250.00", "1000123", otherPartnerId);
+
+			assertThat(line.getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID: the imported partner").isEqualTo(otherPartnerId.getRepoId());
+		}
+
+		@Test
+		void theLineGetsTheOrder_ifTheImportedPartnerIsTheOrderingPartnerOfTheOrder()
+		{
+			final I_C_Order order = createPrepayOrder("1000123", "250.00");
+			final BPartnerId billPartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("bill").getC_BPartner_ID());
+			order.setBill_BPartner_ID(billPartnerId.getRepoId());
+			saveRecord(order);
+
+			final I_C_BankStatementLine line = importSingleLine("250.00", "1000123", customerId);
+
+			assertThat(line.getC_Order_ID()).as("C_Order_ID").isEqualTo(order.getC_Order_ID());
+			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID: the imported partner").isEqualTo(customerId.getRepoId());
 		}
 
 		@Test

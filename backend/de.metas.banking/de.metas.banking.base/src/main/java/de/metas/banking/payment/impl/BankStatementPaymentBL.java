@@ -37,6 +37,7 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
@@ -286,12 +287,14 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		// one refusal for "already paid" and "no longer waiting": a payment (the one the order points to, else a completed or closed one pointing to the order)
-		// carries the order, or the order does not wait for payment any more
-		final boolean carriedByPayment = PaymentId.ofRepoIdOrNull(order.getC_Payment_ID()) != null
-				|| paymentBL.getFirstCompletedOrClosedPaymentIdByOrderId(orderId).isPresent();
-		if (carriedByPayment || !DocStatus.ofCode(order.getDocStatus()).isWaitingForPayment())
+		// carries the order, or the order does not wait for payment any more; the message names the carrying payment, "-" if there is none (e.g. an order closed by hand)
+		final PaymentId carryingPaymentId = CoalesceUtil.coalesceSuppliers(
+				() -> PaymentId.ofRepoIdOrNull(order.getC_Payment_ID()),
+				() -> paymentBL.getFirstCompletedOrClosedPaymentIdByOrderId(orderId).orElse(null));
+		if (carryingPaymentId != null || !DocStatus.ofCode(order.getDocStatus()).isWaitingForPayment())
 		{
-			throw new AdempiereException(MSG_ORDER_NOT_WAITING, order.getDocumentNo());
+			final String carryingPaymentDocumentNo = carryingPaymentId != null ? paymentBL.getById(carryingPaymentId).getDocumentNo() : "-";
+			throw new AdempiereException(MSG_ORDER_NOT_WAITING, order.getDocumentNo(), carryingPaymentDocumentNo);
 		}
 
 		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());

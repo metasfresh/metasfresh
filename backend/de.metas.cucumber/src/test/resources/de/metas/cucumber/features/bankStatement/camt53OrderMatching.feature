@@ -2727,7 +2727,8 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 
   @from:cucumber
   @Id:S32606_OM28
-  Scenario: Prepay order already carried by a completed payment: no order is set
+  Scenario: Waiting prepay order already carried by a completed payment: no order is set
+    # the payment is completed while the order is still drafted, so that it does not release the order: the order waits for payment and a completed payment carries it
     Given generate unique 5-digit document numbers into the REST context variables:
       | REST.Context |
       | no_om28_0028 |
@@ -2738,11 +2739,11 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | l_o_28     | o_28       | p_OM         | 1          |
-    And the order identified by o_28 is completed and waits for payment
     And metasfresh contains C_Payment
       | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
       | p_28       | bp_OM         | 123.52 EUR | true      | o_28       |
     And the payment identified by p_28 is completed
+    And the order identified by o_28 is completed and waits for payment
     When bank statement is imported with identifiers bs_28, matching invoice amounts
     """
 <?xml version="1.0" encoding="utf-8"?>
@@ -2818,6 +2819,373 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | C_BankStatementLine_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier |
       | bsl_28                            | null                      | null                         |
     And exactly 1 payment carries the order identified by o_28
+    And validate the created orders
+      | Identifier | DocStatus | GrandTotal |
+      | o_28       | WP        | 123.52     |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM34
+  Scenario: Waiting prepay order already carried by a closed payment: no order is set
+    # the payments are processed while the order is still drafted, so that none of them releases the order; then the order is completed and waits for payment
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om34_0034 |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_34 | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om34_0034@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_34 | o_34 | p_OM         | 1          |
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
+      | p_34       | bp_OM         | 123.52 EUR | true      | o_34       |
+    And the payment identified by p_34 is completed
+    And the payment identified by p_34 is closed
+    And the order identified by o_34 is completed and waits for payment
+    When bank statement is imported with identifiers bs_34, matching invoice amounts
+    """
+<?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdOM34</MsgId>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<MsgPgntn><PgNb>1</PgNb><LastPgInd>true</LastPgInd></MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdOM34</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<FrToDt><FrDtTm>2026-11-02T00:00:00</FrDtTm><ToDtTm>2026-11-03T23:59:59</ToDtTm></FrToDt>
+			<Acct>
+				<Id><IBAN>CH3908704016075473007</IBAN></Id>
+				<Ccy>EUR</Ccy>
+				<Ownr><Nm>Test CO</Nm></Ownr>
+				<Svcr><FinInstnId><BICFI>AAAAAAAA82A</BICFI><Nm>Test Bank</Nm></FinInstnId></Svcr>
+			</Acct>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-02</Dt></Dt>
+			</Bal>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-03</Dt></Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>REF-OM34</NtryRef>
+				<Amt Ccy="EUR">123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts><Cd>BOOK</Cd></Sts>
+				<BookgDt><Dt>2026-11-03</Dt></BookgDt>
+				<ValDt><Dt>2026-11-03</Dt></ValDt>
+				<AcctSvcrRef>REF-OM34</AcctSvcrRef>
+				<BkTxCd><Prtry><Cd>TRF</Cd><Issr>SWIFT</Issr></Prtry></BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">123.52</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs><AcctSvcrRef>REF-OM34-1</AcctSvcrRef></Refs>
+						<Amt Ccy="EUR">123.52</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls><TxAmt><Amt Ccy="EUR">123.52</Amt></TxAmt></AmtDtls>
+						<RltdPties>
+							<Dbtr><Pty><Nm>Customer Test</Nm></Pty></Dbtr>
+							<DbtrAcct><Id><IBAN>CH4189144993834976921</IBAN></Id></DbtrAcct>
+							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Vorauskasse @no_om34_0034@ Danke</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_34 | bs_34 | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier |
+      | bsl_34 | null | null |
+    And validate the created orders
+      | Identifier | DocStatus | GrandTotal |
+      | o_34       | WP        | 123.52     |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM35a
+  Scenario: Waiting prepay order with a drafted payment: a draft does not carry the order, the order is set
+    # the payments are processed while the order is still drafted, so that none of them releases the order; then the order is completed and waits for payment
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om35a_0035 |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_35a | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om35a_0035@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_35a | o_35a | p_OM         | 1          |
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
+      | p_35a      | bp_OM         | 123.52 EUR | true      | o_35a      |
+    And the order identified by o_35a is completed and waits for payment
+    When bank statement is imported with identifiers bs_35a, matching invoice amounts
+    """
+<?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdOM35a</MsgId>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<MsgPgntn><PgNb>1</PgNb><LastPgInd>true</LastPgInd></MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdOM35a</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<FrToDt><FrDtTm>2026-11-02T00:00:00</FrDtTm><ToDtTm>2026-11-03T23:59:59</ToDtTm></FrToDt>
+			<Acct>
+				<Id><IBAN>CH3908704016075473007</IBAN></Id>
+				<Ccy>EUR</Ccy>
+				<Ownr><Nm>Test CO</Nm></Ownr>
+				<Svcr><FinInstnId><BICFI>AAAAAAAA82A</BICFI><Nm>Test Bank</Nm></FinInstnId></Svcr>
+			</Acct>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-02</Dt></Dt>
+			</Bal>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-03</Dt></Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>REF-OM35a</NtryRef>
+				<Amt Ccy="EUR">123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts><Cd>BOOK</Cd></Sts>
+				<BookgDt><Dt>2026-11-03</Dt></BookgDt>
+				<ValDt><Dt>2026-11-03</Dt></ValDt>
+				<AcctSvcrRef>REF-OM35a</AcctSvcrRef>
+				<BkTxCd><Prtry><Cd>TRF</Cd><Issr>SWIFT</Issr></Prtry></BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">123.52</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs><AcctSvcrRef>REF-OM35a-1</AcctSvcrRef></Refs>
+						<Amt Ccy="EUR">123.52</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls><TxAmt><Amt Ccy="EUR">123.52</Amt></TxAmt></AmtDtls>
+						<RltdPties>
+							<Dbtr><Pty><Nm>Customer Test</Nm></Pty></Dbtr>
+							<DbtrAcct><Id><IBAN>CH4189144993834976921</IBAN></Id></DbtrAcct>
+							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Vorauskasse @no_om35a_0035@ Danke</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_35a | bs_35a | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier |
+      | bsl_35a | o_35a | bp_OM |
+    And exactly 1 payment carries the order identified by o_35a
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM35b
+  Scenario: Waiting prepay order with a voided and a reversed payment: they do not carry the order, the order is set
+    # the payments are processed while the order is still drafted, so that none of them releases the order; then the order is completed and waits for payment
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om35b_0035 |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_35b | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om35b_0035@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_35b | o_35b | p_OM         | 1          |
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
+      | p_35v      | bp_OM         | 123.52 EUR | true      | o_35b      |
+      | p_35r      | bp_OM         | 123.52 EUR | true      | o_35b      |
+    And the payment identified by p_35v is voided
+    And the payment identified by p_35r is completed
+    And the payment identified by p_35r is reversed
+    And the order identified by o_35b is completed and waits for payment
+    When bank statement is imported with identifiers bs_35b, matching invoice amounts
+    """
+<?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdOM35b</MsgId>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<MsgPgntn><PgNb>1</PgNb><LastPgInd>true</LastPgInd></MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdOM35b</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<FrToDt><FrDtTm>2026-11-02T00:00:00</FrDtTm><ToDtTm>2026-11-03T23:59:59</ToDtTm></FrToDt>
+			<Acct>
+				<Id><IBAN>CH3908704016075473007</IBAN></Id>
+				<Ccy>EUR</Ccy>
+				<Ownr><Nm>Test CO</Nm></Ownr>
+				<Svcr><FinInstnId><BICFI>AAAAAAAA82A</BICFI><Nm>Test Bank</Nm></FinInstnId></Svcr>
+			</Acct>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-02</Dt></Dt>
+			</Bal>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-03</Dt></Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>REF-OM35b</NtryRef>
+				<Amt Ccy="EUR">123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts><Cd>BOOK</Cd></Sts>
+				<BookgDt><Dt>2026-11-03</Dt></BookgDt>
+				<ValDt><Dt>2026-11-03</Dt></ValDt>
+				<AcctSvcrRef>REF-OM35b</AcctSvcrRef>
+				<BkTxCd><Prtry><Cd>TRF</Cd><Issr>SWIFT</Issr></Prtry></BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">123.52</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs><AcctSvcrRef>REF-OM35b-1</AcctSvcrRef></Refs>
+						<Amt Ccy="EUR">123.52</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls><TxAmt><Amt Ccy="EUR">123.52</Amt></TxAmt></AmtDtls>
+						<RltdPties>
+							<Dbtr><Pty><Nm>Customer Test</Nm></Pty></Dbtr>
+							<DbtrAcct><Id><IBAN>CH4189144993834976921</IBAN></Id></DbtrAcct>
+							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Vorauskasse @no_om35b_0035@ Danke</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_35b | bs_35b | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier |
+      | bsl_35b | o_35b | bp_OM |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM36
+  Scenario: Standard bank statement import (CSV, not camt.053): a credit line naming a waiting prepay order gets the order and its partner; completing the statement creates the payment with the order and releases the order
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om36_0036 |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_36       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om36_0036@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_36     | o_36       | p_OM         | 1          |
+    And the order identified by o_36 is completed and waits for payment
+    And AD_ImpFormat "bankStatementCsvOM" for table "I_BankStatement" with columns:
+      | ColumnName         | DataType | OPT.DataFormat |
+      | StatementDate      | D        | yyyy-MM-dd     |
+      | StatementLineDate  | D        | yyyy-MM-dd     |
+      | ValutaDate         | D        | yyyy-MM-dd     |
+      | StmtAmt            | N        |                |
+      | TrxAmt             | N        |                |
+      | IBAN               | S        |                |
+      | IBAN_To            | S        |                |
+      | Bill_BPartner_Name | S        |                |
+      | InvoiceDocumentNo  | S        |                |
+      | Memo               | S        |                |
+      | ISO_Code           | S        |                |
+      | Name               | S        |                |
+    And C_DataImport config "bankStatementCsvOM" using AD_ImpFormat "bankStatementCsvOM"
+    # the CSV columns: StatementDate, StatementLineDate, ValutaDate, StmtAmt, TrxAmt, IBAN, IBAN_To, Bill_BPartner_Name, InvoiceDocumentNo, Memo, ISO_Code, Name (of the statement, new per run)
+    # no partner and no invoice number: the order number is a word of the memo
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsvOM":
+    """
+    2026-11-03,2026-11-03,2026-11-03,123.52,123.52,CH3908704016075473007,CH4189144993834976921,,,Vorauskasse @no_om36_0036@ Danke,EUR,OM36 @no_om36_0036@
+    """
+    And load C_BankStatement created by the import for bank account "bpb_OM"
+      | C_BankStatement_ID.Identifier | Name                |
+      | bs_36                         | OM36 @no_om36_0036@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_36                            | bs_36                         | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
+      | bsl_36                            | o_36                      | bp_OM                        | null                        |
+    And the C_BankStatement identified by bs_36 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | p_36                    | bs_36                             | bsl_36                                |
+    And validate payments
+      | C_Payment_ID.Identifier | IsReceipt | C_Order_ID.Identifier |
+      | p_36                    | true      | o_36                  |
+    And validate the created orders
+      | Identifier | DocStatus | GrandTotal |
+      | o_36       | CO        | 123.52     |
 
 
   # ################################################################################
@@ -2914,7 +3282,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | PayAmt |
       | 100.00 |
     And the payment identified by p_31a is completed
-    And the C_BankStatement identified by bs_31a is completed expecting error code BANKSTATEMENT_ORDER_NOT_WAITING
+    And the C_BankStatement identified by bs_31a is completed expecting error code BANKSTATEMENT_ORDER_NOT_WAITING naming the payment identified by p_31a
     And exactly 1 payment carries the order identified by o_31a
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |

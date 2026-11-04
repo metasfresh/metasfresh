@@ -390,7 +390,8 @@ public class BankStatementCamt53Service
 		}
 		else if (stmtAmount.signum() > 0) // order matching is only the fallback of the invoice matching
 		{
-			prepayOrderResolver.findOrder(entryWrapper.getDocumentReferenceCandidates(), stmtAmount, entryWrapper.getLineReference())
+			// no partner filter: the camt import knows the partner only from a matched invoice or order
+			prepayOrderResolver.findOrder(entryWrapper.getDocumentReferenceCandidates(), stmtAmount, null, entryWrapper.getLineReference())
 					.ifPresent(order -> bankStatementLineCreateRequestBuilder
 							.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
 							.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID())));

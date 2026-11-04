@@ -3,6 +3,7 @@ package de.metas.banking.service;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
@@ -43,6 +44,7 @@ public class BankStatementPrepayOrderResolver
 	/**
 	 * @param documentNos       the texts of the line that may be an order's document number
 	 * @param amount            the amount of the line
+	 * @param bpartnerId        the partner of the line, if already known; then only orders with this partner as {@code C_Order.Bill_BPartner_ID} or {@code C_Order.C_BPartner_ID} are found
 	 * @param lineReferenceForLog identifies the line in the log message of an ambiguous match
 	 * @return the one waiting prepay sales order that is named in the texts and totals exactly the amount (full prepayment only);
 	 * empty if there is none or more than one.
@@ -51,6 +53,7 @@ public class BankStatementPrepayOrderResolver
 	public Optional<I_C_Order> findOrder(
 			@NonNull final ImmutableSet<String> documentNos,
 			@NonNull final Money amount,
+			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String lineReferenceForLog)
 	{
 		if (documentNos.isEmpty())
@@ -65,9 +68,10 @@ public class BankStatementPrepayOrderResolver
 				.documentNos(documentNos)
 				.currencyId(amount.getCurrencyId())
 				.amount(amount.toBigDecimal())
+				.bpartnerId(bpartnerId)
 				.build());
 
-		// an order that another unprocessed bank statement line or an active payment already carries is not up for matching;
+		// an order that another unprocessed bank statement line or an active completed or closed payment already carries is not up for matching;
 		// only what is left counts, so that exactly one remaining order is unambiguous
 		final ImmutableSet<OrderId> carriedOrderIds = ImmutableSet.<OrderId>builder()
 				.addAll(bankStatementDAO.getOrderIdsOnUnprocessedLines(candidateOrderIds))
@@ -79,7 +83,7 @@ public class BankStatementPrepayOrderResolver
 		if (orderIds.size() > 1)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog(
-					"Multiple waiting prepay orders found for ReportEntry2={}! MatchedOrderIds={}", lineReferenceForLog, orderIds);
+					"Multiple waiting prepay orders found for bank statement line {}! MatchedOrderIds={}", lineReferenceForLog, orderIds);
 			return Optional.empty();
 		}
 
