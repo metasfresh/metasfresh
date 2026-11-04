@@ -126,10 +126,7 @@ public class CreateHUFromScannedCodeCommand
 				.build());
 
 		// the weight cannot go through the inventory (its attribute key drops weight attributes): set it on the completed CU
-		if (qtyAndWeight.getWeightKgForCU() != null)
-		{
-			setWeight(handlingUnitsBL.getById(huId), productId, qtyAndWeight);
-		}
+		setWeight(handlingUnitsBL.getById(huId), productId, qtyAndWeight);
 		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId); // creates the QR code if missing, like the HU lookup by value does
 		return new CreatedHU(huId, qrCode);
 	}
