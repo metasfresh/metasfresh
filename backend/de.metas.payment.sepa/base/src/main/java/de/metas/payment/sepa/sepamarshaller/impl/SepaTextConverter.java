@@ -72,6 +72,18 @@ public class SepaTextConverter
 	private static final String SPECIAL_CHARS = "+?/-:().,' ";
 
 	/**
+	 * @return {@code true} if the text is non-empty, at most {@link #IDENTIFIER_MAX_LENGTH} long and consists only of characters of the basic SEPA character set,
+	 * i.e. it can be written unchanged as an identifier that must match exactly what was agreed (e.g. a mandate reference).
+	 */
+	public static boolean isSepaIdentifier(@Nullable final String text)
+	{
+		return text != null
+				&& !text.isEmpty()
+				&& text.length() <= IDENTIFIER_MAX_LENGTH
+				&& text.chars().allMatch(SepaTextConverter::isAllowed);
+	}
+
+	/**
 	 * For mandatory identifiers.
 	 *
 	 * @return {@code null} for a blank input or if nothing is left after the conversion; the caller has to tell the two apart (the element is mandatory, so the latter must be refused)

@@ -500,7 +500,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
   #   Debtor OrgStarMandate:    only the org-* mandate is active -> its reference is exported, the inactive mandate of the export org is ignored
   #   Debtor MandateUsedLater:  the mandate was last used after the collection date -> still exported with its own reference, DateLastUsed is not moved back
   #   text conversion to the basic SEPA character set, cut to the maximum length (expected values derived from the rules, never from the writer's output):
-  #     MndtId:  Ä -> AE, & -> space, ö -> oe                 "MREF-Ä&ö/001" -> "MREF-AE oe/001"
+  #     MndtId:  not converted, exported as it is; a reference outside the SEPA character set is refused (see the refusals feature)
+  #              "MREF-(A/B)+1.2" uses every allowed special character kind
   #     Dbtr.Nm: at most 70 chars; umlauts and ß are transliterated, & and € -> space; the rest over 70 chars is cut
   #              input    = "Bäcker & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
   #              expected = "Baecker   Soehne   Grosshandel " (31 chars; & and € became spaces, so 3 spaces each between the words) + 39 x X = 70 chars
@@ -534,7 +535,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference  | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID | IsActive |
       | noBicMandate                           | noBicAcct           | B2B         | MREF-NOBIC-001    | 2013-09-23  | Y           | 2025-09-04   | sellerOrg | Y        |
       | noDescMandate                          | noDescAcct          | B2B         | MREF-NODESC-001   | 2013-09-23  | Y           | 2025-09-04   | sellerOrg | Y        |
-      | longMandate                            | longAcct            | B2B         | MREF-Ä&ö/001      | 2014-03-11  | Y           | 2025-09-04   | sellerOrg | Y        |
+      | longMandate                            | longAcct            | B2B         | MREF-(A/B)+1.2    | 2014-03-11  | Y           | 2025-09-04   | sellerOrg | Y        |
       | orgStarMandate                         | orgStarAcct         | B2B         | MREF-ORGSTAR-001  | 2020-05-04  | Y           | 2025-09-04   | 0         | Y        |
       | inactiveMandate                        | orgStarAcct         | B2B         | MREF-INACTIVE-001 | 2019-02-03  | Y           | 2025-09-04   | sellerOrg | N        |
       | usedLaterMandate                       | usedLaterAcct       | B2B         | MREF-LATER-001    | 2013-09-23  | Y           | 2026-12-01   | sellerOrg | Y        |
@@ -816,8 +817,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
                       <InstdAmt Ccy="EUR">30.00</InstdAmt>
                       <DrctDbtTx>
                           <MndtRltdInf>
-                              <!-- text conversion, see the comment above the scenario: mandate reference, debtor name and remittance info -->
-                              <MndtId>MREF-AE oe/001</MndtId>
+                              <!-- text conversion, see the comment above the scenario: mandate reference kept as it is, debtor name and remittance info -->
+                              <MndtId>MREF-(A/B)+1.2</MndtId>
                               <DtOfSgntr>2014-03-11</DtOfSgntr>
                               <AmdmntInd>false</AmdmntInd>
                           </MndtRltdInf>

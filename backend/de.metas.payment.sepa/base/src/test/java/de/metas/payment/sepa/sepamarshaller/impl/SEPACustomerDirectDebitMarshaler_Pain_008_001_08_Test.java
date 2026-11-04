@@ -96,9 +96,9 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 
 		final SEPAExportContext.SEPAExportContextBuilder exportContext = SEPAExportContext.builder();
 
-		// no BIC; name > 70 characters; mandate reference with umlauts and "&"; description > 140 characters; one-off mandate
+		// no BIC; name > 70 characters; mandate reference with special characters; description > 140 characters; one-off mandate
 		final I_SEPA_Export_Line line1 = createLine(sepaExport, "Bäcker & Söhne € Großhandel " + repeat("X", 60), "DE02120300000000202051", null, "Rechnung „Nr. 1“ " + repeat("Y", 140));
-		exportContext.directDebitMandate(lineId(line1), createMandate("MREF-Ä&ö/001", false));
+		exportContext.directDebitMandate(lineId(line1), createMandate("MREF-(A/B)+1.2", false));
 
 		// umlauts and "&" in the name; empty description; recurring
 		final I_SEPA_Export_Line line2 = createLine(sepaExport, "Bäckerei Groß & Co", "DE02500105170137075030", "INGDDEFFXXX", "");
@@ -183,22 +183,63 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 		assertThatThrownBy(() -> marshal(sepaExport, exportContext))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("SepaTextWithoutSepaCharacters")
-				.hasMessageContaining("Dbtr/Nm")
 				.hasMessageContaining("€ € €");
 	}
 
 	@Test
-	public void mandateReferenceWithoutSepaCharacters_fails()
+	public void blankDebtorName_fails()
 	{
 		createLocation(createOrgPartner(), "Berlin", true, true, true);
 		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
+		final I_SEPA_Export_Line line = createLine(sepaExport, " ", "DE89370400440532013000", "COBADEFFXXX", "Rechnung 4");
+		final SEPAExportContext exportContext = SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-B2B-004", true)).build();
+
+		assertThatThrownBy(() -> marshal(sepaExport, exportContext))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SepaTextWithoutSepaCharacters");
+	}
+
+	@Test
+	public void creditorNameWithoutSepaCharacters_fails()
+	{
+		createLocation(createOrgPartner(), "Berlin", true, true, true);
+		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
+		sepaExport.setSEPA_CreditorName("€€");
+		save(sepaExport);
 		final I_SEPA_Export_Line line = createLine(sepaExport, "Debtor GmbH", "DE89370400440532013000", "COBADEFFXXX", "Rechnung 4");
-		final SEPAExportContext exportContext = SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("€€", true)).build();
+		final SEPAExportContext exportContext = SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-B2B-004", true)).build();
 
 		assertThatThrownBy(() -> marshal(sepaExport, exportContext))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("SepaTextWithoutSepaCharacters")
-				.hasMessageContaining("MndtId")
+				.hasMessageContaining("€€");
+	}
+
+	@Test
+	public void documentNoWithoutSepaCharacters_fails()
+	{
+		createLocation(createOrgPartner(), "Berlin", true, true, true);
+		final I_SEPA_Export sepaExport = createSEPAExport("€");
+		final I_SEPA_Export_Line line = createLine(sepaExport, "Debtor GmbH", "DE89370400440532013000", "COBADEFFXXX", "Rechnung 4");
+		final SEPAExportContext exportContext = SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-B2B-004", true)).build();
+
+		assertThatThrownBy(() -> marshal(sepaExport, exportContext))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SepaTextWithoutSepaCharacters");
+	}
+
+	@Test
+	public void mandateReferenceWithNonSepaCharacter_fails()
+	{
+		createLocation(createOrgPartner(), "Berlin", true, true, true);
+		final I_SEPA_Export sepaExport = createSEPAExport("1000001");
+		final I_SEPA_Export_Line line = createLine(sepaExport, "Debtor GmbH", "DE89370400440532013000", "COBADEFFXXX", "Rechnung 4");
+		final SEPAExportContext exportContext = SEPAExportContext.builder().directDebitMandate(lineId(line), createMandate("MREF-Ä&001", true)).build();
+
+		assertThatThrownBy(() -> marshal(sepaExport, exportContext))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SepaMandateReferenceNotSepa")
+				.hasMessageContaining("MREF-Ä&001")
 				.hasMessageContaining("Debtor GmbH");
 	}
 

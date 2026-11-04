@@ -22,6 +22,32 @@ class SepaTextConverterTest
 	}
 
 	@Nested
+	class isSepaIdentifier
+	{
+		@ParameterizedTest
+		@ValueSource(strings = { "MREF-(A/B)+1.2", "A+?/-:().,' B", "abcXYZ019" })
+		void allowed(final String text)
+		{
+			assertThat(SepaTextConverter.isSepaIdentifier(text)).isTrue();
+		}
+
+		@ParameterizedTest
+		@NullAndEmptySource
+		@ValueSource(strings = { "MREF-Ä&ö/001", "Straße", "é", "a_b", "€", "a😀b" })
+		void notAllowed(final String text)
+		{
+			assertThat(SepaTextConverter.isSepaIdentifier(text)).isFalse();
+		}
+
+		@Test
+		void maxLength35()
+		{
+			assertThat(SepaTextConverter.isSepaIdentifier(repeat("A", 35))).isTrue();
+			assertThat(SepaTextConverter.isSepaIdentifier(repeat("A", 36))).isFalse();
+		}
+	}
+
+	@Nested
 	class toIdentifier
 	{
 		@ParameterizedTest
