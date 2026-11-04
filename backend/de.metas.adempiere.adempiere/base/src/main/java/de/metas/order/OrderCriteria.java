@@ -33,6 +33,10 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * @deprecated Use {@link de.metas.order.OrderQuery} (de.metas.business) with {@code IOrderDAO#getOrderIds(OrderQuery)};
+ * this class stays only as the criteria of {@code IOrderDAO#retrieveByOrderCriteria(OrderCriteria)} (single order by id / external id / document no of an organization).
+ */
 @Deprecated
 @Value
 @Builder(toBuilder = true)

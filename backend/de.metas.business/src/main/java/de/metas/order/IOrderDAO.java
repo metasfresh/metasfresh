@@ -189,7 +189,6 @@ public interface IOrderDAO extends ISingletonService
 
 	/**
 	 * @return the ids of the active orders that match the given query; only the criteria that are set are applied. No organization filter.
-	 * Only the criteria of the order itself are applied; e.g. whether another bank statement line or payment already carries an order is for the caller to decide.
 	 */
 	List<OrderId> getOrderIds(@NonNull OrderQuery query);
 

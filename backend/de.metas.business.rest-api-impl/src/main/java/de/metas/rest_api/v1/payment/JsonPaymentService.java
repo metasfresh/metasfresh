@@ -282,10 +282,10 @@ public class JsonPaymentService
 
 	private Optional<I_C_Order> getOrderIdFromIdentifier(final IdentifierString orderIdentifier, final OrgId orgId)
 	{
-		return orderDAO.retrieveByOrderCriteria(createOrderQuery(orderIdentifier, orgId));
+		return orderDAO.retrieveByOrderCriteria(createOrderCriteria(orderIdentifier, orgId));
 	}
 
-	private OrderCriteria createOrderQuery(final IdentifierString identifierString, final OrgId orgId)
+	private OrderCriteria createOrderCriteria(final IdentifierString identifierString, final OrgId orgId)
 	{
 		final IdentifierString.Type type = identifierString.getType();
 		final OrderCriteria.OrderCriteriaBuilder builder = OrderCriteria.builder().orgId(orgId);

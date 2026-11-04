@@ -37,6 +37,9 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -278,7 +281,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		if (!order.isActive()
 				|| !order.isSOTrx()
 				|| docTypeId == null
-				|| !docTypeDAO.getDocBaseAndSubTypeById(docTypeId).getDocSubType().isPrepay())
+				|| !DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.PrepayOrder).equals(docTypeDAO.getDocBaseAndSubTypeById(docTypeId)))
 		{
 			throw new AdempiereException(MSG_ORDER_NOT_A_PREPAYMENT, order.getDocumentNo());
 		}

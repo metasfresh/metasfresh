@@ -191,20 +191,20 @@ public class OrderService
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 		final ExternalSystemId externalSystemId = masterdataProvider.getExternalSystemId(ExternalSystemType.ofValue(request.getExternalSystemCode()));
 
-		final OrderCriteria orderQuery = OrderCriteria.builder()
+		final OrderCriteria orderCriteria = OrderCriteria.builder()
 				.orgId(orgId)
 				.externalId(ExternalId.of(request.getExternalId()))
 				.externalSystemId(externalSystemId)
 				.build();
 
-		return orderDAO.retrieveByOrderCriteria(orderQuery)
+		return orderDAO.retrieveByOrderCriteria(orderCriteria)
 				.map(I_C_Order::getC_Order_ID)
 				.map(OrderId::ofRepoId);
 	}
 
 	public Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)
 	{
-		final OrderCriteria.OrderCriteriaBuilder queryBuilder = OrderCriteria.builder().orgId(orgId);
+		final OrderCriteria.OrderCriteriaBuilder criteriaBuilder = OrderCriteria.builder().orgId(orgId);
 
 		switch (orderIdentifier.getType())
 		{
@@ -212,15 +212,15 @@ public class OrderService
 				final OrderId orderId = OrderId.ofRepoId(orderIdentifier.asMetasfreshId().getValue());
 				return Optional.of(orderId);
 			case DOC:
-				final OrderCriteria getOrderByDocQuery = queryBuilder
+				final OrderCriteria getOrderByDocCriteria = criteriaBuilder
 						.documentNo(orderIdentifier.asDoc())
 						.build();
 
-				return orderDAO.retrieveByOrderCriteria(getOrderByDocQuery)
+				return orderDAO.retrieveByOrderCriteria(getOrderByDocCriteria)
 						.map(I_C_Order::getC_Order_ID)
 						.map(OrderId::ofRepoId);
 			case EXTERNAL_ID:
-				final OrderCriteria getOrderByExternalId = queryBuilder
+				final OrderCriteria getOrderByExternalId = criteriaBuilder
 						.externalId(orderIdentifier.asExternalId())
 						.build();
 

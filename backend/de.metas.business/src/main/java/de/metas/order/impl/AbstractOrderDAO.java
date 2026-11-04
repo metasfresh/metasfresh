@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.order.OrderQuery;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
@@ -39,9 +38,10 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderCriteria;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.order.OrderCriteria;
+import de.metas.order.OrderQuery;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -551,22 +551,22 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@NonNull
-	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderCriteria orderQuery)
+	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderCriteria orderCriteria)
 	{
-		final OrgId orgId = assumeNotNull(orderQuery.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderQuery);
-		final ExternalId externalId = assumeNotNull(orderQuery.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderQuery);
+		final OrgId orgId = assumeNotNull(orderCriteria.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderCriteria);
+		final ExternalId externalId = assumeNotNull(orderCriteria.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderCriteria);
 
 		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue());
 
-		final InputDataSourceId dataSourceId = orderQuery.getInputDataSourceId();
+		final InputDataSourceId dataSourceId = orderCriteria.getInputDataSourceId();
 		if (dataSourceId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_AD_InputDataSource_ID, dataSourceId);
 		}
 
-		final ExternalSystemId externalSystemId = orderQuery.getExternalSystemId();
+		final ExternalSystemId externalSystemId = orderCriteria.getExternalSystemId();
 		if (externalSystemId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalSystem_ID, externalSystemId);
