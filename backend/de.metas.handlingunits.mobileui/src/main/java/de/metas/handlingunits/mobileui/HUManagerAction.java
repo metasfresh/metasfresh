@@ -16,6 +16,8 @@ public enum HUManagerAction
 	ChangeQty("changeQty"),
 	PrintLabels("printLabels"),
 	ScanGRAI("scanGRAI"),
+	/** create an HU from a scanned product label that is no existing HU (propose + create) */
+	CreateHU("createHU"),
 	;
 
 	@NonNull private final String internalName;
