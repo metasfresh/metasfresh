@@ -108,15 +108,16 @@ const NewHUPreviewScreen = () => {
     api
       .createHUFromScannedCode({ scannedCode, qty, locatorQRCode: locator.qrCode })
       .then((handlingUnitInfo) => {
+        // clear the preview: back on the scan screen it cannot be shown again, so a second OK cannot create a second HU
+        history.replace(huManagerLocation());
+        dispatch(clearLoadedData());
+        // the message goes after the navigation: ScreenToaster dismisses all toasts on a location change, which would remove a toast raised before it
         toastNotification({
           plainMessage: trl('huManager.newHU.created', {
             huValue: handlingUnitInfo.displayName,
             qty: `${qty} ${proposal.uom}`,
           }),
         });
-        // clear the preview: back on the scan screen it cannot be shown again, so a second OK cannot create a second HU
-        history.replace(huManagerLocation());
-        dispatch(clearLoadedData());
       })
       .catch((axiosError) => {
         isCreatingRef.current = false;

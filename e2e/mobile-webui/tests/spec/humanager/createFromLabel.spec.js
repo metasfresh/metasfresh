@@ -6,7 +6,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { NewHUPreviewScreen } from '../../utils/screens/huManager/NewHUPreviewScreen';
-import { expectErrorToast } from '../../utils/common';
+import { expectErrorToast, page as activePage } from '../../utils/common';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { DISPOSAL_REASON_DAMAGED } from '../../utils/screens/huManager/HUDisposalScreen';
 import { uniqueGtin14 } from '../../utils/gtin';
@@ -67,6 +67,9 @@ const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 PCE', locatorCo
     if (locatorCode !== undefined) expect(created.locatorValue).toBe(locatorCode);
     await HUManagerScreen.waitForScreen();
     await NewHUPreviewScreen.expectNotDisplayed();
+    await ErrorToast.expectSuccessToast({ hasText: [`HU ${created.huValue}`, qty] });
+    // the message is the user's only source of the HU number: it must stay readable (not be dismissed by the screen change right after it was raised)
+    await activePage.waitForTimeout(2000);
     await ErrorToast.expectSuccessToast({ hasText: [`HU ${created.huValue}`, qty] });
     await BarcodeScannerComponent.expectAttached({});
     await HUManagerScreen.expectNoHUInfo();
