@@ -241,7 +241,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private GroupHeader83 createGroupHeader(@NonNull final I_SEPA_Export sepaDocument)
 	{
 		final GroupHeader83 groupHeader = new GroupHeader83();
-		groupHeader.setMsgId(SepaDkTextConverter.toIdentifier(sepaDocument.getDocumentNo()));
+		groupHeader.setMsgId(SepaTextConverter.toIdentifier(sepaDocument.getDocumentNo()));
 		groupHeader.setCreDtTm(datatypeFactory.newXMLGregorianCalendar(SystemTime.asGregorianCalendar()));
 		groupHeader.setCtrlSum(ZERO);
 
@@ -309,7 +309,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		drctDbtTxInf.setInstdAmt(instdAmt);
 
 		final MandateRelatedInformation14 mndtRltdInf = new MandateRelatedInformation14();
-		mndtRltdInf.setMndtId(SepaDkTextConverter.toIdentifier(mandate.getReference()));
+		mndtRltdInf.setMndtId(SepaTextConverter.toIdentifier(mandate.getReference()));
 		mndtRltdInf.setDtOfSgntr(toXMLDate(mandate.getMandateDate()));
 		mndtRltdInf.setAmdmntInd(Boolean.FALSE);
 		final DirectDebitTransaction10 drctDbtTx = new DirectDebitTransaction10();
@@ -319,14 +319,14 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		drctDbtTxInf.setDbtrAgt(createFinancialInstitution(line.getSwiftCode()));
 
 		final PartyIdentification135 dbtr = new PartyIdentification135();
-		final String debtorName = SepaDkTextConverter.toText(SepaUtils.getBPartnerNameById(line.getC_BPartner_ID()), MAX_LENGTH_NAME);
+		final String debtorName = SepaTextConverter.toText(SepaUtils.getBPartnerNameById(line.getC_BPartner_ID()), MAX_LENGTH_NAME);
 		Check.assumeNotNull(debtorName, "Debtor of {} has a name", line);
 		dbtr.setNm(debtorName);
 		drctDbtTxInf.setDbtr(dbtr);
 
 		drctDbtTxInf.setDbtrAcct(createCashAccount(line.getIBAN()));
 
-		final String ustrd = SepaDkTextConverter.toOptionalText(line.getDescription(), MAX_LENGTH_REMITTANCE_INFO);
+		final String ustrd = SepaTextConverter.toOptionalText(line.getDescription(), MAX_LENGTH_REMITTANCE_INFO);
 		if (ustrd != null)
 		{
 			final RemittanceInformation16 rmtInf = new RemittanceInformation16();
@@ -343,13 +343,13 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private static String toPmtInfId(@NonNull final String msgId, final int index)
 	{
 		final String indexSuffix = "-" + index;
-		final int maxMsgIdLength = SepaDkTextConverter.IDENTIFIER_MAX_LENGTH - indexSuffix.length() - END_TO_END_ID_SUFFIX.length();
+		final int maxMsgIdLength = SepaTextConverter.IDENTIFIER_MAX_LENGTH - indexSuffix.length() - END_TO_END_ID_SUFFIX.length();
 		return (msgId.length() <= maxMsgIdLength ? msgId : msgId.substring(0, maxMsgIdLength)) + indexSuffix;
 	}
 
 	private String toCreditorName(@NonNull final I_SEPA_Export sepaDocument)
 	{
-		final String creditorName = SepaDkTextConverter.toText(sepaDocument.getSEPA_CreditorName(), MAX_LENGTH_NAME);
+		final String creditorName = SepaTextConverter.toText(sepaDocument.getSEPA_CreditorName(), MAX_LENGTH_NAME);
 		Check.assumeNotNull(creditorName, "{} has a creditor name", sepaDocument);
 		return creditorName;
 	}
@@ -394,9 +394,9 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private PostalAddress24 createPstlAdr(@NonNull final I_C_Location location)
 	{
 		final PostalAddress24 pstlAdr = new PostalAddress24();
-		pstlAdr.setStrtNm(SepaDkTextConverter.toOptionalText(location.getAddress1(), MAX_LENGTH_STREET_NAME));
-		pstlAdr.setPstCd(SepaDkTextConverter.toOptionalText(location.getPostal(), MAX_LENGTH_POST_CODE));
-		pstlAdr.setTwnNm(SepaDkTextConverter.toOptionalText(location.getCity(), MAX_LENGTH_TOWN_NAME));
+		pstlAdr.setStrtNm(SepaTextConverter.toOptionalText(location.getAddress1(), MAX_LENGTH_STREET_NAME));
+		pstlAdr.setPstCd(SepaTextConverter.toOptionalText(location.getPostal(), MAX_LENGTH_POST_CODE));
+		pstlAdr.setTwnNm(SepaTextConverter.toOptionalText(location.getCity(), MAX_LENGTH_TOWN_NAME));
 		pstlAdr.setCtry(StringUtils.trimBlankToNull(countryDAO.getCountryCode(CountryId.ofRepoId(location.getC_Country_ID()))));
 		return pstlAdr;
 	}

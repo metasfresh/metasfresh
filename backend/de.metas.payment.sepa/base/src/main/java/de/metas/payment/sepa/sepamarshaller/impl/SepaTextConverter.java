@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.text.Normalizer;
 
 /*
  * #%L
@@ -30,19 +31,19 @@ import javax.annotation.Nullable;
  */
 
 /**
- * Converts texts to the character sets of the German SEPA direct debit format (pain.008.001.08, GBIC_5) and cuts them to the schema's maximum length, keeping the start.
- * Every character outside the respective set becomes a space; the result is trimmed before it is cut.
- * <ul>
- * <li>Identifiers ({@code MndtId}, {@code MsgId}, {@code PmtInfId}, {@code EndToEndId}): the GBIC_5 pattern {@code [A-Za-z0-9+?/\-:().,' ]}; German umlauts and "ß" are transliterated first.</li>
- * <li>Texts (names, remittance information, address parts): the Deutsche Bundesbank character set, which additionally keeps {@code Ä ä Ö ö Ü ü ß & * $ %}.</li>
- * </ul>
+ * Converts texts to the basic SEPA character set {@code [A-Za-z0-9/?:().,'+\- ]} and cuts them to the schema's maximum length, keeping the start.
+ * <p>
+ * The basic set is valid in every SEPA country; the German banks' set (GBIC_5) additionally allows umlauts, "ß" and {@code & * $ %},
+ * but other countries' banks do not, and the Deutsche Bundesbank itself recommends writing "Ä" as "AE" and "ß" as "ss".
+ * So umlauts and "ß" are transliterated, other letters lose their accents (é → e), and every character still outside the set becomes a space;
+ * the result is trimmed before it is cut.
  */
 @UtilityClass
-public class SepaDkTextConverter
+public class SepaTextConverter
 {
 	public static final int IDENTIFIER_MAX_LENGTH = 35;
 
-	private static final ImmutableMap<Character, String> IDENTIFIER_TRANSLITERATIONS = ImmutableMap.<Character, String>builder()
+	private static final ImmutableMap<Character, String> TRANSLITERATIONS = ImmutableMap.<Character, String>builder()
 			.put('Ä', "AE")
 			.put('Ö', "OE")
 			.put('Ü', "UE")
@@ -52,8 +53,7 @@ public class SepaDkTextConverter
 			.put('ß', "ss")
 			.build();
 
-	private static final String IDENTIFIER_SPECIAL_CHARS = "+?/-:().,' ";
-	private static final String TEXT_SPECIAL_CHARS = "':?,-(+.)/ ÄäÖöÜüß&*$%";
+	private static final String SPECIAL_CHARS = "+?/-:().,' ";
 
 	/**
 	 * @return {@code null} for a blank input; a single space if a non-blank input has nothing left after the conversion (the element is mandatory and must not be empty)
@@ -65,7 +65,7 @@ public class SepaDkTextConverter
 		{
 			return null;
 		}
-		return spaceIfEmpty(cut(convert(text, true), IDENTIFIER_MAX_LENGTH));
+		return spaceIfEmpty(cut(convert(text), IDENTIFIER_MAX_LENGTH));
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class SepaDkTextConverter
 		{
 			return null;
 		}
-		return spaceIfEmpty(cut(convert(text, false), maxLength));
+		return spaceIfEmpty(cut(convert(text), maxLength));
 	}
 
 	/**
@@ -95,36 +95,44 @@ public class SepaDkTextConverter
 		{
 			return null;
 		}
-		final String result = cut(convert(text, false), maxLength);
+		final String result = cut(convert(text), maxLength);
 		return result.isEmpty() ? null : result;
 	}
 
-	private static String convert(@NonNull final String text, final boolean identifier)
+	private static String convert(@NonNull final String text)
 	{
 		final StringBuilder result = new StringBuilder(text.length());
 		text.codePoints().forEach(codePoint -> {
-			if (identifier && Character.isBmpCodePoint(codePoint) && IDENTIFIER_TRANSLITERATIONS.containsKey((char)codePoint))
+			if (Character.isBmpCodePoint(codePoint) && TRANSLITERATIONS.containsKey((char)codePoint))
 			{
-				result.append(IDENTIFIER_TRANSLITERATIONS.get((char)codePoint));
-			}
-			else if (isAllowed(codePoint, identifier ? IDENTIFIER_SPECIAL_CHARS : TEXT_SPECIAL_CHARS))
-			{
-				result.appendCodePoint(codePoint);
+				result.append(TRANSLITERATIONS.get((char)codePoint));
 			}
 			else
 			{
-				result.append(' ');
+				final int baseLetter = withoutAccent(codePoint);
+				result.append(isAllowed(baseLetter) ? (char)baseLetter : ' ');
 			}
 		});
 		return result.toString().trim();
 	}
 
-	private static boolean isAllowed(final int codePoint, @NonNull final String specialChars)
+	/**
+	 * @return the letter without its accent (é → e), or the code point itself if it has no such decomposition
+	 */
+	private static int withoutAccent(final int codePoint)
+	{
+		final String decomposed = Normalizer.normalize(new String(Character.toChars(codePoint)), Normalizer.Form.NFD);
+		final boolean isLetterWithMarks = decomposed.length() > 1
+				&& decomposed.codePoints().skip(1).allMatch(cp -> Character.getType(cp) == Character.NON_SPACING_MARK);
+		return isLetterWithMarks ? decomposed.codePointAt(0) : codePoint;
+	}
+
+	private static boolean isAllowed(final int codePoint)
 	{
 		return (codePoint >= 'a' && codePoint <= 'z')
 				|| (codePoint >= 'A' && codePoint <= 'Z')
 				|| (codePoint >= '0' && codePoint <= '9')
-				|| specialChars.indexOf(codePoint) >= 0;
+				|| SPECIAL_CHARS.indexOf(codePoint) >= 0;
 	}
 
 	private static String cut(@NonNull final String text, final int maxLength)

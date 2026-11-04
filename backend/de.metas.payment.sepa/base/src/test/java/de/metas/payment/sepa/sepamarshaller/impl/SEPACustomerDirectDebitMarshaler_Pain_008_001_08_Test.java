@@ -124,7 +124,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 
 		final Document doc = marshalOneLineExport();
 
-		assertThat(text(doc, CDTR_PSTL_ADR + "/StrtNm")).isEqualTo("Teststraße 1");
+		assertThat(text(doc, CDTR_PSTL_ADR + "/StrtNm")).isEqualTo("Teststrasse 1");
 		assertThat(text(doc, CDTR_PSTL_ADR + "/PstCd")).isEqualTo("10115");
 		assertThat(text(doc, CDTR_PSTL_ADR + "/TwnNm")).isEqualTo("Berlin");
 		assertThat(text(doc, CDTR_PSTL_ADR + "/Ctry")).isEqualTo("DE");

@@ -494,16 +494,16 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_BP_BankAccount_DirectDebitMandate_ID | DateLastUsed |
       | b2bMandate                             | 2026-11-02   |
 
-  # Debtor-side cases, one debtor each, all in one B2B file; each debtor is named after its case (with spaces: an underscore is not in the GBIC_5 character set and would become a space):
+  # Debtor-side cases, one debtor each, all in one B2B file; each debtor is named after its case (with spaces: an underscore is not in the basic SEPA character set and would become a space):
   #   Debtor NoBIC:             the debtor bank has no BIC -> DbtrAgt is NOTPROVIDED
   #   Debtor NoDescription:     the invoice has no description -> no RmtInf/Ustrd
   #   Debtor OrgStarMandate:    only the org-* mandate is active -> its reference is exported, the inactive mandate of the export org is ignored
   #   Debtor MandateUsedLater:  the mandate was last used after the collection date -> still exported with its own reference, DateLastUsed is not moved back
-  #   text conversion to the GBIC_5 character set, cut to the maximum length (expected values derived from the rules, never from the writer's output):
+  #   text conversion to the basic SEPA character set, cut to the maximum length (expected values derived from the rules, never from the writer's output):
   #     MndtId:  Ä -> AE, & -> space, ö -> oe                 "MREF-Ä&ö/001" -> "MREF-AE oe/001"
-  #     Dbtr.Nm: at most 70 chars; € -> space; umlauts, ß and & are kept; the rest over 70 chars is cut
+  #     Dbtr.Nm: at most 70 chars; umlauts and ß are transliterated, & and € -> space; the rest over 70 chars is cut
   #              input    = "Bäcker & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
-  #              expected = "Bäcker & Söhne   Großhandel " (28 chars; the € became a space, so 3 spaces between Söhne and Großhandel) + 42 x X = 70 chars
+  #              expected = "Baecker   Soehne   Grosshandel " (31 chars; & and € became spaces, so 3 spaces each between the words) + 39 x X = 70 chars
   #     Ustrd:   at most 140 chars; „ and “ -> space
   #              input    = "Rechnung „Nr. 1“ " (17 chars) + 140 x Y = 157 chars
   #              expected = "Rechnung  Nr. 1  " (17 chars; 2 spaces before Nr., 2 after 1) + 123 x Y = 140 chars
@@ -839,7 +839,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
                           </FinInstnId>
                       </DbtrAgt>
                       <Dbtr>
-                          <Nm>Bäcker &amp; Söhne   Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Nm>
+                          <Nm>Baecker   Soehne   Grosshandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Nm>
                       </Dbtr>
                       <DbtrAcct>
                           <Id>
