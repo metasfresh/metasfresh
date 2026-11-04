@@ -215,6 +215,10 @@ test.describe('Partner order type', () => {
 
   // eslint-disable-next-line no-unused-vars
   test('the pre-filled prepay type can be changed to the standard order type', async ({ page }) => {
+    // The longest flow of the file (two orders created, type switched, line added, order completed): measured at
+    // 1.8 min locally on a loaded machine, so the 60 s default is too small. The shared SalesOrderPage helpers
+    // (addOrderLine, complete) contain fixed waits, which is why the flow cannot be made faster here.
+    test.setTimeout(240000);
     const masterdata = await createFixture();
 
     await LoginPage.goto();
