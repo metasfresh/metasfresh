@@ -22,11 +22,11 @@ Feature: Business partner copy does not copy direct debit mandates
       | Identifier | Name                | Value           | IsCustomer |
       | bp_orig    | Mandate copy origin | mandcopy_@Date@ | Y          |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                   | RoutingNo | SwiftCode   |
-      | copyBank             | Mandate copy test bank | 30000000  | TESTDEC1XXX |
+      | C_Bank_ID | Name                   | RoutingNo | SwiftCode   |
+      | copyBank  | Mandate copy test bank | 30000000  | TESTDEC1XXX |
     And metasfresh contains C_BP_BankAccount
-      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
-      | origAcct   | bp_orig       | EUR           | DE89370400440532013000 | copyBank             |
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID |
+      | origAcct   | bp_orig       | EUR           | DE89370400440532013000 | copyBank  |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed |
       | origMandate                            | origAcct            | CORE        | MREF-COPY-001    | 2024-03-15  | Y           | 2025-09-04   |

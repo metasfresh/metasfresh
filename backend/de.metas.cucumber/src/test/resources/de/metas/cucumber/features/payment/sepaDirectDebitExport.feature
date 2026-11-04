@@ -47,56 +47,56 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | Identifier    | Name       | Value      | IsActive |
       | pricingSystem | ps_sepa_dd | ps_sepa_dd | true     |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_sales   | pricingSystem                 | DE                    | EUR                 | sepa-dd-PL | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_sales   | pricingSystem      | DE                    | EUR                 | sepa-dd-PL | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name        | ValidFrom  |
-      | plv_sales  | pl_sales                  | sepa-dd-plv | 2026-01-01 |
+      | Identifier | M_PriceList_ID | Name        | ValidFrom  |
+      | plv_sales  | pl_sales       | sepa-dd-plv | 2026-01-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
-      | productPrice | plv_sales                         | product                 | 10.0     | PCE               | taxCategory      |
+      | Identifier   | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
+      | productPrice | plv_sales              | product      | 10.0     | PCE               | taxCategory      |
 
     # --- creditor: the org BP of that organization (name, address), org bank account with BIC and creditor id ---
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                    | Value           | IsCustomer | AD_OrgBP_ID.Identifier |
-      | creditorBP | SEPA Test Creditor GmbH | creditor_@Date@ | N          | sellerOrg              |
+      | Identifier | Name                    | Value           | IsCustomer | AD_OrgBP_ID |
+      | creditorBP | SEPA Test Creditor GmbH | creditor_@Date@ | N          | sellerOrg   |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City   |
       | creditorLoc              | DE          | Musterstrasse 1 | 53111      | Testhausen |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP               | creditorLoc                  | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y            | Y                   |
     # the org info is needed for the invoice tax lookup (country of the org)
     And metasfresh contains AD_OrgInfo:
       | AD_OrgInfo_ID.Identifier | AD_Org_ID.Identifier | Org_BPartner_ID.Identifier | OrgBP_Location_ID.Identifier |
       | creditorOrgInfo          | sellerOrg            | creditorBP                 | creditorBPL                  |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                    | RoutingNo | SwiftCode   |
-      | creditorBank         | SEPA Test Creditor Bank | 10000000  | TESTDEC0XXX |
+      | C_Bank_ID    | Name                    | RoutingNo | SwiftCode   |
+      | creditorBank | SEPA Test Creditor Bank | 10000000  | TESTDEC0XXX |
     And metasfresh contains C_BP_BankAccount
-      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier | SEPA_CreditorIdentifier |
-      | orgAcct    | creditorBP    | EUR           | DE91100000000123456789 | creditorBank         | DE98ZZZ09999999999      |
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID    | SEPA_CreditorIdentifier |
+      | orgAcct    | creditorBP    | EUR           | DE91100000000123456789 | creditorBank | DE98ZZZ09999999999      |
 
-  # One pay selection with debtors of both schemes: the export writes a ZIP with one file per scheme, each with its own totals.
-  #   B2B:  a recurring mandate with 2 invoices -> 2 transactions with RCUR; the mandate's DateLastUsed is set to the collection date
-  #   CORE: a recurring mandate -> RCUR; a mandate that is not recurring and was never used -> OOFF
   @from:cucumber
   @Id:S32708_TC1
-  Scenario: schemes and sequence types: a B2B and a CORE file in one ZIP; B2B recurring with 2 transactions (DateLastUsed set to the collection date), CORE recurring (RCUR) and CORE not recurring and never used (OOFF)
+  Scenario: schemes and sequence types: one ZIP with a B2B and a CORE file
+    - one pay selection with debtors of both schemes: the export writes a ZIP with one file per scheme, each with its own totals
+    - B2B: a recurring mandate with 2 invoices -> 2 transactions with RCUR; the mandate's DateLastUsed is set to the collection date
+    - CORE: a recurring mandate -> RCUR; a mandate that is not recurring and was never used -> OOFF
     Given metasfresh contains C_BPartners:
-      | Identifier   | Name                  | Value         | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
-      | b2bDebtor    | Debtor B2B Recurring  | b2b_@Date@    | Y          | pricingSystem                 | D               |
-      | coreDebtor   | Debtor CORE Recurring | core_@Date@   | Y          | pricingSystem                 | D               |
-      | oneOffDebtor | Debtor CORE OneOff    | oneoff_@Date@ | Y          | pricingSystem                 | D               |
+      | Identifier   | Name                  | Value         | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | b2bDebtor    | Debtor B2B Recurring  | b2b_@Date@    | Y          | pricingSystem      | D           |
+      | coreDebtor   | Debtor CORE Recurring | core_@Date@   | Y          | pricingSystem      | D           |
+      | oneOffDebtor | Debtor CORE OneOff    | oneoff_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                  | RoutingNo | SwiftCode   |
-      | b2bBank              | SEPA Debtor Bank B2B  | 20000000  | TESTDEB2XXX |
-      | coreBank             | SEPA Debtor Bank CORE | 30000000  | TESTDEC1XXX |
+      | C_Bank_ID | Name                  | RoutingNo | SwiftCode   |
+      | b2bBank   | SEPA Debtor Bank B2B  | 20000000  | TESTDEB2XXX |
+      | coreBank  | SEPA Debtor Bank CORE | 30000000  | TESTDEC1XXX |
     And metasfresh contains C_BP_BankAccount
-      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
-      | b2bAcct    | b2bDebtor     | EUR           | DE46200000001000000001 | b2bBank              |
-      | coreAcct   | coreDebtor    | EUR           | DE60300000001000000002 | coreBank             |
-      | oneOffAcct | oneOffDebtor  | EUR           | DE33300000001000000003 | coreBank             |
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID |
+      | b2bAcct    | b2bDebtor     | EUR           | DE46200000001000000001 | b2bBank   |
+      | coreAcct   | coreDebtor    | EUR           | DE60300000001000000002 | coreBank  |
+      | oneOffAcct | oneOffDebtor  | EUR           | DE33300000001000000003 | coreBank  |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
       | b2bMandate                             | b2bAcct             | B2B         | MREF-B2B-001     | 2013-09-23  | Y           | 2025-09-04   | sellerOrg |
@@ -106,11 +106,11 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | AD_Org_ID |
       | oneOffMandate                          | oneOffAcct          | CORE        | MREF-OOFF-001    | 2026-10-01  | N           | sellerOrg |
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
-      | b2bInv1    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-      | b2bInv2    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-      | coreInv    | coreDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-      | oneOffInv  | oneOffDebtor  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | b2bInv1    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
+      | b2bInv2    | b2bDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
+      | coreInv    | coreDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
+      | oneOffInv  | oneOffDebtor  | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
       | b2bInvL1   | b2bInv1      | product      | 1 PCE       | 100.00 | zeroTax  |
@@ -128,8 +128,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     And the invoice identified by coreInv is completed
     And the invoice identified by oneOffInv is completed
     And metasfresh contains Pay Selection
-      | Identifier          | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
-      | schemesPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
+      | Identifier          | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | schemesPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg |
     # one "Create from..." per debtor, so that invoices of other tests on the same DB are not picked up
     And "Create from..." is invoked for pay selection schemesPaySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID | PayDate    |
@@ -502,26 +502,25 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_BP_BankAccount_DirectDebitMandate_ID | DateLastUsed |
       | b2bMandate                             | 2026-11-02   |
 
-  # Debtor-side cases, one debtor each, all in one B2B file; each debtor is named after its case (with spaces: an underscore is not in the basic SEPA character set and would become a space):
-  #   Debtor NoBIC:             the debtor bank has no BIC -> DbtrAgt is NOTPROVIDED
-  #                             it also has an active mandate of another org on the same bank account -> ignored, the export org's mandate is exported
-  #   Debtor NoDescription:     the invoice has no description -> no RmtInf/Ustrd
-  #   Debtor OrgStarMandate:    only the org-* mandate is active -> its reference is exported, the inactive mandate of the export org is ignored
-  #   Debtor MandateUsedLater:  the mandate was last used after the collection date -> still exported with its own reference, DateLastUsed is not moved back;
-  #                             a Swiss debtor (CH IBAN, outside the EEA) whose address has a town -> Dbtr/PstlAdr with town and country
-  #   Debtor NoBIC:             also has a full German address -> Dbtr/PstlAdr, converted like the texts below ("Hauptstraße 5" -> "Hauptstrasse 5", "Köln" -> "Koeln")
-  #   text conversion to the basic SEPA character set, cut to the maximum length (expected values derived from the rules, never from the writer's output):
-  #     MndtId:  not converted, exported as it is; a reference outside the SEPA character set is refused (see the refusals feature)
-  #              "MREF-(A/B)+1.2" uses every allowed special character kind
-  #     Dbtr.Nm: at most 70 chars; umlauts and ß are transliterated, & and € -> space; the rest over 70 chars is cut
-  #              input    = "Bäcker & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
-  #              expected = "Baecker   Soehne   Grosshandel " (31 chars; & and € became spaces, so 3 spaces each between the words) + 39 x X = 70 chars
-  #     Ustrd:   at most 140 chars; „ and “ -> space
-  #              input    = "Rechnung „Nr. 1“ " (17 chars) + 140 x Y = 157 chars
-  #              expected = "Rechnung  Nr. 1  " (17 chars; 2 spaces before Nr., 2 after 1) + 123 x Y = 140 chars
   @from:cucumber
   @Id:S32708_TC15
-  Scenario: debtor-side cases in one file: debtor bank without BIC (NOTPROVIDED), invoice without description (no Ustrd), text conversion to the basic SEPA character set and maximum lengths, only the org-* mandate active, the mandate of another org ignored, mandate last used after the collection date (DateLastUsed not moved back), debtor addresses (German, and Swiss outside the EEA)
+  Scenario: debtor-side cases in one B2B file
+    One debtor per case, each named after its case (with spaces: an underscore is not in the basic SEPA character set and would become a space):
+    - Debtor NoBIC: the debtor bank has no BIC -> DbtrAgt is NOTPROVIDED
+      - a full German address -> Dbtr/PstlAdr, converted like the texts below ("Hauptstraße 5" -> "Hauptstrasse 5", "Köln" -> "Koeln")
+      - an active mandate of another org on the same bank account -> ignored, the export org's mandate is exported
+    - Debtor NoDescription: the invoice has no description -> no RmtInf/Ustrd
+    - Debtor OrgStarMandate: only the org-* mandate is active -> its reference is exported, the inactive mandate of the export org is ignored
+    - Debtor MandateUsedLater: the mandate was last used after the collection date -> still exported with its own reference, DateLastUsed is not moved back
+      - a Swiss debtor (CH IBAN, outside the EEA) whose address has a town -> Dbtr/PstlAdr with town and country
+    - text conversion to the basic SEPA character set, cut to the maximum length (expected values derived from the rules, never from the writer's output):
+      - MndtId: not converted, exported as it is; a reference outside the SEPA character set is refused (see the refusals feature); "MREF-(A/B)+1.2" uses every allowed special character kind
+      - Dbtr.Nm: at most 70 chars; umlauts and ß are transliterated, & and € -> space; the rest over 70 chars is cut
+        input    = "Bäcker & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
+        expected = "Baecker   Soehne   Grosshandel " (31 chars; & and € became spaces, so 3 spaces each between the words) + 39 x X = 70 chars
+      - Ustrd: at most 140 chars; „ and “ -> space
+        input    = "Rechnung „Nr. 1“ " (17 chars) + 140 x Y = 157 chars
+        expected = "Rechnung  Nr. 1  " (17 chars; 2 spaces before Nr., 2 after 1) + 123 x Y = 140 chars
     Given load AD_Org:
       | AD_Org_ID.Identifier | Value |
       | orgStar              | 0     |
@@ -530,36 +529,36 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | AD_Org_ID.Identifier | Name                             |
       | otherOrg             | SEPA direct debit test other org |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                                                                                     | Value          | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
-      | noDescDebtor  | Debtor NoDescription                                                                     | nodesc_@Date@  | Y          | pricingSystem                 | D               |
-      | longDebtor    | Bäcker & Söhne € Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | long_@Date@    | Y          | pricingSystem                 | D               |
-      | orgStarDebtor | Debtor OrgStarMandate                                                                    | orgstar_@Date@ | Y          | pricingSystem                 | D               |
+      | Identifier    | Name                                                                                     | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | noDescDebtor  | Debtor NoDescription                                                                     | nodesc_@Date@  | Y          | pricingSystem      | D           |
+      | longDebtor    | Bäcker & Söhne € Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | long_@Date@    | Y          | pricingSystem      | D           |
+      | orgStarDebtor | Debtor OrgStarMandate                                                                    | orgstar_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_BPartners without locations:
-      | Identifier      | Name                    | Value        | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
-      | noBicDebtor     | Debtor NoBIC            | nobic_@Date@ | Y          | pricingSystem                 | D               |
-      | usedLaterDebtor | Debtor MandateUsedLater | later_@Date@ | Y          | pricingSystem                 | D               |
+      | Identifier      | Name                    | Value        | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | noBicDebtor     | Debtor NoBIC            | nobic_@Date@ | Y          | pricingSystem      | D           |
+      | usedLaterDebtor | Debtor MandateUsedLater | later_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1     | OPT.Postal | OPT.City |
       | noBicLoc                 | DE          | Hauptstraße 5    | 50667      | Köln     |
       | usedLaterLoc             | CH          | Bahnhofstrasse 1 | 8001       | Zürich   |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier   | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | noBicBPL     | noBicDebtor              | noBicLoc                     | Y            | Y                   |
-      | usedLaterBPL | usedLaterDebtor          | usedLaterLoc                 | Y            | Y                   |
+      | Identifier   | C_BPartner_ID   | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | noBicBPL     | noBicDebtor     | noBicLoc                     | Y            | Y                   |
+      | usedLaterBPL | usedLaterDebtor | usedLaterLoc                 | Y            | Y                   |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                 | RoutingNo | SwiftCode   |
-      | b2bBank              | SEPA Debtor Bank B2B | 20000000  | TESTDEB2XXX |
-      | chBank               | SEPA Debtor Bank CH  | 50000000  | TESTCHZZXXX |
+      | C_Bank_ID | Name                 | RoutingNo | SwiftCode   |
+      | b2bBank   | SEPA Debtor Bank B2B | 20000000  | TESTDEB2XXX |
+      | chBank    | SEPA Debtor Bank CH  | 50000000  | TESTCHZZXXX |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                         | RoutingNo |
-      | noBicBank            | SEPA Debtor Bank without BIC | 40000000  |
+      | C_Bank_ID | Name                         | RoutingNo |
+      | noBicBank | SEPA Debtor Bank without BIC | 40000000  |
     And metasfresh contains C_BP_BankAccount
-      | Identifier    | C_BPartner_ID   | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
-      | noBicAcct     | noBicDebtor     | EUR           | DE47400000001000000004 | noBicBank            |
-      | noDescAcct    | noDescDebtor    | EUR           | DE35200000001000000005 | b2bBank              |
-      | longAcct      | longDebtor      | EUR           | DE08200000001000000006 | b2bBank              |
-      | orgStarAcct   | orgStarDebtor   | EUR           | DE51200000001000000008 | b2bBank              |
-      | usedLaterAcct | usedLaterDebtor | EUR           | CH5604835012345678009  | chBank               |
+      | Identifier    | C_BPartner_ID   | C_Currency_ID | IBAN                   | C_Bank_ID |
+      | noBicAcct     | noBicDebtor     | EUR           | DE47400000001000000004 | noBicBank |
+      | noDescAcct    | noDescDebtor    | EUR           | DE35200000001000000005 | b2bBank   |
+      | longAcct      | longDebtor      | EUR           | DE08200000001000000006 | b2bBank   |
+      | orgStarAcct   | orgStarDebtor   | EUR           | DE51200000001000000008 | b2bBank   |
+      | usedLaterAcct | usedLaterDebtor | EUR           | CH5604835012345678009  | chBank    |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference  | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID | IsActive |
       | noBicMandate                           | noBicAcct           | B2B         | MREF-NOBIC-001    | 2013-09-23  | Y           | 2025-09-04   | sellerOrg | Y        |
@@ -570,18 +569,18 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | inactiveMandate                        | orgStarAcct         | B2B         | MREF-INACTIVE-001 | 2019-02-03  | Y           | 2025-09-04   | sellerOrg | N        |
       | usedLaterMandate                       | usedLaterAcct       | B2B         | MREF-LATER-001    | 2013-09-23  | Y           | 2026-12-01   | sellerOrg | Y        |
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
-      | longInv    | longDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-      | orgStarInv | orgStarDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | longInv    | longDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
+      | orgStarInv | orgStarDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
     # bill-to locations with a full address; the price list is given because the Swiss location has no price list of its country
     And metasfresh contains C_Invoice:
-      | Identifier   | C_BPartner_ID   | C_BPartner_Location_ID.Identifier | M_PriceList_ID.Identifier | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
-      | noBicInv     | noBicDebtor     | noBicBPL                          | pl_sales                  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-      | usedLaterInv | usedLaterDebtor | usedLaterBPL                      | pl_sales                  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | Identifier   | C_BPartner_ID   | C_BPartner_Location_ID | M_PriceList_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | noBicInv     | noBicDebtor     | noBicBPL               | pl_sales       | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
+      | usedLaterInv | usedLaterDebtor | usedLaterBPL           | pl_sales       | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
     # no description
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
-      | noDescInv  | noDescDebtor  | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | noDescInv  | noDescDebtor  | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
     And metasfresh contains C_InvoiceLines
       | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID |
       | noBicInvL     | noBicInv     | product      | 1 PCE       | 10.00 | zeroTax  |
@@ -601,8 +600,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     And the invoice identified by orgStarInv is completed
     And the invoice identified by usedLaterInv is completed
     And metasfresh contains Pay Selection
-      | Identifier          | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
-      | debtorsPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
+      | Identifier          | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | debtorsPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg |
     And "Create from..." is invoked for pay selection debtorsPaySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID | PayDate    |
       | CDD              | noBicDebtor   | 2026-11-02 |
@@ -862,7 +861,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
                       <InstdAmt Ccy="EUR">30.00</InstdAmt>
                       <DrctDbtTx>
                           <MndtRltdInf>
-                              <!-- text conversion, see the comment above the scenario: mandate reference kept as it is, debtor name and remittance info -->
+                              <!-- text conversion, see the scenario description: mandate reference kept as it is, debtor name and remittance info -->
                               <MndtId>MREF-(A/B)+1.2</MndtId>
                               <DtOfSgntr>2014-03-11</DtOfSgntr>
                               <AmdmntInd>false</AmdmntInd>
@@ -1057,39 +1056,38 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | usedLaterMandate                       | 2026-12-01   |
       | otherOrgMandate                        | 2025-09-04   |
 
-  # Creditor address: the creditor is the org BP; its address comes from the org BP's default bill-to location (GLN 4000000000129),
-  # never from the debtor bank account's holder data (A_Name, A_City). There is one creditor per file, so the scenario exports three times
-  # and re-points that location before each export; in this order each export expects a different Cdtr than the one before,
-  # so a re-point that did not take effect fails the export after it:
-  #   1. a city of only disallowed characters (empty after conversion) -> no Cdtr.PstlAdr, the export still succeeds
-  #   2. a location with a city (the Background's)                     -> Cdtr.PstlAdr with street, post code, town and country of the org BP
-  #   3. a location without a city                                     -> no Cdtr.PstlAdr at all
   @from:cucumber
   @Id:S32708_TC14
-  Scenario: creditor address from the org BP location, three exports: city of only disallowed characters (no Cdtr.PstlAdr, the export still succeeds), with a city (Cdtr.PstlAdr with town and country, not the debtor account holder's city), without a city (no Cdtr.PstlAdr)
+  Scenario: creditor address from the org BP location, three exports
+    The creditor is the org BP; its address comes from the org BP's default bill-to location (GLN 4000000000129),
+    never from the debtor bank account's holder data (A_Name, A_City). There is one creditor per file, so the scenario exports three times
+    and re-points that location before each export; each export expects a different Cdtr than the one before, so a re-point that did not take effect fails the export after it:
+    - 1. a city of only disallowed characters (empty after conversion) -> no Cdtr.PstlAdr, the export still succeeds
+    - 2. a location with a city (the Background's) -> Cdtr.PstlAdr with street, post code, town and country of the org BP, not the debtor account holder's city
+    - 3. a location without a city -> no Cdtr.PstlAdr at all
     Given metasfresh contains C_BPartners:
-      | Identifier     | Name                    | Value           | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
-      | withCityDebtor | Debtor CreditorWithCity | withcity_@Date@ | Y          | pricingSystem                 | D               |
-      | noCityDebtor   | Debtor CreditorNoCity   | nocity_@Date@   | Y          | pricingSystem                 | D               |
-      | euroCityDebtor | Debtor CreditorEuroCity | eurocity_@Date@ | Y          | pricingSystem                 | D               |
+      | Identifier     | Name                    | Value           | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | withCityDebtor | Debtor CreditorWithCity | withcity_@Date@ | Y          | pricingSystem      | D           |
+      | noCityDebtor   | Debtor CreditorNoCity   | nocity_@Date@   | Y          | pricingSystem      | D           |
+      | euroCityDebtor | Debtor CreditorEuroCity | eurocity_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                 | RoutingNo | SwiftCode   |
-      | b2bBank              | SEPA Debtor Bank B2B | 20000000  | TESTDEB2XXX |
+      | C_Bank_ID | Name                 | RoutingNo | SwiftCode   |
+      | b2bBank   | SEPA Debtor Bank B2B | 20000000  | TESTDEB2XXX |
     And metasfresh contains C_BP_BankAccount
-      | Identifier   | C_BPartner_ID  | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier | OPT.A_Name          | OPT.A_City  |
-      | withCityAcct | withCityDebtor | EUR           | DE35200000001000000005 | b2bBank              | Account Holder Name | Holder City |
-      | noCityAcct   | noCityDebtor   | EUR           | DE08200000001000000006 | b2bBank              | Account Holder Name | Holder City |
-      | euroCityAcct | euroCityDebtor | EUR           | DE78200000001000000007 | b2bBank              | Account Holder Name | Holder City |
+      | Identifier   | C_BPartner_ID  | C_Currency_ID | IBAN                   | C_Bank_ID | A_Name              | A_City      |
+      | withCityAcct | withCityDebtor | EUR           | DE35200000001000000005 | b2bBank   | Account Holder Name | Holder City |
+      | noCityAcct   | noCityDebtor   | EUR           | DE08200000001000000006 | b2bBank   | Account Holder Name | Holder City |
+      | euroCityAcct | euroCityDebtor | EUR           | DE78200000001000000007 | b2bBank   | Account Holder Name | Holder City |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference  | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
       | withCityMandate                        | withCityAcct        | B2B         | MREF-WITHCITY-001 | 2013-09-23  | Y           | 2025-09-04   | sellerOrg |
       | noCityMandate                          | noCityAcct          | B2B         | MREF-NOCITY-001   | 2013-09-23  | Y           | 2025-09-04   | sellerOrg |
       | euroCityMandate                        | euroCityAcct        | B2B         | MREF-EUROCITY-001 | 2013-09-23  | Y           | 2025-09-04   | sellerOrg |
     And metasfresh contains C_Invoice:
-      | Identifier  | C_BPartner_ID  | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
-      | withCityInv | withCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-      | noCityInv   | noCityDebtor   | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-      | euroCityInv | euroCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+      | Identifier  | C_BPartner_ID  | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | withCityInv | withCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
+      | noCityInv   | noCityDebtor   | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
+      | euroCityInv | euroCityDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D           | sellerOrg |
     And metasfresh contains C_InvoiceLines
       | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
       | withCityInvL | withCityInv  | product      | 1 PCE       | 100.00 | zeroTax  |
@@ -1104,10 +1102,10 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     And the invoice identified by noCityInv is completed
     And the invoice identified by euroCityInv is completed
     And metasfresh contains Pay Selection
-      | Identifier           | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
-      | withCityPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
-      | noCityPaySelection   | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
-      | euroCityPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
+      | Identifier           | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | withCityPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg |
+      | noCityPaySelection   | orgAcct             | DD                  | 2026-11-02 | sellerOrg |
+      | euroCityPaySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg |
     And "Create from..." is invoked for pay selection withCityPaySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID  | PayDate    |
       | CDD              | withCityDebtor | 2026-11-02 |
@@ -1135,8 +1133,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City |
       | euroCityLoc              | DE          | Musterstrasse 3 | 53111      | €€       |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP               | euroCityLoc                  | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | euroCityLoc                  | Y            | Y                   |
     When the SEPA export process is run for pay selection "euroCityPaySelection"
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme B2B is:
@@ -1231,8 +1229,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
     # 2. back to the Background's location, with a city
     Given metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP               | creditorLoc                  | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y            | Y                   |
     When the SEPA export process is run for pay selection "withCityPaySelection"
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme B2B is:
@@ -1336,8 +1334,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal |
       | noCityLoc                | DE          | Musterstrasse 2 | 53111      |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP               | noCityLoc                    | Y            | Y                   |
+      | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP    | noCityLoc                    | Y            | Y                   |
     When the SEPA export process is run for pay selection "noCityPaySelection"
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme B2B is:

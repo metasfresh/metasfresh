@@ -104,8 +104,8 @@ public class C_BP_BankAccount_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_BP_BankAccount
-	 *   | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier | OPT.A_Name          | OPT.A_City  |
-	 *   | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank           | Account Holder Name | Holder City |
+	 *   | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID  | A_Name              | A_City      |
+	 *   | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank | Account Holder Name | Holder City |
 	 * </pre>
 	 */
 	@And("metasfresh contains C_BP_BankAccount")
@@ -130,8 +130,8 @@ public class C_BP_BankAccount_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains organization bank accounts
-	 *   | Identifier | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier | SEPA_CreditorIdentifier |
-	 *   | orgAcct    | EUR           | DE91100000000123456789 | creditorBank         | DE98ZZZ09999999999      |
+	 *   | Identifier | C_Currency_ID | IBAN                   | C_Bank_ID    | SEPA_CreditorIdentifier |
+	 *   | orgAcct    | EUR           | DE91100000000123456789 | creditorBank | DE98ZZZ09999999999      |
 	 * And metasfresh contains organization bank accounts
 	 *   | Identifier | C_Currency_ID | IsCashBank |
 	 *   | cashbook   | EUR           | Y          |

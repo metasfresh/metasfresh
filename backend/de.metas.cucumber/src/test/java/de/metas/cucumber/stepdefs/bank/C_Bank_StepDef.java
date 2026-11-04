@@ -53,7 +53,7 @@ public class C_Bank_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>C_Bank_ID.Identifier</b> - (required) identifier under which the bank is registered<br>
+	 *   <b>C_Bank_ID</b> (or <b>C_Bank_ID.Identifier</b>) - (required) identifier under which the bank is registered<br>
 	 *   <b>Name</b>, <b>RoutingNo</b> - (required)<br>
 	 *   <b>SwiftCode</b> - (optional) the BIC; absent or blank = the bank has no BIC<br>
 	 *   <b>C_DataImport_ID.Identifier</b> - (optional, identifier-ref) data import of the bank; absent = the AD_Column default (the bank statement data import)<br>
@@ -61,8 +61,8 @@ public class C_Bank_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_Bank:
-	 *   | C_Bank_ID.Identifier | Name       | RoutingNo | SwiftCode   |
-	 *   | debtorBank           | Debtor Bank | 20000000  | TESTDEB2XXX |
+	 *   | C_Bank_ID  | Name        | RoutingNo | SwiftCode   |
+	 *   | debtorBank | Debtor Bank | 20000000  | TESTDEB2XXX |
 	 * </pre>
 	 */
 	@And("metasfresh contains C_Bank:")

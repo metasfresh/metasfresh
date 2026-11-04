@@ -52,19 +52,12 @@ public class CreatedSEPAExports
 	{
 		@NonNull I_SEPA_Export export;
 
-		/**
-		 * The mandate type of all lines of this export; {@code null} for a credit transfer, or for a direct debit without exportable lines.
-		 */
+		/** All lines of this export have this mandate type; {@code null} for a credit transfer or a direct debit without exportable lines. */
 		@Nullable DirectDebitMandateType scheme;
 
-		/**
-		 * The mandate of each direct debit export line; empty for a credit transfer.
-		 */
 		@NonNull ImmutableMap<SEPAExportLineId, DirectDebitMandate> mandatesBySepaExportLineId;
 
-		/**
-		 * The debtor address of each direct debit export line, i.e. the bill-to address captured on its invoice; empty for a credit transfer.
-		 */
+		/** The address captured on each line's invoice ({@code C_BPartner_Location_Value_ID}), not the partner's current location. */
 		@NonNull ImmutableMap<SEPAExportLineId, LocationId> debtorLocationIdsBySepaExportLineId;
 
 		/**

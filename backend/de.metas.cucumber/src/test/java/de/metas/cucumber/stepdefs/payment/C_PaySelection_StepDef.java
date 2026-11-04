@@ -91,8 +91,8 @@ public class C_PaySelection_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains Pay Selection
-	 *   | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
-	 *   | paySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
+	 *   | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+	 *   | paySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg |
 	 * </pre>
 	 */
 	@And("metasfresh contains Pay Selection")
