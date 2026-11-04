@@ -1899,6 +1899,11 @@ public class M_ShipmentSchedule_StepDef
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking, qtyScheduledForPicking);
 			}
+			if (Check.isNotBlank(carrierAdvisingStatus))
+			{
+				// the carrier advise runs async; waiting for its status lets a scenario continue only after the advise has settled
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, carrierAdvisingStatus);
+			}
 			return queryBuilder
 					.create()
 					.firstOnlyOptional(I_M_ShipmentSchedule.class)
