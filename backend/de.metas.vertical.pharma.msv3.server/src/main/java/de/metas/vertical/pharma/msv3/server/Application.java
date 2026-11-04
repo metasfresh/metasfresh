@@ -2,13 +2,15 @@ package de.metas.vertical.pharma.msv3.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.EventListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,7 +40,7 @@ import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
  */
 
 @SpringBootApplication
-public class Application implements InitializingBean
+public class Application
 {
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
@@ -48,6 +50,11 @@ public class Application implements InitializingBean
 	@Value("${msv3server.startup.requestConfigData:true}")
 	private boolean requestConfigDataOnStartup;
 
+	// @Lazy breaks a bean cycle that Spring Boot 2.6+ no longer tolerates by default
+	// (application -> this field -> MSV3ServerPeerService -> MSV3PeerAuthToken, a @Bean defined
+	// on this very class). The service is only used from requestDataOnStartup() at startup, so a
+	// lazy proxy resolves the real bean on first use once the context is built.
+	@Lazy
 	@Autowired
 	private MSV3ServerPeerService msv3ServerPeerService;
 
@@ -79,8 +86,13 @@ public class Application implements InitializingBean
 		return MSV3PeerAuthToken.of(authTokenStringValue);
 	}
 
-	@Override
-	public void afterPropertiesSet()
+	// Run the startup data request on ApplicationReadyEvent rather than InitializingBean, so it
+	// fires AFTER the context is fully built. afterPropertiesSet() used to run while the
+	// 'application' bean was still in creation; with the @Lazy field that broke the Spring Boot
+	// 2.6+ bean cycle, resolving the lazy proxy that early would fail. At ApplicationReadyEvent the
+	// proxy resolves the real MSV3ServerPeerService and the request actually executes.
+	@EventListener(ApplicationReadyEvent.class)
+	public void requestDataOnStartup()
 	{
 		try
 		{
