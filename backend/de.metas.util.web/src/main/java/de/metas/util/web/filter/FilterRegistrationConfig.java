@@ -35,12 +35,42 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.Ordered;
+import org.springframework.web.filter.UrlHandlerFilter;
 
 @Profile(Profiles.PROFILE_App)
 @Configuration
 public class FilterRegistrationConfig
 {
+	/** {@link org.springframework.web.util.pattern.PathPattern} that matches every path under {@code /api} (any depth). */
+	private static final String URL_PATHPATTERN_API = "/api/**";
+
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+
+	/**
+	 * Restores trailing-slash tolerance for the REST API. Spring 6.0 deprecated and Spring 6.x removed the
+	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} URL matching, so a request whose path ends in a
+	 * slash before the query string — e.g. {@code GET /api/v2/bpartner/byOrg/001/?since=…} — no longer matches
+	 * {@code @GetMapping("/byOrg/{orgCode}")} and fails with {@code NoResourceFoundException} (surfaced as 422).
+	 * <p>
+	 * We normalize the path with Spring's {@link UrlHandlerFilter} in {@code wrapRequest} (mutate) mode — NOT a
+	 * redirect, because API clients must not be bounced with a 308 — so the stripped path is visible to the whole
+	 * filter chain and the {@code DispatcherServlet}. Registered at {@link Ordered#HIGHEST_PRECEDENCE} so every
+	 * downstream filter (auth, audit) and the handler mapping all see the already-normalized path.
+	 */
+	@Bean
+	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashApiUrlHandlerFilter()
+	{
+		final UrlHandlerFilter urlHandlerFilter = UrlHandlerFilter
+				.trailingSlashHandler(URL_PATHPATTERN_API)
+				.wrapRequest()
+				.build();
+
+		final FilterRegistrationBean<UrlHandlerFilter> registrationBean = new FilterRegistrationBean<>(urlHandlerFilter);
+		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+		return registrationBean;
+	}
 
 	// NOTE: we are using standard spring CORS filter
 	// @Bean
