@@ -36,6 +36,8 @@ import org.compiere.model.I_EXP_Processor;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_S_PostgREST_Config;
 import org.compiere.util.Env;
+
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -83,7 +85,7 @@ public class CucumberLifeCycleSupport
 				// Replaces org.springframework.util.SocketUtils (removed in Spring 6).
 				appServerPort = socket.getLocalPort();
 			}
-			catch (final java.io.IOException e)
+			catch (final IOException e)
 			{
 				throw new RuntimeException("Failed to allocate a free TCP port for the metasfresh app server", e);
 			}
