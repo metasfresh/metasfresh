@@ -423,7 +423,7 @@ public class C_Payment_StepDef
 	 *   <b>C_Charge_ID</b> — (optional, identifier-ref) expected charge<br>
 	 *   <b>Posted</b> — (optional) expected posting status code (e.g. {@code Y} posted, {@code E} posting error)<br>
 	 *   <b>PostingError</b> — (optional) the payment must carry a {@code PostingError_Issue_ID} whose issue summary contains this text<br>
-	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, C_Invoice_ID, DateTrx, C_BPartner_ID,
+	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, OverUnderAmt, IsOverUnderPayment, C_Invoice_ID, DateTrx, C_BPartner_ID,
 	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, TenderType, IsPrepayment, Proforma_Invoice_ID, PaymentBonusAmt)<br>
 	 *   <b>PaymentBonus_CreditMemo_ID</b> — (optional, identifier) registers the payment's payment bonus credit memo under the given invoice identifier; {@code null} expects none
 	 * @cucumber.depends StepDefData: C_Payment_StepDefData, C_Charge_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData,
@@ -466,6 +466,8 @@ public class C_Payment_StepDef
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
 		row.getAsOptionalBigDecimal(I_C_Payment.COLUMNNAME_OverUnderAmt)
 				.ifPresent(overUnderAmt -> softly.assertThat(payment.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(overUnderAmt));
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment)
+				.ifPresent(isOverUnderPayment -> softly.assertThat(payment.isOverUnderPayment()).as("IsOverUnderPayment").isEqualTo(isOverUnderPayment));
 		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt)
 				.ifPresent(paymentBonusAmt -> softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo(paymentBonusAmt));
 
