@@ -28,6 +28,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.BankStatementCreateRequest;
+import de.metas.banking.service.BankStatementPrepayOrderResolver;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -112,6 +113,7 @@ public class BankStatementImportProcessTest
 		setupDBFunctionsRepository();
 		setupImportTableDescriptorRepository();
 		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+		BankStatementPrepayOrderResolver.newInstanceForUnitTesting();
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);

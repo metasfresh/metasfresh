@@ -124,7 +124,7 @@ public class BankStatementCamt53Service
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final BankStatementPrepayOrderResolver prepayOrderResolver = new BankStatementPrepayOrderResolver();
+	@NonNull private final BankStatementPrepayOrderResolver prepayOrderResolver;
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -137,13 +137,15 @@ public class BankStatementCamt53Service
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final PaymentAllocationService paymentAllocationService,
 			@NonNull final MoneyService moneyService,
-			@NonNull final BankStatementImportFileLogRepository bankStatementImportFileLogRepository)
+			@NonNull final BankStatementImportFileLogRepository bankStatementImportFileLogRepository,
+			@NonNull final BankStatementPrepayOrderResolver prepayOrderResolver)
 	{
 		this.bankAccountService = bankAccountService;
 		this.currencyRepository = currencyRepository;
 		this.paymentAllocationService = paymentAllocationService;
 		this.moneyService = moneyService;
 		this.bankStatementImportFileLogRepository = bankStatementImportFileLogRepository;
+		this.prepayOrderResolver = prepayOrderResolver;
 	}
 
 	@NonNull

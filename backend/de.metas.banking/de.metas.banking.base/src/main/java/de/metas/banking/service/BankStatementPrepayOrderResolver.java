@@ -1,6 +1,7 @@
 package de.metas.banking.service;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -19,8 +20,11 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -32,9 +36,18 @@ import java.util.Optional;
  * <p>
  * The caller decides what the text candidates of its source are and that the lookup only runs for a credit line without a referenced invoice.
  */
+@Component
 public class BankStatementPrepayOrderResolver
 {
 	private static final Logger logger = LogManager.getLogger(BankStatementPrepayOrderResolver.class);
+
+	@VisibleForTesting
+	public static BankStatementPrepayOrderResolver newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(BankStatementPrepayOrderResolver.class, BankStatementPrepayOrderResolver::new);
+	}
 
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);

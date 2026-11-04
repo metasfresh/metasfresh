@@ -77,12 +77,12 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final BankStatementImportInvoiceResolver invoiceResolver = new BankStatementImportInvoiceResolver();
-	private final BankStatementPrepayOrderResolver prepayOrderResolver = new BankStatementPrepayOrderResolver();
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 	/**
-	 * The import process is instantiated by reflection (see {@code IImportProcessFactory}), not by Spring, so the bean cannot be injected.
-	 * Lazy, because it is only needed for a line that references an invoice.
+	 * The import process is instantiated by reflection (see {@code IImportProcessFactory}), not by Spring, so the beans cannot be injected.
+	 * Lazy, because each is only needed for some lines: the order resolver for a credit line without invoice, the payment bonus service for a line that references an invoice.
 	 */
+	@NonNull private final SpringContextHolder.Lazy<BankStatementPrepayOrderResolver> prepayOrderResolver = SpringContextHolder.lazyBean(BankStatementPrepayOrderResolver.class);
 	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	@Override
@@ -285,7 +285,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 				.filter(Objects::nonNull)
 				.flatMap(text -> Arrays.stream(WHITESPACE.split(text)))
 				.collect(ImmutableSet.toImmutableSet());
-		return prepayOrderResolver.findOrder(words, Money.of(importRecord.getStmtAmt(), currencyId), importedBPartnerId, "I_BankStatement_ID=" + importRecord.getI_BankStatement_ID())
+		return prepayOrderResolver.get().findOrder(words, Money.of(importRecord.getStmtAmt(), currencyId), importedBPartnerId, "I_BankStatement_ID=" + importRecord.getI_BankStatement_ID())
 				.orElse(null);
 	}
 
