@@ -2,7 +2,7 @@
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00702
 @topic:invoiceAddress
-@ghActions:run_on_executor7
+@ghActions:run_on_executor9
 Feature: Render invoice address
 ## F00702: Invoice Address
   Especially tracing the "BPartnerName" part of the address

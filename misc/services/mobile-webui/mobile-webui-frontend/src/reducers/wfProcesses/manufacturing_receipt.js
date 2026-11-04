@@ -176,6 +176,7 @@ registerHandler({
     // NOTE: each line already carries its own `editableAttributes` (JsonAttribute[], SeqNo-ordered)
     // straight from the backend line contract - normalizeLines' `...line` spread threads it through
     // as-is, so no explicit per-line wiring is needed here (see MaterialReceiptLineScreen).
+    draftActivityDataStored.readOnlyAttributes = fromActivity.componentProps.readOnlyAttributes ?? [];
     return draftActivityDataStored;
   },
 });

@@ -73,6 +73,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -271,6 +272,7 @@ public abstract class ReceiptScheduleTestBase
 		}
 
 		product.setC_UOM_ID(stockUOMId.getRepoId());
+		product.setProductType(X_M_Product.PRODUCTTYPE_Item);
 
 		saveRecord(product);
 		return product;

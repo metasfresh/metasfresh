@@ -74,6 +74,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -90,6 +91,10 @@ import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+/**
+ * Repository Tables: C_Tax, C_TaxCategory, C_VAT_SmallBusiness
+ * Repository Cluster: TaxDAO; C_Tax is additionally read (FK lookups only) by CiiMappingRepository.
+ */
 public class TaxDAO implements ITaxDAO
 {
 	private final static Logger logger = LogManager.getLogger(TaxDAO.class);
@@ -258,6 +263,30 @@ public class TaxDAO implements ITaxDAO
 				.firstId(TaxCategoryId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(taxCategoryId);
+	}
+
+	@Override
+	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
+	}
+
+	@Override
+	public Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull final TaxCategoryId taxCategoryId)
+	{
+		final TaxCategoryId activeTaxCategoryId = queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
+				.create()
+				.firstId(TaxCategoryId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(activeTaxCategoryId);
 	}
 
 	@Override
@@ -452,6 +481,13 @@ public class TaxDAO implements ITaxDAO
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);
 
+		final Percent rate = taxQuery.getRate();
+		if (rate != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_Rate, rate.toBigDecimal());
+			loggable.addLog("Rate={}", rate);
+		}
+
 		queryBuilder.orderBy(I_C_Tax.COLUMNNAME_SeqNo);
 		return queryBuilder;
 	}
@@ -520,5 +556,36 @@ public class TaxDAO implements ITaxDAO
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_AD_Client_ID, clientId)
 				.create()
 				.firstIdOnlyOptional(TaxId::ofRepoIdOrNull);
+	}
+
+	@Override
+	@NonNull
+	public TaxCategoryId createTaxCategory(@NonNull final CreateTaxCategoryRequest request)
+	{
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
+		taxCategory.setInternalName(request.getInternalName());
+		taxCategory.setName(request.getName());
+		InterfaceWrapperHelper.saveRecord(taxCategory);
+
+		return TaxCategoryId.ofRepoId(taxCategory.getC_TaxCategory_ID());
+	}
+
+	@Override
+	@NonNull
+	public TaxId createTax(@NonNull final CreateTaxRequest request)
+	{
+		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		tax.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		tax.setName(request.getName());
+		tax.setRate(request.getRate().toBigDecimal());
+		tax.setIsDocumentLevel(request.isDocumentLevel());
+		tax.setValidFrom(TimeUtil.asTimestampNotNull(request.getValidFrom()));
+		tax.setC_Country_ID(request.getCountryId().getRepoId());
+		tax.setTo_Country_ID(request.getCountryId().getRepoId());
+		tax.setTypeOfDestCountry(request.getTypeOfDestCountry().getCode());
+		tax.setSOPOType(request.getSopoType().getCode());
+		InterfaceWrapperHelper.saveRecord(tax);
+
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
 	}
 }

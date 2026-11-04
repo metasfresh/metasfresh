@@ -16,6 +16,7 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.methods.CostAmountType;
+import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -457,6 +458,15 @@ public class CostDetailRepository implements ICostDetailRepository
 				.addNotNull(I_M_CostDetail.COLUMNNAME_M_CostRevaluationLine_ID)
 				.create()
 				.listDistinctAsImmutableSet(I_M_CostDetail.COLUMNNAME_M_Product_ID, ProductId.class);
+	}
+
+	@Override
+	public boolean hasCostDetailsForCostRevaluation(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return queryBL.createQueryBuilder(I_M_CostDetail.class)
+				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostRevaluation_ID, costRevaluationId)
+				.create()
+				.anyMatch();
 	}
 
 	@Override

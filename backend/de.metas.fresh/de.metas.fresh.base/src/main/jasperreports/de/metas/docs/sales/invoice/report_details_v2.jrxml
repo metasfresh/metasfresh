@@ -124,10 +124,6 @@
 		<property name="com.jaspersoft.studio.field.name" value="stdprecision"/>
 		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
 	</field>
-	<field name="priceqtypattern" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="priceqtypattern"/>
-		<property name="com.jaspersoft.studio.field.label" value="priceqtypattern"/>
-	</field>
 	<field name="linenetamt" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="linenetamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
@@ -196,6 +192,10 @@
 		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
+	<field name="priceqtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="priceqtypattern"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceqtypattern"/>
+	</field>
 	<field name="catchweight" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="catchweight"/>
 		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
@@ -208,6 +208,14 @@
 		<property name="com.jaspersoft.studio.field.name" value="customs_number"/>
 		<property name="com.jaspersoft.studio.field.label" value="customs_number"/>
 	</field>
+	<field name="iswithoutcharge" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="iswithoutcharge"/>
+		<property name="com.jaspersoft.studio.field.label" value="iswithoutcharge"/>
+	</field>
+	<field name="reason" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="reason"/>
+		<property name="com.jaspersoft.studio.field.label" value="reason"/>
+	</field>
 	<field name="is_totalamount_hidden" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="is_totalamount_hidden"/>
 		<property name="com.jaspersoft.studio.field.label" value="is_totalamount_hidden"/>
@@ -216,9 +224,9 @@
 		<property name="com.jaspersoft.studio.field.name" value="is_weight_hidden"/>
 		<property name="com.jaspersoft.studio.field.label" value="is_weight_hidden"/>
 	</field>
-	<field name="iswithoutcharge" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="iswithoutcharge"/>
-		<property name="com.jaspersoft.studio.field.label" value="iswithoutcharge"/>
+	<field name="isshowcustomstariffnumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isshowcustomstariffnumber"/>
+		<property name="com.jaspersoft.studio.field.label" value="isshowcustomstariffnumber"/>
 	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
@@ -1025,7 +1033,7 @@ $F{shiplocation}
 			</textField>
 		</band>
 		<band height="13">
-			<printWhenExpression><![CDATA[$F{customs_number}!=null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean(($F{customs_number} != null && !$F{customs_number}.isEmpty()) && $F{isshowcustomstariffnumber}.equals("Y"))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="520" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="722c39a5-a88d-49d0-9f1c-476724152372"/>
 				<box rightPadding="3">
