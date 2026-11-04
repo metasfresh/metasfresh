@@ -35,6 +35,15 @@
     <artifactId>de-metas-common-procurement</artifactId>
 
     <properties>
+        <!-- This shared protocol library is consumed by procurement-webui-backend, a standalone
+             Spring Boot 2.x service still built and run on JDK 14 (see
+             docker-builds/Dockerfile.procurement.backend and that module's java.version=14).
+             The parent (de.metas.parent.general) defaults metasfresh.java.version to 25 for the
+             JDK 25 migration, which would emit class-file version 69 here; a JDK 14 compiler
+             cannot read that ("class file has wrong version 69.0, should be 58.0"). Pin this
+             module to the oldest consumer's bytecode level so both consumers (JDK 14 webui and
+             the JDK 25 main backend) can read it. -->
+        <metasfresh.java.version>14</metasfresh.java.version>
     </properties>
 
     <dependencies>
