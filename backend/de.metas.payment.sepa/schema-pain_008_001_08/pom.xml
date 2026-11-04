@@ -33,7 +33,7 @@
 	<artifactId>de.metas.payment.sepa.schema.pain_008_001_08</artifactId>
 	<packaging>jar</packaging>
 
-	<description>SEPA Direct Debit B2B - schema - pain_008_001_08 (DK GBIC_5)</description>
+	<description>SEPA Direct Debit (CORE and B2B) - schema - pain_008_001_08 (DK GBIC_5)</description>
 	<properties>
 		<migration-sql-basedir/>
 	</properties>

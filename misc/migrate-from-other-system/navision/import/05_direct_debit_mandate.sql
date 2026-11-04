@@ -21,6 +21,11 @@
  */
 
 -- partners need to be imported first, from i_bpartner
+--
+-- The source table "Navision$Bank Account Mandate" comes from a third-party SEPA add-on, not from standard Navision.
+-- The option values mapped below are that add-on's: "Mandate Type" 0 = CORE, 1 = B2B;
+-- "Mandate Status" 0 = empty, 1 = first, 2 = recurring, 3 = final; "Mandate Frequency" 1 = recurring.
+-- Check them against the mandate card of the source system before running; an unknown "Mandate Type" makes the insert fail.
 
 DROP TABLE IF EXISTS migration_data.c_bp_bankaccount_directdebitmandate;
 CREATE TABLE migration_data.c_bp_bankaccount_directdebitmandate AS
