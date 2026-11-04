@@ -9,6 +9,7 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
@@ -17,7 +18,6 @@ import de.metas.handlingunits.attribute.json.JsonAttributeListValue;
 import de.metas.handlingunits.attribute.json.JsonAttributeValueType;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
@@ -339,7 +339,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 			final List<I_M_HU_PI_Item> luPackingInstructionsItems = handlingUnitsBL.retrieveParentPIItemsForParentPI(
 					tuPackingInstructionsId,
-					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+					HuUnitType.LU,
 					customerId);
 
 			if (!luPackingInstructionsItems.isEmpty())

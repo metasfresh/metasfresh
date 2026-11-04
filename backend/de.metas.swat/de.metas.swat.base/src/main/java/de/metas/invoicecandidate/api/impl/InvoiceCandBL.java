@@ -1981,6 +1981,89 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
+	{
+		final List<I_C_Invoice_Candidate> icRecordsToDelete = invoiceCandDAO.retrieveAllReferencingInclInactive(model);
+		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
+		{
+			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
+			invoiceCandDAO.delete(icRecordToDelete);
+		}
+		return icRecordsToDelete.size();
+	}
+
+	/**
+	 * Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense.
+	 */
+	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	{
+		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		final boolean processedByDeliveryClosedRule = icToDelete.isProcessed() && isProcessedByDeliveryClosedRule(icToDelete);
+		if (!manuallyFlaggedAsProcessed && !processedByDeliveryClosedRule)
+		{
+			return; // nothing to do
+		}
+
+		final boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		if (hasInvoiceLines)
+		{
+			return; // nothing to do
+		}
+
+		// icToDelete was set to "processed" to be out of the way (manually, or because its delivery was closed with nothing delivered); in this case, we can unprocess and delete it.
+		icToDelete.setProcessed(false);
+	}
+
+	@Override
+	public boolean isProcessedByDeliveryClosedRule(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		// cheap conditions first; the order line is loaded only if they all hold
+		return ic.isDeliveryClosed()
+				&& isQtyToInvoiceBasedOnDeliveredQty(ic)
+				&& ic.getQtyDelivered().signum() == 0
+				&& ic.getQtyInvoiced().signum() == 0
+				&& retrieveOrderLineQtyDelivered(ic).signum() == 0;
+	}
+
+	/**
+	 * @return {@code true} if the candidate's quantity to invoice can only come from a delivery (see {@code InvoiceCandidate.computeToInvoiceExclOverride}),
+	 * so with its delivery closed and nothing delivered, it can never be invoiced.
+	 */
+	private boolean isQtyToInvoiceBasedOnDeliveredQty(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final InvoiceRule invoiceRule = getInvoiceRule(ic); // the effective rule; never the virtual column InvoiceRule_Effective
+		switch (invoiceRule)
+		{
+			case AfterOrderDelivered:
+				return true; // the ordered qty, but only once the whole order is delivered
+			case AfterDelivery:
+			case OrderCompletelyDelivered:
+			case CustomerScheduleAfterDelivery:
+			case Manual:
+				return productBL.isItemType(ProductId.ofRepoId(ic.getM_Product_ID())); // non-items: delivered or ordered qty
+			default:
+				return false; // Immediate (delivered or ordered qty), AfterPick (picked qty)
+		}
+	}
+
+	/**
+	 * Reads the order line in the candidate's transaction, where a shipment's/receipt's completion already raised its {@code QtyDelivered} before the candidate's own {@code QtyDelivered} follows.
+	 * Not via {@code IOrderDAO#getOrderLineById}: that loads in the thread-inherited transaction, while the recompute can pass the candidate an explicit one.
+	 *
+	 * @return the order line's {@code QtyDelivered}, or zero if the candidate has no order line
+	 */
+	private BigDecimal retrieveOrderLineQtyDelivered(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(ic.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			return ZERO;
+		}
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getCtx(ic), orderLineId.getRepoId(), I_C_OrderLine.class, getTrxName(ic));
+		return orderLine.getQtyDelivered();
+	}
+
+	@Override
 	public void updateProcessedFlag(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Boolean processed = null;
@@ -1991,6 +2074,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		final boolean processedCalc;
+		boolean processedByInvoicing = false;
 		Integer nonReversedIlas = null;
 
 		// If invoice candidate has errors, don't update the Processed_Calc value until the error is solved.
@@ -2022,9 +2106,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 
 			// task 08567: add a way to override "processed" by the user
-			processedCalc = noOpenQty && nonReversedIlas > 0;
+			processedByInvoicing = noOpenQty && nonReversedIlas > 0;
+			processedCalc = processedByInvoicing || isProcessedByDeliveryClosedRule(ic);
 		}
 
+		final boolean processedByOverride = processed != null;
 		if (processed == null)
 		{
 			processed = processedCalc; // processed wasn't set via Processed_Override
@@ -2042,7 +2128,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyToInvoiceInUOM(ZERO);
 			ic.setQtyToInvoiceBeforeDiscount(ZERO);
 
-			ic.setApprovalForInvoicing(false);
+			// Processed only by the delivery-closed rule: keep an approval that was set before shipping,
+			// so that the candidate is still included in an "only approved" invoicing run once something is delivered.
+			if (processedByOverride || processedByInvoicing)
+			{
+				ic.setApprovalForInvoicing(false);
+			}
 		}
 		else if (nonReversedIlas != null && nonReversedIlas == 0)
 		{
@@ -2359,27 +2450,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
 		closeInvoiceCandidates(invoiceCandidates.iterator());
-	}
-
-	@Override
-	public void openInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
-	{
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
-		invoiceCandidates.forEach(this::openInvoiceCandidate);
-	}
-
-	/** Counterpart of {@link #closeInvoiceCandidate(I_C_Invoice_Candidate)}; QtyToInvoice is not restored, the invalidation recomputes it. */
-	private void openInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
-	{
-		candidate.setProcessed_Override(null);
-
-		if (!InterfaceWrapperHelper.hasChanges(candidate))
-		{
-			return;
-		}
-
-		invoiceCandDAO.invalidateCand(candidate);
-		invoiceCandDAO.save(candidate);
 	}
 
 	@Override

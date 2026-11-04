@@ -1,6 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl;
 
 import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -9,11 +10,13 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderId;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 final class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrderReceiptHUProducer
 {
@@ -22,9 +25,11 @@ final class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrde
 	private final I_PP_Order ppOrder;
 	private final ProductId productId;
 
-	public CostCollectorCandidateFinishedGoodsHUProducer(final org.eevolution.model.I_PP_Order ppOrder)
+	public CostCollectorCandidateFinishedGoodsHUProducer(
+			final org.eevolution.model.I_PP_Order ppOrder,
+			@NonNull final Supplier<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker)
 	{
-		super(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+		super(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), packingInstructionChecker);
 		// TODO: validate:
 		// * if is a completed PP_Order
 

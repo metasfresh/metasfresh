@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -104,7 +105,7 @@ public class PPOrderReceiptHUProducer_BestBeforeDate_Test
 		ppOrder.setM_Product_ID(product.getM_Product_ID());
 		saveRecord(ppOrder);
 
-		final AbstractPPOrderReceiptHUProducer producer = new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder);
+		final AbstractPPOrderReceiptHUProducer producer = new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder, LUTUConfigurationPackingInstructionChecker::new);
 		producer.movementDate(MOVEMENT_DATE);
 		return producer;
 	}
