@@ -74,9 +74,8 @@ public interface IProductBL extends ISingletonService
 
 	ProductId getProductIdByValue(OrgId orgId, String productValue);
 
-	/** @return the active product of the context client with this search key (any organisation), or {@code null} */
-	@Nullable
-	ProductId getProductIdByValue(@NonNull String productValue);
+	/** @return the active product of the given client with this search key (any organisation) */
+	Optional<ProductId> getProductIdByValue(@NonNull String productValue, @NonNull ClientId clientId);
 
 	UOMPrecision getUOMPrecision(I_M_Product product);
 

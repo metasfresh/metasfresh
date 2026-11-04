@@ -236,4 +236,29 @@ class LabelProductResolverTest
 
 		assertThat(resolve(new TestCode(codes, null)).getProductId()).isEqualTo(ProductId.ofRepoId(ean13Product.getM_Product_ID()));
 	}
+
+	@Test
+	void productNumber_isLookedUpInTheGivenClient_notInTheAmbientOne()
+	{
+		final ProductLabelCodes codes = ProductLabelCodes.builder().productNo(product.getValue()).build();
+		final ClientId otherClientId = ClientId.ofRepoId(ClientId.METASFRESH.getRepoId() + 1);
+
+		// P1 belongs to the ambient client (Env), not to the given one
+		assertThatThrownBy(() -> resolver.resolve(new TestCode(codes, null), ScannedCode.ofString("TEST"), otherClientId))
+				.isInstanceOf(LabelRejectionException.class)
+				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE);
+
+		// and a product of the given client is found although the ambient client is another one
+		final I_M_Product otherClientProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		InterfaceWrapperHelper.setValue(otherClientProduct, I_M_Product.COLUMNNAME_AD_Client_ID, otherClientId.getRepoId());
+		otherClientProduct.setIsActive(true);
+		otherClientProduct.setValue("P-OTHER");
+		otherClientProduct.setName("P-OTHER");
+		otherClientProduct.setC_UOM_ID(product.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(otherClientProduct);
+		final ProductLabelCodes otherCodes = ProductLabelCodes.builder().productNo("P-OTHER").build();
+
+		assertThat(resolver.resolve(new TestCode(otherCodes, null), ScannedCode.ofString("TEST"), otherClientId).getProductId())
+				.isEqualTo(ProductId.ofRepoId(otherClientProduct.getM_Product_ID()));
+	}
 }

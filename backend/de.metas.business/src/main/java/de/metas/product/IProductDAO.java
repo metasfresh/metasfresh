@@ -121,6 +121,9 @@ public interface IProductDAO extends ISingletonService
 	 */
 	ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
+	/** @return the active product of the given client whose {@code M_Product.Value} equals the given value exactly (the first by {@code M_Product_ID} if several organisations have one) */
+	Optional<ProductId> getProductIdByValue(@NonNull String value, @NonNull ClientId clientId);
+
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull ClientId clientId);

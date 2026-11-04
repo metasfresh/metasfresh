@@ -245,4 +245,25 @@ public class ProductDAOTest
 					.isInstanceOf(DBException.class);
 		}
 	}
+
+	@Nested
+	class getProductIdByValue
+	{
+		@Test
+		void exactValueOfTheGivenClient_isFound_otherClientAndInactiveAreNot()
+		{
+			final I_M_Product p = newInstance(I_M_Product.class);
+			p.setValue("V1");
+			save(p);
+			final I_M_Product inactive = newInstance(I_M_Product.class);
+			inactive.setValue("V2");
+			inactive.setIsActive(false);
+			save(inactive);
+
+			assertThat(productDAO.getProductIdByValue("V1", ClientId.METASFRESH)).contains(ProductId.ofRepoId(p.getM_Product_ID()));
+			assertThat(productDAO.getProductIdByValue("V1", ClientId.ofRepoId(ClientId.METASFRESH.getRepoId() + 1))).isEmpty();
+			assertThat(productDAO.getProductIdByValue("V", ClientId.METASFRESH)).isEmpty();
+			assertThat(productDAO.getProductIdByValue("V2", ClientId.METASFRESH)).isEmpty();
+		}
+	}
 }

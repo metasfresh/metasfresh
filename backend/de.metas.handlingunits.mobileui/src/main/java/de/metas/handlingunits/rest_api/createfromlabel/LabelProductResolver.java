@@ -62,11 +62,8 @@ public class LabelProductResolver
 		final ProductId productId;
 		if (labelCodes.getProductNo() != null)
 		{
-			productId = productBL.getProductIdByValue(labelCodes.getProductNo());
-			if (productId == null)
-			{
-				throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, labelCodes.getProductNo());
-			}
+			productId = productBL.getProductIdByValue(labelCodes.getProductNo(), clientId)
+					.orElseThrow(() -> new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, labelCodes.getProductNo()));
 		}
 		else if (labelCodes.getGtin() != null)
 		{
