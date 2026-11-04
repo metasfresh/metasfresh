@@ -62,8 +62,7 @@ public class LabelProductResolver
 		final ProductId productId;
 		if (labelCodes.getProductNo() != null)
 		{
-			productId = productBL.getProductIdByValue(labelCodes.getProductNo(), clientId)
-					.orElseThrow(() -> new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, labelCodes.getProductNo()));
+			productId = resolveByProductNo(labelCodes.getProductNo(), clientId);
 		}
 		else if (labelCodes.getGtin() != null)
 		{
@@ -94,6 +93,28 @@ public class LabelProductResolver
 			}
 			throw new LabelRejectionException(LABEL_NOT_RECOGNIZED, trunc(scannedCode));
 		}
+	}
+
+	/**
+	 * exactly one active product of the client with this product number, else a rejection (none: no product found; several, one per organisation:
+	 * the code fits several products, never picks one; the articles are named by name, as their numbers are the same)
+	 */
+	@NonNull
+	private ProductId resolveByProductNo(@NonNull final String productNo, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = productBL.getProductIdsByValue(productNo, clientId);
+		if (productIds.isEmpty())
+		{
+			throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, productNo);
+		}
+		else if (productIds.size() > 1)
+		{
+			final String productNames = productBL.getProductNames(productIds).values().stream()
+					.sorted()
+					.collect(Collectors.joining(", "));
+			throw new LabelRejectionException(BARCODE_FITS_SEVERAL_PRODUCTS, productNo, productNames);
+		}
+		return productIds.iterator().next();
 	}
 
 	/** exactly one active product with this GTIN, else a rejection (none: no product found; several: the barcode fits several products, never picks one) */

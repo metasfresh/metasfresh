@@ -133,9 +133,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByValue(@NonNull final String productValue, @NonNull final ClientId clientId)
+	public ImmutableSet<ProductId> getProductIdsByValue(@NonNull final String productValue, @NonNull final ClientId clientId)
 	{
-		return productsRepo.getProductIdByValue(productValue, clientId);
+		return productsRepo.getProductIdsByValue(productValue, clientId);
 	}
 
 	@Override

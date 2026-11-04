@@ -261,4 +261,24 @@ class LabelProductResolverTest
 		assertThat(resolver.resolve(new TestCode(otherCodes, null), ScannedCode.ofString("TEST"), otherClientId).getProductId())
 				.isEqualTo(ProductId.ofRepoId(otherClientProduct.getM_Product_ID()));
 	}
+
+	@Test
+	void productNumberHeldByTwoOrganisationsOfTheClient_isRefusedNamingTheArticles_neverPicksOne()
+	{
+		final I_M_Product otherOrgProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		otherOrgProduct.setAD_Org_ID(product.getAD_Org_ID() + 1);
+		otherOrgProduct.setIsActive(true);
+		otherOrgProduct.setValue(product.getValue());
+		otherOrgProduct.setName("P1 of the other organisation");
+		otherOrgProduct.setC_UOM_ID(product.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(otherOrgProduct);
+		final ProductLabelCodes codes = ProductLabelCodes.builder().productNo(product.getValue()).build();
+
+		final Throwable thrown = catchThrowable(() -> resolve(new TestCode(codes, null)));
+
+		assertThat(thrown)
+				.isInstanceOf(LabelRejectionException.class)
+				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.BARCODE_FITS_SEVERAL_PRODUCTS);
+		assertThat(((LabelRejectionException)thrown).getMessageParams()).anyMatch(v -> String.valueOf(v).contains("P1 of the other organisation"));
+	}
 }

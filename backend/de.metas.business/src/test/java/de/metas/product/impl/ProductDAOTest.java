@@ -247,7 +247,7 @@ public class ProductDAOTest
 	}
 
 	@Nested
-	class getProductIdByValue
+	class getProductIdsByValue
 	{
 		@Test
 		void exactValueOfTheGivenClient_isFound_otherClientAndInactiveAreNot()
@@ -260,10 +260,26 @@ public class ProductDAOTest
 			inactive.setIsActive(false);
 			save(inactive);
 
-			assertThat(productDAO.getProductIdByValue("V1", ClientId.METASFRESH)).contains(ProductId.ofRepoId(p.getM_Product_ID()));
-			assertThat(productDAO.getProductIdByValue("V1", ClientId.ofRepoId(ClientId.METASFRESH.getRepoId() + 1))).isEmpty();
-			assertThat(productDAO.getProductIdByValue("V", ClientId.METASFRESH)).isEmpty();
-			assertThat(productDAO.getProductIdByValue("V2", ClientId.METASFRESH)).isEmpty();
+			assertThat(productDAO.getProductIdsByValue("V1", ClientId.METASFRESH)).containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
+			assertThat(productDAO.getProductIdsByValue("V1", ClientId.ofRepoId(ClientId.METASFRESH.getRepoId() + 1))).isEmpty();
+			assertThat(productDAO.getProductIdsByValue("V", ClientId.METASFRESH)).isEmpty();
+			assertThat(productDAO.getProductIdsByValue("V2", ClientId.METASFRESH)).isEmpty();
+		}
+
+		@Test
+		void sameValueInTwoOrganisationsOfTheClient_bothAreReturned_neverOneOfThem()
+		{
+			final I_M_Product inOrg1 = newInstance(I_M_Product.class);
+			inOrg1.setAD_Org_ID(1);
+			inOrg1.setValue("V1");
+			save(inOrg1);
+			final I_M_Product inOrg2 = newInstance(I_M_Product.class);
+			inOrg2.setAD_Org_ID(2);
+			inOrg2.setValue("V1");
+			save(inOrg2);
+
+			assertThat(productDAO.getProductIdsByValue("V1", ClientId.METASFRESH))
+					.containsExactly(ProductId.ofRepoId(inOrg1.getM_Product_ID()), ProductId.ofRepoId(inOrg2.getM_Product_ID()));
 		}
 	}
 }

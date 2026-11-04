@@ -764,15 +764,15 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByValue(@NonNull final String value, @NonNull final ClientId clientId)
+	public ImmutableSet<ProductId> getProductIdsByValue(@NonNull final String value, @NonNull final ClientId clientId)
 	{
-		return Optional.ofNullable(queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
 				.create()
-				.firstIdOnly(ProductId::ofRepoIdOrNull));
+				.idsAsSet(ProductId::ofRepoId);
 	}
 
 	@Override
