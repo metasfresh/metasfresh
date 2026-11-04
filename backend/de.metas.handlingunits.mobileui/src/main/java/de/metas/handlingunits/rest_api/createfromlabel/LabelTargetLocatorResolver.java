@@ -39,9 +39,11 @@ public class LabelTargetLocatorResolver
 		final Workplace workplace = workplaceService.getWorkplaceByUserId(userId).orElse(null);
 		if (workplace != null)
 		{
-			if (workplace.getPickFromLocatorId() != null)
+			// an inactive pick-from location is not proposed: the create step refuses it
+			final LocatorId pickFromLocatorId = workplace.getPickFromLocatorId();
+			if (pickFromLocatorId != null && warehouseDAO.getLocatorById(pickFromLocatorId).isActive())
 			{
-				return Optional.of(workplace.getPickFromLocatorId());
+				return Optional.of(pickFromLocatorId);
 			}
 
 			final Optional<LocatorId> workplaceWarehouseLocator = getDefaultLocatorId(workplace.getWarehouseId());

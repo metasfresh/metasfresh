@@ -166,6 +166,18 @@ class ProductBLTest
 					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
 		}
 
+		/** failure scenario: a variable-weight EAN-13 (prefix 28) is a per-item price/weight code, never a product identity: even a product holding it verbatim in M_Product.GTIN is not matched */
+		@Test
+		void variableWeightEan13_heldVerbatimOnProductGtin_isNotMatchedExactly()
+		{
+			final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			p.setValue("V1");
+			p.setGTIN("2859414004825");
+			InterfaceWrapperHelper.saveRecord(p);
+
+			assertThat(productBL.getProductIdsByGTIN(GTIN.ofString("2859414004825"), ClientId.METASFRESH)).isEmpty();
+		}
+
 		@Test
 		void labelGtin_sharedByTwoProducts_exactMatchesWinOverStrictFallback()
 		{

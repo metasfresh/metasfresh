@@ -60,7 +60,7 @@ const createMasterdata = async ({ gtin, users, workplaces, products, formats, ex
     });
 };
 
-// AC4: after OK the user is back on the scan screen — a success message naming the HU and the quantity, the scan field ready,
+// After OK the user is back on the scan screen — a success message naming the HU and the quantity, the scan field ready,
 // no HU info screen (the new HU is NOT opened). The message is what tells the user which HU number was created.
 const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 PCE', locatorCode }) => await test.step('Expect: back on the scan screen after OK, success message, no HU info', async () => {
     // the HU is booked on the proposed location (the create response's JsonHU.locatorValue)
@@ -113,7 +113,7 @@ test('custom label (GTIN + lot + best-before) -> preview -> OK -> success messag
 
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
     const { huId, huQRCode } = created;
-    // AC4: success message naming the HU and the quantity, back on the scan screen, the new HU is not opened
+    // success message naming the HU and the quantity, back on the scan screen, the new HU is not opened
     await expectBackOnScanScreenAfterOK({ created, locatorCode });
 
     await Backend.expect({
@@ -217,7 +217,7 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
                 storages: { 'P1': '7 PCE' },
                 cus: [{
                     qty: '7 PCE',
-                    // null = the attribute carries no value (the attribute row exists on every HU; AC27: the label code is not written to it)
+                    // null = the attribute carries no value (the attribute row exists on every HU; the label code is not written to it)
                     attributes: { 'Lot-Nummer': BRACKETED_LABEL_LOT, 'ProductionDate': '2027-03-15', 'HU_QRCode': null },
                 }],
             },

@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 import { toast } from 'react-toastify';
 import BarcodeScannerComponent from '../components/BarcodeScannerComponent';
-import { toastErrorFromObj } from '../utils/toast';
+import { toastError, toastErrorFromObj } from '../utils/toast';
 import { reducer as settingsReducer } from '../reducers/settings';
 
 jest.mock('../utils/ui_trace', () => ({
@@ -15,7 +15,7 @@ jest.mock('../utils/ui_trace', () => ({
   traceFunction: (fn) => fn,
 }));
 jest.mock('../utils/audio', () => ({ beep: jest.fn() }));
-jest.mock('../utils/toast', () => ({ toastErrorFromObj: jest.fn() }));
+jest.mock('../utils/toast', () => ({ toastError: jest.fn(), toastErrorFromObj: jest.fn() }));
 jest.mock('react-toastify', () => ({ toast: { isActive: jest.fn() } }));
 
 // A scan error toast must be seen on every scan screen: one error toast at a time (a repeated error must not stack), but
@@ -30,14 +30,11 @@ describe('BarcodeScannerComponent — scan error toast', () => {
     });
   };
 
-  const renderScanner = () => {
+  const renderScanner = (resolveScannedBarcode = jest.fn(() => Promise.reject(new Error('rejected')))) => {
     const store = createStore(combineReducers({ settings: settingsReducer }));
     render(
       <Provider store={store}>
-        <BarcodeScannerComponent
-          onResolvedResult={jest.fn()}
-          resolveScannedBarcode={jest.fn(() => Promise.reject(new Error('rejected')))}
-        />
+        <BarcodeScannerComponent onResolvedResult={jest.fn()} resolveScannedBarcode={resolveScannedBarcode} />
       </Provider>
     );
   };
@@ -70,5 +67,23 @@ describe('BarcodeScannerComponent — scan error toast', () => {
 
     // the first scan has no previous toast; the second finds the first still active
     expect(toastErrorFromObj).toHaveBeenCalledTimes(1);
+  });
+
+  // the second way a scan fails: the resolver answers with an error message instead of throwing
+  it('gives the toast of a resolver error its own id, and shows none while the previous one is still open', async () => {
+    renderScanner(jest.fn(({ scannedBarcode }) => Promise.resolve({ scannedBarcode, error: 'not a label' })));
+
+    toast.isActive.mockReturnValue(false);
+    await scan('code-1');
+    await scan('code-2');
+    expect(toastError).toHaveBeenCalledTimes(2);
+    const [firstId, secondId] = toastError.mock.calls.map((call) => call[0].toastId);
+    expect(firstId).toBeTruthy();
+    expect(secondId).toBeTruthy();
+    expect(secondId).not.toEqual(firstId);
+
+    toast.isActive.mockReturnValue(true);
+    await scan('code-3');
+    expect(toastError).toHaveBeenCalledTimes(2);
   });
 });

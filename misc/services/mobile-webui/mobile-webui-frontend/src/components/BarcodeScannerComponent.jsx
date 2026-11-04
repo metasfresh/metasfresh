@@ -180,7 +180,6 @@ BarcodeScannerComponent.propTypes = {
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
-  /** one error toast at a time, each with its own id; default: the fixed id */
 };
 
 BarcodeScannerComponent.defaultProps = {

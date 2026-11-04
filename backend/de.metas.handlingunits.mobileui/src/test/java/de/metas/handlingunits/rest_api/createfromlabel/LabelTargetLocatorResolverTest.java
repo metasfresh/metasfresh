@@ -116,6 +116,18 @@ class LabelTargetLocatorResolverTest
 		assertThat(resolver.resolve(userId, orgId)).contains(pickFrom);
 	}
 
+	/** failure scenario: an inactive pick-from location is proposed, and the create step then refuses it; the warehouse default is proposed instead */
+	@Test
+	void workplacePickFromLocatorInactive_fallsBackToWorkplaceWarehouseDefault()
+	{
+		final WarehouseId workplaceWarehouse = newWarehouseId(1_000_102);
+		final LocatorId inactivePickFrom = newLocator(workplaceWarehouse, "pick-from-inactive", false, false);
+		final LocatorId defaultLocator = newLocator(workplaceWarehouse, "wp-default", true, true);
+		assignWorkplace(workplaceWarehouse, inactivePickFrom);
+
+		assertThat(resolver.resolve(userId, orgId)).contains(defaultLocator);
+	}
+
 	/** failure scenario: the proposal is a read — a warehouse without an active locator must not get one created */
 	@Test
 	void warehouseWithoutActiveLocator_noLocator_noInsert()

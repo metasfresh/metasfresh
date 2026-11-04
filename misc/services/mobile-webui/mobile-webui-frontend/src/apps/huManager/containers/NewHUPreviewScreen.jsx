@@ -38,7 +38,7 @@ const NewHUPreviewScreen = () => {
   const preview = useSelector((state) => getNewHUPreviewFromGlobalState(state));
   const { scannedCode, proposal } = preview ?? {};
 
-  // the quantity field is prefilled with the proposed quantity; it forwards its qtyInfo on mount and on every keystroke
+  // the quantity field starts empty, or with the quantity the scanned code carries (the proposal); it forwards its qtyInfo on mount and on every keystroke
   const [qtyInfo, setQtyInfo] = useState(() => toQtyInfo(proposal));
   const [isChangeLocatorDialogOpen, setChangeLocatorDialogOpen] = useState(false);
   const [locator, setLocator] = useState(() => toLocator(proposal));
@@ -130,7 +130,8 @@ const NewHUPreviewScreen = () => {
   };
 
   return (
-    <div className="pt-3 section">
+    <>
+      {/* the quantity row sits right under the header table, outside the padded `.section`, so its caption lines up with the header captions */}
       <table className="table view-header is-size-6">
         <tbody>
           <tr>
@@ -148,14 +149,16 @@ const NewHUPreviewScreen = () => {
         </tbody>
       </table>
       {/* the buttons: OK / Cancel / Change locator; no scanner on this screen (a locator is scanned in the dialog) */}
-      <Button testId="ok-button" caption={trl('huManager.newHU.ok')} disabled={!isOKEnabled} onClick={onOK} />
-      <Button
-        testId="change-locator-button"
-        caption={trl('huManager.newHU.changeLocator')}
-        disabled={isCreating}
-        onClick={() => setChangeLocatorDialogOpen(true)}
-      />
-      <Button testId="cancel-button" caption={trl('general.cancelText')} isDanger onClick={onCancel} />
+      <div className="pt-3 section">
+        <Button testId="ok-button" caption={trl('huManager.newHU.ok')} disabled={!isOKEnabled} onClick={onOK} />
+        <Button
+          testId="change-locator-button"
+          caption={trl('huManager.newHU.changeLocator')}
+          disabled={isCreating}
+          onClick={() => setChangeLocatorDialogOpen(true)}
+        />
+        <Button testId="cancel-button" caption={trl('general.cancelText')} isDanger onClick={onCancel} />
+      </div>
       {isChangeLocatorDialogOpen && (
         <ChangeCurrentLocatorDialog
           onOK={(locatorQRCode) => {
@@ -165,7 +168,7 @@ const NewHUPreviewScreen = () => {
           onClose={() => setChangeLocatorDialogOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 };
 

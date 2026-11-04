@@ -240,7 +240,7 @@ describe('NewHUPreviewScreen with a replaced proposal', () => {
   });
 });
 
-// AC4: after OK the user is back on the scan screen with a success message — the new HU is NOT loaded into the HU info screen
+// After OK the user is back on the scan screen with a success message — the new HU is NOT loaded into the HU info screen
 // (the user opens it by typing the HU number from the message).
 describe('NewHUPreviewScreen after OK', () => {
   it('shows the success message, keeps the new HU out of the HU info state and returns to the scan screen', async () => {

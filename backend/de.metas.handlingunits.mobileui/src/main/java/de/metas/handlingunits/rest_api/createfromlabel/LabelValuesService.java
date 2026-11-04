@@ -6,6 +6,7 @@ import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.model.ProductLabelCodes;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
@@ -20,7 +21,9 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMessages.BARCODE_FITS_SEVERAL_PRODUCTS;
@@ -152,36 +155,40 @@ public class LabelValuesService
 	@NonNull
 	private ProductId resolveByProductNo(@NonNull final String productNo, @NonNull final ClientId clientId)
 	{
-		final ImmutableSet<ProductId> productIds = productBL.getProductIdsByValue(productNo, clientId);
-		if (productIds.isEmpty())
-		{
-			throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, productNo);
-		}
-		else if (productIds.size() > 1)
-		{
-			final String productNames = productBL.getProductNames(productIds).values().stream()
-					.sorted()
-					.collect(Collectors.joining(", "));
-			throw new LabelRejectionException(BARCODE_FITS_SEVERAL_PRODUCTS, productNo, productNames);
-		}
-		return productIds.iterator().next();
+		return exactlyOne(
+				productBL.getProductIdsByValue(productNo, clientId),
+				PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE,
+				productNo,
+				productIds -> productBL.getProductNames(productIds).values());
 	}
 
 	/** exactly one active product with this GTIN, else a rejection (none: no product found; several: the barcode fits several products, never picks one) */
 	@NonNull
 	private ProductId resolveByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
-		final ImmutableSet<ProductId> productIds = productBL.getProductIdsByGTIN(gtin, clientId);
+		return exactlyOne(
+				productBL.getProductIdsByGTIN(gtin, clientId),
+				PRODUCT_NOT_FOUND_FOR_GTIN,
+				gtin.getAsString(),
+				productIds -> productBL.getProductValues(productIds).values());
+	}
+
+	/** @param namesOfSeveral what names the articles in the "fits several products" message (article names when their numbers are the same, else numbers) */
+	@NonNull
+	private static ProductId exactlyOne(
+			@NonNull final ImmutableSet<ProductId> productIds,
+			@NonNull final AdMessageKey notFoundMessageKey,
+			@NonNull final String code,
+			@NonNull final Function<ImmutableSet<ProductId>, Collection<String>> namesOfSeveral)
+	{
 		if (productIds.isEmpty())
 		{
-			throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_GTIN, gtin.getAsString());
+			throw new LabelRejectionException(notFoundMessageKey, code);
 		}
 		else if (productIds.size() > 1)
 		{
-			final String productValues = productBL.getProductValues(productIds).values().stream()
-					.sorted()
-					.collect(Collectors.joining(", "));
-			throw new LabelRejectionException(BARCODE_FITS_SEVERAL_PRODUCTS, gtin.getAsString(), productValues);
+			final String names = namesOfSeveral.apply(productIds).stream().sorted().collect(Collectors.joining(", "));
+			throw new LabelRejectionException(BARCODE_FITS_SEVERAL_PRODUCTS, code, names);
 		}
 		return productIds.iterator().next();
 	}
