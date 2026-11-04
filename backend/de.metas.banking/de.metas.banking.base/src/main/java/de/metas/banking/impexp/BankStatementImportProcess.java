@@ -24,6 +24,7 @@ package de.metas.banking.impexp;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -31,6 +32,7 @@ import de.metas.banking.impexp.BankStatementImportInvoiceResolver.ReferencedInvo
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
+import de.metas.banking.service.BankStatementPrepayOrderResolver;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -42,6 +44,7 @@ import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -52,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BankStatement;
@@ -61,7 +65,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -69,10 +77,12 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final BankStatementImportInvoiceResolver invoiceResolver = new BankStatementImportInvoiceResolver();
+	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 	/**
-	 * The import process is instantiated by reflection (see {@code IImportProcessFactory}), not by Spring, so the bean cannot be injected.
-	 * Lazy, because it is only needed for a line that references an invoice.
+	 * The import process is instantiated by reflection (see {@code IImportProcessFactory}), not by Spring, so the beans cannot be injected.
+	 * Lazy, because each is only needed for some lines: the order resolver for a credit line without invoice, the payment bonus service for a line that references an invoice.
 	 */
+	@NonNull private final SpringContextHolder.Lazy<BankStatementPrepayOrderResolver> prepayOrderResolver = SpringContextHolder.lazyBean(BankStatementPrepayOrderResolver.class);
 	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	@Override
@@ -193,14 +203,20 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
 		// the lookup is one read-only query per line with a reference (so N queries for N such lines), also for customers without a payment bonus;
-		// the bonus gate decides whether its result is used
-		final ReferencedInvoice referencedInvoice = invoiceResolver.resolve(importRecord)
-				.filter(invoice -> hasPaymentBonusDeduction(invoice, currencyId))
-				.orElse(null);
+		// the bonus gate decides whether its result is used as the line's invoice, while any found invoice suppresses the order lookup below
+		final ReferencedInvoice resolvedInvoice = invoiceResolver.resolve(importRecord).orElse(null);
+		final ReferencedInvoice referencedInvoice = resolvedInvoice != null && hasPaymentBonusDeduction(resolvedInvoice, currencyId)
+				? resolvedInvoice
+				: null;
 		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
-		final BPartnerId bpartnerId = importedBPartnerId != null || referencedInvoice == null
-				? importedBPartnerId
-				: referencedInvoice.getBpartnerId();
+		// like the CAMT import: order matching is only the fallback of the invoice matching, for a credit line
+		final I_C_Order referencedOrder = resolvedInvoice == null && importRecord.getStmtAmt().signum() > 0
+				? findPrepayOrder(importRecord, currencyId, importedBPartnerId)
+				: null;
+		final BPartnerId referencedBPartnerId = referencedInvoice != null ? referencedInvoice.getBpartnerId()
+				: referencedOrder != null ? BPartnerId.ofRepoId(referencedOrder.getBill_BPartner_ID())
+				: null;
+		final BPartnerId bpartnerId = importedBPartnerId != null ? importedBPartnerId : referencedBPartnerId;
 
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(
 				BankStatementLineCreateRequest.builder()
@@ -210,6 +226,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						//
 						.bpartnerId(bpartnerId)
 						.invoiceId(referencedInvoice != null ? referencedInvoice.getInvoiceId() : null)
+						.orderId(referencedOrder != null ? OrderId.ofRepoId(referencedOrder.getC_Order_ID()) : null)
 						// the amounts of a line with an invoice are coming from the bank, so they must not be overwritten with the invoice's open amount (like the CAMT import);
 						// a line without an invoice keeps the default, for a user who picks the invoice later
 						.updateAmountsFromInvoice(referencedInvoice == null)
@@ -249,6 +266,27 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.build());
 
 		importRecord.setC_BankStatementLine_ID(bankStatementLineId.getRepoId());
+	}
+
+	/**
+	 * The waiting prepay sales order whose document number is a separate word of the document number / memo / description of the line and that totals exactly its amount,
+	 * the same lookup as of the CAMT import ({@link BankStatementPrepayOrderResolver}); the texts are the ones of the invoice lookup, split into words like the CAMT texts.
+	 *
+	 * @param importedBPartnerId the partner of the line, if imported; then only that partner's orders are found
+	 */
+	@Nullable
+	private I_C_Order findPrepayOrder(
+			@NonNull final I_I_BankStatement importRecord,
+			@NonNull final CurrencyId currencyId,
+			@Nullable final BPartnerId importedBPartnerId)
+	{
+		final ImmutableSet<String> words = Stream.of(importRecord.getInvoiceDocumentNo(), importRecord.getMemo(), importRecord.getLineDescription())
+				.map(StringUtils::trimBlankToNull)
+				.filter(Objects::nonNull)
+				.flatMap(text -> Arrays.stream(WHITESPACE.split(text)))
+				.collect(ImmutableSet.toImmutableSet());
+		return prepayOrderResolver.get().findOrder(words, Money.of(importRecord.getStmtAmt(), currencyId), importedBPartnerId, "I_BankStatement_ID=" + importRecord.getI_BankStatement_ID())
+				.orElse(null);
 	}
 
 	/**
