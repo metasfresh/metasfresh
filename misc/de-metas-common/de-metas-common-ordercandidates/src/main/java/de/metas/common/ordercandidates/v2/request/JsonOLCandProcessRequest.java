@@ -24,7 +24,7 @@ package de.metas.common.ordercandidates.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,10 +35,10 @@ import javax.annotation.Nullable;
 @JsonDeserialize(builder = JsonOLCandProcessRequest.JsonOLCandProcessRequestBuilder.class)
 public class JsonOLCandProcessRequest
 {
-	@ApiModelProperty(required = true, value = "This translates to 'C_OLCand.externalHeaderId'.")
+	@Schema(description = "This translates to 'C_OLCand.externalHeaderId'.", required = true)
 	String externalHeaderId;
 
-	@ApiModelProperty(required = true, value = "This translates to 'ExternalSystem.value' of the external system the candidates in question were added with.")
+	@Schema(description = "This translates to 'ExternalSystem.value' of the external system the candidates in question were added with.", required = true)
 	String externalSystemCode;
 
 	Boolean ship;

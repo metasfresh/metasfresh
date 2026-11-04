@@ -33,20 +33,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
 @Value
-@ApiModel
+@Schema
 public class JsonRequestBPartnerUpsert
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	List<JsonRequestBPartnerUpsertItem> requestItems;
 
-	@ApiModelProperty(position = 20, value = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)
+	@Schema(description = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@JsonCreator

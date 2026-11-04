@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.rest_api.v1.SwaggerDocConstants;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,45 +48,37 @@ import java.util.function.Function;
 @JsonDeserialize(builder = JsonInboundPaymentInfo.JsonInboundPaymentInfoBuilder.class)
 public class JsonInboundPaymentInfo
 {
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String", //
-			value = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
+	@Schema(description = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`", required = true, implementation = String.class)
 	@Nullable
 	String externalPaymentId;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String", //
-			value = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC, required = true, implementation = String.class)
 	@NonNull
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String")
+	@Schema(required = true, implementation = String.class)
 	@NonNull
 	String targetIBAN;
 
-	@ApiModelProperty(dataType = "java.lang.String", //
-			value = SwaggerDocConstants.ORDER_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.ORDER_IDENTIFIER_DOC, implementation = String.class)
 	@Nullable
 	String orderIdentifier;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String")
+	@Schema(required = true, implementation = String.class)
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(value = "Optional, to specify the `AD_Org_ID`.\n"
+	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"
 					+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 					+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
 	String orgCode;
 
-	@ApiModelProperty(dataType = "java.time.LocalDate",
-			value = "If this is sent, it is used for both `accounting date` and `payment date`.")
+	@Schema(description = "If this is sent, it is used for both `accounting date` and `payment date`.")
 	@Nullable
 	LocalDate transactionDate;
 
-	@ApiModelProperty(value = "List of payment allocations")
+	@Schema(description = "List of payment allocations")
 	@Nullable
 	@JsonProperty("lines")
 	List<JsonPaymentAllocationLine> lines;

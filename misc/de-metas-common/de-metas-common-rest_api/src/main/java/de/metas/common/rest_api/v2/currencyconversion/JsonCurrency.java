@@ -24,23 +24,22 @@ package de.metas.common.rest_api.v2.currencyconversion;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@ApiModel("An active currency.")
+@Schema(name = "An active currency.")
 @Value
 public class JsonCurrency
 {
-	@ApiModelProperty(position = 10, value = "3-letter ISO currency code.")
+	@Schema(description = "3-letter ISO currency code.")
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(position = 20, value = "The name of the currency.")
+	@Schema(description = "The name of the currency.")
 	@Nullable
 	String name;
 

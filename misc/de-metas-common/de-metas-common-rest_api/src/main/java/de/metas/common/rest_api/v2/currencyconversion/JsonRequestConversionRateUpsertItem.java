@@ -25,8 +25,7 @@ package de.metas.common.rest_api.v2.currencyconversion;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,36 +36,36 @@ import java.time.LocalDate;
 
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "A single normalized conversion rate to upsert.")
+@Schema(description = "A single normalized conversion rate to upsert.")
 public class JsonRequestConversionRateUpsertItem
 {
-	@ApiModelProperty(position = 10, required = true, value = "3-letter ISO source currency code.")
+	@Schema(description = "3-letter ISO source currency code.", required = true)
 	@NonNull
 	String fromCurrencyCode;
 
-	@ApiModelProperty(position = 20, required = true, value = "3-letter ISO target currency code.")
+	@Schema(description = "3-letter ISO target currency code.", required = true)
 	@NonNull
 	String toCurrencyCode;
 
-	@ApiModelProperty(position = 30, required = true, value = "amount(from) x multiplyRate = amount(to); positive.")
+	@Schema(description = "amount(from) x multiplyRate = amount(to); positive.", required = true)
 	@NonNull
 	BigDecimal multiplyRate;
 
-	@ApiModelProperty(position = 40, required = true, value = "The date this rate is valid from (ISO yyyy-MM-dd).")
+	@Schema(description = "The date this rate is valid from (ISO yyyy-MM-dd).", required = true)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@NonNull
 	LocalDate validFrom;
 
-	@ApiModelProperty(position = 50, value = "Conversion type code (S/P/A/C); omitted defaults to the org default conversion type.")
+	@Schema(description = "Conversion type code (S/P/A/C); omitted defaults to the org default conversion type.")
 	@Nullable
 	String conversionTypeCode;
 
-	@ApiModelProperty(position = 60, value = "The date this rate is valid to; omitted leaves the rate open (no gap).")
+	@Schema(description = "The date this rate is valid to; omitted leaves the rate open (no gap).")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Nullable
 	LocalDate validTo;
 
-	@ApiModelProperty(position = 70, value = "Org code; omitted defaults to org 0 (shared).")
+	@Schema(description = "Org code; omitted defaults to org 0 (shared).")
 	@Nullable
 	String orgCode;
 

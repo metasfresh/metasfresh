@@ -24,14 +24,14 @@ package de.metas.common.rest_api.v2.currencyconversion;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
 
-@ApiModel("The active currencies the caller should fetch rates for.")
+@Schema(name = "The active currencies the caller should fetch rates for.")
 @Value
 @Builder
 @JsonDeserialize(builder = JsonResponseCurrencies.JsonResponseCurrenciesBuilder.class)

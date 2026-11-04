@@ -25,7 +25,7 @@ package de.metas.common.handlingunits;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,7 +39,7 @@ public class JsonHUProduct
 	@NonNull String productValue;
 	@NonNull String productName;
 	@NonNull String qty;
-	@ApiModelProperty(required = true, value = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
+	@Schema(description = "Unit of measurement; this translates to `C_UOM.X12DE355`.", required = true)
 	@NonNull String uom;
 
 	@JsonPOJOBuilder(withPrefix = "")

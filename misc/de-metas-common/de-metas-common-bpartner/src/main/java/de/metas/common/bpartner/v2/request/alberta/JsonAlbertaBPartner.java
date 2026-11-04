@@ -22,7 +22,7 @@
 
 package de.metas.common.bpartner.v2.request.alberta;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -35,32 +35,32 @@ import java.time.Instant;
 @EqualsAndHashCode
 public class JsonAlbertaBPartner
 {
-	@ApiModelProperty(position = 20)
+	@Schema
 	@Nullable
 	private Boolean isArchived;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean archivedSet;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	@Nullable
 	private String title;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean titleSet;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	@Nullable
 	private String titleShort;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean titleShortSet;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	@Nullable
 	private Instant timestamp;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean timestampSet;
 
 	public void setIsArchived(@Nullable final Boolean isArchived)
