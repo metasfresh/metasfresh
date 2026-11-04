@@ -356,6 +356,15 @@ const ScanHUAndGetQtyComponent = ({
     return onResult(result);
   };
 
+  // The dialog knows the qty context (entered qty, rejected qty, reason); the caller's prompt may also
+  // need what the SCANNED HU is (e.g. the manufacturing issue screen names the HU's remainder, not the
+  // order-side shortfall), so `resolvedBarcodeData` is handed over too. Memoised because this wrapper is
+  // the first dependency of GetQuantityDialog's own `getConfirmationPrompt` useCallback; an inline arrow
+  // would invalidate that memo on every render of this component.
+  const getConfirmationPromptForQtyWithHU = useCallback(
+    (qtyInput, context) => getConfirmationPromptForQty(qtyInput, { ...context, resolvedBarcodeData }),
+    [getConfirmationPromptForQty, resolvedBarcodeData]
+  );
 
   const onCloseDialog = () => {
     setProgressStatus(STATUS_READ_HU_BARCODE);
