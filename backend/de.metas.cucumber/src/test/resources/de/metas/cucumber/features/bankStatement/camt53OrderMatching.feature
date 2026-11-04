@@ -2235,7 +2235,8 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 
   @from:cucumber
   @Id:S32606_OM24
-  Scenario: Hand-picked order with a partial amount: completing the statement fails, the order stays waiting
+  Scenario: Hand-picked order with a partial amount: completing the statement creates one payment of the line amount with the order and releases the order
+    # human decision 2026-11-04 ("Allow any amount"): a hand-picked order is paid with whatever amount the line has; only the automatic match needs the full amount
     Given generate unique 5-digit document numbers into the REST context variables:
       | REST.Context |
       | no_om24_0024 |
@@ -2253,12 +2254,18 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And metasfresh contains C_BankStatementLine:
       | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
       | bsl_24     | bs_24              | 100.00 EUR | bp_OM         | o_24       |
-    And the C_BankStatement identified by bs_24 is completed expecting error code BANKSTATEMENT_ORDER_AMOUNT_MISMATCH
-    And exactly 0 payments carry the order identified by o_24
-    And exactly 0 payments belong to the bank statement line identified by bsl_24
+    And the C_BankStatement identified by bs_24 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | p_24                    | bs_24                             | bsl_24                                |
+    And validate payments
+      | C_Payment_ID.Identifier | PayAmt | IsReceipt | C_Order_ID.Identifier |
+      | p_24                    | 100.00 | true      | o_24                  |
+    And exactly 1 payment carries the order identified by o_24
+    And exactly 1 payment belongs to the bank statement line identified by bsl_24
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
-      | o_24       | WP        | 123.52     |
+      | o_24       | CO        | 123.52     |
 
 
   # ################################################################################

@@ -67,6 +67,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Order;
@@ -263,12 +264,20 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			paymentBuilder.orderId(orderId);
 		}
 
-		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+		final I_C_Payment payment = paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+		if (invoiceId == null && orderId != null && payment.getPayAmt().compareTo(payAmount.toBigDecimal()) != 0)
+		{
+			// setting the order prefills the order's total (C_Payment.updateFromOrder, as for a payment entered by hand in window Zahlung);
+			// this payment is the money of the bank statement line, which may be less or more than the order total
+			payment.setPayAmt(payAmount.toBigDecimal());
+			InterfaceWrapperHelper.saveRecord(payment);
+		}
+		return payment;
 	}
 
 	/**
-	 * Full prepayment of an active sales prepay order only: the order must be a prepay order, still wait for payment, no completed or closed payment may carry it yet,
-	 * and the line amount and currency must equal the order total.
+	 * Prepayment of an active sales prepay order: the order must be a prepay order, still wait for payment, no completed or closed payment may carry it yet,
+	 * and the line must be in the order's currency (any amount).
 	 *
 	 * @throws AdempiereException if not, so completing the bank statement fails visibly and the order stays waiting
 	 */
@@ -297,12 +306,13 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			throw new AdempiereException(MSG_ORDER_NOT_WAITING, order.getDocumentNo(), carryingPaymentDocumentNo);
 		}
 
+		// any amount (human decision 2026-11-04): a hand-picked order is paid with the line amount; only the automatic match needs the full amount
 		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
-		if (order.getGrandTotal().compareTo(trxAmt.toBigDecimal()) != 0 || !CurrencyId.equals(orderCurrencyId, trxAmt.getCurrencyId()))
+		if (!CurrencyId.equals(orderCurrencyId, trxAmt.getCurrencyId()))
 		{
 			throw new AdempiereException(MSG_ORDER_AMOUNT_MISMATCH,
 										 order.getDocumentNo(),
-										 order.getGrandTotal().toPlainString() + " " + moneyService.getCurrencyCodeByCurrencyId(orderCurrencyId).toThreeLetterCode());
+										 moneyService.getCurrencyCodeByCurrencyId(orderCurrencyId).toThreeLetterCode());
 		}
 	}
 
