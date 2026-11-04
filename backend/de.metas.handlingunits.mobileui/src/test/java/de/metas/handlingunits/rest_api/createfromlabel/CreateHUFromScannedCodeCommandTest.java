@@ -46,6 +46,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -378,6 +379,41 @@ class CreateHUFromScannedCodeCommandTest
 		InterfaceWrapperHelper.saveRecord(product2);
 		final I_M_Locator locator = Services.get(IWarehouseDAO.class).getLocatorById(locatorQRCode.getLocatorId());
 		locator.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(locator);
+
+		assertThatThrownBy(() -> create(readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"1\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}")))
+				.hasMessageContaining(CreateFromLabelMessages.NOT_AN_ACTIVE_LOCATOR.toAD_Message());
+		assertThat(huQtyService.requests).isEmpty();
+	}
+
+	/** The client sends warehouse + locator inside the location QR code: a pair that does not match the stored locator is refused, nothing is booked. */
+	@Test
+	void locatorQRCodeWithAnotherWarehouseThanTheLocator_refusedAndNothingBooked() throws IOException
+	{
+		product2.setGTIN("02001234567893");
+		InterfaceWrapperHelper.saveRecord(product2);
+		final I_M_Warehouse otherWarehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		otherWarehouse.setValue("other_wh");
+		otherWarehouse.setName("other_wh");
+		InterfaceWrapperHelper.saveRecord(otherWarehouse);
+		final LocatorQRCode mismatching = LocatorQRCode.builder()
+				.locatorId(LocatorId.ofRepoId(otherWarehouse.getM_Warehouse_ID(), locatorQRCode.getLocatorId().getRepoId()))
+				.caption("mismatching")
+				.build();
+
+		assertThatThrownBy(() -> create(readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"1\",\"locatorQRCode\":\"" + mismatching.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}")))
+				.hasMessageContaining(CreateFromLabelMessages.NOT_AN_ACTIVE_LOCATOR.toAD_Message());
+		assertThat(huQtyService.requests).isEmpty();
+	}
+
+	/** A locator of another client is refused, nothing is booked. */
+	@Test
+	void locatorOfAnotherClient_refusedAndNothingBooked() throws IOException
+	{
+		product2.setGTIN("02001234567893");
+		InterfaceWrapperHelper.saveRecord(product2);
+		final I_M_Locator locator = Services.get(IWarehouseDAO.class).getLocatorById(locatorQRCode.getLocatorId());
+		InterfaceWrapperHelper.setValue(locator, I_M_Locator.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId() + 1);
 		InterfaceWrapperHelper.saveRecord(locator);
 
 		assertThatThrownBy(() -> create(readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"1\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}")))

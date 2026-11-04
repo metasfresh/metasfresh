@@ -23,6 +23,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 
@@ -107,7 +108,7 @@ public class CreateHUFromScannedCodeCommand
 		{
 			throw new AdempiereException(CreateFromLabelMessages.QTY_MUST_BE_POSITIVE, qty);
 		}
-		assertActiveLocatorOfClient();
+		final LocatorId verifiedLocatorId = getVerifiedLocatorId();
 
 		final LabelProduct labelProduct = labelProductResolver.resolve(scannedCode, clientId);
 		final ProductId productId = labelProduct.getProductId();
@@ -118,7 +119,7 @@ public class CreateHUFromScannedCodeCommand
 				.date(date)
 				.productId(productId)
 				.qty(Quantitys.of(qty, qtyAndWeight.getStockUomId()))
-				.locatorId(locatorId)
+				.locatorId(verifiedLocatorId)
 				.attributes(toInventoryAttributes(labelValues))
 				// origin marker on the inventory document, in the language of the creating user; "Change Qty" books the same inventory sub-type
 				.description(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate(adLanguage))
@@ -133,14 +134,22 @@ public class CreateHUFromScannedCodeCommand
 		return new CreatedHU(huId, qrCode);
 	}
 
-	/** the location comes from the client (proposed or scanned): it must be an active location of the client, and the create step never makes one */
-	private void assertActiveLocatorOfClient()
+	/**
+	 * the location comes from the client (proposed or scanned): it must be an active location of the client, and the warehouse that came
+	 * with it must be the warehouse of the stored location. The create step never makes a location, and books with the stored id pair only.
+	 */
+	@NonNull
+	private LocatorId getVerifiedLocatorId()
 	{
 		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId);
-		if (locator == null || !locator.isActive() || locator.getAD_Client_ID() != clientId.getRepoId())
+		if (locator == null
+				|| !locator.isActive()
+				|| !ClientId.equals(ClientId.ofRepoId(locator.getAD_Client_ID()), clientId)
+				|| !WarehouseId.equals(WarehouseId.ofRepoId(locator.getM_Warehouse_ID()), locatorId.getWarehouseId()))
 		{
 			throw new AdempiereException(CreateFromLabelMessages.NOT_AN_ACTIVE_LOCATOR, locatorId.getRepoId());
 		}
+		return LocatorId.ofRecord(locator);
 	}
 
 	/**
