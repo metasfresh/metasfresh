@@ -91,6 +91,11 @@ public class CucumberLifeCycleSupport
 			}
 			System.setProperty("server.port", Integer.toString(appServerPort));
 
+			// Spring Boot 3.5 registers two ClientHttpConnectorAutoConfiguration.ReactorNetty bean definitions
+			// under the same name; the production app enables overriding via application.properties, but the
+			// cucumber boot runs ServerBoot in this test JVM and does not load that file, so set it here too.
+			System.setProperty("spring.main.allow-bean-definition-overriding", "true");
+
 			System.setProperty("java.awt.headless", "true"); // "simulate headless mode
 			System.setProperty("app-server-run-headless", "true"); //
 			System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //

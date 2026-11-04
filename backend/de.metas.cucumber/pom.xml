@@ -291,6 +291,15 @@
             <artifactId>validator</artifactId>
             <version>2.11.0</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- Ships a legacy slf4j-1.x binding (org/slf4j/impl/StaticLoggerBinder.class). Harmless
+                     under slf4j-api 2.x (which binds via ServiceLoader, not StaticLoggerBinder), but keep
+                     the test classpath a single, unambiguous slf4j-2.x + logback stack. -->
+                <exclusion>
+                    <groupId>com.googlecode.slf4j-maven-plugin-log</groupId>
+                    <artifactId>slf4j-maven-plugin-log</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>de.metas.einvoice</groupId>
@@ -314,10 +323,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- JDK 17+ denies the deep reflection org.adempiere.util.proxy.impl.JavaAssistInterceptor
-                         uses to call ClassLoader.defineClass when booting ServerBoot in the forked test JVM
-                         (InaccessibleObjectException: java.base does not "opens java.lang"). -->
-                    <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED</argLine>
+                    <!-- Note: the add-opens (java.base/java.lang=ALL-UNNAMED) needed on JDK 25 for
+                         JavaAssistInterceptor's reflective ClassLoader.defineClass is supplied by the
+                         project-wide surefire argLine in de.metas.parent.general (misc/parent-pom). A child
+                         argLine here would REPLACE the parent's and drop jacoco @{argLine} + heap settings. -->
                     <properties>
                         <configurationParameters>
                             cucumber.junit-platform.naming-strategy=surefire
