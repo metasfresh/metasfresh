@@ -28,4 +28,11 @@ public class JsonCreateRoleRequest
 	@Nullable List<Identifier> includedRoles;
 
 	@Nullable List<JsonRoleTableAccessRequest> tableAccess;
+
+	/**
+	 * The role's access to mobile applications ({@code Mobile_Application_Access}), e.g. HU Manager without
+	 * "allow all actions" and with only one action granted. Permissions of included roles are merged (union): a role
+	 * that must not allow all actions needs {@code includedRoles: []}.
+	 */
+	@Nullable List<JsonRoleMobileApplicationAccessRequest> mobileApplicationAccess;
 }

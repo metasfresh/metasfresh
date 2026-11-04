@@ -186,6 +186,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public int countActiveHUsByProductId(@NonNull final ProductId productId)
+	{
+		return handlingUnitsRepo.countActiveHUsByProductId(productId);
+	}
+
+	@Override
 	public ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull final Collection<HuId> huIds)
 	{
 		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
