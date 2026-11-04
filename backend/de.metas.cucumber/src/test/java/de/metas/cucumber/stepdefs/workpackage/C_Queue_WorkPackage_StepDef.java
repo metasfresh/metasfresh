@@ -82,7 +82,6 @@ public class C_Queue_WorkPackage_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 
 	private static final String MAIL_WP_PROCESSOR_INTERNAL_NAME = "MailWorkpackageProcessor";
