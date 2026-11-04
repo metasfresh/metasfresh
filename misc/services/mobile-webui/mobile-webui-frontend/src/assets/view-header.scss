@@ -13,6 +13,7 @@
       td {
         max-width: 60vw !important;
         overflow: hidden;
+        overflow-wrap: anywhere; // a long unbroken value (article name/number, lot) wraps inside its cell instead of being clipped; captions (th) keep word-aware wrapping
         text-align: right;
       }
     }
