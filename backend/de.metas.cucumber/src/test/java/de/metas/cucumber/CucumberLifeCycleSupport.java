@@ -92,9 +92,14 @@ public class CucumberLifeCycleSupport
 			System.setProperty("server.port", Integer.toString(appServerPort));
 
 			// Spring Boot 3.5 registers two ClientHttpConnectorAutoConfiguration.ReactorNetty bean definitions
-			// under the same name; the production app enables overriding via application.properties, but the
-			// cucumber boot runs ServerBoot in this test JVM and does not load that file, so set it here too.
+			// under the same name; the production app excludes the deprecated one (and allows overriding as a
+			// safety net) via application.properties, but the cucumber boot runs ServerBoot in this test JVM and
+			// does not load that file, so set both here too. Excluding the deprecated auto-configuration is the
+			// actual fix: with only override enabled, the new class's BuilderCustomizer @Bean receives an
+			// instance of the deprecated class -> IllegalArgumentException "not an instance of".
 			System.setProperty("spring.main.allow-bean-definition-overriding", "true");
+			System.setProperty("spring.autoconfigure.exclude",
+					"org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration");
 
 			System.setProperty("java.awt.headless", "true"); // "simulate headless mode
 			System.setProperty("app-server-run-headless", "true"); //
