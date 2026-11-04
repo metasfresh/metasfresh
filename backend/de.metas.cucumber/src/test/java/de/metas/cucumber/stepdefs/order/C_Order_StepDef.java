@@ -195,7 +195,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 @RequiredArgsConstructor
 public class C_Order_StepDef
 {
-	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@]+@");
+	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@\\s]+@");
 	private static final String COLUMNNAME_Exclude_C_Order_ID = "Exclude_" + COLUMNNAME_C_Order_ID;
 
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);

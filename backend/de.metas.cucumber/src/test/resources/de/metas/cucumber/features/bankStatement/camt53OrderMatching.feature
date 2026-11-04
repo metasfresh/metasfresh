@@ -2292,7 +2292,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And metasfresh contains C_BankStatementLine:
       | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
       | bsl_25     | bs_25              | 123.52 CHF | bp_OM         | o_25       |
-    And the C_BankStatement identified by bs_25 is completed expecting error code BANKSTATEMENT_ORDER_AMOUNT_MISMATCH
+    And the C_BankStatement identified by bs_25 is completed expecting error code BANKSTATEMENT_ORDER_CURRENCY_MISMATCH
     And exactly 0 payments carry the order identified by o_25
     And exactly 0 payments belong to the bank statement line identified by bsl_25
     And validate the created orders

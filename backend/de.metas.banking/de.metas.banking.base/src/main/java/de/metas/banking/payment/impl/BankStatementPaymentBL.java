@@ -87,7 +87,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
-	private static final AdMessageKey MSG_ORDER_AMOUNT_MISMATCH = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_AMOUNT_MISMATCH");
+	private static final AdMessageKey MSG_ORDER_CURRENCY_MISMATCH = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_CURRENCY_MISMATCH");
 	private static final AdMessageKey MSG_ORDER_NOT_WAITING = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_WAITING");
 	private static final AdMessageKey MSG_ORDER_NOT_A_PREPAYMENT = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_A_PREPAYMENT");
 
@@ -310,7 +310,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
 		if (!CurrencyId.equals(orderCurrencyId, trxAmt.getCurrencyId()))
 		{
-			throw new AdempiereException(MSG_ORDER_AMOUNT_MISMATCH,
+			throw new AdempiereException(MSG_ORDER_CURRENCY_MISMATCH,
 										 order.getDocumentNo(),
 										 moneyService.getCurrencyCodeByCurrencyId(orderCurrencyId).toThreeLetterCode());
 		}

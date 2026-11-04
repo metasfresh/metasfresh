@@ -2,7 +2,7 @@
 -- now also names the payment that carries the order (REQUIREMENTS AC-OM3: "order already paid / carried by payment <C_Payment.DocumentNo>").
 -- {0} = C_Order.DocumentNo, {1} = C_Payment.DocumentNo of the carrying payment, "-" if no payment carries the order (e.g. an order closed by hand).
 --
--- Impact: AD_Message 545988 MsgText + its AD_Message_Trl rows (de_DE, de_CH, en_US). NOT affected: all other AD_Message rows.
+-- Impact: AD_Message 545988 MsgText + its AD_Message_Trl rows (all languages; en_US gets the English text). NOT affected: all other AD_Message rows.
 
 UPDATE AD_Message
 SET MsgText = 'Auftrag {0} ist bereits bezahlt oder wartet nicht mehr auf Zahlung (Zahlung: {1}). Es wird keine Zahlung erstellt. Bitte den Auftrag in der Auszugsposition entfernen.',
@@ -13,7 +13,7 @@ WHERE AD_Message_ID = 545988
 UPDATE AD_Message_Trl
 SET MsgText = 'Auftrag {0} ist bereits bezahlt oder wartet nicht mehr auf Zahlung (Zahlung: {1}). Es wird keine Zahlung erstellt. Bitte den Auftrag in der Auszugsposition entfernen.',
     Updated = TO_TIMESTAMP('2026-11-04 10:30:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Message_ID = 545988 AND AD_Language IN ('de_DE', 'de_CH')
+WHERE AD_Message_ID = 545988 AND AD_Language <> 'en_US'
 ;
 
 UPDATE AD_Message_Trl
