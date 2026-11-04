@@ -25,33 +25,42 @@ package de.metas.order;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
- * Criteria of {@link IOrderDAO#getWaitingPrepaySalesOrderIds(WaitingPrepaySalesOrderQuery)}.
+ * Criteria of {@link IOrderDAO#getOrderIds(OrderQuery)}. Every criterion is optional; only the ones that are set are applied.
+ * <p>
+ * Not to be confused with the deprecated {@link OrderCriteria}.
  */
 @Value
 @Builder
-public class WaitingPrepaySalesOrderQuery
+public class OrderQuery
 {
-	/** {@code C_Order.C_DocType_ID} has to be one of these, i.e. the prepay document types; the caller determines them. */
-	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+	/** {@code C_Order.DocStatus} */
+	@Nullable DocStatus docStatus;
 
-	/** Candidate {@code C_Order.DocumentNo} values, e.g. the words of a bank line's text. */
-	@NonNull ImmutableSet<String> documentNos;
+	/** {@code C_Order.IsSOTrx} */
+	@Nullable SOTrx soTrx;
 
-	/** {@code C_Order.C_Currency_ID} */
-	@NonNull CurrencyId currencyId;
+	/** If set, {@code C_Order.C_DocType_ID} has to be one of these (an empty set matches nothing). */
+	@Nullable ImmutableSet<DocTypeId> docTypeIds;
+
+	/** If set, {@code C_Order.DocumentNo} has to be one of these (an empty set matches nothing), e.g. the words of a bank line's text. */
+	@Nullable ImmutableSet<String> documentNos;
+
+	/** If set, has to equal {@code C_Order.C_Currency_ID} */
+	@Nullable CurrencyId currencyId;
 
 	/** If set, the order's {@code C_Order.Bill_BPartner_ID} or {@code C_Order.C_BPartner_ID} has to be this partner. */
 	@Nullable BPartnerId bpartnerId;
 
-	/** Has to equal {@code C_Order.GrandTotal} */
-	@NonNull BigDecimal amount;
+	/** If set, has to equal {@code C_Order.GrandTotal} */
+	@Nullable BigDecimal amount;
 }

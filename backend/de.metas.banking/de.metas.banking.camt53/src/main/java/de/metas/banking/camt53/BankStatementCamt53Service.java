@@ -57,6 +57,7 @@ import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.lang.SOTrx;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -69,7 +70,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.WaitingPrepaySalesOrderQuery;
+import de.metas.order.OrderQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentBL;
@@ -578,7 +579,9 @@ public class BankStatementCamt53Service
 			return Optional.empty();
 		}
 
-		final List<OrderId> candidateOrderIds = orderDAO.getWaitingPrepaySalesOrderIds(WaitingPrepaySalesOrderQuery.builder()
+		final List<OrderId> candidateOrderIds = orderDAO.getOrderIds(OrderQuery.builder()
+				.soTrx(SOTrx.SALES)
+				.docStatus(DocStatus.WaitingPayment)
 				.docTypeIds(docTypeDAO.getDocTypeIdsByDocBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.PrepayOrder)))
 				.documentNos(documentNos)
 				.currencyId(stmtAmount.getCurrencyId())

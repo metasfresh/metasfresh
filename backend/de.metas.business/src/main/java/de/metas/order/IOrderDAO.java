@@ -166,7 +166,7 @@ public interface IOrderDAO extends ISingletonService
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
 
-	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
+	Optional<I_C_Order> retrieveByOrderCriteria(OrderCriteria query);
 
 	Set<OrderId> retrieveIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
@@ -188,10 +188,10 @@ public interface IOrderDAO extends ISingletonService
 	boolean isCalibrationRuleUsed(@NonNull CalibrationRuleId calibrationRuleId);
 
 	/**
-	 * @return the ids of the active, sales, {@code DocStatus='WP'} orders that match the given query (document types, document numbers, currency, amount, optional partner).
-	 * Only the criteria of the order itself are applied; whether another bank statement line or payment already carries an order is for the caller to decide. No organization filter.
+	 * @return the ids of the active orders that match the given query; only the criteria that are set are applied. No organization filter.
+	 * Only the criteria of the order itself are applied; e.g. whether another bank statement line or payment already carries an order is for the caller to decide.
 	 */
-	List<OrderId> getWaitingPrepaySalesOrderIds(@NonNull WaitingPrepaySalesOrderQuery query);
+	List<OrderId> getOrderIds(@NonNull OrderQuery query);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 	List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);

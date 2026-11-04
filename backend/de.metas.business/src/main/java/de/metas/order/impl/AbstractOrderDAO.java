@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.order.WaitingPrepaySalesOrderQuery;
+import de.metas.order.OrderQuery;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
@@ -41,7 +41,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.order.OrderQuery;
+import de.metas.order.OrderCriteria;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -53,7 +53,6 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.X_C_Order;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -407,7 +406,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@NonNull
-	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderQuery query)
+	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderCriteria query)
 	{
 		if (query.getOrderId() != null)
 		{
@@ -447,7 +446,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Nullable
-	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderQuery query)
+	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderCriteria query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -552,7 +551,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@NonNull
-	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderQuery orderQuery)
+	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderCriteria orderQuery)
 	{
 		final OrgId orgId = assumeNotNull(orderQuery.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderQuery);
 		final ExternalId externalId = assumeNotNull(orderQuery.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderQuery);
@@ -610,22 +609,41 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public List<OrderId> getWaitingPrepaySalesOrderIds(@NonNull final WaitingPrepaySalesOrderQuery query)
+	public List<OrderId> getOrderIds(@NonNull final OrderQuery query)
 	{
-		if (query.getDocTypeIds().isEmpty() || query.getDocumentNos().isEmpty())
+		if ((query.getDocTypeIds() != null && query.getDocTypeIds().isEmpty())
+				|| (query.getDocumentNos() != null && query.getDocumentNos().isEmpty()))
 		{
 			return ImmutableList.of();
 		}
 
 		final IQueryBuilder<I_C_Order> queryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, true)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, X_C_Order.DOCSTATUS_WaitingPayment)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_DocType_ID, query.getDocTypeIds())
-				.addInArrayFilter(I_C_Order.COLUMNNAME_DocumentNo, query.getDocumentNos())
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Currency_ID, query.getCurrencyId())
-				.addEqualsFilter(I_C_Order.COLUMNNAME_GrandTotal, query.getAmount());
+				.addOnlyActiveRecordsFilter();
 
+		if (query.getSoTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+		}
+		if (query.getDocStatus() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (query.getDocTypeIds() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Order.COLUMNNAME_C_DocType_ID, query.getDocTypeIds());
+		}
+		if (query.getDocumentNos() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Order.COLUMNNAME_DocumentNo, query.getDocumentNos());
+		}
+		if (query.getCurrencyId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
+		}
+		if (query.getAmount() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_GrandTotal, query.getAmount());
+		}
 		if (query.getBpartnerId() != null)
 		{
 			queryBuilder.addCompositeQueryFilter()

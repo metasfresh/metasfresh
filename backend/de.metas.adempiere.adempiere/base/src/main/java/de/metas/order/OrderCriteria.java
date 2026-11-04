@@ -33,9 +33,10 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+@Deprecated
 @Value
 @Builder(toBuilder = true)
-public class OrderQuery
+public class OrderCriteria
 {
 	@Nullable
 	Integer orderId;

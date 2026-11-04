@@ -40,7 +40,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.OrderQuery;
+import de.metas.order.OrderCriteria;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
@@ -191,7 +191,7 @@ public class OrderService
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 		final ExternalSystemId externalSystemId = masterdataProvider.getExternalSystemId(ExternalSystemType.ofValue(request.getExternalSystemCode()));
 
-		final OrderQuery orderQuery = OrderQuery.builder()
+		final OrderCriteria orderQuery = OrderCriteria.builder()
 				.orgId(orgId)
 				.externalId(ExternalId.of(request.getExternalId()))
 				.externalSystemId(externalSystemId)
@@ -204,7 +204,7 @@ public class OrderService
 
 	public Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)
 	{
-		final OrderQuery.OrderQueryBuilder queryBuilder = OrderQuery.builder().orgId(orgId);
+		final OrderCriteria.OrderCriteriaBuilder queryBuilder = OrderCriteria.builder().orgId(orgId);
 
 		switch (orderIdentifier.getType())
 		{
@@ -212,7 +212,7 @@ public class OrderService
 				final OrderId orderId = OrderId.ofRepoId(orderIdentifier.asMetasfreshId().getValue());
 				return Optional.of(orderId);
 			case DOC:
-				final OrderQuery getOrderByDocQuery = queryBuilder
+				final OrderCriteria getOrderByDocQuery = queryBuilder
 						.documentNo(orderIdentifier.asDoc())
 						.build();
 
@@ -220,7 +220,7 @@ public class OrderService
 						.map(I_C_Order::getC_Order_ID)
 						.map(OrderId::ofRepoId);
 			case EXTERNAL_ID:
-				final OrderQuery getOrderByExternalId = queryBuilder
+				final OrderCriteria getOrderByExternalId = queryBuilder
 						.externalId(orderIdentifier.asExternalId())
 						.build();
 

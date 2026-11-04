@@ -25,10 +25,12 @@ package de.metas.order.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.WaitingPrepaySalesOrderQuery;
+import de.metas.order.OrderQuery;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
@@ -47,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The partner filter is the only criterion of the query that is tested here; the other criteria are covered by cucumber scenarios.
  */
-public class OrderDAO_getWaitingPrepaySalesOrderIds_Test
+public class OrderDAO_getOrderIds_Test
 {
 	private static final CurrencyId EUR = CurrencyId.ofRepoId(102);
 	private static final BPartnerId PARTNER_A = BPartnerId.ofRepoId(1);
@@ -82,9 +84,11 @@ public class OrderDAO_getWaitingPrepaySalesOrderIds_Test
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
 
-	private WaitingPrepaySalesOrderQuery.WaitingPrepaySalesOrderQueryBuilder query()
+	private OrderQuery.OrderQueryBuilder query()
 	{
-		return WaitingPrepaySalesOrderQuery.builder()
+		return OrderQuery.builder()
+				.soTrx(SOTrx.SALES)
+				.docStatus(DocStatus.WaitingPayment)
 				.docTypeIds(ImmutableSet.of(DocTypeId.ofRepoId(prepayDocType.getC_DocType_ID())))
 				.documentNos(ImmutableSet.of("0021"))
 				.currencyId(EUR)
@@ -99,10 +103,24 @@ public class OrderDAO_getWaitingPrepaySalesOrderIds_Test
 		final OrderId orderOfAAsOrderingPartnerOnly = createWaitingPrepayOrder(PARTNER_B, PARTNER_A);
 		final OrderId orderOfB = createWaitingPrepayOrder(PARTNER_B, PARTNER_B);
 
-		assertThat(orderDAO.getWaitingPrepaySalesOrderIds(query().bpartnerId(PARTNER_A).build()))
+		assertThat(orderDAO.getOrderIds(query().bpartnerId(PARTNER_A).build()))
 				.containsExactlyInAnyOrder(orderOfAAsBillPartner, orderOfAAsOrderingPartnerOnly);
 
-		assertThat(orderDAO.getWaitingPrepaySalesOrderIds(query().build()))
+		assertThat(orderDAO.getOrderIds(query().build()))
 				.containsExactlyInAnyOrder(orderOfAAsBillPartner, orderOfAAsOrderingPartnerOnly, orderOfB);
+	}
+
+	/** Every criterion is optional: unset ones are not applied, an empty document number set matches nothing. */
+	@Test
+	void unsetCriteriaAreNotApplied_emptySetMatchesNothing()
+	{
+		final OrderId order = createWaitingPrepayOrder(PARTNER_A, PARTNER_A);
+
+		assertThat(orderDAO.getOrderIds(OrderQuery.builder().documentNos(ImmutableSet.of("0021")).build()))
+				.containsExactly(order);
+		assertThat(orderDAO.getOrderIds(OrderQuery.builder().docStatus(DocStatus.Completed).build()))
+				.isEmpty();
+		assertThat(orderDAO.getOrderIds(OrderQuery.builder().documentNos(ImmutableSet.of()).build()))
+				.isEmpty();
 	}
 }
