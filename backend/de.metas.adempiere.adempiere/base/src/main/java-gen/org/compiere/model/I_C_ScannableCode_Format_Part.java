@@ -116,10 +116,6 @@ public interface I_C_ScannableCode_Format_Part
 	 */
 	int getC_ScannableCode_Format_ID();
 
-	org.compiere.model.I_C_ScannableCode_Format getC_ScannableCode_Format();
-
-	void setC_ScannableCode_Format(org.compiere.model.I_C_ScannableCode_Format C_ScannableCode_Format);
-
 	ModelColumn<I_C_ScannableCode_Format_Part, org.compiere.model.I_C_ScannableCode_Format> COLUMN_C_ScannableCode_Format_ID = new ModelColumn<>(I_C_ScannableCode_Format_Part.class, "C_ScannableCode_Format_ID", org.compiere.model.I_C_ScannableCode_Format.class);
 	String COLUMNNAME_C_ScannableCode_Format_ID = "C_ScannableCode_Format_ID";
 
@@ -213,6 +209,7 @@ public interface I_C_ScannableCode_Format_Part
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -222,6 +219,7 @@ public interface I_C_ScannableCode_Format_Part
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
