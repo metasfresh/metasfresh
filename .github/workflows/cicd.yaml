@@ -2,6 +2,7 @@ name: cicd
 on: [push, workflow_dispatch]
 env:
   PIPELINE_VERSION: '0.3.6'
+  COMPOSE_COMPATIBILITY: "true"
 jobs:
 
   init:
@@ -62,7 +63,6 @@ jobs:
           echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
-          echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   java:
     runs-on: ubuntu-latest
@@ -151,11 +151,6 @@ jobs:
             docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
-      - name: push-maven-dists
-        run: |
-          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
-          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
-
   frontend:
     runs-on: ubuntu-latest
     needs: init
@@ -206,10 +201,6 @@ jobs:
     needs: [init, frontend]
     steps:
       - uses: actions/checkout@v4
-      - uses: testspace-com/setup-testspace@v1
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         run: |
           docker buildx build \
@@ -220,8 +211,6 @@ jobs:
       - name: publish results
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
-          find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
-          testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -521,10 +510,6 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -566,10 +551,6 @@ jobs:
         run: |
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
-          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
-          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
-          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
-          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -636,10 +617,6 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -649,15 +626,10 @@ jobs:
           mkdir cucumber
           docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
-          docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
+          docker compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
           docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
-          docker-compose down
+          docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
-      - name: push-results
-        run: |
-          find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                              # upload cucumber html
-          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
       - name: push-database-images
         uses: nick-fields/retry@v3
         with:
@@ -694,7 +666,7 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          docker-compose up -d
+          docker compose up -d
       - name: Make the script files executable
         working-directory: docker-builds/health/
         if: success() || failure()
@@ -745,11 +717,11 @@ jobs:
 #        if: success() || failure()
 #        run: |
 #          ./apiHealthChecks.sh
-      - name: create docker-compose summary
+      - name: create docker compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()
         run: |
-          docker-compose ps -a
+          docker compose ps -a
           docker inspect --format "{{json .State.Health }}" compose_db_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_webapi_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_app_1 | jq
@@ -764,7 +736,7 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         if: success() || failure()
         run: | 
-          docker-compose down
+          docker compose down
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
