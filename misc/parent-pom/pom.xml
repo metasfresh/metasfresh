@@ -427,6 +427,12 @@
                              to repeatedly mark them as "stale" and trigger full module recompilation (JDK-6960424). -->
                         <compilerArgs>
                             <arg>-Xpkginfo:always</arg>
+                            <!-- Spring Framework 6.1 (Spring Boot 3) no longer infers constructor/method
+                                 parameter names for bean lookup unless classes are compiled with -parameters.
+                                 Without it, by-name disambiguation of multiple same-type beans (e.g. two
+                                 RestTemplate beans in de.metas.shipper.gateway.dhl.oauth2.OAuth2Config) fails
+                                 the boot with NoUniqueBeanDefinitionException. -->
+                            <arg>-parameters</arg>
                         </compilerArgs>
                         <!-- JDK 23+ changed the default annotation-processing policy to "none": javac no longer
                              runs processors discovered only on the classpath. Lombok is a plain dependency here,
