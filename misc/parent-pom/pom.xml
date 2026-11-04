@@ -78,11 +78,8 @@
         <!-- keep in sync with the spring-boot 3.5.x BOM (backend/pom.xml imports spring-boot-dependencies) -->
         <logback.version>1.5.34</logback.version>
 
-        <springfox-swagger.version>3.0.0</springfox-swagger.version>
-        <!--        Compatibility with Springfox-->
-        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
-        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
+        <!-- springdoc-openapi: OpenAPI 3 / Swagger-UI for Spring Boot 3.5 (replaces springfox 3.0.0, which is javax.servlet-only and broken on Spring Boot 3). 2.8.x targets the Spring Boot 3.4/3.5 line; 2.8.9+ explicitly supports Spring Boot 3.5. -->
+        <springdoc.version>2.8.17</springdoc.version>
 
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors.
              2.0.18 is managed by the spring-boot 3.5.16 BOM; the backend now runs on the slf4j-2.x API. -->

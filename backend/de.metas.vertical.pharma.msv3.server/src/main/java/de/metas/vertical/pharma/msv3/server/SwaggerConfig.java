@@ -1,13 +1,10 @@
 package de.metas.vertical.pharma.msv3.server;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
 
 /*
  * #%L
@@ -31,26 +28,18 @@ import springfox.documentation.spring.web.plugins.Docket;
  * #L%
  */
 
+// NOTE: no @EnableWebMvc here (see de.metas.ui.web.config.SwaggerConfig). springdoc needs Boot's MVC
+// auto-configuration.
 @Configuration
-@EnableWebMvc
 public class SwaggerConfig
 {
 	@Bean
-	public Docket api()
+	public OpenAPI api()
 	{
-		return new Docket(DocumentationType.OAS_30)
-				.select()
-				.paths(PathSelectors.any())
-				.build()
-				.apiInfo(createApiInfo());
-	}
-
-	public ApiInfo createApiInfo()
-	{
-		return new ApiInfoBuilder()
+		return new OpenAPI().info(new Info()
 				.title("metasfresh MSV3 server")
-				.license("GNU General Public License, version 2")
-				.licenseUrl("http://www.gnu.org/licenses/gpl-2.0.html")
-				.build();
+				.license(new License()
+						.name("GNU General Public License, version 2")
+						.url("http://www.gnu.org/licenses/gpl-2.0.html")));
 	}
 }

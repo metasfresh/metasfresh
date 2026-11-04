@@ -76,7 +76,7 @@
             <dependency>
                 <groupId>de.pentabyte</groupId>
                 <artifactId>springfox-enum-plugin</artifactId>
-                <version>${springfox-enum-plugin.version}</version>
+                <version>3.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -151,12 +151,12 @@
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox-swagger.version}</version>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
     
