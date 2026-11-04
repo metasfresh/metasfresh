@@ -507,16 +507,14 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
   #     Ustrd:   at most 140 chars; „ and “ -> space
   #              input    = "Rechnung „Nr. 1“ " (17 chars) + 140 x Y = 157 chars
   #              expected = "Rechnung  Nr. 1  " (17 chars; 2 spaces before Nr., 2 after 1) + 123 x Y = 140 chars
-  #     the debtor named "€ € €" (only disallowed characters) -> Dbtr.Nm is a single space; the export succeeds
   @from:cucumber
   @Id:S32708_TC15
-  Scenario: debtor-side cases in one file: debtor bank without BIC (NOTPROVIDED), invoice without description (no Ustrd), text conversion to the basic SEPA character set and maximum lengths (a name of only disallowed characters becomes one space), only the org-* mandate active, mandate last used after the collection date (DateLastUsed not moved back)
+  Scenario: debtor-side cases in one file: debtor bank without BIC (NOTPROVIDED), invoice without description (no Ustrd), text conversion to the basic SEPA character set and maximum lengths, only the org-* mandate active, mandate last used after the collection date (DateLastUsed not moved back)
     Given metasfresh contains C_BPartners:
       | Identifier      | Name                                                                                     | Value          | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | noBicDebtor     | Debtor NoBIC                                                                             | nobic_@Date@   | Y          | pricingSystem                 | D               |
       | noDescDebtor    | Debtor NoDescription                                                                     | nodesc_@Date@  | Y          | pricingSystem                 | D               |
       | longDebtor      | Bäcker & Söhne € Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | long_@Date@    | Y          | pricingSystem                 | D               |
-      | euroDebtor      | € € €                                                                                    | euros_@Date@   | Y          | pricingSystem                 | D               |
       | orgStarDebtor   | Debtor OrgStarMandate                                                                    | orgstar_@Date@ | Y          | pricingSystem                 | D               |
       | usedLaterDebtor | Debtor MandateUsedLater                                                                  | later_@Date@   | Y          | pricingSystem                 | D               |
     And metasfresh contains C_Bank:
@@ -530,7 +528,6 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | noBicAcct     | noBicDebtor     | EUR           | DE47400000001000000004 | noBicBank            |
       | noDescAcct    | noDescDebtor    | EUR           | DE35200000001000000005 | b2bBank              |
       | longAcct      | longDebtor      | EUR           | DE08200000001000000006 | b2bBank              |
-      | euroAcct      | euroDebtor      | EUR           | DE78200000001000000007 | b2bBank              |
       | orgStarAcct   | orgStarDebtor   | EUR           | DE51200000001000000008 | b2bBank              |
       | usedLaterAcct | usedLaterDebtor | EUR           | DE46200000001000000001 | b2bBank              |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
@@ -538,7 +535,6 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | noBicMandate                           | noBicAcct           | B2B         | MREF-NOBIC-001    | 2013-09-23  | Y           | 2025-09-04   | sellerOrg | Y        |
       | noDescMandate                          | noDescAcct          | B2B         | MREF-NODESC-001   | 2013-09-23  | Y           | 2025-09-04   | sellerOrg | Y        |
       | longMandate                            | longAcct            | B2B         | MREF-Ä&ö/001      | 2014-03-11  | Y           | 2025-09-04   | sellerOrg | Y        |
-      | euroMandate                            | euroAcct            | B2B         | MREF-EURO-001     | 2014-03-11  | Y           | 2025-09-04   | sellerOrg | Y        |
       | orgStarMandate                         | orgStarAcct         | B2B         | MREF-ORGSTAR-001  | 2020-05-04  | Y           | 2025-09-04   | 0         | Y        |
       | inactiveMandate                        | orgStarAcct         | B2B         | MREF-INACTIVE-001 | 2019-02-03  | Y           | 2025-09-04   | sellerOrg | N        |
       | usedLaterMandate                       | usedLaterAcct       | B2B         | MREF-LATER-001    | 2013-09-23  | Y           | 2026-12-01   | sellerOrg | Y        |
@@ -546,7 +542,6 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | Identifier   | C_BPartner_ID   | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | OPT.Description                                                                                                                                               | AD_Org_ID |
       | noBicInv     | noBicDebtor     | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice NoBIC                                                                                                                                                 | sellerOrg |
       | longInv      | longDebtor      | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Rechnung „Nr. 1“ YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY | sellerOrg |
-      | euroInv      | euroDebtor      | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice for disallowed characters                                                                                                                             | sellerOrg |
       | orgStarInv   | orgStarDebtor   | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice OrgStarMandate                                                                                                                                        | sellerOrg |
       | usedLaterInv | usedLaterDebtor | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice MandateUsedLater                                                                                                                                      | sellerOrg |
     # no description
@@ -558,13 +553,11 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | noBicInvL     | noBicInv     | product      | 1 PCE       | 10.00 | zeroTax  |
       | noDescInvL    | noDescInv    | product      | 1 PCE       | 20.00 | zeroTax  |
       | longInvL      | longInv      | product      | 1 PCE       | 30.00 | zeroTax  |
-      | euroInvL      | euroInv      | product      | 1 PCE       | 40.00 | zeroTax  |
       | orgStarInvL   | orgStarInv   | product      | 1 PCE       | 50.00 | zeroTax  |
       | usedLaterInvL | usedLaterInv | product      | 1 PCE       | 60.00 | zeroTax  |
     And the invoice identified by noBicInv is completed
     And the invoice identified by noDescInv is completed
     And the invoice identified by longInv is completed
-    And the invoice identified by euroInv is completed
     And the invoice identified by orgStarInv is completed
     And the invoice identified by usedLaterInv is completed
     And metasfresh contains Pay Selection
@@ -581,9 +574,6 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | CDD              | longDebtor    | 2026-11-02 |
     And "Create from..." is invoked for pay selection debtorsPaySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID | PayDate    |
-      | CDD              | euroDebtor    | 2026-11-02 |
-    And "Create from..." is invoked for pay selection debtorsPaySelection, using following parameters:
-      | MatchRequirement | C_BPartner_ID | PayDate    |
       | CDD              | orgStarDebtor | 2026-11-02 |
     And "Create from..." is invoked for pay selection debtorsPaySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID   | PayDate    |
@@ -594,7 +584,6 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | noBicInv     | 10.00   | 10.00  | noBicAcct           |
       | noDescInv    | 20.00   | 20.00  | noDescAcct          |
       | longInv      | 30.00   | 30.00  | longAcct            |
-      | euroInv      | 40.00   | 40.00  | euroAcct            |
       | orgStarInv   | 50.00   | 50.00  | orgStarAcct         |
       | usedLaterInv | 60.00   | 60.00  | usedLaterAcct       |
 
@@ -603,7 +592,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     Then the SEPA export result is a single XML file
     And the pay selection "debtorsPaySelection" has SEPA_Export records:
       | SEPA_Protocol   | NumberOfLines |
-      | pain.008.001.08 | 6             |
+      | pain.008.001.08 | 5             |
     And the SEPA direct debit file for scheme B2B is:
       """
       <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -612,8 +601,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
               <GrpHdr>
                   <MsgId>${ignore}</MsgId>
                   <CreDtTm>2026-10-28T10:00:00.000+01:00</CreDtTm>
-                  <NbOfTxs>6</NbOfTxs>
-                  <CtrlSum>210.00</CtrlSum>
+                  <NbOfTxs>5</NbOfTxs>
+                  <CtrlSum>170.00</CtrlSum>
                   <InitgPty>
                       <Nm>SEPA Test Creditor GmbH</Nm>
                   </InitgPty>
@@ -848,84 +837,6 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
                       </DbtrAcct>
                       <RmtInf>
                           <Ustrd>Rechnung  Nr. 1  YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY</Ustrd>
-                      </RmtInf>
-                  </DrctDbtTxInf>
-              </PmtInf>
-              <PmtInf>
-                  <PmtInfId>${ignore}</PmtInfId>
-                  <PmtMtd>DD</PmtMtd>
-                  <NbOfTxs>1</NbOfTxs>
-                  <CtrlSum>40.00</CtrlSum>
-                  <PmtTpInf>
-                      <SvcLvl>
-                          <Cd>SEPA</Cd>
-                      </SvcLvl>
-                      <LclInstrm>
-                          <Cd>B2B</Cd>
-                      </LclInstrm>
-                      <SeqTp>RCUR</SeqTp>
-                  </PmtTpInf>
-                  <ReqdColltnDt>2026-11-02</ReqdColltnDt>
-                  <Cdtr>
-                      <Nm>SEPA Test Creditor GmbH</Nm>
-                      <PstlAdr>
-                          <StrtNm>Musterstrasse 1</StrtNm>
-                          <PstCd>53111</PstCd>
-                          <TwnNm>Testhausen</TwnNm>
-                          <Ctry>DE</Ctry>
-                      </PstlAdr>
-                  </Cdtr>
-                  <CdtrAcct>
-                      <Id>
-                          <IBAN>DE91100000000123456789</IBAN>
-                      </Id>
-                  </CdtrAcct>
-                  <CdtrAgt>
-                      <FinInstnId>
-                          <BICFI>TESTDEC0XXX</BICFI>
-                      </FinInstnId>
-                  </CdtrAgt>
-                  <ChrgBr>SLEV</ChrgBr>
-                  <CdtrSchmeId>
-                      <Id>
-                          <PrvtId>
-                              <Othr>
-                                  <Id>DE98ZZZ09999999999</Id>
-                                  <SchmeNm>
-                                      <Prtry>SEPA</Prtry>
-                                  </SchmeNm>
-                              </Othr>
-                          </PrvtId>
-                      </Id>
-                  </CdtrSchmeId>
-                  <DrctDbtTxInf>
-                      <PmtId>
-                          <EndToEndId>${ignore}</EndToEndId>
-                      </PmtId>
-                      <InstdAmt Ccy="EUR">40.00</InstdAmt>
-                      <DrctDbtTx>
-                          <MndtRltdInf>
-                              <MndtId>MREF-EURO-001</MndtId>
-                              <DtOfSgntr>2014-03-11</DtOfSgntr>
-                              <AmdmntInd>false</AmdmntInd>
-                          </MndtRltdInf>
-                      </DrctDbtTx>
-                      <DbtrAgt>
-                          <FinInstnId>
-                              <BICFI>TESTDEB2XXX</BICFI>
-                          </FinInstnId>
-                      </DbtrAgt>
-                      <Dbtr>
-                          <!-- the debtor named "€ € €": only disallowed characters, so the name is one space -->
-                          <Nm> </Nm>
-                      </Dbtr>
-                      <DbtrAcct>
-                          <Id>
-                              <IBAN>DE78200000001000000007</IBAN>
-                          </Id>
-                      </DbtrAcct>
-                      <RmtInf>
-                          <Ustrd>Invoice for disallowed characters</Ustrd>
                       </RmtInf>
                   </DrctDbtTxInf>
               </PmtInf>

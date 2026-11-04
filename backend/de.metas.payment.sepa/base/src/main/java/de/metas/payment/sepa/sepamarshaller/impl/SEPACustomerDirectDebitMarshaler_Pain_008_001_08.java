@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -122,6 +123,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	/**
 	 * Maximum lengths of the GBIC_5 types (Max140Text_SDD for names, Max140Text, Max70Text, Max16Text, Max35Text).
 	 */
+	private static final AdMessageKey MSG_TextWithoutSepaCharacters = AdMessageKey.of("de.metas.payment.sepa.SepaTextWithoutSepaCharacters");
 	private static final int MAX_LENGTH_NAME = 70;
 	private static final int MAX_LENGTH_REMITTANCE_INFO = 140;
 	private static final int MAX_LENGTH_STREET_NAME = 70;
@@ -309,7 +311,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		drctDbtTxInf.setInstdAmt(instdAmt);
 
 		final MandateRelatedInformation14 mndtRltdInf = new MandateRelatedInformation14();
-		mndtRltdInf.setMndtId(SepaTextConverter.toIdentifier(mandate.getReference()));
+		mndtRltdInf.setMndtId(toMandatoryText(SepaTextConverter.toIdentifier(mandate.getReference()), mandate.getReference(), "MndtId", toPartnerLabel(line)));
 		mndtRltdInf.setDtOfSgntr(toXMLDate(mandate.getMandateDate()));
 		mndtRltdInf.setAmdmntInd(Boolean.FALSE);
 		final DirectDebitTransaction10 drctDbtTx = new DirectDebitTransaction10();
@@ -319,9 +321,10 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		drctDbtTxInf.setDbtrAgt(createFinancialInstitution(line.getSwiftCode()));
 
 		final PartyIdentification135 dbtr = new PartyIdentification135();
-		final String debtorName = SepaTextConverter.toText(SepaUtils.getBPartnerNameById(line.getC_BPartner_ID()), MAX_LENGTH_NAME);
-		Check.assumeNotNull(debtorName, "Debtor of {} has a name", line);
-		dbtr.setNm(debtorName);
+		final String originalDebtorName = SepaUtils.getBPartnerNameById(line.getC_BPartner_ID());
+		final String debtorName = SepaTextConverter.toText(originalDebtorName, MAX_LENGTH_NAME);
+		Check.assumeNotNull(originalDebtorName, "Debtor of {} has a name", line);
+		dbtr.setNm(toMandatoryText(debtorName, originalDebtorName, "Dbtr/Nm", toPartnerLabel(line)));
 		drctDbtTxInf.setDbtr(dbtr);
 
 		drctDbtTxInf.setDbtrAcct(createCashAccount(line.getIBAN()));
@@ -349,9 +352,32 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 
 	private String toCreditorName(@NonNull final I_SEPA_Export sepaDocument)
 	{
-		final String creditorName = SepaTextConverter.toText(sepaDocument.getSEPA_CreditorName(), MAX_LENGTH_NAME);
-		Check.assumeNotNull(creditorName, "{} has a creditor name", sepaDocument);
-		return creditorName;
+		final String originalName = sepaDocument.getSEPA_CreditorName();
+		Check.assumeNotNull(originalName, "{} has a creditor name", sepaDocument);
+		return toMandatoryText(SepaTextConverter.toText(originalName, MAX_LENGTH_NAME), originalName, "Cdtr/Nm", sepaDocument.getDocumentNo());
+	}
+
+	/**
+	 * @param converted the {@link SepaTextConverter} result of {@code original}; {@code null} if nothing is left of a non-blank {@code original}
+	 * @param element   the SEPA element the text is meant for
+	 * @param owner     what the text belongs to, for the message
+	 * @throws AdempiereException if the mandatory element would be empty, so that no export is created
+	 */
+	@Nullable
+	private static String toMandatoryText(@Nullable final String converted, @Nullable final String original, @NonNull final String element, @Nullable final String owner)
+	{
+		if (converted == null && Check.isNotBlank(original))
+		{
+			throw new AdempiereException(MSG_TextWithoutSepaCharacters, element, owner, original).markAsUserValidationError();
+		}
+		return converted;
+	}
+
+	/** @return the value of the line's partner, followed by its name */
+	private String toPartnerLabel(@NonNull final I_SEPA_Export_Line line)
+	{
+		final I_C_BPartner partner = bpartnerDAO.getById(BPartnerId.ofRepoId(line.getC_BPartner_ID()));
+		return partner.getValue() + " " + partner.getName();
 	}
 
 	private PartyIdentification135 createCreditor(@NonNull final I_SEPA_Export sepaDocument)

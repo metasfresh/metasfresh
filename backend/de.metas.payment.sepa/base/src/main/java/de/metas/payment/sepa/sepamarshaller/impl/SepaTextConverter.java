@@ -36,7 +36,7 @@ import java.text.Normalizer;
  * The basic set is valid in every SEPA country; the German banks' set (GBIC_5) additionally allows umlauts, "ß" and {@code & * $ %},
  * but other countries' banks do not, and the Deutsche Bundesbank itself recommends writing "Ä" as "AE" and "ß" as "ss".
  * So umlauts, "ß" and letters such as "ø" or "Ł" are transliterated, other letters lose their accents (é → e), and every character still outside the set becomes a space;
- * the result is trimmed before it is cut.
+ * the result is trimmed before it is cut. A text with no character left yields {@code null}.
  */
 @UtilityClass
 public class SepaTextConverter
@@ -63,27 +63,29 @@ public class SepaTextConverter
 			.put('ł', "l")
 			.put('Đ', "D")
 			.put('đ', "d")
+			.put('Ð', "D")
+			.put('ð', "d")
+			.put('Þ', "TH")
+			.put('þ', "th")
 			.build();
 
 	private static final String SPECIAL_CHARS = "+?/-:().,' ";
 
 	/**
-	 * @return {@code null} for a blank input; a single space if a non-blank input has nothing left after the conversion (the element is mandatory and must not be empty)
+	 * For mandatory identifiers.
+	 *
+	 * @return {@code null} for a blank input or if nothing is left after the conversion; the caller has to tell the two apart (the element is mandatory, so the latter must be refused)
 	 */
 	@Nullable
 	public static String toIdentifier(@Nullable final String text)
 	{
-		if (Check.isBlank(text))
-		{
-			return null;
-		}
-		return spaceIfEmpty(cut(convert(text), IDENTIFIER_MAX_LENGTH));
+		return toText(text, IDENTIFIER_MAX_LENGTH);
 	}
 
 	/**
 	 * For mandatory texts.
 	 *
-	 * @return {@code null} for a blank input; a single space if a non-blank input has nothing left after the conversion (the element is mandatory and must not be empty)
+	 * @return {@code null} for a blank input or if nothing is left after the conversion; the caller has to tell the two apart (the element is mandatory, so the latter must be refused)
 	 */
 	@Nullable
 	public static String toText(@Nullable final String text, final int maxLength)
@@ -92,7 +94,8 @@ public class SepaTextConverter
 		{
 			return null;
 		}
-		return spaceIfEmpty(cut(convert(text), maxLength));
+		final String result = cut(convert(text), maxLength);
+		return result.isEmpty() ? null : result;
 	}
 
 	/**
@@ -103,12 +106,7 @@ public class SepaTextConverter
 	@Nullable
 	public static String toOptionalText(@Nullable final String text, final int maxLength)
 	{
-		if (Check.isBlank(text))
-		{
-			return null;
-		}
-		final String result = cut(convert(text), maxLength);
-		return result.isEmpty() ? null : result;
+		return toText(text, maxLength);
 	}
 
 	private static String convert(@NonNull final String text)
@@ -151,10 +149,5 @@ public class SepaTextConverter
 	private static String cut(@NonNull final String text, final int maxLength)
 	{
 		return text.length() <= maxLength ? text : text.substring(0, maxLength);
-	}
-
-	private static String spaceIfEmpty(@NonNull final String text)
-	{
-		return text.isEmpty() ? " " : text;
 	}
 }

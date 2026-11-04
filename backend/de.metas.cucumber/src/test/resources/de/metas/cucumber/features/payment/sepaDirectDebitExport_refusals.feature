@@ -464,3 +464,42 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | einmaliges Mandat auf 2 Zeilen                        |
       | zusätzlichen Zeilen aus der Zahlungsauswahl entfernen |
     And the pay selection "paySelection" has no SEPA_Export
+
+  @from:cucumber
+  @Id:S32708_TC24
+  Scenario: debtor name without any character of the SEPA character set: export refused naming the partner, no SEPA_Export
+    Given metasfresh contains C_BPartners:
+      | Identifier | Name  | Value                | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
+      | debtor     | € € € | dd_nosepaname_@Date@   | Y          | pricingSystem                 | D               |
+    And metasfresh contains C_Bank:
+      | C_Bank_ID.Identifier | Name                 | RoutingNo | SwiftCode   |
+      | debtorBank           | SEPA Debtor No Chars | 20000000  | TESTDEB2XXX |
+    And metasfresh contains C_BP_BankAccount
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
+      | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank           |
+    And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | AD_Org_ID |
+      | mandate                                | debtorAcct          | CORE        | MREF-NOSEPA-001  | 2026-10-01  | Y           | sellerOrg |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
+      | invoice    | debtor        | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID |
+      | invoiceL   | invoice      | product      | 1 PCE       | 10.00 | zeroTax  |
+    And the invoice identified by invoice is completed
+    And metasfresh contains Pay Selection
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
+      | paySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
+      | MatchRequirement | C_BPartner_ID | PayDate    |
+      | CDD              | debtor        | 2026-11-02 |
+    And the pay selection identified by paySelection is completed
+
+    When the SEPA export process is run for pay selection "paySelection"
+
+    Then the SEPA export process fails with a message containing:
+      | SEPA-Lastschrift-Export nicht erstellt |
+      | Dbtr/Nm                                |
+      | dd_nosepaname_                         |
+      | € € €                                  |
+    And the pay selection "paySelection" has no SEPA_Export

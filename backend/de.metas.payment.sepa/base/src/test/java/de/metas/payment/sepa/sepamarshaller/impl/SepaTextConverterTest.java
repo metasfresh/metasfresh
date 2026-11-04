@@ -56,9 +56,9 @@ class SepaTextConverterTest
 		}
 
 		@Test
-		void onlyDisallowedCharacters_isOneSpace()
+		void onlyDisallowedCharacters_isNull()
 		{
-			assertThat(SepaTextConverter.toIdentifier("€€")).isEqualTo(" ");
+			assertThat(SepaTextConverter.toIdentifier("€€")).isNull();
 		}
 	}
 
@@ -78,6 +78,7 @@ class SepaTextConverterTest
 				"Bäcker & Söhne € Großhandel | Baecker   Soehne   Grosshandel", // umlauts and ß are transliterated, & and € become a space
 				"Société Générale, Łódź      | Societe Generale, Lodz",          // accents are dropped; Ł has no decomposition and is transliterated
 				"Søren Ærø, Œuvre, Đorđe     | Soren AEro, OEuvre, Dorde",       // letters without a decomposition are transliterated
+				"Þórður Ðórsson              | THordur Dorsson",                 // Icelandic letters without a decomposition
 				"Rechnung „Nr. 1“            | Rechnung  Nr. 1",                 // trimmed after the conversion
 				"a😀b              | a b",                             // a character outside the BMP is ONE space, not two
 				"50% * 2 $                   | 50    2",
@@ -101,9 +102,9 @@ class SepaTextConverterTest
 		}
 
 		@Test
-		void onlyDisallowedCharacters_isOneSpace()
+		void onlyDisallowedCharacters_isNull()
 		{
-			assertThat(SepaTextConverter.toText("€ € €", 70)).isEqualTo(" ");
+			assertThat(SepaTextConverter.toText("€ € €", 70)).isNull();
 		}
 	}
 
