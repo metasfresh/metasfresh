@@ -1,4 +1,4 @@
-FROM node:14 as build
+FROM node:14-bullseye as build
 
 RUN npm install -g webpack webpack-cli
 
@@ -6,7 +6,9 @@ WORKDIR /app
 COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
 # COPY yarn.lock .
 
-RUN yarn install
+# --ignore-engines: no committed yarn.lock, so a cold install floats test-only transitive deps
+# (e.g. expect@30) now requiring node>=18; build runs on node 14 and tests are not run here.
+RUN yarn install --ignore-engines
 
 COPY misc/services/mobile-webui/mobile-webui-frontend/ .
 
@@ -16,7 +18,7 @@ RUN yarn lint
 RUN yarn build
 
 
-FROM nginx:1.21.6 as runtime
+FROM nginx:1.30 as runtime
 
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 
