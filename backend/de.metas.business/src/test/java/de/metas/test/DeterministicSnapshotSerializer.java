@@ -1,4 +1,4 @@
-package de.metas.rest_api.support;
+package de.metas.test;
 
 import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
