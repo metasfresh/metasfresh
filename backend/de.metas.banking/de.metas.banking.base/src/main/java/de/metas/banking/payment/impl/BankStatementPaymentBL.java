@@ -37,13 +37,22 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
@@ -51,6 +60,7 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
@@ -60,9 +70,12 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -74,10 +87,17 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
+	private static final AdMessageKey MSG_ORDER_CURRENCY_MISMATCH = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_CURRENCY_MISMATCH");
+	private static final AdMessageKey MSG_ORDER_NOT_WAITING = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_WAITING");
+	private static final AdMessageKey MSG_ORDER_NOT_A_PREPAYMENT = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_A_PREPAYMENT");
+
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBankStatementBL bankStatementBL;
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final PaymentAllocationService paymentAllocationService;
@@ -142,8 +162,21 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 											   .direction(expectedPaymentDirection)
 											   .bpartnerId(bpartnerId)
 											   .payAmt(expectedPaymentAmount)
+											   .orderId(extractOrderIdToPay(bankStatementLine, trxAmt))
 											   .excludePaymentIds(excludePaymentIds)
 											   .build());
+	}
+
+	/**
+	 * @return the order that the payment of this line has to carry, i.e. the order of an incoming line without invoice;
+	 * null for a debit, 0.00 or invoice line (these never get the order).
+	 */
+	@Nullable
+	private static OrderId extractOrderIdToPay(@NonNull final I_C_BankStatementLine bankStatementLine, @NonNull final Money trxAmt)
+	{
+		return bankStatementLine.getC_Invoice_ID() <= 0 && trxAmt.signum() > 0
+				? OrderId.ofRepoIdOrNull(bankStatementLine.getC_Order_ID())
+				: null;
 	}
 
 	private static Money extractTrxAmt(final I_C_BankStatementLine line)
@@ -181,6 +214,8 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final Money payAmount = trxAmt.negateIf(!inboundPayment);
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(bankStatementLine.getC_Invoice_ID());
+
+		final OrderId orderId = extractOrderIdToPay(bankStatementLine, trxAmt);
 
 		final TenderType tenderType = paymentBL.getTenderType(orgBankAccountId);
 
@@ -223,8 +258,65 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 			paymentBuilder.invoiceId(invoiceId);
 		}
+		else if (orderId != null)
+		{
+			// invoice matching comes first; a debit, 0.00 or invoice line never gives its payment the order (see extractOrderIdToPay)
+			assertOrderCanBePaid(orderId, trxAmt);
+			paymentBuilder.orderId(orderId);
+		}
 
-		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+		final I_C_Payment payment = paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+		if (invoiceId == null && orderId != null && payment.getPayAmt().compareTo(payAmount.toBigDecimal()) != 0)
+		{
+			// on the first save, interceptor C_Payment.updateFromOrder overwrites PayAmt with the order's total minus the payment term discount
+			// (the builder only saves; the interceptor is not changed here because other callers, e.g. the REST order payment, rely on it);
+			// this payment is the cash received on the bank statement line, which may be less or more than the order total, so PayAmt is set back.
+			// DiscountAmt is intentionally left as the interceptor sets it, the same as for a payment entered by hand in window Zahlung.
+			payment.setPayAmt(payAmount.toBigDecimal());
+			paymentDAO.save(payment);
+		}
+		return payment;
+	}
+
+	/**
+	 * Prepayment of an active sales prepay order: the order must be a prepay order, still wait for payment, no completed or closed payment may carry it yet,
+	 * and the line must be in the order's currency (any amount).
+	 *
+	 * @throws AdempiereException if not, so completing the bank statement fails visibly and the order stays waiting
+	 */
+	private void assertOrderCanBePaid(@NonNull final OrderId orderId, @NonNull final Money trxAmt)
+	{
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		// the lookups and the "Auftrag" dropdown only offer such orders, but the field can also be filled by other means
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+		if (!order.isActive()
+				|| !order.isSOTrx()
+				|| docTypeId == null
+				|| !DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.PrepayOrder).equals(docTypeDAO.getDocBaseAndSubTypeById(docTypeId)))
+		{
+			throw new AdempiereException(MSG_ORDER_NOT_A_PREPAYMENT, order.getDocumentNo());
+		}
+
+		// one refusal for "already paid" and "no longer waiting": a payment (the one the order points to, else a completed or closed one pointing to the order)
+		// carries the order, or the order does not wait for payment any more; the message names the carrying payment, "-" if there is none (e.g. an order closed by hand)
+		final PaymentId carryingPaymentId = CoalesceUtil.coalesceSuppliers(
+				() -> PaymentId.ofRepoIdOrNull(order.getC_Payment_ID()),
+				() -> paymentBL.getFirstCompletedOrClosedPaymentIdByOrderId(orderId).orElse(null));
+		if (carryingPaymentId != null || !DocStatus.ofCode(order.getDocStatus()).isWaitingForPayment())
+		{
+			final String carryingPaymentDocumentNo = carryingPaymentId != null ? paymentBL.getById(carryingPaymentId).getDocumentNo() : "-";
+			throw new AdempiereException(MSG_ORDER_NOT_WAITING, order.getDocumentNo(), carryingPaymentDocumentNo);
+		}
+
+		// any amount (human decision 2026-11-04): a hand-picked order is paid with the line amount; only the automatic match needs the full amount
+		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
+		if (!CurrencyId.equals(orderCurrencyId, trxAmt.getCurrencyId()))
+		{
+			throw new AdempiereException(MSG_ORDER_CURRENCY_MISMATCH,
+										 order.getDocumentNo(),
+										 moneyService.getCurrencyCodeByCurrencyId(orderCurrencyId).toThreeLetterCode());
+		}
 	}
 
 	@Override

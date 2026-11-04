@@ -32,6 +32,7 @@ import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -41,6 +42,7 @@ import org.compiere.SpringContextHolder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,9 +53,16 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 
-	public C_BankStatement_Camt53_ImportAttachment_StepDef(@NonNull final C_BankStatement_StepDefData bankStatementTable)
+	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@\\s]+@");
+
+	private final TestContext restTestContext;
+
+	public C_BankStatement_Camt53_ImportAttachment_StepDef(
+			@NonNull final C_BankStatement_StepDefData bankStatementTable,
+			@NonNull final TestContext restTestContext)
 	{
 		this.bankStatementTable = bankStatementTable;
+		this.restTestContext = restTestContext;
 	}
 
 	@And("^bank statement is imported with identifiers (.*), matching invoice amounts$")
@@ -80,6 +89,12 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 		importCamt53Document(identifier, fileContent, false);
 	}
 
+	/** Resolves {@code @name@} REST context variables; a document without such a token is taken literally (a single '@' would throw in the expression compiler). */
+	private String resolvePlaceholders(@NonNull final String fileContent)
+	{
+		return PLACEHOLDER.matcher(fileContent).find() ? restTestContext.resolveVariables(fileContent) : fileContent;
+	}
+
 	private void importCamt53Document(@NonNull final String identifier, @NonNull final String fileContent, final boolean isMatchAmounts)
 	{
 		final I_C_BankStatement_Import_File importFileRecord = InterfaceWrapperHelper.newInstance(I_C_BankStatement_Import_File.class);
@@ -90,7 +105,7 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 		final ImportBankStatementRequest importBankStatementRequest = ImportBankStatementRequest
 				.builder()
 				.camt53File(AttachmentEntryDataResource.builder()
-									.source(fileContent.getBytes(StandardCharsets.UTF_8)) // the docstring XML declares UTF-8; the platform charset (cp1252 on Windows) corrupts umlauts
+									.source(resolvePlaceholders(fileContent).getBytes(StandardCharsets.UTF_8)) // the docstring XML declares UTF-8; the platform charset (cp1252 on Windows) corrupts umlauts
 									.filename("does_not_matter.xml")
 									.build())
 				.isMatchAmounts(isMatchAmounts)
