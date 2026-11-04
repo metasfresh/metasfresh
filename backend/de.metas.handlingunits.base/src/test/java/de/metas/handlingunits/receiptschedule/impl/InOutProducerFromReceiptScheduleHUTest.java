@@ -39,7 +39,6 @@ import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
@@ -117,7 +116,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 						new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 								new PPOrderIssueScheduleService(
 										new PPOrderIssueScheduleRepository(),
-										new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting())
+										HUQtyService.newInstanceForUnitTesting()
 								)),
 						HUQRCodesService.newInstanceForUnitTesting()
 				)

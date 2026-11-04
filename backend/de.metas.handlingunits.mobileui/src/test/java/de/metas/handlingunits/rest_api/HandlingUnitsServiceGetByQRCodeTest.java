@@ -7,7 +7,6 @@ import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.inventory.InventoryCandidateRepository;
@@ -49,7 +48,7 @@ class HandlingUnitsServiceGetByQRCodeTest
 
 		service = new HandlingUnitsService(
 				HUQRCodesService.newInstanceForUnitTesting(),
-				new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting()),
+				HUQtyService.newInstanceForUnitTesting(),
 				HULabelService.newInstanceForUnitTesting(),
 				new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()), new InventoryCandidateRepository()),
 				new HUGraiService(new HUPIGraiRepository()));

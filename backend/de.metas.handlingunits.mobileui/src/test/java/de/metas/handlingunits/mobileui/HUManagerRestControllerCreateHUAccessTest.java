@@ -7,7 +7,6 @@ import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -110,7 +109,7 @@ class HUManagerRestControllerCreateHUAccessTest
 		disposeAction = newAction(HUManagerAction.Dispose.getInternalName());
 
 		final HUQRCodesService huQRCodesService = HUQRCodesService.newInstanceForUnitTesting();
-		final HUQtyService huQtyService = new HUQtyService(InventoryService.newInstanceForUnitTesting(), HUQRCodesService.newInstanceForUnitTesting());
+		final HUQtyService huQtyService = HUQtyService.newInstanceForUnitTesting();
 		final InventoryCandidateService inventoryCandidateService = new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()), new InventoryCandidateRepository());
 		controller = new HUManagerRestController(
 				new MobileApplicationService(new MobileApplicationInfoRepository(), Optional.empty()),

@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
@@ -67,6 +68,8 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -87,6 +90,18 @@ public class HUQtyService
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+	@VisibleForTesting
+	public static HUQtyService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				HUQtyService.class,
+				() -> new HUQtyService(
+						InventoryService.newInstanceForUnitTesting(),
+						HUQRCodesService.newInstanceForUnitTesting()));
+	}
 
 	@Nullable
 	public Inventory updateQty(@NonNull final UpdateHUQtyRequest request)

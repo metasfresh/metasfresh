@@ -32,7 +32,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -98,7 +97,7 @@ public class WeightHUCommandTest
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
-		this.huQtyService = new HUQtyService(inventoryService, HUQRCodesService.newInstanceForUnitTesting());
+		this.huQtyService = HUQtyService.newInstanceForUnitTesting();
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}
