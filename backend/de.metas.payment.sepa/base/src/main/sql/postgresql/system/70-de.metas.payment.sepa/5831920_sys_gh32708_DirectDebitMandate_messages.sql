@@ -37,7 +37,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:
 
 -- DirectDebitMandateExpired
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545970 /*From ID Server*/,0,TO_TIMESTAMP('2026-10-28 11:30:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa','Y','{0}, Mandat {1}: abgelaufen – letzte Nutzung bzw. Unterschrift am {2} liegt mehr als 36 Monate vor dem Einzugsdatum {3}. Wurde das Mandat später genutzt (z. B. im Vorsystem), das Datum „Letzte Nutzung“ korrigieren; sonst das alte Mandat deaktivieren und das neu unterschriebene Mandat erfassen; oder die Zeile aus der Zahlungsauswahl entfernen.','E',TO_TIMESTAMP('2026-10-28 11:30:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa.DirectDebitMandateExpired');
+VALUES (0,545970 /*From ID Server*/,0,TO_TIMESTAMP('2026-10-28 11:30:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa','Y','{0}, Mandat {1}: abgelaufen – letzte Nutzung bzw. Unterschrift am {2} liegt mehr als 36 Monate vor dem Einzugsdatum {3}. Wurde das Mandat später genutzt, das Datum „Letzte Nutzung“ korrigieren; sonst das alte Mandat deaktivieren und das neu unterschriebene Mandat erfassen; oder die Zeile aus der Zahlungsauswahl entfernen.','E',TO_TIMESTAMP('2026-10-28 11:30:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa.DirectDebitMandateExpired');
 
 UPDATE AD_Message SET ErrorCode='DD_MANDATE_EXPIRED', Updated=TO_TIMESTAMP('2026-10-28 11:30:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545970;
 
@@ -47,7 +47,7 @@ FROM AD_Language l, AD_Message t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=545970
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID);
 
-UPDATE AD_Message_Trl SET MsgText='{0}, mandate {1}: expired – last used or signed on {2}, more than 36 months before the collection date {3}. If the mandate was used more recently (e.g. in the previous system), correct its last-used date; otherwise deactivate the old mandate and enter the newly signed one; or remove the line from the pay selection.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:30:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545970;
+UPDATE AD_Message_Trl SET MsgText='{0}, mandate {1}: expired – last used or signed on {2}, more than 36 months before the collection date {3}. If the mandate was used more recently, correct its last-used date; otherwise deactivate the old mandate and enter the newly signed one; or remove the line from the pay selection.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:30:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545970;
 
 UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 11:30:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language IN ('de_DE','de_CH') AND AD_Message_ID=545970;
 
