@@ -39,6 +39,18 @@
         <java.version>14</java.version>
         <spring-boot.version>2.7.11</spring-boot.version>
         <camel.version>3.14.7</camel.version>
+        <!-- java25 / logging: this service is still on Spring Boot 2.7.11, whose LogbackLoggingSystem
+             binds via the SLF4J-1.x org.slf4j.impl.StaticLoggerBinder. The project-wide parent-pom
+             (de.metas.parent.general) force-manages SLF4J 2.0.18 + logback 1.5.34 + logstash-encoder
+             8.1 (the Spring Boot 3 line, which dropped StaticLoggerBinder), which this module inherits
+             -> the metas-edi container died at startup with NoClassDefFoundError
+             org/slf4j/impl/StaticLoggerBinder. Override the versions the inherited dependencyManagement
+             resolves through (these property names) back to the 1.x line that Spring Boot 2.7.11 and
+             logback 1.2.x expect, giving a consistent SLF4J-1.7.x + logback-1.2.x binding for THIS
+             service only. (A move to the 2.x line would require porting this service to Spring Boot 3.) -->
+        <slf4j-api.version>1.7.36</slf4j-api.version>
+        <logback.version>1.2.12</logback.version>
+        <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
         <guava.version>30.1.1-jre</guava.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
