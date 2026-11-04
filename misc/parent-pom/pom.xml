@@ -551,11 +551,15 @@
                              Hence it is important to add those command-line params where @{argLine} holds those params.
                              Note that the @ is not a typo.
                              See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html and https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#argLine -->
-                        <!-- add-opens (java.base/java.lang=ALL-UNNAMED): JDK 25 enforces strong encapsulation,
-                             so the Javassist-based JavaAssistInterceptor (and other code doing reflective
-                             ClassLoader.defineClass) throws InaccessibleObjectException in the test fork without
-                             it. Applies to every module's surefire fork via this parent. -->
-                        <argLine>@{argLine} -Xms256m -Xmx2048m -Dfile.encoding=UTF-8 --add-opens=java.base/java.lang=ALL-UNNAMED</argLine>
+                        <!-- add-opens: JDK 25 enforces strong encapsulation, so code doing reflective
+                             setAccessible on JDK internals throws InaccessibleObjectException in the test
+                             fork without an explicit open. Applies to every module's surefire fork via
+                             this parent.
+                             - java.base/java.lang: the Javassist-based JavaAssistInterceptor (and other
+                               code doing reflective ClassLoader.defineClass).
+                             - java.base/java.util: EnvTests reflects java.util.Properties.defaults
+                               (getDeclaredField("defaults").setAccessible(true)). -->
+                        <argLine>@{argLine} -Xms256m -Xmx2048m -Dfile.encoding=UTF-8 --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED</argLine>
                         <!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
                              When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0
                              or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.
