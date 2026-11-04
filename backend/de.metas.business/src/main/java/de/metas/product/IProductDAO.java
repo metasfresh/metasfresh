@@ -116,7 +116,7 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	/**
-	 * @return all active products of the given client whose {@link org.compiere.model.I_M_Product#COLUMNNAME_GTIN} equals the given GTIN exactly, ordered by M_Product_ID.
+	 * @return all active products of the given client whose {@link I_M_Product#COLUMNNAME_GTIN} equals the given GTIN exactly, ordered by M_Product_ID.
 	 * Unlike {@link #getProductIdByGTINStrictly(GTIN, ClientId)} it never picks one of several products sharing the GTIN.
 	 */
 	ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
