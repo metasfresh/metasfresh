@@ -6,7 +6,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { NewHUPreviewScreen } from '../../utils/screens/huManager/NewHUPreviewScreen';
-import { expectErrorToast, page, SLOW_ACTION_TIMEOUT } from '../../utils/common';
+import { expectErrorToast } from '../../utils/common';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { DISPOSAL_REASON_DAMAGED } from '../../utils/screens/huManager/HUDisposalScreen';
 import { uniqueGtin14 } from '../../utils/gtin';
@@ -85,15 +85,7 @@ const openCreatedHUByValue = async ({ created, locatorCode, qty = '1 PCE' }) => 
 
 const expectCreateCallCount = (counter, expected) => expect(counter.count).toBe(expected);
 
-/** counts the POSTs to the given endpoints (url fragments) from now on */
-const countPostCalls = (...urlParts) => {
-    const counter = { count: 0 };
-    page.on('request', (r) => {
-        if (r.method() === 'POST' && urlParts.some((urlPart) => r.url().includes(urlPart))) counter.count++;
-    });
-    return counter;
-};
-const countCreateCalls = () => countPostCalls('createFromScannedCode');
+const countCreateCalls = () => NewHUPreviewScreen.countCreateCalls();
 
 const goBackToApplicationsAndLogout = async () => {
     await HUManagerScreen.goBack();
@@ -227,6 +219,7 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
             },
         },
         inventories: { [huQRCode]: { isExists: true, docStatus: 'CO', count: 1, qtyCount: '7' } },
+        products: { 'P1': { huCount: 1 } },
     });
 });
 
@@ -759,7 +752,7 @@ const restrictedHUManagerRole = (grantedActions) => ({
     },
 });
 
-const countProposeAndCreateCalls = () => countPostCalls('proposeFromScannedCode', 'createFromScannedCode');
+const countProposeAndCreateCalls = () => NewHUPreviewScreen.countProposeAndCreateCalls();
 
 // noinspection JSUnusedLocalSymbols
 test('role without allow-all and without the createHU grant -> product label gives today\'s not found, no preview, nothing booked', async ({ page }) => {
@@ -780,14 +773,14 @@ test('role without allow-all and without the createHU grant -> product label giv
     // today's not-found error: the HU lookup answers 404 (positive proof the HU lookup itself works for this role) and the app shows
     // its generic error toast ("Please try again ... (Trace: ...)": the app shows the raw axios text only when the
     // mobileui.frontend.showAllErrorMessages SysConfig is Y), never the label messages of the new feature
-    const lookupPromise = page.waitForResponse((r) => r.url().includes('/hu-manager/byQRCode') && r.request().method() === 'POST', { timeout: SLOW_ACTION_TIMEOUT });
+    const huLookup = HUManagerScreen.watchHULookup();
     await expectErrorToast('product label without createHU', async () => {
         await HUManagerScreen.scanLabel({ label: bracketedLabel(gtin) });
     }, ({ textContent }) => {
         expect(textContent).toMatch(/Please try again/);
         expect(textContent).not.toMatch(/Label not recognized|No product found|does not identify a product|Not a product label/);
     });
-    expect((await lookupPromise).status()).toBe(404);
+    expect(await huLookup.getStatus()).toBe(404);
     await NewHUPreviewScreen.expectNotDisplayed();
     await HUManagerScreen.waitForScreen();
     expect(calls.count).toBe(0); // neither propose nor create was even called: the app gate (HUManagerScreen.jsx) holds

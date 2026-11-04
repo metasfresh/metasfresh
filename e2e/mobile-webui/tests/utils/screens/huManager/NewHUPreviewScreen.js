@@ -20,6 +20,15 @@ const toCreatedHU = async (response) => {
 };
 const waitForCreateResponse = () => page.waitForResponse((r) => r.url().includes('createFromScannedCode') && r.request().method() === 'POST', { timeout: SLOW_ACTION_TIMEOUT });
 
+/** counts the POSTs to the given endpoints (url fragments) from now on */
+const countPostCalls = (...urlParts) => {
+    const counter = { count: 0 };
+    page.on('request', (r) => {
+        if (r.method() === 'POST' && urlParts.some((urlPart) => r.url().includes(urlPart))) counter.count++;
+    });
+    return counter;
+};
+
 /**
  * The "New HU" preview of the HU Manager: shown after a scanned product label found no existing HU.
  * One expect function per row (product, quantity, location, lot number, best-before date, production date, weight); specs never see the test ids.
@@ -27,6 +36,12 @@ const waitForCreateResponse = () => page.waitForResponse((r) => r.url().includes
  * Quantity: an inline field (qty-input) in the quantity row; the unit is shown in the field. Buttons: ok-button, cancel-button.
  */
 export const NewHUPreviewScreen = {
+    /** counts the create calls (OK click) from now on: `{ count }` */
+    countCreateCalls: () => countPostCalls('createFromScannedCode'),
+
+    /** counts the propose and the create calls (preview and OK click) from now on: `{ count }` */
+    countProposeAndCreateCalls: () => countPostCalls('proposeFromScannedCode', 'createFromScannedCode'),
+
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),

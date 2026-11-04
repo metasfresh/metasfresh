@@ -57,6 +57,15 @@ export const HUManagerScreen = {
         await BarcodeScannerComponent.type(label);
     }),
 
+    /**
+     * starts watching the next HU lookup by a scanned code (the call that decides "existing HU or not"); call it BEFORE the scan.
+     * @returns {{ getStatus: () => Promise<number> }} the HTTP status of that lookup
+     */
+    watchHULookup: () => {
+        const response = page.waitForResponse((r) => r.url().includes('/hu-manager/byQRCode') && r.request().method() === 'POST', { timeout: SLOW_ACTION_TIMEOUT });
+        return { getStatus: async () => (await response).status() };
+    },
+
     /** scans a product label that is no existing HU and waits for the "New HU" preview */
     scanLabelAndWaitForPreview: async ({ label }) => await test.step(`${NAME} - Scan label and wait for the New HU preview`, async () => {
         await HUManagerScreen.scanLabel({ label });
