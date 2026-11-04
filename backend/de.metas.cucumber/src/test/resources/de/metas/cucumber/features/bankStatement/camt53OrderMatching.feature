@@ -3679,8 +3679,8 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | p_37a                   | bs_37a                            | bsl_37a                               |
     # the customer paid the full order total (no Skonto taken): the payment is the line amount and carries no discount
     And validate payments
-      | C_Payment_ID.Identifier | PayAmt | DiscountAmt | IsReceipt | C_Order_ID.Identifier |
-      | p_37a                   | 123.52 | 0           | true      | o_37a                 |
+      | C_Payment_ID.Identifier | PayAmt | DiscountAmt | IsReceipt | C_Order_ID.Identifier | WriteOffAmt | IsOverUnderPayment | OverUnderAmt |
+      | p_37a                   | 123.52 | 0           | true      | o_37a                 | 0 | false | 0 |
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
       | o_37a      | CO        | 123.52     |
@@ -3736,5 +3736,5 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | p_37b                   | bs_37b                            | bsl_37b                               |
     # 121.05 = 123.52 - 2 % Skonto: the payment keeps the discount, so it settles the order total exactly
     And validate payments
-      | C_Payment_ID.Identifier | PayAmt | DiscountAmt | IsReceipt | C_Order_ID.Identifier |
-      | p_37b                   | 121.05 | 2.47        | true      | o_37b                 |
+      | C_Payment_ID.Identifier | PayAmt | DiscountAmt | IsReceipt | C_Order_ID.Identifier | WriteOffAmt | IsOverUnderPayment | OverUnderAmt |
+      | p_37b                   | 121.05 | 2.47        | true      | o_37b                 | 0 | false | 0 |
