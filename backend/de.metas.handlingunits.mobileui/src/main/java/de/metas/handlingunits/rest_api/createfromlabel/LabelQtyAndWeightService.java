@@ -45,7 +45,7 @@ public class LabelQtyAndWeightService
 			}
 			else
 			{
-				result.weightNotUsed(true);
+				result.isWeightIgnored(true);
 			}
 		}
 		return result.build();

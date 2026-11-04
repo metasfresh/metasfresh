@@ -112,7 +112,7 @@ public class ProposeHUFromScannedCodeCommand
 				.weightKg(qtyAndWeight.getWeightKgForCU())
 				.locatorQRCode(locatorQRCode != null ? locatorQRCode.toScannedCode() : null)
 				.locatorCaption(locatorQRCode != null ? locatorQRCode.getCaption() : null)
-				.weightNote(qtyAndWeight.isWeightNotUsed() ? TranslatableStrings.adMessage(WEIGHT_NOT_USED).translate(adLanguage) : null)
+				.weightNote(qtyAndWeight.isWeightIgnored() ? TranslatableStrings.adMessage(WEIGHT_NOT_USED).translate(adLanguage) : null)
 				.build();
 	}
 

@@ -95,7 +95,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 	@Test
 	void noAllowAllActionsGiven_existingRestrictedRowStaysRestricted()
 	{
-		repository.createMobileApplicationAccess(request().allowAllActions(false).build());
+		repository.createMobileApplicationAccess(request().isAllowAllActions(false).build());
 
 		repository.createMobileApplicationAccess(request().build()); // e.g. the POS grant or the Mobile_Application interceptor
 
@@ -107,7 +107,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 	{
 		repository.createMobileApplicationAccess(request().build()); // as role_access_update() leaves it
 
-		repository.createMobileApplicationAccess(request().allowAllActions(false).build());
+		repository.createMobileApplicationAccess(request().isAllowAllActions(false).build());
 
 		assertThat(accessRowCount()).isEqualTo(1);
 		final MobileApplicationPermissions permissions = repository.getMobileApplicationPermissions(ROLE_ID);
@@ -120,8 +120,8 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 	{
 		repository.createMobileApplicationAccess(request().build());
 
-		repository.createMobileApplicationAccess(request().allowAllActions(false).allowedActionIds(ImmutableSet.of(actionId)).build());
-		repository.createMobileApplicationAccess(request().allowAllActions(false).allowedActionIds(ImmutableSet.of(actionId)).build());
+		repository.createMobileApplicationAccess(request().isAllowAllActions(false).allowedActionIds(ImmutableSet.of(actionId)).build());
+		repository.createMobileApplicationAccess(request().isAllowAllActions(false).allowedActionIds(ImmutableSet.of(actionId)).build());
 
 		final MobileApplicationPermissions permissions = repository.getMobileApplicationPermissions(ROLE_ID);
 		assertThat(permissions.isAllowAction(applicationId, actionId)).isTrue();
@@ -138,7 +138,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 
 		final int queriesBefore = queryBL.actionAccessQueryCount.get();
 
-		repository.createMobileApplicationAccess(request().allowAllActions(false)
+		repository.createMobileApplicationAccess(request().isAllowAllActions(false)
 				.allowedActionIds(ImmutableSet.of(actionId, otherActionId, thirdActionId, fourthActionId)).build());
 
 		assertThat(queryBL.actionAccessQueryCount.get() - queriesBefore).as("queries on " + I_Mobile_Application_Action_Access.Table_Name).isEqualTo(1);
@@ -155,7 +155,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 		createActionAccess(actionId, true);
 		createActionAccess(actionId, true);
 
-		assertThatThrownBy(() -> repository.createMobileApplicationAccess(request().allowAllActions(false)
+		assertThatThrownBy(() -> repository.createMobileApplicationAccess(request().isAllowAllActions(false)
 				.allowedActionIds(ImmutableSet.of(actionId)).build()))
 				.isInstanceOf(DBMoreThanOneRecordsFoundException.class)
 				.hasMessageContaining(I_Mobile_Application_Action_Access.Table_Name)

@@ -24,5 +24,5 @@ class LabelQtyAndWeight
 	/** set only when the label weight becomes the CU's net weight (catch-weight product) */
 	@Nullable BigDecimal weightKgForCU;
 	/** the label carries a weight that this product does not use */
-	boolean weightNotUsed;
+	boolean isWeightIgnored;
 }

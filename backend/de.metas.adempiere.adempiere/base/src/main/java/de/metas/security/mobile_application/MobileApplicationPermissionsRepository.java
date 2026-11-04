@@ -104,9 +104,9 @@ public class MobileApplicationPermissionsRepository
 		}
 
 		accessRecord.setIsActive(true);
-		if (request.getAllowAllActions() != null)
+		if (request.getIsAllowAllActions() != null)
 		{
-			accessRecord.setIsAllowAllActions(request.getAllowAllActions());
+			accessRecord.setIsAllowAllActions(request.getIsAllowAllActions());
 		}
 
 		InterfaceWrapperHelper.save(accessRecord);

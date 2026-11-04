@@ -194,7 +194,7 @@ public class CreateRoleCommand
 					.clientId(MasterdataContext.CLIENT_ID)
 					.orgId(MasterdataContext.ORG_ID)
 					.applicationId(application.getRepoId())
-					.allowAllActions(accessRequest.isAllowAllActions())
+					.isAllowAllActions(accessRequest.isAllowAllActions())
 					.allowedActionIds(getActionIds(application, grantedActions))
 					.build());
 		}

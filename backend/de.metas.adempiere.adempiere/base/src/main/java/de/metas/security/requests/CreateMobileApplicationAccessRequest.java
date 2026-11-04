@@ -26,7 +26,7 @@ public class CreateMobileApplicationAccessRequest
 	 * row is left as it is. Not {@code null}: the row gets exactly this value, also when it already exists (e.g. created by
 	 * {@code role_access_update()} when the role was created).
 	 */
-	@Nullable Boolean allowAllActions;
+	@Nullable Boolean isAllowAllActions;
 
 	/** Actions to grant through {@code Mobile_Application_Action_Access} (relevant when the access does not allow all actions); rows that exist are kept. */
 	@NonNull @Builder.Default ImmutableSet<MobileApplicationActionId> allowedActionIds = ImmutableSet.of();

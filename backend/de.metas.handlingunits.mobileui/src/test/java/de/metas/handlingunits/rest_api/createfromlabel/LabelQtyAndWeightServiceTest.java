@@ -44,7 +44,7 @@ class LabelQtyAndWeightServiceTest
 		assertThat(result.getQty()).isEqualByComparingTo(LABEL_WEIGHT);
 		assertThat(result.getStockUom()).isEqualTo(X12DE355.KILOGRAM);
 		assertThat(result.getWeightKgForCU()).isNull();
-		assertThat(result.isWeightNotUsed()).isFalse();
+		assertThat(result.isWeightIgnored()).isFalse();
 	}
 
 	@Test
@@ -65,17 +65,17 @@ class LabelQtyAndWeightServiceTest
 
 		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
 		assertThat(result.getWeightKgForCU()).isEqualByComparingTo(LABEL_WEIGHT);
-		assertThat(result.isWeightNotUsed()).isFalse();
+		assertThat(result.isWeightIgnored()).isFalse();
 	}
 
 	@Test
-	void otherProduct_weightNotUsed()
+	void otherProduct_weightIsIgnored()
 	{
 		final LabelQtyAndWeight result = service.compute(newProduct("P-PCE", each), LABEL_WEIGHT);
 
 		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
 		assertThat(result.getWeightKgForCU()).isNull();
-		assertThat(result.isWeightNotUsed()).isTrue();
+		assertThat(result.isWeightIgnored()).isTrue();
 	}
 
 	@Test
@@ -85,7 +85,7 @@ class LabelQtyAndWeightServiceTest
 
 		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
 		assertThat(result.getWeightKgForCU()).isNull();
-		assertThat(result.isWeightNotUsed()).isFalse();
+		assertThat(result.isWeightIgnored()).isFalse();
 	}
 
 	private static I_C_UOM newUom(final X12DE355 code, final String uomType)
