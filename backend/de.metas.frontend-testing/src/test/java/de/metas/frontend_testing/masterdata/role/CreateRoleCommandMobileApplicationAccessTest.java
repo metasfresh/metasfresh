@@ -90,7 +90,7 @@ class CreateRoleCommandMobileApplicationAccessTest
 	void notAllowAll_noGrantedAction_appAccessButNoAction()
 	{
 		final RoleId roleId = createRole(JsonRoleMobileApplicationAccessRequest.builder()
-				.application("huManager").allowAllActions(false).build());
+				.application("huManager").isAllowAllActions(false).build());
 
 		final MobileApplicationPermissions permissions = permissionsOf(roleId);
 		assertThat(permissions.isAllowAccess(applicationId)).isTrue();
@@ -102,7 +102,7 @@ class CreateRoleCommandMobileApplicationAccessTest
 	void notAllowAll_onlyCreateHUGranted_onlyThatAction()
 	{
 		final RoleId roleId = createRole(JsonRoleMobileApplicationAccessRequest.builder()
-				.application("huManager").allowAllActions(false).grantedActions(ImmutableList.of("createHU")).build());
+				.application("huManager").isAllowAllActions(false).grantedActions(ImmutableList.of("createHU")).build());
 
 		final MobileApplicationPermissions permissions = permissionsOf(roleId);
 		assertThat(permissions.isAllowAccess(applicationId)).isTrue();
@@ -124,7 +124,7 @@ class CreateRoleCommandMobileApplicationAccessTest
 	void unknownGrantedAction_failsNamingIt()
 	{
 		assertThatThrownBy(() -> createRole(JsonRoleMobileApplicationAccessRequest.builder()
-				.application("huManager").allowAllActions(false).grantedActions(ImmutableList.of("noSuchAction")).build()))
+				.application("huManager").isAllowAllActions(false).grantedActions(ImmutableList.of("noSuchAction")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("noSuchAction");
 	}
@@ -134,7 +134,7 @@ class CreateRoleCommandMobileApplicationAccessTest
 	{
 		assertThatThrownBy(() -> createRole(ImmutableList.of(
 				JsonRoleMobileApplicationAccessRequest.builder().application("huManager").build(),
-				JsonRoleMobileApplicationAccessRequest.builder().application("huManager").allowAllActions(false).build())))
+				JsonRoleMobileApplicationAccessRequest.builder().application("huManager").isAllowAllActions(false).build())))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("huManager")
 				.hasMessageContaining("more than once");
@@ -144,10 +144,10 @@ class CreateRoleCommandMobileApplicationAccessTest
 	void grantedActionsWithAllowAll_failsNamingIt()
 	{
 		assertThatThrownBy(() -> createRole(JsonRoleMobileApplicationAccessRequest.builder()
-				.application("huManager").allowAllActions(true).grantedActions(ImmutableList.of("createHU")).build()))
+				.application("huManager").isAllowAllActions(true).grantedActions(ImmutableList.of("createHU")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("grantedActions")
-				.hasMessageContaining("allowAllActions");
+				.hasMessageContaining("isAllowAllActions");
 	}
 
 	@Test
@@ -158,14 +158,24 @@ class CreateRoleCommandMobileApplicationAccessTest
 				.hasMessageContaining("noSuchApp");
 	}
 
-	/** what the masterdata spec sends: no {@code allowAllActions} means allow all */
+	/** what the masterdata spec sends: no {@code isAllowAllActions} means allow all */
 	@Test
-	void json_allowAllActionsDefaultsToTrue() throws Exception
+	void json_isAllowAllActionsDefaultsToTrue() throws Exception
 	{
 		final JsonRoleMobileApplicationAccessRequest request = new ObjectMapper()
 				.readValue("{\"application\":\"huManager\"}", JsonRoleMobileApplicationAccessRequest.class);
 
 		assertThat(request.isAllowAllActions()).isTrue();
 		assertThat(request.getGrantedActions()).isNull();
+	}
+
+	/** the JSON property name is the field name (a sender using another name must not be silently dropped) */
+	@Test
+	void json_isAllowAllActionsFalse_isRead() throws Exception
+	{
+		final JsonRoleMobileApplicationAccessRequest request = new ObjectMapper()
+				.readValue("{\"application\":\"huManager\",\"isAllowAllActions\":false}", JsonRoleMobileApplicationAccessRequest.class);
+
+		assertThat(request.isAllowAllActions()).isFalse();
 	}
 }

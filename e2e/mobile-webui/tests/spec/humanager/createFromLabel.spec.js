@@ -809,7 +809,7 @@ test('one barcode on two products -> one message naming both, no preview, nothin
 const restrictedHUManagerRole = (grantedActions) => ({
     "restricted": {
         includedRoles: [],
-        mobileApplicationAccess: [{ application: 'huManager', allowAllActions: false, ...(grantedActions ? { grantedActions } : {}) }],
+        mobileApplicationAccess: [{ application: 'huManager', isAllowAllActions: false, ...(grantedActions ? { grantedActions } : {}) }],
     },
 });
 

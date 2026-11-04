@@ -24,11 +24,11 @@ public class JsonRoleMobileApplicationAccessRequest
 	@NonNull String application;
 
 	/** {@code Mobile_Application_Access.IsAllowAllActions}, default {@code true} (like a grant via the application window) */
-	@Builder.Default boolean allowAllActions = true;
+	@Builder.Default boolean isAllowAllActions = true;
 
 	/**
 	 * {@code Mobile_Application_Action.InternalName}s granted through {@code Mobile_Application_Action_Access}
-	 * (relevant only when {@link #allowAllActions} is {@code false}), e.g. {@code createHU}
+	 * (relevant only when {@link #isAllowAllActions} is {@code false}), e.g. {@code createHU}
 	 */
 	@Nullable List<String> grantedActions;
 }
