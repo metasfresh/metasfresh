@@ -73,7 +73,14 @@ public final class AttributesKey implements Comparable<AttributesKey>
 
 	public static final AttributesKey NONE = AttributesKey.ofAttributeValueIds(-1002);
 
-	@JsonCreator
+	// mode = DELEGATING is required: paired with @JsonValue below, AttributesKey round-trips as a
+	// single JSON String. The JDK 25 / Spring Boot 3 migration compiles with javac -parameters, so
+	// jackson-module-parameter-names now sees this single-arg factory's parameter name and would
+	// otherwise treat it as a PROPERTIES creator (expecting {"attributesKeyString": "..."}) and fail
+	// with MismatchedInputException: "no String-argument constructor/factory method to deserialize
+	// from String value". Pinning DELEGATING keeps the String-delegating behaviour regardless of
+	// -parameters / ParameterNamesModule.
+	@JsonCreator(mode = JsonCreator.Mode.DELEGATING)
 	@NonNull
 	public static AttributesKey ofString(@Nullable final String attributesKeyString)
 	{
