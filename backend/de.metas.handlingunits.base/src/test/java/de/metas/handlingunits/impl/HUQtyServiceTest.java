@@ -1,5 +1,14 @@
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.UpdateHUQtyRequest;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import static org.mockito.Mockito.doNothing;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
@@ -25,11 +34,13 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_AD_OrgInfo;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,5 +161,55 @@ class HUQtyServiceTest
 		// the movement date is the date the caller set
 		assertThat(header.getMovementDate()).isEqualTo(TimeUtil.asTimestamp(MOVEMENT_DATE));
 		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine_HU.class).create().count()).isZero();
+	}
+
+	/**
+	 * Pins the inventory header shared by "Change Qty" ({@code updateQty}) and "create from label": the header's org comes from the locator's
+	 * client/org, its warehouse from the locator, its date and description from the request, its doc type is the single-HU inventory.
+	 * An HU is identified by its QR code here, so no HU stack is needed; completing is not part of this check.
+	 */
+	@Test
+	void updateQty_forAnHUQRCode_createsTheInventoryHeaderOfTheLocatorWithDateAndDescription()
+	{
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(1000002);
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_NichtSpeichern);
+		saveRecord(orgInfo);
+		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
+		warehouseRecord.setAD_Org_ID(1000002);
+		saveRecord(warehouseRecord);
+		final I_M_Locator locatorRecord = newInstance(I_M_Locator.class);
+		locatorRecord.setAD_Org_ID(1000002);
+		locatorRecord.setM_Warehouse_ID(warehouseRecord.getM_Warehouse_ID());
+		saveRecord(locatorRecord);
+		final HUQRCode huQRCode = HUQRCode.builder()
+				.id(HUQRCodeUniqueId.random())
+				.packingInfo(HUQRCodePackingInfo.builder()
+						.huUnitType(HUQRCodeUnitType.TU)
+						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(540))
+						.caption("test")
+						.build())
+				.product(HUQRCodeProductInfo.builder().id(ProductId.ofRepoId(12345)).code("P").name("P").build())
+				.attributes(ImmutableList.of())
+				.build();
+		doNothing().when(inventoryService).completeDocument(any());
+
+		huQtyService.updateQty(UpdateHUQtyRequest.builder()
+				.date(MOVEMENT_DATE)
+				.huQRCode(huQRCode)
+				.locatorId(LocatorId.ofRecord(locatorRecord))
+				.qty(Quantity.of("7", uomRecord))
+				.description("changed qty")
+				.build());
+
+		final I_M_Inventory header = Services.get(IQueryBL.class).createQueryBuilder(I_M_Inventory.class).create().firstOnlyNotNull(I_M_Inventory.class);
+		assertThat(header.getAD_Org_ID()).isEqualTo(1000002);
+		assertThat(header.getM_Warehouse_ID()).isEqualTo(warehouseRecord.getM_Warehouse_ID());
+		assertThat(header.getC_DocType_ID()).isEqualTo(singleHUDocTypeId.getRepoId());
+		assertThat(header.getMovementDate()).isEqualTo(TimeUtil.asTimestamp(MOVEMENT_DATE));
+		assertThat(header.getDescription()).isEqualTo("changed qty");
+		final I_M_InventoryLine line = Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class).create().firstOnlyNotNull(I_M_InventoryLine.class);
+		assertThat(line.getM_Product_ID()).isEqualTo(12345);
+		assertThat(line.getQtyCount()).isEqualByComparingTo("7");
 	}
 }
