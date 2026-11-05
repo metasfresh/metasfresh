@@ -50,6 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Spring MVC slice (Boot's MVC + Jackson auto-configuration, no app context, no DB) with the msv3 server's {@link JsonConfiguration}.
+ * It pins the configuration class's behaviour, not the wiring of the msv3 {@link Application}.
  */
 class JsonConfigurationTest
 {
@@ -98,7 +99,10 @@ class JsonConfigurationTest
 	}
 
 	/**
-	 * Fails if Spring MVC bypasses the converter bean (e.g. {@code @EnableWebMvc} is re-added, so Boot's MVC auto-configuration backs off).
+	 * Pins that, under Boot's MVC auto-configuration, Spring MVC uses the converter bean of {@link JsonConfiguration}.
+	 * <p>
+	 * This runs in its own small context, not in the msv3 {@link Application} context, so it does not catch an {@code @EnableWebMvc} added
+	 * elsewhere in msv3 main code: that is caught by {@code v2.RestMessageConverterWiringIntegrationTest}.
 	 */
 	@Test
 	void springMvc_uses_the_converter_bean()

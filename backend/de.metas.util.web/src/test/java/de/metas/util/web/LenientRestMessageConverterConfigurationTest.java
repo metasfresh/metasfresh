@@ -54,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Spring MVC slice (Boot's MVC + Jackson auto-configuration, no app context, no DB), set up like {@code ServerBoot} / {@code WebRestApiApplication}:
  * a strict {@code @Primary} shared mapper plus the imported {@link LenientRestMessageConverterConfiguration}.
+ * It pins the configuration class's behaviour, not the wiring of the real applications (see {@link #springMvc_uses_the_converter_bean()}).
  */
 class LenientRestMessageConverterConfigurationTest
 {
@@ -113,8 +114,13 @@ class LenientRestMessageConverterConfigurationTest
 	}
 
 	/**
-	 * Fails if Spring MVC bypasses the converter bean, e.g. because someone (re-)adds {@code @EnableWebMvc} or a
-	 * {@code WebMvcConfigurationSupport} subclass, so that Boot's MVC auto-configuration backs off and MVC builds its own default converters.
+	 * Pins that, under Boot's MVC auto-configuration, Spring MVC uses the converter bean of {@link LenientRestMessageConverterConfiguration}
+	 * and that its mapper is not the strict shared one.
+	 * <p>
+	 * This runs in its own small context, not in {@code ServerBoot} / {@code WebRestApiApplication}. It does not catch a change to those apps:
+	 * a missing {@code @Import} is caught by {@code ServerBootWiringTest} / {@code WebRestApiApplicationWiringTest}, and an
+	 * {@code @EnableWebMvc} or {@code WebMvcConfigurationSupport} subclass in main code by the ArchUnit rule
+	 * {@code MetasfreshArchRules.noCustomSpringMvcConfiguration()}.
 	 */
 	@Test
 	void springMvc_uses_the_converter_bean()

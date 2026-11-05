@@ -20,8 +20,9 @@ import java.nio.file.Paths;
  * {@link MetasfreshArchRules#checkAllModulesIndividually(JavaClasses)} then splits the imported classes by their
  * owning module (source jar) and freezes each module against its <b>own</b> baseline. Per-module baselines are
  * reproducible by construction (a module's violations depend only on that module's own classes), unlike a single
- * whole-app baseline whose class set drifted between a stale local build and CI's fresh build. Adding a new rule
- * changes only {@code MetasfreshArchRules} — never this class.
+ * whole-app baseline whose class set drifted between a stale local build and CI's fresh build. Adding a new frozen
+ * rule changes only {@code MetasfreshArchRules} — never this class. A zero-tolerance (un-frozen) rule gets its own
+ * test method here.
  */
 public class ModuleArchitectureTest
 {
@@ -48,5 +49,15 @@ public class ModuleArchitectureTest
 	void metasfresh_backend_satisfiesArchitectureRules()
 	{
 		MetasfreshArchRules.checkAllModulesIndividually(wholeBackendClasses);
+	}
+
+	/**
+	 * Zero-tolerance rule, checked directly over the whole backend instead of frozen per module: see
+	 * {@link MetasfreshArchRules#noCustomSpringMvcConfiguration()}.
+	 */
+	@Test
+	void metasfresh_backend_hasNoCustomSpringMvcConfiguration()
+	{
+		MetasfreshArchRules.noCustomSpringMvcConfiguration().check(wholeBackendClasses);
 	}
 }
