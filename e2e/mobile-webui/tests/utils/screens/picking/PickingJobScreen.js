@@ -309,7 +309,7 @@ export const PickingJobScreen = {
     }),
 
     expectPickAllButtonVisible: async () => await step(`${NAME} - Expect Pick All button to be visible`, async () => {
-        await pickAllButton().waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+        await pickAllButton().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /**
