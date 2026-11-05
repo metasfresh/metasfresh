@@ -48,8 +48,8 @@ public class FilterRegistrationConfig
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
 
 	/**
-	 * Restores trailing-slash tolerance for the REST API. Spring 6.0 deprecated and Spring 6.x removed the
-	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} URL matching, so a request whose path ends in a
+	 * Restores trailing-slash tolerance for the REST API. Spring 6.0 switched trailing-slash matching off by default and deprecated the
+	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} switch (removed in Spring 7), so a request whose path ends in a
 	 * slash before the query string — e.g. {@code GET /api/v2/bpartner/byOrg/001/?since=…} — no longer matches
 	 * {@code @GetMapping("/byOrg/{orgCode}")} and fails with {@code NoResourceFoundException} (surfaced as 422).
 	 * <p>

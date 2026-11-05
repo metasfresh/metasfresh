@@ -62,8 +62,8 @@ public class WebConfig implements WebMvcConfigurer
 
 	/**
 	 * Restores trailing-slash tolerance for the webui-api REST endpoints (the {@code /rest/api/**} surface the
-	 * React frontend drives). Spring 6.0 deprecated and Spring 6.x removed the
-	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} URL matching, so a request whose path ends in a slash
+	 * React frontend drives). Spring 6.0 switched trailing-slash matching off by default and deprecated the
+	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} switch (removed in Spring 7), so a request whose path ends in a slash
 	 * — e.g. the frontend's {@code GET /rest/api/window/{windowId}/{documentId}/} document load — no longer
 	 * matches {@code @GetMapping("/{windowId}/{documentId}")} and fails with {@code NoResourceFoundException}
 	 * (404). That 404 breaks every document window in the frontend (the window never renders its fields), which
