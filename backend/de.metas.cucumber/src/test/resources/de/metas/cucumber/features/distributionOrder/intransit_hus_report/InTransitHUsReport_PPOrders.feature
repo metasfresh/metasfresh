@@ -86,6 +86,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
       | comp_planning | COMP         |                           | N1                        | prodWH         | plant         | N            |
       | comp2_plan    | COMP2        |                           | N1                        | prodWH         | plant         | N            |
 
+  # ##########################################################################
   @from:cucumber
   Scenario: Bundled line for two manufacturing orders with different picking instructions prints one summary line per order
     # the raw material is in stock when the orders are planned, so the dispo advises a distribution candidate for each order
@@ -157,6 +158,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And the mobile user's trolley is cleared
     And the mobile user's trolley is empty
 
+  # ##########################################################################
   @from:cucumber
   Scenario: One manufacturing order without picking instruction keeps the single-order header
     When create PP_Order:
@@ -206,6 +208,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And the mobile user's trolley is cleared
     And the mobile user's trolley is empty
 
+  # ##########################################################################
   @from:cucumber
   Scenario: One manufacturing order with a picking instruction prints the summary line and hides the single-order header
     When create PP_Order:
@@ -258,6 +261,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And the mobile user's trolley is cleared
     And the mobile user's trolley is empty
 
+  # ##########################################################################
   @from:cucumber
   Scenario: Two products on the trolley (one distribution order each) print one summary row per product inside its table
     # each product has its own product planning, which is part of the DD_Order header key, so each component gets its own DD_Order
@@ -336,11 +340,12 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And the mobile user's trolley is cleared
     And the mobile user's trolley is empty
 
+  # ##########################################################################
   @from:cucumber
   Scenario: A trolley warehouse name too long for one line wraps and pushes the rows below it down
     # a fixed value and name: the name is too long for the "Ziellager" field, so it always wraps to a second line
     Given metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | Value            | Name                                                  | IsInTransit |
+      | M_Warehouse_ID | Value            | Name                                                   | IsInTransit |
       | longTrolleyWH  | MBS_TROLLEY_LONG | MBS Trolley Lager mit einem langen Namen, der umbricht | true        |
     And metasfresh contains M_Locator:
       | Identifier     | M_Warehouse_ID | IsDefault |
