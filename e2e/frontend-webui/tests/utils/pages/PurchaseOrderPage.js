@@ -10,9 +10,6 @@ import { reactivateDocument } from '../DocumentStatus';
 /** Included tab of the order lines, as used in the REST path. */
 const PURCHASE_ORDER_LINES_TAB_ID = 'AD_Tab-293';
 
-/** Included tab of the order lines, as used in the REST path. */
-const PURCHASE_ORDER_LINES_TAB_ID = 'AD_Tab-293';
-
 /**
  * Page object for Purchase Order window (ID: 181).
  * Handles creating and completing purchase orders in metasfresh.
