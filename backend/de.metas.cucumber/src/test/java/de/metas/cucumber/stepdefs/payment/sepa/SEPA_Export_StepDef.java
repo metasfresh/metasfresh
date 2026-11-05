@@ -302,8 +302,9 @@ public class SEPA_Export_StepDef
 	 * @param expectedErrorCode the expected {@code AdempiereException.getErrorCode()}
 	 * @cucumber.example
 	 * <pre>{@code
-	 * Then the SEPA export process fails with error code "de.metas.payment.sepa.SomeError" and a message containing:
-	 *   | Mandat |
+	 * Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
+	 *   | @de.metas.payment.sepa.DirectDebitMandateMissing@ |
+	 *   | dd_tc5_                                           |
 	 * }</pre>
 	 */
 	@Then("the SEPA export process fails with error code {string} and a message containing:")
