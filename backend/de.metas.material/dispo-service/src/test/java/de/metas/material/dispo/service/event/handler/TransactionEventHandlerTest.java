@@ -87,6 +87,7 @@ public class TransactionEventHandlerTest
 		final Candidate candidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(100))
 				.parentId(CandidateId.ofRepoId(200))
+				.seqNo(777)
 				.type(CandidateType.SUPPLY)
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
@@ -113,10 +114,14 @@ public class TransactionEventHandlerTest
 		assertThat(result.get(1).getId()).isEqualTo(candidate.getId());
 		assertThat(result.get(1).getParentId()).isEqualTo(candidate.getParentId());
 		assertThat(result.get(1).getQuantity()).isEqualTo(ZERO);
+		assertThat(result.get(1).getSeqNo()).isEqualTo(777); // the updated original keeps its seqNo
 
 		assertThat(result.get(0).getId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getParentId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getQuantity()).isEqualByComparingTo("23");
+		// the split-off candidate must NOT inherit the source's seqNo: it is brand-new and must get its own
+		// (fallback = its MD_Candidate_ID) so two same-date receipts don't collide on one STOCK coordinate
+		assertThat(result.get(0).getSeqNo()).isZero();
 	}
 
 	@Test

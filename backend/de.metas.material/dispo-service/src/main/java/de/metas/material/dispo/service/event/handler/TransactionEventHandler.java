@@ -639,6 +639,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.toBuilder()
 					.id(null)
 					.parentId(null) // important to make sure a supply new candidate gets a stock record
+					// brand-new candidate: give it its OWN seqNo (fallback = its MD_Candidate_ID), don't inherit the
+					// source's. Inheriting it made two same-DateProjected receipts share one (date, seqNo) STOCK
+					// coordinate -> one STOCK for two mains, dropping the 2nd receipt's qty and throwing "Duplicate key"
+					// in computeStockIdToMainCandidateMap. Mirrors createBuilderForNewUnrelatedCandidate (sets no seqNo).
+					.seqNo(0)
 					.type(computeCounterCandidateType(candidate, event))
 					.materialDescriptor(newMaterialDescriptor)
 					.clearTransactionDetails()
