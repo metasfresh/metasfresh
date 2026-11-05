@@ -10,9 +10,9 @@ import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGRAICodesResponse;
-import de.metas.handlingunits.model.I_M_HU;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_Data_Export_Audit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,15 +34,13 @@ class HUAuditServiceTest
 	private static final String HU_MANAGER_PATH = HandlingUnitsRestController.HU_REST_CONTROLLER_PATH + "/hu-manager";
 
 	private HUAuditService huAuditService;
-	private DataExportAuditRepository dataExportAuditRepository;
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		dataExportAuditRepository = new DataExportAuditRepository();
-		huAuditService = new HUAuditService(new DataExportAuditService(dataExportAuditRepository, new DataExportAuditLogRepository()));
+		huAuditService = new HUAuditService(new DataExportAuditService(new DataExportAuditRepository(), new DataExportAuditLogRepository()));
 	}
 
 	static Stream<GenericDataExportAuditRequest> huManagerResponsesThatAreNoSingleHU()
@@ -68,7 +66,8 @@ class HUAuditServiceTest
 
 		assertThatCode(() -> huAuditService.performDataAuditForRequest(request)).doesNotThrowAnyException();
 
-		assertThat(dataExportAuditRepository.getByTableRecordReference(TableRecordReference.of(I_M_HU.Table_Name, Integer.parseInt(HU_ID))))
+		assertThat(POJOLookupMap.get().getRecords(I_Data_Export_Audit.class))
+				.as("no response here is a single HU, so nothing may be audited at all")
 				.isEmpty();
 	}
 
