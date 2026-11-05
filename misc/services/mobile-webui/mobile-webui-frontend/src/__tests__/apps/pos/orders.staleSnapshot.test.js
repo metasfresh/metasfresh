@@ -38,7 +38,7 @@ describe('POS orders reducer - UPDATE_ORDER vs. out-of-order snapshots', () => {
     expect(currentOrder(stateAfter).payments).toEqual([CASH_PAYMENT]);
   });
 
-  it('ignores an older snapshot that would remove the order (e.g. a stale DRAFTED one)', () => {
+  it('ignores an older snapshot that would move the order back to DRAFTED', () => {
     const state = stateWith(order({ version: 6, payments: [CASH_PAYMENT] }));
 
     expect(applySnapshot(state, order({ version: 4, status: 'DR' }))).toBe(state);

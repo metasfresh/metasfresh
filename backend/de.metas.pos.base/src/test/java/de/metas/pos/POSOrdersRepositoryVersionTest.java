@@ -13,6 +13,7 @@ import de.metas.pricing.PricingSystemAndListId;
 import de.metas.order.OrderId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -26,6 +27,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -166,16 +168,38 @@ class POSOrdersRepositoryVersionTest
 	}
 
 	@Test
-	void theLoadVersionIsTakenBeforeReading_soASaveDuringTheReadIsNewer()
+	void getById_takesTheLoadVersionBeforeReading_soASaveDuringTheReadIsNewer()
+	{
+		assertLoadVersionTakenBeforeReading(() -> repository.getById(repository.getIdByExternalId(EXTERNAL_ID)));
+	}
+
+	@Test
+	void list_takesTheLoadVersionBeforeReading_soASaveDuringTheReadIsNewer()
+	{
+		assertLoadVersionTakenBeforeReading(() -> CollectionUtils.singleElement(repository.list(openOrdersQuery())));
+	}
+
+	@Test
+	void firstOnly_takesTheLoadVersionBeforeReading_soASaveDuringTheReadIsNewer()
+	{
+		assertLoadVersionTakenBeforeReading(() -> repository.firstOnly(openOrdersQuery()).orElseThrow(() -> new AdempiereException("no order")));
+	}
+
+	private void assertLoadVersionTakenBeforeReading(final Supplier<POSOrder> load)
 	{
 		repository.createOrUpdateByExternalId(EXTERNAL_ID, this::newOrder, order -> {});
 		final long[] concurrentSaveVersion = new long[1];
 		afterTakingLoadVersion = () -> concurrentSaveVersion[0] = repository.updateByExternalId(EXTERNAL_ID, order -> order.setSalesOrderId(OrderId.ofRepoId(123))).getVersion();
 
-		final POSOrder loaded = repository.getById(repository.getIdByExternalId(EXTERNAL_ID));
+		final POSOrder loaded = load.get();
 
 		assertThat(loaded.getSalesOrderId()).isEqualTo(OrderId.ofRepoId(123)); // the read happened after the concurrent save
 		assertThat(concurrentSaveVersion[0]).isGreaterThan(loaded.getVersion()); // so the concurrent save's event is not dropped
+	}
+
+	private static POSOrderQuery openOrdersQuery()
+	{
+		return POSOrderQuery.builder().posTerminalId(POSTerminalId.ofRepoId(1)).cashierId(UserId.ofRepoId(1)).isOpen(true).build();
 	}
 
 	@Test
