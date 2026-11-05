@@ -685,6 +685,22 @@ public class MobileUI_Picking_StepDef
 	}
 
 	/**
+	 * Closes the current LU or TU pick target, as the mobile "close LU" / "close TU" button does.
+	 * With the profile option {@code IsShipOnCloseLU}, closing an LU also enqueues the shipment of that LU.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And close the LU picking target
+	 * </pre>
+	 */
+	@When("close the {word} picking target")
+	public void closePickingTargetStep(@NonNull final String targetType)
+	{
+		closePickingTarget(targetType);
+	}
+
+	/**
 	 * Attempts to close the current LU or TU pick target and asserts it is rejected with the given AD_Message key.
 	 * Mirrors {@link #completeExpectingRejection}: the close path runs the same carrier-advise consistency guard,
 	 * so a package carrying inconsistent carriers (e.g. two distinct manual carriers on one HU) must be rejected

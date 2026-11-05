@@ -251,3 +251,52 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus | OPT.IgnoreCreated.M_InOut_ID.Identifier |
       | shipmentSchedule1                | shipment2             | CO            | shipment1                               |
+
+
+  # ###################################################################################################################
+  # ###################################################################################################################
+
+  # Ship on close LU: each LU close of the picking job starts its own shipment run (own workpackage, own async batch),
+  # so one picking job gives one shipment per closed LU.
+  # Both runs are still pending when the second LU is closed, and a recompute clears the batch of all schedules
+  # before the runs are processed: the runs still do not merge.
+  @from:cucumber
+  @Id:S33468_250
+  Scenario: with ship on close LU, one picking job with two closed LUs gives two shipments, one per LU
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob | IsShipOnCloseLU |
+      | Y                   | CREATE_AND_COMPLETE  | Y                                  | Y               |
+    # closing an LU also auto-prints its label; label printing is not what this scenario checks
+    And temporarily set sys config boolean value false for sys config 'de.metas.ui.web.picking.PickingLabel.AutoPrint.Enabled'
+    And new "GenerateInOutFromShipmentSchedules" workpackages are held
+
+    When pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 6         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+    And close the LU picking target
+    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
+    And close the LU picking target
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    And M_ShipmentSchedule shipmentSchedule1 is loaded now, recomputed from its order and saved
+    And M_ShipmentSchedule shipmentSchedule2 is loaded now, recomputed from its order and saved
+    And M_ShipmentSchedule shipmentSchedule3 is loaded now, recomputed from its order and saved
+    And the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction as firstLUWorkPackage
+    And the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction as secondLUWorkPackage
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | firstLUShipment       | CO            |
+      | shipmentSchedule2                | firstLUShipment       | CO            |
+      | shipmentSchedule3                | secondLUShipment      | CO            |
+    # each shipment belongs to the run of its own LU close; one shipment cannot carry both runs' batches
+    And the M_InOut firstLUShipment carries the C_Async_Batch_ID of the C_Queue_WorkPackage firstLUWorkPackage
+    And the M_InOut secondLUShipment carries the C_Async_Batch_ID of the C_Queue_WorkPackage secondLUWorkPackage
+
+    # completing the job finds nothing left to ship
+    When complete picking job
+    Then there are 0 pending "GenerateInOutFromShipmentSchedules" workpackages
