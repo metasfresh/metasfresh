@@ -267,6 +267,27 @@ public interface I_C_BP_BankAccount_DirectDebitMandate
 	String COLUMNNAME_MandateStatus = "MandateStatus";
 
 	/**
+	 * Set Mandate Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMandateType (java.lang.String MandateType);
+
+	/**
+	 * Get Mandate Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getMandateType();
+
+	ModelColumn<I_C_BP_BankAccount_DirectDebitMandate, Object> COLUMN_MandateType = new ModelColumn<>(I_C_BP_BankAccount_DirectDebitMandate.class, "MandateType", null);
+	String COLUMNNAME_MandateType = "MandateType";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

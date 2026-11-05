@@ -62,6 +62,29 @@ public abstract class StepDefData<T>
 		this.clazz = clazz;
 	}
 
+	/**
+	 * @return the table name of {@link #clazz} or {@code null} if this stepdef is not about a model interface
+	 */
+	@Nullable
+	public String getTableName()
+	{
+		return clazz != null ? InterfaceWrapperHelper.getTableNameOrNull(clazz) : null;
+	}
+
+	/**
+	 * Loads the record referenced by the given {@code recordRef} as this stepdef's model class and {@link #put(StepDefDataIdentifier, Object)}s it.
+	 *
+	 * @throws AdempiereException if this stepdef is not about a model interface (e.g. it holds POJOs), because such records cannot be loaded from a {@link TableRecordReference}
+	 */
+	public void putRecord(@NonNull final StepDefDataIdentifier identifier, @NonNull final TableRecordReference recordRef)
+	{
+		if (getTableName() == null)
+		{
+			throw new AdempiereException("Cannot put " + recordRef + " as `" + identifier + "` because " + this + " holds POJOs, not model interface records");
+		}
+		put(identifier, recordRef.getModel(clazz));
+	}
+
 	@Override
 	public String toString()
 	{
