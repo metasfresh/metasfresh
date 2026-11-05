@@ -335,3 +335,60 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
 
     And the mobile user's trolley is cleared
     And the mobile user's trolley is empty
+
+  @from:cucumber
+  Scenario: A trolley warehouse name too long for one line wraps and pushes the rows below it down
+    # a fixed value and name: the name is too long for the "Ziellager" field, so it always wraps to a second line
+    Given metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | Value            | Name                                                  | IsInTransit |
+      | longTrolleyWH  | MBS_TROLLEY_LONG | MBS Trolley Lager mit einem langen Namen, der umbricht | true        |
+    And metasfresh contains M_Locator:
+      | Identifier     | M_Warehouse_ID | IsDefault |
+      | longTrolleyLoc | longTrolleyWH  | N         |
+
+    When create PP_Order:
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
+      | PP7         | MOP         | FG2          | 10         | plant         | prodWH         | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP7    |
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID |
+      | c8         | COMP         | rawWH               | prodWH           | 10 PCE | PP7                 |
+    And the following DD_Order_Candidates are enqueued for generating DD_Orders
+      | DD_Order_Candidate_ID |
+      | c8                    |
+    And after not more than 60s, the DD_Order_Candidates are allocated to DD_OrderLines:
+      | DD_Order_Candidate_ID | DD_Order_ID | DD_OrderLine_ID |
+      | c8                    | ddo6        | ddol6           |
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv5           | 2021-04-11   | rawWH          |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv5           | invLine6           | COMP         | rawLoc       | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'inv5'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | invLine6           | hu6     |
+
+    And the mobile user's trolley is set to locator longTrolleyLoc
+    And Start distribution job for dd_order identified by ddo6
+      | DD_Order_ID |
+      | ddo6        |
+    And Pick HU for distribution job line
+      | M_HU_ID |
+      | hu6     |
+
+    When the Materialbegleitschein is printed for locator longTrolleyLoc
+
+    Then an AD_Archive exists for the record identified by "longTrolleyLoc"
+    And the PDF archived for the record identified by "longTrolleyLoc" has no overlapping text
+    # the second line of the warehouse name is a visual line of its own, not printed into the "Ziellagerort" row
+    And the visual line containing text "Namen, der umbricht" in the PDF archived for the record identified by "longTrolleyLoc" is exactly "Namen, der umbricht"
+    # group header: the two lines of the warehouse name and the "Ziellagerort" line, then the single-order header
+    And in the PDF archived for the record identified by "longTrolleyLoc", exactly 3 lines appear between text "Materialbegleitschein" and text "Produktionsauftrag:"
+    And the visual line containing text "Produktionsauftrag:" in the PDF archived for the record identified by "longTrolleyLoc" is exactly "Produktionsauftrag: MBS_PP7 Datum: 12.04.2021"
+    # the QR label page (after the first page's footer) has the same three lines above its order header
+    And in the PDF archived for the record identified by "longTrolleyLoc", exactly 3 lines appear between text "Seite 1" and text "Produktionsauftrag:"
+
+    And the mobile user's trolley is cleared
+    And the mobile user's trolley is empty
