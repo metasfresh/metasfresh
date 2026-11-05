@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -36,6 +35,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -57,13 +56,10 @@ import java.util.stream.Collectors;
 @Builder
 class POSOrdersLoaderAndSaver
 {
-	/**
-	 * Last {@link POSOrder#getVersion()} handed out, see {@link #nextVersion()} and {@link #currentVersion()}. Static, because a loader-and-saver instance is created per operation.
-	 */
-	private static final AtomicLong lastVersion = new AtomicLong(0);
-
 	@NonNull private final IQueryBL queryBL;
 	@NonNull private final POSOrderEventDispatcher eventDispatcher;
+	@NonNull private final POSOrderVersionSource versionSource;
+	@NonNull private final ITrxManager trxManager;
 
 	private final HashMap<POSOrderId, I_C_POS_Order> orderRecordsById = new HashMap<>();
 	private final HashMap<POSOrderExternalId, Optional<I_C_POS_Order>> orderRecordsByExternalId = new HashMap<>();
@@ -71,7 +67,7 @@ class POSOrdersLoaderAndSaver
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
 
 	/**
-	 * @param versionBeforeRead {@link #currentVersion()}, taken BEFORE the record was read
+	 * @param versionBeforeRead {@link POSOrderVersionSource#current()}, taken BEFORE the record was read
 	 */
 	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord, final long versionBeforeRead)
 	{
@@ -80,7 +76,7 @@ class POSOrdersLoaderAndSaver
 	}
 
 	/**
-	 * @param versionBeforeRead {@link #currentVersion()}, taken BEFORE the records were read
+	 * @param versionBeforeRead {@link POSOrderVersionSource#current()}, taken BEFORE the records were read
 	 */
 	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords, final long versionBeforeRead)
 	{
@@ -92,7 +88,7 @@ class POSOrdersLoaderAndSaver
 
 	POSOrder getById(final @NonNull POSOrderId posOrderId)
 	{
-		final long versionBeforeRead = currentVersion();
+		final long versionBeforeRead = versionSource.current();
 		return withVersion(fromRecord(getOrderRecordById(posOrderId)), versionBeforeRead);
 	}
 
@@ -577,28 +573,15 @@ class POSOrdersLoaderAndSaver
 			putPaymentRecordsToCache(posOrderId, paymentRecordsNew);
 		}
 
-		order.setVersion(nextVersion());
-		eventDispatcher.fireOrderChanged(order);
+		// Stamp only after commit: a load running before the commit reads the old content, so it must not get a version
+		// which is not lower than this save's (else the frontend would drop this save's REST response and event as stale).
+		// Also, a rolled back save neither gets a version nor sends an event.
+		trxManager.runAfterCommit(() -> {
+			order.setVersion(versionSource.next());
+			eventDispatcher.fireOrderChanged(order);
+		});
 	}
 
-	/**
-	 * @return a version greater than any returned before in this JVM, and at least the current time in millis, so that versions
-	 * still increase after a server restart (as long as the previous run averaged less than one save per millisecond)
-	 */
-	private static long nextVersion()
-	{
-		return lastVersion.updateAndGet(last -> Math.max(last + 1, SystemTime.millis()));
-	}
-
-	/**
-	 * @return the version for an order loaded from DB, to be taken BEFORE reading it: not lower than the version of any save
-	 * so far in this JVM (so a delayed event of an earlier save is not considered newer), and lower than the version of any
-	 * later save (so the event of a save which happens while reading is not considered older)
-	 */
-	static long currentVersion()
-	{
-		return lastVersion.updateAndGet(last -> Math.max(last, SystemTime.millis()));
-	}
 
 	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)
 	{

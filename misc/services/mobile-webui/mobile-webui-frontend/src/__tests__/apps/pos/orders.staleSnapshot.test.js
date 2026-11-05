@@ -1,5 +1,5 @@
 import { ordersReducer } from '../../../apps/pos/reducers/orders';
-import { UPDATE_ORDER } from '../../../apps/pos/actionTypes';
+import { POS_TERMINAL_LOAD_DONE, UPDATE_ORDER } from '../../../apps/pos/actionTypes';
 
 /*
  * The backend stamps every saved POS order with a monotonic `version`. Order snapshots reach the frontend through two
@@ -53,11 +53,14 @@ describe('POS orders reducer - UPDATE_ORDER vs. out-of-order snapshots', () => {
     expect(currentOrder(stateAfter).payments).toEqual([CASH_PAYMENT]);
   });
 
-  it('applies a snapshot of the same version (the websocket echo of a REST response)', () => {
-    const state = stateWith(order({ version: 6, payments: [] }));
+  // Same version = the save the frontend already applied (e.g. the websocket echo of a REST response). Applying it again
+  // can only drop local changes which are not saved yet, e.g. the cash payment just added while its POST is in flight.
+  it('ignores a snapshot of the same version, keeping the not yet saved local changes', () => {
+    const state = stateWith(order({ version: 6, payments: [CASH_PAYMENT] }));
 
-    const stateAfter = applySnapshot(state, order({ version: 6, payments: [CASH_PAYMENT] }));
+    const stateAfter = applySnapshot(state, order({ version: 6, payments: [] }));
 
+    expect(stateAfter).toBe(state);
     expect(currentOrder(stateAfter).payments).toEqual([CASH_PAYMENT]);
   });
 
@@ -71,5 +74,38 @@ describe('POS orders reducer - UPDATE_ORDER vs. out-of-order snapshots', () => {
     expect(currentOrder(applySnapshot(versioned, order({ payments: [CASH_PAYMENT] }))).payments).toEqual([
       CASH_PAYMENT,
     ]);
+  });
+});
+
+describe('POS orders reducer - UPDATE_ORDER vs. delayed snapshots of an order already removed', () => {
+  const removedState = () => applySnapshot(stateWith(order({ version: 6 })), order({ version: 7, status: 'VO' }));
+
+  it('removes the order on a voided snapshot', () => {
+    expect(removedState().orders.byUUID[ORDER_UUID]).toBeUndefined();
+  });
+
+  it('does not bring the order back on an older snapshot', () => {
+    const state = removedState();
+
+    const stateAfter = applySnapshot(state, order({ version: 6, status: 'WP' }));
+
+    expect(stateAfter.orders.byUUID[ORDER_UUID]).toBeUndefined();
+  });
+
+  it('applies a newer snapshot of the removed order', () => {
+    const stateAfter = applySnapshot(removedState(), order({ version: 8, status: 'WP' }));
+
+    expect(currentOrder(stateAfter).version).toBe(8);
+  });
+
+  it('forgets the removed orders when the whole orders list is reloaded', () => {
+    const reloaded = ordersReducer(removedState(), {
+      type: POS_TERMINAL_LOAD_DONE,
+      payload: { posTerminal: { id: 1, openOrders: [] } },
+    });
+
+    const stateAfter = applySnapshot(reloaded, order({ version: 2, status: 'WP' }));
+
+    expect(currentOrder(stateAfter).version).toBe(2);
   });
 });

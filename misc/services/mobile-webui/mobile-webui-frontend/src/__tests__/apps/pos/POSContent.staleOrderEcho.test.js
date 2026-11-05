@@ -193,6 +193,45 @@ describe('POSContent - cash dialog vs. the delayed websocket snapshots, versione
     expect(ordersAPI.checkoutPayment).toHaveBeenCalledWith(expect.objectContaining({ cashTenderedAmount: 10 }));
   });
 
+  // The add-payment save is slower than the 200 ms debounce: the checkout echo is sent alone and arrives while the
+  // add-payment POST is still in flight, i.e. while the cash payment exists only locally.
+  it('keeps the cash dialog mounted when the checkout echo arrives before the add-payment response', () => {
+    const store = newStore();
+    store.dispatch({
+      type: POS_TERMINAL_LOAD_DONE,
+      payload: {
+        posTerminal: {
+          id: POS_TERMINAL_ID,
+          cashJournalOpen: true,
+          currencyPrecision: 2,
+          availablePaymentMethods: ['CASH'],
+          products: [],
+          openOrders: [checkoutSnapshotV2],
+        },
+      },
+    });
+    render(
+      <Provider store={store}>
+        <POSContent />
+      </Provider>
+    );
+    act(() => {
+      store.dispatch({ type: ADD_PAYMENT, payload: { order_uuid: ORDER_UUID, paymentMethod: 'CASH', amount: 2.5 } });
+    });
+    tapNumpad('10');
+    const okButtonBefore = okButton();
+
+    applySnapshot(store, checkoutSnapshotV2); // the echo of the checkout save, same version as the order in state
+    expect(okButtonBefore).toBeInTheDocument(); // not detached
+
+    const payment = store.getState()['applications/pos'].orders.byUUID[ORDER_UUID].payments[0];
+    applySnapshot(store, backendOrder({ payments: [{ ...payment, allowCheckout: true }], version: 3 }));
+    expect(okButtonBefore).toBeInTheDocument();
+
+    fireEvent.click(okButtonBefore);
+    expect(ordersAPI.checkoutPayment).toHaveBeenCalledWith(expect.objectContaining({ cashTenderedAmount: 10 }));
+  });
+
   it('keeps the payment panel and the cash dialog mounted when a stale DRAFTED snapshot arrives', () => {
     const store = newStore();
     const addPaymentSnapshot = checkoutAndTapCash(store, {
