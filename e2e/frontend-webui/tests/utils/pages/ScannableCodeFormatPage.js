@@ -50,39 +50,49 @@ const stillIfEnabled = async (name) => {
  * (C_ScannableCode_Format_Part).
  */
 export class ScannableCodeFormatPage {
+  /** AD record id of the format created by createFormat, until deleteCreatedFormat. */
+  static _createdFormatId = null;
+
   /** Name of the still taken by the next endNoInForm() call (new part form vs advanced edit). */
   static _formStill = '01-new-part-form-end-no';
 
-  /** Log in as the local admin user in the given language, through the page's request context (shares the cookies). */
-  static async loginAs(language) {
-    return await test.step(`Log in (${language})`, async () => {
-      this._formStill = '01-new-part-form-end-no';
+  /**
+   * Log in as the given masterdata user (see Backend.createMasterdata; its language is the user's language) through the
+   * page's request context, which shares the browser cookies.
+   */
+  static async loginAs({ username, password }) {
+    return await test.step(`Log in as ${username}`, async () => {
       const page = getPage();
-      // the WebUI takes its language (Accept-Language of every request) from local storage, as set by the login page's language selector
-      await page.addInitScript((lang) => window.localStorage.setItem('metasfreshLanguage', lang), language);
       const api = `${FRONTEND_BASE_URL}/rest/api`;
-      const headers = { 'Content-Type': 'application/json', 'Accept-Language': language };
-      const auth = await page.request.post(`${api}/login/authenticate`, { headers, data: { username: 'metasfresh', password: 'metasfresh' } });
+      const headers = { 'Content-Type': 'application/json' };
+      const auth = await page.request.post(`${api}/login/authenticate`, { headers, data: { username, password } });
       if (!auth.ok()) {
         throw new Error(`login failed: HTTP ${auth.status()}`);
       }
-      const role = (await auth.json()).roles[0];
-      const done = await page.request.post(`${api}/login/loginComplete`, { headers, data: role });
-      if (!done.ok()) {
-        throw new Error(`role selection failed: HTTP ${done.status()}`);
+      const body = await auth.json();
+      if (body.loginComplete === false) {
+        // more than one role: pick the first
+        const done = await page.request.post(`${api}/login/loginComplete`, { headers, data: body.roles[0] });
+        if (!done.ok()) {
+          throw new Error(`role selection failed: HTTP ${done.status()}`);
+        }
       }
-      await this.setUserLanguage(language);
     });
   }
 
-  /** Set the language of the logged-in user (AD_User.AD_Language), as the WebUI's language switch does. */
-  static async setUserLanguage(language) {
-    const res = await getPage().request.put(`${FRONTEND_BASE_URL}/rest/api/userSession/language`, {
-      headers: { 'Content-Type': 'application/json', 'Accept-Language': language },
-      data: { key: language, caption: language },
-    });
+  /**
+   * Delete the format created by createFormat (if any), so no active format is left behind: a format with an open-end
+   * part and no constant part matches ANY scanned code and would shadow the formats of other tests on this stack.
+   */
+  static async deleteCreatedFormat() {
+    if (!this._createdFormatId) {
+      return;
+    }
+    const id = this._createdFormatId;
+    this._createdFormatId = null;
+    const res = await getPage().request.delete(`${FRONTEND_BASE_URL}/rest/api/window/${SCANNABLE_CODE_FORMAT_WINDOW_ID}/${id}`);
     if (!res.ok()) {
-      throw new Error(`setting the user language ${language} failed: HTTP ${res.status()}`);
+      throw new Error(`deleting the scannable code format ${id} failed: HTTP ${res.status()}`);
     }
   }
 
@@ -90,6 +100,7 @@ export class ScannableCodeFormatPage {
   static async createFormat(name) {
     return await test.step(`Create the scannable code format "${name}"`, async () => {
       const page = getPage();
+      this._formStill = '01-new-part-form-end-no';
       await page.goto(`${FRONTEND_BASE_URL}/window/${SCANNABLE_CODE_FORMAT_WINDOW_ID}/NEW`, { waitUntil: 'domcontentloaded' });
       const nameInput = page.locator('.form-field-Name input').first();
       await nameInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -100,6 +111,7 @@ export class ScannableCodeFormatPage {
       await page.keyboard.press('Tab');
       await saved;
       await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+      this._createdFormatId = page.url().match(/\/window\/\d+\/(\d+)/)[1];
     });
   }
 

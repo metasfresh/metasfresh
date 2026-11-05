@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
+import { Backend } from '../utils/Backend';
 import { ScannableCodeFormatPage } from '../utils/pages/ScannableCodeFormatPage';
 
 /**
@@ -14,9 +15,9 @@ const DESCRIPTION = {
   de_DE: 'Leer lassen: bis zum Ende des Codes bzw. bis zur Position vor dem nächsten Teil lesen.',
 };
 
-// The language is a user setting (AD_User.AD_Language): put it back to English for whoever uses the stack next.
+// The created format has an open-end part and no constant part, so it would match any scanned code: never leave it behind.
 test.afterEach(async ({ page }) => { // eslint-disable-line no-unused-vars
-  await ScannableCodeFormatPage.setUserLanguage('en_US');
+  await ScannableCodeFormatPage.deleteCreatedFormat();
 });
 
 [
@@ -25,12 +26,14 @@ test.afterEach(async ({ page }) => { // eslint-disable-line no-unused-vars
 ].forEach(({ language, label, endNoCaption }) => {
   test(`A scannable code format part can be saved without End No, and the field explains it (${label})`, async ({ page }) => { // eslint-disable-line no-unused-vars
     test.setTimeout(300000);
-    allure.epic('Mobile UI');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
     allure.story('Scannable code format: open End No');
     allure.severity('normal');
     allure.description(`End No of a scannable code format part is optional; the field description explains it in ${label}.`);
 
-    await ScannableCodeFormatPage.loginAs(language);
+    const md = await Backend.createMasterdata({ request: { login: { user: { language, firstname: 'EndNo', lastname: 'E2E' } } } });
+    await ScannableCodeFormatPage.loginAs(md.login.user);
     await ScannableCodeFormatPage.createFormat(`E2E open end ${language} ${Date.now()}`);
 
     await ScannableCodeFormatPage.openNewPartForm();
