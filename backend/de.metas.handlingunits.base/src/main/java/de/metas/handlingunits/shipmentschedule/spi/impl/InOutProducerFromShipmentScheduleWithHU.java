@@ -188,6 +188,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 * @see #setDeliveryPlanningId(DeliveryPlanningId)
 	 */
 	@Nullable private DeliveryPlanningId deliveryPlanningId = null;
+	@Nullable private AsyncBatchId asyncBatchId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -428,8 +429,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 			}
 		}
 
-		// Taken from the shipment's first schedule; with setIgnoreScheduleAsyncBatch, that schedule may have lost the batch its siblings still carry.
-		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
+		// The run's batch if there is one (inside a shipment workpackage: the workpackage's batch, which a schedule recompute cannot clear);
+		// otherwise the batch of the shipment's first schedule.
+		if (asyncBatchId != null)
+		{
+			shipment.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+		}
+		else if (shipmentSchedule.getC_Async_Batch_ID() > 0)
 		{
 			shipment.setC_Async_Batch_ID(shipmentSchedule.getC_Async_Batch_ID());
 		}
@@ -775,6 +781,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	@Override
 	public IInOutProducerFromShipmentScheduleWithHU setAsyncBatchId(@Nullable final AsyncBatchId asyncBatchId)
 	{
+		this.asyncBatchId = asyncBatchId;
 		return this;
 	}
 
