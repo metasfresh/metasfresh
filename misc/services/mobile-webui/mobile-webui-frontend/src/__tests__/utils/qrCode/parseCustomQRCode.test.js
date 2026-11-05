@@ -1,5 +1,5 @@
 import { parseCustomQRCode, parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQRCode';
-import { ATTR_GTIN } from '../../../utils/qrCode/common';
+import { ATTR_GTIN, ATTR_lotNo } from '../../../utils/qrCode/common';
 
 describe('parseNumber', () => {
   test('should return the number as is if decimalPoint is 0', () => {
@@ -108,5 +108,45 @@ describe('parseCustomQRCode', () => {
     });
     expect(result.error).toBeUndefined();
     expect(result[ATTR_GTIN]).toBe('02001234567893');
+  });
+});
+
+describe('parseCustomQRCode - part with an open end (reads to the end of the code)', () => {
+  // 1..4 "(10)", lot from 5 to the end; the backend sends endPosition 0 for an open end
+  const formatWithOpenEnd = (endPosition) => ({
+    name: 'Test',
+    parts: [
+      { type: 'CONSTANT', startPosition: 1, endPosition: 4, constantValue: '(10)' },
+      { type: 'LOT', startPosition: 5, endPosition },
+    ],
+  });
+
+  test.each([0, null, undefined])('endPosition %p: lots of any length are read', (endPosition) => {
+    ['7', '123456', '1234567', 'AB12CD34EF56GH78IJ90'].forEach((lot) => {
+      const result = parseCustomQRCode({ string: `(10)${lot}`, format: formatWithOpenEnd(endPosition) });
+      expect(result.error).toBeUndefined();
+      expect(result[ATTR_lotNo]).toBe(lot);
+    });
+  });
+
+  test('leading zeros are stripped and a trailing blank is trimmed, like in the backend', () => {
+    const result = parseCustomQRCode({ string: '(10)012345 ', format: formatWithOpenEnd(0) });
+    expect(result[ATTR_lotNo]).toBe('12345');
+  });
+
+  test('a filled end: a lot padded with trailing blanks is trimmed, like in the backend', () => {
+    const result = parseCustomQRCode({ string: '(10)AB12  ', format: formatWithOpenEnd(10) });
+    expect(result.error).toBeUndefined();
+    expect(result[ATTR_lotNo]).toBe('AB12');
+  });
+
+  test('no character at the start position: not recognized', () => {
+    expect(parseCustomQRCode({ string: '(10)', format: formatWithOpenEnd(0) }).error).toBeDefined();
+  });
+
+  test('a filled end is still exact', () => {
+    const result = parseCustomQRCode({ string: '(10)1234567', format: formatWithOpenEnd(10) });
+    expect(result[ATTR_lotNo]).toBe('123456');
+    expect(parseCustomQRCode({ string: '(10)12345', format: formatWithOpenEnd(10) }).error).toBeDefined();
   });
 });
