@@ -234,8 +234,6 @@ public class PickingJobPickCommand
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
-		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
-
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{

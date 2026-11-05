@@ -13,8 +13,8 @@ Feature: SQL function result lines
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains AD_Org:
-      | AD_Org_ID.Identifier | Name             | Value            |
-      | org_1                | sql function org | sql_function_org |
+      | AD_Org_ID.Identifier | Name                | Value           |
+      | org_1                | sql function org    | sql_function_org |
     And metasfresh contains M_Products:
       | Identifier | Name                 | OPT.AD_Org_ID.Identifier |
       | product_1  | sql_function_product | org_1                    |
@@ -31,23 +31,23 @@ Feature: SQL function result lines
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
       | pp_1       | plv_so                            | product_1               | 10.0     | Normal                        | PCE               |
     And metasfresh contains C_BPartners without locations:
-      | Identifier   | Name                | M_PricingSystem_ID | IsCustomer | AD_Org_ID | AD_OrgBP_ID | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
-      | customer_1   | sql_function_bp     | ps_1               | Y          | org_1     |             | I               | 1000002                |
-      | org_bpartner | sql_function_org_bp | ps_1               |            | org_1     | org_1       | I               | 1000002                |
+      | Identifier   | Name                 | M_PricingSystem_ID | IsCustomer | AD_Org_ID | AD_OrgBP_ID | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | customer_1   | sql_function_bp      | ps_1               | Y          | org_1     |             | I               | 1000002                |
+      | org_bpartner | sql_function_org_bp  | ps_1               |            | org_1     | org_1       | I               | 1000002                |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1   | OPT.Postal | OPT.City | OPT.AD_Org_ID.Identifier |
       | location_1               | DE          | Bahnhofstrasse | 8000       | Zuerich  | org_1                    |
       | org_location_1           | DE          | Orgstrasse     | 3000       | Bern     | org_1                    |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier      | GLN           | C_BPartner_ID | IsShipToDefault | IsBillToDefault | OPT.C_Location_ID.Identifier |
-      | bpLocation_1    | 1234567891155 | customer_1    | Y               | Y               | location_1                   |
+      | Identifier     | GLN           | C_BPartner_ID | IsShipToDefault | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | bpLocation_1   | 1234567891155 | customer_1    | Y               | Y               | location_1                   |
       | orgBpLocation_1 | 1234567891166 | org_bpartner  | Y               | Y               | org_location_1               |
     And metasfresh contains AD_OrgInfo:
       | AD_OrgInfo_ID.Identifier | AD_Org_ID.Identifier | Org_BPartner_ID.Identifier | OrgBP_Location_ID.Identifier |
       | org_info_1               | org_1                | org_bpartner               | orgBpLocation_1              |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value           | Name                 | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouse_1               | sql_function_wh | sqlFunctionWarehouse | org_bpartner                 | orgBpLocation_1                       |
+      | M_Warehouse_ID.Identifier | Value                | Name               | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouse_1               | sql_function_wh      | sqlFunctionWarehouse | org_bpartner               | orgBpLocation_1                       |
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value           | M_Warehouse_ID.Identifier |
       | locator_1               | sql_function_lc | warehouse_1               |
