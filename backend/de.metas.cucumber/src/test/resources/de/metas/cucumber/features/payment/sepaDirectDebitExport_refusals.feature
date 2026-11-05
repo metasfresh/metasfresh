@@ -61,8 +61,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | Identifier | Name                    | Value           | IsCustomer | AD_OrgBP_ID |
       | creditorBP | SEPA Test Creditor GmbH | creditor_@Date@ | N          | sellerOrg   |
     And metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City   |
-      | creditorLoc              | DE          | Musterstrasse 1 | 53111      | Testhausen |
+      | C_Location_ID | CountryCode | Address1        | Postal | City       |
+      | creditorLoc   | DE          | Musterstrasse 1 | 53111  | Testhausen |
     And metasfresh contains C_BPartner_Locations:
       | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
       | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y        | Y               |
@@ -646,8 +646,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | Identifier | Name                | Value              | IsCustomer | M_PricingSystem_ID | PaymentRule |
       | debtor     | Debtor Swiss NoTown | dd_chnotown_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.Address1     | OPT.Postal |
-      | debtorLoc                | CH          | Bahnhofstrasse 1 | 8001       |
+      | C_Location_ID | CountryCode | Address1         | Postal |
+      | debtorLoc     | CH          | Bahnhofstrasse 1 | 8001   |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
       | debtorBPL  | debtor        | debtorLoc                    | Y        | Y               |

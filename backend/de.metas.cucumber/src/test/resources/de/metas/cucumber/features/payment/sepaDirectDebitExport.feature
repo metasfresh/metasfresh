@@ -61,8 +61,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | Identifier | Name                    | Value           | IsCustomer | AD_OrgBP_ID |
       | creditorBP | SEPA Test Creditor GmbH | creditor_@Date@ | N          | sellerOrg   |
     And metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City   |
-      | creditorLoc              | DE          | Musterstrasse 1 | 53111      | Testhausen |
+      | C_Location_ID | CountryCode | Address1        | Postal | City       |
+      | creditorLoc   | DE          | Musterstrasse 1 | 53111  | Testhausen |
     And metasfresh contains C_BPartner_Locations:
       | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
       | creditorBPL | 4000000000129 | creditorBP    | creditorLoc                  | Y        | Y               |
@@ -538,9 +538,9 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | noBicDebtor     | Debtor NoBIC            | nobic_@Date@ | Y          | pricingSystem      | D           |
       | usedLaterDebtor | Debtor MandateUsedLater | later_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.Address1     | OPT.Postal | OPT.City |
-      | noBicLoc                 | DE          | Hauptstraße 5    | 50667      | Köln     |
-      | usedLaterLoc             | CH          | Bahnhofstrasse 1 | 8001       | Zürich   |
+      | C_Location_ID | CountryCode | Address1         | Postal | City   |
+      | noBicLoc      | DE          | Hauptstraße 5    | 50667  | Köln   |
+      | usedLaterLoc  | CH          | Bahnhofstrasse 1 | 8001   | Zürich |
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | C_BPartner_ID   | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
       | noBicBPL     | noBicDebtor     | noBicLoc                     | Y        | Y               |
@@ -1130,8 +1130,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
     # 1. a city of only disallowed characters
     Given metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City |
-      | euroCityLoc              | DE          | Musterstrasse 3 | 53111      | €€       |
+      | C_Location_ID | CountryCode | Address1        | Postal | City |
+      | euroCityLoc   | DE          | Musterstrasse 3 | 53111  | €€   |
     And metasfresh contains C_BPartner_Locations:
       | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
       | creditorBPL | 4000000000129 | creditorBP    | euroCityLoc                  | Y        | Y               |
@@ -1331,8 +1331,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
     # 3. a location without a city
     Given metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal |
-      | noCityLoc                | DE          | Musterstrasse 2 | 53111      |
+      | C_Location_ID | CountryCode | Address1        | Postal |
+      | noCityLoc     | DE          | Musterstrasse 2 | 53111  |
     And metasfresh contains C_BPartner_Locations:
       | Identifier  | GLN           | C_BPartner_ID | OPT.C_Location_ID.Identifier | IsBillTo | IsBillToDefault |
       | creditorBPL | 4000000000129 | creditorBP    | noCityLoc                    | Y        | Y               |
