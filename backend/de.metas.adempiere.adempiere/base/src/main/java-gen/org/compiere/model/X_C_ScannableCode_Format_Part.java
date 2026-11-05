@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO implements I_C_ScannableCode_Format_Part, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1991241075L;
+	private static final long serialVersionUID = 834795677L;
 
     /** Standard Constructor */
     public X_C_ScannableCode_Format_Part (final Properties ctx, final int C_ScannableCode_Format_Part_ID, @Nullable final String trxName)
@@ -44,18 +44,6 @@ public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO impleme
 	public java.lang.String getConstantValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ConstantValue);
-	}
-
-	@Override
-	public org.compiere.model.I_C_ScannableCode_Format getC_ScannableCode_Format()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_ScannableCode_Format_ID, org.compiere.model.I_C_ScannableCode_Format.class);
-	}
-
-	@Override
-	public void setC_ScannableCode_Format(final org.compiere.model.I_C_ScannableCode_Format C_ScannableCode_Format)
-	{
-		set_ValueFromPO(COLUMNNAME_C_ScannableCode_Format_ID, org.compiere.model.I_C_ScannableCode_Format.class, C_ScannableCode_Format);
 	}
 
 	@Override
@@ -119,6 +107,8 @@ public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO impleme
 	public static final String DATATYPE_Constant = "CONSTANT";
 	/** ProductionDate = PRODUCTION_DATE */
 	public static final String DATATYPE_ProductionDate = "PRODUCTION_DATE";
+	/** GTIN = GTIN */
+	public static final String DATATYPE_GTIN = "GTIN";
 	@Override
 	public void setDataType (final java.lang.String DataType)
 	{

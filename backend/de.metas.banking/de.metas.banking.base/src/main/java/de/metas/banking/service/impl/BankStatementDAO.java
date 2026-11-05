@@ -21,6 +21,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -319,6 +320,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
 		record.setDebitorOrCreditorId(request.getDebtorOrCreditorId());
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
+		record.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
 		record.setCurrencyRate(request.getCurrencyRate());
 		record.setIsMultiplePayment(request.isMultiPayment());
 
@@ -394,5 +396,25 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatementId)
 				.create()
 				.maxInt(I_C_BankStatementLine.COLUMNNAME_Line);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<OrderId> getOrderIdsOnUnprocessedLines(@NonNull final Collection<OrderId> orderIds)
+	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_BankStatementLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_C_BankStatementLine.COLUMNNAME_C_Order_ID, orderIds)
+				.create()
+				.listDistinct(I_C_BankStatementLine.COLUMNNAME_C_Order_ID, Integer.class)
+				.stream()
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
