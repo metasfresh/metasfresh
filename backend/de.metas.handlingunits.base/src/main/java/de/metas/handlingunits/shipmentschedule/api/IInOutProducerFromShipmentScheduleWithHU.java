@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.async.AsyncBatchId;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
@@ -55,4 +56,10 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	 * Default {@code false}.
 	 */
 	IInOutProducerFromShipmentScheduleWithHU setIgnoreScheduleAsyncBatch(boolean ignoreScheduleAsyncBatch);
+
+	/**
+	 * The async batch of the run that creates the shipments, e.g. the shipment workpackage's batch.
+	 * If set, every created shipment gets it as {@code C_Async_Batch_ID}; if {@code null} (default), a shipment gets the batch of its first schedule.
+	 */
+	IInOutProducerFromShipmentScheduleWithHU setAsyncBatchId(@Nullable AsyncBatchId asyncBatchId);
 }

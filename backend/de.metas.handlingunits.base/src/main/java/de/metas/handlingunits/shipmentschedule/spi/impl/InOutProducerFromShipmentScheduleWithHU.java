@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -768,6 +769,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 		this.shipmentScheduleKeyBuilder = ignoreScheduleAsyncBatch
 				? ShipmentScheduleHeaderAggregationKeyBuilder.withoutAsyncBatch()
 				: shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setAsyncBatchId(@Nullable final AsyncBatchId asyncBatchId)
+	{
 		return this;
 	}
 

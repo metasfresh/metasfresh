@@ -622,6 +622,55 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 				assertThat(result.getInOuts()).hasSize(1);
 			}
 		}
+
+		@Nested
+		public class shipmentAsyncBatch
+		{
+			private ShipmentScheduleBuilder candidateBuilder;
+
+			@BeforeEach
+			public void beforeEach()
+			{
+				InOutCandidateValidator.registerSSAggregationKeyDependencies();
+
+				candidateBuilder = shipmentSchedule()
+						.deliveryRule(DeliveryRule.AVAILABILITY)
+						.orderId(order())
+						.productId(product("product", uom("uom")))
+						.qtyOrdered("10")
+						.qtyToDeliver("10");
+			}
+
+			@Test
+			public void runAsyncBatch_evenIfTheFirstScheduleLostIt()
+			{
+				final AsyncBatchId runAsyncBatchId = asyncBatch();
+				final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
+						candidateBuilder.asyncBatchId(null).build(),
+						candidateBuilder.asyncBatchId(runAsyncBatchId).build());
+
+				final InOutProducerFromShipmentScheduleWithHU producer = new InOutProducerFromShipmentScheduleWithHU(new DefaultInOutGenerateResult(true));
+				producer.setIgnoreScheduleAsyncBatch(true);
+				producer.setAsyncBatchId(runAsyncBatchId);
+
+				final InOutGenerateResult result = process(candidates, producer);
+				assertThat(result.getInOuts()).hasSize(1);
+				assertThat(result.getInOuts().get(0).getC_Async_Batch_ID()).isEqualTo(runAsyncBatchId.getRepoId());
+			}
+
+			@Test
+			public void firstSchedulesAsyncBatch_ifNoRunAsyncBatch()
+			{
+				final AsyncBatchId scheduleAsyncBatchId = asyncBatch();
+				final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
+						candidateBuilder.asyncBatchId(scheduleAsyncBatchId).build(),
+						candidateBuilder.asyncBatchId(scheduleAsyncBatchId).build());
+
+				final InOutGenerateResult result = process(candidates);
+				assertThat(result.getInOuts()).hasSize(1);
+				assertThat(result.getInOuts().get(0).getC_Async_Batch_ID()).isEqualTo(scheduleAsyncBatchId.getRepoId());
+			}
+		}
 	}
 
 }
