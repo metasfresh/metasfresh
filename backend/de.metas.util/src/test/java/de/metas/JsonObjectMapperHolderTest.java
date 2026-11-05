@@ -23,10 +23,12 @@
 package de.metas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JsonObjectMapperHolderTest
 {
@@ -38,27 +40,40 @@ class JsonObjectMapperHolderTest
 		public int value;
 	}
 
+	private static final String JSON_WITH_UNKNOWN_PROPERTIES = "{\"name\":\"abc\",\"value\":7,\"currencyCode\":\"EUR\",\"title\":\"some step label\"}";
+
 	/**
-	 * Behaviour restored for the JDK25 / Spring-Boot-3 upgrade: the shared ObjectMapper must IGNORE
-	 * unknown JSON properties, matching the Spring-Boot-2 / jackson-2.11 base behaviour the e2e seed
-	 * relied on (a hard-coded price {@code currencyCode}, a mobile {@code title} test-step label, …).
-	 * Under SB3 Jackson defaults FAIL_ON_UNKNOWN_PROPERTIES to true; the holder disables it again.
+	 * The general-purpose mapper must stay strict: {@code JsonMapperUtil.tryDeserializeToType} (e.g. the bpartner data-export audit)
+	 * and the cucumber REST harness tell JSON types apart by an unknown property failing. A lenient shared mapper makes every JSON
+	 * "successfully" deserialize into any type with null fields (NPE in {@code BPartnerCompositeAuditService.auditAdUser}, null REST response bodies).
 	 */
 	@Test
-	void deserialize_ignores_unknown_properties()
+	void newJsonObjectMapper_rejects_unknown_properties()
 	{
 		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		final String jsonWithExtras = "{\"name\":\"abc\",\"value\":7,\"currencyCode\":\"EUR\",\"title\":\"some step label\"}";
 
-		assertThatCode(() -> mapper.readValue(jsonWithExtras, SimpleDto.class))
+		assertThatThrownBy(() -> mapper.readValue(JSON_WITH_UNKNOWN_PROPERTIES, SimpleDto.class))
+				.isInstanceOf(UnrecognizedPropertyException.class);
+	}
+
+	/**
+	 * The REST (Spring MVC message converter) mapper ignores unknown request properties, like the pre-JDK25 REST layer did
+	 * (e.g. a price {@code currencyCode}, a mobile {@code title} test-step label, an OLCand {@code dataDest}).
+	 */
+	@Test
+	void newHttpMessageConverterJsonObjectMapper_ignores_unknown_properties()
+	{
+		final ObjectMapper mapper = JsonObjectMapperHolder.newHttpMessageConverterJsonObjectMapper();
+
+		assertThatCode(() -> mapper.readValue(JSON_WITH_UNKNOWN_PROPERTIES, SimpleDto.class))
 				.as("unknown JSON properties must be ignored, not rejected")
 				.doesNotThrowAnyException();
 	}
 
 	@Test
-	void deserialize_binds_known_properties_even_with_an_unknown_one() throws Exception
+	void newHttpMessageConverterJsonObjectMapper_binds_known_properties_even_with_an_unknown_one() throws Exception
 	{
-		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final ObjectMapper mapper = JsonObjectMapperHolder.newHttpMessageConverterJsonObjectMapper();
 		final SimpleDto dto = mapper.readValue("{\"name\":\"abc\",\"value\":7,\"extra\":true}", SimpleDto.class);
 		assertThat(dto.name).isEqualTo("abc");
 		assertThat(dto.value).isEqualTo(7);

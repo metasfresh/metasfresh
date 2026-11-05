@@ -97,23 +97,28 @@ public class JsonObjectMapperHolder
 				.registerModule(new GuavaModule())
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				// JDK25/Spring-Boot-3 migration note: the e2e masterdata seed sends a few JSON extras
-				// the backend never models (a hard-coded price `currencyCode` and a mobile
-				// `JsonExpectations.title` that is only a Playwright test.step() label leaking via a
-				// request spread). Jackson's own FAIL_ON_UNKNOWN_PROPERTIES default is `true` (strict);
-				// on base new_dawn_uat these payloads were nonetheless tolerated (the SB2-era REST stack
-				// was lenient) and the identical e2e jobs ran GREEN, failing with UnrecognizedPropertyException
-				// only on this SB3/JDK25 branch. We disable it explicitly here to restore that long-standing
-				// base leniency (and to match the codebase convention — e.g. SimpleObjectSerializer,
-				// NShiftClientConfig already configure FAIL_ON_UNKNOWN_PROPERTIES=false) rather than
-				// introduce a new tolerance. The fields are confirmed spurious (consumed nowhere; born in
-				// metasfresh PR #21830 / #21765 with no backend side), so there is nothing to bind.
-				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.enable(MapperFeature.USE_ANNOTATIONS);
 
 		logger.info("Created a new JSON ObjectMapper: {} \nRegistered modules: {}", objectMapper, objectMapper.getRegisteredModuleIds());
 
 		return objectMapper;
+	}
+
+	/**
+	 * Mapper for the Spring MVC {@code MappingJackson2HttpMessageConverter} that binds REST request bodies and writes REST responses.
+	 * <p>
+	 * Same configuration as {@link #newJsonObjectMapper()}, except that unknown JSON properties in a request body are ignored instead of rejected.
+	 * That restores the pre-JDK25 REST behaviour: on base, the springfox {@code @EnableWebMvc} made Spring use its own default
+	 * {@code Jackson2ObjectMapperBuilder}-built converter mapper, which has {@code FAIL_ON_UNKNOWN_PROPERTIES} disabled; with springdoc,
+	 * {@code @EnableWebMvc} is gone and Spring Boot's converter uses our (strict) {@code @Primary} mapper instead.
+	 * <p>
+	 * The leniency is deliberately limited to the HTTP message converter: {@link #newJsonObjectMapper()} / {@link #sharedJsonObjectMapper()}
+	 * stay strict, because code like {@code JsonMapperUtil.tryDeserializeToType} relies on an unknown property failing in order to tell
+	 * JSON types apart.
+	 */
+	public static ObjectMapper newHttpMessageConverterJsonObjectMapper()
+	{
+		return newJsonObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 	}
 
 	@Nullable

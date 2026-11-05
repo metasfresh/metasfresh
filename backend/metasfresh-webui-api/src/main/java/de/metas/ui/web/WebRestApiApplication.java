@@ -60,6 +60,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -135,6 +136,18 @@ public class WebRestApiApplication
 	public ObjectMapper jsonObjectMapper()
 	{
 		return JsonObjectMapperHolder.sharedJsonObjectMapper();
+	}
+
+	/**
+	 * REST message converter: like {@link #jsonObjectMapper()}, but tolerant of unknown request properties, as the pre-JDK25 REST layer was.
+	 * Spring Boot's own converter auto-configuration backs off in favour of this bean.
+	 *
+	 * @see JsonObjectMapperHolder#newHttpMessageConverterJsonObjectMapper()
+	 */
+	@Bean
+	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter()
+	{
+		return new MappingJackson2HttpMessageConverter(JsonObjectMapperHolder.newHttpMessageConverterJsonObjectMapper());
 	}
 
 	@Bean(Adempiere.BEAN_NAME)
