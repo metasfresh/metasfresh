@@ -78,6 +78,16 @@ class POSOrdersRepositoryVersionTest
 	}
 
 	@Test
+	void ordersLoadedByQueryHaveAVersionToo()
+	{
+		final long savedVersion = repository.createOrUpdateByExternalId(EXTERNAL_ID, this::newOrder, order -> {}).getVersion();
+		final POSOrderQuery query = POSOrderQuery.builder().posTerminalId(POSTerminalId.ofRepoId(1)).cashierId(UserId.ofRepoId(1)).build();
+
+		assertThat(repository.list(query)).singleElement().satisfies(order -> assertThat(order.getVersion()).isGreaterThanOrEqualTo(savedVersion));
+		assertThat(repository.firstOnly(query)).hasValueSatisfying(order -> assertThat(order.getVersion()).isGreaterThanOrEqualTo(savedVersion));
+	}
+
+	@Test
 	void versionKeepsIncreasing_evenWhenTheClockStandsStill()
 	{
 		SystemTime.setFixedTimeSource("2026-11-05T10:00:00Z");

@@ -70,21 +70,36 @@ class POSOrdersLoaderAndSaver
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
 
-	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
+	/**
+	 * @param versionBeforeRead {@link #currentVersion()}, taken BEFORE the record was read
+	 */
+	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord, final long versionBeforeRead)
 	{
 		addToCacheAndWarmUp(ImmutableList.of(orderRecord));
-		return fromRecord(orderRecord);
+		return withVersion(fromRecord(orderRecord), versionBeforeRead);
 	}
 
-	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
+	/**
+	 * @param versionBeforeRead {@link #currentVersion()}, taken BEFORE the records were read
+	 */
+	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords, final long versionBeforeRead)
 	{
 		addToCacheAndWarmUp(orderRecords);
-		return orderRecords.stream().map(this::fromRecord).collect(ImmutableList.toImmutableList());
+		return orderRecords.stream()
+				.map(orderRecord -> withVersion(fromRecord(orderRecord), versionBeforeRead))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	POSOrder getById(final @NonNull POSOrderId posOrderId)
 	{
-		return fromRecord(getOrderRecordById(posOrderId));
+		final long versionBeforeRead = currentVersion();
+		return withVersion(fromRecord(getOrderRecordById(posOrderId)), versionBeforeRead);
+	}
+
+	private static POSOrder withVersion(@NonNull final POSOrder order, final long version)
+	{
+		order.setVersion(version);
+		return order;
 	}
 
 	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)
@@ -286,9 +301,7 @@ class POSOrdersLoaderAndSaver
 		final List<I_C_POS_OrderLine> lineRecords = getLineRecordsByOrderId(posOrderId);
 		final List<I_C_POS_Payment> paymentRecords = getPaymentRecordsByOrderId(posOrderId);
 
-		final POSOrder order = fromRecord(orderRecord, lineRecords, paymentRecords);
-		order.setVersion(currentVersion());
-		return order;
+		return fromRecord(orderRecord, lineRecords, paymentRecords);
 	}
 
 	static POSOrderId extractPOSOrderId(final I_C_POS_Order orderRecord)
@@ -578,10 +591,11 @@ class POSOrdersLoaderAndSaver
 	}
 
 	/**
-	 * @return the version for an order just loaded from DB: not lower than the version of any save so far in this JVM
-	 * (so a delayed event of an earlier save is not considered newer), and lower than the version of any later save
+	 * @return the version for an order loaded from DB, to be taken BEFORE reading it: not lower than the version of any save
+	 * so far in this JVM (so a delayed event of an earlier save is not considered newer), and lower than the version of any
+	 * later save (so the event of a save which happens while reading is not considered older)
 	 */
-	private static long currentVersion()
+	static long currentVersion()
 	{
 		return lastVersion.updateAndGet(last -> Math.max(last, SystemTime.millis()));
 	}
