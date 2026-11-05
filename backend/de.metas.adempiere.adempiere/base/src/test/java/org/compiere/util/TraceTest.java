@@ -75,4 +75,21 @@ class TraceTest
 		assertThat(Trace.toOneLineStackTraceString(stacktrace))
 				.isEqualTo("SalesOrderRestController.revertOrder:241 <~~~ WebConfig$ApiNoStoreCacheControlFilter.doFilter:80");
 	}
+
+	/**
+	 * JDK 17+ dynamic proxies live in {@code jdk.proxyN} and are skipped like the other {@code jdk.*} frames: they carry no line number,
+	 * the actual logic is in the {@code InvocationHandler}.
+	 */
+	@Test
+	void toOneLineStackTraceString_jdk17_dynamicProxyFramesAreSkipped()
+	{
+		final StackTraceElement[] stacktrace = {
+				frame("de.metas.rest_api.v2.order.sales.SalesOrderRestController", "revertOrder", 241),
+				frame("jdk.proxy2.$Proxy187", "revertOrder", -1),
+				frame("de.metas.server.config.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
+		};
+
+		assertThat(Trace.toOneLineStackTraceString(stacktrace))
+				.isEqualTo("SalesOrderRestController.revertOrder:241 <~~~ WebConfig$ApiNoStoreCacheControlFilter.doFilter:80");
+	}
 }
