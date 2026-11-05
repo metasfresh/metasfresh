@@ -45,9 +45,12 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
       | rawWH          | false       |             | rawLoc       |
       | prodWH         | false       | plant       |              |
     # the trolley's own in-transit warehouse and locator, so the report lists exactly this scenario's HUs
+    # a short fixed value and name (the default name embeds Instant.now(), whose length depends on the JDK's clock precision):
+    # the "Ziellager" line then does not wrap, so the line counts below do not depend on the clock.
+    # The scenarios share this warehouse; each still gets its own locator, which is what the report is run for.
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | IsInTransit |
-      | trolleyWH      | true        |
+      | M_Warehouse_ID | Value       | Name        | IsInTransit |
+      | trolleyWH      | MBS_TROLLEY | MBS Trolley | true        |
     And metasfresh contains M_Locator:
       | Identifier | M_Warehouse_ID | IsDefault |
       | trolleyLoc | trolleyWH      | N         |
