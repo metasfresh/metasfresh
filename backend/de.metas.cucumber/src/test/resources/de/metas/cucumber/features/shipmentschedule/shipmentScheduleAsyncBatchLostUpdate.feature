@@ -178,6 +178,38 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
   # ###################################################################################################################
   # ###################################################################################################################
 
+  # Fresh timing, but the recompute pass covers all three schedules before the shipment workpackage reads them:
+  # no schedule carries the run's batch any more. The shipment still belongs to the run: it takes the batch from the workpackage.
+  @from:cucumber
+  @Id:S33468_240
+  Scenario: after a recompute cleared the batch of all schedules of a run, the shipment still carries the run's batch
+    Given pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 6         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+      | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And complete picking job
+    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
+    When M_ShipmentSchedule shipmentSchedule1 is loaded now, recomputed from its order and saved
+    And M_ShipmentSchedule shipmentSchedule2 is loaded now, recomputed from its order and saved
+    And M_ShipmentSchedule shipmentSchedule3 is loaded now, recomputed from its order and saved
+    And the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction as shipmentWorkPackage
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment1             | CO            |
+      | shipmentSchedule3                | shipment1             | CO            |
+    And the M_InOut shipment1 carries the C_Async_Batch_ID of the C_Queue_WorkPackage shipmentWorkPackage
+
+
+
+  # ###################################################################################################################
+  # ###################################################################################################################
+
   # Batch cleanup after a partial run: run 1 ships part of line 1 and gives schedule 1 the run's batch.
   # The next schedule recompute copies the order's empty batch onto the schedule again.
   # Without that cleanup, run 2 groups schedule 1 (old batch) apart from schedules 2 and 3 (no batch): two shipments.
