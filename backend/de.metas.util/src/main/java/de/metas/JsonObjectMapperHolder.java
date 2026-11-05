@@ -97,6 +97,18 @@ public class JsonObjectMapperHolder
 				.registerModule(new GuavaModule())
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+				// JDK25/Spring-Boot-3 migration note: the e2e masterdata seed sends a few JSON extras
+				// the backend never models (a hard-coded price `currencyCode` and a mobile
+				// `JsonExpectations.title` that is only a Playwright test.step() label leaking via a
+				// request spread). Jackson's own FAIL_ON_UNKNOWN_PROPERTIES default is `true` (strict);
+				// on base new_dawn_uat these payloads were nonetheless tolerated (the SB2-era REST stack
+				// was lenient) and the identical e2e jobs ran GREEN, failing with UnrecognizedPropertyException
+				// only on this SB3/JDK25 branch. We disable it explicitly here to restore that long-standing
+				// base leniency (and to match the codebase convention — e.g. SimpleObjectSerializer,
+				// NShiftClientConfig already configure FAIL_ON_UNKNOWN_PROPERTIES=false) rather than
+				// introduce a new tolerance. The fields are confirmed spurious (consumed nowhere; born in
+				// metasfresh PR #21830 / #21765 with no backend side), so there is nothing to bind.
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.enable(MapperFeature.USE_ANNOTATIONS);
 
 		logger.info("Created a new JSON ObjectMapper: {} \nRegistered modules: {}", objectMapper, objectMapper.getRegisteredModuleIds());
