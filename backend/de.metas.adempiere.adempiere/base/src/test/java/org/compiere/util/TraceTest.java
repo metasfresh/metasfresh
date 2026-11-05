@@ -46,7 +46,7 @@ class TraceTest
 				frame("java.lang.reflect.Method", "invoke", 498),
 				frame("org.springframework.web.servlet.FrameworkServlet", "service", 883),
 				frame("javax.servlet.http.HttpServlet", "service", 764),
-				frame("de.metas.util.web.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
+				frame("de.metas.server.config.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
 		};
 
 		assertThat(Trace.toOneLineStackTraceString(stacktrace))
@@ -69,7 +69,7 @@ class TraceTest
 				frame("org.springframework.web.servlet.FrameworkServlet", "service", 885),
 				frame("jakarta.servlet.http.HttpServlet", "service", 658),
 				frame("org.apache.catalina.core.ApplicationFilterChain", "internalDoFilter", 195),
-				frame("de.metas.util.web.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
+				frame("de.metas.server.config.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
 		};
 
 		assertThat(Trace.toOneLineStackTraceString(stacktrace))
