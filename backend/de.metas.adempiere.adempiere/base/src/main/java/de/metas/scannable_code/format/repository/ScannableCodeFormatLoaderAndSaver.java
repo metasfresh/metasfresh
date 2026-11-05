@@ -2,6 +2,7 @@ package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
@@ -16,14 +17,20 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Builder
 class ScannableCodeFormatLoaderAndSaver
 {
+	private static final Logger logger = LogManager.getLogger(ScannableCodeFormatLoaderAndSaver.class);
+
 	@NotNull private final IQueryBL queryBL;
 
 	private final HashMap<ScannableCodeFormatId, I_C_ScannableCode_Format> formatRecordsCache = new HashMap<>();
@@ -35,7 +42,8 @@ class ScannableCodeFormatLoaderAndSaver
 		final Set<ScannableCodeFormatId> formatIds = formatRecordsCache.keySet();
 
 		return formatIds.stream()
-				.map(this::getById)
+				.map(this::getByIdOrNull)
+				.filter(Objects::nonNull)
 				.collect(ScannableCodeFormatsCollection.collect());
 	}
 
@@ -88,6 +96,24 @@ class ScannableCodeFormatLoaderAndSaver
 		return ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID());
 	}
 
+	/**
+	 * One broken format must not stop the other formats from working: log it and skip it.
+	 */
+	@Nullable
+	private ScannableCodeFormat getByIdOrNull(@NotNull final ScannableCodeFormatId formatId)
+	{
+		try
+		{
+			return getById(formatId);
+		}
+		catch (final Exception ex)
+		{
+			final I_C_ScannableCode_Format formatRecord = formatRecordsCache.get(formatId);
+			logger.warn("Skipping invalid scannable code format {} (ID={}): {}", formatRecord != null ? formatRecord.getName() : "?", formatId.getRepoId(), ex.getLocalizedMessage(), ex);
+			return null;
+		}
+	}
+
 	private ScannableCodeFormat getById(@NotNull final ScannableCodeFormatId formatId)
 	{
 		final I_C_ScannableCode_Format formatRecord = formatRecordsCache.get(formatId);
@@ -111,9 +137,7 @@ class ScannableCodeFormatLoaderAndSaver
 					.id(extactScannableCodeFormatId(formatRecord))
 					.name(formatRecord.getName())
 					.description(formatRecord.getDescription())
-					.parts(partRecords.stream()
-							.map(ScannableCodeFormatLoaderAndSaver::fromRecord)
-							.collect(ImmutableList.toImmutableList()))
+					.parts(fromRecords(partRecords))
 					.build();
 		}
 		catch (Exception ex)
@@ -129,12 +153,62 @@ class ScannableCodeFormatLoaderAndSaver
 		}
 	}
 
-	private static ScannableCodeFormatPart fromRecord(@NotNull final I_C_ScannableCode_Format_Part record)
+	/**
+	 * Parts keep the given order (that's the parsing order); only the end of a part with an empty {@code EndNo} is resolved here.
+	 * Empty (0) {@code EndNo}: the part ends where the part with the next higher {@code StartNo} starts, or it reads to the end of the code if it's the last one.
+	 */
+	private static ImmutableList<ScannableCodeFormatPart> fromRecords(@NotNull final List<I_C_ScannableCode_Format_Part> partRecords)
+	{
+		final List<I_C_ScannableCode_Format_Part> partRecordsSortedByStartNo = partRecords.stream()
+				.sorted(Comparator.comparingInt(I_C_ScannableCode_Format_Part::getStartNo))
+				.collect(ImmutableList.toImmutableList());
+
+		return partRecords.stream()
+				.map(partRecord -> fromRecord(partRecord, computeEndNo(partRecord, partRecordsSortedByStartNo)))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static int computeEndNo(
+			@NotNull final I_C_ScannableCode_Format_Part partRecord,
+			@NotNull final List<I_C_ScannableCode_Format_Part> partRecordsSortedByStartNo)
+	{
+		if (partRecord.getEndNo() != ScannableCodeFormatPart.OPEN_END)
+		{
+			return partRecord.getEndNo();
+		}
+
+		int index = -1;
+		for (int i = 0; i < partRecordsSortedByStartNo.size(); i++)
+		{
+			final I_C_ScannableCode_Format_Part other = partRecordsSortedByStartNo.get(i);
+			if (other == partRecord)
+			{
+				index = i;
+			}
+			else if (other.getStartNo() == partRecord.getStartNo())
+			{
+				throw new AdempiereException("Part starting at " + partRecord.getStartNo() + " has no End No, but another part starts at the same position");
+			}
+		}
+		if (index < 0 || index == partRecordsSortedByStartNo.size() - 1)
+		{
+			return ScannableCodeFormatPart.OPEN_END; // last part: to the end of the code
+		}
+
+		final int endNo = partRecordsSortedByStartNo.get(index + 1).getStartNo() - 1;
+		if (endNo < partRecord.getStartNo())
+		{
+			throw new AdempiereException("Part starting at " + partRecord.getStartNo() + " has no End No, but the next part starts at " + (endNo + 1));
+		}
+		return endNo;
+	}
+
+	private static ScannableCodeFormatPart fromRecord(@NotNull final I_C_ScannableCode_Format_Part record, final int endNo)
 	{
 		final ScannableCodeFormatPartType type = ScannableCodeFormatPartType.ofCode(record.getDataType());
 		final ScannableCodeFormatPart.ScannableCodeFormatPartBuilder builder = ScannableCodeFormatPart.builder()
 				.startPosition(record.getStartNo())
-				.endPosition(record.getEndNo())
+				.endPosition(endNo)
 				.type(type);
 
 		if (type == ScannableCodeFormatPartType.Constant)

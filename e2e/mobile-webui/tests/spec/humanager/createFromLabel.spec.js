@@ -14,7 +14,9 @@ import {
     BRACKETED_LABEL_LOT,
     BRACKETED_LABEL_PRODUCTION_DATE_DISPLAY,
     bracketedLabel,
+    bracketedLabelWithLot,
     FORMAT_BRACKETED_GTIN_PRODDATE_LOT,
+    FORMAT_BRACKETED_GTIN_PRODDATE_OPENLOT,
     FORMAT_GTIN_LOT_BBD,
     gs1Label,
     gtinLotBbdLabel,
@@ -625,6 +627,58 @@ test('rejections show one message each, book nothing; quantity 0 disables OK', a
     });
 
     // nothing was booked by any of the above
+    await Backend.expect({ products: { 'P1': { huCount: 0 } } });
+});
+
+// A part with an open end (End No empty) reads to the end of the code: any lot length from 1 character, letters and digits.
+// noinspection JSUnusedLocalSymbols
+test('open-end lot part: lots of 7, 1 and 12 characters (alphanumeric, trailing blank) -> the HU carries exactly that lot', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('critical');
+
+    const gtin = uniqueGtin14();
+    const masterdata = await createMasterdata({ gtin, formats: [FORMAT_BRACKETED_GTIN_PRODDATE_OPENLOT] });
+    await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
+
+    // [label lot as scanned, lot expected on the preview and the CU]
+    const cases = [['4817329', '4817329'], ['7', '7'], ['AB12cd34EFGH', 'AB12cd34EFGH'], ['9150227 ', '9150227']];
+    for (const [scannedLot, expectedLot] of cases) {
+        await test.step(`lot '${scannedLot}'`, async () => {
+            await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabelWithLot(gtin, scannedLot) });
+            await NewHUPreviewScreen.expectLotNumber(expectedLot);
+            await NewHUPreviewScreen.expectProductionDate(BRACKETED_LABEL_PRODUCTION_DATE_DISPLAY);
+            await NewHUPreviewScreen.setQty(1);
+            const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
+            const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
+            await expectBackOnScanScreenAfterOK({ created, locatorCode });
+            await Backend.expect({
+                hus: {
+                    [created.huId]: {
+                        huStatus: 'A',
+                        storages: { 'P1': '1 PCE' },
+                        cus: [{ qty: '1 PCE', attributes: { 'Lot-Nummer': expectedLot, 'ProductionDate': '2027-03-15' } }],
+                    },
+                },
+            });
+        });
+    }
+    await Backend.expect({ products: { 'P1': { huCount: cases.length } } });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('open-end lot part: a label without any lot character is not recognized, nothing is booked', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('normal');
+
+    const gtin = uniqueGtin14();
+    const masterdata = await createMasterdata({ gtin, formats: [FORMAT_BRACKETED_GTIN_PRODDATE_OPENLOT] });
+    await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
+
+    await expectRejection({ title: 'no lot character', label: bracketedLabelWithLot(gtin, ''), expectedText: /Label not recognized/ });
     await Backend.expect({ products: { 'P1': { huCount: 0 } } });
 });
 
