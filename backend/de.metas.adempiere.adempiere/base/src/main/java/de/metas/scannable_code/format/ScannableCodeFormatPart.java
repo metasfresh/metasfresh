@@ -23,7 +23,10 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 public class ScannableCodeFormatPart
 {
 	int startPosition;
+	/** 0 = open end: the part reads up to the end of the scanned code (only the last part of a format can be left open, the loader resolves the others) */
 	int endPosition;
+
+	public static final int OPEN_END = 0;
 
 	@NonNull ScannableCodeFormatPartType type;
 
@@ -46,7 +49,7 @@ public class ScannableCodeFormatPart
 			@Nullable final String description)
 	{
 		Check.assume(startPosition >= 1, "startPosition >= 1");
-		Check.assume(startPosition <= endPosition, "startPosition <= endPosition");
+		Check.assume(endPosition == OPEN_END || startPosition <= endPosition, "endPosition is 0 (open end) or startPosition <= endPosition");
 
 		this.startPosition = startPosition;
 		this.endPosition = endPosition;
@@ -77,7 +80,9 @@ public class ScannableCodeFormatPart
 	@Deprecated
 	public String toString() {return toStringShort();}
 
-	private String toStringShort() {return type + "[" + startPosition + "-" + endPosition + "]";}
+	private String toStringShort() {return type + "[" + startPosition + "-" + (isOpenEnd() ? "" : endPosition) + "]";}
+
+	public boolean isOpenEnd() {return endPosition == OPEN_END;}
 
 	BooleanWithReason parseAndUpdateResult(@NonNull final ScannedCode scannedCode, @NonNull final ParsedScannedCodeBuilder result)
 	{
@@ -129,8 +134,17 @@ public class ScannableCodeFormatPart
 
 	private Optional<String> extractAsString(final ScannedCode scannedCode)
 	{
-		int startIndex = startPosition - 1;
-		int endIndex = endPosition - 1 + 1;
+		final int startIndex = startPosition - 1;
+
+		if (isOpenEnd())
+		{
+			// needs at least 1 character, like any other part
+			return startIndex < scannedCode.length()
+					? Optional.of(scannedCode.substring(startIndex, scannedCode.length()))
+					: Optional.empty();
+		}
+
+		final int endIndex = endPosition - 1 + 1;
 
 		if (endIndex > scannedCode.length())
 		{
