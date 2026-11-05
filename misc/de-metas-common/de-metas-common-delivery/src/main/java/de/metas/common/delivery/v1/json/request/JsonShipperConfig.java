@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonShipperConfig
 {
@@ -58,5 +58,12 @@ public class JsonShipperConfig
 	public String getAdditionalProperty(@NonNull final String key)
 	{
 		return additionalProperties.get(key);
+	}
+
+	@JsonIgnore
+	@NonNull
+	public JsonShipperConfig withAdditionalProperty(@NonNull final String key, @NonNull final String value)
+	{
+		return toBuilder().additionalProperty(key, value).build();
 	}
 }

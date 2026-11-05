@@ -30,24 +30,24 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -80,8 +80,8 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CON
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_DOCUMENT_NO;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
@@ -104,7 +104,7 @@ public class ExternalSystemScriptedExportConversionService
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 	@NonNull private final ExternalSystemExportAuditRepo exportAuditRepo;
-	@NonNull private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	@NonNull private final ExternalSystemConfigRepository externalSystemConfigRepository;
 
 	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
@@ -288,7 +288,11 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
-		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
+		// UNKNOWN (not null): the auto-trigger / archive-listener path must propagate a non-null error
+		// context so a downstream failure reaches the scripted-export error listener (createIssue only
+		// notifies it when errorContext != null) and the status row flips to Error. The EDI and Re-send
+		// paths pass EDI / RESEND; auto-trigger has no specific context, so it uses the neutral UNKNOWN.
+		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, ExternalSystemInvocationContext.UNKNOWN).getExceptions();
 	}
 
 	/**
@@ -335,6 +339,23 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final TableRecordReference sourceRecord)
 	{
 		return exportStatusService.getResendableConfigsBySourceRecord(sourceRecord);
+	}
+
+	/**
+	 * Returns all config IDs in a re-triggerable state for the given source record, judged on each config's
+	 * LATEST attempt. Includes {@link de.metas.externalsystem.ExternalSystemExportStatus#Sent} (re-send even
+	 * when previously successful) and an operator-parked
+	 * {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}; excludes
+	 * {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend} and the actively-in-flight states
+	 * (Enqueued, SendingStarted, and a transient auto-flow Pending) to avoid duplicate concurrent sends.
+	 *
+	 * @see ExternalSystemExportStatusService#getMatchingConfigIdsBySourceRecord(TableRecordReference)
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return exportStatusService.getMatchingConfigIdsBySourceRecord(sourceRecord);
 	}
 
 	/**
@@ -439,7 +460,7 @@ public class ExternalSystemScriptedExportConversionService
 	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId,
-			@Nullable final ExternalSystemInvocationContext errorContext)
+			@NonNull final ExternalSystemInvocationContext errorContext)
 	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);
@@ -452,12 +473,8 @@ public class ExternalSystemScriptedExportConversionService
 					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
 					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
 					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
-					.addParameter(PARAM_Record_ID, recordId);
-
-			if (errorContext != null)
-			{
-				processInfoBuilder.addParameter(PARAM_ERROR_CONTEXT, errorContext.getCode());
-			}
+					.addParameter(PARAM_Record_ID, recordId)
+					.addParameter(PARAM_ERROR_CONTEXT, errorContext.getCode());
 
 			final ProcessInfo processInfo = processInfoBuilder.buildAndPrepareExecution().executeSync().getProcessInfo();
 			final ProcessExecutionResult result = processInfo.getResult();
@@ -529,7 +546,7 @@ public class ExternalSystemScriptedExportConversionService
 		try
 		{
 			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(
-					externalSystemConfigRepo.getParentTypeById(config.getParentId()));
+					externalSystemConfigRepository.getParentTypeById(config.getParentId()));
 
 			final UserId exportUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
 			final RoleId exportRoleId = Env.getLoggedRoleIdIfExists(getCtx()).orElse(RoleId.SYSTEM);

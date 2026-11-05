@@ -144,7 +144,11 @@ Feature: MD_Candidate_Remove_From_ATP process
       | sol_atp_003 | so_atp_003 | product_atp  | 100        |
     And the order identified by so_atp_003 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_atp_003 | sol_atp_003               | N             |
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -159,8 +163,6 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
       | pol_atp_003 | po_atp_003 | product_atp  | 150        |
     And the order identified by po_atp_003 is completed
-
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # Verify all candidates
     And after not more than 10s, MD_Candidates are found
@@ -208,7 +210,11 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_1  | so_004_1   | product_atp  | 30         |
     And the order identified by so_004_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_004_1 | sol_004_1                 | N             |
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -222,7 +228,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | pol_004_1  | po_004_1   | product_atp  | 50         |
     And the order identified by po_004_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Create sales order 2 (demand_2_004 at T+3) - this is the middle candidate we'll test
     And metasfresh contains C_Orders:
@@ -232,7 +238,11 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_2  | so_004_2   | product_atp  | 40         |
     And the order identified by so_004_2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_004_2 | sol_004_2                 | N             |
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -246,7 +256,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | pol_004_2  | po_004_2   | product_atp  | 60         |
     And the order identified by po_004_2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Create sales order 3 (demand_3_004 at T+5)
     And metasfresh contains C_Orders:
@@ -256,7 +266,10 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_3  | so_004_3   | product_atp  | 35         |
     And the order identified by so_004_3 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_004_3 | sol_004_3                 | N             |
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |

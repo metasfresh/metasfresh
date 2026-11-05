@@ -58,8 +58,8 @@ Feature: Customer Return from Shipment
 
     # Step 2: Wait for shipment schedule, generate and complete shipment
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier  | C_OrderLine_ID | IsToRecompute |
-      | schedule_CR | orderLine_CR   | N             |
+      | Identifier  | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | schedule_CR | orderLine_CR   | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -102,8 +102,8 @@ Feature: Customer Return from Shipment
 
     # Step 2: Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute |
-      | schedule_CR2 | orderLine_CR2  | N             |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | schedule_CR2 | orderLine_CR2  | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -156,8 +156,8 @@ Feature: Customer Return from Shipment
 
     # Step 2: Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute |
-      | schedule_CR3 | orderLine_CR3  | N             |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | schedule_CR3 | orderLine_CR3  | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |

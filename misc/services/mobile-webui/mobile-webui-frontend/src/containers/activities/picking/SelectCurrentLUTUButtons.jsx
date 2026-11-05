@@ -1,6 +1,6 @@
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { trl } from '../../../utils/translations';
-import React from 'react';
+import React, { useState } from 'react';
 import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 import PropTypes from 'prop-types';
 import { reopenClosedLUScreenLocation, selectPickingTargetScreenLocation } from '../../../routes/picking';
@@ -12,13 +12,30 @@ import {
   PICKTO_STRUCTURE_TU,
 } from '../../../reducers/wfProcesses/picking/PickToStructure';
 import { useHasClosedHUs } from './useClosedHUs';
+import { useDispatch } from 'react-redux';
+import { advisePickingTarget } from '../../../api/picking';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { toastError } from '../../../utils/toast';
 
 const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, lineId, isUserEditable = true }) => {
   const history = useMobileNavigation();
+  const dispatch = useDispatch();
+  const [isAdvising, setIsAdvising] = useState(false);
 
-  const { luPickingTarget, tuPickingTarget, allowedPickToStructures, isAllowReopeningLU } = useCurrentPickingTargetInfo(
-    { wfProcessId, activityId, lineId }
-  );
+  const {
+    luPickingTarget,
+    tuPickingTarget,
+    lineCarrierAdviseAvailable,
+    lineCarrierAdviseReadOnly,
+    lineCarrierProductCaption,
+    lineCarrierAdviseDisabledReason,
+    jobCarrierAdviseAvailable,
+    jobCarrierAdviseReadOnly,
+    jobCarrierProductCaption,
+    jobCarrierAdviseDisabledReason,
+    allowedPickToStructures,
+    isAllowReopeningLU,
+  } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
 
   const { hasClosedLUs } = useHasClosedHUs({ wfProcessId, lineId });
 
@@ -41,6 +58,21 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
   const onSelectTUPickingTargetClick = () => {
     history.push(selectPickingTargetScreenLocation({ applicationId, wfProcessId, activityId, lineId, type: 'tu' }));
   };
+
+  const onAdviseCarrierClick = () => {
+    setIsAdvising(true);
+    advisePickingTarget({ wfProcessId, lineId })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setIsAdvising(false));
+  };
+
+  // Advise flags come from the line (line view) with a job-level fallback (header view).
+  const isCarrierAdviseAvailable = lineCarrierAdviseAvailable === true || jobCarrierAdviseAvailable === true;
+  const isCarrierAdviseReadOnly =
+    lineCarrierAdviseAvailable === true ? lineCarrierAdviseReadOnly === true : jobCarrierAdviseReadOnly === true;
+  const carrierProductCaption = lineCarrierProductCaption ?? jobCarrierProductCaption;
+  const carrierAdviseDisabledReason = lineCarrierAdviseDisabledReason ?? jobCarrierAdviseDisabledReason;
 
   return (
     <>
@@ -75,6 +107,31 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           disabled={!isUserEditable}
           onClick={onSelectTUPickingTargetClick}
         />
+      )}
+      {isCarrierAdviseAvailable && (
+        <ButtonWithIndicator
+          testId="advise-carrier-button"
+          captionKey="activities.picking.adviseCarrier"
+          disabled={!isUserEditable || isAdvising || isCarrierAdviseReadOnly}
+          onClick={onAdviseCarrierClick}
+        >
+          {(carrierProductCaption || carrierAdviseDisabledReason) && (
+            <div className="row is-full is-size-7">
+              <div className="carrier-advise-info">
+                {carrierProductCaption && (
+                  <div className="carrier-advise-line">
+                    <span data-testid="carrier-product-caption">{carrierProductCaption}</span>
+                  </div>
+                )}
+                {carrierAdviseDisabledReason && (
+                  <div className="carrier-advise-line advise-carrier-disabled-reason">
+                    <span data-testid="carrier-advise-disabled-reason">{carrierAdviseDisabledReason}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </ButtonWithIndicator>
       )}
     </>
   );

@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
-@ghActions:run_on_executor6
+@ghActions:run_on_executor9
 Feature: Production + Distribution material dispo scenarios
 ## F5100: Material Disposition
 
@@ -96,7 +96,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -141,7 +141,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -204,7 +204,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -283,7 +283,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -345,7 +345,7 @@ Feature: Production + Distribution material dispo scenarios
     #
     # Complete the Sales order and expect PP_Order_Candidate and DD_Order_Candidate to be generated
     When the order identified by SO is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | plant         | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |

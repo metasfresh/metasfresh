@@ -1,0 +1,1 @@
+Method <de.metas.inbound.mail.request.RequestFromInboundEMailListener.createRequest(de.metas.inbound.mail.config.InboundEMailConfig, de.metas.inbound.mail.InboundEMail)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (RequestFromInboundEMailListener.java:95)

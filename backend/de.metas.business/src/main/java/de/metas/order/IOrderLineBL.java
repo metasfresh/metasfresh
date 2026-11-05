@@ -25,6 +25,7 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
@@ -53,6 +54,13 @@ public interface IOrderLineBL extends ISingletonService
 	String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
 
 	List<I_C_OrderLine> getByOrderIds(final Set<OrderId> orderIds);
+
+	/**
+	 * Bulk counterpart of {@link #getOrderLineById(OrderLineId)}: the order lines with the given ids, in one round trip.
+	 * Ids without a matching record are simply absent from the result.
+	 */
+	@NonNull
+	List<I_C_OrderLine> getByIds(@NonNull Set<OrderLineId> orderLineIds);
 
 	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
 
@@ -242,4 +250,6 @@ public interface IOrderLineBL extends ISingletonService
 	void setTax(@NonNull org.compiere.model.I_C_OrderLine orderLine);
 
 	void setGrossWeightInKg(@NonNull I_C_OrderLine orderLine);
+
+	Money getLineGrossAmt(@NonNull I_C_OrderLine orderLine);
 }

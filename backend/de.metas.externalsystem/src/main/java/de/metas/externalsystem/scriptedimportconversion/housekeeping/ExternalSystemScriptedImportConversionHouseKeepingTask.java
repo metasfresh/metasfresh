@@ -24,7 +24,7 @@ package de.metas.externalsystem.scriptedimportconversion.housekeeping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
@@ -54,7 +54,7 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@NonNull
-	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+	private final ExternalSystemConfigRepository externalSystemConfigDAO;
 
 	@Override
 	public void executeTask()
@@ -73,8 +73,8 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 
 		for (final ExternalSystemParentConfig config : parentConfigList)
 		{
-			// Fire the Start intent per child; the process derives the concrete command (REST vs SFTP
-			// enable) from the child's own endpoint transport.
+			// Fire the Start intent per child; the process derives the concrete enable command from the
+			// child's own endpoint transport.
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " (Start) for ScriptedImportConversion config " + config.getChildConfig().getId());
 			ProcessInfo.builder()
 					.setAD_Process_ID(processId)

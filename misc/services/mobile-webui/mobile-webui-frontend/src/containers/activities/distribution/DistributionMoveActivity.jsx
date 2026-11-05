@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
@@ -10,12 +11,15 @@ import { trl } from '../../../utils/translations';
 import { distributionDropAllToScreenLocation, distributionPickFromScreenLocation } from '../../../routes/distribution';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import { postDistributionSwitchPickFromLocatorThunk } from '../../../apps/distribution/redux/postDistributionSwitchPickFromLocatorThunk';
+import { toastError } from '../../../utils/toast';
 
 const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
   const history = useMobileNavigation();
+  const dispatch = useDispatch();
   const lines = getLinesArrayFromActivity(activityState);
   const {
-    dataStored: { isUserEditable, hasLinesInTransit },
+    dataStored: { isUserEditable, hasLinesInTransit, canSwitchPickFromLocator },
   } = activityState;
 
   const onScannedCode = ({ scannedBarcode: huQRCode }) => {
@@ -30,6 +34,12 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
         activityId,
       })
     );
+  };
+
+  const onSwitchPickFromLocator = () => {
+    dispatch(postDistributionSwitchPickFromLocatorThunk({ wfProcessId })).catch((axiosError) => {
+      toastError({ axiosError });
+    });
   };
 
   return (
@@ -54,6 +64,15 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
           />
         );
       })}
+      {canSwitchPickFromLocator && (
+        <ButtonWithIndicator
+          testId="switchPickFromLocator-button"
+          data-pickfromlocator={lines[0]?.pickFromLocator?.id}
+          caption={trl('activities.distribution.switchPickFromLocator')}
+          disabled={!isUserEditable}
+          onClick={onSwitchPickFromLocator}
+        />
+      )}
       <ButtonWithIndicator
         testId="scanDropToLocator-button"
         caption={trl('activities.distribution.scanDropToLocator')}

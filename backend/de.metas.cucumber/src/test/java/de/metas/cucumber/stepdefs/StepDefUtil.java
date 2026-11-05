@@ -23,8 +23,10 @@
 package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
@@ -32,16 +34,18 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
@@ -54,7 +58,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * TODO: move all "waiting" methods to de.metas.common.util.{@link de.metas.common.util.TryAndWaitUtil}.
@@ -398,6 +405,63 @@ public class StepDefUtil
 		{
 			throw e;
 		}
+	}
+
+	/**
+	 * Runs {@code action} and asserts it is REFUSED with the given {@code AD_Message.ErrorCode}.
+	 * <p>
+	 * Asserting the error code — rather than merely that <i>some</i> exception was thrown — pins WHY the
+	 * action failed, so the step cannot pass because of an unrelated failure. Shared by the
+	 * "cannot be completed because of error code" steps of the various document types.
+	 */
+	public void assertRefusedWithErrorCode(@NonNull final String errorCode, @NonNull final Runnable action)
+	{
+		assertThatThrownBy(action::run)
+				.isInstanceOfSatisfying(AdempiereException.class,
+						exception -> assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode));
+	}
+
+	/**
+	 * Runs {@code action} and asserts it is REFUSED with a message containing {@code expectedMessagePart}.
+	 * <p>
+	 * Use only when the refusal has no stable {@code AD_Message.ErrorCode} to assert against instead
+	 * (see {@link #assertRefusedWithErrorCode}) — e.g. a composed, multi-part exception message such as
+	 * {@code ProductNotOnPriceListException}'s does not carry one.
+	 */
+	public void assertRefusedWithMessageContaining(@NonNull final String expectedMessagePart, @NonNull final Runnable action)
+	{
+		assertThatThrownBy(action::run)
+				.isInstanceOfSatisfying(AdempiereException.class,
+						exception -> assertThat(exception.getMessage()).as("Message of %s", exception).contains(expectedMessagePart));
+	}
+
+	/**
+	 * Runs {@code action} and asserts that it fails with an {@link AdempiereException} raised for {@code adMessage}, anywhere in the cause chain.
+	 * <p>
+	 * An exception counts as raised for {@code adMessage} if it was created with that {@link AdMessageKey} (matched via its error code),
+	 * or if it was created from the message's text, as in {@code new AdempiereException(msgBL.getMsg(ctx, key))}.
+	 *
+	 * @return the outermost matching exception, e.g. to check the parameters rendered into its message.
+	 * This can be a wrapper that inherited the error code of the exception it wraps.
+	 */
+	@NonNull
+	public AdempiereException assertThrowsWithAdMessage(@NonNull final ThrowingCallable action, @NonNull final AdMessageKey adMessage)
+	{
+		final Throwable thrown = catchThrowable(action);
+		assertThat(thrown).as("expected a failure with AD_Message %s", adMessage).isNotNull();
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final String expectedErrorCode = coalesce(msgBL.getErrorCode(adMessage), adMessage.toAD_Message());
+		final String messageText = msgBL.getMsg(Env.getCtx(), adMessage);
+		for (Throwable cause = thrown; cause != null; cause = cause.getCause())
+		{
+			if (cause instanceof AdempiereException
+					&& (expectedErrorCode.equals(((AdempiereException)cause).getErrorCode()) || cause.getMessage().contains(messageText)))
+			{
+				return (AdempiereException)cause;
+			}
+		}
+		throw new AssertionError("expected a failure with AD_Message " + adMessage + ", but was: " + thrown, thrown);
 	}
 
 	public List<String> splitByColon(@NonNull final String s)

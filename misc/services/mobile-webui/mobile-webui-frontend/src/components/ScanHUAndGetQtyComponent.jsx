@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
+import YesNoDialog from './dialogs/YesNoDialog';
 import Button from './buttons/Button';
 import ButtonWithIndicator from './buttons/ButtonWithIndicator';
 import GraiCapturePanel from './GraiCapturePanel';
@@ -13,10 +14,10 @@ import { toastError, toastErrorFromObj, toastNotification } from '../utils/toast
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
-import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
-import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 import Spinner from './Spinner';
 import { doFinally } from '../utils';
+import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
+import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
@@ -72,6 +73,7 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
+  const [confirmationDialogProps, setConfirmationDialogProps] = useState(undefined);
   const [isProcessing, setProcessing] = useState(false);
   // synchronous twin of isProcessing: state is only visible after the next render, so two taps handled
   // before that render would both pass a state-only check
@@ -224,17 +226,67 @@ const ScanHUAndGetQtyComponent = ({
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
 
+  // Mirrors GetQuantityDialog.fireOnQtyChange: isProcessing is what suppresses the scan target while
+  // the pick's POST is in flight, and it has to be cleared on the error branch too.
+  // The ref makes a second call before the next render a no-op (a state-only check would let both through).
+  const fireOnResult = (onResultPayload) => {
+    if (isResultInFlightRef.current) {
+      return undefined;
+    }
+    const clearInFlight = () => {
+      isResultInFlightRef.current = false;
+      setProcessing(false);
+    };
+
+    isResultInFlightRef.current = true;
+    setProcessing(true);
+    try {
+      const promise = onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
+      return doFinally(promise, clearInFlight);
+    } catch (error) {
+      clearInFlight();
+      throw error;
+    }
+  };
+
   const requestQtyOrReportResult = async ({ resolvedBarcodeData }) => {
     if (isAskForQty({ resolvedBarcodeData })) {
       setProgressStatus(STATUS_READ_QTY);
-    } else {
-      await onResult({
-        qty: 0,
-        reason: null,
-        scannedBarcode: resolvedBarcodeData.scannedBarcode,
-        resolvedBarcodeData: resolvedBarcodeData,
-      })?.catch?.((error) => toastErrorFromObj(error));
+      return;
     }
+
+    const onResultPayload = {
+      qty: 0,
+      reason: null,
+      scannedBarcode: resolvedBarcodeData.scannedBarcode,
+      resolvedBarcodeData: resolvedBarcodeData,
+    };
+
+    // The whole-TU mirror of the over-delivery handling GetQuantityDialog performs for the CU path.
+    // The comparison input is the TU's own content (qtyInitial), not the qty: 0 booking instruction above.
+    if (getConfirmationPromptForQty) {
+      const confirmationPrompt = await getConfirmationPromptForQty(resolvedBarcodeData.qtyInitial);
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({ promptQuestion: confirmationPrompt, onResultPayload });
+        return;
+      }
+    } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
+      // Gated on Number.isFinite: with no resolved qtyInitial there is nothing to compare, so the pick books
+      // unchecked - as on the prompt branch above, where an absent qty raises no confirmation either.
+      const qtyAboveMaxError = validateQtyAgainstMax({
+        qty: resolvedBarcodeData.qtyInitial,
+        qtyMax: resolvedBarcodeData.qtyMax,
+        uom: resolvedBarcodeData.uom,
+        invalidQtyMessageKey,
+      });
+      if (qtyAboveMaxError) {
+        // Thrown, not toasted: the caller (BarcodeScannerComponent / HUScanner) turns this into the
+        // error beep + toast every other rejected scan produces, and leaves the scanner armed.
+        throw qtyAboveMaxError;
+      }
+    }
+
+    await fireOnResult(onResultPayload);
   };
 
   const validateQtyEntered = (qtyEntered, uom) => {
@@ -246,16 +298,8 @@ const ScanHUAndGetQtyComponent = ({
     // Qty shall be less than or equal to qtyMax
     // NOTE: skip qtyMax validation when over-pick confirmation prompt is enabled,
     // because the prompt handles the over-delivery scenario instead
-    if (!getConfirmationPromptForQty && resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
-      const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
-        qty: qtyEntered - resolvedBarcodeData.qtyMax,
-        uom,
-      });
-
-      if (diff > 0) {
-        const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
-      }
+    if (!getConfirmationPromptForQty) {
+      return validateQtyAgainstMax({ qty: qtyEntered, qtyMax: resolvedBarcodeData.qtyMax, uom, invalidQtyMessageKey });
     }
 
     // OK
@@ -271,6 +315,7 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     productionDate,
     lotNo,
+    serialNos,
     productNo,
     barcodeType,
     isCloseTarget = false,
@@ -289,6 +334,7 @@ const ScanHUAndGetQtyComponent = ({
       bestBeforeDate,
       productionDate,
       lotNo,
+      serialNos,
       productNo,
       isCloseTarget,
       isDone,
@@ -310,28 +356,15 @@ const ScanHUAndGetQtyComponent = ({
     return onResult(result);
   };
 
-  // isProcessing suppresses the GRAI save button (and the scan target) while the pick's POST is in
-  // flight, so a second tap cannot book the same line again. It is cleared in a finally, so a failed
-  // pick gives the screen back to the operator.
-  const fireOnResult = (onResultPayload) => {
-    if (isResultInFlightRef.current) {
-      return undefined;
-    }
-    const clearInFlight = () => {
-      isResultInFlightRef.current = false;
-      setProcessing(false);
-    };
-
-    isResultInFlightRef.current = true;
-    setProcessing(true);
-    try {
-      const promise = onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
-      return doFinally(promise, clearInFlight);
-    } catch (error) {
-      clearInFlight();
-      throw error;
-    }
-  };
+  // The dialog knows the qty context (entered qty, rejected qty, reason); the caller's prompt may also
+  // need what the SCANNED HU is (e.g. the manufacturing issue screen names the HU's remainder, not the
+  // order-side shortfall), so `resolvedBarcodeData` is handed over too. Memoised because this wrapper is
+  // the first dependency of GetQuantityDialog's own `getConfirmationPrompt` useCallback; an inline arrow
+  // would invalidate that memo on every render of this component.
+  const getConfirmationPromptForQtyWithHU = useCallback(
+    (qtyInput, context) => getConfirmationPromptForQty(qtyInput, { ...context, resolvedBarcodeData }),
+    [getConfirmationPromptForQty, resolvedBarcodeData]
+  );
 
   const onCloseDialog = () => {
     setProgressStatus(STATUS_READ_HU_BARCODE);
@@ -340,10 +373,26 @@ const ScanHUAndGetQtyComponent = ({
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
 
-  // Early return (after every hook): the GRAI save button and the scanners are unmounted while the
-  // pick is in flight.
+  // Early return (after every hook), so the BarcodeScannerComponent below is unmounted while the pick
+  // is in flight: re-arming it would let the next scan book the same line a second time.
   if (isProcessing) {
     return <Spinner />;
+  }
+
+  // Early return (after every hook), so the BarcodeScannerComponent below is unmounted while the
+  // operator answers: two mounted scanners would both capture the next hardware scan.
+  // progressStatus is deliberately left untouched, so declining returns to the very step we came from.
+  if (confirmationDialogProps) {
+    return (
+      <YesNoDialog
+        promptQuestion={confirmationDialogProps.promptQuestion}
+        onYes={() => {
+          fireOnResult(confirmationDialogProps.onResultPayload);
+          setConfirmationDialogProps(undefined);
+        }}
+        onNo={() => setConfirmationDialogProps(undefined)}
+      />
+    );
   }
 
   switch (progressStatus) {
@@ -407,7 +456,9 @@ const ScanHUAndGetQtyComponent = ({
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           //
-          getConfirmationPromptForQty={getConfirmationPromptForQty}
+          // `undefined` when the caller passes no prompt callback: GetQuantityDialog's "no prop -> no
+          // prompt" contract is a truthiness check, which a bare wrapper would always satisfy.
+          getConfirmationPromptForQty={getConfirmationPromptForQty ? getConfirmationPromptForQtyWithHU : undefined}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={onCloseDialog}
@@ -511,6 +562,26 @@ export default ScanHUAndGetQtyComponent;
 // -----------------------------------------------------------------------------
 //
 //
+
+/**
+ * The one qtyAboveMax ceiling, shared by the CU path (validateQtyEntered) and the whole-TU path
+ * (requestQtyOrReportResult).
+ *
+ * @returns the translated error message, or null when the qty is within qtyMax.
+ */
+const validateQtyAgainstMax = ({ qty, qtyMax, uom, invalidQtyMessageKey }) => {
+  if (!qtyMax || qtyMax <= 0) {
+    return null;
+  }
+
+  const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({ qty: qty - qtyMax, uom });
+  if (diff <= 0) {
+    return null;
+  }
+
+  const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
+  return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
+};
 
 const isAskForQty = ({ resolvedBarcodeData }) => {
   const qrCode = resolvedBarcodeData?.qrCode;

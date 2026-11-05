@@ -79,6 +79,13 @@ public class PhoneNumber
 		this.phoneNumber = phoneNumber.trim();
 	}
 
+	public static String normalize(@NonNull final String phone)
+	{
+		final boolean hasLeadingPlus = phone.startsWith("+");
+		final String digits = phone.replaceAll("[^\\d]", "");
+		return hasLeadingPlus ? "+" + digits : digits;
+	}
+
 	@Override
 	@Deprecated
 	public String toString() {return getAsString();}

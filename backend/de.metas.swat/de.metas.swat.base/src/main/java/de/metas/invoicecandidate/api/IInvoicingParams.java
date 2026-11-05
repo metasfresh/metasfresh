@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
@@ -50,6 +51,7 @@ public interface IInvoicingParams
 	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
 	String PARA_IsDeliveryDateAsInvoiceDate = "IsDeliveryDateAsInvoiceDate";
 	String PARA_OverrideDueDate = "OverrideDueDate";
+	String PARA_IsPartialInvoice = "IsPartialInvoice";
 
 
 	/**
@@ -135,7 +137,13 @@ public interface IInvoicingParams
 	 *  Otherwise they are just prepared and left in the DocStatus IP (in progress);
 	 */
 	boolean isCompleteInvoices();
-	
+
+	/**
+	 * @return whether to generate partial (true) or final (false) invoices; null if not specified.
+	 */
+	@Nullable
+	Boolean getIsPartialInvoice();
+
 	default Map<String, ?> asMap()
 	{
 		final Builder<String, Object> result = ImmutableMap.builder();
@@ -159,6 +167,10 @@ public interface IInvoicingParams
 		if (getOverrideDueDate() != null)
 		{
 			result.put(InvoicingParams.PARA_OverrideDueDate, getOverrideDueDate());
+		}
+		if (getIsPartialInvoice() != null)
+		{
+			result.put(InvoicingParams.PARA_IsPartialInvoice, getIsPartialInvoice());
 		}
 
 		result.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());

@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
@@ -16,6 +16,7 @@ import entryTableData
   from '../../../../test_setup/fixtures/table/entry_table_data.json';
 
 import EntryTable from '../../../components/table/EntryTable';
+import MasterWidget from '../../../components/widget/MasterWidget';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
@@ -78,6 +79,38 @@ describe('EntryTable', () => {
     expect(html).toContain(`Tab1-Section2-Line1-Field2`);
     expect(html).toContain(
       `form-group row form-group-table widgetType-Composed widgetType-Composed-2 form-field-100006 form-field-100006_Info`
+    );
+  });
+
+  it('gives its widgets a way to show a refused number notification', () => {
+    const { windowId, documentId, tabId } = props;
+    const tableId = getTableId({ windowId, docId: documentId, tabId });
+    const store = mockStore(
+      createStore({
+        tables: {
+          length: 1,
+          [`${tableId}`]: {
+            windowId,
+            docId: documentId,
+            tabId,
+            rows: entryTableData.result,
+          },
+        },
+      })
+    );
+
+    const wrapper = mount(
+      <Provider store={store}>
+        <table>
+          <EntryTable {...props} />
+        </table>
+      </Provider>
+    );
+
+    const widgets = wrapper.find(MasterWidget);
+    expect(widgets.length).toBeGreaterThan(0);
+    widgets.forEach((widget) =>
+      expect(widget.prop('addNotification')).toEqual(expect.any(Function))
     );
   });
 });

@@ -107,7 +107,10 @@ export const postStepPicked = ({
   lotNo,
   setGrais,
   graiCodes,
+  setSerialNos,
+  serialNos,
   isCloseTarget = false,
+  isShelfLifeConfirmed = false,
 }) => {
   const realRejectedQtyReason =
     qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
@@ -132,7 +135,10 @@ export const postStepPicked = ({
     lotNo,
     setGrais,
     graiCodes,
+    setSerialNos,
+    serialNos,
     isCloseTarget,
+    isShelfLifeConfirmed,
   });
 };
 
@@ -144,6 +150,36 @@ export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQR
     pickingStepId: stepId,
     type: 'UNPICK',
     huQRCode,
+    unpickToTargetQRCode,
+  });
+};
+
+export const resolveUnpickByScannedCode = ({ wfProcessId, scannedCode }) => {
+  return axios
+    .post(`${apiBasePath}/picking/unpick/resolve`, { wfProcessId, scannedCode })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const postStepPartiallyUnPicked = ({
+  wfProcessId,
+  activityId,
+  lineId,
+  scannedCode,
+  unpickProductId,
+  unpickQty,
+  unpickToTargetQRCode,
+}) => {
+  // Job-scoped removal: no pickingStepId, so the backend reverses the product across the whole job.
+  // huQRCode is structurally required (non-blank) by the event DTO but unused on the product+qty
+  // subset path, so the scanned product code stands in for it.
+  return postEvent({
+    wfProcessId,
+    wfActivityId: activityId,
+    pickingLineId: lineId,
+    type: 'UNPICK',
+    huQRCode: scannedCode,
+    unpickProductId,
+    unpickQty,
     unpickToTargetQRCode,
   });
 };
@@ -182,9 +218,9 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const getScannedHUQRCodeInfo = ({ qrCode, productNo }) => {
+export const getScannedHUQRCodeInfo = ({ qrCode, productNo, wfProcessId, lineId }) => {
   return axios
-    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode, productNo })
+    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode, productNo, wfProcessId, lineId })
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -207,5 +243,17 @@ export const getQtyAvailable = ({ wfProcessId }) => {
 export const completePickingJob = ({ wfProcessId }) => {
   return axios
     .post(`${apiBasePath}/picking/job/${wfProcessId}/complete`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const postMassPrintingScan = ({ scannedCode }) => {
+  return axios
+    .post(`${apiBasePath}/picking/massPrinting/scan`, { scannedCode })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const advisePickingTarget = ({ wfProcessId, lineId }) => {
+  return axios
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/advise`, { lineId }))
     .then((response) => unboxAxiosResponse(response));
 };

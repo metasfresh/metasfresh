@@ -151,7 +151,7 @@ public class M_ReceiptSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateHeaderAggregationKey(final I_M_ReceiptSchedule sched)
 	{
-		if (sched.isProcessed() || sched.isIsClosed())
+		if (sched.isProcessed() || sched.isClosed())
 		{
 			return;
 		}

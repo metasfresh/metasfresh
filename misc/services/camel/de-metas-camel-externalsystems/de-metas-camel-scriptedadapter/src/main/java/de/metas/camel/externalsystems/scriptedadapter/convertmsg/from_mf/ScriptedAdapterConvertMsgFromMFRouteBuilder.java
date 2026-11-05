@@ -37,6 +37,7 @@ import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessToken;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessTokenRequest;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthIdentity;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthTokenManager;
+import de.metas.camel.externalsystems.scriptedadapter.oauth2.OAuth2TokenManager;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
@@ -90,6 +91,17 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 {
 	public static final String HEADER_AUTH_TYPE = "AuthType";
 	public static final String HEADER_TRANSPORT_TYPE = "TransportType";
+
+	/**
+	 * The transport types an endpoint can use to send data OUT of metasfresh. Not every transport an
+	 * endpoint can be configured with is one of them: a file-polling transport only ever brings data IN,
+	 * and an endpoint configured with one carries none of the settings (target URL, HTTP method,
+	 * authentication) an outbound call needs — see {@link #extractTransportTypeToHeader(Exchange)}.
+	 */
+	@VisibleForTesting
+	static final String TRANSPORT_TYPE_HTTP = "HTTP";
+	@VisibleForTesting
+	static final String TRANSPORT_TYPE_SFTP = "SFTP";
 
 	public static final String ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID = "ScriptedExportConversion-ConvertMsgFromMF";
 
@@ -148,7 +160,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	private final OAuthTokenManager oauthTokenManager;
 
 	@NonNull
+	private final OAuth2TokenManager oauth2TokenManager;
+
+	@NonNull
 	private final SftpDeliveryProcessor sftpDeliveryProcessor;
+
+	private final FileUploadProcessor fileUploadProcessor = new FileUploadProcessor();
 
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
@@ -193,7 +210,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 					.process(this::extractTransportTypeToHeader)
 					.choice()
 						// SFTP transport branch
-						.when(header(HEADER_TRANSPORT_TYPE).isEqualTo("SFTP"))
+						.when(header(HEADER_TRANSPORT_TYPE).isEqualTo(TRANSPORT_TYPE_SFTP))
 							.log("Using SFTP transport")
 							.process(sftpDeliveryProcessor)
 							.process(this::prepareSftpAttachmentRequest)
@@ -207,6 +224,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 									.process(this::prepareHttpRequestForTokenAuth)
 								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth))
 									.process(this::prepareHttpRequestForOAuth)
+								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth2))
+									.process(this::prepareHttpRequestForOAuth2)
 								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.SAS))
 									.process(this::prepareHttpRequestForSasAuth)
 								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.Basic))
@@ -215,13 +234,20 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 									.throwException(new RuntimeCamelException("Unsupported authentication type"))
 							.end()
 
-							// Make the rest-call and handle the case of a stale OAuth token
+							// Make the rest-call and handle the case of a stale OAuth/OAuth2 token
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
 							.choice()
 								.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
 									.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
 									.process(this::forceRefreshOAuthToken)
+									.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 									.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
+								.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth2'"))
+									.log(LoggingLevel.WARN, "Received 401, refreshing OAuth2 token and retrying once...")
+									.process(this::forceRefreshOAuth2Token)
+									.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
+									.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_OAUTH2_RETRY")
 							.end()
 
 							// Notify metasfresh that the export succeeded (2xx). Fires exactly once after the final
@@ -259,7 +285,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 					+ "}/${exchangeProperty." + EXCHANGE_PROPERTY_FAN_OUT_TOTAL + "}")
 			.process(this::extractTransportTypeToHeader)
 			.choice()
-				.when(header(HEADER_TRANSPORT_TYPE).isEqualTo("SFTP"))
+				.when(header(HEADER_TRANSPORT_TYPE).isEqualTo(TRANSPORT_TYPE_SFTP))
 					.process(sftpDeliveryProcessor)
 					.process(this::prepareSftpAttachmentRequest)
 					.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
@@ -270,6 +296,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 							.process(this::prepareHttpRequestForTokenAuth)
 						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth))
 							.process(this::prepareHttpRequestForOAuth)
+						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth2))
+							.process(this::prepareHttpRequestForOAuth2)
 						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.SAS))
 							.process(this::prepareHttpRequestForSasAuth)
 						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.Basic))
@@ -277,12 +305,19 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 						.otherwise()
 							.throwException(new RuntimeCamelException("Unsupported authentication type"))
 					.end()
+					.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 					.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT")
 					.choice()
 						.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
 							.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
 							.process(this::forceRefreshOAuthToken)
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT_RETRY")
+						.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth2'"))
+							.log(LoggingLevel.WARN, "Received 401, refreshing OAuth2 token and retrying once...")
+							.process(this::forceRefreshOAuth2Token)
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
+							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT_OAUTH2_RETRY")
 					.end()
 
 					// Notify metasfresh that this fan-out element succeeded (2xx). Fires exactly once after
@@ -581,12 +616,30 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		}
 	}
 
+	/**
+	 * Resolves the endpoint's transport type onto the header the route branches on, and rejects one that
+	 * cannot send data out of metasfresh.
+	 * <p>
+	 * The branch below is SFTP-or-otherwise, so without this check an inbound-only transport would be
+	 * treated as HTTP and fail somewhere down the HTTP branch on an absent target URL, method or
+	 * authentication — none of which such an endpoint carries — leaving the operator with an error that
+	 * says nothing about the actual misconfiguration.
+	 */
 	private void extractTransportTypeToHeader(@NonNull final Exchange exchange)
 	{
 		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
-		final String transportType = msgFromMfContext.getEndpointParameters().getTransportType();
+		final String configuredTransportType = msgFromMfContext.getEndpointParameters().getTransportType();
 		// Default to HTTP if not specified
-		exchange.getIn().setHeader(HEADER_TRANSPORT_TYPE, Check.isBlank(transportType) ? "HTTP" : transportType);
+		final String transportType = Check.isBlank(configuredTransportType) ? TRANSPORT_TYPE_HTTP : configuredTransportType;
+
+		if (!TRANSPORT_TYPE_HTTP.equals(transportType) && !TRANSPORT_TYPE_SFTP.equals(transportType))
+		{
+			throw new RuntimeCamelException("Transport type '" + transportType + "' cannot send data out of metasfresh:"
+					+ " it is an inbound-only transport. Outbound endpoints support "
+					+ TRANSPORT_TYPE_HTTP + " and " + TRANSPORT_TYPE_SFTP + " only.");
+		}
+
+		exchange.getIn().setHeader(HEADER_TRANSPORT_TYPE, transportType);
 	}
 
 	private void extractAuthTypeToHeader(@NonNull final Exchange exchange)
@@ -644,6 +697,48 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void prepareHttpRequestForOAuth2(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.OAuth2);
+		Check.assumeNotEmpty(endpointParameters.getOauthTokenUrl(), "oauthTokenUrl must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getClientId(), "clientId must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getUser(), "user must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getPassword(), "password must not be empty for OAuth2 auth");
+
+		final String accessToken = oauth2TokenManager.getAccessToken(
+				endpointParameters.getOauthTokenUrl(),
+				endpointParameters.getOauthScope(),
+				endpointParameters.getClientId(),
+				endpointParameters.getUser(),
+				endpointParameters.getPassword());
+
+		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().setHeader(AUTHORIZATION, "Bearer " + accessToken);
+		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
+		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void forceRefreshOAuth2Token(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+
+		// Invalidate the cached token so the next request will get a fresh token
+		oauth2TokenManager.invalidateToken(
+				endpointParameters.getOauthTokenUrl(),
+				endpointParameters.getClientId(),
+				endpointParameters.getUser());
+
+		// Re-prepare request with fresh token
+		prepareHttpRequestForOAuth2(exchange);
 	}
 
 	private void prepareHttpRequestForBasicAuth(@NonNull final Exchange exchange)

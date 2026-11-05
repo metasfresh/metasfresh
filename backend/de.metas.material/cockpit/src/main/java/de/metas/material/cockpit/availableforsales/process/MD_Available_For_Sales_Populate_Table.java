@@ -48,7 +48,7 @@ public class MD_Available_For_Sales_Populate_Table extends JavaProcess
 
 		while (productsMeantToBeSold.hasNext())
 		{
-			availableForSalesService.syncAvailableForSalesForProduct(productsMeantToBeSold.next());
+			availableForSalesService.syncAvailableForSalesForProduct(productsMeantToBeSold.next(), getClientId());
 		}
 
 		return MSG_OK;

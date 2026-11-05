@@ -44,6 +44,8 @@ public class JsonWarehouseResponse
 		@NonNull String y;
 		@NonNull String z;
 		@NonNull String x1;
+		@Nullable Integer priorityNo;
+		@Nullable Boolean isGroundLocator;
 	}
 
 }

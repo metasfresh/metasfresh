@@ -1,5 +1,4 @@
 import { ViewHeader } from '../ViewHeader';
-import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -13,6 +12,7 @@ import * as uiTrace from '../../utils/ui_trace';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 import { computeId } from '../../utils/testing_support';
 import { useMobileLocation } from '../../hooks/useMobileLocation';
+import ShelfLifeConfirmDialogHost from '../../apps/picking/ShelfLifeConfirmDialogHost';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useMobileNavigation();
@@ -58,7 +58,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
     return (
       <div className="app-container app-container-fullscreen">
         <Component />
-        <ScreenToaster />
+        <ShelfLifeConfirmDialogHost />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
       <div className="app-content">
         <ViewHeader />
         <Component />
-        <ScreenToaster />
+        <ShelfLifeConfirmDialogHost />
       </div>
       <div className="app-footer">
         <div className="columns is-mobile">
