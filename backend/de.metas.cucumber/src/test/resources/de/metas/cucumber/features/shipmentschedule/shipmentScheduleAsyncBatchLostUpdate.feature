@@ -134,13 +134,15 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
     And complete picking job
     And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
     When the earlier loaded copy of M_ShipmentSchedule shipmentSchedule2 is recomputed from its order and saved
-    And the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+    And the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction as shipmentWorkPackage
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | shipmentSchedule1                | shipment1             | CO            |
       | shipmentSchedule2                | shipment1             | CO            |
       | shipmentSchedule3                | shipment1             | CO            |
+    # the stale save did not write the order's empty batch over the run's batch
+    And M_ShipmentSchedule shipmentSchedule2 carries the C_Async_Batch_ID of the C_Queue_WorkPackage shipmentWorkPackage
 
 
   # ###################################################################################################################

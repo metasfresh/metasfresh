@@ -61,6 +61,7 @@ import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.cucumber.stepdefs.workpackage.C_Queue_WorkPackage_StepDefData;
 import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
@@ -248,6 +249,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
+	@NonNull private final C_Queue_WorkPackage_StepDefData workPackageTable;
 
 	private final TestContext testContext;
 
@@ -1282,6 +1284,29 @@ public class M_ShipmentSchedule_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500,
 				() -> loadUncachedCopy(shipmentScheduleIdentifier).getC_Async_Batch_ID() <= 0,
 				() -> logger.info("C_Async_Batch_ID of M_ShipmentSchedule {}: {}", shipmentScheduleIdentifier, loadUncachedCopy(shipmentScheduleIdentifier).getC_Async_Batch_ID()));
+	}
+
+	/**
+	 * Asserts that the schedule, read from the DB, still carries the async batch of the given workpackage.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, C_Queue_WorkPackage_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And M_ShipmentSchedule shipmentSchedule2 carries the C_Async_Batch_ID of the C_Queue_WorkPackage shipmentWorkPackage
+	 * </pre>
+	 */
+	@And("^M_ShipmentSchedule (.*) carries the C_Async_Batch_ID of the C_Queue_WorkPackage (.*)$")
+	public void schedule_carries_async_batch_of_workpackage(
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String workPackageIdentifier)
+	{
+		final int workPackageAsyncBatchId = workPackageTable.get(workPackageIdentifier).getC_Async_Batch_ID();
+		assertThat(workPackageAsyncBatchId).as("C_Async_Batch_ID of C_Queue_WorkPackage %s", workPackageIdentifier).isGreaterThan(0);
+
+		assertThat(loadUncachedCopy(shipmentScheduleIdentifier).getC_Async_Batch_ID())
+				.as("C_Async_Batch_ID of M_ShipmentSchedule %s", shipmentScheduleIdentifier)
+				.isEqualTo(workPackageAsyncBatchId);
 	}
 
 	@NonNull
