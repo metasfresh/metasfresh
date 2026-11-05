@@ -100,7 +100,7 @@ public class CreateHUFromScannedCodeCommand
 				.description(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate(adLanguage))
 				.weightInKg(labelValues.getWeightKgForCU())
 				// picking finds the booked HU by this label string (HU_QRCode attribute), as the manufacturing receipt stores it
-				.huQRCodeAttributeValue(scannedCode.getAsString())
+				.huQRCodeAttributeValue(scannedCode)
 				.build());
 	}
 

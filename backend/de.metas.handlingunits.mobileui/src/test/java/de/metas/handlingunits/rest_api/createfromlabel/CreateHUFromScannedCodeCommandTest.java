@@ -291,7 +291,7 @@ class CreateHUFromScannedCodeCommandTest
 		create(requestOf("P1LOT001271231251101"));
 
 		assertThat(huQtyService.requests).hasSize(1);
-		assertThat(huQtyService.requests.get(0).getHuQRCodeAttributeValue()).isEqualTo("P1LOT001271231251101");
+		assertThat(huQtyService.requests.get(0).getHuQRCodeAttributeValue()).isEqualTo(ScannedCode.ofString("P1LOT001271231251101"));
 	}
 
 	/**

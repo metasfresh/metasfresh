@@ -895,9 +895,15 @@ public class PickingJobPickCommand
 		{
 			pickingUnit.assertIsCU();
 
-			if (isPickWholeTU)
+			final I_M_HU pickFromHURecord = huService.getById(pickFromHU.getId());
+			if (isPickWholeTU && huService.isVirtual(pickFromHURecord))
 			{
-				final I_M_HU pickFromHURecord = huService.getById(pickFromHU.getId());
+				// A scanned custom label asks for "the whole HU", but a virtual HU (CU, e.g. one booked from a label in the HU Manager) is no TU to extract:
+				// pick the CU quantity like a normal CU pick.
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/true);
+			}
+			else if (isPickWholeTU)
+			{
 				packedHUs = pickWholeTUs(productId, pickFromHURecord, QtyTU.ONE);
 			}
 			else

@@ -34,6 +34,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -68,6 +69,12 @@ class HUQtyServiceWeightTest
 {
 	private static final ZonedDateTime MOVEMENT_DATE = ZonedDateTime.of(2026, 1, 15, 10, 30, 0, 0, ZoneId.of("Europe/Berlin"));
 
+	private IDocTypeDAO docTypeDAO;
+	private IQueryBL queryBL;
+	private IHandlingUnitsBL handlingUnitsBL;
+	private IHUContextFactory huContextFactory;
+	private ITrxManager trxManager;
+
 	private HUTestHelper helper;
 	private HUQtyService huQtyService;
 	private ProductId productId;
@@ -78,12 +85,17 @@ class HUQtyServiceWeightTest
 	@BeforeEach
 	void beforeEach()
 	{
-		helper = HUTestHelper.newInstanceOutOfTrx();
+		helper = HUTestHelper.newInstanceOutOfTrx(); // inits the test environment: services are looked up only after it
+		docTypeDAO = Services.get(IDocTypeDAO.class);
+		queryBL = Services.get(IQueryBL.class);
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		huContextFactory = Services.get(IHUContextFactory.class);
+		trxManager = Services.get(ITrxManager.class);
 
 		final InventoryService inventoryService = Mockito.spy(InventoryService.newInstanceForUnitTesting());
 		huQtyService = new HUQtyService(inventoryService, HUQRCodesService.newInstanceForUnitTesting());
 
-		Services.get(IDocTypeDAO.class).createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
+		docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
 				.docBaseType(DocBaseType.MaterialPhysicalInventory)
 				.docSubType(DocSubType.SingleHUInventory)
@@ -122,7 +134,7 @@ class HUQtyServiceWeightTest
 
 		// completing the inventory would create the HU; here only its effect is simulated: the completed SINGLE_HU line points to the CU
 		doAnswer(invocation -> {
-			final I_M_InventoryLine line = Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class).create().firstOnlyNotNull(I_M_InventoryLine.class);
+			final I_M_InventoryLine line = queryBL.createQueryBuilder(I_M_InventoryLine.class).create().firstOnlyNotNull(I_M_InventoryLine.class);
 			line.setM_HU_ID(cuId.getRepoId());
 			saveRecord(line);
 			return null;
@@ -151,7 +163,7 @@ class HUQtyServiceWeightTest
 	@Test
 	void createHUFromInventory_withLabel_storesItInTheHUQRCodeAttribute()
 	{
-		inCallersTrx(request(null, "LABEL-123"));
+		inCallersTrx(request(null, ScannedCode.ofString("LABEL-123")));
 
 		assertThat(qrCodeAttributeOf(cuId)).isEqualTo("LABEL-123");
 	}
@@ -166,15 +178,15 @@ class HUQtyServiceWeightTest
 
 	private String qrCodeAttributeOf(final HuId huId)
 	{
-		final I_M_HU hu = Services.get(IHandlingUnitsBL.class).getById(huId);
-		return Services.get(IHUContextFactory.class).createMutableHUContext().getHUAttributeStorageFactory().getAttributeStorage(hu)
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		return huContextFactory.createMutableHUContext().getHUAttributeStorageFactory().getAttributeStorage(hu)
 				.getValueAsString(HUAttributeConstants.ATTR_QRCode);
 	}
 
 	/** the method runs in the caller's transaction (HU attributes are written in it), see its Javadoc */
 	private CreatedHU inCallersTrx(final CreateHUFromInventoryRequest request)
 	{
-		return Services.get(ITrxManager.class).callInThreadInheritedTrx(() -> huQtyService.createHUFromInventory(request));
+		return trxManager.callInThreadInheritedTrx(() -> huQtyService.createHUFromInventory(request));
 	}
 
 	private CreateHUFromInventoryRequest request(final BigDecimal weightInKg)
@@ -182,7 +194,7 @@ class HUQtyServiceWeightTest
 		return request(weightInKg, null);
 	}
 
-	private CreateHUFromInventoryRequest request(final BigDecimal weightInKg, final String label)
+	private CreateHUFromInventoryRequest request(final BigDecimal weightInKg, final ScannedCode label)
 	{
 		return CreateHUFromInventoryRequest.builder()
 				.date(MOVEMENT_DATE)
@@ -197,8 +209,8 @@ class HUQtyServiceWeightTest
 
 	private BigDecimal weightNetOf(final HuId huId)
 	{
-		final I_M_HU hu = Services.get(IHandlingUnitsBL.class).getById(huId);
-		final IWeightable weightable = Weightables.wrap(Services.get(IHUContextFactory.class)
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IWeightable weightable = Weightables.wrap(huContextFactory
 				.createMutableHUContext()
 				.getHUAttributeStorageFactory()
 				.getAttributeStorage(hu));
