@@ -695,8 +695,9 @@ public class MobileUI_Picking_StepDef
 	 * </pre>
 	 */
 	@When("close the {word} picking target")
-	public void closePickingTargetStep(@NonNull final String targetType)
+	public void closePickingTargetStep(@NonNull final String targetType) throws InterruptedException
 	{
+		waitUntilPickingJobSchedulesValid();
 		closePickingTarget(targetType);
 	}
 
