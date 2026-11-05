@@ -11,6 +11,7 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_Inventory_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -34,6 +35,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inventory.InventoryCandidateService;
 import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -66,6 +68,8 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mmovement.MovementLineQuery;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -111,7 +115,9 @@ public class AssertExpectationsCommandServices
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final InventoryCandidateService inventoryCandidateService;
 	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -184,6 +190,11 @@ public class AssertExpectationsCommandServices
 	public IHUProductStorage getSingleProductStorage(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.getSingleHUProductStorage(hu);
+	}
+
+	public ImmutableAttributeSet getAsiAttributes(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
 	}
 
 	public ImmutableAttributeSet getAttributes(@NonNull final I_M_HU hu)
@@ -286,6 +297,16 @@ public class AssertExpectationsCommandServices
 				.filter(line -> line.getM_HU_ID() == huId.getRepoId())
 				.sorted(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
+	{
+		return inventoryCandidateService.getInventoryCandidatesByHUId(huId);
+	}
+
+	public int countActiveHUsByProductId(@NonNull final ProductId productId)
+	{
+		return handlingUnitsBL.countActiveHUsByProductId(productId);
 	}
 
 	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)

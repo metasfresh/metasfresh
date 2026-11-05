@@ -38,7 +38,7 @@ import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderQuery;
+import de.metas.order.OrderCriteria;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
@@ -282,13 +282,13 @@ public class JsonPaymentService
 
 	private Optional<I_C_Order> getOrderIdFromIdentifier(final IdentifierString orderIdentifier, final OrgId orgId)
 	{
-		return orderDAO.retrieveByOrderCriteria(createOrderQuery(orderIdentifier, orgId));
+		return orderDAO.retrieveByOrderCriteria(createOrderCriteria(orderIdentifier, orgId));
 	}
 
-	private OrderQuery createOrderQuery(final IdentifierString identifierString, final OrgId orgId)
+	private OrderCriteria createOrderCriteria(final IdentifierString identifierString, final OrgId orgId)
 	{
 		final IdentifierString.Type type = identifierString.getType();
-		final OrderQuery.OrderQueryBuilder builder = OrderQuery.builder().orgId(orgId);
+		final OrderCriteria.OrderCriteriaBuilder builder = OrderCriteria.builder().orgId(orgId);
 		if (IdentifierString.Type.METASFRESH_ID.equals(type))
 		{
 			return builder
