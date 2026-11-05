@@ -542,7 +542,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setSEPA_Export_ID(header.getSEPA_Export_ID());
 		exportLine.setIsGroupLine(true);
 		exportLine.setDescription(refList.getAggregatedDescription(invoiceIds -> invoiceIds.stream()
-				.map(invoicesById::get)
+				.map(invoiceId -> Check.assumeNotNull(invoicesById.get(invoiceId), "Invoice {} is loaded", invoiceId))
 				.collect(ImmutableList.toImmutableList())));
 		exportLine.setStructuredRemittanceInfo(refList.getAggregatedRemittanceInfo());
 		exportLine.setNumberOfReferences(refList.size());
