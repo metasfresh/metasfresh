@@ -288,7 +288,7 @@ $F{shiplocation}
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{Reference} + ": " + $F{reference}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Reference} + " " + $F{reference}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="13">
