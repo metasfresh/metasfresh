@@ -121,11 +121,11 @@ test('GS1 label books a CU, picking refuses the same GS1 label as the wrong code
 });
 
 // noinspection JSUnusedLocalSymbols
-test('bracketed UDI label (fixed-position format) books a CU, picking refuses the same label with "no HU with this attribute", nothing picked', async ({ page }) => {
+test('bracketed UDI label (fixed-position format) books a CU, picking by the same label finds the booked HU and picks it', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
-    allure.severity('normal');
+    allure.severity('critical');
 
     const gtin = uniqueGtin14('8');
     const label = bracketedLabel(gtin);
@@ -136,15 +136,10 @@ test('bracketed UDI label (fixed-position format) books a CU, picking refuses th
     await goBackToApplications();
     await startPickingJob({ masterdata });
 
-    // the label code is not stored on the new HU, so the picking lookup by the HU_QRCode attribute finds no HU
-    // (message de.metas.handlingunits.picking.job.QR_CODE_HU_NOT_FOUND_BY_ATTRIBUTE, shown here by its key)
-    await expectErrorToast('Bracketed label is refused by picking: no HU carries the code', async () => {
-        await PickingJobScreen.pickHU({ qrCode: label, isScanDirectly: true, expectedPickDirectly: true });
-    }, ({ textContent }) => {
-        expect(textContent).toContain('PICKING_QR_HU_NOT_FOUND_BY_ATTRIBUTE');
-    });
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' });
-    await Backend.expect({ hus: { [huId]: { huStatus: 'A' } } });
+    // the label code is stored on the new HU (HU_QRCode attribute), so the picking lookup finds it
+    await PickingJobScreen.pickHU({ qrCode: label, isScanDirectly: true, expectedPickDirectly: true });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '' });
+    await Backend.expect({ hus: { [huId]: { huStatus: 'E' } } });
 });
 
 // noinspection JSUnusedLocalSymbols

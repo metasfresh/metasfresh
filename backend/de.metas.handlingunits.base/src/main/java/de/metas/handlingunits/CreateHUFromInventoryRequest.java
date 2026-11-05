@@ -26,4 +26,6 @@ public class CreateHUFromInventoryRequest
 	@Nullable String description;
 	/** the net weight (kg) to set on the new CU after the inventory completed; {@code null}: the weight is not touched */
 	@Nullable Quantity weightInKg;
+	/** the scanned label string to store in the new HU's {@code HU_QRCode} attribute, so picking finds the HU by that label; {@code null}: not stored */
+	@Nullable String huQRCodeAttributeValue;
 }

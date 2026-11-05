@@ -285,13 +285,15 @@ public class PickingJobHUService
 
 	public Optional<HuId> getFirstHUIdByQRCodeAttribute(
 			@NonNull final IHUQRCode scannedQRCode,
-			@NonNull final ProductId productId)
+			@NonNull final ProductId productId,
+			@NonNull final WarehouseId warehouseId)
 	{
 		return handlingUnitsBL.createHUQueryBuilder()
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductId(productId)
 				.addOnlyWithAttribute(HUAttributeConstants.ATTR_QRCode, scannedQRCode.getAsString())
+				.addOnlyInLocatorIds(warehouseService.getLocatorIdsOfTheSamePickingGroup(warehouseId))
 				.setExcludeReserved()
 				.firstId();
 	}

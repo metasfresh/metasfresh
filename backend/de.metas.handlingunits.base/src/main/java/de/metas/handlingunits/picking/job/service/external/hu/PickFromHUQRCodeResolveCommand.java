@@ -118,7 +118,7 @@ class PickFromHUQRCodeResolveCommand
 			{
 				return ExplainedOptional.emptyBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(productId));
 			}
-			return findHUByQRCodeAttribute(pickFromHUQRCode, productId);
+			return findHUByQRCodeAttribute(pickFromHUQRCode, productId, warehouseId);
 		}
 		else
 		{
@@ -151,9 +151,10 @@ class PickFromHUQRCodeResolveCommand
 
 	private ExplainedOptional<HUInfo> findHUByQRCodeAttribute(
 			@NonNull final IHUQRCode scannedQRCode,
-			@NonNull final ProductId productId)
+			@NonNull final ProductId productId,
+			@NonNull final WarehouseId warehouseId)
 	{
-		final HuId huId = huService.getFirstHUIdByQRCodeAttribute(scannedQRCode, productId).orElse(null);
+		final HuId huId = huService.getFirstHUIdByQRCodeAttribute(scannedQRCode, productId, warehouseId).orElse(null);
 		if (huId == null)
 		{
 			return ExplainedOptional.emptyBecause(ERR_QR_HU_NotFoundByAttribute);

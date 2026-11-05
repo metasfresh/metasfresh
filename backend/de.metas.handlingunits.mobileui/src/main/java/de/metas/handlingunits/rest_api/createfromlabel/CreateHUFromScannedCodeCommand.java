@@ -99,6 +99,8 @@ public class CreateHUFromScannedCodeCommand
 				// origin marker on the inventory document, in the language of the creating user; "Change Qty" books the same inventory sub-type
 				.description(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate(adLanguage))
 				.weightInKg(labelValues.getWeightKgForCU())
+				// picking finds the booked HU by this label string (HU_QRCode attribute), as the manufacturing receipt stores it
+				.huQRCodeAttributeValue(scannedCode.getAsString())
 				.build());
 	}
 

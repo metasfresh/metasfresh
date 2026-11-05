@@ -280,6 +280,21 @@ class CreateHUFromScannedCodeCommandTest
 	}
 
 	/**
+	 * Failure scenario: picking finds the booked HU by the scanned label string ({@code HU_QRCode} attribute); if the create step does not
+	 * hand the scanned label to the new HU, the label that booked the stock can never be picked.
+	 */
+	@Test
+	void scannedLabel_isHandedOverToBeStoredOnTheNewHU() throws IOException
+	{
+		newCustomLabelFormat();
+
+		create(requestOf("P1LOT001271231251101"));
+
+		assertThat(huQtyService.requests).hasSize(1);
+		assertThat(huQtyService.requests.get(0).getHuQRCodeAttributeValue()).isEqualTo("P1LOT001271231251101");
+	}
+
+	/**
 	 * Failure scenario: an attribute the installation does not define (here the production date) must not fail the booking: the
 	 * preview does not show it either, so it is neither shown nor stored.
 	 */

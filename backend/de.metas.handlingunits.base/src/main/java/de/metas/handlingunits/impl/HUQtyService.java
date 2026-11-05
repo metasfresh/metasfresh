@@ -42,6 +42,8 @@ import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCre
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -223,7 +225,25 @@ public class HUQtyService
 		final HuId huId = CollectionUtils.singleElement(inventoryService.getById(inventoryHeader.getId()).getHuIds());
 
 		setWeightNet(huId, request.getProductId(), request.getWeightInKg());
+		setQRCodeAttribute(huId, request.getHuQRCodeAttributeValue());
 		return new CreatedHU(huId, huQRCodesService.getQRCodeByHuId(huId));
+	}
+
+	private void setQRCodeAttribute(@NonNull final HuId huId, @Nullable final String value)
+	{
+		if (value == null)
+		{
+			return;
+		}
+
+		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(huId);
+		if (!huAttributes.hasAttribute(HUAttributeConstants.ATTR_QRCode))
+		{
+			return;
+		}
+
+		huAttributes.setSaveOnChange(true);
+		huAttributes.setValue(HUAttributeConstants.ATTR_QRCode, value);
 	}
 
 	private void setWeightNet(@NonNull final HuId cuId, @NonNull final ProductId productId, @Nullable final Quantity weightInKg)
