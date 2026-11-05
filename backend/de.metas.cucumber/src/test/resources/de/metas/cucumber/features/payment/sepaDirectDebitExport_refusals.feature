@@ -110,12 +110,10 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | SEPA-Lastschrift-Export nicht erstellt  |
-      | dd_tc5_                                 |
-      | DE89370400440532013000                  |
-      | kein aktives Lastschriftmandat          |
-      | unterschriebene Mandat des Zahlers      |
-      | Zeile aus der Zahlungsauswahl entfernen |
+      | @de.metas.payment.sepa.DirectDebitMandateCheckFailed@ |
+      | dd_tc5_                                               |
+      | DE89370400440532013000                                |
+      | @de.metas.payment.sepa.DirectDebitMandateMissing@     |
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
@@ -154,8 +152,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with a message containing:
-      | SEPA Gläubiger-Identifikationsnummer |
-      | DE02100100100006820101               |
+      | @de.metas.payment.sepa.C_BP_BankAccount_SEPA_CreditorIdentifierNotSet@ |
+      | DE02100100100006820101                                                 |
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
@@ -191,14 +189,10 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | dd_tc19_                                |
-      | MREF-TC19-001                           |
-      | <RefDate>                               |
-      | abgelaufen                              |
-      | Letzte Nutzung                          |
-      | korrigieren                             |
-      | alte Mandat deaktivieren                |
-      | Zeile aus der Zahlungsauswahl entfernen |
+      | dd_tc19_                                          |
+      | MREF-TC19-001                                     |
+      | <RefDate>                                         |
+      | @de.metas.payment.sepa.DirectDebitMandateExpired@ |
     And the pay selection "paySelection" has no SEPA_Export
 
     Examples:
@@ -291,9 +285,9 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | dd_tc21a_c_                    |
-      | DE02120300000000202051         |
-      | kein aktives Lastschriftmandat |
+      | dd_tc21a_c_                                       |
+      | DE02120300000000202051                            |
+      | @de.metas.payment.sepa.DirectDebitMandateMissing@ |
     And the pay selection "paySelection" has no SEPA_Export
     And validate C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | DateLastUsed |
@@ -345,10 +339,10 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | dd_tc21b_c_     |
-      | MREF-TC21B-CORE |
-      | 01.01.2020      |
-      | abgelaufen      |
+      | dd_tc21b_c_                                       |
+      | MREF-TC21B-CORE                                   |
+      | 01.01.2020                                        |
+      | @de.metas.payment.sepa.DirectDebitMandateExpired@ |
     And the pay selection "paySelection" has no SEPA_Export
     And validate C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | DateLastUsed |
@@ -409,17 +403,16 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | dd_tc23_oneoff_                             |
-      | MREF-TC23-ONEOFF                            |
-      | einmaliges Mandat, bereits genutzt          |
-      | 15.01.2026                                  |
-      | das Datum „Letzte Nutzung“ am Mandat leeren |
-      | dd_tc23_missing_                            |
-      | DE02120300000000202051                      |
-      | kein aktives Lastschriftmandat              |
-      | dd_tc23_expired_                            |
-      | MREF-TC23-EXPIRED                           |
-      | abgelaufen                                  |
+      | dd_tc23_oneoff_                                      |
+      | MREF-TC23-ONEOFF                                     |
+      | 15.01.2026                                           |
+      | @de.metas.payment.sepa.DirectDebitMandateOneOffUsed@ |
+      | dd_tc23_missing_                                     |
+      | DE02120300000000202051                               |
+      | @de.metas.payment.sepa.DirectDebitMandateMissing@    |
+      | dd_tc23_expired_                                     |
+      | MREF-TC23-EXPIRED                                    |
+      | @de.metas.payment.sepa.DirectDebitMandateExpired@    |
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
@@ -462,10 +455,9 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | dd_oneoff2_                                           |
-      | MREF-ONEOFF2-001                                      |
-      | einmaliges Mandat auf 2 Zeilen                        |
-      | zusätzlichen Zeilen aus der Zahlungsauswahl entfernen |
+      | dd_oneoff2_                                                   |
+      | MREF-ONEOFF2-001                                              |
+      | @de.metas.payment.sepa.DirectDebitMandateOneOffMultipleLines@ |
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
@@ -501,9 +493,9 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with a message containing:
-      | SEPA-Lastschrift-Export nicht erstellt |
-      | dd_nosepaname_                         |
-      | € € €                                  |
+      | @de.metas.payment.sepa.SepaTextWithoutSepaCharacters@ |
+      | dd_nosepaname_                                        |
+      | € € €                                                 |
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
@@ -539,10 +531,9 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with a message containing:
-      | SEPA-Lastschrift-Export nicht erstellt |
-      | MREF-Ä&001                             |
-      | dd_noseparef_                          |
-      | Leerzeichen und + ? / - : ( ) . , '    |
+      | @de.metas.payment.sepa.SepaMandateReferenceNotSepa@ |
+      | MREF-Ä&001                                          |
+      | dd_noseparef_                                       |
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
@@ -587,8 +578,6 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with a message containing:
-      | SEPA-Lastschrift-Export nicht erstellt                          |
-      | dd_chnotown_                                                    |
-      | hat keinen Ort                                                  |
-      | Rechnung stornieren und mit vollständiger Adresse neu erstellen |
+      | @de.metas.payment.sepa.SepaDebtorAddressWithoutTown@ |
+      | dd_chnotown_                                         |
     And the pay selection "paySelection" has no SEPA_Export

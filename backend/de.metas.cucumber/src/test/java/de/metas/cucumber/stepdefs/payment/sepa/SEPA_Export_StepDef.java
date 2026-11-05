@@ -26,6 +26,8 @@ package de.metas.cucumber.stepdefs.payment.sepa;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.payment.C_PaySelection_StepDefData;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.process.C_PaySelection_SEPA_XmlExport;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
@@ -72,10 +74,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -92,9 +97,15 @@ import static org.assertj.core.api.Assertions.fail;
 public class SEPA_Export_StepDef
 {
 	private static final String SPACE_TOKEN = "<SPACE>";
+	/** A cell {@code @<AD_Message value>@} stands for the current text of that message. */
+	private static final Pattern MESSAGE_KEY_CELL = Pattern.compile("^@(.+)@$");
+	private static final Pattern MESSAGE_PARAMETER = Pattern.compile("\\{(\\d+)}");
+	/** Formatted into every parameter of a message, so that its text can be split into the parts around the parameters. */
+	private static final String PARAMETER_SENTINEL = "\u0001";
 	private static final String IGNORE_PLACEHOLDER = "${ignore}";
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@NonNull private final C_PaySelection_StepDefData paySelectionTable;
@@ -261,15 +272,21 @@ public class SEPA_Export_StepDef
 	}
 
 	/**
-	 * Asserts that the last run failed, carries no report data, and that its message contains every given substring.
-	 * The table has no header row: every cell is one substring (the message is in the runtime language, de_DE); {@code <SPACE>} stands for one space.
+	 * Asserts that the last run failed, carries no report data, and that its message contains every given cell.
+	 * The table has no header row; every cell is one of:
+	 * <ul>
+	 *   <li>{@code @<AD_Message value>@} - the message must contain the current text of that AD_Message, in the runtime language (de_DE):
+	 *   every fixed part of it, i.e. the text around its {@code {n}} parameters. So a wording change of the message needs no change of the feature.</li>
+	 *   <li>any other text - a substring the message must contain, for the values that differ per scenario (partner, IBAN, mandate reference, date);
+	 *   {@code <SPACE>} stands for one space.</li>
+	 * </ul>
 	 * The message is the result summary plus the exception message.
 	 *
 	 * @cucumber.example
 	 * <pre>{@code
 	 * Then the SEPA export process fails with a message containing:
-	 *   | Mandat |
-	 *   | fehlt  |
+	 *   | @de.metas.payment.sepa.DirectDebitMandateMissing@ |
+	 *   | dd_tc5_                                           |
 	 * }</pre>
 	 */
 	@Then("the SEPA export process fails with a message containing:")
@@ -373,7 +390,10 @@ public class SEPA_Export_StepDef
 			for (final String cell : row)
 			{
 				assertThat(cell).as("empty cell in the substring table").isNotNull();
-				softly.assertThat(messages.toString()).as("failure message").contains(unspace(cell));
+				for (final String expected : toExpectedSubstrings(cell))
+				{
+					softly.assertThat(messages.toString()).as("failure message (cell " + cell + ")").contains(expected);
+				}
 			}
 		}
 		softly.assertAll();
@@ -452,6 +472,41 @@ public class SEPA_Export_StepDef
 	private static String sanitize(final String s)
 	{
 		return s.replaceAll("[^A-Za-z0-9._-]", "_");
+	}
+
+	/**
+	 * @return for a {@code @<AD_Message value>@} cell, the fixed parts of that message's current text; else the cell itself
+	 */
+	private List<String> toExpectedSubstrings(@NonNull final String cell)
+	{
+		final Matcher keyMatcher = MESSAGE_KEY_CELL.matcher(cell);
+		if (!keyMatcher.matches())
+		{
+			return Collections.singletonList(unspace(cell));
+		}
+
+		final AdMessageKey messageKey = AdMessageKey.of(keyMatcher.group(1));
+		final String rawText = msgBL.getMsg(Env.getCtx(), messageKey);
+		int parametersCount = 0;
+		final Matcher parameterMatcher = MESSAGE_PARAMETER.matcher(rawText);
+		while (parameterMatcher.find())
+		{
+			parametersCount = Math.max(parametersCount, Integer.parseInt(parameterMatcher.group(1)) + 1);
+		}
+
+		// format it like the exception does, so that quote escaping etc. is the same; then split at the parameters
+		final Object[] sentinels = Collections.nCopies(parametersCount, PARAMETER_SENTINEL).toArray();
+		final String formattedText = msgBL.getMsg(Env.getCtx(), messageKey, sentinels);
+		final List<String> fixedParts = new ArrayList<>();
+		for (final String part : formattedText.split(Pattern.quote(PARAMETER_SENTINEL)))
+		{
+			if (!part.trim().isEmpty())
+			{
+				fixedParts.add(part);
+			}
+		}
+		assertThat(fixedParts).as("text of AD_Message " + messageKey + " (" + rawText + ")").isNotEmpty();
+		return fixedParts;
 	}
 
 	private static String unspace(final String cell)
