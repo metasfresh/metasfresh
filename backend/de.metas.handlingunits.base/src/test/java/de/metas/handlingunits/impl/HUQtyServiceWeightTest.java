@@ -12,7 +12,14 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import org.adempiere.mm.attributes.AttributesTestHelper;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.model.I_M_Attribute;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -90,6 +97,12 @@ class HUQtyServiceWeightTest
 		final I_M_Locator locator = BusinessTestHelper.createLocator("locator", warehouse);
 		locatorId = LocatorId.ofRecord(locator);
 
+		// HU_QRCode exists on the virtual packing instructions, like in the application dictionary
+		final I_M_Attribute qrCodeAttribute = new AttributesTestHelper().createM_Attribute(HUAttributeConstants.ATTR_QRCode.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(qrCodeAttribute)
+				.setM_HU_PI_Version(HuPackingInstructionsVersionId.VIRTUAL)
+				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
+
 		final I_M_HU cu = helper.newVHU()
 				.productId(productId)
 				.qty(Quantity.of("12.345", uomKg))
@@ -135,6 +148,29 @@ class HUQtyServiceWeightTest
 		assertThat(weightNetOf(cuId)).isEqualTo(weightNetBefore);
 	}
 
+	@Test
+	void createHUFromInventory_withLabel_storesItInTheHUQRCodeAttribute()
+	{
+		inCallersTrx(request(null, "LABEL-123"));
+
+		assertThat(qrCodeAttributeOf(cuId)).isEqualTo("LABEL-123");
+	}
+
+	@Test
+	void createHUFromInventory_withoutLabel_leavesHUQRCodeAttributeEmpty()
+	{
+		inCallersTrx(request(null));
+
+		assertThat(qrCodeAttributeOf(cuId)).isNull();
+	}
+
+	private String qrCodeAttributeOf(final HuId huId)
+	{
+		final I_M_HU hu = Services.get(IHandlingUnitsBL.class).getById(huId);
+		return Services.get(IHUContextFactory.class).createMutableHUContext().getHUAttributeStorageFactory().getAttributeStorage(hu)
+				.getValueAsString(HUAttributeConstants.ATTR_QRCode);
+	}
+
 	/** the method runs in the caller's transaction (HU attributes are written in it), see its Javadoc */
 	private CreatedHU inCallersTrx(final CreateHUFromInventoryRequest request)
 	{
@@ -143,6 +179,11 @@ class HUQtyServiceWeightTest
 
 	private CreateHUFromInventoryRequest request(final BigDecimal weightInKg)
 	{
+		return request(weightInKg, null);
+	}
+
+	private CreateHUFromInventoryRequest request(final BigDecimal weightInKg, final String label)
+	{
 		return CreateHUFromInventoryRequest.builder()
 				.date(MOVEMENT_DATE)
 				.productId(productId)
@@ -150,6 +191,7 @@ class HUQtyServiceWeightTest
 				.locatorId(locatorId)
 				.attributes(ImmutableAttributeSet.EMPTY)
 				.weightInKg(weightInKg != null ? Quantity.of(weightInKg, helper.uomKg) : null)
+				.huQRCodeAttributeValue(label)
 				.build();
 	}
 

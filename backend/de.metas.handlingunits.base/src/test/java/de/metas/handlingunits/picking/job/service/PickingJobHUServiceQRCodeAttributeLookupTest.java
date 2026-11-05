@@ -4,17 +4,17 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import org.adempiere.mm.attributes.AttributesTestHelper;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Attribute;
@@ -63,7 +63,7 @@ class PickingJobHUServiceQRCodeAttributeLookupTest
 
 	private static CustomHUQRCode label()
 	{
-		return CustomHUQRCode.ofParsedScannedCode(ParsedScannedCode.builder().scannedCode(de.metas.scannable_code.ScannedCode.ofString(LABEL)).build());
+		return CustomHUQRCode.ofParsedScannedCode(ParsedScannedCode.builder().scannedCode(ScannedCode.ofString(LABEL)).build());
 	}
 
 	@Test

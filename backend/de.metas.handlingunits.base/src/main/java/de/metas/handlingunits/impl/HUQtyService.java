@@ -34,6 +34,8 @@ import de.metas.handlingunits.CreatedHU;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.UpdateHUQtyRequest;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
 import de.metas.handlingunits.inventory.InventoryLineCreateRequest;
@@ -42,8 +44,6 @@ import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCre
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -194,6 +194,8 @@ public class HUQtyService
 	 * The line is marked {@link HUAggregationType#SINGLE_HU}, like the draft lines of {@link #updateQty(UpdateHUQtyRequest)}.
 	 * The HU is a virtual HU (a CU): the inventory line carries no packing instructions.
 	 * A given weight is set on the CU after the inventory completed (the inventory's attribute key drops weight attributes).
+	 *
+	 * A given label string is stored in the CU's {@code HU_QRCode} attribute (skipped if the HU has no such attribute), so picking finds the HU by that label.
 	 *
 	 * Runs in the caller's transaction: it opens none, so the inventory, the weight and the HU QR code commit or roll back together with the caller.
 	 *
