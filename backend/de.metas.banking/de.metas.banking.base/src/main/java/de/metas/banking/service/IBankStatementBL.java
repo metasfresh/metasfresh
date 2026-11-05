@@ -29,6 +29,7 @@ import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -90,6 +91,11 @@ public interface IBankStatementBL extends ISingletonService
 	BankStatementLineReferenceList getLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
 
 	void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bsl, @NonNull InvoiceId invoiceId);
+
+	/**
+	 * Sets {@code C_BankStatementLine.C_BPartner_ID} to the order's {@code C_Order.Bill_BPartner_ID}.
+	 */
+	void updateLineFromOrder(@NonNull I_C_BankStatementLine bsl, @NonNull OrderId orderId);
 
 	boolean isCashJournal(final I_C_BankStatementLine bankStatementLine);
 

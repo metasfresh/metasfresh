@@ -717,6 +717,18 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin.getAsString())
+				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.idsAsSet(ProductId::ofRepoId);
+	}
+
+	@Override
 	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull final EAN13ProductCode ean13ProductCode, @NonNull final ClientId clientId)
 	{
 		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
@@ -749,6 +761,18 @@ public class ProductDAO implements IProductDAO
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public ImmutableSet<ProductId> getProductIdsByValue(@NonNull final String value, @NonNull final ClientId clientId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
+				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.idsAsSet(ProductId::ofRepoId);
 	}
 
 	@Override

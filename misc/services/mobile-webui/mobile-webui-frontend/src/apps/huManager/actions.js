@@ -1,7 +1,7 @@
 import * as api from './api';
 import { setClearanceStatusRequest } from './api';
 
-import { CHANGE_CLEARANCE_STATUS, CLEAR_LOADED_DATA, HANDLING_UNIT_LOADED } from './actionTypes';
+import { CHANGE_CLEARANCE_STATUS, CLEAR_LOADED_DATA, HANDLING_UNIT_LOADED, NEW_HU_PREVIEW_LOADED } from './actionTypes';
 import { postToAndroidPrinterProxy } from '../../api/androidPrinterProxy';
 
 export const clearLoadedData = () => {
@@ -14,6 +14,14 @@ export const handlingUnitLoaded = ({ handlingUnitInfo }) => {
   return {
     type: HANDLING_UNIT_LOADED,
     payload: handlingUnitInfo,
+  };
+};
+
+/** the "New HU" preview of a scanned product label: { scannedCode, proposal } (proposal = server's JsonHUProposal); null clears it */
+export const newHUPreviewLoaded = ({ scannedCode, proposal }) => {
+  return {
+    type: NEW_HU_PREVIEW_LOADED,
+    payload: { scannedCode, proposal },
   };
 };
 

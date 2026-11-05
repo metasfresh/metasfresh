@@ -69,6 +69,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -1136,6 +1137,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return new HUQueryBuilder(getHUReservationRepository(),
 				getAgeAttributeService(),
 				getDDOrderMoveScheduleRepository());
+	}
+
+	@Override
+	public int countActiveHUsByProductId(@NonNull final ProductId productId)
+	{
+		return createHUQueryBuilder()
+				.addOnlyWithProductId(productId)
+				.setOnlyTopLevelHUs(false) // LUs and their included TUs/VHUs all count
+				.setAllowEmptyStorage()
+				.createQuery()
+				.count();
 	}
 
 	private HUReservationRepository getHUReservationRepository()

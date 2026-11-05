@@ -113,7 +113,7 @@ class PickFromHUQRCodeResolveCommand
 		else if (pickFromHUQRCode instanceof CustomHUQRCode)
 		{
 			final CustomHUQRCode customQRCode = (CustomHUQRCode)pickFromHUQRCode;
-			final BooleanWithReason valid = validateQRCode_ProductNo(customQRCode, productId);
+			final BooleanWithReason valid = validateQRCode_CustomProductIdentifiers(customQRCode, productId);
 			if (valid.isFalse())
 			{
 				return ExplainedOptional.emptyBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(productId));
@@ -205,17 +205,29 @@ class PickFromHUQRCodeResolveCommand
 		return BooleanWithReason.TRUE;
 	}
 
-	private BooleanWithReason validateQRCode_ProductNo(
+	private BooleanWithReason validateQRCode_CustomProductIdentifiers(
 			@NonNull final CustomHUQRCode customQRCode,
 			@NonNull final ProductId expectedProductId)
 	{
 		final String qrCodeProductNo = customQRCode.getProductNo().orElse(null);
-		if (qrCodeProductNo == null) {return BooleanWithReason.TRUE;}
-
-		final String expectedProductNo = productService.getProductValue(expectedProductId);
-		if (!Objects.equals(qrCodeProductNo, expectedProductNo))
+		if (qrCodeProductNo != null)
 		{
-			return BooleanWithReason.falseBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(expectedProductId));
+			final String expectedProductNo = productService.getProductValue(expectedProductId);
+			if (!Objects.equals(qrCodeProductNo, expectedProductNo))
+			{
+				return BooleanWithReason.falseBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(expectedProductId));
+			}
+		}
+
+		final GTIN qrCodeGTIN = customQRCode.getGTIN().orElse(null);
+		if (qrCodeGTIN != null)
+		{
+			// a GTIN of no article is a label of another product, not an error
+			final ProductId gtinProductId = productService.getProductIdByGTINStrictly(qrCodeGTIN, ClientId.METASFRESH).orElse(null);
+			if (!ProductId.equals(expectedProductId, gtinProductId))
+			{
+				return BooleanWithReason.falseBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(expectedProductId));
+			}
 		}
 
 		return BooleanWithReason.TRUE;
