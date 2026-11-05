@@ -28,13 +28,14 @@ BEGIN
   END IF;
 END $$;
 
--- partner + product: clone an existing row (keeps all mandatory columns) and rename
+-- partner + product: clone an existing row (keeps all mandatory columns) and rename.
+-- Every raw-inserted id is drawn from the table's own sequence, so later REST-created records never collide on the pkey.
 CREATE TEMP TABLE _bp ON COMMIT DROP AS SELECT * FROM c_bpartner ORDER BY c_bpartner_id LIMIT 1;
-UPDATE _bp SET c_bpartner_id=(SELECT max(c_bpartner_id)+1 FROM c_bpartner), value='ESDROPBP1', name='Zyxquarta Handels GmbH', name2=NULL, companyname=NULL, ad_orgbp_id=NULL;
+UPDATE _bp SET c_bpartner_id=nextval('c_bpartner_seq'), value='ESDROPBP1', name='Zyxquarta Handels GmbH', name2=NULL, companyname=NULL, ad_orgbp_id=NULL;
 INSERT INTO c_bpartner SELECT * FROM _bp;
 
 CREATE TEMP TABLE _p ON COMMIT DROP AS SELECT * FROM m_product ORDER BY m_product_id LIMIT 1;
-UPDATE _p SET m_product_id=(SELECT max(m_product_id)+1 FROM m_product), value='ESDROPPRD1', name='Zyxbanane Bio Spezialsorte', description=NULL;
+UPDATE _p SET m_product_id=nextval('m_product_seq'), value='ESDROPPRD1', name='Zyxbanane Bio Spezialsorte', description=NULL;
 INSERT INTO m_product SELECT * FROM _p;
 
 -- orders: synthesize one template row per table (no orders exist on a bare DB), mandatory FKs -> first existing target row
@@ -84,8 +85,8 @@ DO $$
 DECLARE r record; v_oid numeric; v_olid numeric;
 BEGIN
   FOR r IN SELECT * FROM _seed ORDER BY tag LOOP
-    SELECT coalesce(max(c_order_id),0)+1 INTO v_oid FROM c_order;
-    SELECT coalesce(max(c_orderline_id),0)+1 INTO v_olid FROM c_orderline;
+    v_oid := nextval('c_order_seq');
+    v_olid := nextval('c_orderline_seq');
     UPDATE _o  SET c_order_id=v_oid, issotrx=r.issotrx, dateordered=r.dateordered, documentno='ESDROP-'||r.tag;
     INSERT INTO c_order SELECT * FROM _o;
     UPDATE _ol SET c_orderline_id=v_olid, c_order_id=v_oid, linenetamt=r.amt, dateordered=r.dateordered;
