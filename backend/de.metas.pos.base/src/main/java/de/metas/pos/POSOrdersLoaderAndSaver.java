@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
 class POSOrdersLoaderAndSaver
 {
 	/**
-	 * Last {@link POSOrder#getVersion()} handed out, see {@link #nextVersion()}. Static, because a loader-and-saver instance is created per operation.
+	 * Last {@link POSOrder#getVersion()} handed out, see {@link #nextVersion()} and {@link #currentVersion()}. Static, because a loader-and-saver instance is created per operation.
 	 */
 	private static final AtomicLong lastVersion = new AtomicLong(0);
 
@@ -286,7 +286,9 @@ class POSOrdersLoaderAndSaver
 		final List<I_C_POS_OrderLine> lineRecords = getLineRecordsByOrderId(posOrderId);
 		final List<I_C_POS_Payment> paymentRecords = getPaymentRecordsByOrderId(posOrderId);
 
-		return fromRecord(orderRecord, lineRecords, paymentRecords);
+		final POSOrder order = fromRecord(orderRecord, lineRecords, paymentRecords);
+		order.setVersion(currentVersion());
+		return order;
 	}
 
 	static POSOrderId extractPOSOrderId(final I_C_POS_Order orderRecord)
@@ -573,6 +575,15 @@ class POSOrdersLoaderAndSaver
 	private static long nextVersion()
 	{
 		return lastVersion.updateAndGet(last -> Math.max(last + 1, SystemTime.millis()));
+	}
+
+	/**
+	 * @return the version for an order just loaded from DB: not lower than the version of any save so far in this JVM
+	 * (so a delayed event of an earlier save is not considered newer), and lower than the version of any later save
+	 */
+	private static long currentVersion()
+	{
+		return lastVersion.updateAndGet(last -> Math.max(last, SystemTime.millis()));
 	}
 
 	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)

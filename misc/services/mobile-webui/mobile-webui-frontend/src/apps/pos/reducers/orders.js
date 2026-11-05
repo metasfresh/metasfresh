@@ -156,7 +156,8 @@ const changeOrder = ({ ordersState, order_uuid, mapper }) => {
  * back for a moment (e.g. drop the pending payment, which unmounts the cash dialog).
  *
  * @returns true if both the incoming snapshot and the order in state carry the backend's order version and the
- * snapshot's version is lower. A snapshot without a version, or an order not in state, is never considered older.
+ * snapshot's version is lower. A snapshot without a version, or an order not in state, is never considered older
+ * (so a delayed snapshot of an order which was already removed from state, e.g. voided, is still applied).
  */
 const isOlderThanOrderInState = ({ applicationState, order }) => {
   const existingVersion = applicationState.orders?.byUUID?.[order.uuid]?.version;

@@ -64,13 +64,17 @@ class POSOrdersRepositoryVersionTest
 	}
 
 	@Test
-	void versionIsNotPersisted_aLoadedOrderHasNone()
+	void aLoadedOrderIsNotOlderThanItsLastSave_andTheNextSaveIsNewer()
 	{
-		repository.createOrUpdateByExternalId(EXTERNAL_ID, this::newOrder, order -> {});
+		SystemTime.setFixedTimeSource("2026-11-05T10:00:00Z");
+		final long savedVersion = repository.createOrUpdateByExternalId(EXTERNAL_ID, this::newOrder, order -> {}).getVersion();
 
 		final POSOrder loaded = repository.getById(repository.getIdByExternalId(EXTERNAL_ID));
+		final long savedAgainVersion = repository.updateByExternalId(EXTERNAL_ID, order -> {}).getVersion();
 
-		assertThat(loaded.getVersion()).isNull();
+		// a delayed event of the earlier save must not be considered newer than what a reload returned
+		assertThat(loaded.getVersion()).isGreaterThanOrEqualTo(savedVersion);
+		assertThat(savedAgainVersion).isGreaterThan(loaded.getVersion());
 	}
 
 	@Test
