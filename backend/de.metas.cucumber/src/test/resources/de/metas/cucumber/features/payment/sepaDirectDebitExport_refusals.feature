@@ -157,8 +157,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
-  @Id:S32708_TC19a
-  Scenario Outline: mandate older than 36 months before the collection date: refused (last use <DateLastUsed>, signed <MandateDate>, collection <PayDate>)
+  @Id:S32708_TC19a1
+  Scenario: mandate last used 31.08.2023 23:59, collected 01.09.2026: older than 36 months, refused
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
       | debtor     | SEPA Debtor T19 | dd_tc19_@Date@ | Y          | pricingSystem      | D           |
@@ -169,21 +169,21 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID  |
       | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
-      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate   | IsRecurring | DateLastUsed   | AD_Org_ID |
-      | mandate                                | debtorAcct          | CORE        | MREF-TC19-001    | <MandateDate> | Y           | <DateLastUsed> | sellerOrg |
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed     | AD_Org_ID |
+      | mandate                                | debtorAcct          | CORE        | MREF-TC19-001    | 2013-01-01  | Y           | 2023-08-31T23:59 | sellerOrg |
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced   | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
-      | invoice    | debtor        | Y       | <DateInvoiced> | EUR           | pt_sepa          | D           | sellerOrg |
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | invoice    | debtor        | Y       | 2026-08-27   | EUR           | pt_sepa          | D           | sellerOrg |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
       | invoiceL1  | invoice      | product      | 1 PCE       | 100.00 | zeroTax  |
     And the invoice identified by invoice is completed
     And metasfresh contains Pay Selection
-      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate   | AD_Org_ID |
-      | paySelection | orgAcct             | DD                  | <PayDate> | sellerOrg |
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | paySelection | orgAcct             | DD                  | 2026-09-01 | sellerOrg |
     And "Create from..." is invoked for pay selection paySelection, using following parameters:
-      | MatchRequirement | C_BPartner_ID | PayDate   |
-      | CDD              | debtor        | <PayDate> |
+      | MatchRequirement | C_BPartner_ID | PayDate    |
+      | CDD              | debtor        | 2026-09-01 |
     And the pay selection identified by paySelection is completed
 
     When the SEPA export process is run for pay selection "paySelection"
@@ -191,19 +191,13 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
       | dd_tc19_                                          |
       | MREF-TC19-001                                     |
-      | <RefDate>                                         |
+      | 31.08.2023                                        |
       | @de.metas.payment.sepa.DirectDebitMandateExpired@ |
     And the pay selection "paySelection" has no SEPA_Export
 
-    Examples:
-      | DateLastUsed     | MandateDate | PayDate    | DateInvoiced | RefDate    |
-      | 2023-08-31T23:59 | 2013-01-01  | 2026-09-01 | 2026-08-27   | 31.08.2023 |
-      | 2024-02-29       | 2013-01-01  | 2027-03-01 | 2027-02-24   | 29.02.2024 |
-      |                  | 2023-09-30  | 2026-10-31 | 2026-10-26   | 30.09.2023 |
-
   @from:cucumber
-  @Id:S32708_TC19b
-  Scenario Outline: mandate exactly 36 months before the collection date: still valid, exported (last use <DateLastUsed>, collection <PayDate>)
+  @Id:S32708_TC19a2
+  Scenario: mandate last used 29.02.2024, collected 01.03.2027 (leap day): older than 36 months, refused
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
       | debtor     | SEPA Debtor T19 | dd_tc19_@Date@ | Y          | pricingSystem      | D           |
@@ -214,31 +208,138 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID  |
       | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
-      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed   | AD_Org_ID |
-      | mandate                                | debtorAcct          | CORE        | MREF-TC19-002    | 2013-01-01  | Y           | <DateLastUsed> | sellerOrg |
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
+      | mandate                                | debtorAcct          | CORE        | MREF-TC19-001    | 2013-01-01  | Y           | 2024-02-29   | sellerOrg |
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced   | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
-      | invoice    | debtor        | Y       | <DateInvoiced> | EUR           | pt_sepa          | D           | sellerOrg |
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | invoice    | debtor        | Y       | 2027-02-24   | EUR           | pt_sepa          | D           | sellerOrg |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
       | invoiceL1  | invoice      | product      | 1 PCE       | 100.00 | zeroTax  |
     And the invoice identified by invoice is completed
     And metasfresh contains Pay Selection
-      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate   | AD_Org_ID |
-      | paySelection | orgAcct             | DD                  | <PayDate> | sellerOrg |
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | paySelection | orgAcct             | DD                  | 2027-03-01 | sellerOrg |
     And "Create from..." is invoked for pay selection paySelection, using following parameters:
-      | MatchRequirement | C_BPartner_ID | PayDate   |
-      | CDD              | debtor        | <PayDate> |
+      | MatchRequirement | C_BPartner_ID | PayDate    |
+      | CDD              | debtor        | 2027-03-01 |
+    And the pay selection identified by paySelection is completed
+
+    When the SEPA export process is run for pay selection "paySelection"
+
+    Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
+      | dd_tc19_                                          |
+      | MREF-TC19-001                                     |
+      | 29.02.2024                                        |
+      | @de.metas.payment.sepa.DirectDebitMandateExpired@ |
+    And the pay selection "paySelection" has no SEPA_Export
+
+  @from:cucumber
+  @Id:S32708_TC19a3
+  Scenario: mandate never used, signed 30.09.2023, collected 31.10.2026: older than 36 months, refused
+    Given metasfresh contains C_BPartners:
+      | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | debtor     | SEPA Debtor T19 | dd_tc19_@Date@ | Y          | pricingSystem      | D           |
+    And metasfresh contains C_Bank:
+      | C_Bank_ID  | Name            | RoutingNo | SwiftCode   |
+      | debtorBank | SEPA Debtor T19 | 20000000  | TESTDEB2XXX |
+    And metasfresh contains C_BP_BankAccount
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID  |
+      | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank |
+    And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
+      | mandate                                | debtorAcct          | CORE        | MREF-TC19-001    | 2023-09-30  | Y           |              | sellerOrg |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | invoice    | debtor        | Y       | 2026-10-26   | EUR           | pt_sepa          | D           | sellerOrg |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 1 PCE       | 100.00 | zeroTax  |
+    And the invoice identified by invoice is completed
+    And metasfresh contains Pay Selection
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | paySelection | orgAcct             | DD                  | 2026-10-31 | sellerOrg |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
+      | MatchRequirement | C_BPartner_ID | PayDate    |
+      | CDD              | debtor        | 2026-10-31 |
+    And the pay selection identified by paySelection is completed
+
+    When the SEPA export process is run for pay selection "paySelection"
+
+    Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
+      | dd_tc19_                                          |
+      | MREF-TC19-001                                     |
+      | 30.09.2023                                        |
+      | @de.metas.payment.sepa.DirectDebitMandateExpired@ |
+    And the pay selection "paySelection" has no SEPA_Export
+
+  @from:cucumber
+  @Id:S32708_TC19b1
+  Scenario: mandate last used 31.08.2023 00:00, collected 31.08.2026: exactly 36 months, still valid, exported
+    Given metasfresh contains C_BPartners:
+      | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | debtor     | SEPA Debtor T19 | dd_tc19_@Date@ | Y          | pricingSystem      | D           |
+    And metasfresh contains C_Bank:
+      | C_Bank_ID  | Name            | RoutingNo | SwiftCode   |
+      | debtorBank | SEPA Debtor T19 | 20000000  | TESTDEB2XXX |
+    And metasfresh contains C_BP_BankAccount
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID  |
+      | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank |
+    And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed     | AD_Org_ID |
+      | mandate                                | debtorAcct          | CORE        | MREF-TC19-002    | 2013-01-01  | Y           | 2023-08-31T00:00 | sellerOrg |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | invoice    | debtor        | Y       | 2026-08-26   | EUR           | pt_sepa          | D           | sellerOrg |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 1 PCE       | 100.00 | zeroTax  |
+    And the invoice identified by invoice is completed
+    And metasfresh contains Pay Selection
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | paySelection | orgAcct             | DD                  | 2026-08-31 | sellerOrg |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
+      | MatchRequirement | C_BPartner_ID | PayDate    |
+      | CDD              | debtor        | 2026-08-31 |
     And the pay selection identified by paySelection is completed
 
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export result is a single XML file
 
-    Examples:
-      | DateLastUsed     | PayDate    | DateInvoiced |
-      | 2023-08-31T00:00 | 2026-08-31 | 2026-08-26   |
-      | 2024-02-29       | 2027-02-28 | 2027-02-23   |
+  @from:cucumber
+  @Id:S32708_TC19b2
+  Scenario: mandate last used 29.02.2024, collected 28.02.2027 (leap day): exactly 36 months, still valid, exported
+    Given metasfresh contains C_BPartners:
+      | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | debtor     | SEPA Debtor T19 | dd_tc19_@Date@ | Y          | pricingSystem      | D           |
+    And metasfresh contains C_Bank:
+      | C_Bank_ID  | Name            | RoutingNo | SwiftCode   |
+      | debtorBank | SEPA Debtor T19 | 20000000  | TESTDEB2XXX |
+    And metasfresh contains C_BP_BankAccount
+      | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID  |
+      | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank |
+    And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
+      | mandate                                | debtorAcct          | CORE        | MREF-TC19-002    | 2013-01-01  | Y           | 2024-02-29   | sellerOrg |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | PaymentRule | AD_Org_ID |
+      | invoice    | debtor        | Y       | 2027-02-23   | EUR           | pt_sepa          | D           | sellerOrg |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 1 PCE       | 100.00 | zeroTax  |
+    And the invoice identified by invoice is completed
+    And metasfresh contains Pay Selection
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+      | paySelection | orgAcct             | DD                  | 2027-02-28 | sellerOrg |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
+      | MatchRequirement | C_BPartner_ID | PayDate    |
+      | CDD              | debtor        | 2027-02-28 |
+    And the pay selection identified by paySelection is completed
+
+    When the SEPA export process is run for pay selection "paySelection"
+
+    Then the SEPA export result is a single XML file
 
   @from:cucumber
   @Id:S32708_TC21a
