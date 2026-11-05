@@ -339,7 +339,9 @@ public final class MetasfreshArchRules
 	}
 
 	/**
-	 * No {@code @EnableWebMvc} and no {@code WebMvcConfigurationSupport} subclass in backend main code.
+	 * No {@code @EnableWebMvc} and no {@code WebMvcConfigurationSupport} subclass in the main code that {@link #importWholeBackend()} imports
+	 * (the classpath of this module, i.e. the {@code ServerBoot} + {@code WebRestApiApplication} closure). Standalone applications outside that
+	 * closure are NOT covered here and need their own guard (e.g. the msv3 server's {@code JsonConfigurationTest}).
 	 * <p>
 	 * Either one makes Spring Boot's MVC auto-configuration back off in every application that component-scans the class
 	 * ({@code ServerBoot} and {@code WebRestApiApplication} scan all of {@code de.metas} and {@code org.adempiere}). Spring MVC then builds
