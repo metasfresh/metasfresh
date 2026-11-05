@@ -50,6 +50,11 @@ public class JsonPOSOrder
 
 	int hashCode;
 
+	/**
+	 * See {@link POSOrder#getVersion()}. A client shall ignore a snapshot whose version is lower than the one it already has.
+	 */
+	@Nullable Long version;
+
 	public static JsonPOSOrder from(@NonNull final POSOrder order, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
 	{
 		final String currencySymbol = getCurrencySymbolById.apply(order.getCurrencyId());
@@ -89,6 +94,7 @@ public class JsonPOSOrder
 				.allowAddPaymentReason(allowAddPayment.getReasonAsString())
 				//
 				.hashCode(order.hashCode())
+				.version(order.getVersion())
 				//
 				.build();
 	}

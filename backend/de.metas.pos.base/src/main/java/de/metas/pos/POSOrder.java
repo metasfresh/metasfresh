@@ -66,6 +66,14 @@ public class POSOrder
 
 	@Nullable @Getter @Setter private OrderId salesOrderId;
 
+	/**
+	 * Strictly increasing version, stamped by every save (see {@link POSOrdersLoaderAndSaver}).
+	 * Not persisted, so it is null for an order which was only loaded.
+	 * Clients use it to drop order snapshots which arrive out of order: the websocket "order changed" events are debounced,
+	 * so they can arrive after the REST response of a newer save.
+	 */
+	@EqualsAndHashCode.Exclude @Nullable @Getter @Setter private Long version;
+
 	@Builder
 	private POSOrder(
 			@NonNull final POSOrderExternalId externalId,

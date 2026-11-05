@@ -43,6 +43,10 @@ export function ordersReducer(applicationState, action) {
     }
     case UPDATE_ORDER: {
       const { order } = action.payload;
+      if (isOlderThanOrderInState({ applicationState, order })) {
+        console.log('Ignoring stale order snapshot', { order });
+        return applicationState;
+      }
 
       let isOpenOrder = isOpenOrderStatus(order.status);
       return syncOrdersFromSource({
@@ -145,6 +149,19 @@ const changeOrder = ({ ordersState, order_uuid, mapper }) => {
 //
 //
 //
+
+/**
+ * Order snapshots arrive both as REST responses and as websocket events. The backend sends the websocket events through
+ * a trailing debouncer, so a snapshot can arrive after a REST response of a newer save. Applying it would roll the order
+ * back for a moment (e.g. drop the pending payment, which unmounts the cash dialog).
+ *
+ * @returns true if both the incoming snapshot and the order in state carry the backend's order version and the
+ * snapshot's version is lower. A snapshot without a version, or an order not in state, is never considered older.
+ */
+const isOlderThanOrderInState = ({ applicationState, order }) => {
+  const existingVersion = applicationState.orders?.byUUID?.[order.uuid]?.version;
+  return order.version != null && existingVersion != null && order.version < existingVersion;
+};
 
 const syncOrdersFromSource = ({ applicationState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
   return changeOrdersStateInApplicationState({

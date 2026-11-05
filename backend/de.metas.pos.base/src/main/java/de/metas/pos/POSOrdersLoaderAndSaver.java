@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -55,6 +57,11 @@ import java.util.stream.Collectors;
 @Builder
 class POSOrdersLoaderAndSaver
 {
+	/**
+	 * Last {@link POSOrder#getVersion()} handed out, see {@link #nextVersion()}. Static, because a loader-and-saver instance is created per operation.
+	 */
+	private static final AtomicLong lastVersion = new AtomicLong(0);
+
 	@NonNull private final IQueryBL queryBL;
 	@NonNull private final POSOrderEventDispatcher eventDispatcher;
 
@@ -555,7 +562,17 @@ class POSOrdersLoaderAndSaver
 			putPaymentRecordsToCache(posOrderId, paymentRecordsNew);
 		}
 
+		order.setVersion(nextVersion());
 		eventDispatcher.fireOrderChanged(order);
+	}
+
+	/**
+	 * @return a version greater than any returned before in this JVM, and at least the current time in millis, so that versions
+	 * still increase after a server restart (as long as the previous run averaged less than one save per millisecond)
+	 */
+	private static long nextVersion()
+	{
+		return lastVersion.updateAndGet(last -> Math.max(last + 1, SystemTime.millis()));
 	}
 
 	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)
