@@ -51,7 +51,7 @@ public class JsonPOSOrder
 	int hashCode;
 
 	/**
-	 * See {@link POSOrder#getVersion()}. A client shall ignore a snapshot whose version is lower than the one it already has.
+	 * See {@link POSOrder#getVersion()}. A client shall ignore a snapshot whose version is not greater than the one it already has for that order.
 	 */
 	@Nullable Long version;
 

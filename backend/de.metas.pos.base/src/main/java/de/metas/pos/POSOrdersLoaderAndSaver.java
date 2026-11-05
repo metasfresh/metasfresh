@@ -576,12 +576,14 @@ class POSOrdersLoaderAndSaver
 		// Stamp only after commit: a load running before the commit reads the old content, so it must not get a version
 		// which is not lower than this save's (else the frontend would drop this save's REST response and event as stale).
 		// Also, a rolled back save neither gets a version nor sends an event.
+		// Known limit: two concurrent saves of the same order commit in lock order, but their after-commit callbacks run in
+		// their own threads and are not ordered; if the first one is delayed past the second, the older content gets the
+		// greater version and the frontend shows it until the next save. Closing that needs a version kept with the order in DB.
 		trxManager.runAfterCommit(() -> {
 			order.setVersion(versionSource.next());
 			eventDispatcher.fireOrderChanged(order);
 		});
 	}
-
 
 	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)
 	{
