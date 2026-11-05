@@ -186,7 +186,7 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('reference label shape (bracketed, fixed positions) -> preview -> enter quantity -> OK -> lot + production date on the CU, no HU_QRCode value', async ({ page }) => {
+test('reference label shape (bracketed, fixed positions) -> preview -> enter quantity -> OK -> lot + production date + the label code (HU_QRCode) on the CU', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
@@ -196,7 +196,8 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
     const masterdata = await createMasterdata({ gtin });
     await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
 
-    await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
+    const label = bracketedLabel(gtin);
+    await HUManagerScreen.scanLabelAndWaitForPreview({ label });
     await NewHUPreviewScreen.expectProductContains(masterdata.products.P1.productName);
     await NewHUPreviewScreen.expectLotNumber(BRACKETED_LABEL_LOT);
     await NewHUPreviewScreen.expectProductionDate(BRACKETED_LABEL_PRODUCTION_DATE_DISPLAY);
@@ -212,7 +213,7 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
     await expectBackOnScanScreenAfterOK({ created, locatorCode, qty: '7 PCE' });
 
     // one completed inventory; one CU with the entered quantity, the lot and the production date of the label, on the previewed location;
-    // the label code itself is NOT stored as the HU_QRCode attribute
+    // the scanned label code is stored in the HU_QRCode attribute, so picking finds the HU by that label
     await Backend.expect({
         hus: {
             [huId]: {
@@ -220,8 +221,7 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
                 storages: { 'P1': '7 PCE' },
                 cus: [{
                     qty: '7 PCE',
-                    // null = the attribute carries no value (the attribute row exists on every HU; the label code is not written to it)
-                    attributes: { 'Lot-Nummer': BRACKETED_LABEL_LOT, 'ProductionDate': '2027-03-15', 'HU_QRCode': null },
+                    attributes: { 'Lot-Nummer': BRACKETED_LABEL_LOT, 'ProductionDate': '2027-03-15', 'HU_QRCode': label },
                 }],
             },
         },
