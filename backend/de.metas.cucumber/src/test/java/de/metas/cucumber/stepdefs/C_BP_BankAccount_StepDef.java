@@ -43,7 +43,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
@@ -314,99 +313,63 @@ public class C_BP_BankAccount_StepDef
 				.firstOnlyOptional(I_C_BP_BankAccount.class);
 	}
 
+	/**
+	 * Asserts bank accounts registered by an earlier step. Only the columns present in the table (and not blank) are compared.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BP_BankAccount_ID</b> - (required, identifier-ref) the bank account<br>
+	 *   <b>C_BPartner_ID</b> - (required, identifier-ref) the partner that owns the account<br>
+	 *   <b>Description</b>, <b>IBAN</b>, <b>QR_IBAN</b>, <b>Name</b> - (optional) expected values<br>
+	 *   <b>ISO_Code</b> - (optional) ISO code of the account currency, e.g. EUR<br>
+	 *   <b>IsActive</b>, <b>IsDefault</b> - (optional) expected flags<br>
+	 *   <b>A_Name</b>, <b>A_Street</b>, <b>A_Zip</b>, <b>A_City</b>, <b>A_Country</b> - (optional) expected account holder data; the null placeholder = no value
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_BP_BankAccount:
+	 *   | C_BP_BankAccount_ID | C_BPartner_ID | IBAN                   | ISO_Code | IsActive | A_Name              |
+	 *   | debtorAcct          | debtor        | DE89370400440532013000 | EUR      | true     | Account Holder Name |
+	 * </pre>
+	 */
 	@And("validate C_BP_BankAccount:")
 	public void validate_C_BP_BankAccount(@NonNull final DataTable dataTable)
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String bpBankAccountIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
-			final I_C_BP_BankAccount bpBankAccount = bpBankAccountTable.get(bpBankAccountIdentifier);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_BP_BankAccount bpBankAccount = bpBankAccountTable.get(row.getAsIdentifier(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID));
 
-			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID);
-			final I_C_BPartner bPartnerRecord = bpartnerTable.get(bpIdentifier);
-			softly.assertThat(bpBankAccount.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bPartnerRecord.getC_BPartner_ID());
+			final I_C_BPartner bpartner = bpartnerTable.get(row.getAsIdentifier(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID));
+			softly.assertThat(bpBankAccount.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bpartner.getC_BPartner_ID());
 
-			final String description = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_Description);
-			if (Check.isNotBlank(description))
-			{
-				softly.assertThat(bpBankAccount.getDescription()).as("Description").isEqualTo(description);
-			}
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_Description)
+					.ifPresent(description -> softly.assertThat(bpBankAccount.getDescription()).as("Description").isEqualTo(description));
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN)
+					.ifPresent(iban -> softly.assertThat(bpBankAccount.getIBAN()).as("IBAN").isEqualTo(iban));
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN)
+					.ifPresent(qrIban -> softly.assertThat(bpBankAccount.getQR_IBAN()).as("QR_IBAN").isEqualTo(qrIban));
+			row.getAsOptionalString("ISO_Code")
+					.map(isoCode -> currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode)).getId())
+					.ifPresent(currencyId -> softly.assertThat(bpBankAccount.getC_Currency_ID()).as("C_Currency_ID").isEqualTo(currencyId.getRepoId()));
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_Name)
+					.ifPresent(name -> softly.assertThat(bpBankAccount.getName()).as("Name").isEqualTo(name));
 
-			final String iban = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_IBAN);
-			if (Check.isNotBlank(iban))
-			{
-				softly.assertThat(bpBankAccount.getIBAN()).as("IBAN").isEqualTo(iban);
-			}
+			row.getAsOptionalBoolean(I_C_BP_BankAccount.COLUMNNAME_IsActive)
+					.ifPresent(isActive -> softly.assertThat(bpBankAccount.isActive()).as("IsActive").isEqualTo(isActive));
+			row.getAsOptionalBoolean(I_C_BP_BankAccount.COLUMNNAME_IsDefault)
+					.ifPresent(isDefault -> softly.assertThat(bpBankAccount.isDefault()).as("IsDefault").isEqualTo(isDefault));
 
-			final String sepaCreditorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier);
-			if (Check.isNotBlank(sepaCreditorIdentifier))
-			{
-				softly.assertThat(bpBankAccount.getSEPA_CreditorIdentifier()).as("SEPA_CreditorIdentifier").isEqualTo(sepaCreditorIdentifier);
-			}
-
-			final String qrIban = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_QR_IBAN);
-			if (Check.isNotBlank(qrIban))
-			{
-				softly.assertThat(bpBankAccount.getQR_IBAN()).as("QR_IBAN").isEqualTo(qrIban);
-			}
-
-			final String isoCurrencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "ISO_Code");
-			if (Check.isNotBlank(isoCurrencyCode))
-			{
-				final CurrencyId currencyId = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCurrencyCode)).getId();
-				softly.assertThat(bpBankAccount.getC_Currency_ID()).as("C_Currency_ID").isEqualTo(currencyId.getRepoId());
-			}
-
-			final String name = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_Name);
-			if (Check.isNotBlank(name))
-			{
-				softly.assertThat(bpBankAccount.getName()).as("Name").isEqualTo(name);
-			}
-
-			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(row, I_C_BP_BankAccount.COLUMNNAME_IsActive);
-			if (isActive != null)
-			{
-				softly.assertThat(bpBankAccount.isActive()).as("IsActive").isEqualTo(isActive);
-			}
-
-			final Boolean isDefault = DataTableUtil.extractBooleanForColumnNameOrNull(row, I_C_BP_BankAccount.COLUMNNAME_IsDefault);
-			if (isDefault != null)
-			{
-				softly.assertThat(bpBankAccount.isDefault()).as("isDefault").isEqualTo(isDefault);
-			}
-
-			final String accountName = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Name);
-			if (Check.isNotBlank(accountName))
-			{
-				softly.assertThat(bpBankAccount.getA_Name()).as(COLUMNNAME_A_Name).isEqualTo(DataTableUtil.nullToken2Null(accountName));
-			}
-
-			final String accountStreet = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Street);
-			if (Check.isNotBlank(accountStreet))
-			{
-				softly.assertThat(bpBankAccount.getA_Street()).as(COLUMNNAME_A_Street).isEqualTo(DataTableUtil.nullToken2Null(accountStreet));
-			}
-
-			final String accountZip = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Zip);
-			if (Check.isNotBlank(accountZip))
-			{
-				softly.assertThat(bpBankAccount.getA_Zip()).as(COLUMNNAME_A_Zip).isEqualTo(DataTableUtil.nullToken2Null(accountZip));
-			}
-
-			final String accountCity = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_City);
-			if (Check.isNotBlank(accountCity))
-			{
-				softly.assertThat(bpBankAccount.getA_City()).as(COLUMNNAME_A_City).isEqualTo(DataTableUtil.nullToken2Null(accountCity));
-			}
-
-			final String accountCountry = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Country);
-			if (Check.isNotBlank(accountCountry))
-			{
-				softly.assertThat(bpBankAccount.getA_Country()).as(COLUMNNAME_A_Country).isEqualTo(DataTableUtil.nullToken2Null(accountCountry));
-			}
-		}
+			row.getAsOptionalString(COLUMNNAME_A_Name)
+					.ifPresent(accountName -> softly.assertThat(bpBankAccount.getA_Name()).as(COLUMNNAME_A_Name).isEqualTo(DataTableUtil.nullToken2Null(accountName)));
+			row.getAsOptionalString(COLUMNNAME_A_Street)
+					.ifPresent(accountStreet -> softly.assertThat(bpBankAccount.getA_Street()).as(COLUMNNAME_A_Street).isEqualTo(DataTableUtil.nullToken2Null(accountStreet)));
+			row.getAsOptionalString(COLUMNNAME_A_Zip)
+					.ifPresent(accountZip -> softly.assertThat(bpBankAccount.getA_Zip()).as(COLUMNNAME_A_Zip).isEqualTo(DataTableUtil.nullToken2Null(accountZip)));
+			row.getAsOptionalString(COLUMNNAME_A_City)
+					.ifPresent(accountCity -> softly.assertThat(bpBankAccount.getA_City()).as(COLUMNNAME_A_City).isEqualTo(DataTableUtil.nullToken2Null(accountCity)));
+			row.getAsOptionalString(COLUMNNAME_A_Country)
+					.ifPresent(accountCountry -> softly.assertThat(bpBankAccount.getA_Country()).as(COLUMNNAME_A_Country).isEqualTo(DataTableUtil.nullToken2Null(accountCountry)));
+		});
 
 		softly.assertAll();
 	}

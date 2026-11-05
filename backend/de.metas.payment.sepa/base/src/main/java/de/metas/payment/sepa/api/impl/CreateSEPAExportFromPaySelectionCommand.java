@@ -60,6 +60,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -141,14 +142,15 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		final I_SEPA_Export header = createExportHeader(source);
+		final Map<InvoiceId, I_C_Invoice> invoicesById = loadInvoices(paySelectionLines);
 
 		if (isGroupTransactions && PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
 		{
-			handleInvoicePaySelectionLines(paySelectionLines, header);
+			handleInvoicePaySelectionLines(paySelectionLines, invoicesById, header);
 		}
 		else
 		{
-			handleUngroupedPaySelectionLines(paySelectionLines, header);
+			handleUngroupedPaySelectionLines(paySelectionLines, invoicesById, header);
 		}
 
 		return CreatedSEPAExports.builder()
@@ -181,12 +183,9 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		// load every invoice once: it feeds both the export line and the debtor's address
-		final Map<InvoiceId, I_C_Invoice> invoicesById = invoiceBL.getByIds(linesByScheme.values().stream()
-						.flatMap(List::stream)
-						.map(line -> InvoiceId.ofRepoId(line.getC_Invoice_ID()))
-						.collect(ImmutableSet.toImmutableSet()))
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), invoice -> invoice));
+		final Map<InvoiceId, I_C_Invoice> invoicesById = loadInvoices(linesByScheme.values().stream()
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList()));
 
 		final Set<DirectDebitMandate> usedMandates = new LinkedHashSet<>();
 		linesByScheme.forEach((scheme, lines) -> {
@@ -321,9 +320,24 @@ class CreateSEPAExportFromPaySelectionCommand
 		return LocationId.ofRepoId(Check.assumeGreaterThanZero(invoice.getC_BPartner_Location_Value_ID(), I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID));
 	}
 
-	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line)
+	/**
+	 * Loads the invoices of all given lines with one query; lines without an invoice are skipped.
+	 */
+	private Map<InvoiceId, I_C_Invoice> loadInvoices(@NonNull final List<I_C_PaySelectionLine> lines)
 	{
-		return createExportLine(line, invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID())));
+		return invoiceBL.getByIds(lines.stream()
+						.map(line -> InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID()))
+						.filter(Objects::nonNull)
+						.collect(ImmutableSet.toImmutableSet()))
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), invoice -> invoice));
+	}
+
+	private static I_C_Invoice getInvoice(@NonNull final Map<InvoiceId, I_C_Invoice> invoicesById, @NonNull final I_C_PaySelectionLine line)
+	{
+		final I_C_Invoice invoice = invoicesById.get(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
+		Check.assumeNotNull(invoice, "Invoice of {} exists", line);
+		return invoice;
 	}
 
 	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line, @NonNull final I_C_Invoice sourceInvoice)
@@ -423,6 +437,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private void handleInvoicePaySelectionLines(
 			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final Map<InvoiceId, I_C_Invoice> invoicesById,
 			@NonNull final I_SEPA_Export header)
 	{
 		// QR-IBAN (QRR) payments carry a per-invoice QR reference and cannot be aggregated;
@@ -434,13 +449,13 @@ class CreateSEPAExportFromPaySelectionCommand
 				.filter(line -> !hasQrIban(line))
 				.collect(ImmutableList.toImmutableList());
 
-		handleUngroupedPaySelectionLines(qrIbanLines, header);
+		handleUngroupedPaySelectionLines(qrIbanLines, invoicesById, header);
 
 		final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> keyToAggregatedPaySelectionLines = getInvoiceKeyToGroupedPaySelectionLines(groupableLines);
 		final List<I_C_PaySelectionLine> ungroupedPaySelectionLines = getUngroupedPaySelectionLines(keyToAggregatedPaySelectionLines);
 
-		handleUngroupedPaySelectionLines(ungroupedPaySelectionLines, header);
-		handleGroupedPaySelectionLines(keyToAggregatedPaySelectionLines, header);
+		handleUngroupedPaySelectionLines(ungroupedPaySelectionLines, invoicesById, header);
+		handleGroupedPaySelectionLines(keyToAggregatedPaySelectionLines, invoicesById, header);
 	}
 
 	private boolean hasQrIban(@NonNull final I_C_PaySelectionLine line)
@@ -455,13 +470,14 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private void handleUngroupedPaySelectionLines(
 			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final Map<InvoiceId, I_C_Invoice> invoicesById,
 			@NonNull final I_SEPA_Export header)
 	{
 		paySelectionLines.stream()
 				// No Bank account. Nothing to do.
 				.filter(this::hasBusinessPartnerBankAccount)
 				.forEach(line -> {
-					final I_SEPA_Export_Line exportLine = createExportLine(line);
+					final I_SEPA_Export_Line exportLine = createExportLine(line, getInvoice(invoicesById, line));
 					exportLine.setSEPA_Export(header);
 					save(exportLine);
 				});
@@ -469,6 +485,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private void handleGroupedPaySelectionLines(
 			@NonNull final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> sepaExportLineRefs,
+			@NonNull final Map<InvoiceId, I_C_Invoice> invoicesById,
 			@NonNull final I_SEPA_Export header)
 	{
 		sepaExportLineRefs
@@ -478,19 +495,19 @@ class CreateSEPAExportFromPaySelectionCommand
 				.forEach(entry -> {
 					final InvoicePaySelectionLinesAggregationKey sepaExportGroupLinesKey = entry.getKey();
 					final AggregatedInvoicePaySelectionLines lines = entry.getValue();
-					final I_SEPA_Export_Line exportLine = createAndSaveExportLine(sepaExportGroupLinesKey, lines, header);
+					final I_SEPA_Export_Line exportLine = createAndSaveExportLine(sepaExportGroupLinesKey, lines, invoicesById, header);
 
-					lines.forEach(line -> createAndSaveExportLineRef(line, header, exportLine));
+					lines.forEach(line -> createAndSaveExportLineRef(line, getInvoice(invoicesById, line), header, exportLine));
 				});
 	}
 
 	private void createAndSaveExportLineRef(@NonNull final I_C_PaySelectionLine line,
+											@NonNull final I_C_Invoice sourceInvoice,
 											@NonNull final I_SEPA_Export header,
 											@NonNull final I_SEPA_Export_Line exportLine)
 	{
 		final I_SEPA_Export_Line_Ref ref = newInstance(I_SEPA_Export_Line_Ref.class);
 
-		final I_C_Invoice sourceInvoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
 		final String description = sourceInvoice.getDescription();
 		final String structuredRemittanceInfo = line.getReference();
 
@@ -510,6 +527,7 @@ class CreateSEPAExportFromPaySelectionCommand
 	@NonNull
 	private I_SEPA_Export_Line createAndSaveExportLine(@NonNull final CreateSEPAExportFromPaySelectionCommand.InvoicePaySelectionLinesAggregationKey sepaExportGroupLinesKey,
 													   @NonNull final AggregatedInvoicePaySelectionLines refList,
+													   @NonNull final Map<InvoiceId, I_C_Invoice> invoicesById,
 													   @NonNull final I_SEPA_Export header)
 	{
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class);
@@ -523,7 +541,9 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setSwiftCode(sepaExportGroupLinesKey.getSwiftCode());
 		exportLine.setSEPA_Export_ID(header.getSEPA_Export_ID());
 		exportLine.setIsGroupLine(true);
-		exportLine.setDescription(refList.getAggregatedDescription(invoiceBL::getByIds));
+		exportLine.setDescription(refList.getAggregatedDescription(invoiceIds -> invoiceIds.stream()
+				.map(invoicesById::get)
+				.collect(ImmutableList.toImmutableList())));
 		exportLine.setStructuredRemittanceInfo(refList.getAggregatedRemittanceInfo());
 		exportLine.setNumberOfReferences(refList.size());
 

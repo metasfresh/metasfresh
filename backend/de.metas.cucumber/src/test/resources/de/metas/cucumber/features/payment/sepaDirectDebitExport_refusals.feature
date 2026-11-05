@@ -161,8 +161,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
   @from:cucumber
   @Id:S32708_TC19a
   Scenario Outline: mandate older than 36 months before the collection date: refused (last use <DateLastUsed>, signed <MandateDate>, collection <PayDate>)
-    Given metasfresh has date and time <DateInvoiced>T10:00:00+01:00[Europe/Berlin]
-    And metasfresh contains C_BPartners:
+    Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
       | debtor     | SEPA Debtor T19 | dd_tc19_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_Bank:
@@ -211,8 +210,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
   @from:cucumber
   @Id:S32708_TC19b
   Scenario Outline: mandate exactly 36 months before the collection date: still valid, exported (last use <DateLastUsed>, collection <PayDate>)
-    Given metasfresh has date and time <DateInvoiced>T10:00:00+01:00[Europe/Berlin]
-    And metasfresh contains C_BPartners:
+    Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID | PaymentRule |
       | debtor     | SEPA Debtor T19 | dd_tc19_@Date@ | Y          | pricingSystem      | D           |
     And metasfresh contains C_Bank:

@@ -1,5 +1,9 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.banking.mandate.DirectDebitMandate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -53,6 +57,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -222,14 +227,15 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 				sepaDocument.getPaymentDate(),
 				orgDAO.getTimeZone(OrgId.ofRepoId(sepaDocument.getAD_Org_ID()))));
 
-		for (final I_SEPA_Export_Line line : sepaDocumentLines)
-		{
-			if (!line.isActive() || line.isError())
-			{
-				continue;
-			}
+		final ImmutableList<I_SEPA_Export_Line> linesToExport = sepaDocumentLines.stream()
+				.filter(line -> line.isActive() && !line.isError())
+				.collect(ImmutableList.toImmutableList());
+		final ImmutableMap<SEPAExportLineId, Debtor> debtorsByLineId = loadDebtors(linesToExport);
 
-			final PaymentInstruction29 pmtInf = createPaymentInstruction(sepaDocument, line, groupHeader.getMsgId(), cstmrDrctDbtInitn.getPmtInf().size() + 1, creditor, requestedCollectionDate);
+		for (final I_SEPA_Export_Line line : linesToExport)
+		{
+			final Debtor debtor = debtorsByLineId.get(SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID()));
+			final PaymentInstruction29 pmtInf = createPaymentInstruction(sepaDocument, line, debtor, groupHeader.getMsgId(), cstmrDrctDbtInitn.getPmtInf().size() + 1, creditor, requestedCollectionDate);
 			cstmrDrctDbtInitn.getPmtInf().add(pmtInf);
 			groupHeader.setCtrlSum(groupHeader.getCtrlSum().add(pmtInf.getCtrlSum()));
 		}
@@ -243,6 +249,36 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		final DocumentSDD document = new DocumentSDD();
 		document.setCstmrDrctDbtInitn(cstmrDrctDbtInitn);
 		return document;
+	}
+
+	/**
+	 * Loads the partners and the debtor locations of all lines with one query each.
+	 */
+	private ImmutableMap<SEPAExportLineId, Debtor> loadDebtors(@NonNull final List<I_SEPA_Export_Line> lines)
+	{
+		final ImmutableMap<BPartnerId, I_C_BPartner> partnersById = Maps.uniqueIndex(
+				bpartnerDAO.retrieveByIds(lines.stream()
+						.map(line -> BPartnerId.ofRepoId(line.getC_BPartner_ID()))
+						.collect(ImmutableSet.toImmutableSet())),
+				partner -> BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+
+		final ImmutableMap<SEPAExportLineId, LocationId> locationIdsByLineId = Maps.toMap(
+				lines.stream().map(line -> SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID())).collect(ImmutableSet.toImmutableSet()),
+				exportContext::getDebtorLocationId);
+		final ImmutableMap<LocationId, I_C_Location> locationsById = Maps.uniqueIndex(
+				locationDAO.getByIds(ImmutableSet.copyOf(locationIdsByLineId.values())),
+				location -> LocationId.ofRepoId(location.getC_Location_ID()));
+
+		return lines.stream().collect(ImmutableMap.toImmutableMap(
+				line -> SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID()),
+				line -> {
+					final SEPAExportLineId lineId = SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID());
+					final I_C_BPartner partner = partnersById.get(BPartnerId.ofRepoId(line.getC_BPartner_ID()));
+					Check.assumeNotNull(partner, "Debtor partner of {} exists", line);
+					final I_C_Location location = locationsById.get(locationIdsByLineId.get(lineId));
+					Check.assumeNotNull(location, "Debtor location of {} exists", line);
+					return new Debtor(partner, location);
+				}));
 	}
 
 	private GroupHeader83 createGroupHeader(@NonNull final I_SEPA_Export sepaDocument)
@@ -261,6 +297,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private PaymentInstruction29 createPaymentInstruction(
 			@NonNull final I_SEPA_Export sepaHdr,
 			@NonNull final I_SEPA_Export_Line line,
+			@NonNull final Debtor debtor,
 			@NonNull final String msgId,
 			final int index,
 			@NonNull final PartyIdentification135 creditor,
@@ -290,7 +327,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		pmtInf.setChrgBr(ChargeBearerType1Code.SLEV);
 		pmtInf.setCdtrSchmeId(createCreditorSchemeIdOrNull(sepaHdr.getSEPA_CreditorIdentifier()));
 
-		final DirectDebitTransactionInformation23 drctDbtTxInf = createDirectDebitTransactionInformation(pmtInf.getPmtInfId() + END_TO_END_ID_SUFFIX, sepaHdr, line, mandate);
+		final DirectDebitTransactionInformation23 drctDbtTxInf = createDirectDebitTransactionInformation(pmtInf.getPmtInfId() + END_TO_END_ID_SUFFIX, sepaHdr, line, debtor, mandate);
 		pmtInf.getDrctDbtTxInf().add(drctDbtTxInf);
 		pmtInf.setCtrlSum(drctDbtTxInf.getInstdAmt().getValue());
 
@@ -301,6 +338,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 			@NonNull final String endToEndId,
 			@NonNull final I_SEPA_Export sepaHdr,
 			@NonNull final I_SEPA_Export_Line line,
+			@NonNull final Debtor debtor,
 			@NonNull final DirectDebitMandate mandate)
 	{
 		final DirectDebitTransactionInformation23 drctDbtTxInf = new DirectDebitTransactionInformation23();
@@ -317,7 +355,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		drctDbtTxInf.setInstdAmt(instdAmt);
 
 		final MandateRelatedInformation14 mndtRltdInf = new MandateRelatedInformation14();
-		mndtRltdInf.setMndtId(toMandateReference(mandate.getReference(), line));
+		mndtRltdInf.setMndtId(toMandateReference(mandate.getReference(), debtor));
 		mndtRltdInf.setDtOfSgntr(toXMLDate(mandate.getMandateDate()));
 		mndtRltdInf.setAmdmntInd(Boolean.FALSE);
 		final DirectDebitTransaction10 drctDbtTx = new DirectDebitTransaction10();
@@ -327,11 +365,11 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		drctDbtTxInf.setDbtrAgt(createFinancialInstitution(line.getSwiftCode()));
 
 		final PartyIdentification135 dbtr = new PartyIdentification135();
-		final String originalDebtorName = SepaUtils.getBPartnerNameById(line.getC_BPartner_ID());
+		final String originalDebtorName = debtor.getPartner().getName();
 		Check.assumeNotNull(originalDebtorName, "Debtor of {} has a name", line);
 		final String debtorName = SepaTextConverter.toText(originalDebtorName, MAX_LENGTH_NAME);
-		dbtr.setNm(toMandatoryText(debtorName, originalDebtorName, "Name", toPartnerLabel(line)));
-		dbtr.setPstlAdr(createDebtorPstlAdrOrNull(sepaHdr, line));
+		dbtr.setNm(toMandatoryText(debtorName, originalDebtorName, "Name", debtor.getLabel()));
+		dbtr.setPstlAdr(createDebtorPstlAdrOrNull(sepaHdr, line, debtor));
 		drctDbtTxInf.setDbtr(dbtr);
 
 		drctDbtTxInf.setDbtrAcct(createCashAccount(line.getIBAN()));
@@ -370,11 +408,11 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	 * @throws AdempiereException if it contains a character outside the SEPA character set, so that no export is created
 	 */
 	@NonNull
-	private String toMandateReference(@NonNull final String reference, @NonNull final I_SEPA_Export_Line line)
+	private static String toMandateReference(@NonNull final String reference, @NonNull final Debtor debtor)
 	{
 		if (!SepaTextConverter.isSepaIdentifier(reference))
 		{
-			throw new AdempiereException(MSG_MandateReferenceNotSepa, SepaUtils.escapeAtSignsForParseTranslation(toPartnerLabel(line)), SepaUtils.escapeAtSignsForParseTranslation(reference));
+			throw new AdempiereException(MSG_MandateReferenceNotSepa, SepaUtils.escapeAtSignsForParseTranslation(debtor.getLabel()), SepaUtils.escapeAtSignsForParseTranslation(reference));
 		}
 		return reference;
 	}
@@ -402,13 +440,6 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private String toOrgLabel(@NonNull final I_SEPA_Export sepaDocument)
 	{
 		return orgDAO.retrieveOrgName(OrgId.ofRepoId(sepaDocument.getAD_Org_ID()));
-	}
-
-	/** @return the value of the line's partner, followed by its name */
-	private String toPartnerLabel(@NonNull final I_SEPA_Export_Line line)
-	{
-		final I_C_BPartner partner = bpartnerDAO.getById(BPartnerId.ofRepoId(line.getC_BPartner_ID()));
-		return SepaUtils.toPartnerLabel(partner.getValue(), partner.getName());
 	}
 
 	private PartyIdentification135 createCreditor(@NonNull final I_SEPA_Export sepaDocument)
@@ -463,10 +494,9 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	 * @throws AdempiereException if the address has no town although it is mandatory, because the creditor's or the debtor's bank is outside the EEA
 	 */
 	@Nullable
-	private PostalAddress24 createDebtorPstlAdrOrNull(@NonNull final I_SEPA_Export sepaHdr, @NonNull final I_SEPA_Export_Line line)
+	private PostalAddress24 createDebtorPstlAdrOrNull(@NonNull final I_SEPA_Export sepaHdr, @NonNull final I_SEPA_Export_Line line, @NonNull final Debtor debtor)
 	{
-		final LocationId debtorLocationId = exportContext.getDebtorLocationId(SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID()));
-		final PostalAddress24 pstlAdr = createPstlAdr(locationDAO.getById(debtorLocationId));
+		final PostalAddress24 pstlAdr = createPstlAdr(debtor.getLocation());
 		if (isCompleteAddress(pstlAdr))
 		{
 			return pstlAdr;
@@ -474,7 +504,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 
 		if (SepaUtils.isNonEeaSepaCountryIban(sepaHdr.getIBAN()) || SepaUtils.isNonEeaSepaCountryIban(line.getIBAN()))
 		{
-			throw new AdempiereException(MSG_DebtorAddressWithoutTown, SepaUtils.escapeAtSignsForParseTranslation(toPartnerLabel(line)));
+			throw new AdempiereException(MSG_DebtorAddressWithoutTown, SepaUtils.escapeAtSignsForParseTranslation(debtor.getLabel()));
 		}
 		return null;
 	}
@@ -551,5 +581,19 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	public String toString()
 	{
 		return "SEPACustomerDirectDebitMarshaler_Pain_008_001_08";
+	}
+
+	/** The debtor partner and address of one export line. */
+	@Value
+	private static class Debtor
+	{
+		@NonNull I_C_BPartner partner;
+		@NonNull I_C_Location location;
+
+		/** @return the value of the partner, followed by its name */
+		String getLabel()
+		{
+			return SepaUtils.toPartnerLabel(partner.getValue(), partner.getName());
+		}
 	}
 }
