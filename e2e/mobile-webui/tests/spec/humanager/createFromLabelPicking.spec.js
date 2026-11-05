@@ -139,7 +139,7 @@ test('bracketed UDI label (fixed-position format) books a CU, picking by the sam
     // the label code is stored on the new HU (HU_QRCode attribute), so the picking lookup finds it
     await PickingJobScreen.pickHU({ qrCode: label, isScanDirectly: true, expectedPickDirectly: true });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '' });
-    await Backend.expect({ hus: { [huId]: { huStatus: 'E' } } });
+    await Backend.expect({ hus: { [huId]: { huStatus: 'D' } } }); // the CU is packed into the picked TU
 });
 
 // noinspection JSUnusedLocalSymbols

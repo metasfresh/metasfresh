@@ -899,8 +899,9 @@ public class PickingJobPickCommand
 			if (isPickWholeTU && huService.isVirtual(pickFromHURecord))
 			{
 				// A scanned custom label asks for "the whole HU", but a virtual HU (CU, e.g. one booked from a label in the HU Manager) is no TU to extract:
-				// pick the CU quantity like a normal CU pick.
-				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/true);
+				// pick all of its quantity (the scan carries no quantity) like a normal CU pick.
+				final Quantity qtyWholeHU = HUContextHolder.getCurrent().getHUStorageFactory().getStorage(pickFromHURecord).getQuantity(productId, qtyToPickCUs.getUOM());
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, qtyWholeHU, /*recordLeafCUsAsTUParts*/true);
 			}
 			else if (isPickWholeTU)
 			{
@@ -1241,13 +1242,23 @@ public class PickingJobPickCommand
 			@NonNull final PackToHUsProducer.PackToInfo packToInfo,
 			final boolean recordLeafCUsAsTUParts)
 	{
+		return pickCUsAndPackTo(productId, pickFromVHUId, packToInfo, qtyToPickCUs, recordLeafCUsAsTUParts);
+	}
+
+	private LUTUResult pickCUsAndPackTo(
+			@NonNull final ProductId productId,
+			@NonNull final HuId pickFromVHUId,
+			@NonNull final PackToHUsProducer.PackToInfo packToInfo,
+			@NonNull final Quantity qtyPicked,
+			final boolean recordLeafCUsAsTUParts)
+	{
 		return packToHUsProducer.packToHU(
 				PackToHUsProducer.PackToHURequest.builder()
 						.huContext(HUContextHolder.getCurrent())
 						.pickFromHUId(pickFromVHUId)
 						.packToInfo(packToInfo)
 						.productId(productId)
-						.qtyPicked(qtyToPickCUs)
+						.qtyPicked(qtyPicked)
 						.catchWeight(getCatchWeight())
 						.documentRef(getLineId().toTableRecordReference())
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
