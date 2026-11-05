@@ -68,7 +68,6 @@ import java.util.stream.Collectors;
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -431,7 +430,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		header.setIsExportBatchBookings(paySelectionHeader.isExportBatchBookings());
 
-		save(header);
+		sepaDocumentDAO.save(header);
 		return header;
 	}
 
@@ -479,7 +478,7 @@ class CreateSEPAExportFromPaySelectionCommand
 				.forEach(line -> {
 					final I_SEPA_Export_Line exportLine = createExportLine(line, getInvoice(invoicesById, line));
 					exportLine.setSEPA_Export(header);
-					save(exportLine);
+					sepaDocumentDAO.save(exportLine);
 				});
 	}
 
@@ -521,7 +520,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		ref.setAmt(line.getPayAmt());
 		ref.setC_Currency_ID(exportLine.getC_Currency_ID());
 
-		save(ref);
+		sepaDocumentDAO.save(ref);
 	}
 
 	@NonNull
@@ -547,7 +546,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setStructuredRemittanceInfo(refList.getAggregatedRemittanceInfo());
 		exportLine.setNumberOfReferences(refList.size());
 
-		save(exportLine);
+		sepaDocumentDAO.save(exportLine);
 
 		return exportLine;
 	}

@@ -39,4 +39,6 @@ public interface ISEPADocumentDAO extends ISingletonService
 	void save(@NonNull I_SEPA_Export export);
 
 	void save(@NonNull I_SEPA_Export_Line exportLine);
+
+	void save(@NonNull I_SEPA_Export_Line_Ref exportLineRef);
 }

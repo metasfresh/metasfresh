@@ -21,7 +21,6 @@ import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
@@ -108,7 +107,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		paySelection.setLastSepaExport(SystemTime.asTimestamp());
 		paySelection.setLastSepaExportBy_ID(getAD_User_ID());
-		InterfaceWrapperHelper.saveRecord(paySelection);
+		paySelectionDAO.save(paySelection);
 
 		getResult().setReportData(ReportResultData.builder()
 				.reportFilename(xml.getFilename())
