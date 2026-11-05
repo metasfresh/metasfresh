@@ -37,6 +37,7 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
+import de.metas.util.web.LenientRestMessageConverterConfiguration;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,10 +58,10 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -68,6 +69,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import java.util.ArrayList;
 
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@Import(LenientRestMessageConverterConfiguration.class)
 @EnableAsync
 @Profile(Profiles.PROFILE_Webui)
 public class WebRestApiApplication
@@ -136,18 +138,6 @@ public class WebRestApiApplication
 	public ObjectMapper jsonObjectMapper()
 	{
 		return JsonObjectMapperHolder.sharedJsonObjectMapper();
-	}
-
-	/**
-	 * REST message converter: like {@link #jsonObjectMapper()}, but tolerant of unknown request properties, as the pre-JDK25 REST layer was.
-	 * Spring Boot's own converter auto-configuration backs off in favour of this bean.
-	 *
-	 * @see JsonObjectMapperHolder#newHttpMessageConverterJsonObjectMapper()
-	 */
-	@Bean
-	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter()
-	{
-		return new MappingJackson2HttpMessageConverter(JsonObjectMapperHolder.newHttpMessageConverterJsonObjectMapper());
 	}
 
 	@Bean(Adempiere.BEAN_NAME)
