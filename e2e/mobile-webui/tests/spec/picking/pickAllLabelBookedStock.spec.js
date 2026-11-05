@@ -98,7 +98,7 @@ test('Pick all takes the order quantity (5) out of one pack (10) booked by label
 });
 
 // noinspection JSUnusedLocalSymbols
-test('line (15) larger than any single pack (two packs of 10 booked by label): Pick all behaviour recorded', async ({ page }) => {
+test('KNOWN LIMITATION: line (15) larger than any single pack (2 x 10 booked by label) - Pick all fails, nothing picked', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230');
     allure.story('Pick All button');
@@ -111,14 +111,22 @@ test('line (15) larger than any single pack (two packs of 10 booked by label): P
     const huId2 = await bookPackByLabel({ label: bracketedLabel(gtin), qty: 10 });
 
     await startPickingJob({ masterdata });
-    // OBSERVED (local run 2026-11-05): the button is offered (stock 20 >= 15 in total), but a line is filled from ONE pack only,
-    // so the first pack (10) cannot cover 15: the server answers with the generic error, the job stays open, nothing is picked.
-    await page.getByTestId('pickAll-button').waitFor({ state: 'visible' });
+    // Known limitation: Pick all fills each line from ONE pack only (the button is offered because the total stock, 20, covers 15).
+    // When multi-pack auto-pick is implemented, change this case to expect 15 picked from both packs.
+    await PickingJobScreen.expectPickAllButtonVisible();
+    let pickAllResponse;
     await expectErrorToast('Pick all with a line larger than any single pack fails', async () => {
-        await page.getByTestId('pickAll-button').tap();
+        pickAllResponse = await PickingJobScreen.tapPickAllButtonExpectingError();
     }, ({ textContent }) => {
         expect(textContent).toContain('Please try again');
     });
+    // the generic toast is shared by every server error: pin the real server rejection
+    expect(pickAllResponse.status()).toBe(422); // AdempiereException
+    const errorMessage = JSON.stringify(await pickAllResponse.json());
+    // the one pack the line is taken from (10) cannot cover the requested 15
+    expect(errorMessage).toContain('Cannot fully unload all qty for AllocationRequest');
+    expect(errorMessage).toContain('qty=15 Stk');
+    expect(errorMessage).toContain('qtyAllocated=10');
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '15 Stk', qtyPicked: '0 Stk' });
     await Backend.expect({ hus: { [huId1]: { storages: { P1: '10 PCE' } }, [huId2]: { storages: { P1: '10 PCE' } } } });
 });

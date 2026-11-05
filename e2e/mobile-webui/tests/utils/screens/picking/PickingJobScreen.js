@@ -308,6 +308,20 @@ export const PickingJobScreen = {
         await PickingJobsListScreen.waitForScreen();
     }),
 
+    expectPickAllButtonVisible: async () => await step(`${NAME} - Expect Pick All button to be visible`, async () => {
+        await pickAllButton().waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Taps Pick All for a case where the server is expected to reject it (the caller wraps this in expectErrorToast).
+     * Does not wait for the jobs list. Returns the /pickAll response so the caller can assert the real rejection, not only the generic toast.
+     */
+    tapPickAllButtonExpectingError: async () => await step(`${NAME} - Tap Pick All button, expecting a server error`, async () => {
+        const responsePromise = page.waitForResponse((r) => r.url().includes('/pickAll') && r.request().method() === 'POST', { timeout: 30000 });
+        await pickAllButton().tap();
+        return await responsePromise;
+    }),
+
     expectPickAllButtonHidden: async () => await step(`${NAME} - Expect Pick All button to be hidden`, async () => {
         let button = page.getByTestId('pickAll-button');
         await button.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
