@@ -86,8 +86,13 @@ public class AbstractStockEstimateHandler
 				? BigDecimal.ZERO
 				: stockEstimateEvent.getQuantityDelta();
 
+		// Keep both branches of type Integer. A bare int literal `0` would force binary numeric
+		// promotion and auto-unbox getQtyStockEstimateSeqNo() to int; since that value is @Nullable
+		// (a StockEstimateCreatedEvent legitimately carries a null seqNo), the unboxing threw a
+		// NullPointerException on the async material-event thread. MainDataRequestHandler already
+		// null-tolerates the seqNo, so a null must flow through unchanged.
 		final Integer qtyStockSeqNo = stockEstimateEvent instanceof StockEstimateDeletedEvent
-				? 0
+				? Integer.valueOf(0)
 				: stockEstimateEvent.getQtyStockEstimateSeqNo();
 		
 		return UpdateMainDataRequest.builder()
