@@ -58,7 +58,7 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setIgnoreScheduleAsyncBatch(boolean ignoreScheduleAsyncBatch);
 
 	/**
-	 * The async batch of the run that creates the shipments, e.g. the shipment workpackage's batch.
+	 * The async batch of the run that creates the shipments.
 	 * If set, every created shipment gets it as {@code C_Async_Batch_ID}; if {@code null} (default), a shipment gets the batch of its first schedule.
 	 */
 	IInOutProducerFromShipmentScheduleWithHU setAsyncBatchId(@Nullable AsyncBatchId asyncBatchId);

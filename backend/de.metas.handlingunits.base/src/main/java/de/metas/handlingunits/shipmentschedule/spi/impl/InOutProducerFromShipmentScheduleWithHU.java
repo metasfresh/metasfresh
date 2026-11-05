@@ -429,8 +429,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 			}
 		}
 
-		// The run's batch if there is one (inside a shipment workpackage: the workpackage's batch, which a schedule recompute cannot clear);
-		// otherwise the batch of the shipment's first schedule.
 		if (asyncBatchId != null)
 		{
 			shipment.setC_Async_Batch_ID(asyncBatchId.getRepoId());
