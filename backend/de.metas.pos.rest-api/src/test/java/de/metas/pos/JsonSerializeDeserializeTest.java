@@ -360,6 +360,7 @@ class JsonSerializeDeserializeTest
 								.build()
 				))
 				.hashCode(123)
+				.version(1762333200000L)
 				.build();
 	}
 
