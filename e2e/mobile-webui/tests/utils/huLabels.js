@@ -22,6 +22,19 @@ export const BRACKETED_LABEL_PRODUCTION_DATE_DISPLAY = '03/15/2027'; // en_US di
 export const bracketedLabel = (gtin) => `(01)${gtin}(11)270315(10)${BRACKETED_LABEL_LOT}`;
 
 /**
+ * Same label shape, but the LOT part has an open end (endPosition 0 = End No empty = read to the end of the code): a lot of ANY length from 1 character.
+ * Invented labels: `bracketedLabelWithLot(gtin, lot)`.
+ */
+export const FORMAT_BRACKETED_GTIN_PRODDATE_OPENLOT = {
+    name: 'my bracketed label, open lot (HU Manager)',
+    parts: [
+        ...FORMAT_BRACKETED_GTIN_PRODDATE_LOT.parts.slice(0, 5),
+        { startPosition: 33, endPosition: 0, type: 'LOT' },
+    ],
+};
+export const bracketedLabelWithLot = (gtin, lot) => `(01)${gtin}(11)270315(10)${lot}`;
+
+/**
  * For the tests that need a best-before date (MHD): GTIN 1-14, LOT 15-19, BEST_BEFORE_DATE 20-25 (yyMMdd), no product-code part.
  * e.g. '02001234567893' + 'L2311' + '271231'. The product's stored GTIN is the 14-digit form (the customer-data shape: leading 0 + 13-digit EAN).
  */
