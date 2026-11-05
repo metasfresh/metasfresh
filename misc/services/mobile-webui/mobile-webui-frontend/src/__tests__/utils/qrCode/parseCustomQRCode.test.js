@@ -134,6 +134,12 @@ describe('parseCustomQRCode - part with an open end (reads to the end of the cod
     expect(result[ATTR_lotNo]).toBe('12345');
   });
 
+  test('a filled end: a lot padded with trailing blanks is trimmed, like in the backend', () => {
+    const result = parseCustomQRCode({ string: '(10)AB12  ', format: formatWithOpenEnd(10) });
+    expect(result.error).toBeUndefined();
+    expect(result[ATTR_lotNo]).toBe('AB12');
+  });
+
   test('no character at the start position: not recognized', () => {
     expect(parseCustomQRCode({ string: '(10)', format: formatWithOpenEnd(0) }).error).toBeDefined();
   });

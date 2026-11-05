@@ -177,21 +177,17 @@ class ScannableCodeFormatLoaderAndSaver
 			return partRecord.getEndNo();
 		}
 
-		for (final I_C_ScannableCode_Format_Part other : partRecordsSortedByStartNo)
-		{
-			if (other != partRecord && other.getStartNo() == partRecord.getStartNo())
-			{
-				throw new AdempiereException("Part starting at " + partRecord.getStartNo() + " has no End No, but another part starts at the same position");
-			}
-		}
-
 		int index = -1;
 		for (int i = 0; i < partRecordsSortedByStartNo.size(); i++)
 		{
-			if (partRecordsSortedByStartNo.get(i) == partRecord)
+			final I_C_ScannableCode_Format_Part other = partRecordsSortedByStartNo.get(i);
+			if (other == partRecord)
 			{
 				index = i;
-				break;
+			}
+			else if (other.getStartNo() == partRecord.getStartNo())
+			{
+				throw new AdempiereException("Part starting at " + partRecord.getStartNo() + " has no End No, but another part starts at the same position");
 			}
 		}
 		if (index < 0 || index == partRecordsSortedByStartNo.size() - 1)
