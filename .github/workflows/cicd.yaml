@@ -80,6 +80,11 @@ jobs:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
         run: |
           envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: build-commons
         run: |
           docker buildx build \
@@ -88,7 +93,9 @@ jobs:
           --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-backend
         run: |
@@ -99,7 +106,9 @@ jobs:
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-backend-dist
         run: |
@@ -110,7 +119,9 @@ jobs:
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel
         run: |
@@ -121,7 +132,9 @@ jobs:
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel-dist
         run: |
@@ -132,7 +145,9 @@ jobs:
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         uses: nick-fields/retry@v3
@@ -142,15 +157,25 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
 
   frontend:
     runs-on: ubuntu-latest
