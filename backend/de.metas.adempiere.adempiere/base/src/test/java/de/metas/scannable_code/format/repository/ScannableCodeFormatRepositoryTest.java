@@ -140,6 +140,19 @@ class ScannableCodeFormatRepositoryTest
 	}
 
 	@Test
+	void openEndSharingStartNoWithAnEarlierPart_isInvalid()
+	{
+		// same as above, but the part sharing the start position comes first (a stable sort must not make the result depend on the record order)
+		assertThatThrownBy(() -> repository.create(ScannableCodeFormatCreateRequest.builder()
+				.name("duplicate start, other order")
+				.parts(ImmutableList.of(
+						part(1, 3, ScannableCodeFormatPartType.ProductCode),
+						part(1, 0, ScannableCodeFormatPartType.LotNo)))
+				.build()))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
 	void negativeEnd_isInvalid()
 	{
 		assertThatThrownBy(() -> repository.create(ScannableCodeFormatCreateRequest.builder()

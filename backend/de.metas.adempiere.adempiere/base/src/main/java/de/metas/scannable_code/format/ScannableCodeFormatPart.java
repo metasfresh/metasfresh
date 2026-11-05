@@ -23,7 +23,7 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 public class ScannableCodeFormatPart
 {
 	int startPosition;
-	/** 0 = open end: the part reads up to the end of the scanned code (only the last part of a format can be left open, the loader resolves the others) */
+	/** 0 = open end: the part reads to the end of the scanned code */
 	int endPosition;
 
 	public static final int OPEN_END = 0;

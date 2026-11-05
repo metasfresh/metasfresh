@@ -2,12 +2,12 @@ package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
-import de.metas.logging.LogManager;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
@@ -16,8 +16,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
-import org.slf4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -175,6 +175,14 @@ class ScannableCodeFormatLoaderAndSaver
 		if (partRecord.getEndNo() != ScannableCodeFormatPart.OPEN_END)
 		{
 			return partRecord.getEndNo();
+		}
+
+		for (final I_C_ScannableCode_Format_Part other : partRecordsSortedByStartNo)
+		{
+			if (other != partRecord && other.getStartNo() == partRecord.getStartNo())
+			{
+				throw new AdempiereException("Part starting at " + partRecord.getStartNo() + " has no End No, but another part starts at the same position");
+			}
 		}
 
 		int index = -1;
