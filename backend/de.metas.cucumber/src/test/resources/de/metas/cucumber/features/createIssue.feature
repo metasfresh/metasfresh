@@ -24,6 +24,7 @@ Feature: issue creation using metasfresh api
 @allure.label.epic:E0270_CRM
 @allure.label.feature:F00271_Karottenabrechnung_mit_Lager
 @F00271
+  @expectsAdIssue:unexpected.NPE
   Scenario: The request is good and the issue is created
 
     When the metasfresh REST-API endpoint path 'api/v2/externalsystem/externalstatus/123123/error' receives a 'POST' request with the payload
