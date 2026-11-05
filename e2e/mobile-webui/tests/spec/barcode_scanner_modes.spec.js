@@ -27,54 +27,39 @@ const modeSysconfigs = ({
 });
 
 // The tests below write GLOBAL AD_SysConfig scanner knobs (e.g. the CT60 test sets
-// mode.hardware.input.readOnly=Y, the manual-typing test sets defaultMode=manual). The backend's
-// reset-to-defaults (SysconfigCommand) does not cover the mode.hardware.*, mode.manual.* and
-// defaultMode keys on this branch, so without a restore a knob leaks into every later test, spec
-// and run on the same DB — e.g. a second run of this spec fails the "readOnly absent" test on the
-// readOnly=Y left behind by the CT60 test.
-// So each test's masterdata call remembers the sysconfig values it found (previousSysconfigs) and
-// afterEach writes them back, also when the test failed. Only a masterdata call that itself fails
-// returns no previousSysconfigs, so nothing can be restored for that test.
-let sysconfigsToRestore = null;
-
-const createMasterdataAndRememberSysconfigs = async (request) => {
-    const masterdata = await Backend.createMasterdata({ language: 'en_US', request });
-    // keep the values from BEFORE the test's first masterdata call
-    if (sysconfigsToRestore == null) {
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? {};
-    }
-    return masterdata;
-};
-
-test.afterEach(async () => {
-    const sysconfigs = sysconfigsToRestore;
-    sysconfigsToRestore = null;
-    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
-        await Backend.setSysconfigs(sysconfigs);
-    }
-});
+// mode.hardware.input.readOnly=Y, the manual-typing test sets defaultMode=manual). No manual
+// restore is needed here: Backend.createMasterdata / setSysconfigs already remember the keys each
+// call overwrote (from the response's previousSysconfigs) and the page fixture restores them, each
+// to its own row, after every test via the restoreSysconfigs endpoint. So a knob can't leak into a
+// later test, spec or run on the same DB.
 
 // Minimal masterdata: login only, no HU/orders. Used by the attribute-guard tests,
 // which only need the barcode input to render — so they run in seconds.
 const createLoginMasterdata = async ({ extraSysconfigs } = {}) => {
-    return await createMasterdataAndRememberSysconfigs({
-        sysconfigs: { ...extraSysconfigs },
-        login: { user: { language: 'en_US' } },
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            sysconfigs: { ...extraSysconfigs },
+            login: { user: { language: 'en_US' } },
+        },
     });
 };
 
 // Full masterdata: login + a handling unit, so scanning its QR code navigates to the HU Manager.
 const createMasterdataWithHU = async ({ extraSysconfigs } = {}) => {
-    return await createMasterdataAndRememberSysconfigs({
-        sysconfigs: { ...extraSysconfigs },
-        login: { user: { language: 'en_US' } },
-        products: { P1: {} },
-        warehouses: { wh1: {} },
-        packingInstructions: {
-            PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
-        },
-        handlingUnits: {
-            HU1: { product: 'P1', warehouse: 'wh1', qty: 80 },
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            sysconfigs: { ...extraSysconfigs },
+            login: { user: { language: 'en_US' } },
+            products: { P1: {} },
+            warehouses: { wh1: {} },
+            packingInstructions: {
+                PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                HU1: { product: 'P1', warehouse: 'wh1', qty: 80 },
+            },
         },
     });
 };
