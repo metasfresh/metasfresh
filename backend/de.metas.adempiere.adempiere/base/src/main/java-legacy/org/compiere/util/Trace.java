@@ -151,6 +151,8 @@ public class Trace
 
 			// Skip some irrelevant stack trace elements
 			if (classname.startsWith("java.") || classname.startsWith("javax.") || classname.startsWith("sun.")
+					|| classname.startsWith("jdk.") // JDK18+ reflection (jdk.internal.reflect.DirectMethodHandleAccessor), the successor of sun.reflect.*
+					|| classname.startsWith("jakarta.") // Jakarta EE (e.g. jakarta.servlet), the successor of javax.*
 					|| classname.startsWith("com.google.")
 					|| classname.startsWith("org.springframework.")
 					|| classname.startsWith("org.apache.")
