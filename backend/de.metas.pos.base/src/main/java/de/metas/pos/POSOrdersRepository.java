@@ -24,30 +24,35 @@ public class POSOrdersRepository
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final POSOrderEventDispatcher eventDispatcher;
+	@NonNull private final POSOrderVersionSource versionSource;
 
 	private POSOrdersLoaderAndSaver newLoaderAndSaver()
 	{
 		return POSOrdersLoaderAndSaver.builder()
 				.queryBL(queryBL)
 				.eventDispatcher(eventDispatcher)
+				.versionSource(versionSource)
+				.trxManager(trxManager)
 				.build();
 	}
 
 	public List<POSOrder> list(@NonNull final POSOrderQuery query)
 	{
+		final long versionBeforeRead = versionSource.current();
 		final List<I_C_POS_Order> orderRecords = toSqlQuery(query)
 				.create()
 				.list();
 
-		return newLoaderAndSaver().loadFromRecords(orderRecords);
+		return newLoaderAndSaver().loadFromRecords(orderRecords, versionBeforeRead);
 	}
 
 	public Optional<POSOrder> firstOnly(@NonNull final POSOrderQuery query)
 	{
+		final long versionBeforeRead = versionSource.current();
 		return toSqlQuery(query)
 				.create()
 				.firstOnlyOptional(I_C_POS_Order.class)
-				.map(record -> newLoaderAndSaver().loadFromRecord(record));
+				.map(record -> newLoaderAndSaver().loadFromRecord(record, versionBeforeRead));
 	}
 
 	private IQueryBuilder<I_C_POS_Order> toSqlQuery(final POSOrderQuery query)
