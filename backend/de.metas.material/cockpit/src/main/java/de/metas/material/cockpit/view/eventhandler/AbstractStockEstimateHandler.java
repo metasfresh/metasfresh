@@ -94,7 +94,7 @@ public class AbstractStockEstimateHandler
 		final Integer qtyStockSeqNo = stockEstimateEvent instanceof StockEstimateDeletedEvent
 				? Integer.valueOf(0)
 				: stockEstimateEvent.getQtyStockEstimateSeqNo();
-		
+
 		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.qtyStockEstimateSeqNo(qtyStockSeqNo)

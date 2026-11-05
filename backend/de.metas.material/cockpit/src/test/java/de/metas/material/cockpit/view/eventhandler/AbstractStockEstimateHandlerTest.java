@@ -4,6 +4,7 @@ import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
+import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,5 +80,35 @@ public class AbstractStockEstimateHandlerTest
 		assertThatCode(() -> handler.handleEvent(event)).doesNotThrowAnyException();
 		assertThat(captured.get()).isNotNull();
 		assertThat(captured.get().getQtyStockEstimateSeqNo()).isNull();
+	}
+
+	/**
+	 * The deleted-event branch of the same ternary must keep yielding seqNo 0 (it already did; this
+	 * pins that contract so the NPE fix cannot regress it).
+	 */
+	@Test
+	public void handleEvent_deletedEvent_passesSeqNoZero()
+	{
+		final AtomicReference<UpdateMainDataRequest> captured = new AtomicReference<>();
+		final MainDataRequestHandler capturingHandler = new MainDataRequestHandler()
+		{
+			@Override
+			public void handleDataUpdateRequest(final UpdateMainDataRequest dataUpdateRequest)
+			{
+				captured.set(dataUpdateRequest);
+			}
+		};
+		final AbstractStockEstimateHandler handler = new AbstractStockEstimateHandler(capturingHandler);
+
+		final StockEstimateDeletedEvent event = StockEstimateDeletedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 0))
+				.materialDescriptor(newMaterialDescriptor())
+				.date(Instant.parse("2021-06-23T00:00:00Z"))
+				.eventDate(Instant.parse("2021-06-23T00:00:00Z"))
+				.build();
+
+		assertThatCode(() -> handler.handleEvent(event)).doesNotThrowAnyException();
+		assertThat(captured.get()).isNotNull();
+		assertThat(captured.get().getQtyStockEstimateSeqNo()).isZero();
 	}
 }
