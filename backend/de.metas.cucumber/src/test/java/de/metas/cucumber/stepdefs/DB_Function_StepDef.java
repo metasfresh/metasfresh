@@ -84,12 +84,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step definitions that run plain SQL in the test DB: creating or replacing PL/pgSQL functions, running a migration script from the
- * source tree (whole, or one of its statements) and hiding an {@code AD_MigrationScript} record for one scenario.
- * Also: read the text result of a PL/pgSQL / SQL report function and assert it line by line.
+ * Step definitions to read the text result of a PL/pgSQL / SQL report function and assert it line by line.
  * It also holds the set-up steps the QR-bill scenarios need (organization as QR-bill creditor, a dunning letter on an invoice).
  * Limits of the result step: the function has one numeric argument (an invoice or dunning document ID), returns a column named
  * <code>QR_Code</code>, and <code>&lt;GrandTotal&gt;</code> is resolved from an invoice, so it fits the QR-bill functions only.
+ * <p>
+ * It also holds step definitions that run plain SQL in the test DB: creating or replacing PL/pgSQL functions (used by scenarios that verify
+ * DB-function-driven sequence providers), running a migration script from the source tree (whole, or one of its statements),
+ * and hiding an {@code AD_MigrationScript} record for one scenario.
  */
 public class DB_Function_StepDef
 {
@@ -444,6 +446,16 @@ public class DB_Function_StepDef
 		invoiceIdentifiersByDunningDocIdentifier.put(dunningDocIdentifier, invoiceIdentifier);
 	}
 
+	private int getRecordId(@NonNull final String recordIdentifier)
+	{
+		final Integer dunningDocId = dunningDocIdsByIdentifier.get(recordIdentifier);
+		if (dunningDocId != null)
+		{
+			return dunningDocId;
+		}
+		return invoiceTable.get(recordIdentifier).getC_Invoice_ID();
+	}
+
 	/**
 	 * Runs a migration script of the source tree as one JDBC statement string, outside any transaction, so the scenario runs exactly the shipped file.
 	 * The path is relative to the repository root; it is looked up in the working directory and each of its parents
@@ -576,15 +588,5 @@ public class DB_Function_StepDef
 				new Object[] { deletedMigrationScriptRowsJson },
 				ITrx.TRXNAME_None);
 		deletedMigrationScriptRowsJson = null;
-	}
-
-	private int getRecordId(@NonNull final String recordIdentifier)
-	{
-		final Integer dunningDocId = dunningDocIdsByIdentifier.get(recordIdentifier);
-		if (dunningDocId != null)
-		{
-			return dunningDocId;
-		}
-		return invoiceTable.get(recordIdentifier).getC_Invoice_ID();
 	}
 }
