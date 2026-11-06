@@ -38,6 +38,11 @@ public class DhlClientConfig
 {
 
 
+	int shipperConfigId; // DHL_Shipper_Config_ID, named in error messages
+
+	@NonNull
+	String shipperName; // name of the config's M_Shipper, named in error messages
+
 	@NonNull
 	String baseUrl;
 
@@ -65,18 +70,34 @@ public class DhlClientConfig
 	@NonNull
 	String trackingUrlBase;
 
-	@Nullable
+	/**
+	 * @throws AdempiereException if the configuration has no billing number for the given product
+	 */
+	@NonNull
 	public String getBillingNumber(@NonNull final DhlShipperProduct product)
 	{
+		final String billingNumber;
+		final String fieldName;
 		switch (product)
 		{
 			case Dhl_Paket:
-				return accountNumber;
+				billingNumber = accountNumber;
+				fieldName = "Kontonummer";
+				break;
 			case Dhl_PaketInternational:
-				return accountNumberInternational;
+				billingNumber = accountNumberInternational;
+				fieldName = "Kontonummer international";
+				break;
 			default:
 				throw new AdempiereException("Unsupported DHL product: " + product);
 		}
+
+		if (billingNumber == null || billingNumber.trim().isEmpty())
+		{
+			throw new AdempiereException("The DHL configuration DHL_Shipper_Config_ID=" + shipperConfigId + " of shipper '" + shipperName + "'"
+					+ " has no billing number for the DHL product " + product.getCode() + ". Please fill the field '" + fieldName + "'.");
+		}
+		return billingNumber;
 	}
 
 }

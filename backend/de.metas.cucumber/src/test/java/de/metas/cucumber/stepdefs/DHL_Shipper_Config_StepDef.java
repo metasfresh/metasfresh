@@ -34,11 +34,12 @@ public class DHL_Shipper_Config_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 
-			final String configIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID);
+			final String configIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID, I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID);
 			final I_DHL_Shipper_Config config = dhlConfigTable.getOptional(configIdentifier)
 					.orElseGet(() -> this.createConfig(tableRow));
 
-			final String accountNumber = DataTableUtil.extractStringForColumnName(tableRow, I_DHL_Shipper_Config.COLUMNNAME_AccountNumber);
+			// the national billing number may be left empty ("null") to test a configuration that lacks it
+			final String accountNumber = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_DHL_Shipper_Config.COLUMNNAME_AccountNumber);
 			config.setAccountNumber(accountNumber);
 			config.setAccountNumber_International(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_DHL_Shipper_Config.COLUMNNAME_AccountNumber_International));
 

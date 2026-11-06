@@ -463,3 +463,152 @@ Feature: Dhl Shipment
     And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
       | product | billingNumber  |
       | V53WPAK | 33333333335301 |
+
+  # ##########################################################################
+  # ##########################################################################
+
+  @Id:S32526_TC2_international
+  Scenario: DHL shipment from DE to AT without an international billing number is not sent to DHL
+    Given metasfresh contains M_PriceLists
+      | Identifier   | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_dhl_so_at | ps_dhl_1           | AT                        | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier    | M_PriceList_ID.Identifier | ValidFrom  |
+      | plv_dhl_so_at | pl_dhl_so_at              | 2022-01-20 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
+      | plv_dhl_so_at          | test_product_dhl_01 | 10.0     | Normal                        | PCE               |
+      | plv_dhl_so_at          | packing_product_1   | 0.0      | Normal                        | PCE               |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
+      | dhl_location_at          | AT          | addr 7       | 1010       | Wien     |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier      | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | dhl_location_at | 1122334455669 | dhl_customer             | dhl_location_at              | true         | false        |
+    And contains M_Shippers
+      | Identifier         | Value      | Name       | OPT.ShipperGateway | OPT.TrackingURL               |
+      | shipper_dhl_tc2_at | dhl_tc2_at | dhl_tc2_at | dhl                | https://dhl.test/track?id={0} |
+    And metasfresh contains DHL Configuration:
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
+      | dhl_cfg_tc2_at                   | shipper_dhl_tc2_at      | 33333333330102 | null                            |
+    And metasfresh contains External System
+      | Name                                | Value                               |
+      | TestSystem_S32526_TC2_international | TestSystem_S32526_TC2_international |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    """
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalHeaderId": "dhl_tc2_at_01",
+      "externalLineId": "dhl_tc2_at_01",
+      "externalSystemCode": "TestSystem_S32526_TC2_international",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+          "bpartnerIdentifier": "gln-1122334455667",
+          "bpartnerLocationIdentifier": "gln-1122334455669"
+      },
+      "dateRequired": "2022-12-12",
+      "dateOrdered": "2022-12-12",
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-1000002",
+      "productIdentifier": "val-test_product_dhl_01",
+      "qty": 1,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "ref_tc2_at_12301",
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "bpartnerName": "olCandBPartnerName",
+      "packingMaterialId": @dhl_huProductTU_X@,
+      "shipper": "val-dhl_tc2_at"
+    }
+  ]
+}
+    """
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+    """
+{
+    "externalHeaderId": "dhl_tc2_at_01",
+    "externalSystemCode": "TestSystem_S32526_TC2_international",
+    "ship": true,
+    "invoice": false,
+    "closeOrder": false
+}
+    """
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier |
+      | order_1               | shipment_1            |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID       | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_dhl_tc2_at | dhl_customer  | dhl_location_at        | 0.250         | package1     | 30         | 20        | 10         |
+    # the parcel is not sent to DHL: the work package fails and names the configuration and the missing billing number
+    And the DHL work package of M_Package package1 failed because the DHL configuration lacks a billing number:
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | missingField              |
+      | dhl_cfg_tc2_at                   | shipper_dhl_tc2_at      | Kontonummer international |
+    And no DHL request is logged for the DHL_ShipmentOrder of M_Package package1
+
+  @Id:S32526_TC2_national
+  Scenario: DHL shipment from DE to DE without a national billing number is not sent to DHL
+    Given contains M_Shippers
+      | Identifier         | Value      | Name       | OPT.ShipperGateway | OPT.TrackingURL               |
+      | shipper_dhl_tc2_de | dhl_tc2_de | dhl_tc2_de | dhl                | https://dhl.test/track?id={0} |
+    And metasfresh contains DHL Configuration:
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber | OPT.AccountNumber_International |
+      | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | null          | 33333333335301                  |
+    And metasfresh contains External System
+      | Name                           | Value                          |
+      | TestSystem_S32526_TC2_national | TestSystem_S32526_TC2_national |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    """
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalHeaderId": "dhl_tc2_de_01",
+      "externalLineId": "dhl_tc2_de_01",
+      "externalSystemCode": "TestSystem_S32526_TC2_national",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+          "bpartnerIdentifier": "gln-1122334455667",
+          "bpartnerLocationIdentifier": "gln-1122334455667"
+      },
+      "dateRequired": "2022-12-12",
+      "dateOrdered": "2022-12-12",
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-1000002",
+      "productIdentifier": "val-test_product_dhl_01",
+      "qty": 1,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "ref_tc2_de_12301",
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "bpartnerName": "olCandBPartnerName",
+      "packingMaterialId": @dhl_huProductTU_X@,
+      "shipper": "val-dhl_tc2_de"
+    }
+  ]
+}
+    """
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+    """
+{
+    "externalHeaderId": "dhl_tc2_de_01",
+    "externalSystemCode": "TestSystem_S32526_TC2_national",
+    "ship": true,
+    "invoice": false,
+    "closeOrder": false
+}
+    """
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier |
+      | order_1               | shipment_1            |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID       | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_dhl_tc2_de | dhl_customer  | dhl_location           | 0.250         | package1     | 30         | 20        | 10         |
+    # the parcel is not sent to DHL: the work package fails and names the configuration and the missing billing number
+    And the DHL work package of M_Package package1 failed because the DHL configuration lacks a billing number:
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | missingField |
+      | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | Kontonummer  |
+    And no DHL request is logged for the DHL_ShipmentOrder of M_Package package1
