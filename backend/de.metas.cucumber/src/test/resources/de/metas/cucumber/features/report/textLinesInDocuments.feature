@@ -368,7 +368,7 @@ Feature: Free text lines print at their position on a sales order confirmation
     # ever print between two footer fields; the last ARTICLE row sits in an entirely different subreport, with
     # the order's totals/payment-terms block always between it and the footer regardless of text lines), it
     # only proves DescriptionBottom itself still prints correctly
-    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Zahlungsweise Zahlung via Rechnung" and text "Vielen Dank für Ihren Einkauf"
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Zahlungsweise: Zahlung via Rechnung" and text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "order" has no overlapping text
 
     # -- the delivery note: its own report SQL function does not reference C_Doc_TextLine at all, and its
