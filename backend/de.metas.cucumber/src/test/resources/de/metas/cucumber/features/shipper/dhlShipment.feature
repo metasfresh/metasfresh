@@ -1,9 +1,9 @@
 @from:cucumber
-@allure.label.epic:E0355_Transport_Planning_Extralogistik
-@allure.label.feature:F00355
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29101_DHL_Interface
 @ghActions:run_on_executor10
 Feature: Dhl Shipment
-## F00355: Shipper
+## F29101: DHL Interface
 
   Background:
     Given infrastructure and metasfresh are running
