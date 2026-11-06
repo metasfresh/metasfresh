@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -133,7 +134,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private final InOutGenerateResult result;
-	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
+	private IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
 	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private final ShipmentLineNoInfo shipmentLineNoInfo = new ShipmentLineNoInfo();
@@ -186,6 +187,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 * @see #setDeliveryPlanningId(DeliveryPlanningId)
 	 */
 	@Nullable private DeliveryPlanningId deliveryPlanningId = null;
+	@Nullable private AsyncBatchId asyncBatchId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -426,7 +428,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 			}
 		}
 
-		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
+		if (asyncBatchId != null)
+		{
+			shipment.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+		}
+		else if (shipmentSchedule.getC_Async_Batch_ID() > 0)
 		{
 			shipment.setC_Async_Batch_ID(shipmentSchedule.getC_Async_Batch_ID());
 		}
@@ -757,6 +763,22 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this.deliveryPlanningId = deliveryPlanningId;
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setIgnoreScheduleAsyncBatch(final boolean ignoreScheduleAsyncBatch)
+	{
+		this.shipmentScheduleKeyBuilder = ignoreScheduleAsyncBatch
+				? shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilderWithoutAsyncBatch()
+				: shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setAsyncBatchId(@Nullable final AsyncBatchId asyncBatchId)
+	{
+		this.asyncBatchId = asyncBatchId;
 		return this;
 	}
 

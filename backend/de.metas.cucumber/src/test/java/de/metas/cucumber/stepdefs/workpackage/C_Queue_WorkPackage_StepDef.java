@@ -472,11 +472,14 @@ public class C_Queue_WorkPackage_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+	 * When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction as shipmentWorkPackage
 	 * </pre>
+	 * The optional {@code as <identifier>} stores the processed workpackage, e.g. to check its async batch on the created records.
 	 */
-	@And("^the held \"(.*)\" workpackage is processed in one transaction$")
-	public void process_held_workpackage_in_one_transaction(@NonNull final String processorShortName)
+	@And("^the held \"(.*)\" workpackage is processed in one transaction(?: as (.*))?$")
+	public void process_held_workpackage_in_one_transaction(
+			@NonNull final String processorShortName,
+			@Nullable final String workPackageIdentifier)
 	{
 		final I_C_Queue_WorkPackage workPackage = retrieveOldestPendingWorkPackage(processorShortName)
 				.orElseThrow(() -> new AdempiereException("No pending C_Queue_WorkPackage found for processor")
@@ -495,9 +498,14 @@ public class C_Queue_WorkPackage_StepDef
 
 		trxManager.runInNewTrx(localTrxName -> processClaimedWorkPackage(workPackageId, processorShortName, localTrxName, true));
 
-		assertThat(retrieveWorkPackage(workPackageId).isProcessed())
+		final I_C_Queue_WorkPackage processedWorkPackage = retrieveWorkPackage(workPackageId);
+		assertThat(processedWorkPackage.isProcessed())
 				.as("Processed of C_Queue_WorkPackage_ID=%s of processor %s after the one-transaction run", workPackageId.getRepoId(), processorShortName)
 				.isTrue();
+		if (workPackageIdentifier != null)
+		{
+			workPackageTable.putOrReplace(workPackageIdentifier, processedWorkPackage);
+		}
 	}
 
 	/**

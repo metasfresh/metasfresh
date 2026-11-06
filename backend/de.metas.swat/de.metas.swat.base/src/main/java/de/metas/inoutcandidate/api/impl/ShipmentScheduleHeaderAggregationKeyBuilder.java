@@ -36,10 +36,24 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 public class ShipmentScheduleHeaderAggregationKeyBuilder extends AbstractHeaderAggregationKeyBuilder<I_M_ShipmentSchedule>
 {
 	public static final String REGISTRATION_KEY = I_M_ShipmentSchedule.Table_Name;
+	public static final String REGISTRATION_KEY_WITHOUT_ASYNC_BATCH = I_M_ShipmentSchedule.Table_Name + "_WithoutAsyncBatch";
 
 	public ShipmentScheduleHeaderAggregationKeyBuilder()
 	{
 		super(REGISTRATION_KEY);
+	}
+
+	private ShipmentScheduleHeaderAggregationKeyBuilder(final String registrationKey)
+	{
+		super(registrationKey);
+	}
+
+	/**
+	 * @return a builder whose keys are the header aggregation keys without the schedules' {@code C_Async_Batch_ID}
+	 */
+	public static ShipmentScheduleHeaderAggregationKeyBuilder withoutAsyncBatch()
+	{
+		return new ShipmentScheduleHeaderAggregationKeyBuilder(REGISTRATION_KEY_WITHOUT_ASYNC_BATCH);
 	}
 
 	@Override
