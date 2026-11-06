@@ -77,6 +77,13 @@ class SepaTextConverterTest
 		}
 
 		@Test
+		void whitespaceRuns_areNotCollapsed()
+		{
+			// unlike texts, identifiers are converted as before: only character by character
+			assertThat(SepaTextConverter.toIdentifier("A  B")).isEqualTo("A  B");
+		}
+
+		@Test
 		void cutTo35Characters()
 		{
 			assertThat(SepaTextConverter.toIdentifier(repeat("A", 40))).isEqualTo(repeat("A", 35));
