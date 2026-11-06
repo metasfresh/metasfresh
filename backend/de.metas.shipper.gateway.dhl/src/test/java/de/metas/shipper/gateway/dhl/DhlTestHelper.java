@@ -233,10 +233,13 @@ class DhlTestHelper
 		final UomId dummyUom = UomId.ofRepoId(1);
 
 		final DhlClientConfig config = DhlClientConfig.builder()
+				.shipperConfigId(1)
+				.shipperName("dummy")
 				.baseUrl(BASE_URL)
 				.applicationID(USER_NAME)
 				.applicationToken(APP_TOKEN)
 				.accountNumber(accountNumber) // special account number, depending on target country. why dhl why?????
+				.accountNumberInternational(accountNumber)
 				.signature(PASSWORD)
 				.username(USER_NAME)
 				.lengthUomId(dummyUom)

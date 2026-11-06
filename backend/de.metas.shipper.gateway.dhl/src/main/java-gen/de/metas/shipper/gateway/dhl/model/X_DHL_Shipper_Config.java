@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.shipper.gateway.dhl.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for DHL_Shipper_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_DHL_Shipper_Config extends org.compiere.model.PO implements I_DHL_Shipper_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1716512080L;
+	private static final long serialVersionUID = 2049251978L;
 
     /** Standard Constructor */
     public X_DHL_Shipper_Config (final Properties ctx, final int DHL_Shipper_Config_ID, @Nullable final String trxName)
@@ -44,6 +44,18 @@ public class X_DHL_Shipper_Config extends org.compiere.model.PO implements I_DHL
 	public java.lang.String getAccountNumber() 
 	{
 		return get_ValueAsString(COLUMNNAME_AccountNumber);
+	}
+
+	@Override
+	public void setAccountNumber_International (final @Nullable java.lang.String AccountNumber_International)
+	{
+		set_Value (COLUMNNAME_AccountNumber_International, AccountNumber_International);
+	}
+
+	@Override
+	public java.lang.String getAccountNumber_International() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountNumber_International);
 	}
 
 	@Override

@@ -58,21 +58,19 @@ public class DhlClientConfigRepository
 		{
 			throw new AdempiereException("No DHL shipper configuration found for shipperId=" + shipperId);
 		}
+		final I_M_Shipper shipperPo = InterfaceWrapperHelper.load(configPO.getM_Shipper_ID(), I_M_Shipper.class);
 		return DhlClientConfig.builder()
+				.shipperConfigId(configPO.getDHL_Shipper_Config_ID())
+				.shipperName(shipperPo.getName())
 				.applicationID(configPO.getapplicationID())
 				.applicationToken(configPO.getApplicationToken())
 				.baseUrl(configPO.getdhl_api_url())
 				.accountNumber(configPO.getAccountNumber())
+				.accountNumberInternational(configPO.getAccountNumber_International())
 				.username(configPO.getUserName())
 				.signature(configPO.getSignature())
 				.lengthUomId(UomId.ofRepoId(configPO.getDhl_LenghtUOM_ID()))
-				.trackingUrlBase(retrieveTrackingUrl(configPO.getM_Shipper_ID()))
+				.trackingUrlBase(shipperPo.getTrackingURL())
 				.build();
-	}
-
-	private static String retrieveTrackingUrl(final int m_shipper_id)
-	{
-		final I_M_Shipper shipperPo = InterfaceWrapperHelper.load(m_shipper_id, I_M_Shipper.class);
-		return shipperPo.getTrackingURL();
 	}
 }
