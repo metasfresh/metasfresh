@@ -492,7 +492,7 @@ Feature: Dhl Shipment
       | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
       | dhl_cfg_tc2_at                   | shipper_dhl_tc2_at      | 33333333330102 | null                            |
     And metasfresh contains External System
-      | Name                                | Value                               |
+      | Name                   | Value                  |
       | TestSystem_S32526_TC2a | TestSystem_S32526_TC2a |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
@@ -557,7 +557,7 @@ Feature: Dhl Shipment
       | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber | OPT.AccountNumber_International |
       | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | null          | 33333333335301                  |
     And metasfresh contains External System
-      | Name                           | Value                          |
+      | Name                   | Value                  |
       | TestSystem_S32526_TC2b | TestSystem_S32526_TC2b |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
