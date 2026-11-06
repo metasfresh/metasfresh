@@ -4,7 +4,6 @@ import de.metas.frontend_testing.expectations.request.JsonRecordColumnExpectatio
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
@@ -47,17 +46,20 @@ class AssertRecordColumnExpectationsCommand
 			final POInfo poInfo = POInfo.getPOInfo(tableName);
 			if (poInfo == null)
 			{
-				throw new AdempiereException("Unknown table: " + tableName);
+				fail(what + ": unknown table");
+				return;
 			}
 			final String keyColumnName = poInfo.getKeyColumnName();
 			if (keyColumnName == null)
 			{
-				throw new AdempiereException("Table has no single key column: " + tableName);
+				fail(what + ": table has no single key column");
+				return;
 			}
 			final int columnIndex = poInfo.getColumnIndex(columnName);
 			if (columnIndex < 0 || poInfo.isVirtualColumn(columnIndex))
 			{
-				throw new AdempiereException("Unknown or virtual column: " + tableName + "." + columnName);
+				fail(what + ": unknown or virtual column");
+				return;
 			}
 
 			final String recordExistsSql = "SELECT COUNT(1) FROM " + poInfo.getTableName() + " WHERE " + keyColumnName + "=?";

@@ -2,6 +2,7 @@ package de.metas.frontend_testing.expectations.request;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -20,5 +21,5 @@ public class JsonRecordColumnExpectation
 	int recordId;
 	@NonNull String columnName;
 	/** the value expected to be stored, compared as String; {@code null} = expect NULL */
-	@Nullable String expectedValue;
+	@Nullable @ToString.Exclude String expectedValue;
 }
