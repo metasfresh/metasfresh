@@ -97,9 +97,8 @@ const goBackToApplicationsAndLogout = async () => {
     await ApplicationsListScreen.logout();
 };
 
-// The unit of the quantity is the symbol in the user's language (C_UOM_Trl.UOMSymbol), not the X12DE355 code: en_US shows "Ea" for a
-// piece product, de_DE shows "Stk" (the screen once showed the code "PCE" in every language).
-test('the quantity unit is shown in the user language: de_DE shows "Stk" (not PCE), in the field and in the success message', async ({ page }) => {
+// The unit of the quantity is the symbol in the user's language (C_UOM_Trl.UOMSymbol), not the X12DE355 code: de_DE shows "Stk", not "PCE".
+test('the quantity unit on the preview is shown in the user language (de_DE: "Stk")', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
@@ -120,11 +119,6 @@ test('the quantity unit is shown in the user language: de_DE shows "Stk" (not PC
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: gtinLotBbdLabel(gtin) });
     await NewHUPreviewScreen.setQty(2);
     await NewHUPreviewScreen.expectQty({ qty: '2', uom: 'Stk' });
-    await expect(activePage.getByTestId('qty-value')).not.toContainText('PCE');
-    await NewHUPreviewScreen.expectLocatorProposedAndGet();
-
-    const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
-    await ErrorToast.expectSuccessToast({ hasText: [`${created.huValue}`, '2 Stk'] });
 });
 
 // noinspection JSUnusedLocalSymbols

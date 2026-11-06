@@ -34,7 +34,7 @@ class LabelValues
 	@Nullable LocalDate productionDate;
 
 	@NonNull UomId stockUomId;
-	/** {@link #stockUomId} as code; not for display (the JSON shows the translated symbol) */
+	/** {@link #stockUomId} as code, for the JSON */
 	@NonNull X12DE355 stockUom;
 	/** the quantity the scanned code carries (the label weight of a product stocked in kg), in {@link #stockUomId}; null: the code carries none, the user types it */
 	@Nullable Quantity qty;
