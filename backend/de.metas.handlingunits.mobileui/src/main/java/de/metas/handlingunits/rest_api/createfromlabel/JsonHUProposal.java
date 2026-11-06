@@ -26,7 +26,7 @@ public class JsonHUProposal
 	@Nullable JsonProduct product;
 	/** proposed quantity, in the product's stock UOM */
 	@Nullable BigDecimal qty;
-	/** X12DE355 code of the stock UOM, e.g. {@code PCE}, {@code KGM} */
+	/** the stock UOM's symbol ({@code C_UOM.UOMSymbol}) in the user's language, e.g. {@code Stk}, {@code kg}; for display only */
 	@Nullable String uom;
 	@NonNull @Singular List<JsonAttribute> attributes;
 	/** the label's net weight in kg; set only when the weight becomes the CU's net weight (catch-weight product) */

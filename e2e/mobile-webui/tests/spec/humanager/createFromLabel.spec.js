@@ -64,7 +64,7 @@ const createMasterdata = async ({ gtin, users, workplaces, products, formats, ex
 
 // After OK the user is back on the scan screen — a success message naming the HU and the quantity, the scan field ready,
 // no HU info screen (the new HU is NOT opened). The message is what tells the user which HU number was created.
-const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 PCE', locatorCode }) => await test.step('Expect: back on the scan screen after OK, success message, no HU info', async () => {
+const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 Ea', locatorCode }) => await test.step('Expect: back on the scan screen after OK, success message, no HU info', async () => {
     // the HU is booked on the proposed location (the create response's JsonHU.locatorValue)
     if (locatorCode !== undefined) expect(created.locatorValue).toBe(locatorCode);
     await HUManagerScreen.waitForScreen();
@@ -97,6 +97,30 @@ const goBackToApplicationsAndLogout = async () => {
     await ApplicationsListScreen.logout();
 };
 
+// The unit of the quantity is the symbol in the user's language (C_UOM_Trl.UOMSymbol), not the X12DE355 code: de_DE shows "Stk", not "PCE".
+test('the quantity unit on the preview is shown in the user language (de_DE: "Stk")', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('normal');
+
+    const gtin = uniqueGtin14();
+    const masterdata = await Backend.createMasterdata({
+        language: "de_DE",
+        request: {
+            login: { user: { language: "de_DE" } },
+            products: { "P1": { gtin, uom: 'PCE' } },
+            warehouses: { "wh1": { locators: { wh1_l1: {} } } },
+            customQRCodeFormats: [FORMAT_GTIN_LOT_BBD],
+        }
+    });
+    await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
+
+    await HUManagerScreen.scanLabelAndWaitForPreview({ label: gtinLotBbdLabel(gtin) });
+    await NewHUPreviewScreen.setQty(2);
+    await NewHUPreviewScreen.expectQty({ qty: '2', uom: 'Stk' });
+});
+
 // noinspection JSUnusedLocalSymbols
 test('custom label (GTIN + lot + best-before) -> preview -> OK -> success message, back on the scan screen; the HU opened by its number, Move works', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
@@ -111,7 +135,7 @@ test('custom label (GTIN + lot + best-before) -> preview -> OK -> success messag
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: gtinLotBbdLabel(gtin) });
     await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
     await NewHUPreviewScreen.setQty(1);
-    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
     await NewHUPreviewScreen.expectLotNumber('L2311');
     await NewHUPreviewScreen.expectOKEnabled();
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
@@ -157,7 +181,7 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
     await NewHUPreviewScreen.expectProductContains(masterdata.products.P1.productName);
     await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
     await NewHUPreviewScreen.setQty(1);
-    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
     await NewHUPreviewScreen.expectLotNumber('L2311');
     // the best-before date of the label (use-by 31.12.2027) is shown on the preview, exactly (en_US display MM/DD/YYYY)
     await NewHUPreviewScreen.expectBestBeforeDate('12/31/2027');
@@ -206,12 +230,12 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
 
     // the label carries no quantity: the user enters it
     await NewHUPreviewScreen.setQty(7);
-    await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'Ea' });
     await NewHUPreviewScreen.expectOKEnabled();
 
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
     const { huId, huQRCode } = created;
-    await expectBackOnScanScreenAfterOK({ created, locatorCode, qty: '7 PCE' });
+    await expectBackOnScanScreenAfterOK({ created, locatorCode, qty: '7 Ea' });
 
     // one completed inventory; one CU with the entered quantity, the lot and the production date of the label, on the previewed location;
     // the label code itself is NOT stored as the HU_QRCode attribute
@@ -246,7 +270,7 @@ test('GS1 label -> preview -> OK -> CU with lot + best-before (= use-by)', async
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: gs1Label(gtin) });
     await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
     await NewHUPreviewScreen.setQty(1);
-    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
@@ -422,9 +446,9 @@ test('inline quantity on the preview: typed digits stay in the field, emptied fi
         await NewHUPreviewScreen.expectNoScanner();
         await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
         await NewHUPreviewScreen.setQty(1);
-        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
         await NewHUPreviewScreen.setQty(7);
-        await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'PCE' });
+        await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'Ea' });
         await ErrorToast.expectNoErrorToast();
         await NewHUPreviewScreen.expectLocator(wh1_l1.code);
         await NewHUPreviewScreen.expectOKEnabled();
@@ -441,11 +465,11 @@ test('inline quantity on the preview: typed digits stay in the field, emptied fi
         await NewHUPreviewScreen.setQty(3);
         await NewHUPreviewScreen.changeLocator(wh2_l1.qrCode);
         await NewHUPreviewScreen.expectLocator(wh2_l1.code);
-        await NewHUPreviewScreen.expectQty({ qty: '3', uom: 'PCE' });
+        await NewHUPreviewScreen.expectQty({ qty: '3', uom: 'Ea' });
     });
 
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
-    await expectBackOnScanScreenAfterOK({ created, qty: '3 PCE' });
+    await expectBackOnScanScreenAfterOK({ created, qty: '3 Ea' });
     await Backend.expect({ hus: { [created.huId]: { huStatus: 'A', storages: { 'P1': '3 PCE' } } } });
     await openCreatedHUByValue({ created, locatorCode: wh2_l1.code, qty: '3 PCE' }); // booked on the scanned location, typed quantity
 });
@@ -517,7 +541,7 @@ test('catch-weight product, label with constant + product code + weight + lot + 
     await HUManagerScreen.scanLabelAndWaitForPreview({ label });
     await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
     await NewHUPreviewScreen.setQty(1);
-    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
     await NewHUPreviewScreen.expectWeight('12.345 KGM');
     await NewHUPreviewScreen.expectLotNumber('L2311');
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
@@ -570,11 +594,11 @@ test('GS1 label with weight (310n) — kg product: quantity = weight; piece prod
 
     await test.step('product stocked in kg: quantity = label weight', async () => {
         await HUManagerScreen.scanLabelAndWaitForPreview({ label: `01${gtinKg}3103012345` });
-        await NewHUPreviewScreen.expectQty({ qty: '12.345', uom: 'KGM' });
+        await NewHUPreviewScreen.expectQty({ qty: '12.345', uom: 'kg' });
         const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
         const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
         const { huId } = created;
-        await expectBackOnScanScreenAfterOK({ created, qty: '12.345 KGM', locatorCode });
+        await expectBackOnScanScreenAfterOK({ created, qty: '12.345 kg', locatorCode });
         await Backend.expect({ hus: { [huId]: { huStatus: 'A', storages: { 'P1': '12.345 KGM' } } } });
     });
 
@@ -582,7 +606,7 @@ test('GS1 label with weight (310n) — kg product: quantity = weight; piece prod
         await HUManagerScreen.scanLabelAndWaitForPreview({ label: `01${gtinPce}3103012345` });
         await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
         await NewHUPreviewScreen.setQty(1);
-        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
         await NewHUPreviewScreen.expectWeightNotUsed();
         const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
         const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
@@ -756,7 +780,7 @@ test('the same label twice -> two previews alike, two HUs, two completed invento
         await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
         await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
         await NewHUPreviewScreen.setQty(1);
-        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
         // the user has no workplace -> the organisation's default location; the second preview must look like the first
         if (i === 1) locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
         await NewHUPreviewScreen.expectLocator(locatorCode);
@@ -881,7 +905,7 @@ test('role without allow-all, only createHU granted -> product label opens the p
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
     await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
     await NewHUPreviewScreen.setQty(1);
-    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'Ea' });
     await NewHUPreviewScreen.clickCancel();
 
     await HUManagerScreen.waitForScreen();
