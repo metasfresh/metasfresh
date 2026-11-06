@@ -7,6 +7,8 @@
 
 FROM maven:3.9.16-eclipse-temurin-25
 
+RUN apt-get -y update && apt-get -y install curl wget && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /workspace
 
 # Copy git.properties (created by CI from init job outputs)

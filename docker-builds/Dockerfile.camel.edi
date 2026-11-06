@@ -12,7 +12,7 @@ FROM eclipse-temurin:25-jre-jammy
 
 RUN apt-get -y update && \
     apt-get -y upgrade && \
-    apt-get -y install bash curl zip dos2unix && \
+    apt-get -y install bash curl wget zip dos2unix && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/metasfresh-esb-camel/

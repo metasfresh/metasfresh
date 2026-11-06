@@ -5,7 +5,7 @@ FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 FROM eclipse-temurin:25-jdk-jammy
 
 RUN apt-get -y update && \
-    apt-get -y install curl && \
+    apt-get -y install curl wget && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
