@@ -393,7 +393,7 @@ Feature: Dhl Shipment
       | Identifier   | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | pl_dhl_so_at | ps_dhl_1           | AT                        | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier   | M_PriceList_ID.Identifier | ValidFrom  |
+      | Identifier    | M_PriceList_ID.Identifier | ValidFrom  |
       | plv_dhl_so_at | pl_dhl_so_at              | 2022-01-20 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
@@ -406,7 +406,7 @@ Feature: Dhl Shipment
       | Identifier      | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
       | dhl_location_at | 1122334455668 | dhl_customer             | dhl_location_at              | true         | false        |
     And metasfresh contains External System
-      | Name                 | Value                |
+      | Name                  | Value                 |
       | TestSystem_S32526_TC1 | TestSystem_S32526_TC1 |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """

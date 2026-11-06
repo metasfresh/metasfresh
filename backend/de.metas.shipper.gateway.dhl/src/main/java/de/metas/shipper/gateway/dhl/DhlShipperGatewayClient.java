@@ -210,10 +210,10 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.profile(DhlConstants.STANDARD_GRUPPENPROFIL);
 		final ImmutableList.Builder<JsonDhlShipment> shipments = ImmutableList.builder();
 		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
+		final DhlShipperProduct product = DhlShipperProduct.forCode(Check.assumeNotNull(deliveryOrder.getShipperProduct(), "deliveryOrder has a shipperProduct: {}", deliveryOrder).getCode());
 		for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 		{
 			final String customerReference = getCustomerReference(deliveryOrder);
-			final DhlShipperProduct product = DhlShipperProduct.forCode(Check.assumeNotNull(deliveryOrder.getShipperProduct(), "deliveryOrder has a shipperProduct: {}", deliveryOrder).getCode());
 			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
 					.billingNumber(config.getBillingNumber(product))
 					.product(product.getCode())
