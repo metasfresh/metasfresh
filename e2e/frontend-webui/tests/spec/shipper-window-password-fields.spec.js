@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { loginWithMasterdataUser } from '../utils/LoginHelper';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
-import { readXlsx } from '../utils/ExcelParser';
+import { columnTextsByFieldName, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
 
 /**
  * Shipper window (Lieferweg, 142) — carrier secrets are password fields.
@@ -115,6 +115,7 @@ async function createShipperAndOpen(page) {
     },
   });
   const shipperId = masterdata.shippers.shipper.shipperId;
+  const shipperName = masterdata.shippers.shipper.name;
   expect(shipperId, 'masterdata must report the id of the created shipper').toBeTruthy();
 
   // A modal left with an invalid new record asks "Do you really want to leave?" - fail loudly, never confirm silently.
@@ -126,7 +127,7 @@ async function createShipperAndOpen(page) {
 
   await loginWithMasterdataUser(page, masterdata.login.user);
   await openShipper(page, shipperId);
-  return { shipperId, dialogs };
+  return { shipperId, shipperName, dialogs };
 }
 
 async function openShipper(page, shipperId) {
@@ -287,7 +288,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
   test('AC6 Excel: the shipper export carries no typed secret; carrier tab grids offer no export', async ({ page }) => {
     labelTest();
     test.setTimeout(300000);
-    const { shipperId, dialogs } = await createShipperAndOpen(page);
+    const { shipperId, shipperName, dialogs } = await createShipperAndOpen(page);
     const secrets = newSecrets(newUnique());
 
     await createCarrierConfig(page, 'dhl', secrets.dhl);
@@ -296,11 +297,24 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     await createCarrierConfig(page, 'go', secrets.go);
     const typedSecrets = Object.values(secrets).flatMap((carrierSecrets) => Object.values(carrierSecrets));
 
+    // The export item of the actions menu; the list-view step below proves this selector finds it when offered.
+    const exportLink = page.locator('.subheader-container a.subheader-item[href*="/export/excel"]');
+
     await test.step('Carrier tab grids offer no Excel export (export runs on window views only)', async () => {
       await openShipper(page, shipperId);
       for (const carrierKey of Object.keys(CARRIERS)) {
         await openTab(page, CARRIERS[carrierKey]);
-        await expect(tabPane(page).locator('a[href*="/export/excel"]'), `${carrierKey} tab grid export link`).toHaveCount(0);
+        await onlyRowId(page);
+        const row = tabPane(page).locator('tbody tr[data-testid^="table-row-"]').first();
+        await expect(async () => {
+          await row.click();
+          await expect(row).toHaveClass(/row-selected/, { timeout: 2000 });
+        }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.keyboard.press('Alt+1');
+        await page.locator('.subheader-container').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(exportLink, `${carrierKey}: the actions menu with a tab row selected offers no Excel export`).toHaveCount(0);
+        await page.keyboard.press('Escape');
+        await page.locator('.subheader-container').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
       }
     });
 
@@ -322,7 +336,6 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
       // the actions menu shortcut keeps the selection (a click outside the table may clear it)
       await page.keyboard.press('Alt+1');
-      const exportLink = page.locator('.subheader-container a.subheader-item[href*="/export/excel"]');
       await exportLink.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       expect(await exportLink.getAttribute('href'), 'the export must hold the test shipper').toContain(String(shipperId));
       const download = page.waitForEvent('download', { timeout: SLOW_ACTION_TIMEOUT });
@@ -333,7 +346,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     await test.step('The export holds the shipper and no typed secret', async () => {
       const workbook = await readXlsx(filePath);
       allure.attachment('Excel export sheets', JSON.stringify(workbook.sheets.map((sheet) => ({ name: sheet.name, rows: sheet.rows.length }))), 'application/json');
-      expect(workbook.allTexts.some((text) => text.includes('PwFieldsShipper')), 'the export must contain the test shipper').toBe(true);
+      const gridFieldNames = await fetchViewGridFieldNames(page, SHIPPER_WINDOW_ID);
+      expect(columnTextsByFieldName(workbook.sheets[0], gridFieldNames, 'Name'), 'Name column of the export').toEqual([shipperName]);
       for (const secret of typedSecrets) {
         expect(workbook.allTexts.some((text) => text.includes(secret)), 'the export must not contain a typed secret').toBe(false);
       }
@@ -356,19 +370,34 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     // Listen from here on: the secrets are stored; the typing above legitimately sent them.
     const bodies = [];
     const pendingBodies = [];
+    const observed = { windowResponses: 0, websocketMessages: 0 };
     page.on('response', (response) => {
-      if (!response.url().includes('/rest/api/window/')) {
+      const url = response.url();
+      // /stomp/ = the SockJS endpoint: on an HTTP fallback transport its messages arrive as responses
+      const isWindow = url.includes('/rest/api/window/');
+      const isStomp = url.includes('/stomp/');
+      if (!isWindow && !isStomp) {
         return;
       }
       pendingBodies.push(
         response
           .text()
-          .then((text) => bodies.push({ source: `${response.request().method()} ${response.url()}`, text }))
+          .then((text) => {
+            bodies.push({ source: `${response.request().method()} ${url}`, text });
+            if (isWindow) {
+              observed.windowResponses++;
+            } else if (text.trim() !== '') {
+              observed.websocketMessages++;
+            }
+          })
           .catch(() => {})
       );
     });
     page.on('websocket', (webSocket) => {
-      webSocket.on('framereceived', ({ payload }) => bodies.push({ source: `websocket ${webSocket.url()}`, text: String(payload) }));
+      webSocket.on('framereceived', ({ payload }) => {
+        bodies.push({ source: `websocket ${webSocket.url()}`, text: String(payload) });
+        observed.websocketMessages++;
+      });
     });
 
     await test.step('Open the shipper and every carrier tab', async () => {
@@ -393,7 +422,10 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
     await flushPendingUiTasks(page);
     await Promise.all(pendingBodies);
-    expect(bodies.length, 'window REST responses must have been observed').toBeGreaterThan(0);
+    // positive controls: "no secret seen" means something only if the traffic was captured
+    expect(observed.windowResponses, 'window REST responses must have been observed').toBeGreaterThan(0);
+    expect(observed.websocketMessages, 'websocket frames / SockJS messages must have been observed').toBeGreaterThan(0);
+    console.log(`[INFO] AC7 observed: ${JSON.stringify(observed)}`);
     const leaks = bodies
       .filter(({ text }) => typedSecrets.some((secret) => text.includes(secret)))
       .map(({ source }) => source);
@@ -418,6 +450,10 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       await typeAndLeave(page, modal.locator('.form-field-UserName input'), 'b4-user', { tabId: CARRIERS.dhl.tabId, fieldName: 'UserName' });
       await closeModal(page);
       await stored('secrets unchanged after saving another field');
+      // positive control: the other field was saved (UserName starts empty)
+      await expectStored('the other field was saved', [
+        { tableName: 'DHL_Shipper_Config', recordId, columnName: 'UserName', expectedValue: 'b4-user' },
+      ]);
     });
 
     await test.step('Click into each secret and leave it without typing', async () => {
@@ -463,7 +499,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     const input = modal.locator('.form-field-ApplicationToken input');
     const patched = waitForFieldPatch(page, CARRIERS.dhl.tabId, 'ApplicationToken');
     await input.click();
-    await input.clear();
+    await input.press('ControlOrMeta+a');
+    await input.press('Backspace');
     await input.press('Tab');
     expect((await patched).ok(), 'PATCH of the cleared ApplicationToken').toBe(true);
     await closeModal(page);
@@ -500,17 +537,27 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     const nshiftRecordId = await createCarrierConfig(page, 'nshift', { Client_Secret: secrets.nshift.Client_Secret });
 
     // Sent directly, not typed: typed through the UI the mask cannot reach the server unchanged.
+    // The same PATCH also sets UserName: its stored value proves the PATCH was persisted, so
+    // "secret unchanged" cannot hold merely because nothing was saved.
+    const userName = `b4-ac10-user-${newUnique()}`;
     const patchWithMask = async (carrierKey, recordId, fieldNames) => {
       const response = await page.request.patch(
         `${WEBAPI_BASE_URL}/window/${SHIPPER_WINDOW_ID}/${shipperId}/${CARRIERS[carrierKey].tabId}/${recordId}`,
-        { data: fieldNames.map((fieldName) => ({ op: 'replace', path: fieldName, value: MASK })) }
+        {
+          data: [
+            ...fieldNames.map((fieldName) => ({ op: 'replace', path: fieldName, value: MASK })),
+            { op: 'replace', path: 'UserName', value: userName },
+          ],
+        }
       );
       expect(response.ok(), `PATCH with the mask: HTTP ${response.status()}`).toBe(true);
     };
     await patchWithMask('dhl', dhlRecordId, ['ApplicationToken', 'Signature']);
     await patchWithMask('nshift', nshiftRecordId, ['Client_Secret']);
 
-    await expectStored('secrets unchanged after a PATCH with the mask', [
+    await expectStored('secrets unchanged and the rest of the PATCH stored', [
+      { tableName: 'DHL_Shipper_Config', recordId: dhlRecordId, columnName: 'UserName', expectedValue: userName },
+      { tableName: 'Carrier_Config', recordId: nshiftRecordId, columnName: 'UserName', expectedValue: userName },
       { tableName: 'DHL_Shipper_Config', recordId: dhlRecordId, columnName: 'ApplicationToken', expectedValue: secrets.dhl.ApplicationToken },
       { tableName: 'DHL_Shipper_Config', recordId: dhlRecordId, columnName: 'Signature', expectedValue: secrets.dhl.Signature },
       { tableName: 'Carrier_Config', recordId: nshiftRecordId, columnName: 'Client_Secret', expectedValue: secrets.nshift.Client_Secret },
