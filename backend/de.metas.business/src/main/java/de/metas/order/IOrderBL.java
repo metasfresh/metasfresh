@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -331,6 +332,9 @@ public interface IOrderBL extends ISingletonService
 
 	@NonNull
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
+
+	@NonNull
+	Stream<OrderId> streamOrderIdsByBPartnerId(@NonNull BPartnerId bpartnerId);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
 
