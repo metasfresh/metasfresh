@@ -26,8 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +50,18 @@ class ShipmentScheduleHeaderAggregationKeyBuilderTest
 
 		// the production registration of both key value handlers
 		InOutCandidateValidator.registerSSAggregationKeyDependencies();
+	}
+
+	/**
+	 * The registry keeps its handlers in static fields that {@link AdempiereTestHelper#init()} does not reset, so a handler left
+	 * registered here would run in every later test of the same JVM fork.
+	 */
+	@AfterEach
+	void clearRegisteredHandlers()
+	{
+		final IAggregationKeyRegistry keyRegistry = Services.get(IAggregationKeyRegistry.class);
+		keyRegistry.clearHandlers(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
+		keyRegistry.clearHandlers(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY_WITHOUT_ASYNC_BATCH);
 	}
 
 	private static I_M_ShipmentSchedule createSched(final int bpartnerId, final int asyncBatchId)

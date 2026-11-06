@@ -28,6 +28,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.impl.DefaultInOutGenerateResult;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -51,6 +52,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -61,6 +63,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -113,6 +116,18 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
 		Loggables.temporarySetLoggable(Loggables.console());
+	}
+
+	/**
+	 * Some nested tests register the shipment schedule key handlers. The registry keeps them in static fields that
+	 * {@link AdempiereTestHelper#init()} does not reset, so a handler left registered would run in every later test of the same JVM fork.
+	 */
+	@AfterEach
+	public void clearRegisteredKeyHandlers()
+	{
+		final IAggregationKeyRegistry keyRegistry = Services.get(IAggregationKeyRegistry.class);
+		keyRegistry.clearHandlers(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
+		keyRegistry.clearHandlers(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY_WITHOUT_ASYNC_BATCH);
 	}
 
 	@Nested
