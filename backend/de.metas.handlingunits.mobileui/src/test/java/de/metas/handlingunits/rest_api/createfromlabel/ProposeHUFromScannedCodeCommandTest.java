@@ -1,5 +1,6 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
@@ -90,7 +91,8 @@ class ProposeHUFromScannedCodeCommandTest
 			@Override
 			public ITranslatableString getUOMSymbolById(@NonNull final UomId uomId)
 			{
-				return TranslatableStrings.singleLanguage("de_DE", "Stk"); // C_UOM.UOMSymbol "PCE", its de_DE translation "Stk"
+				assertThat(uomId).isEqualTo(pieceUomId);
+				return TranslatableStrings.ofMap(ImmutableMap.of("de_DE", "Stk", "en_US", "Ea")); // C_UOM_Trl.UOMSymbol of the piece UOM
 			}
 		};
 		final LabelValuesService labelValuesService = new LabelValuesService(HUQRCodesService.newInstanceForUnitTesting(), Services.get(IProductBL.class), uomDAO)
