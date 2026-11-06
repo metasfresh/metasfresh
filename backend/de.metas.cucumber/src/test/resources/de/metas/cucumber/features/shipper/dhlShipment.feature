@@ -81,10 +81,6 @@ Feature: Dhl Shipment
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
       | dhl_location | 1122334455667 | dhl_customer             | dhl_location                 | true         | true         | locationBPName   | locationName |
-    # the DHL consignee e-mail is the customer's default contact e-mail
-    And metasfresh contains AD_Users:
-      | Identifier  | Name        | EMail                | OPT.C_BPartner_ID.Identifier | OPT.IsDefaultContact |
-      | dhl_contact | dhl_contact | customer@example.com | dhl_customer                 | true                 |
 
     # Create CU-TU Allocation
     And metasfresh contains M_HU_PI:
