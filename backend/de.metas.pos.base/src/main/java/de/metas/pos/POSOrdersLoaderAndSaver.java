@@ -35,6 +35,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -57,27 +58,44 @@ class POSOrdersLoaderAndSaver
 {
 	@NonNull private final IQueryBL queryBL;
 	@NonNull private final POSOrderEventDispatcher eventDispatcher;
+	@NonNull private final POSOrderVersionSource versionSource;
+	@NonNull private final ITrxManager trxManager;
 
 	private final HashMap<POSOrderId, I_C_POS_Order> orderRecordsById = new HashMap<>();
 	private final HashMap<POSOrderExternalId, Optional<I_C_POS_Order>> orderRecordsByExternalId = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
 
-	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
+	/**
+	 * @param versionBeforeRead {@link POSOrderVersionSource#current()}, taken BEFORE the record was read
+	 */
+	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord, final long versionBeforeRead)
 	{
 		addToCacheAndWarmUp(ImmutableList.of(orderRecord));
-		return fromRecord(orderRecord);
+		return withVersion(fromRecord(orderRecord), versionBeforeRead);
 	}
 
-	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
+	/**
+	 * @param versionBeforeRead {@link POSOrderVersionSource#current()}, taken BEFORE the records were read
+	 */
+	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords, final long versionBeforeRead)
 	{
 		addToCacheAndWarmUp(orderRecords);
-		return orderRecords.stream().map(this::fromRecord).collect(ImmutableList.toImmutableList());
+		return orderRecords.stream()
+				.map(orderRecord -> withVersion(fromRecord(orderRecord), versionBeforeRead))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	POSOrder getById(final @NonNull POSOrderId posOrderId)
 	{
-		return fromRecord(getOrderRecordById(posOrderId));
+		final long versionBeforeRead = versionSource.current();
+		return withVersion(fromRecord(getOrderRecordById(posOrderId)), versionBeforeRead);
+	}
+
+	private static POSOrder withVersion(@NonNull final POSOrder order, final long version)
+	{
+		order.setVersion(version);
+		return order;
 	}
 
 	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)
@@ -555,7 +573,16 @@ class POSOrdersLoaderAndSaver
 			putPaymentRecordsToCache(posOrderId, paymentRecordsNew);
 		}
 
-		eventDispatcher.fireOrderChanged(order);
+		// Stamp only after commit: a load running before the commit reads the old content, so it must not get a version
+		// which is not lower than this save's (else the frontend would drop this save's REST response and event as stale).
+		// Also, a rolled back save neither gets a version nor sends an event.
+		// Known limit: two concurrent saves of the same order commit in lock order, but their after-commit callbacks run in
+		// their own threads and are not ordered; if the first one is delayed past the second, the older content gets the
+		// greater version and the frontend shows it until the next save. Closing that needs a version kept with the order in DB.
+		trxManager.runAfterCommit(() -> {
+			order.setVersion(versionSource.next());
+			eventDispatcher.fireOrderChanged(order);
+		});
 	}
 
 	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)
