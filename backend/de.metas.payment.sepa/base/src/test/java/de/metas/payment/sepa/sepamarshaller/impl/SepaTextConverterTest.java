@@ -138,9 +138,9 @@ class SepaTextConverterTest
 		}
 
 		@Test
-		void cutAfterTrim_mayEndWithASpace()
+		void cut_doesNotEndWithASpace()
 		{
-			assertThat(SepaTextConverter.toText("abc def", 4)).isEqualTo("abc ");
+			assertThat(SepaTextConverter.toText("abc def", 4)).isEqualTo("abc");
 		}
 
 		@Test

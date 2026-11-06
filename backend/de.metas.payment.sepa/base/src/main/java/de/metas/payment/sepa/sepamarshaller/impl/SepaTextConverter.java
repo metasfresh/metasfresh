@@ -2,6 +2,7 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -42,7 +43,7 @@ import java.util.regex.Pattern;
  * Of these, only {@code &} is kept: it is common in company names ("Müller & Co."), while banks in other countries may not accept the others,
  * and the Bundesbank itself recommends writing "Ä" as "AE" and "ß" as "ss".
  * So umlauts, "ß" and letters such as "ø" or "Ł" are transliterated, other letters lose their accents (é → e), and every character still outside the set becomes a space;
- * in texts, each run of whitespace then becomes one space. The result is trimmed before it is cut. A text with no character left yields {@code null}.
+ * in texts, each run of whitespace then becomes one space. The result is trimmed before and after it is cut, so a cut text never ends with a space. A text with no character left yields {@code null}.
  */
 @UtilityClass
 public class SepaTextConverter
@@ -107,7 +108,7 @@ public class SepaTextConverter
 		{
 			return null;
 		}
-		return nullIfEmpty(cut(convert(text, false), IDENTIFIER_MAX_LENGTH));
+		return StringUtils.trimBlankToNull(cut(convert(text, false), IDENTIFIER_MAX_LENGTH));
 	}
 
 	/**
@@ -122,7 +123,7 @@ public class SepaTextConverter
 		{
 			return null;
 		}
-		return nullIfEmpty(cut(collapseWhitespace(convert(text, true)), maxLength));
+		return StringUtils.trimBlankToNull(cut(collapseWhitespace(convert(text, true)), maxLength));
 	}
 
 	/**
@@ -181,11 +182,6 @@ public class SepaTextConverter
 		return MULTIPLE_SPACES.matcher(text).replaceAll(" ");
 	}
 
-	@Nullable
-	private static String nullIfEmpty(@NonNull final String text)
-	{
-		return text.isEmpty() ? null : text;
-	}
 
 	private static String cut(@NonNull final String text, final int maxLength)
 	{
