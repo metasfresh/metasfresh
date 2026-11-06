@@ -5,6 +5,8 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.process.JavaProcess;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,5 +63,21 @@ class C_PaySelection_SEPA_XmlExportTest
 				.filename("1000001.xml")
 				.contentType("application/xml")
 				.content(new byte[] {});
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"CT, pain.001.001.09.ch.03",
+			"DD, pain.008.001.08",
+	})
+	void defaultSepaProtocolCode_dependsOnTheTransactionType(final String paySelectionTrxType, final String expectedProtocolCode)
+	{
+		assertThat(C_PaySelection_SEPA_XmlExport.getDefaultSepaProtocolCode(paySelectionTrxType)).isEqualTo(expectedProtocolCode);
+	}
+
+	@Test
+	void defaultSepaProtocolCode_withoutTransactionType_isNull()
+	{
+		assertThat(C_PaySelection_SEPA_XmlExport.getDefaultSepaProtocolCode(null)).isNull();
 	}
 }

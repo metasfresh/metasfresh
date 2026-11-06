@@ -88,7 +88,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date, needed for the mandate check
 		save(paySelection);
 		createActiveMandatesOfLines(paySelection);
-		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
+		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.DIRECT_DEBIT_PAIN_008_001_08);
 		sepaTestHelper.assertCommonDebitDirectCases(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
@@ -102,7 +102,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date, needed for the mandate check
 		save(paySelection);
 		createActiveMandatesOfLines(paySelection);
-		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
+		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, false, SEPAProtocol.DIRECT_DEBIT_PAIN_008_001_08);
 		sepaTestHelper.assertCommonDebitDirectCases(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 

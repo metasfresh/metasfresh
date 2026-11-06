@@ -39,7 +39,7 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 	CREDIT_TRANSFER_PAIN_001_001_03_CH_02(X_SEPA_Export.SEPA_PROTOCOL_CreditTransferPain00100103Ch02), //
 	CREDIT_TRANSFER_PAIN_001_001_09_CH_03(X_SEPA_Export.SEPA_PROTOCOL_CreditTransferPain00100109Ch03), //
 	/**
-	 * Old direct debit format; no longer chosen for new exports (see {@link #ofPaySelectionTrxType}), kept for exports created with it.
+	 * Old direct debit format; refused for new exports (see {@link #ofPaySelectionTrxType}), kept for exports created with it.
 	 */
 	DIRECT_DEBIT_PAIN_008_003_02(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800302), //
 	DIRECT_DEBIT_PAIN_008_001_08(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800108) //
@@ -71,29 +71,47 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 		return this == CREDIT_TRANSFER_PAIN_001_001_03_CH_02 || this == CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
 	}
 
+	public boolean isDirectDebit()
+	{
+		return this == DIRECT_DEBIT_PAIN_008_003_02 || this == DIRECT_DEBIT_PAIN_008_001_08;
+	}
+
 	/**
-	 * @param chosenCreditTransferProtocol the credit transfer protocol chosen by the user; only relevant for {@link PaySelectionTrxType#CREDIT_TRANSFER}.
-	 *                                     If {@code null}, {@link #CREDIT_TRANSFER_PAIN_001_001_09_CH_03} is used.
+	 * @param chosenProtocol the protocol chosen by the user; if {@code null}, the default of the given type is used:
+	 *                       {@link #CREDIT_TRANSFER_PAIN_001_001_09_CH_03} for credit transfer, {@link #DIRECT_DEBIT_PAIN_008_001_08} for direct debit
+	 * @throws AdempiereException if the chosen protocol does not match the type, or is {@link #DIRECT_DEBIT_PAIN_008_003_02}, which can no longer be used for new exports
 	 */
 	public static SEPAProtocol ofPaySelectionTrxType(
 			@NonNull final PaySelectionTrxType paySelectionTrxType,
-			@Nullable final SEPAProtocol chosenCreditTransferProtocol)
+			@Nullable final SEPAProtocol chosenProtocol)
 	{
 		if (PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
 		{
-			if (chosenCreditTransferProtocol == null)
+			if (chosenProtocol == null)
 			{
 				return CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
 			}
-			if (!chosenCreditTransferProtocol.isCreditTransfer())
+			if (!chosenProtocol.isCreditTransfer())
 			{
-				throw new AdempiereException("SEPA protocol " + chosenCreditTransferProtocol.getCode() + " is not a credit transfer protocol");
+				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " is not a credit transfer protocol");
 			}
-			return chosenCreditTransferProtocol;
+			return chosenProtocol;
 		}
 		else if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
 		{
-			return DIRECT_DEBIT_PAIN_008_001_08;
+			if (chosenProtocol == null)
+			{
+				return DIRECT_DEBIT_PAIN_008_001_08;
+			}
+			if (!chosenProtocol.isDirectDebit())
+			{
+				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " is not a direct debit protocol");
+			}
+			if (chosenProtocol == DIRECT_DEBIT_PAIN_008_003_02)
+			{
+				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " can no longer be used for new direct debit exports");
+			}
+			return chosenProtocol;
 		}
 		else
 		{

@@ -8,7 +8,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 ## The export writes pain.008.001.08, one file per scheme (CORE / B2B), taking the mandate data
 ## (reference, signature date, sequence type) from the debtor's C_BP_BankAccount_DirectDebitMandate.
 ##
-## Expected values are derived from the requirements (the pain.008.001.08 GBIC_5 schema and the text conversion to the basic SEPA character set and maximum lengths), not from the writer's output.
+## Expected values are derived from the requirements (the pain.008.001.08 GBIC_5 schema and the text conversion to the SEPA character set and maximum lengths), not from the writer's output.
 ##
 ## Data notes:
 ## - Every scenario runs in its own organization (created in the Background) with its own org BP, which is the creditor; no seed data is changed.
@@ -513,14 +513,14 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     - Debtor OrgStarMandate: only the org-* mandate is active -> its reference is exported, the inactive mandate of the export org is ignored
     - Debtor MandateUsedLater: the mandate was last used after the collection date -> still exported with its own reference, DateLastUsed is not moved back
       - a Swiss debtor (CH IBAN, outside the EEA) whose address has a town -> Dbtr/PstlAdr with town and country
-    - text conversion to the basic SEPA character set, cut to the maximum length (expected values derived from the rules, never from the writer's output):
+    - text conversion to the SEPA character set (basic set, plus & in texts), cut to the maximum length (expected values derived from the rules, never from the writer's output):
       - MndtId: not converted, exported as it is; a reference outside the SEPA character set is refused (see the refusals feature); "MREF-(A/B)+1.2" uses every allowed special character kind
-      - Dbtr.Nm: at most 70 chars; umlauts and ß are transliterated, & and € -> space; the rest over 70 chars is cut
+      - Dbtr.Nm: at most 70 chars; umlauts and ß are transliterated, & is kept (allowed by the German banks in texts), € -> space, each run of spaces -> one space; the rest over 70 chars is cut
         input    = "Bäcker & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
-        expected = "Baecker   Soehne   Grosshandel " (31 chars; & and € became spaces, so 3 spaces each between the words) + 39 x X = 70 chars
-      - Ustrd: at most 140 chars; „ and “ -> space
+        expected = "Baecker & Soehne Grosshandel " (29 chars; the space, € and space between Soehne and Grosshandel became one space) + 41 x X = 70 chars
+      - Ustrd: at most 140 chars; „ and “ -> space, each run of spaces -> one space
         input    = "Rechnung „Nr. 1“ " (17 chars) + 140 x Y = 157 chars
-        expected = "Rechnung  Nr. 1  " (17 chars; 2 spaces before Nr., 2 after 1) + 123 x Y = 140 chars
+        expected = "Rechnung Nr. 1 " (15 chars; one space before Nr., one after 1) + 125 x Y = 140 chars
     Given load AD_Org:
       | AD_Org_ID.Identifier | Value |
       | orgStar              | 0     |
@@ -873,7 +873,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
                           </FinInstnId>
                       </DbtrAgt>
                       <Dbtr>
-                          <Nm>Baecker   Soehne   Grosshandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Nm>
+                          <Nm>Baecker &amp; Soehne Grosshandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Nm>
                       </Dbtr>
                       <DbtrAcct>
                           <Id>
@@ -881,7 +881,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
                           </Id>
                       </DbtrAcct>
                       <RmtInf>
-                          <Ustrd>Rechnung  Nr. 1  YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY</Ustrd>
+                          <Ustrd>Rechnung Nr. 1 YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY</Ustrd>
                       </RmtInf>
                   </DrctDbtTxInf>
               </PmtInf>

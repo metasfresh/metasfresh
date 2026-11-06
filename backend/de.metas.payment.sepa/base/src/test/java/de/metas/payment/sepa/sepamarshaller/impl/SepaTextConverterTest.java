@@ -61,6 +61,7 @@ class SepaTextConverterTest
 		@ParameterizedTest
 		@CsvSource(delimiter = '|', value = {
 				"MREF-Ä&ö/001 | MREF-AE oe/001", // umlauts are transliterated, "&" becomes a space
+				"A&B          | A B",            // identifiers keep the basic character set only, so "&" still becomes a space
 				"Straße       | Strasse",
 				"Müller-Lüdenscheidt é | Mueller-Luedenscheidt e",
 		})
@@ -101,17 +102,25 @@ class SepaTextConverterTest
 
 		@ParameterizedTest
 		@CsvSource(delimiter = '|', value = {
-				"Bäcker & Söhne € Großhandel | Baecker   Soehne   Grosshandel", // umlauts and ß are transliterated, & and € become a space
+				"Bäcker & Söhne € Großhandel | Baecker & Soehne Grosshandel",   // umlauts and ß are transliterated, & is kept, € becomes a space
 				"Société Générale, Łódź      | Societe Generale, Lodz",          // accents are dropped; Ł has no decomposition and is transliterated
 				"Søren Ærø, Œuvre, Đorđe     | Soren AEro, OEuvre, Dorde",       // letters without a decomposition are transliterated
 				"Þórður Ðórsson              | THordur Dorsson",                 // Icelandic letters without a decomposition
-				"Rechnung „Nr. 1“            | Rechnung  Nr. 1",                 // trimmed after the conversion
+				"Rechnung „Nr. 1“            | Rechnung Nr. 1",                  // trimmed and whitespace collapsed after the conversion
 				"a😀b              | a b",                             // a character outside the BMP is ONE space, not two
-				"50% * 2 $                   | 50    2",
+				"50% * 2 $                   | 50 2",
+				"Fokken & Müller GmbH & Co.  | Fokken & Mueller GmbH & Co.",     // & is allowed for the German banks (DFÜ-Abkommen Anlage 3)
+				"A&B                         | A&B",
 		})
 		void converted(final String text, final String expected)
 		{
 			assertThat(SepaTextConverter.toText(text, 70)).isEqualTo(expected);
+		}
+
+		@Test
+		void whitespaceRunInside_isCollapsedToOneSpace()
+		{
+			assertThat(SepaTextConverter.toText("Fokken \t\n  Müller", 70)).isEqualTo("Fokken Mueller");
 		}
 
 		@Test

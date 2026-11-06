@@ -22,6 +22,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
@@ -57,6 +58,7 @@ import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.text;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Real-usage chain of the process {@code C_PaySelection_SEPA_XmlExport}: a pay selection with a purchase invoice line is turned into a SEPA export
@@ -139,18 +141,34 @@ public class SEPAExportFromPaySelectionChainTest
 	}
 
 	@Test
-	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_001_08() throws Exception
+	void directDebit_pain008_001_08Chosen_exportsPain008_001_08() throws Exception
 	{
 		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
 		final I_C_BP_BankAccount vendorBankAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
 		createActiveMandate(vendorBankAccount);
 		createPaySelectionLine(paySelection, vendorBankAccount, null);
 
-		final byte[] xml = exportAsProcessDoes(paySelection, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
+		final byte[] xml = exportAsProcessDoes(paySelection, SEPAProtocol.DIRECT_DEBIT_PAIN_008_001_08);
 
 		assertThat(rootNamespace(xml)).isEqualTo(NAMESPACE_PAIN_008_001_08);
 		// the debtor address is the one captured on the invoice
 		assertThat(text(parse(xml), "Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr/PstlAdr/TwnNm")).isEqualTo("Zuerich");
+	}
+
+	/**
+	 * A credit transfer format chosen for a direct debit pay selection is refused instead of being ignored.
+	 */
+	@Test
+	void directDebit_pain001_001_03_ch_02Chosen_isRefused()
+	{
+		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
+		final I_C_BP_BankAccount vendorBankAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
+		createActiveMandate(vendorBankAccount);
+		createPaySelectionLine(paySelection, vendorBankAccount, null);
+
+		assertThatThrownBy(() -> exportAsProcessDoes(paySelection, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.getCode());
 	}
 
 	/**
