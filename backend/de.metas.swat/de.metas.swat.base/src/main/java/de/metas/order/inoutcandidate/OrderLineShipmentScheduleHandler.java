@@ -358,7 +358,12 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
 		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType().getNullableCode());
 
-		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
+		// Set only on a real change: PO writes a column that was set to its loaded value, too, so a recompute that loaded
+		// the schedule before a shipment run assigned its batch would otherwise overwrite that batch on save.
+		if (shipmentSchedule.getC_Async_Batch_ID() != order.getC_Async_Batch_ID())
+		{
+			shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
+		}
 
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(orderId, de.metas.order.model.I_C_Order.class);

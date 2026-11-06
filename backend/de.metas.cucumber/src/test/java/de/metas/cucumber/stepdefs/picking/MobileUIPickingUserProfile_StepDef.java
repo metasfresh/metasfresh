@@ -83,6 +83,7 @@ public class MobileUIPickingUserProfile_StepDef
 	 *   <li>{@code IsAllowCompletingPartialPickingJob} — boolean</li>
 	 *   <li>{@code IsCatchWeightTUPickingEnabled} — boolean</li>
 	 *   <li>{@code IsShowConfirmationPromptWhenOverPick} — boolean; N means over-picking is blocked</li>
+	 *   <li>{@code IsShipOnCloseLU} — boolean (closing an LU pick target ships that LU right away)</li>
 	 *   <li>{@code IsMassPrinting} — boolean</li>
  *   <li>{@code IsShowConfirmationPromptWhenOverPick} — boolean (N means over-picking is blocked)</li>
 	 *   <li>{@code IsConsideredOnlyScheduledJobs} — boolean (job-scheduled-to-workplace mode: only demand scheduled to the picker's workplace via a {@code M_Picking_Job_Schedule} is eligible)</li>
@@ -116,6 +117,7 @@ public class MobileUIPickingUserProfile_StepDef
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowCompletingPartialPickingJob).ifPresent(defaultPickingJobOptionsBuilder::isAllowCompletingPartialPickingJob);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsCatchWeightTUPickingEnabled).ifPresent(defaultPickingJobOptionsBuilder::isCatchWeightTUPickingEnabled);
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsShipOnCloseLU).ifPresent(defaultPickingJobOptionsBuilder::isShipOnCloseLU);
 			row.getAsOptionalEnum("PickingJobAggregationType", PickingJobAggregationType.class).ifPresent(defaultPickingJobOptionsBuilder::aggregationType);
 
 			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder profileBuilder = profile.toBuilder()
