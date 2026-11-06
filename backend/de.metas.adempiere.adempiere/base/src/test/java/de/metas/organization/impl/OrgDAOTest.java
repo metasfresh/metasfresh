@@ -5,8 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Optional;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.X_AD_OrgInfo;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
@@ -70,6 +75,47 @@ class OrgDAOTest
 
 		final Optional<OrgId> result = orgDAO.retrieveOrgIdBy(query);
 		assertThat(result).isEmpty();
+	}
+
+	@Nested
+	class getOrgWarehouseIdIfExists
+	{
+		private void orgInfo(final int orgRepoId, final int warehouseRepoId)
+		{
+			final I_AD_OrgInfo record = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+			record.setAD_Org_ID(orgRepoId);
+			record.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_NichtSpeichern);
+			record.setM_Warehouse_ID(warehouseRepoId);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+
+		@Test
+		void orgInfoWithWarehouse_returnsIt()
+		{
+			orgInfo(1000000, 555);
+
+			assertThat(orgDAO.getOrgWarehouseIdIfExists(OrgId.ofRepoId(1000000))).contains(WarehouseId.ofRepoId(555));
+		}
+
+		@Test
+		void orgInfoWithoutWarehouse_isEmpty()
+		{
+			orgInfo(1000000, -1);
+
+			assertThat(orgDAO.getOrgWarehouseIdIfExists(OrgId.ofRepoId(1000000))).isEmpty();
+		}
+
+		@Test
+		void orgWithoutOrgInfo_isEmpty_notAnException()
+		{
+			assertThat(orgDAO.getOrgWarehouseIdIfExists(OrgId.ofRepoId(1000001))).isEmpty();
+		}
+
+		@Test
+		void anyOrg_isEmpty()
+		{
+			assertThat(orgDAO.getOrgWarehouseIdIfExists(OrgId.ANY)).isEmpty();
+		}
 	}
 
 }

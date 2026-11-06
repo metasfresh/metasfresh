@@ -42,7 +42,9 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
 import de.metas.common.util.StringUtils;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
@@ -102,6 +104,11 @@ public class BPartnerBL implements IBPartnerBL
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	/** {@code C_BPartner.SO_DocTypeTarget_ID} by partner; avoids re-loading the partner for every caller of a bulk process */
+	private final CCache<BPartnerId, Optional<DocTypeId>> salesOrderDocTypeIdCache = CCache.<BPartnerId, Optional<DocTypeId>>builder()
+			.cacheName(BPartnerBL.class.getSimpleName() + "#salesOrderDocTypeId")
+			.tableName(I_C_BPartner.Table_Name)
+			.build();
 
 	public BPartnerBL()
 	{
@@ -123,6 +130,14 @@ public class BPartnerBL implements IBPartnerBL
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnersRepo.getById(bpartnerId);
+	}
+
+	@Override
+	public Optional<DocTypeId> getSalesOrderDocTypeId(@NonNull final BPartnerId bpartnerId)
+	{
+		return salesOrderDocTypeIdCache.getOrLoad(
+				bpartnerId,
+				() -> Optional.ofNullable(DocTypeId.ofRepoIdOrNull(getById(bpartnerId).getSO_DocTypeTarget_ID())));
 	}
 
 	@Override

@@ -27,7 +27,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllowConsolidatePredicate;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderQuery;
+import de.metas.order.OrderCriteria;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -64,7 +64,7 @@ public class MatchOrderIdShipmentScheduleConsolidatePredicate implements IShipme
 		}
 
 		final I_C_Order orderRecord = orderDAO
-				.retrieveByOrderCriteria(OrderQuery.builder()
+				.retrieveByOrderCriteria(OrderCriteria.builder()
 												 .orderId(orderID)
 												 .orgId(OrgId.ofRepoId(sched.getAD_Org_ID()))
 												 .build())

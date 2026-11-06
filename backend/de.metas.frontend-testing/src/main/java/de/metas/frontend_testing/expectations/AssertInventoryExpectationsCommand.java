@@ -13,6 +13,8 @@ import de.metas.inventory.InventoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -118,6 +120,31 @@ class AssertInventoryExpectationsCommand
 			// else the latest one referencing the HU.
 			assertQtysOfSelectedInventory(selectedInventory, inventoryLines, description, expectation);
 		}
+
+		if (expectation.getLineAttributes() != null)
+		{
+			assertLineAttributesOfSelectedInventory(selectedInventory, inventoryLines, description, expectation.getLineAttributes());
+		}
+	}
+
+	private void assertLineAttributesOfSelectedInventory(
+			@Nullable final Inventory selectedInventory,
+			@NonNull final List<I_M_InventoryLine> inventoryLines,
+			@Nullable final String description,
+			@NonNull final Map<String, String> expectedAttributes)
+	{
+		if (selectedInventory == null)
+		{
+			fail("Expected an inventory document"
+					+ (description != null ? " with description '" + description + "'" : "")
+					+ " to assert line attributes on, but none was found");
+			return;
+		}
+
+		final List<I_M_InventoryLine> linesOfInventory = inventoryLines.stream()
+				.filter(line -> line.getM_Inventory_ID() == selectedInventory.getId().getRepoId())
+				.collect(ImmutableList.toImmutableList());
+		assertLineAttributes(linesOfInventory, expectedAttributes, services::getAsiAttributes);
 	}
 
 	/**
@@ -201,6 +228,25 @@ class AssertInventoryExpectationsCommand
 				.map(qtyGetter)
 				.map(qty -> qty != null ? qty : BigDecimal.ZERO)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	@VisibleForTesting
+	static void assertLineAttributes(
+			@NonNull final List<I_M_InventoryLine> inventoryLines,
+			@NonNull final Map<String, String> expectedAttributes,
+			@NonNull final Function<AttributeSetInstanceId, ImmutableAttributeSet> asiLoader)
+	{
+		if (inventoryLines.isEmpty())
+		{
+			fail("Expected inventory lines to assert attributes on, but none was found");
+			return;
+		}
+
+		for (final I_M_InventoryLine line : inventoryLines)
+		{
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
+			HUAttributeAssertions.assertAttributes(expectedAttributes, asiLoader.apply(asiId));
+		}
 	}
 
 	/**

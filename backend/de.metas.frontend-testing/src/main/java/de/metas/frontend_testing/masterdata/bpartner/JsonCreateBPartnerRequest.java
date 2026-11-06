@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.document.DocSubType;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.order.InvoiceRule;
@@ -71,6 +72,12 @@ public class JsonCreateBPartnerRequest
 	 * enum stays free of Jackson annotations (whose global serialization change would break other consumers).
 	 */
 	@Nullable String invoiceRule;
+
+	/**
+	 * The partner's sales order type ({@code C_BPartner.SO_DocTypeTarget_ID}), given by its {@code C_DocType.DocSubType} code,
+	 * e.g. {@code "PR"} for the prepay order. If null, the partner has no order type.
+	 */
+	@Nullable DocSubType orderDocSubType;
 
 	/**
 	 * Contacts (AD_User records) to create for this business partner.

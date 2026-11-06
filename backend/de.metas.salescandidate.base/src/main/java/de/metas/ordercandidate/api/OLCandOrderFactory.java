@@ -38,6 +38,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.error.AdIssueId;
@@ -150,6 +151,7 @@ class OLCandOrderFactory
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
@@ -408,7 +410,7 @@ class OLCandOrderFactory
 			}
 			try
 			{
-				documentBL.processEx(order, X_C_Order.DOCACTION_Complete, DocStatus.Completed.getCode());
+				completeOrder(order);
 				save(order);
 
 				loggable.addLog("@Created@ @C_Order_ID@ " + order.getDocumentNo());
@@ -430,6 +432,31 @@ class OLCandOrderFactory
 					olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 				}
 			}
+		}
+	}
+
+	/**
+	 * Completes the given order. A prepay order that is not paid yet is not completed but waits for the payment
+	 * ({@link DocStatus#WaitingPayment}); that is the regular outcome for such an order, not a failure.
+	 */
+	private void completeOrder(@NonNull final I_C_Order order)
+	{
+		final boolean isPrepayOrder = docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
+		if (!isPrepayOrder)
+		{
+			documentBL.processEx(order, X_C_Order.DOCACTION_Complete, DocStatus.Completed.getCode());
+			return;
+		}
+
+		documentBL.processEx(order, X_C_Order.DOCACTION_Complete, null);
+
+		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
+		if (!docStatus.isCompleted() && !docStatus.isWaitingForPayment())
+		{
+			throw new AdempiereException("Prepay order does not have expected status (Expected=" + DocStatus.Completed + " or " + DocStatus.WaitingPayment + ", actual=" + docStatus + ")")
+					.appendParametersToMessage()
+					.setParameter("C_Order_ID", order.getC_Order_ID())
+					.setParameter("DocumentNo", order.getDocumentNo());
 		}
 	}
 
