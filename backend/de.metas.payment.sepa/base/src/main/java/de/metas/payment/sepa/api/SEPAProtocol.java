@@ -82,11 +82,11 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 	 */
 	public static SEPAProtocol getDefault(@NonNull final PaySelectionTrxType paySelectionTrxType)
 	{
-		if (PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
+		if (paySelectionTrxType.isCreditTransfer())
 		{
 			return CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
 		}
-		else if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
+		else if (paySelectionTrxType.isDirectDebit())
 		{
 			return DIRECT_DEBIT_PAIN_008_001_08;
 		}
@@ -109,7 +109,7 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 			return getDefault(paySelectionTrxType);
 		}
 
-		if (PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
+		if (paySelectionTrxType.isCreditTransfer())
 		{
 			if (!chosenProtocol.isCreditTransfer())
 			{
@@ -117,7 +117,7 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 			}
 			return chosenProtocol;
 		}
-		else if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
+		else if (paySelectionTrxType.isDirectDebit())
 		{
 			if (!chosenProtocol.isDirectDebit())
 			{
