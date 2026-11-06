@@ -1,7 +1,8 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { loginWithMasterdataUser } from '../utils/LoginHelper';
 import { Backend } from '../utils/Backend';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { LoginPage } from '../utils/pages/LoginPage';
@@ -21,25 +22,6 @@ import { LoginPage } from '../utils/pages/LoginPage';
 
 const USER_WINDOW_ID = 108; // AD_User ("User (AD_User)"), table AD_User
 
-/**
- * Log in as the admin. That login offers a role selection (the default role is pre-selected), which
- * LoginPage.login does not complete here, so the "Send" click is done directly; LoginPage is still
- * used for the login page itself and for the target user's single-role login.
- */
-async function loginAsAdmin(page) {
-  await LoginPage.goto();
-  await page.locator('input[name="username"]').fill('metasfresh');
-  await page.locator('input[name="password"]').fill('metasfresh');
-  await page.locator('.btn-meta-success').click();
-  try {
-    await page.locator('.input-dropdown-container .input-field').first().waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
-    await page.locator('.btn-meta-success').click();
-  } catch {
-    // no role selection needed
-  }
-  await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: SLOW_ACTION_TIMEOUT });
-}
-
 test.describe('User window — change password process', () => {
   test('typed passwords are revealed exactly and the new password logs the user in', async ({ page }) => {
     allure.epic('E0182: System Configuration');
@@ -58,9 +40,9 @@ Runs the "Change password" process of the user window against a freshly created 
 3. After logging out, the target user can log in with the new password
 `);
 
-    const oldPassword = `old-${Date.now()}`;
-    const newPassword = `New!Pass-${Date.now()}`;
-    const login = `b3cp${Date.now()}`;
+    const unique = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+    const newPassword = `New!Pass-${unique}`;
+    const login = `b3cp${unique}`;
 
     let targetUserId;
     await test.step('Create the target system user (password = login)', async () => {
@@ -72,7 +54,8 @@ Runs the "Change password" process of the user window against a freshly created 
     });
 
     await test.step('Admin opens the user window on the target user', async () => {
-      await loginAsAdmin(page);
+      // LoginPage.login misses the 2nd /login/authenticate of the admin's two-role login (selectors-and-gotchas.md)
+      await loginWithMasterdataUser(page, { username: 'metasfresh', password: 'metasfresh' });
       await page.goto(`${FRONTEND_BASE_URL}/window/${USER_WINDOW_ID}/${targetUserId}`);
       await page.locator('.form-field-Login').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator('.form-field-Login input')).toHaveValue(login);
@@ -82,7 +65,7 @@ Runs the "Change password" process of the user window against a freshly created 
     const fieldInput = (name) => modal.locator(`.form-field-${name} input`);
 
     await test.step('Open the Change password process', async () => {
-      await page.locator('.header-item-container, .btn-square').first().click();
+      await page.locator('.header-left-side .btn-header').click();
       await page.locator('[data-testid="action-AD_User_ChangePassword"]').click();
       await modal.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       for (const name of ['OldPassword', 'NewPassword', 'NewPasswordRetype']) {
