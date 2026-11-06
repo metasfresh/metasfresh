@@ -25,7 +25,6 @@ package de.metas.ui.web.dashboard;
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.elasticsearch.IESSystem;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
@@ -63,7 +62,6 @@ public class UserDashboardDataService
 
 		this.kpiDataProvider = KPIDataProvider.builder()
 				.kpiRepository(kpiRepository)
-				.esSystem(Services.get(IESSystem.class))
 				.sysConfigBL(Services.get(ISysConfigBL.class))
 				.kpiPermissionsProvider(new KPIPermissionsProvider(Services.get(IUserRolePermissionsDAO.class)))
 				.build();

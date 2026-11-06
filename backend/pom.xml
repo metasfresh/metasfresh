@@ -129,8 +129,6 @@
 
         <module>de.metas.edi</module>
 
-        <module>de.metas.elasticsearch</module>
-
         <module>de.metas.banking</module>
         <module>de.metas.contracts</module>
 
