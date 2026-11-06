@@ -6,7 +6,7 @@
 -- ad_process_delete handles every reference and deletes the process, so the statements of 5831250 then match no rows.
 -- Does nothing where the process is already gone.
 
--- Edit of an already integrated script (immutability exception): sp80 is stuck AT this script - 5831247 (the function) is
+-- Edit of an already integrated script (immutability exception): a customer instance is stuck AT this script - 5831247 (the function) is
 -- applied, and as 5831247/5831248 are consecutive no earlier-numbered follow-up script can fix the function before this call.
 -- The installed (old) ad_process_delete refuses to delete a process that still has AD_Process_Access rows when the database
 -- carries an FK from AD_Process_Access to AD_Process, although it would delete them itself.
