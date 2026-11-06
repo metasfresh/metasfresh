@@ -40,9 +40,9 @@ public class SEPAProtocolTest
 	void directDebit_ignoresChoice()
 	{
 		assertThat(SEPAProtocol.ofPaySelectionTrxType(PaySelectionTrxType.DIRECT_DEBIT, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02))
-				.isSameAs(SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02);
+				.isSameAs(SEPAProtocol.DIRECT_DEBIT_PAIN_008_001_08);
 		assertThat(SEPAProtocol.ofPaySelectionTrxType(PaySelectionTrxType.DIRECT_DEBIT, null))
-				.isSameAs(SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02);
+				.isSameAs(SEPAProtocol.DIRECT_DEBIT_PAIN_008_001_08);
 	}
 
 	@Test
