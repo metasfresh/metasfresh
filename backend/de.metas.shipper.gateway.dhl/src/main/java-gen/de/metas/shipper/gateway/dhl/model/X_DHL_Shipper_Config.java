@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.shipper.gateway.dhl.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for DHL_Shipper_Config
  *  @author metasfresh (generated) 
