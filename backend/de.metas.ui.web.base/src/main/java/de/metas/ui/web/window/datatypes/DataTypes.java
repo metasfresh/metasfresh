@@ -192,7 +192,9 @@ public final class DataTypes
 			}
 			else if (Password.class == targetType)
 			{
-				return cast(Password.ofNullableString(value.toString()));
+				// an empty password is no password (stored as NULL), same as an empty String field
+				final String passwordStr = value.toString();
+				return passwordStr.isEmpty() ? null : cast(Password.ofNullableString(passwordStr));
 			}
 			else if (ColorValue.class == targetType)
 			{
