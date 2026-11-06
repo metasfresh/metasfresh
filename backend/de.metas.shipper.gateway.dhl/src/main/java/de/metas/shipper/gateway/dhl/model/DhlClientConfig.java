@@ -27,6 +27,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -44,8 +47,11 @@ public class DhlClientConfig
 	@NonNull
 	String applicationToken; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
 
-	@NonNull
-	String accountNumber; // DHL Business Customer Portal (also presented as EKP)
+	@Nullable
+	String accountNumber; // DHL Business Customer Portal (also presented as EKP); billing number of the national product
+
+	@Nullable
+	String accountNumberInternational; // billing number of the international product
 
 	@NonNull
 	String username; // DHL Business Customer Portal
@@ -58,5 +64,19 @@ public class DhlClientConfig
 
 	@NonNull
 	String trackingUrlBase;
+
+	@Nullable
+	public String getBillingNumber(@NonNull final DhlShipperProduct product)
+	{
+		switch (product)
+		{
+			case Dhl_Paket:
+				return accountNumber;
+			case Dhl_PaketInternational:
+				return accountNumberInternational;
+			default:
+				throw new AdempiereException("Unsupported DHL product: " + product);
+		}
+	}
 
 }

@@ -10,6 +10,7 @@ Feature: Dhl Shipment
     And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Berlin]
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
     # Read the HU's WeightGross attribute first, with product nominal gross as fallback. The last scenario
     # in this feature resets WeightSourceTypes to the default ProductWeight to cover the fallback path.
     And set sys config String value HUWeightGross,ProductWeight for sys config de.metas.shipping.WeightSourceTypes
@@ -21,8 +22,8 @@ Feature: Dhl Shipment
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
     And metasfresh contains DHL Configuration:
-      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  |
-      | dhl1                             | shipper_DHL             | 33333333330102 |
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
+      | dhl1                             | shipper_DHL             | 33333333330102 | 33333333335301                  |
 
     #Karton
     And load M_Product:
@@ -80,6 +81,10 @@ Feature: Dhl Shipment
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
       | dhl_location | 1122334455667 | dhl_customer             | dhl_location                 | true         | true         | locationBPName   | locationName |
+    # the DHL consignee e-mail is the customer's default contact e-mail
+    And metasfresh contains AD_Users:
+      | Identifier  | Name        | EMail                | OPT.C_BPartner_ID.Identifier | OPT.IsDefaultContact |
+      | dhl_contact | dhl_contact | customer@example.com | dhl_customer                 | true                 |
 
     # Create CU-TU Allocation
     And metasfresh contains M_HU_PI:
@@ -192,6 +197,10 @@ Feature: Dhl Shipment
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
       | package1     | dhl_customer  | 30             | 20            | 10             | 0.250          |
+    # DE -> DE parcel is sent as national product with the national billing number
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | billingNumber  |
+      | V01PAK  | 33333333330102 |
 
 
   @Id:S0335.1_200
@@ -373,3 +382,88 @@ Feature: Dhl Shipment
     And validate M_Packages for shipment shipment_1
       | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
       | shipper_DHL  | dhl_customer  | dhl_location           | 1.25          | package1     | 30         | 20        | 10         |
+    # DE -> DE parcel is sent as national product with the national billing number
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | billingNumber  |
+      | V01PAK  | 33333333330102 |
+
+
+
+  # ##########################################################################
+  # ##########################################################################
+  @Id:S32526_TC1
+  Scenario: DHL shipment from DE to AT is sent with the international product and the international billing number
+    Given metasfresh contains M_PriceLists
+      | Identifier   | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_dhl_so_at | ps_dhl_1           | AT                        | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier   | M_PriceList_ID.Identifier | ValidFrom  |
+      | plv_dhl_so_at | pl_dhl_so_at              | 2022-01-20 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
+      | plv_dhl_so_at          | test_product_dhl_01 | 10.0     | Normal                        | PCE               |
+      | plv_dhl_so_at          | packing_product_1   | 0.0      | Normal                        | PCE               |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
+      | dhl_location_at          | AT          | addr 7       | 1010       | Wien     |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier      | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | dhl_location_at | 1122334455668 | dhl_customer             | dhl_location_at              | true         | false        |
+    And metasfresh contains External System
+      | Name                 | Value                |
+      | TestSystem_S32526_TC1 | TestSystem_S32526_TC1 |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    """
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalHeaderId": "dhl_at_01",
+      "externalLineId": "dhl_at_01",
+      "externalSystemCode": "TestSystem_S32526_TC1",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+          "bpartnerIdentifier": "gln-1122334455667",
+          "bpartnerLocationIdentifier": "gln-1122334455668"
+      },
+      "dateRequired": "2022-12-12",
+      "dateOrdered": "2022-12-12",
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-1000002",
+      "productIdentifier": "val-test_product_dhl_01",
+      "qty": 1,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "ref_at_12301",
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "bpartnerName": "olCandBPartnerName",
+      "packingMaterialId": @dhl_huProductTU_X@,
+      "shipper": "val-Dhl"
+    }
+  ]
+}
+    """
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+    """
+{
+    "externalHeaderId": "dhl_at_01",
+    "externalSystemCode": "TestSystem_S32526_TC1",
+    "ship": true,
+    "invoice": false,
+    "closeOrder": false
+}
+    """
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier |
+      | order_1               | shipment_1            |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer  | dhl_location_at        | 0.250         | package1     | 30         | 20        | 10         |
+    And validate DHL_ShipmentOrder:
+      | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
+      | package1     | dhl_customer  | 30             | 20            | 10             | 0.250          |
+    # DE -> AT parcel is sent as international product with the international billing number
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | billingNumber  |
+      | V53WPAK | 33333333335301 |

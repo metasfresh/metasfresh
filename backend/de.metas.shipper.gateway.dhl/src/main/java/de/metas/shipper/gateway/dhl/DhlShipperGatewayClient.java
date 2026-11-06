@@ -213,9 +213,10 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 		{
 			final String customerReference = getCustomerReference(deliveryOrder);
+			final DhlShipperProduct product = DhlShipperProduct.forCode(Check.assumeNotNull(deliveryOrder.getShipperProduct(), "deliveryOrder has a shipperProduct: {}", deliveryOrder).getCode());
 			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
-					.billingNumber(config.getAccountNumber())
-					.product(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null)
+					.billingNumber(config.getBillingNumber(product))
+					.product(product.getCode())
 					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
 					.shipper(DhlAddressMapper.getShipperAddress(deliveryOrder.getPickupAddress()))
 					.consignee(DhlAddressMapper.getConsigneeAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))

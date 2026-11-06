@@ -40,6 +40,7 @@ public class DHL_Shipper_Config_StepDef
 
 			final String accountNumber = DataTableUtil.extractStringForColumnName(tableRow, I_DHL_Shipper_Config.COLUMNNAME_AccountNumber);
 			config.setAccountNumber(accountNumber);
+			config.setAccountNumber_International(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_DHL_Shipper_Config.COLUMNNAME_AccountNumber_International));
 
 			saveRecord(config);
 

@@ -63,6 +63,7 @@ public class DhlClientConfigRepository
 				.applicationToken(configPO.getApplicationToken())
 				.baseUrl(configPO.getdhl_api_url())
 				.accountNumber(configPO.getAccountNumber())
+				.accountNumberInternational(configPO.getAccountNumber_International())
 				.username(configPO.getUserName())
 				.signature(configPO.getSignature())
 				.lengthUomId(UomId.ofRepoId(configPO.getDhl_LenghtUOM_ID()))
