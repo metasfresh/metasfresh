@@ -182,7 +182,6 @@ public class SepaTextConverter
 		return MULTIPLE_SPACES.matcher(text).replaceAll(" ");
 	}
 
-
 	private static String cut(@NonNull final String text, final int maxLength)
 	{
 		return text.length() <= maxLength ? text : text.substring(0, maxLength);
