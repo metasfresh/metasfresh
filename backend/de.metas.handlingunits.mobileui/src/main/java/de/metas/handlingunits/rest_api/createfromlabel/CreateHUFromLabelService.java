@@ -1,6 +1,7 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
 import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class CreateHUFromLabelService
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final HUQtyService huQtyService;
 	@NonNull private final LabelValuesService labelValuesService;
@@ -30,6 +32,7 @@ public class CreateHUFromLabelService
 		return ProposeHUFromScannedCodeCommand.builder()
 				.attributeDAO(attributeDAO)
 				.warehouseDAO(warehouseDAO)
+				.uomDAO(uomDAO)
 				.labelValuesService(labelValuesService)
 				.labelTargetLocatorResolver(labelTargetLocatorResolver);
 	}

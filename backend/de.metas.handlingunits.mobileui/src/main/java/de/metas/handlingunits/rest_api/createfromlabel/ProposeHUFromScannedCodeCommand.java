@@ -9,6 +9,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.organization.OrgId;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,6 +32,7 @@ public class ProposeHUFromScannedCodeCommand
 	// services
 	@NonNull private final IAttributeDAO attributeDAO;
 	@NonNull private final IWarehouseDAO warehouseDAO;
+	@NonNull private final IUOMDAO uomDAO;
 	@NonNull private final LabelValuesService labelValuesService;
 	@NonNull private final LabelTargetLocatorResolver labelTargetLocatorResolver;
 
@@ -45,6 +47,7 @@ public class ProposeHUFromScannedCodeCommand
 	private ProposeHUFromScannedCodeCommand(
 			@NonNull final IAttributeDAO attributeDAO,
 			@NonNull final IWarehouseDAO warehouseDAO,
+			@NonNull final IUOMDAO uomDAO,
 			@NonNull final LabelValuesService labelValuesService,
 			@NonNull final LabelTargetLocatorResolver labelTargetLocatorResolver,
 			@NonNull final ClientId clientId,
@@ -55,6 +58,7 @@ public class ProposeHUFromScannedCodeCommand
 	{
 		this.attributeDAO = attributeDAO;
 		this.warehouseDAO = warehouseDAO;
+		this.uomDAO = uomDAO;
 		this.labelValuesService = labelValuesService;
 		this.labelTargetLocatorResolver = labelTargetLocatorResolver;
 		this.clientId = clientId;
@@ -91,7 +95,7 @@ public class ProposeHUFromScannedCodeCommand
 						.name(labelValues.getProductName())
 						.build())
 				.qty(labelValues.getQty() != null ? labelValues.getQty().toBigDecimal() : null)
-				.uom(labelValues.getStockUom().getCode())
+				.uom(uomDAO.getUOMSymbolById(labelValues.getStockUomId()).translate(adLanguage))
 				.attributes(toJsonAttributes(labelValues))
 				.weightKg(labelValues.getWeightKgForCU() != null ? labelValues.getWeightKgForCU().toBigDecimal() : null)
 				.locatorQRCode(locatorQRCode != null ? locatorQRCode.toScannedCode() : null)
