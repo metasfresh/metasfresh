@@ -4,7 +4,7 @@
 --   direct debit (DD)    -> pain.008.001.08 only (pain.008.003.02 is rejected by German banks for new exports)
 -- The default now depends on the transaction type as well; the process provides it (CT -> pain.001.001.09.ch.03, DD -> pain.008.001.08),
 -- so the static credit-transfer default is removed from the parameter.
--- The previous rule 540805 (SEPA_Protocol_CreditTransfer) is credit-transfer only by name and content, so it is left as it is and a new rule is used.
+-- The previous rule 540805 (SEPA_Protocol_CreditTransfer) is credit-transfer only by name and content, so a new rule is used instead of changing it.
 
 INSERT INTO AD_Val_Rule (AD_Client_ID, AD_Org_ID, AD_Val_Rule_ID, Code, Created, CreatedBy, Description, EntityType, IsActive, Name, Type, Updated, UpdatedBy)
 VALUES (0, 0, 540812 /*From ID Server*/,

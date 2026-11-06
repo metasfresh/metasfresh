@@ -19,15 +19,4 @@ WHERE AD_Element_ID = 577573 AND AD_Language = 'de_DE'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(577573, 'de_DE')
 ;
-/* DDL */ select update_ad_element_on_ad_element_trl_update(577573, 'de_DE')
-;
 
--- Propagate to the process parameter and the column (same statements the element propagation issues)
-UPDATE AD_Column SET Description = 'Format (Version) der SEPA-Zahlungsdatei.', Help = NULL WHERE AD_Element_ID = 577573
-;
-UPDATE AD_Process_Para SET Description = 'Format (Version) der SEPA-Zahlungsdatei.', Help = NULL WHERE AD_Element_ID = 577573 AND IsCentrallyMaintained = 'Y'
-;
-/* DDL */ select update_Process_Para_Translation_From_AD_Element(577573)
-;
-/* DDL */ select update_Column_Translation_From_AD_Element(577573)
-;
