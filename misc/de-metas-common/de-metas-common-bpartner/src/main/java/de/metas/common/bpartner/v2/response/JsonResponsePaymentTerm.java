@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,19 +38,16 @@ public class JsonResponsePaymentTerm
 	public static final String NAME = "name";
 	public static final String VALUE = "value";
 
-	@ApiModelProperty( //
-			required = true, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_PaymentTerm.C_PaymentTerm_ID`.")
+	@Schema(description = "This translates to `C_PaymentTerm.C_PaymentTerm_ID`.", required = true, implementation = Integer.class)
 	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty( value = "This translates to `C_PaymentTerm.Name`.")
+	@Schema(description = "This translates to `C_PaymentTerm.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@ApiModelProperty( value = "This translates to `C_PaymentTerm.Value`.")
+	@Schema(description = "This translates to `C_PaymentTerm.Value`.")
 	@JsonProperty(VALUE)
 	String value;
 

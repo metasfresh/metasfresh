@@ -119,12 +119,14 @@ public class Finder extends Thread {
                     return;*/
                 cdlg.cont = false;
                 cdlg.cancel = false;
+                cdlg.resetDecision();
                 if (!showCdlg) {
                     editor.showToolsPanel();
                     editor.toolsPanel.addTab(Local.getString("Find"), cdlg);
                     showCdlg = true;
-                }                
-                this.suspend();
+                }
+                // Thread.suspend() was removed in Java 21+; block on the dialog's monitor instead.
+                cdlg.awaitDecision();
 
                 if (cdlg.cancel) {
                     editor.toolsPanel.remove(cdlg);

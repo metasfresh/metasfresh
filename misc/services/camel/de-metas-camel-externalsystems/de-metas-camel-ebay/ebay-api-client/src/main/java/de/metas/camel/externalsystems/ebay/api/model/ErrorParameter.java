@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type contains the name and value of an input parameter that contributed to a specific error or warning condition.
  */
-@ApiModel(description = "This type contains the name and value of an input parameter that contributed to a specific error or warning condition.")
+@Schema(description = "This type contains the name and value of an input parameter that contributed to a specific error or warning condition.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class ErrorParameter
 {
@@ -51,7 +50,7 @@ public class ErrorParameter
 	 * @return name
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the name of input field that caused an issue with the call request.")
+	@Schema(description = "This is the name of input field that caused an issue with the call request.")
 
 	public String getName()
 	{
@@ -76,7 +75,7 @@ public class ErrorParameter
 	 * @return value
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the actual value that was passed in for the element specified in the name field.")
+	@Schema(description = "This is the actual value that was passed in for the element specified in the name field.")
 
 	public String getValue()
 	{

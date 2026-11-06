@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used to store the unique identifier of an evidence file. Evidence files are used by seller to contest a payment dispute.
  */
-@ApiModel(description = "This type is used to store the unique identifier of an evidence file. Evidence files are used by seller to contest a payment dispute.")
+@Schema(description = "This type is used to store the unique identifier of an evidence file. Evidence files are used by seller to contest a payment dispute.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class FileEvidence
 {
@@ -48,7 +47,7 @@ public class FileEvidence
 	 * @return fileId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "If an uploadEvidenceFile call is successful, a unique identifier of this evidence file will be returned in the uploadEvidenceFile response payload. This unique fileId value is then used to either add this evidence file to a new evidence set using the addEvidence method, or to add this file to an existing evidence set using the updateEvidence method. Note that if an evidence set already exists for a payment dispute, the getPaymentDispute method will return both the evidenceId (unique identifier of evidence set) value, and the fileId (unique identifier of a file within that evidence set) value(s).")
+	@Schema(description = "If an uploadEvidenceFile call is successful, a unique identifier of this evidence file will be returned in the uploadEvidenceFile response payload. This unique fileId value is then used to either add this evidence file to a new evidence set using the addEvidence method, or to add this file to an existing evidence set using the updateEvidence method. Note that if an evidence set already exists for a payment dispute, the getPaymentDispute method will return both the evidenceId (unique identifier of evidence set) value, and the fileId (unique identifier of a file within that evidence set) value(s).")
 
 	public String getFileId()
 	{

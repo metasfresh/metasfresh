@@ -2,7 +2,7 @@ package de.metas.location.geocoding.asynchandler;
 
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.compiere.model.I_C_Location;

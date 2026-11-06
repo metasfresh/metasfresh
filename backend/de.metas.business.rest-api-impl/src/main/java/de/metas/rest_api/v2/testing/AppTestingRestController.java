@@ -32,7 +32,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -76,11 +76,11 @@ public class AppTestingRestController
 
 	@PutMapping(produces = "application/json")
 	public ResponseEntity<?> putMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
+			@Parameter(description = "Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
+			@Parameter(description = "Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -88,11 +88,11 @@ public class AppTestingRestController
 
 	@GetMapping(produces = "application/json")
 	public ResponseEntity<?> getMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
+			@Parameter(description = "Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
+			@Parameter(description = "Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -100,15 +100,15 @@ public class AppTestingRestController
 
 	@PostMapping(produces = "application/json")
 	public ResponseEntity<?> postMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
+			@Parameter(description = "Response body the endpoint should return")
 			@RequestParam(name = "responseBody", required = false) final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
+			@Parameter(description = "Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis,
-			@ApiParam("Exception thrown in metas API")
+			@Parameter(description = "Exception thrown in metas API")
 			@RequestParam(name = "throwException", required = false) final boolean throwException,
-			@ApiParam("Return non-json body")
+			@Parameter(description = "Return non-json body")
 			@RequestParam(name = "nonJsonBody", required = false) final boolean nonJsonBody) throws InterruptedException
 	{
 		if (throwException)
@@ -130,11 +130,11 @@ public class AppTestingRestController
 
 	@DeleteMapping(produces = "application/json")
 	public ResponseEntity<?> deleteMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
+			@Parameter(description = "Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
+			@Parameter(description = "Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);

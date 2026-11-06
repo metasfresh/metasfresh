@@ -25,8 +25,7 @@ package de.metas.common.bprelation.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,16 +37,16 @@ import java.util.List;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
-@ApiModel
+@Schema
 public class JsonRequestBPRelationsUpsert
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	String orgCode;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	String locationIdentifier;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	List<JsonRequestBPRelationTarget> relatesTo;
 
 	@JsonCreator

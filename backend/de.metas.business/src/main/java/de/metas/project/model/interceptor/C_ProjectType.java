@@ -37,7 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @Callout(I_C_ProjectType.class)

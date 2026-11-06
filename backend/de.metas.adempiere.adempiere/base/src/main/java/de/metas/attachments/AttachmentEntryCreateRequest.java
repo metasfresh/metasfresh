@@ -10,7 +10,7 @@ import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;

@@ -20,8 +20,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.TrackingInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
 /**
  * This container is returned if the buyer is returning one or more line items in an order that is associated with the payment dispute, and that buyer has provided return shipping tracking information and/or a note about the return.
  */
-@ApiModel(description = "This container is returned if the buyer is returning one or more line items in an order that is associated with the payment dispute, and that buyer has provided return shipping tracking information and/or a note about the return.")
+@Schema(description = "This container is returned if the buyer is returning one or more line items in an order that is associated with the payment dispute, and that buyer has provided return shipping tracking information and/or a note about the return.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class InfoFromBuyer
 {
@@ -54,7 +53,7 @@ public class InfoFromBuyer
 	 * @return note
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This field shows any note that was left by the buyer for in regards to the dispute.")
+	@Schema(description = "This field shows any note that was left by the buyer for in regards to the dispute.")
 
 	public String getNote()
 	{
@@ -89,7 +88,7 @@ public class InfoFromBuyer
 	 * @return returnShipmentTracking
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array shows shipment tracking information for one or more shipping packages being returned to the buyer after a payment dispute.")
+	@Schema(description = "This array shows shipment tracking information for one or more shipping packages being returned to the buyer after a payment dispute.")
 
 	public List<TrackingInfo> getReturnShipmentTracking()
 	{

@@ -73,7 +73,7 @@ class OrderDeliveryDayBLTest
 		void fallsBackToOrderDatePromised()
 		{
 			final I_C_Order order = createOrder(LocalDate.of(2019, Month.SEPTEMBER, 1));
-			final I_C_OrderLine orderLine = prepareOrderLine().build();
+			final I_C_OrderLine orderLine = createOrderLine(null, null);
 
 			final ZonedDateTime deliveryDate = OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone);
 			assertThat(deliveryDate).isNotNull();
@@ -84,9 +84,7 @@ class OrderDeliveryDayBLTest
 		void prefersOrderLineDatePromisedOverHeader()
 		{
 			final I_C_Order order = createOrder(LocalDate.of(2019, Month.SEPTEMBER, 1));
-			final I_C_OrderLine orderLine = prepareOrderLine()
-					.datePromised(LocalDate.of(2019, Month.SEPTEMBER, 2))
-					.build();
+			final I_C_OrderLine orderLine = createOrderLine(LocalDate.of(2019, Month.SEPTEMBER, 2), null);
 
 			final ZonedDateTime deliveryDate = OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone);
 			assertThat(deliveryDate).isNotNull();
@@ -97,10 +95,7 @@ class OrderDeliveryDayBLTest
 		void prefersPresetDateShippedOverDatePromised()
 		{
 			final I_C_Order order = createOrder(LocalDate.of(2019, Month.SEPTEMBER, 1));
-			final I_C_OrderLine orderLine = prepareOrderLine()
-					.datePromised(LocalDate.of(2019, Month.SEPTEMBER, 2))
-					.presetDateShipped(LocalDate.of(2019, Month.SEPTEMBER, 3))
-					.build();
+			final I_C_OrderLine orderLine = createOrderLine(LocalDate.of(2019, Month.SEPTEMBER, 2), LocalDate.of(2019, Month.SEPTEMBER, 3));
 
 			final ZonedDateTime deliveryDate = OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone);
 			assertThat(deliveryDate).isNotNull();
@@ -112,7 +107,7 @@ class OrderDeliveryDayBLTest
 		{
 			final I_C_Order order = newInstance(I_C_Order.class);
 			saveRecord(order);
-			final I_C_OrderLine orderLine = prepareOrderLine().build();
+			final I_C_OrderLine orderLine = createOrderLine(null, null);
 
 			assertThat(OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone)).isNull();
 		}
@@ -125,7 +120,6 @@ class OrderDeliveryDayBLTest
 			return order;
 		}
 
-		@Builder(builderMethodName = "prepareOrderLine", builderClassName = "_OrderLineBuilder")
 		private I_C_OrderLine createOrderLine(final LocalDate datePromised, final LocalDate presetDateShipped)
 		{
 			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);

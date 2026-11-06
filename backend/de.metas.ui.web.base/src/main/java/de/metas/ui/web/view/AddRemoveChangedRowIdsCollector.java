@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import lombok.ToString;
-import org.elasticsearch.common.util.set.Sets;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.HashSet;

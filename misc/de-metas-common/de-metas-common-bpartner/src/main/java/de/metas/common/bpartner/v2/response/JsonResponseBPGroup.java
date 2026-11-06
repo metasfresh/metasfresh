@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,19 +39,16 @@ public class JsonResponseBPGroup
 	public static final String VALUE = "value";
 	public static final String ACTIVE = "active";
 
-	@ApiModelProperty( //
-			required = true, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_BP_Group.C_BP_Group_ID`.")
+	@Schema(description = "This translates to `C_BP_Group.C_BP_Group_ID`.", required = true, implementation = Integer.class)
 	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(value = "This translates to `C_BP_Group.Name`.")
+	@Schema(description = "This translates to `C_BP_Group.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@ApiModelProperty(value = "This translates to `C_BP_Group.Value`.")
+	@Schema(description = "This translates to `C_BP_Group.Value`.")
 	@JsonProperty(VALUE)
 	String value;
 

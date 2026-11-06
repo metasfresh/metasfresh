@@ -31,7 +31,7 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
@@ -74,10 +75,38 @@ public class SystemTime
 	/**
 	 * @param zonedDateTime ISO 8601 date time format (see {@link ZonedDateTime#parse(CharSequence)}).
 	 *                      e.g. 2018-02-28T13:13:13+01:00[Europe/Berlin]
+	 *                      <p>
+	 *                      When the literal carries both a region zone (e.g. {@code [Europe/Berlin]})
+	 *                      and an explicit UTC offset, the <b>zone is authoritative</b>: see
+	 *                      {@link #parseZoneAuthoritative(String)}.
 	 */
 	public static void setFixedTimeSource(@NonNull final String zonedDateTime)
 	{
-		setTimeSource(FixedTimeSource.ofZonedDateTime(ZonedDateTime.parse(zonedDateTime)));
+		setTimeSource(FixedTimeSource.ofZonedDateTime(parseZoneAuthoritative(zonedDateTime)));
+	}
+
+	/**
+	 * Parses an ISO-8601 zoned date-time with the <b>region zone as the authority</b>: the literal's
+	 * wall-clock local date-time is resolved against that zone's own DST rules, and an explicit UTC
+	 * offset in the literal is ignored when it contradicts the zone at that instant.
+	 * <p>
+	 * This is deliberately different from {@link ZonedDateTime#parse(CharSequence)}, which treats the
+	 * explicit offset as authoritative and merely relabels the zone. That matters only for a literal
+	 * whose offset is wrong for its region/season, e.g. {@code 2024-09-20T08:00:00+01:00[Europe/Berlin]}
+	 * (a summer date carrying Berlin's winter offset +01:00 instead of CEST +02:00):
+	 * {@code ZonedDateTime.parse} yields 07:00Z, whereas resolving zone-first yields the intended
+	 * 06:00Z (08:00 Berlin wall-clock). Older JDK builds resolved such literals zone-first; JDK 21/25
+	 * (and recent 17.0.x) switched to offset-first. Our test fixtures encode wall-clock intent with a
+	 * (sometimes stale) offset, so we pin the zone-first meaning here to stay JDK-independent.
+	 * <p>
+	 * Literals with no region zone (offset-only, or {@code Z}) and literals whose offset is correct for
+	 * the zone are unaffected -- they resolve to exactly the same instant either way.
+	 */
+	private static ZonedDateTime parseZoneAuthoritative(@NonNull final String zonedDateTime)
+	{
+		final ZoneId zone = ZonedDateTime.parse(zonedDateTime).getZone();
+		final LocalDateTime localDateTime = LocalDateTime.parse(zonedDateTime, DateTimeFormatter.ISO_DATE_TIME);
+		return localDateTime.atZone(zone);
 	}
 
 	public static long millis()

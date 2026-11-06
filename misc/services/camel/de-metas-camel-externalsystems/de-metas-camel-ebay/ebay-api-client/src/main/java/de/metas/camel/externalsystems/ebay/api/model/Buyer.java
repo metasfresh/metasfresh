@@ -21,14 +21,13 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.TaxAddress;
 import de.metas.camel.externalsystems.ebay.api.model.TaxIdentifier;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type contains information about the order&#39;s buyer.
  */
-@ApiModel(description = "This type contains information about the order's buyer.")
+@Schema(description = "This type contains information about the order's buyer.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class Buyer
 {
@@ -57,7 +56,7 @@ public class Buyer
 	 * @return taxAddress
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public TaxAddress getTaxAddress()
 	{
@@ -82,7 +81,7 @@ public class Buyer
 	 * @return taxIdentifier
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public TaxIdentifier getTaxIdentifier()
 	{
@@ -107,7 +106,7 @@ public class Buyer
 	 * @return username
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The buyer's eBay user ID.")
+	@Schema(description = "The buyer's eBay user ID.")
 
 	public String getUsername()
 	{

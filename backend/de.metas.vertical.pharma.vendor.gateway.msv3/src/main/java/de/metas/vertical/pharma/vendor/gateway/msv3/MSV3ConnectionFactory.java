@@ -1,12 +1,11 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3;
 
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
@@ -44,8 +43,11 @@ public class MSV3ConnectionFactory
 	{
 		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
-		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(config.getVersion().getJaxbPackagesToScan());
+		// The MSV3 schema types are javax.xml.bind-annotated (xjc-generated). Bind them through a
+		// javax JAXB context rather than Spring OXM's Jaxb2Marshaller, which under Spring Boot 3 uses
+		// the jakarta.xml.bind runtime and cannot marshal javax.xml.bind types. See
+		// MSV3JavaxJaxbMarshaller.
+		final MSV3JavaxJaxbMarshaller marshaller = new MSV3JavaxJaxbMarshaller(config.getVersion().getJaxbPackagesToScan());
 
 		final WebServiceTemplate webServiceTemplate = new WebServiceTemplate();
 		webServiceTemplate.setMessageSender(messageSender);

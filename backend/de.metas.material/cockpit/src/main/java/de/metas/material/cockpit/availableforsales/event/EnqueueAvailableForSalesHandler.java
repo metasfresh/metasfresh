@@ -14,7 +14,7 @@ import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Properties;
 
 @Component

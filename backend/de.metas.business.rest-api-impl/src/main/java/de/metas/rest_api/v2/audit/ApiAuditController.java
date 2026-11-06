@@ -30,10 +30,10 @@ import de.metas.audit.apirequest.response.ApiResponseAudit;
 import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.audit.ApiAuditService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -56,15 +56,15 @@ public class ApiAuditController
 {
 	@NonNull private final ApiAuditService apiAuditService;
 
-	@ApiOperation("Retrieve and mimic the original API response by request audit ID")
+	@Operation(summary = "Retrieve and mimic the original API response by request audit ID")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved and mimicked original response"),
-			@ApiResponse(code = 404, message = "API request audit record not found"),
-			@ApiResponse(code = 500, message = "Internal server error while processing the response")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved and mimicked original response"),
+			@ApiResponse(responseCode = "404", description = "API request audit record not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error while processing the response")
 	})
 	@GetMapping("/requests/{requestId}/response")
 	public ResponseEntity<Object> mimicOriginalResponse(
-			@ApiParam(required = true, value = "The API request audit ID to mimic response for")
+			@Parameter(required = true, description = "The API request audit ID to mimic response for")
 			@PathVariable("requestId")
 			@NonNull final String requestId)
 	{

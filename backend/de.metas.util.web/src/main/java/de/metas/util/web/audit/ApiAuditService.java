@@ -87,10 +87,10 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
@@ -268,7 +268,8 @@ public class ApiAuditService
 					.setParameter("Path", apiRequestAudit.getPath());
 		}
 
-		final org.springframework.http.HttpMethod httpMethod = org.springframework.http.HttpMethod.resolve(apiRequestAudit.getMethod().getCode());
+		// Spring 6: HttpMethod is a class (no longer an enum); resolve(String) removed -> valueOf(String).
+		final org.springframework.http.HttpMethod httpMethod = org.springframework.http.HttpMethod.valueOf(apiRequestAudit.getMethod().getCode());
 
 		final WebClient.RequestBodyUriSpec uriSpec = webClient.method(httpMethod);
 

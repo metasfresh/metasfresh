@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,19 +39,16 @@ public class JsonResponseIncoterms
 	public static final String VALUE = "value";
 	public static final String ACTIVE = "active";
 
-	@ApiModelProperty( //
-			required = true, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_Incoterms.C_Incoterms_ID`.")
+	@Schema(description = "This translates to `C_Incoterms.C_Incoterms_ID`.", required = true, implementation = Integer.class)
 	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(value = "This translates to `C_Incoterms.Name`.")
+	@Schema(description = "This translates to `C_Incoterms.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@ApiModelProperty(value = "This translates to `C_Incoterms.Value`.")
+	@Schema(description = "This translates to `C_Incoterms.Value`.")
 	@JsonProperty(VALUE)
 	String value;
 

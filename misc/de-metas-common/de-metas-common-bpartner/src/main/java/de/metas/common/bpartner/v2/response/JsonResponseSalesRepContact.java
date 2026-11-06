@@ -25,7 +25,7 @@ package de.metas.common.bpartner.v2.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,31 +43,31 @@ public class JsonResponseSalesRepContact
 	public static final String SALES_REP_FIRSTNAME = "salesRepFirstName";
 	public static final String SALES_REP_NAME = "salesRepName";
 
-	@ApiModelProperty(required = true, value = "This translates to `AD_User.AD_User_ID`.")
+	@Schema(description = "This translates to `AD_User.AD_User_ID`.", required = true)
 	@JsonProperty(SALES_REP_ID)
 	JsonMetasfreshId salesRepId;
 
-	@ApiModelProperty(required = true, value = "This translates to `AD_User.Value`.")
+	@Schema(description = "This translates to `AD_User.Value`.", required = true)
 	@JsonProperty(SALES_REP_VALUE)
 	String salesRepValue;
 
-	@ApiModelProperty(required = true, value = "This translates to `AD_User.Phone`.")
+	@Schema(description = "This translates to `AD_User.Phone`.", required = true)
 	@JsonProperty(SALES_REP_PHONE)
 	String phone;
 
-	@ApiModelProperty(required = true, value = "This translates to `AD_User.Email`.")
+	@Schema(description = "This translates to `AD_User.Email`.", required = true)
 	@JsonProperty(SALES_REP_EMAIL)
 	String  email;
 
-	@ApiModelProperty(required = true, value = "This translates to `AD_User.LastName`.")
+	@Schema(description = "This translates to `AD_User.LastName`.", required = true)
 	@JsonProperty(SALES_REP_LASTNAME)
 	String lastName;
 
-	@ApiModelProperty(required = true, value = "This translates to `AD_User.FirstName`.")
+	@Schema(description = "This translates to `AD_User.FirstName`.", required = true)
 	@JsonProperty(SALES_REP_FIRSTNAME)
 	String firstName;
 
-	@ApiModelProperty(required = true, value = "This translates to `AD_User.Name`.")
+	@Schema(description = "This translates to `AD_User.Name`.", required = true)
 	@JsonProperty(SALES_REP_NAME)
 	String name;
 

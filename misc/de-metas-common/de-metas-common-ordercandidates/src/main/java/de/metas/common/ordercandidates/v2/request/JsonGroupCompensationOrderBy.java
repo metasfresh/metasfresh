@@ -22,12 +22,13 @@
 
 package de.metas.common.ordercandidates.v2.request;
 
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description =
+		"GroupFirst: " + "The bundle (compensation-group) product will be ordered first, before the group." + "\n"
+		+ "GroupLast: " + "The bundle (compensation-group) product will be ordered last, after the group.")
 public enum JsonGroupCompensationOrderBy
 {
-	@ApiEnum("The bundle (compensation-group) product will be ordered first, before the group.")
 	GroupFirst,
-	@ApiEnum("The bundle (compensation-group) product will be ordered last, after the group.")
 	GroupLast
 }

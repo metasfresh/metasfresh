@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type contains information about a buyer request to cancel an order.
  */
-@ApiModel(description = "This type contains information about a buyer request to cancel an order.")
+@Schema(description = "This type contains information about a buyer request to cancel an order.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class CancelRequest
 {
@@ -67,7 +66,7 @@ public class CancelRequest
 	 * @return cancelCompletedDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The date and time that the order cancellation was completed, if applicable. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field is not returned until the cancellation request has actually been approved by the seller. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
+	@Schema(description = "The date and time that the order cancellation was completed, if applicable. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field is not returned until the cancellation request has actually been approved by the seller. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
 
 	public String getCancelCompletedDate()
 	{
@@ -92,7 +91,7 @@ public class CancelRequest
 	 * @return cancelInitiator
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This string value indicates the party who made the initial cancellation request. Typically, either the 'Buyer' or 'Seller'. If a cancellation request has been made, this field should be returned.")
+	@Schema(description = "This string value indicates the party who made the initial cancellation request. Typically, either the 'Buyer' or 'Seller'. If a cancellation request has been made, this field should be returned.")
 
 	public String getCancelInitiator()
 	{
@@ -117,7 +116,7 @@ public class CancelRequest
 	 * @return cancelReason
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The reason why the cancelInitiator initiated the cancellation request. Cancellation reasons for a buyer might include 'order placed by mistake' or 'order won't arrive in time'. For a seller, a typical cancellation reason is 'out of stock'. If a cancellation request has been made, this field should be returned.")
+	@Schema(description = "The reason why the cancelInitiator initiated the cancellation request. Cancellation reasons for a buyer might include 'order placed by mistake' or 'order won't arrive in time'. For a seller, a typical cancellation reason is 'out of stock'. If a cancellation request has been made, this field should be returned.")
 
 	public String getCancelReason()
 	{
@@ -142,7 +141,7 @@ public class CancelRequest
 	 * @return cancelRequestedDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The date and time that the order cancellation was requested. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field is returned for each cancellation request. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
+	@Schema(description = "The date and time that the order cancellation was requested. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field is returned for each cancellation request. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
 
 	public String getCancelRequestedDate()
 	{
@@ -167,7 +166,7 @@ public class CancelRequest
 	 * @return cancelRequestId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of the order cancellation request. This field is returned for each cancellation request.")
+	@Schema(description = "The unique identifier of the order cancellation request. This field is returned for each cancellation request.")
 
 	public String getCancelRequestId()
 	{
@@ -192,7 +191,7 @@ public class CancelRequest
 	 * @return cancelRequestState
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The current stage or condition of the cancellation request. This field is returned for each cancellation request. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CancelRequestStateEnum'>eBay API documentation</a>")
+	@Schema(description = "The current stage or condition of the cancellation request. This field is returned for each cancellation request. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CancelRequestStateEnum'>eBay API documentation</a>")
 
 	public String getCancelRequestState()
 	{

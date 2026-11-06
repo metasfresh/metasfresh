@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used by the returnAddress
  */
-@ApiModel(description = "This type is used by the returnAddress")
+@Schema(description = "This type is used by the returnAddress")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class Phone
 {
@@ -51,7 +50,7 @@ public class Phone
 	 * @return countryCode
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The seller's country calling code. This field is needed if the buyer is located in a different country than the seller. It is also OK to provide if the buyer and seller are both located in the same country. For a full list of calling codes for all countries, see the countrycode.org site.")
+	@Schema(description = "The seller's country calling code. This field is needed if the buyer is located in a different country than the seller. It is also OK to provide if the buyer and seller are both located in the same country. For a full list of calling codes for all countries, see the countrycode.org site.")
 
 	public String getCountryCode()
 	{
@@ -77,7 +76,7 @@ public class Phone
 	 * @return number
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The seller's primary phone number associated with the return address. When this number is provided in a contestPaymentDispute or contestPaymentDispute method, it is provided as one continuous numeric string, including the area code. So, if the phone number's area code was '408', a number in this field may look something like this: &quot;number&quot; : &quot;4088084356&quot; If the buyer is located in a different country than the seller, the seller's country calling code will need to be specified in the countryCode field.")
+	@Schema(description = "The seller's primary phone number associated with the return address. When this number is provided in a contestPaymentDispute or contestPaymentDispute method, it is provided as one continuous numeric string, including the area code. So, if the phone number's area code was '408', a number in this field may look something like this: &quot;number&quot; : &quot;4088084356&quot; If the buyer is located in a different country than the seller, the seller's country calling code will need to be specified in the countryCode field.")
 
 	public String getNumber()
 	{

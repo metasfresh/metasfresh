@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
 @AllArgsConstructor
 public enum KPIDatasourceType implements ReferenceListAwareEnum
 {
-	ELASTICSEARCH(X_WEBUI_KPI.KPI_DATASOURCE_TYPE_Elasticsearch),
 	SQL(X_WEBUI_KPI.KPI_DATASOURCE_TYPE_SQL);
 
 	@Getter

@@ -30,7 +30,7 @@ import org.assertj.core.api.OptionalAssert;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -71,7 +71,7 @@ public class EMailSentStatusTest
 	public void test_errorWithConnectionException()
 	{
 		final java.net.ConnectException connectionEx = new java.net.ConnectException("test connection error");
-		final javax.mail.MessagingException exception = new javax.mail.MessagingException("test messaging exception", connectionEx);
+		final jakarta.mail.MessagingException exception = new jakarta.mail.MessagingException("test messaging exception", connectionEx);
 		final String expectedSentMsg = "(ME): test messaging exception - Connection error: test connection error";
 
 		final EMailSentStatus status = EMailSentStatus.error(exception);

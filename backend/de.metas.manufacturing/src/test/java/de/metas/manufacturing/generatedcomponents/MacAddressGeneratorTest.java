@@ -148,7 +148,6 @@ class MacAddressGeneratorTest
 			};
 		}
 
-		@Builder(builderMethodName = "context", builderClassName = "$contextBuilder")
 		private ComponentGeneratorContext createContext(
 				@NonNull final Integer qty,
 				@Nullable String alreadySetMAC1,
@@ -178,10 +177,7 @@ class MacAddressGeneratorTest
 		void prefixHasColon()
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("BB:", 1);
-			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(1)
-					.alreadySetMAC1("")
-					.build());
+			final ImmutableAttributeSet result = generator.generate(createContext(1, "", null));
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
 					.attributeValue(AttributeConstants.RouterMAC1, "BB:00:00:00:00:01")
@@ -192,11 +188,7 @@ class MacAddressGeneratorTest
 		void prefixNoColon()
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("BB:A", 1234);
-			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(2)
-					.alreadySetMAC1("already set")
-					.alreadySetMAC2("")
-					.build());
+			final ImmutableAttributeSet result = generator.generate(createContext(2, "already set", ""));
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
 					.attributeValue(AttributeConstants.RouterMAC2, "BB:A0:00:00:04:D2")
@@ -207,10 +199,7 @@ class MacAddressGeneratorTest
 		void dashGroupDelimiter()
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("BB-A", 1234);
-			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(1)
-					.alreadySetMAC1("")
-					.build());
+			final ImmutableAttributeSet result = generator.generate(createContext(1, "", null));
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
 					.attributeValue(AttributeConstants.RouterMAC1, "BB-A0-00-00-04-D2")
@@ -221,10 +210,7 @@ class MacAddressGeneratorTest
 		void noPrefix()
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("", 1234321);
-			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(1)
-					.alreadySetMAC1("")
-					.build());
+			final ImmutableAttributeSet result = generator.generate(createContext(1, "", null));
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
 					.attributeValue(AttributeConstants.RouterMAC1, "00:00:00:12:D5:91")

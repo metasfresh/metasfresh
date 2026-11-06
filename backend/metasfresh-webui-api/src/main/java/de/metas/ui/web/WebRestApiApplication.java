@@ -37,6 +37,7 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
+import de.metas.util.web.LenientRestMessageConverterConfiguration;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,6 +58,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
@@ -67,6 +69,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import java.util.ArrayList;
 
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@Import(LenientRestMessageConverterConfiguration.class)
 @EnableAsync
 @Profile(Profiles.PROFILE_Webui)
 public class WebRestApiApplication

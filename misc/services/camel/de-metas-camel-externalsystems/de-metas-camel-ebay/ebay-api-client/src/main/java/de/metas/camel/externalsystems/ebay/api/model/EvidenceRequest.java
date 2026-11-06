@@ -20,8 +20,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.OrderLineItems;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
 /**
  * This type is used by the evidenceRequests array that is returned in the getPaymentDispute response if one or more evidential documents are being requested to help resolve the payment dispute.
  */
-@ApiModel(description = "This type is used by the evidenceRequests array that is returned in the getPaymentDispute response if one or more evidential documents are being requested to help resolve the payment dispute.")
+@Schema(description = "This type is used by the evidenceRequests array that is returned in the getPaymentDispute response if one or more evidential documents are being requested to help resolve the payment dispute.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class EvidenceRequest
 {
@@ -66,7 +65,7 @@ public class EvidenceRequest
 	 * @return evidenceId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "Unique identifier of the evidential file set. Potentially, each evidential file set can have more than one file, that is why there is this file set identifier, and then an identifier for each file within this file set.")
+	@Schema(description = "Unique identifier of the evidential file set. Potentially, each evidential file set can have more than one file, that is why there is this file set identifier, and then an identifier for each file within this file set.")
 
 	public String getEvidenceId()
 	{
@@ -91,7 +90,7 @@ public class EvidenceRequest
 	 * @return evidenceType
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This enumeration value shows the type of evidential document provided. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:EvidenceTypeEnum'>eBay API documentation</a>")
+	@Schema(description = "This enumeration value shows the type of evidential document provided. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:EvidenceTypeEnum'>eBay API documentation</a>")
 
 	public String getEvidenceType()
 	{
@@ -126,7 +125,7 @@ public class EvidenceRequest
 	 * @return lineItems
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array shows one or more order line items associated with the evidential document that has been provided.")
+	@Schema(description = "This array shows one or more order line items associated with the evidential document that has been provided.")
 
 	public List<OrderLineItems> getLineItems()
 	{
@@ -152,7 +151,7 @@ public class EvidenceRequest
 	 * @return requestDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when eBay requested the evidential document from the seller in response to a payment dispute. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when eBay requested the evidential document from the seller in response to a payment dispute. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getRequestDate()
 	{
@@ -178,7 +177,7 @@ public class EvidenceRequest
 	 * @return respondByDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the seller is expected to provide a requested evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the seller is expected to provide a requested evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getRespondByDate()
 	{

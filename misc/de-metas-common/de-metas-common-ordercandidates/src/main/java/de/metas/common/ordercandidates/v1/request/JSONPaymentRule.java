@@ -1,6 +1,6 @@
 package de.metas.common.ordercandidates.v1.request;
 
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 /*
@@ -25,16 +25,17 @@ import lombok.Getter;
  * #L%
  */
 
+@Schema(description =
+		"Paypal: " + "Specifies that the order will have paymentRule = Paypal" + "\n"
+		+ "OnCredit: " + "Specifies that the order will have paymentRule = On Credit" + "\n"
+		+ "DirectDebit: " + "Specifies that the order will have paymentRule = Direct Debit")
 public enum JSONPaymentRule
 {
 
-	@ApiEnum("Specifies that the order will have paymentRule = Paypal")
 	Paypal("L"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = On Credit")
 	OnCredit("P"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = Direct Debit")
 	DirectDebit("D");
 
 	@Getter

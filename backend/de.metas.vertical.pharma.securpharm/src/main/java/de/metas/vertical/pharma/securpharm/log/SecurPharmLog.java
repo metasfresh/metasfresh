@@ -28,7 +28,7 @@ import java.time.Instant;
 import javax.annotation.Nullable;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,7 +58,7 @@ public class SecurPharmLog
 	// Response
 	@NonNull
 	Instant responseTime;
-	HttpStatus responseCode;
+	HttpStatusCode responseCode;
 	String responseData;
 
 	@NonNull

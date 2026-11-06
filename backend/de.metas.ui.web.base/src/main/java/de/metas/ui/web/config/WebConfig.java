@@ -24,23 +24,26 @@ package de.metas.ui.web.config;
 
 import de.metas.ui.web.CORSFilter;
 import de.metas.ui.web.WebuiURLs;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.session.web.http.DefaultCookieSerializer;
+import org.springframework.web.filter.UrlHandlerFilter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +53,45 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer
 {
 	public static final String ENDPOINT_ROOT = "/rest/api";
+
+	/** {@link org.springframework.web.util.pattern.PathPattern} matching every webui-api REST path (any depth) under the {@code /rest} root that {@link #ENDPOINT_ROOT} lives in. */
+	private static final String URL_PATHPATTERN_REST = "/rest/**";
+
+	/** Servlet URL pattern the {@link #trailingSlashRestUrlHandlerFilter()} is mapped to; the webui-api serves its whole REST surface under {@code /rest}. */
+	private static final String URL_PATTERN_REST = "/rest/*";
+
+	/**
+	 * Restores trailing-slash tolerance for the webui-api REST endpoints (the {@code /rest/api/**} surface the
+	 * React frontend drives). Spring 6.0 switched trailing-slash matching off by default and deprecated the
+	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} switch (removed in Spring 7), so a request whose path ends in a slash
+	 * — e.g. the frontend's {@code GET /rest/api/window/{windowId}/{documentId}/} document load — no longer
+	 * matches {@code @GetMapping("/{windowId}/{documentId}")} and fails with {@code NoResourceFoundException}
+	 * (404). That 404 breaks every document window in the frontend (the window never renders its fields), which
+	 * is what hung all six {@code frontend webui test} shards to the 60-min CI timeout.
+	 * <p>
+	 * We normalize the path with Spring's {@link UrlHandlerFilter} in {@code wrapRequest} (mutate) mode — NOT a
+	 * redirect, because the frontend XHR clients must not be bounced with a 308 — so the stripped path is visible
+	 * to the whole filter chain (CORS, logging, auth) and the {@code DispatcherServlet}. Registered at
+	 * {@link Ordered#HIGHEST_PRECEDENCE} so every downstream filter and the handler mapping see the normalized path.
+	 * <p>
+	 * This mirrors {@code de.metas.util.web.filter.FilterRegistrationConfig}, which restored the same tolerance on
+	 * the app-server {@code /api} profile; the webui-api runs a separate Spring context and needs its own
+	 * registration here. Behaviour-restoring (the SB2-era base {@code new_dawn_uat} tolerated trailing slashes)
+	 * and forward-compatible.
+	 */
+	@Bean
+	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashRestUrlHandlerFilter()
+	{
+		final UrlHandlerFilter urlHandlerFilter = UrlHandlerFilter
+				.trailingSlashHandler(URL_PATHPATTERN_REST)
+				.wrapRequest()
+				.build();
+
+		final FilterRegistrationBean<UrlHandlerFilter> registrationBean = new FilterRegistrationBean<>(urlHandlerFilter);
+		registrationBean.addUrlPatterns(URL_PATTERN_REST);
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+		return registrationBean;
+	}
 
 	@Bean
 	public CookieSerializer cookieSerializer()

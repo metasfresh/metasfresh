@@ -34,7 +34,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -43,18 +43,16 @@ import lombok.Value;
 @Value
 public class JsonChangeInfo
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	Long createdMillis;
 
-	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was created", //
-			dataType = "java.lang.Integer", position = 20)
+	@Schema(description = "Might be `null` if no `#AD_User_ID` was in the application context while the record was created", implementation = Integer.class)
 	JsonMetasfreshId createdBy;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	Long lastUpdatedMillis;
 
-	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated", //
-			allowEmptyValue = true, dataType = "java.lang.Integer", position = 30)
+	@Schema(description = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated", implementation = Integer.class)
 	JsonMetasfreshId lastUpdatedBy;
 
 	@JsonInclude(Include.NON_EMPTY)

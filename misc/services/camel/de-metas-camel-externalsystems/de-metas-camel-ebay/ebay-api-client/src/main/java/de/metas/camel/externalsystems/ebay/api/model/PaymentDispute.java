@@ -27,8 +27,7 @@ import de.metas.camel.externalsystems.ebay.api.model.OrderLineItems;
 import de.metas.camel.externalsystems.ebay.api.model.PaymentDisputeOutcomeDetail;
 import de.metas.camel.externalsystems.ebay.api.model.ReturnAddress;
 import de.metas.camel.externalsystems.ebay.api.model.SimpleAmount;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,7 @@ import java.util.List;
 /**
  * This type is used by the base response of the getPaymentDispute method. The getPaymentDispute method retrieves detailed information on a specific payment dispute.
  */
-@ApiModel(description = "This type is used by the base response of the getPaymentDispute method. The getPaymentDispute method retrieves detailed information on a specific payment dispute.")
+@Schema(description = "This type is used by the base response of the getPaymentDispute method. The getPaymentDispute method retrieves detailed information on a specific payment dispute.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class PaymentDispute
 {
@@ -129,7 +128,7 @@ public class PaymentDispute
 	 * @return amount
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public SimpleAmount getAmount()
 	{
@@ -164,7 +163,7 @@ public class PaymentDispute
 	 * @return availableChoices
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The value(s) returned in this array indicate the choices that the seller has when responding to the payment dispute. Once the seller has responded to the payment dispute, this field will no longer be shown, and instead, the sellerResponse field will show the decision that the seller made.")
+	@Schema(description = "The value(s) returned in this array indicate the choices that the seller has when responding to the payment dispute. Once the seller has responded to the payment dispute, this field will no longer be shown, and instead, the sellerResponse field will show the decision that the seller made.")
 
 	public List<String> getAvailableChoices()
 	{
@@ -189,7 +188,7 @@ public class PaymentDispute
 	 * @return buyerProvided
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public InfoFromBuyer getBuyerProvided()
 	{
@@ -214,7 +213,7 @@ public class PaymentDispute
 	 * @return buyerUsername
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the eBay user ID of the buyer that initiated the payment dispute.")
+	@Schema(description = "This is the eBay user ID of the buyer that initiated the payment dispute.")
 
 	public String getBuyerUsername()
 	{
@@ -240,7 +239,7 @@ public class PaymentDispute
 	 * @return closedDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the payment dispute was closed, so this field is only returned for payment disputes in the CLOSED state. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the payment dispute was closed, so this field is only returned for payment disputes in the CLOSED state. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getClosedDate()
 	{
@@ -276,7 +275,7 @@ public class PaymentDispute
 	 * @return evidence
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This container shows any evidence that has been provided by the seller to contest the payment dispute. Evidence may include shipment tracking information, proof of authentication documentation, image(s) to proof that an item is as described, or financial documentation/invoice. This container is only returned if the seller has provided at least one document used as evidence against the payment dispute.")
+	@Schema(description = "This container shows any evidence that has been provided by the seller to contest the payment dispute. Evidence may include shipment tracking information, proof of authentication documentation, image(s) to proof that an item is as described, or financial documentation/invoice. This container is only returned if the seller has provided at least one document used as evidence against the payment dispute.")
 
 	public List<DisputeEvidence> getEvidence()
 	{
@@ -311,7 +310,7 @@ public class PaymentDispute
 	 * @return evidenceRequests
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This container is returned if one or more evidence documents are being requested from the seller.")
+	@Schema(description = "This container is returned if one or more evidence documents are being requested from the seller.")
 
 	public List<EvidenceRequest> getEvidenceRequests()
 	{
@@ -346,7 +345,7 @@ public class PaymentDispute
 	 * @return lineItems
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array is used to identify one or more order line items associated with the payment dispute. There will always be at least one itemId/lineItemId pair returned in this array.")
+	@Schema(description = "This array is used to identify one or more order line items associated with the payment dispute. There will always be at least one itemId/lineItemId pair returned in this array.")
 
 	public List<OrderLineItems> getLineItems()
 	{
@@ -381,7 +380,7 @@ public class PaymentDispute
 	 * @return monetaryTransactions
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array provide details about one or more monetary transactions that occur as part of a payment dispute. This array is only returned once one or more monetary transacations occur with a payment dispute.")
+	@Schema(description = "This array provide details about one or more monetary transactions that occur as part of a payment dispute. This array is only returned once one or more monetary transacations occur with a payment dispute.")
 
 	public List<MonetaryTransaction> getMonetaryTransactions()
 	{
@@ -407,7 +406,7 @@ public class PaymentDispute
 	 * @return openDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the payment dispute was opened. This field is returned for payment disputes in all states. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the payment dispute was opened. This field is returned for payment disputes in all states. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getOpenDate()
 	{
@@ -432,7 +431,7 @@ public class PaymentDispute
 	 * @return orderId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the unique identifier of the order involved in the payment dispute. Note: eBay rolled out a new Order ID format in June 2019. The legacy APIs still support the old and new order ID format to identify orders, but only the new order ID format is returned in REST-based API responses.")
+	@Schema(description = "This is the unique identifier of the order involved in the payment dispute. Note: eBay rolled out a new Order ID format in June 2019. The legacy APIs still support the old and new order ID format to identify orders, but only the new order ID format is returned in REST-based API responses.")
 
 	public String getOrderId()
 	{
@@ -457,7 +456,7 @@ public class PaymentDispute
 	 * @return paymentDisputeId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the unique identifier of the payment dispute. This is the same identifier that is passed in to the call URI. This identifier is automatically created by eBay once the payment dispute comes into the eBay Managed Payments system.")
+	@Schema(description = "This is the unique identifier of the payment dispute. This is the same identifier that is passed in to the call URI. This identifier is automatically created by eBay once the payment dispute comes into the eBay Managed Payments system.")
 
 	public String getPaymentDisputeId()
 	{
@@ -482,7 +481,7 @@ public class PaymentDispute
 	 * @return paymentDisputeStatus
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The enumeration value in this field gives the current status of the payment dispute. The status of a payment dispute partially determines other fields that are returned in the response. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeStateEnum'>eBay API documentation</a>")
+	@Schema(description = "The enumeration value in this field gives the current status of the payment dispute. The status of a payment dispute partially determines other fields that are returned in the response. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeStateEnum'>eBay API documentation</a>")
 
 	public String getPaymentDisputeStatus()
 	{
@@ -508,7 +507,7 @@ public class PaymentDispute
 	 * @return reason
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The enumeration value in this field gives the reason why the buyer initiated the payment dispute. See DisputeReasonEnum type for a description of the supported reasons that buyers can give for initiating a payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeReasonEnum'>eBay API documentation</a>")
+	@Schema(description = "The enumeration value in this field gives the reason why the buyer initiated the payment dispute. See DisputeReasonEnum type for a description of the supported reasons that buyers can give for initiating a payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeReasonEnum'>eBay API documentation</a>")
 
 	public String getReason()
 	{
@@ -533,7 +532,7 @@ public class PaymentDispute
 	 * @return resolution
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public PaymentDisputeOutcomeDetail getResolution()
 	{
@@ -559,7 +558,7 @@ public class PaymentDispute
 	 * @return respondByDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the seller must response to a payment dispute, so this field is only returned for payment disputes in the ACTION_NEEDED state. For payment disputes that currently require action by the seller, that same seller should look at the availableChoices array to see the available actions. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the seller must response to a payment dispute, so this field is only returned for payment disputes in the ACTION_NEEDED state. For payment disputes that currently require action by the seller, that same seller should look at the availableChoices array to see the available actions. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getRespondByDate()
 	{
@@ -584,7 +583,7 @@ public class PaymentDispute
 	 * @return returnAddress
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public ReturnAddress getReturnAddress()
 	{
@@ -609,7 +608,7 @@ public class PaymentDispute
 	 * @return revision
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This integer value indicates the revision number of the payment dispute. Each time an action is taken against a payment dispute, this integer value increases by 1.")
+	@Schema(description = "This integer value indicates the revision number of the payment dispute. Each time an action is taken against a payment dispute, this integer value increases by 1.")
 
 	public Integer getRevision()
 	{
@@ -635,7 +634,7 @@ public class PaymentDispute
 	 * @return sellerResponse
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The enumeration value returned in this field indicates how the seller has responded to the payment dispute. The seller has the option of accepting the payment dispute and agreeing to issue a refund, accepting the payment dispute and agreeing to issue a refund as long as the buyer returns the item, or contesting the payment dispute. This field is returned as soon as the seller makes an initial decision on the payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:SellerResponseEnum'>eBay API documentation</a>")
+	@Schema(description = "The enumeration value returned in this field indicates how the seller has responded to the payment dispute. The seller has the option of accepting the payment dispute and agreeing to issue a refund, accepting the payment dispute and agreeing to issue a refund as long as the buyer returns the item, or contesting the payment dispute. This field is returned as soon as the seller makes an initial decision on the payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:SellerResponseEnum'>eBay API documentation</a>")
 
 	public String getSellerResponse()
 	{
