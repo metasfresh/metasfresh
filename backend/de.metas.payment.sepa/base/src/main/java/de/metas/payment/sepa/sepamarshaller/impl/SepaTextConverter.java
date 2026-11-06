@@ -2,11 +2,13 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.text.Normalizer;
+import java.util.regex.Pattern;
 
 /*
  * #%L
@@ -31,12 +33,17 @@ import java.text.Normalizer;
  */
 
 /**
- * Converts texts to the basic SEPA character set {@code [A-Za-z0-9/?:().,'+\- ]} and cuts them to the schema's maximum length, keeping the start.
- * <p>
- * The basic set is valid in every SEPA country; the German banks' set (GBIC_5) additionally allows umlauts, "ß" and {@code & * $ %},
- * but other countries' banks do not, and the Deutsche Bundesbank itself recommends writing "Ä" as "AE" and "ß" as "ss".
+ * Converts texts of a direct debit file to the SEPA character set and cuts them to the schema's maximum length, keeping the start.
+ * <ul>
+ * <li>Identifiers (e.g. the message ID) keep only the basic SEPA character set {@code [A-Za-z0-9/?:().,'+\- ]}, which the schema enforces for them.</li>
+ * <li>Texts (names, addresses, remittance information) additionally keep {@code &}.</li>
+ * </ul>
+ * The German banks accept more than the basic set in texts: the DFÜ-Abkommen, Anlage 3, and the Deutsche Bundesbank's
+ * "Technische Spezifikationen SEPA-Lastschriften" (November 2024) list {@code Ä ä Ö ö Ü ü ß & * $ %} as allowed.
+ * Of these, only {@code &} is kept: it is common in company names ("Müller & Co."), while banks in other countries may not accept the others,
+ * and the Bundesbank itself recommends writing "Ä" as "AE" and "ß" as "ss".
  * So umlauts, "ß" and letters such as "ø" or "Ł" are transliterated, other letters lose their accents (é → e), and every character still outside the set becomes a space;
- * the result is trimmed before it is cut. A text with no character left yields {@code null}.
+ * in texts, each run of whitespace then becomes one space. The result is trimmed before and after it is cut, so a cut text never ends with a space. A text with no character left yields {@code null}.
  */
 @UtilityClass
 public class SepaTextConverter
@@ -69,7 +76,13 @@ public class SepaTextConverter
 			.put('þ', "th")
 			.build();
 
+	private static final Pattern MULTIPLE_SPACES = Pattern.compile(" {2,}");
+
 	private static final String SPECIAL_CHARS = "+?/-:().,' ";
+	/**
+	 * Allowed in texts, but not in identifiers
+	 */
+	private static final String TEXT_ONLY_SPECIAL_CHARS = "&";
 
 	/**
 	 * @return {@code true} if the text is non-empty, at most {@link #IDENTIFIER_MAX_LENGTH} long and consists only of characters of the basic SEPA character set,
@@ -91,7 +104,11 @@ public class SepaTextConverter
 	@Nullable
 	public static String toIdentifier(@Nullable final String text)
 	{
-		return toText(text, IDENTIFIER_MAX_LENGTH);
+		if (Check.isBlank(text))
+		{
+			return null;
+		}
+		return StringUtils.trimBlankToNull(cut(convert(text, false), IDENTIFIER_MAX_LENGTH));
 	}
 
 	/**
@@ -106,8 +123,7 @@ public class SepaTextConverter
 		{
 			return null;
 		}
-		final String result = cut(convert(text), maxLength);
-		return result.isEmpty() ? null : result;
+		return StringUtils.trimBlankToNull(cut(collapseWhitespace(convert(text, true)), maxLength));
 	}
 
 	/**
@@ -121,7 +137,7 @@ public class SepaTextConverter
 		return toText(text, maxLength);
 	}
 
-	private static String convert(@NonNull final String text)
+	private static String convert(@NonNull final String text, final boolean isText)
 	{
 		final StringBuilder result = new StringBuilder(text.length());
 		// composed first, so that a letter delivered as base letter + combining mark is transliterated like the single character
@@ -133,7 +149,7 @@ public class SepaTextConverter
 			else
 			{
 				final int baseLetter = withoutAccent(codePoint);
-				result.append(isAllowed(baseLetter) ? (char)baseLetter : ' ');
+				result.append(isAllowed(baseLetter) || (isText && TEXT_ONLY_SPECIAL_CHARS.indexOf(baseLetter) >= 0) ? (char)baseLetter : ' ');
 			}
 		});
 		return result.toString().trim();
@@ -156,6 +172,14 @@ public class SepaTextConverter
 				|| (codePoint >= 'A' && codePoint <= 'Z')
 				|| (codePoint >= '0' && codePoint <= '9')
 				|| SPECIAL_CHARS.indexOf(codePoint) >= 0;
+	}
+
+	/**
+	 * Every character outside the SEPA character set already became a space, so a run of whitespace is a run of spaces here
+	 */
+	private static String collapseWhitespace(@NonNull final String text)
+	{
+		return MULTIPLE_SPACES.matcher(text).replaceAll(" ");
 	}
 
 	private static String cut(@NonNull final String text, final int maxLength)

@@ -38,9 +38,9 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	@NonNull private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
 
 	@Override
-	public CreatedSEPAExports createSEPAExportFromPaySelection(@NonNull final I_C_PaySelection from, final boolean isGroupTransactions, @Nullable final SEPAProtocol chosenCreditTransferProtocol)
+	public CreatedSEPAExports createSEPAExportFromPaySelection(@NonNull final I_C_PaySelection from, final boolean isGroupTransactions, @Nullable final SEPAProtocol chosenProtocol)
 	{
-		return new CreateSEPAExportFromPaySelectionCommand(from, isGroupTransactions, chosenCreditTransferProtocol).run();
+		return new CreateSEPAExportFromPaySelectionCommand(from, isGroupTransactions, chosenProtocol).run();
 	}
 
 	@Override
