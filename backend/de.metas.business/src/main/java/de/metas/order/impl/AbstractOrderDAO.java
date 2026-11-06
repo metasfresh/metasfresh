@@ -38,6 +38,7 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderCriteria;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderQuery;
@@ -405,7 +406,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@NonNull
-	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderQuery query)
+	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderCriteria query)
 	{
 		if (query.getOrderId() != null)
 		{
@@ -445,7 +446,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Nullable
-	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderQuery query)
+	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderCriteria query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -550,22 +551,22 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@NonNull
-	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderQuery orderQuery)
+	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderCriteria orderCriteria)
 	{
-		final OrgId orgId = assumeNotNull(orderQuery.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderQuery);
-		final ExternalId externalId = assumeNotNull(orderQuery.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderQuery);
+		final OrgId orgId = assumeNotNull(orderCriteria.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderCriteria);
+		final ExternalId externalId = assumeNotNull(orderCriteria.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderCriteria);
 
 		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue());
 
-		final InputDataSourceId dataSourceId = orderQuery.getInputDataSourceId();
+		final InputDataSourceId dataSourceId = orderCriteria.getInputDataSourceId();
 		if (dataSourceId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_AD_InputDataSource_ID, dataSourceId);
 		}
 
-		final ExternalSystemId externalSystemId = orderQuery.getExternalSystemId();
+		final ExternalSystemId externalSystemId = orderCriteria.getExternalSystemId();
 		if (externalSystemId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalSystem_ID, externalSystemId);
@@ -605,5 +606,52 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.iterateAndStreamIds(OrderLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public List<OrderId> getOrderIds(@NonNull final OrderQuery query)
+	{
+		if ((query.getDocTypeIds() != null && query.getDocTypeIds().isEmpty())
+				|| (query.getDocumentNos() != null && query.getDocumentNos().isEmpty()))
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBuilder<I_C_Order> queryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getSoTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+		}
+		if (query.getDocStatus() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (query.getDocTypeIds() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Order.COLUMNNAME_C_DocType_ID, query.getDocTypeIds());
+		}
+		if (query.getDocumentNos() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Order.COLUMNNAME_DocumentNo, query.getDocumentNos());
+		}
+		if (query.getCurrencyId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
+		}
+		if (query.getAmount() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_GrandTotal, query.getAmount());
+		}
+		if (query.getBpartnerId() != null)
+		{
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Bill_BPartner_ID, query.getBpartnerId())
+					.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
+		}
+
+		return queryBuilder.create().listIds(OrderId::ofRepoId);
 	}
 }
