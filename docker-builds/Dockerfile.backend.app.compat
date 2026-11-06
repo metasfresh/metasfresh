@@ -28,6 +28,11 @@ RUN apt-get -y update && apt-get -y install locales netcat postgresql-client cur
 RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
+# -compat images are started by the customer's own start scripts, not by the CMD of Dockerfile.backend.app,
+# so the --add-opens that CMD passes is missing there; without it Java 25 refuses the reflective
+# ClassLoader.defineClass access (JavaAssistInterceptor) and the server dies at startup.
+# JDK_JAVA_OPTIONS is read by every `java` launcher invocation and is independent of JAVA_TOOL_OPTIONS.
+ENV JDK_JAVA_OPTIONS="--add-opens=java.base/java.lang=ALL-UNNAMED"
 
 WORKDIR /opt/metasfresh
 
