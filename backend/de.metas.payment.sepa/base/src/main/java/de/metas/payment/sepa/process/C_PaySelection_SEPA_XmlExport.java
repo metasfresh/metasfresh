@@ -102,8 +102,8 @@ public class C_PaySelection_SEPA_XmlExport
 		}
 
 		final PaySelectionId paySelectionId = PaySelectionId.ofRepoIdOrNull(getRecord_ID());
-		final String paySelectionTrxType = paySelectionId != null
-				? paySelectionDAO.getById(paySelectionId).map(I_C_PaySelection::getPaySelectionTrxType).orElse(null)
+		final PaySelectionTrxType paySelectionTrxType = paySelectionId != null
+				? paySelectionDAO.getById(paySelectionId).map(paySelection -> PaySelectionTrxType.ofNullableCode(paySelection.getPaySelectionTrxType())).orElse(null)
 				: null;
 		final String defaultSepaProtocolCode = getDefaultSepaProtocolCode(paySelectionTrxType);
 		return defaultSepaProtocolCode != null ? defaultSepaProtocolCode : DEFAULT_VALUE_NOTAVAILABLE;
@@ -114,9 +114,8 @@ public class C_PaySelection_SEPA_XmlExport
 	 */
 	@VisibleForTesting
 	@Nullable
-	static String getDefaultSepaProtocolCode(@Nullable final String paySelectionTrxTypeCode)
+	static String getDefaultSepaProtocolCode(@Nullable final PaySelectionTrxType paySelectionTrxType)
 	{
-		final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(paySelectionTrxTypeCode);
 		return paySelectionTrxType != null
 				? SEPAProtocol.getDefault(paySelectionTrxType).getCode()
 				: null;

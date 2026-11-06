@@ -2,6 +2,7 @@ package de.metas.payment.sepa.process;
 
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStrings;
@@ -82,10 +83,10 @@ class C_PaySelection_SEPA_XmlExportTest
 
 	@ParameterizedTest
 	@CsvSource({
-			"CT, pain.001.001.09.ch.03",
-			"DD, pain.008.001.08",
+			"CREDIT_TRANSFER, pain.001.001.09.ch.03",
+			"DIRECT_DEBIT, pain.008.001.08",
 	})
-	void defaultSepaProtocolCode_dependsOnTheTransactionType(final String paySelectionTrxType, final String expectedProtocolCode)
+	void defaultSepaProtocolCode_dependsOnTheTransactionType(final PaySelectionTrxType paySelectionTrxType, final String expectedProtocolCode)
 	{
 		assertThat(C_PaySelection_SEPA_XmlExport.getDefaultSepaProtocolCode(paySelectionTrxType)).isEqualTo(expectedProtocolCode);
 	}
