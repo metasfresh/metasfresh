@@ -93,6 +93,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		//
 		// Register Handlers
 		keyRegistry.registerAggregationKeyValueHandler(registrationKey, new ShipmentScheduleKeyValueHandler());
+		keyRegistry.registerAggregationKeyValueHandler(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY_WITHOUT_ASYNC_BATCH, new ShipmentScheduleKeyValueHandler(false));
 
 		//
 		// Register ShipmentScheduleHeaderAggregationKeyBuilder
