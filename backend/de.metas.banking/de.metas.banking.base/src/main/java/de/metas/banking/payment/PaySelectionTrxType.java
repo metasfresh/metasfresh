@@ -57,5 +57,15 @@ public enum PaySelectionTrxType implements ReferenceListAwareEnum
 		return index.ofNullableCode(code);
 	}
 
+	public boolean isCreditTransfer()
+	{
+		return this == CREDIT_TRANSFER;
+	}
+
+	public boolean isDirectDebit()
+	{
+		return this == DIRECT_DEBIT;
+	}
+
 	private static final ValuesIndex<PaySelectionTrxType> index = ReferenceListAwareEnums.index(values());
 }

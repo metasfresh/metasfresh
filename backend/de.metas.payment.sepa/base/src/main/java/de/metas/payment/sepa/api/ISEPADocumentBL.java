@@ -36,9 +36,9 @@ public interface ISEPADocumentBL extends ISingletonService
 	/**
 	 * Creates the SEPA exports of the given pay selection: one for a credit transfer, one per mandate type (scheme) for a direct debit.
 	 *
-	 * @param chosenCreditTransferProtocol the credit transfer protocol to use; {@code null} means the default. Ignored for direct debit pay selections.
+	 * @param chosenProtocol the protocol to use; {@code null} means the default of the pay selection's transaction type. Must match that type, see {@link SEPAProtocol#ofPaySelectionTrxType}.
 	 */
-	CreatedSEPAExports createSEPAExportFromPaySelection(I_C_PaySelection from, boolean isGroupTransactions, @Nullable SEPAProtocol chosenCreditTransferProtocol);
+	CreatedSEPAExports createSEPAExportFromPaySelection(I_C_PaySelection from, boolean isGroupTransactions, @Nullable SEPAProtocol chosenProtocol);
 
 	Date getDueDate(I_SEPA_Export_Line line);
 
