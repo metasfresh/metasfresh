@@ -6,7 +6,7 @@
 -- Element (German base language, English via _Trl)
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, ColumnName, EntityType, Name, PrintName, Description)
 VALUES (585597 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-11-06 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-11-06 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'AccountNumber_International', 'de.metas.shipper.gateway.dhl', 'Kontonummer international', 'Kontonummer international',
+        'AccountNumber_International', 'D', 'Kontonummer international', 'Kontonummer international',
         'Internationale Abrechnungsnummer (DHL Paket International, Produkt V53WPAK)');
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, Help, PO_Name, PO_PrintName, PO_Description, PO_Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
@@ -41,7 +41,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593790
 SELECT db_alter_table('DHL_Shipper_Config', 'ALTER TABLE public.DHL_Shipper_Config ADD COLUMN AccountNumber_International VARCHAR(255)');
 
 -- Existing configs: the international billing number starts out equal to the current AccountNumber
-SELECT backup_table('dhl_shipper_config', '_gh32526_AccNo_Intl');
+SELECT backup_table('dhl_shipper_config', '_gh32526_AccountNumber_International');
 UPDATE DHL_Shipper_Config SET AccountNumber_International = AccountNumber, Updated = TO_TIMESTAMP('2026-11-06 14:01:30', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 99
 WHERE AccountNumber_International IS NULL;
 
@@ -50,7 +50,7 @@ INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, C
                       IsSameLine, IsHeading, IsFieldOnly, IsEncrypted, EntityType, SeqNoGrid, IsDisplayedGrid, SpanX, SpanY, IsAlwaysUpdateable)
 VALUES (788149 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-11-06 14:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-11-06 14:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'Kontonummer international', 'Internationale Abrechnungsnummer (DHL Paket International, Produkt V53WPAK)', 542055, 593790, 'Y', 255, 'N', 45, 0,
-        'N', 'N', 'N', 'N', 'de.metas.shipper.gateway.dhl', 45, 'N', 1, 1, 'N');
+        'N', 'N', 'N', 'N', 'D', 45, 'Y', 1, 1, 'N');
 
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, t.AD_Field_ID, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
