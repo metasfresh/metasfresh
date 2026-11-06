@@ -43,6 +43,10 @@ export function ordersReducer(applicationState, action) {
     }
     case UPDATE_ORDER: {
       const { order } = action.payload;
+      if (isNotNewerThanOrderInState({ applicationState, order })) {
+        console.log('Ignoring stale order snapshot', { order });
+        return applicationState;
+      }
 
       let isOpenOrder = isOpenOrderStatus(order.status);
       return syncOrdersFromSource({
@@ -50,6 +54,7 @@ export function ordersReducer(applicationState, action) {
         posTerminalId: order.posTerminalId,
         fromOrdersArray: isOpenOrder ? [order] : [],
         missingIds: isOpenOrder ? [] : [order.uuid],
+        removedVersionsByUUID: !isOpenOrder && order.version != null ? { [order.uuid]: order.version } : undefined,
         isUpdateOnly: true,
       });
     }
@@ -146,7 +151,33 @@ const changeOrder = ({ ordersState, order_uuid, mapper }) => {
 //
 //
 
-const syncOrdersFromSource = ({ applicationState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
+/**
+ * Order snapshots arrive both as REST responses and as websocket events. The backend sends the websocket events through
+ * a trailing debouncer, so a snapshot can arrive after a REST response of a newer save. Applying it would roll the order
+ * back for a moment (e.g. drop the pending payment, which unmounts the cash dialog).
+ *
+ * A snapshot of the same version is the save the frontend already applied (typically the websocket echo of a REST
+ * response). Applying it again can only drop local changes which are not saved yet, e.g. a payment whose POST is in
+ * flight, so it is ignored too.
+ *
+ * @returns true if the incoming snapshot carries the backend's order version and it is not greater than the version of
+ * the order in state, or, if the order was already removed from state (e.g. voided), than the version which removed it.
+ * A snapshot without a version, or one for an order without a known version, is always applied.
+ */
+const isNotNewerThanOrderInState = ({ applicationState, order }) => {
+  const ordersState = applicationState.orders;
+  const knownVersion = ordersState?.byUUID?.[order.uuid]?.version ?? ordersState?.removedVersionsByUUID?.[order.uuid];
+  return order.version != null && knownVersion != null && order.version <= knownVersion;
+};
+
+const syncOrdersFromSource = ({
+  applicationState,
+  posTerminalId,
+  fromOrdersArray,
+  missingIds,
+  removedVersionsByUUID,
+  isUpdateOnly,
+}) => {
   return changeOrdersStateInApplicationState({
     applicationState,
     mapper: (ordersState) =>
@@ -155,16 +186,33 @@ const syncOrdersFromSource = ({ applicationState, posTerminalId, fromOrdersArray
         posTerminalId,
         fromOrdersArray,
         missingIds,
+        removedVersionsByUUID,
         isUpdateOnly,
       }),
   });
 };
 
-const syncOrdersStateFromSource = ({ ordersState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
+const syncOrdersStateFromSource = ({
+  ordersState,
+  posTerminalId,
+  fromOrdersArray,
+  missingIds,
+  removedVersionsByUUID: removedVersionsByUUIDToAdd,
+  isUpdateOnly,
+}) => {
   const byUUID = isUpdateOnly ? { ...ordersState.byUUID } : {};
+  // versions of the orders removed from state, so that a delayed snapshot does not bring them back (see isNotNewerThanOrderInState)
+  // forgotten on a full reload, because the loaded orders are the new reference
+  const removedVersionsByUUID = {
+    ...(isUpdateOnly ? ordersState.removedVersionsByUUID : {}),
+    ...removedVersionsByUUIDToAdd,
+  };
 
   if (fromOrdersArray?.length > 0) {
-    fromOrdersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
+    fromOrdersArray.forEach((order) => {
+      byUUID[order.uuid] = recomputeOrderDetails({ order });
+      delete removedVersionsByUUID[order.uuid];
+    });
   }
 
   if (missingIds?.length > 0) {
@@ -194,6 +242,7 @@ const syncOrdersStateFromSource = ({ ordersState, posTerminalId, fromOrdersArray
     ...ordersState,
     current_uuid,
     byUUID,
+    removedVersionsByUUID,
   };
 };
 

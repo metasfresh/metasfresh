@@ -20,3 +20,5 @@ export const CLOSE_MODAL = 'ui/closeModal';
 
 export const SHOW_PANEL = 'ui/showPanel';
 export const CLOSE_PANEL = 'ui/closePanel';
+
+export const SET_CASH_TENDERED_DRAFT = 'ui/setCashTenderedDraft';

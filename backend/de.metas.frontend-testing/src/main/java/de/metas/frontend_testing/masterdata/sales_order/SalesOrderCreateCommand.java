@@ -8,6 +8,7 @@ import de.metas.document.DocTypeId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.frontend_testing.masterdata.AsyncQueueProcessorsReadiness;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -71,6 +72,13 @@ public class SalesOrderCreateCommand
 	public JsonSalesOrderCreateResponse execute()
 	{
 		final JsonSalesOrderCreateResponse response = trxManager.callInThreadInheritedTrx(this::execute0);
+
+		// The shipment schedules are created by an async workpackage, so don't spend the poll budgets below on processors that are not started yet
+		if (!lineCreateRequestAndBuilders.isEmpty())
+		{
+			AsyncQueueProcessorsReadiness.awaitStarted();
+		}
+
 		trxManager.runInThreadInheritedTrx(this::createSchedules);
 		waitForShipmentSchedulesToBeValid();
 		return response;
@@ -246,6 +254,7 @@ public class SalesOrderCreateCommand
 		}
 		catch (final InterruptedException e)
 		{
+			Thread.currentThread().interrupt();
 			throw new AdempiereException(e);
 		}
 	}
