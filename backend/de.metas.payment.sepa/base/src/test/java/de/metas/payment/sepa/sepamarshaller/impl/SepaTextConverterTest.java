@@ -116,7 +116,7 @@ class SepaTextConverterTest
 				"Rechnung „Nr. 1“            | Rechnung Nr. 1",                  // trimmed and whitespace collapsed after the conversion
 				"a😀b              | a b",                             // a character outside the BMP is ONE space, not two
 				"50% * 2 $                   | 50 2",
-				"Fokken & Müller GmbH & Co.  | Fokken & Mueller GmbH & Co.",     // & is allowed for the German banks (DFÜ-Abkommen Anlage 3)
+				"Meier & Söhne GmbH & Co.     | Meier & Soehne GmbH & Co.",     // & is allowed for the German banks (DFÜ-Abkommen Anlage 3)
 				"A&B                         | A&B",
 		})
 		void converted(final String text, final String expected)
@@ -127,7 +127,7 @@ class SepaTextConverterTest
 		@Test
 		void whitespaceRunInside_isCollapsedToOneSpace()
 		{
-			assertThat(SepaTextConverter.toText("Fokken \t\n  Müller", 70)).isEqualTo("Fokken Mueller");
+			assertThat(SepaTextConverter.toText("Meier \t\n  Söhne", 70)).isEqualTo("Meier Soehne");
 		}
 
 		@Test
