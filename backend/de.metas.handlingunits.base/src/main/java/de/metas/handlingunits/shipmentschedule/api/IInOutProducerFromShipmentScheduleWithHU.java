@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.async.AsyncBatchId;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
@@ -49,4 +50,16 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable DeliveryPlanningId deliveryPlanningId);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
+
+	/**
+	 * If {@code true}, candidates whose schedules differ only in their {@code C_Async_Batch_ID} go into the same shipment.
+	 * Default {@code false}.
+	 */
+	IInOutProducerFromShipmentScheduleWithHU setIgnoreScheduleAsyncBatch(boolean ignoreScheduleAsyncBatch);
+
+	/**
+	 * The async batch of the run that creates the shipments.
+	 * If set, every created shipment gets it as {@code C_Async_Batch_ID}; if {@code null} (default), a shipment gets the batch of its first schedule.
+	 */
+	IInOutProducerFromShipmentScheduleWithHU setAsyncBatchId(@Nullable AsyncBatchId asyncBatchId);
 }
