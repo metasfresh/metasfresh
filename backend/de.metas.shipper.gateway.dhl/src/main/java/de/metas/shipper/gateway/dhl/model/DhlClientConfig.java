@@ -22,7 +22,10 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -36,6 +39,7 @@ import javax.annotation.Nullable;
 @ToString(of = { "baseUrl" })
 public class DhlClientConfig
 {
+	private static final AdMessageKey MSG_MissingBillingNumber = AdMessageKey.of("de.metas.shipper.gateway.dhl.MissingBillingNumber");
 
 
 	int shipperConfigId; // DHL_Shipper_Config_ID, named in error messages
@@ -77,25 +81,24 @@ public class DhlClientConfig
 	public String getBillingNumber(@NonNull final DhlShipperProduct product)
 	{
 		final String billingNumber;
-		final String fieldName;
+		final String columnName;
 		switch (product)
 		{
 			case Dhl_Paket:
 				billingNumber = accountNumber;
-				fieldName = "Kontonummer";
+				columnName = I_DHL_Shipper_Config.COLUMNNAME_AccountNumber;
 				break;
 			case Dhl_PaketInternational:
 				billingNumber = accountNumberInternational;
-				fieldName = "Kontonummer international";
+				columnName = I_DHL_Shipper_Config.COLUMNNAME_AccountNumber_International;
 				break;
 			default:
 				throw new AdempiereException("Unsupported DHL product: " + product);
 		}
 
-		if (billingNumber == null || billingNumber.trim().isEmpty())
+		if (Check.isBlank(billingNumber))
 		{
-			throw new AdempiereException("The DHL configuration DHL_Shipper_Config_ID=" + shipperConfigId + " of shipper '" + shipperName + "'"
-					+ " has no billing number for the DHL product " + product.getCode() + ". Please fill the field '" + fieldName + "'.");
+			throw new AdempiereException(MSG_MissingBillingNumber, String.valueOf(shipperConfigId), shipperName, product.getCode(), TranslatableStrings.adElementOrMessage(columnName));
 		}
 		return billingNumber;
 	}

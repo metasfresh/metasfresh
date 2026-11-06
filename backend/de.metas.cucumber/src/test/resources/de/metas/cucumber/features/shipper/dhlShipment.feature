@@ -467,7 +467,7 @@ Feature: Dhl Shipment
   # ##########################################################################
   # ##########################################################################
 
-  @Id:S32526_TC2_international
+  @Id:S32526_TC2a
   Scenario: DHL shipment from DE to AT without an international billing number is not sent to DHL
     Given metasfresh contains M_PriceLists
       | Identifier   | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
@@ -493,7 +493,7 @@ Feature: Dhl Shipment
       | dhl_cfg_tc2_at                   | shipper_dhl_tc2_at      | 33333333330102 | null                            |
     And metasfresh contains External System
       | Name                                | Value                               |
-      | TestSystem_S32526_TC2_international | TestSystem_S32526_TC2_international |
+      | TestSystem_S32526_TC2a | TestSystem_S32526_TC2a |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
 {
@@ -502,7 +502,7 @@ Feature: Dhl Shipment
       "orgCode": "001",
       "externalHeaderId": "dhl_tc2_at_01",
       "externalLineId": "dhl_tc2_at_01",
-      "externalSystemCode": "TestSystem_S32526_TC2_international",
+      "externalSystemCode": "TestSystem_S32526_TC2a",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1122334455667",
@@ -530,7 +530,7 @@ Feature: Dhl Shipment
     """
 {
     "externalHeaderId": "dhl_tc2_at_01",
-    "externalSystemCode": "TestSystem_S32526_TC2_international",
+    "externalSystemCode": "TestSystem_S32526_TC2a",
     "ship": true,
     "invoice": false,
     "closeOrder": false
@@ -544,11 +544,11 @@ Feature: Dhl Shipment
       | shipper_dhl_tc2_at | dhl_customer  | dhl_location_at        | 0.250         | package1     | 30         | 20        | 10         |
     # the parcel is not sent to DHL: the work package fails and names the configuration and the missing billing number
     And the DHL work package of M_Package package1 failed because the DHL configuration lacks a billing number:
-      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | missingField              |
-      | dhl_cfg_tc2_at                   | shipper_dhl_tc2_at      | Kontonummer international |
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | product | missingField              |
+      | dhl_cfg_tc2_at                   | shipper_dhl_tc2_at      | V53WPAK | Kontonummer international |
     And no DHL request is logged for the DHL_ShipmentOrder of M_Package package1
 
-  @Id:S32526_TC2_national
+  @Id:S32526_TC2b
   Scenario: DHL shipment from DE to DE without a national billing number is not sent to DHL
     Given contains M_Shippers
       | Identifier         | Value      | Name       | OPT.ShipperGateway | OPT.TrackingURL               |
@@ -558,7 +558,7 @@ Feature: Dhl Shipment
       | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | null          | 33333333335301                  |
     And metasfresh contains External System
       | Name                           | Value                          |
-      | TestSystem_S32526_TC2_national | TestSystem_S32526_TC2_national |
+      | TestSystem_S32526_TC2b | TestSystem_S32526_TC2b |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
 {
@@ -567,7 +567,7 @@ Feature: Dhl Shipment
       "orgCode": "001",
       "externalHeaderId": "dhl_tc2_de_01",
       "externalLineId": "dhl_tc2_de_01",
-      "externalSystemCode": "TestSystem_S32526_TC2_national",
+      "externalSystemCode": "TestSystem_S32526_TC2b",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1122334455667",
@@ -595,7 +595,7 @@ Feature: Dhl Shipment
     """
 {
     "externalHeaderId": "dhl_tc2_de_01",
-    "externalSystemCode": "TestSystem_S32526_TC2_national",
+    "externalSystemCode": "TestSystem_S32526_TC2b",
     "ship": true,
     "invoice": false,
     "closeOrder": false
@@ -609,6 +609,6 @@ Feature: Dhl Shipment
       | shipper_dhl_tc2_de | dhl_customer  | dhl_location           | 0.250         | package1     | 30         | 20        | 10         |
     # the parcel is not sent to DHL: the work package fails and names the configuration and the missing billing number
     And the DHL work package of M_Package package1 failed because the DHL configuration lacks a billing number:
-      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | missingField |
-      | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | Kontonummer  |
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | product | missingField |
+      | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | V01PAK  | Kontonummer  |
     And no DHL request is logged for the DHL_ShipmentOrder of M_Package package1

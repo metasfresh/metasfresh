@@ -2,9 +2,9 @@ package de.metas.cucumber.stepdefs.shipper.dhl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.cucumber.stepdefs.DHL_Shipper_Config_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -41,9 +41,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class Dhl_ShipmentOrder_Log_StepDef
 {
 	private static final int WAIT_SECONDS = 60;
+	/** parameter of {@code DeliveryOrderWorkpackageProcessor} holding the delivery order id */
+	private static final String DELIVERY_ORDER_ID_PARAM_NAME = "DeliveryOrderRepoId";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	@NonNull private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository = SpringContextHolder.instance.getBean(DhlDeliveryOrderRepository.class);
 	@NonNull private final M_Package_StepDefData packageTable;
@@ -91,13 +92,14 @@ public class Dhl_ShipmentOrder_Log_StepDef
 	 * @cucumber.columns
 	 *   <b>DHL_Shipper_Config_ID.Identifier</b> - the config whose id the error message must name<br>
 	 *   <b>M_Shipper_ID.Identifier</b> - the shipper whose name the error message must name<br>
-	 *   <b>missingField</b> - the field name the error message must name<br>
+	 *   <b>product</b> - the DHL product code the error message must name<br>
+	 *   <b>missingField</b> - the field label the error message must name, in quotes<br>
 	 * @cucumber.depends StepDefData: M_Package_StepDefData, DHL_Shipper_Config_StepDefData, M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And the DHL work package of M_Package package1 failed because the DHL configuration lacks a billing number:
-	 *   | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | missingField |
-	 *   | dhl_cfg                          | shipper_dhl             | Kontonummer  |
+	 *   | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | product | missingField |
+	 *   | dhl_cfg                          | shipper_dhl             | V01PAK  | Kontonummer  |
 	 * </pre>
 	 */
 	@And("the DHL work package of M_Package {word} failed because the DHL configuration lacks a billing number:")
@@ -117,7 +119,8 @@ public class Dhl_ShipmentOrder_Log_StepDef
 				.as("work package error message")
 				.contains("DHL_Shipper_Config_ID=" + config.getDHL_Shipper_Config_ID())
 				.contains(shipper.getName())
-				.contains(row.getAsString("missingField"));
+				.contains("\"" + row.getAsString("missingField") + "\"")
+				.contains(row.getAsString("product"));
 	}
 
 	/**
@@ -148,14 +151,18 @@ public class Dhl_ShipmentOrder_Log_StepDef
 				.addStringLikeFilter(I_C_Queue_PackageProcessor.COLUMNNAME_Classname, "%DeliveryOrderWorkpackageProcessor", false)
 				.create()
 				.listIds();
+		final List<Integer> workPackageIds = queryBL.createQueryBuilder(I_C_Queue_WorkPackage_Param.class)
+				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMNNAME_ParameterName, DELIVERY_ORDER_ID_PARAM_NAME)
+				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMNNAME_P_Number, shipmentOrder.getDHL_ShipmentOrderRequest_ID())
+				.create()
+				.listDistinct(I_C_Queue_WorkPackage_Param.COLUMNNAME_C_Queue_WorkPackage_ID, Integer.class);
 		return queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageIds)
 				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, processorIds)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsError, true)
 				.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
 				.create()
-				.stream()
-				.filter(wp -> workpackageParamDAO.retrieveWorkpackageParams(wp).getParameterAsInt("DeliveryOrderRepoId", -1) == shipmentOrder.getDHL_ShipmentOrderRequest_ID())
-				.findFirst();
+				.firstOptional(I_C_Queue_WorkPackage.class);
 	}
 
 	private Optional<I_Dhl_ShipmentOrder_Log> retrieveLatestLog(@NonNull final I_DHL_ShipmentOrder shipmentOrder)
