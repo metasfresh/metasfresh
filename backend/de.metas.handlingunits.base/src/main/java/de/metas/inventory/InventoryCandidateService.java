@@ -16,27 +16,31 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class InventoryCandidateService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ADReferenceService adReferenceService;
+	@NonNull private final ADReferenceService adReferenceService;
+	@NonNull private final InventoryCandidateRepository inventoryCandidateRepository;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-	public InventoryCandidateService(final ADReferenceService adReferenceService)
+	/**
+	 * @return the active {@code M_Inventory_Candidate} records of the given HU, regardless of their {@code Processed} state.
+	 */
+	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
 	{
-		this.adReferenceService = adReferenceService;
+		return inventoryCandidateRepository.getByHuId(huId);
 	}
 
 	public ADRefList getDisposalReasons()
@@ -64,7 +68,7 @@ public class InventoryCandidateService
 		}
 
 		final ImmutableMap<ProductId, I_M_Inventory_Candidate> existingRecords = Maps.uniqueIndex(
-				queryByHuIdAndNotProcessed(huId).create().list(),
+				inventoryCandidateRepository.getNotProcessedByHuId(huId),
 				record -> ProductId.ofRepoId(record.getM_Product_ID()));
 
 		handlingUnitsBL.getStorageFactory()
@@ -103,19 +107,8 @@ public class InventoryCandidateService
 		InterfaceWrapperHelper.save(record);
 	}
 
-	private IQueryBuilder<I_M_Inventory_Candidate> queryByHuIdAndNotProcessed(final @NonNull HuId huId)
-	{
-		return queryBL.createQueryBuilder(I_M_Inventory_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_Processed, false);
-	}
-
 	public boolean isDisposalPending(final @NonNull HuId huId)
 	{
-		return queryByHuIdAndNotProcessed(huId)
-				.addNotNull(I_M_Inventory_Candidate.COLUMNNAME_DisposeReason)
-				.create()
-				.anyMatch();
+		return inventoryCandidateRepository.hasNotProcessedWithDisposeReason(huId);
 	}
 }
