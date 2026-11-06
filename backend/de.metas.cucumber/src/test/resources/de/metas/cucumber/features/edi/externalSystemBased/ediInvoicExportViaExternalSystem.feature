@@ -52,6 +52,7 @@ Feature: EDI INVOIC export via External System
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
   @F00350
+  @expectsAdIssue:External.system.export.failed:.Test.error
   Scenario: create an invoice and export INVOIC via external system
 
     And metasfresh contains C_Orders:

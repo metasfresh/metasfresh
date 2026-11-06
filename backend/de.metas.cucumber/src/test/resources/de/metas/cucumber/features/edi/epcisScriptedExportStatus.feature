@@ -116,6 +116,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   @Id:S30088_020
+  @expectsAdIssue:EPCIS_rejected_test
   Scenario: S30088_020 — /error callback: status row Error + AD_Issue_ID linked + roll-up Error
 
     And metasfresh contains C_Orders:
@@ -160,6 +161,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   @Id:S30088_030
+  @expectsAdIssue:EPCIS_error_resend
   Scenario: S30088_030 — re-send of an errored shipment adds a NEW attempt row (per-attempt history), keeping the errored one
 
     And metasfresh contains C_Orders:
@@ -1372,6 +1374,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   @ghActions:run_on_executor7
   @Id:S30916_150
+  @expectsAdIssue:EPCIS_error_nosend
   Scenario: S30916_150 — re-send of an errored shipment whose SSCCs are all already in the ledger sends NOTHING (DontSend), not an empty event
   ## Re-send gate (nothing-new → no empty event). A shipment is completed and Enqueued, then its
   ## EPCIS send ERRORS (so the config becomes re-sendable). Its physical SSCC is then recorded in
