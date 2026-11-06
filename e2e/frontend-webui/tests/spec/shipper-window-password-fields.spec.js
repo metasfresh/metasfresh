@@ -312,6 +312,11 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
         }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
         await page.keyboard.press('Alt+1');
         await page.locator('.subheader-container').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        // positive control: the menu rendered its items - the "about this document" item is offered on every record view
+        await expect(
+          page.locator('.subheader-container .subheader-item').filter({ has: page.locator('i.meta-icon-more') }),
+          `${carrierKey}: the actions menu must show its items`
+        ).toHaveCount(1);
         await expect(exportLink, `${carrierKey}: the actions menu with a tab row selected offers no Excel export`).toHaveCount(0);
         await page.keyboard.press('Escape');
         await page.locator('.subheader-container').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
@@ -370,7 +375,10 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     // Listen from here on: the secrets are stored; the typing above legitimately sent them.
     const bodies = [];
     const pendingBodies = [];
-    const observed = { windowResponses: 0, websocketMessages: 0 };
+    // Only STOMP MESSAGE frames carry data; SockJS framing ("o" open, "h" heartbeat) and the STOMP
+    // CONNECTED frame do not. SockJS wraps STOMP frames in a JSON array: a["MESSAGE\n...
+    const isStompMessage = (text) => /(^|\["|",")MESSAGE\\n/.test(text) || /^MESSAGE\n/.test(text);
+    const observed = { windowResponses: 0, stompMessages: 0 };
     page.on('response', (response) => {
       const url = response.url();
       // /stomp/ = the SockJS endpoint: on an HTTP fallback transport its messages arrive as responses
@@ -386,8 +394,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
             bodies.push({ source: `${response.request().method()} ${url}`, text });
             if (isWindow) {
               observed.windowResponses++;
-            } else if (text.trim() !== '') {
-              observed.websocketMessages++;
+            } else if (isStompMessage(text)) {
+              observed.stompMessages++;
             }
           })
           .catch(() => {})
@@ -395,8 +403,11 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     });
     page.on('websocket', (webSocket) => {
       webSocket.on('framereceived', ({ payload }) => {
-        bodies.push({ source: `websocket ${webSocket.url()}`, text: String(payload) });
-        observed.websocketMessages++;
+        const text = String(payload);
+        bodies.push({ source: `websocket ${webSocket.url()}`, text });
+        if (isStompMessage(text)) {
+          observed.stompMessages++;
+        }
       });
     });
 
@@ -424,7 +435,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     await Promise.all(pendingBodies);
     // positive controls: "no secret seen" means something only if the traffic was captured
     expect(observed.windowResponses, 'window REST responses must have been observed').toBeGreaterThan(0);
-    expect(observed.websocketMessages, 'websocket frames / SockJS messages must have been observed').toBeGreaterThan(0);
+    expect(observed.stompMessages, 'STOMP MESSAGE frames (websocket or SockJS transport) must have been observed').toBeGreaterThan(0);
     console.log(`[INFO] AC7 observed: ${JSON.stringify(observed)}`);
     const leaks = bodies
       .filter(({ text }) => typedSecrets.some((secret) => text.includes(secret)))
