@@ -472,7 +472,6 @@ public class C_Queue_WorkPackage_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
 	 * When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction as shipmentWorkPackage
 	 * </pre>
 	 * The optional {@code as <identifier>} stores the processed workpackage, e.g. to check its async batch on the created records.
