@@ -477,7 +477,7 @@ test('inline quantity on the preview: typed digits stay in the field, emptied fi
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
     await expectBackOnScanScreenAfterOK({ created, qty: '3 Ea' });
     await Backend.expect({ hus: { [created.huId]: { huStatus: 'A', storages: { 'P1': '3 PCE' } } } });
-    await openCreatedHUByValue({ created, locatorCode: wh2_l1.code, qty: '3 Ea' }); // booked on the scanned location, typed quantity
+    await openCreatedHUByValue({ created, locatorCode: wh2_l1.code, qty: '3 PCE' }); // booked on the scanned location, typed quantity
 });
 
 // noinspection JSUnusedLocalSymbols

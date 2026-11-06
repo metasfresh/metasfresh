@@ -65,7 +65,7 @@ const NewHUPreviewScreen = () => {
 
   // what the label would create is shown in the app's caption/value header (same component as every other screen); the locator
   // is changeable, so the header values follow it
-  const weightText = proposal?.weightKg != null ? `${proposal.weightKg} KGM` : proposal?.weightNote; // the label's weight (X12DE355 code like the qty row): shown when it becomes the CU's net weight, else the server's note that it is not used for this product
+  const weightText = proposal?.weightKg != null ? `${proposal.weightKg} KGM` : proposal?.weightNote; // the label's weight (the X12DE355 code, not translated): shown when it becomes the CU's net weight, else the server's note that it is not used for this product
   const locatorCaption = locator.caption ?? trl('huManager.newHU.noLocator');
   useEffect(() => {
     if (!proposal) return;
