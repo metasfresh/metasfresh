@@ -90,7 +90,7 @@ Runs the "Change password" process of the user window against a freshly created 
           { timeout: SLOW_ACTION_TIMEOUT }
         );
         await input.click();
-        await input.fill(value);
+        await input.pressSequentially(value); // keystrokes like a real user (fill() would replace the content and hide focus handling)
         await input.press('Tab');
         const response = await patched;
         expect(response.ok(), `PATCH of ${name} failed: HTTP ${response.status()}`).toBe(true);
