@@ -7,6 +7,7 @@ import de.metas.tax.api.VATIdentifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -35,6 +36,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.location.ILocationBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -136,6 +138,12 @@ class ClientSetup
 					.orgId(OrgId.ofRepoId(adOrg.getAD_Org_ID()));
 			//
 			orgBPartner = partnerOrgBL.retrieveLinkedBPartner(adOrg);
+			if (orgBPartner == null)
+			{
+				// AD_OrgBP_ID is kept, but retrieveLinkedBPartner only returns an active C_BPartner.
+				// A missing or deactivated org partner used to NPE in retrieveDefaultContactOrNull.
+				throw new AdempiereException(AdMessageKey.of("ClientSetup_NoActiveOrgBPartner"), adOrg.getName());
+			}
 			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(adOrgInfo.getOrgBPartnerLocationId());
 			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
