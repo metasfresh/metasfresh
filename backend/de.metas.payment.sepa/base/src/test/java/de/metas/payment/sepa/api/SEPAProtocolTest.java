@@ -90,6 +90,18 @@ public class SEPAProtocolTest
 	}
 
 	@Test
+	void getDefault_creditTransfer()
+	{
+		assertThat(SEPAProtocol.getDefault(PaySelectionTrxType.CREDIT_TRANSFER)).isSameAs(SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_09_CH_03);
+	}
+
+	@Test
+	void getDefault_directDebit()
+	{
+		assertThat(SEPAProtocol.getDefault(PaySelectionTrxType.DIRECT_DEBIT)).isSameAs(SEPAProtocol.DIRECT_DEBIT_PAIN_008_001_08);
+	}
+
+	@Test
 	void isDirectDebit()
 	{
 		assertThat(SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.isDirectDebit()).isTrue();

@@ -77,20 +77,40 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 	}
 
 	/**
-	 * @param chosenProtocol the protocol chosen by the user; if {@code null}, the default of the given type is used:
-	 *                       {@link #CREDIT_TRANSFER_PAIN_001_001_09_CH_03} for credit transfer, {@link #DIRECT_DEBIT_PAIN_008_001_08} for direct debit
+	 * @return the protocol used for a new export of the given type if none is chosen:
+	 * {@link #CREDIT_TRANSFER_PAIN_001_001_09_CH_03} for credit transfer, {@link #DIRECT_DEBIT_PAIN_008_001_08} for direct debit
+	 */
+	public static SEPAProtocol getDefault(@NonNull final PaySelectionTrxType paySelectionTrxType)
+	{
+		if (PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
+		{
+			return CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
+		}
+		else if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
+		{
+			return DIRECT_DEBIT_PAIN_008_001_08;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + PaySelectionTrxType.class.getSimpleName() + ": " + paySelectionTrxType);
+		}
+	}
+
+	/**
+	 * @param chosenProtocol the protocol chosen by the user; if {@code null}, {@link #getDefault} of the given type is used
 	 * @throws AdempiereException if the chosen protocol does not match the type, or is {@link #DIRECT_DEBIT_PAIN_008_003_02}, which can no longer be used for new exports
 	 */
 	public static SEPAProtocol ofPaySelectionTrxType(
 			@NonNull final PaySelectionTrxType paySelectionTrxType,
 			@Nullable final SEPAProtocol chosenProtocol)
 	{
+		if (chosenProtocol == null)
+		{
+			return getDefault(paySelectionTrxType);
+		}
+
 		if (PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
 		{
-			if (chosenProtocol == null)
-			{
-				return CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
-			}
 			if (!chosenProtocol.isCreditTransfer())
 			{
 				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " is not a credit transfer protocol");
@@ -99,10 +119,6 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 		}
 		else if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
 		{
-			if (chosenProtocol == null)
-			{
-				return DIRECT_DEBIT_PAIN_008_001_08;
-			}
 			if (!chosenProtocol.isDirectDebit())
 			{
 				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " is not a direct debit protocol");

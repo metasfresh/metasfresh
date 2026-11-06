@@ -110,7 +110,7 @@ public class C_PaySelection_SEPA_XmlExport
 	}
 
 	/**
-	 * @return the code of the protocol that is used if none is chosen, see {@link SEPAProtocol#ofPaySelectionTrxType}; {@code null} if the transaction type is not set
+	 * @return the code of {@link SEPAProtocol#getDefault} for the given type; {@code null} if the transaction type is not set
 	 */
 	@VisibleForTesting
 	@Nullable
@@ -118,7 +118,7 @@ public class C_PaySelection_SEPA_XmlExport
 	{
 		final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(paySelectionTrxTypeCode);
 		return paySelectionTrxType != null
-				? SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType, null).getCode()
+				? SEPAProtocol.getDefault(paySelectionTrxType).getCode()
 				: null;
 	}
 
