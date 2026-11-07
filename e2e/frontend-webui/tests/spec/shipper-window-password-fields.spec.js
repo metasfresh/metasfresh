@@ -14,12 +14,12 @@ import { columnTextsByFieldName, fetchViewGridFieldNames, readXlsx } from '../ut
  * interfaces. Those secrets must never reach the browser, the grid or an Excel export in clear
  * text, and saving a record must never overwrite them with the mask `********`:
  *
- * - AC5: the secret inputs are password inputs
- * - AC6: a grid column of a secret shows `********` (set) or nothing (not set); the Excel export carries no secret
- * - AC7: no window REST response or websocket frame carries a typed secret
- * - AC8: saving another field, or clicking into a secret and leaving it, keeps the stored secret
- * - AC9: typing replaces the secret with exactly the typed text (also texts with stars); clearing stores NULL
- * - AC10: a PATCH with the mask `********` keeps the stored secret
+ * - the secret inputs are password inputs
+ * - a grid column of a secret shows `********` (set) or nothing (not set); the Excel export carries no secret
+ * - no window REST response or websocket frame carries a typed secret
+ * - saving another field, or clicking into a secret and leaving it, keeps the stored secret
+ * - typing replaces the secret with exactly the typed text (also texts with stars); clearing stores NULL
+ * - a PATCH with the mask `********` keeps the stored secret
  *
  * One shipper (no gateway) is created per test; all carrier tabs of window 142 are always shown,
  * so each carrier config is created in its own tab and the secrets are typed through the UI.
@@ -71,10 +71,10 @@ const newUnique = () => `${Date.now().toString(36)}${Math.random().toString(36).
 
 /** Synthetic, obviously fake secret values, unique per test. */
 const newSecrets = (unique) => ({
-  dhl: { ApplicationToken: `b4-dhl-token-${unique}`, Signature: `b4-dhl-sig-${unique}` },
-  nshift: { Password: `b4-nshift-pw-${unique}`, Client_Secret: `b4-nshift-cs-${unique}` },
-  dpd: { DelisPassword: `b4-dpd-pw-${unique}` },
-  go: { GO_AuthPassword: `b4-go-pw-${unique}` },
+  dhl: { ApplicationToken: `pw-dhl-token-${unique}`, Signature: `pw-dhl-sig-${unique}` },
+  nshift: { Password: `pw-nshift-pw-${unique}`, Client_Secret: `pw-nshift-cs-${unique}` },
+  dpd: { DelisPassword: `pw-dpd-pw-${unique}` },
+  go: { GO_AuthPassword: `pw-go-pw-${unique}` },
 });
 
 function labelTest() {
@@ -201,7 +201,7 @@ async function openRecordView(page, carrierKey) {
   return modal;
 }
 
-/** B2 stored-value expectation; the answer is pass/fail only and never reveals the stored value. */
+/** server-side stored-value expectation; the answer is pass/fail only and never reveals the stored value. */
 async function expectStored(title, entries) {
   const records = {};
   entries.forEach(({ tableName, recordId, columnName, expectedValue }) => {
@@ -211,7 +211,7 @@ async function expectStored(title, entries) {
 }
 
 test.describe('Shipper window — carrier secrets are password fields', () => {
-  test('AC5: DHL application token, DHL password and nShift client secret are password inputs', async ({ page }) => {
+  test('DHL application token, DHL password and nShift client secret are password inputs', async ({ page }) => {
     labelTest();
     test.setTimeout(180000);
     const { dialogs } = await createShipperAndOpen(page);
@@ -237,7 +237,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
   });
 
-  test('AC6 grid: a secret column shows the mask or nothing, a secret outside the grid appears in no cell', async ({ page }) => {
+  test('grid: a secret column shows the mask or nothing, a secret outside the grid appears in no cell', async ({ page }) => {
     labelTest();
     test.setTimeout(300000);
     const { shipperId, dialogs } = await createShipperAndOpen(page);
@@ -252,14 +252,14 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
     await openShipper(page, shipperId);
 
-    // in grid = Y per S1: DHL ApplicationToken + Signature (fallback), nShift Password, DPD DelisPassword
+    // in grid = Y per the window layout: DHL ApplicationToken + Signature (fallback), nShift Password, DPD DelisPassword
     const inGrid = [
       { carrierKey: 'dhl', column: 'ApplicationToken', expected: MASK },
       { carrierKey: 'dhl', column: 'Signature', expected: '' },
       { carrierKey: 'nshift', column: 'Password', expected: MASK },
       { carrierKey: 'dpd', column: 'DelisPassword', expected: MASK },
     ];
-    // in grid = N per S1: nShift Client_Secret, GO GO_AuthPassword
+    // in grid = N per the window layout: nShift Client_Secret, GO GO_AuthPassword
     const notInGrid = [
       { carrierKey: 'nshift', column: 'Client_Secret' },
       { carrierKey: 'go', column: 'GO_AuthPassword' },
@@ -285,7 +285,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
   });
 
-  test('AC6 Excel: the shipper export carries no typed secret; carrier tab grids offer no export', async ({ page }) => {
+  test('Excel: the shipper export carries no typed secret; carrier tab grids offer no export', async ({ page }) => {
     labelTest();
     test.setTimeout(300000);
     const { shipperId, shipperName, dialogs } = await createShipperAndOpen(page);
@@ -361,7 +361,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
   });
 
-  test('AC7: no window REST response and no websocket frame carries a typed secret', async ({ page }) => {
+  test('no window REST response and no websocket frame carries a typed secret', async ({ page }) => {
     labelTest();
     test.setTimeout(300000);
     const { shipperId, dialogs } = await createShipperAndOpen(page);
@@ -436,7 +436,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     // positive controls: "no secret seen" means something only if the traffic was captured
     expect(observed.windowResponses, 'window REST responses must have been observed').toBeGreaterThan(0);
     expect(observed.stompMessages, 'STOMP MESSAGE frames (websocket or SockJS transport) must have been observed').toBeGreaterThan(0);
-    console.log(`[INFO] AC7 observed: ${JSON.stringify(observed)}`);
+    console.log(`[INFO] observed traffic: ${JSON.stringify(observed)}`);
     const leaks = bodies
       .filter(({ text }) => typedSecrets.some((secret) => text.includes(secret)))
       .map(({ source }) => source);
@@ -444,7 +444,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
   });
 
-  test('AC8: saving another field, or clicking into a secret and leaving it, keeps the stored secrets', async ({ page }) => {
+  test('saving another field, or clicking into a secret and leaving it, keeps the stored secrets', async ({ page }) => {
     labelTest();
     test.setTimeout(180000);
     const { dialogs } = await createShipperAndOpen(page);
@@ -458,12 +458,12 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
     await test.step('Edit another field and save', async () => {
       const modal = await openRecordView(page, 'dhl');
-      await typeAndLeave(page, modal.locator('.form-field-UserName input'), 'b4-user', { tabId: CARRIERS.dhl.tabId, fieldName: 'UserName' });
+      await typeAndLeave(page, modal.locator('.form-field-UserName input'), 'pw-user', { tabId: CARRIERS.dhl.tabId, fieldName: 'UserName' });
       await closeModal(page);
       await stored('secrets unchanged after saving another field');
       // positive control: the other field was saved (UserName starts empty)
       await expectStored('the other field was saved', [
-        { tableName: 'DHL_Shipper_Config', recordId, columnName: 'UserName', expectedValue: 'b4-user' },
+        { tableName: 'DHL_Shipper_Config', recordId, columnName: 'UserName', expectedValue: 'pw-user' },
       ]);
     });
 
@@ -481,7 +481,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
   });
 
-  test('AC9: typing a new secret stores exactly the typed text', async ({ page }) => {
+  test('typing a new secret stores exactly the typed text', async ({ page }) => {
     labelTest();
     test.setTimeout(180000);
     const { dialogs } = await createShipperAndOpen(page);
@@ -489,7 +489,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     const secrets = newSecrets(unique);
     const recordId = await createCarrierConfig(page, 'dhl', secrets.dhl);
 
-    const typed = `b4-dhl-token-new-${unique}`;
+    const typed = `pw-dhl-token-new-${unique}`;
     const modal = await openRecordView(page, 'dhl');
     await typeAndLeave(page, modal.locator('.form-field-ApplicationToken input'), typed, { tabId: CARRIERS.dhl.tabId, fieldName: 'ApplicationToken' });
     await closeModal(page);
@@ -499,7 +499,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
   });
 
-  test('AC9: clearing a secret stores NULL', async ({ page }) => {
+  test('clearing a secret stores NULL', async ({ page }) => {
     labelTest();
     test.setTimeout(180000);
     const { dialogs } = await createShipperAndOpen(page);
@@ -522,7 +522,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
   });
 
   for (const starValue of ['*', 'ab*c', '*********']) {
-    test(`AC9 stars: typing "${starValue}" stores exactly that text`, async ({ page }) => {
+    test(`stars: typing "${starValue}" stores exactly that text`, async ({ page }) => {
       labelTest();
       test.setTimeout(180000);
       const { dialogs } = await createShipperAndOpen(page);
@@ -539,7 +539,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     });
   }
 
-  test('AC10: a PATCH with the mask keeps the stored secrets', async ({ page }) => {
+  test('a PATCH with the mask keeps the stored secrets', async ({ page }) => {
     labelTest();
     test.setTimeout(240000);
     const { shipperId, dialogs } = await createShipperAndOpen(page);
@@ -550,7 +550,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
     // Sent directly, not typed: typed through the UI the mask cannot reach the server unchanged.
     // The same PATCH also sets UserName: its stored value proves the PATCH was persisted, so
     // "secret unchanged" cannot hold merely because nothing was saved.
-    const userName = `b4-ac10-user-${newUnique()}`;
+    const userName = `pw-patch-user-${newUnique()}`;
     const patchWithMask = async (carrierKey, recordId, fieldNames) => {
       const response = await page.request.patch(
         `${WEBAPI_BASE_URL}/window/${SHIPPER_WINDOW_ID}/${shipperId}/${CARRIERS[carrierKey].tabId}/${recordId}`,
@@ -587,7 +587,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       return editor;
     }
 
-    test('AC8 grid: clicking into the secret cell and leaving it keeps the stored secret', async ({ page }) => {
+    test('grid: clicking into the secret cell and leaving it keeps the stored secret', async ({ page }) => {
       labelTest();
       test.setTimeout(180000);
       const { shipperId, dialogs } = await createShipperAndOpen(page);
@@ -605,7 +605,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
     });
 
-    test('AC9 grid: typing into the secret cell stores exactly the typed text', async ({ page }) => {
+    test('grid: typing into the secret cell stores exactly the typed text', async ({ page }) => {
       labelTest();
       test.setTimeout(180000);
       const unique = newUnique();
@@ -614,7 +614,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       const recordId = await createCarrierConfig(page, 'dhl', secrets.dhl);
       await openShipper(page, shipperId);
 
-      const typed = `b4-grid-token-${unique}`;
+      const typed = `pw-grid-token-${unique}`;
       const editor = await openCellEditor(page);
       const patched = waitForFieldPatch(page, CARRIERS.dhl.tabId, 'ApplicationToken');
       await editor.pressSequentially(typed);

@@ -94,7 +94,7 @@ export async function savedWindowRecordId(page, windowId) {
 }
 
 /**
- * B2 stored-value expectation: the stored column holds `expectedValue` (`null` = NULL). The answer is
+ * server-side stored-value expectation: the stored column holds `expectedValue` (`null` = NULL). The answer is
  * pass/fail only; the stored value is never read back.
  */
 export async function expectStoredColumnValue(title, { tableName, recordId, columnName, expectedValue }) {

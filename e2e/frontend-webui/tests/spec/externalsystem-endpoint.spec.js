@@ -75,7 +75,7 @@ async function openNewEndpoint(page) {
 /** What the WebUI shows for a stored password instead of its value. */
 const MASKED_PASSWORD = '********';
 
-/** B2 stored-value expectation: the stored Password column holds the typed value (pass/fail only, the value is never read back). */
+/** server-side stored-value expectation: the stored Password column holds the typed value (pass/fail only, the value is never read back). */
 async function expectStoredPassword(title, recordId, expectedValue) {
   await expectStoredColumnValue(title, { tableName: 'ExternalSystem_Endpoint', recordId, columnName: 'Password', expectedValue });
 }
