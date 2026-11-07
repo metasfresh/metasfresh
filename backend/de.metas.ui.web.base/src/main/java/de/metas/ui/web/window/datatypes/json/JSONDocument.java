@@ -79,6 +79,10 @@ public final class JSONDocument extends JSONDocumentBase
 		}
 
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
+		if (options.isUnboxPasswordFields())
+		{
+			jsonDocument.setUnboxPasswordFields();
+		}
 
 		// fieldsBy
 		// Fields
@@ -227,6 +231,10 @@ public final class JSONDocument extends JSONDocumentBase
 
 		final DocumentPath documentPath = documentChangedEvents.getDocumentPath();
 		final JSONDocument jsonDocument = new JSONDocument(documentPath);
+		if (options.isUnboxPasswordFields())
+		{
+			jsonDocument.setUnboxPasswordFields();
+		}
 
 		// If the document was deleted, we just need to export that flag. All the other changes are not relevant.
 		if (documentChangedEvents.isDeleted())
@@ -350,7 +358,6 @@ public final class JSONDocument extends JSONDocumentBase
 	private JSONDocument(final DocumentPath documentPath)
 	{
 		super(documentPath);
-		setUnboxPasswordFields();
 		this.websocketEndpoint = buildWebsocketEndpointOrNull(getWindowId(), getId());
 	}
 

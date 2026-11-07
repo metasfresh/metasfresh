@@ -53,6 +53,12 @@ public class JSONDocumentOptions
 
 	private final boolean showAdvancedFields;
 
+	/**
+	 * If true, password fields are sent in clear text. Only for process parameters (e.g. "show password"); never for window records.
+	 */
+	@Getter
+	private final boolean unboxPasswordFields;
+
 	@NonNull private final JSONDocumentPermissions documentPermissions;
 
 	private static final Splitter FIELDS_LIST_SPLITTER = Splitter.on(",")
@@ -63,11 +69,13 @@ public class JSONDocumentOptions
 	private JSONDocumentOptions(
 			@NonNull final UserSession userSession,
 			@Nullable final String showOnlyFieldsListStr,
-			final boolean showAdvancedFields)
+			final boolean showAdvancedFields,
+			final boolean unboxPasswordFields)
 	{
 		this.jsonOpts = JSONOptions.of(userSession);
 		this.showOnlyFieldsListStr = showOnlyFieldsListStr;
 		this.showAdvancedFields = showAdvancedFields;
+		this.unboxPasswordFields = unboxPasswordFields;
 		this.documentPermissions = new JSONDocumentPermissions(userSession.getUserRolePermissions());
 	}
 
