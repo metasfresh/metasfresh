@@ -1650,15 +1650,21 @@ jobs:
           docker tag ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
-          # Cucumber runs the metasfresh app (ServerBoot) in-process in the cucumber container; there is no
-          # separate webapi. Its log files are written to ./log/ below the container's WORKDIR (/cucumber) and
-          # vanish with `docker compose down`, so they are copied out here, before the verdict is known.
-          # They are uploaded by the `if: failure()` step "Upload server logs" below.
-          mkdir -p server-logs/app
-          docker compose logs --no-color --timestamps cucumber > server-logs/app/stdout.log 2>&1 || true
-          docker cp "$(docker compose ps -aq cucumber)":/cucumber/log server-logs/app/ || true
-          docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
+      # Own step with `if: always()`, so that it also runs when `run-tests` hits its timeout or a command in
+      # it fails, and does the teardown that used to end `run-tests`. Cucumber runs the metasfresh app
+      # (ServerBoot) in-process in the cucumber container; there is no separate webapi. The app's log files
+      # are written to ./log/ below the container's WORKDIR (/cucumber) and vanish with `docker compose down`,
+      # so they are copied out first. They are uploaded by the step "Upload server logs" below.
+      - name: collect server logs and stop stack
+        if: always()
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          cucumberparams: ${{ matrix.params }}
+        run: |
+          mkdir -p server-logs/app
+          timeout 30 docker cp "$(docker compose ps -aq cucumber)":/cucumber/log server-logs/app/ || true
+          timeout 120 docker compose down || true
       - name: Extract Cucumber Allure results
         if: always()
         run: |
@@ -1792,9 +1798,10 @@ jobs:
           name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
           retention-days: 30
+      # `failure() || cancelled()`: a job-level timeout concludes `cancelled`, not `failure`.
       - name: Upload server logs
         uses: actions/upload-artifact@v6
-        if: failure()
+        if: failure() || cancelled()
         with:
           name: server-logs-cucumber-${{ matrix.profile }}-attempt${{ github.run_attempt }}
           path: server-logs/
@@ -2051,15 +2058,16 @@ jobs:
           dbqualifier: preloaded
         run: |
           timeout 120 docker compose --profile mobile logs --timestamps db rabbitmq search app wiremock mobile > infra.log 2>&1 || true
-      # Server logs for the `if: failure()` upload "Upload server logs" below. Collected here, before
-      # `stop stack` removes the containers, i.e. before the test verdict is known (the verdict only
-      # becomes a step failure in `assert success`); collecting is cheap, uploading is failure-only.
-      # `!cancelled()`: on a cancelled job the failure-only upload never runs, so collecting would
-      # only burn the shared 5-minute cancellation window that `stop stack after cancellation` needs.
+      # Server logs for the step "Upload server logs" below. Collected here, before `stop stack`
+      # removes the containers, i.e. before the test verdict is known (the verdict only becomes a
+      # step failure in `assert success`); collecting is cheap, uploading is failure/cancel-only.
+      # `always()`, like `capture stack logs`: a job-level timeout concludes `cancelled`, and a hung
+      # server is the case these logs are most needed for. Each command is capped at 30 s so that,
+      # on a cancelled job, this step stays well inside the shared 5-minute cancellation window.
       # Per service: its stdout plus the log files logback writes to ./log/ below the image's WORKDIR.
       # The mobile profile has no `webapi` service (the mobile UI talks to `app` directly).
       - name: collect server logs
-        if: ${{ !cancelled() }}
+        if: always()
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -2067,8 +2075,8 @@ jobs:
           dbqualifier: preloaded
         run: |
           mkdir -p server-logs/app
-          timeout 120 docker compose --profile mobile logs --no-color --timestamps app > server-logs/app/stdout.log 2>&1 || true
-          timeout 120 docker compose --profile mobile cp app:/opt/metasfresh/log server-logs/app/ || true
+          timeout 30 docker compose --profile mobile logs --no-color --timestamps app > server-logs/app/stdout.log 2>&1 || true
+          timeout 30 docker compose --profile mobile cp app:/opt/metasfresh/log server-logs/app/ || true
       - name: commit post-test db image
         run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
@@ -2136,9 +2144,10 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
+      # `failure() || cancelled()`: a job-level timeout concludes `cancelled`, not `failure`.
       - name: Upload server logs
         uses: actions/upload-artifact@v6
-        if: failure()
+        if: failure() || cancelled()
         with:
           name: server-logs-mobile-${{ matrix.shard_label }}-attempt${{ github.run_attempt }}
           path: docker-builds/e2e-tests/server-logs/
@@ -2221,14 +2230,15 @@ jobs:
           dbqualifier: preloaded
         run: |
           timeout 120 docker compose --profile frontend logs --timestamps db rabbitmq search app wiremock webapi webui > infra.log 2>&1 || true
-      # Server logs for the `if: failure()` upload "Upload server logs" below. Collected here, before
-      # `stop stack` removes the containers, i.e. before the test verdict is known (the verdict only
-      # becomes a step failure in `assert success`); collecting is cheap, uploading is failure-only.
-      # `!cancelled()`: on a cancelled job the failure-only upload never runs, so collecting would
-      # only burn the shared 5-minute cancellation window that `stop stack after cancellation` needs.
+      # Server logs for the step "Upload server logs" below. Collected here, before `stop stack`
+      # removes the containers, i.e. before the test verdict is known (the verdict only becomes a
+      # step failure in `assert success`); collecting is cheap, uploading is failure/cancel-only.
+      # `always()`, like `capture stack logs`: a job-level timeout concludes `cancelled`, and a hung
+      # server is the case these logs are most needed for. Each command is capped at 30 s so that,
+      # on a cancelled job, this step stays well inside the shared 5-minute cancellation window.
       # Per service: its stdout plus the log files logback writes to ./log/ below the image's WORKDIR.
       - name: collect server logs
-        if: ${{ !cancelled() }}
+        if: always()
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -2236,11 +2246,11 @@ jobs:
           dbqualifier: preloaded
         run: |
           mkdir -p server-logs/app
-          timeout 120 docker compose --profile frontend logs --no-color --timestamps app > server-logs/app/stdout.log 2>&1 || true
-          timeout 120 docker compose --profile frontend cp app:/opt/metasfresh/log server-logs/app/ || true
+          timeout 30 docker compose --profile frontend logs --no-color --timestamps app > server-logs/app/stdout.log 2>&1 || true
+          timeout 30 docker compose --profile frontend cp app:/opt/metasfresh/log server-logs/app/ || true
           mkdir -p server-logs/webapi
-          timeout 120 docker compose --profile frontend logs --no-color --timestamps webapi > server-logs/webapi/stdout.log 2>&1 || true
-          timeout 120 docker compose --profile frontend cp webapi:/opt/metasfresh-webui-api/log server-logs/webapi/ || true
+          timeout 30 docker compose --profile frontend logs --no-color --timestamps webapi > server-logs/webapi/stdout.log 2>&1 || true
+          timeout 30 docker compose --profile frontend cp webapi:/opt/metasfresh-webui-api/log server-logs/webapi/ || true
       - name: commit post-test db image
         run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
@@ -2305,9 +2315,10 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
+      # `failure() || cancelled()`: a job-level timeout concludes `cancelled`, not `failure`.
       - name: Upload server logs
         uses: actions/upload-artifact@v6
-        if: failure()
+        if: failure() || cancelled()
         with:
           name: server-logs-frontend-${{ matrix.shard_label }}-attempt${{ github.run_attempt }}
           path: docker-builds/e2e-tests/server-logs/
