@@ -5,6 +5,8 @@ import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../
 import { assertRecordIsValid, getRecordData, getValidationStatus } from '../utils/WebAPIValidation';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
+import { loginWithMasterdataUser } from '../utils/LoginHelper';
+import { columnTextsByFieldName, exportRecordsToExcel, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -965,6 +967,103 @@ translation is caught instead of being eyeballed on a screenshot.
       }
 
       await saveStill(page, `endpoint-window-transport-LOCAL_FILE-${language}.png`);
+    });
+  });
+});
+
+/**
+ * Types `value` into `field` key by key, the way a user does, and leaves the field with Tab; waits for
+ * the server's answer to the field's PATCH.
+ */
+async function typeFieldLocator(page, fieldName, field, value) {
+  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await commitField(page, fieldName, async () => {
+    await field.click();
+    await field.pressSequentially(value);
+    await field.press('Tab');
+  });
+}
+
+test.describe('ExternalSystem Endpoint — password in the grid and the Excel export', () => {
+  test('Password is not in the endpoint grid and nowhere in its Excel export', async ({ page }) => {
+    allure.epic('E0182: System Configuration');
+    allure.tag('F9111: Reference Type Password');
+    allure.tag('F9111');
+    allure.story('A password appears in no grid cell and no Excel cell');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — the password stays out of the grid and the Excel export
+
+The endpoint window's grid has no Password column, so its Excel export ("Download selected"),
+which writes exactly the grid's columns, has none either. This guards that the typed password
+appears in no grid cell and in no cell of the export, while it is stored as typed.
+
+1. Create a SFTP endpoint with PASSWORD authentication, typing the password
+2. Record view: the WebUI shows the password masked; the stored value is the typed one
+3. List view of that endpoint: no Password column, no cell holds the typed password
+4. Excel export of that endpoint: no Password column, no cell holds the typed password
+    `);
+
+    test.setTimeout(240000);
+
+    const typedPassword = `pw-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+    const masterdata = await Backend.createMasterdata({
+      request: { login: { user: { language: 'en_US' } } },
+    });
+    await loginWithMasterdataUser(page, masterdata.login.user);
+
+    await test.step('Create a SFTP endpoint with a typed password', async () => {
+      await openNewEndpoint(page);
+      await selectListValue(page, 'TransportType', 'SFTP');
+      await typeFieldLocator(page, 'SftpHost', page.locator('.form-field-SftpHost input[type="text"]'), 'sftp.example.com');
+      await typeFieldLocator(page, 'SftpUsername', page.locator('.form-field-SftpUsername input[type="text"]'), 'gridexcel');
+      await selectListValue(page, 'SftpAuthType', 'PASSWORD');
+      await typeFieldLocator(
+        page,
+        'Password',
+        page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]'),
+        typedPassword
+      );
+      await typeFieldLocator(page, 'SftpRemotePath', page.locator('.form-field-SftpRemotePath input[type="text"]'), '/outbound/edi');
+    });
+
+    const recordId = await savedRecordId(page);
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the SFTP endpoint');
+
+    let endpointValue;
+    await test.step('Record view shows the password masked; it is stored as typed', async () => {
+      await page.reload();
+      const passwordInput = page.locator('.form-field-Password input');
+      await passwordInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await expect(passwordInput, 'the record view must not show the typed password').not.toHaveValue(typedPassword);
+      const record = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+      expect(record.fieldsByName.Password.value, 'the WebUI must get the password as ********').toBe(MASKED_PASSWORD);
+      endpointValue = record.fieldsByName.Value.value;
+      expect(endpointValue, 'the endpoint must have a search key').toBeTruthy();
+      await expectStoredPassword('the endpoint stores the typed password', recordId, typedPassword);
+    });
+
+    let filePath;
+    await test.step('Grid: no Password column, no cell with the typed password; export it', async () => {
+      filePath = await exportRecordsToExcel(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, [Number(recordId)]);
+      const row = page.locator(`tr[data-testid="table-row-${recordId}"]`);
+      // positive control: the grid rendered the endpoint's search key column
+      await expect(row.locator('td[data-cy="cell-Value"]'), 'the grid shows the endpoint').toHaveText(endpointValue);
+      await expect(page.locator('th[data-testid="column-Password"]'), 'the endpoint grid has no Password column').toHaveCount(0);
+      const gridHtml = await page.locator('table').first().evaluate((table) => table.outerHTML);
+      expect(gridHtml.includes(typedPassword), 'the grid (cell texts and titles) must not contain the typed password').toBe(false);
+    });
+
+    await test.step('Excel: no Password column, no cell with the typed password', async () => {
+      const workbook = await readXlsx(filePath);
+      const gridFieldNames = await fetchViewGridFieldNames(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID);
+      allure.attachment('Excel export', JSON.stringify({ gridFieldNames, sheets: workbook.sheets }), 'application/json');
+      expect(gridFieldNames, 'the grid layout has no Password column').not.toContain('Password');
+      // positive control: the export holds the endpoint, in the grid layout's columns
+      expect(columnTextsByFieldName(workbook.sheets[0], gridFieldNames, 'Value'), 'Value column of the export').toEqual([endpointValue]);
+      expect(workbook.allTexts.some((text) => text.includes(typedPassword)), 'no cell of the export may contain the typed password').toBe(false);
     });
   });
 });

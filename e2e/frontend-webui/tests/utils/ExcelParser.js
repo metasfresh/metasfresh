@@ -1,4 +1,6 @@
 import ExcelJS from 'exceljs';
+import { expect } from '@playwright/test';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from './common';
 import { WEBAPI_BASE_URL } from './WebAPIValidation';
 
 /**
@@ -74,6 +76,54 @@ export function columnTextsByFieldName(sheet, gridFieldNames, fieldName) {
     throw new Error(`the export has ${header ? header.length : 0} columns, the grid layout ${gridFieldNames.length}`);
   }
   return rows.map((row) => row[columnIndex] ?? '');
+}
+
+/**
+ * Opens the window's list view on exactly the given records, selects all of them and downloads them
+ * through the actions menu's Excel export ("Download selected").
+ *
+ * The list view is opened on a view of only these ids, because a window's list is paged and holds
+ * every other run's records too.
+ *
+ * @param {import('@playwright/test').Page} page - logged-in page
+ * @param {number|string} windowId
+ * @param {number[]} recordIds - the records to export; each one must be visible in the view
+ * @returns {Promise<string>} path of the downloaded file
+ */
+export async function exportRecordsToExcel(page, windowId, recordIds) {
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${windowId}`, {
+    data: { windowId: String(windowId), viewType: 'grid', filterOnlyIds: recordIds },
+  });
+  expect(viewResponse.ok(), `view of window ${windowId} records ${recordIds}: HTTP ${viewResponse.status()}`).toBe(true);
+  const { viewId } = await viewResponse.json();
+  await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}?viewId=${viewId}`);
+
+  const rows = recordIds.map((recordId) => page.locator(`tr[data-testid="table-row-${recordId}"]`));
+  for (const row of rows) {
+    await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  }
+  // A click right after the grid renders does not always land as a selection - assert it, retrying.
+  await expect(async () => {
+    await rows[0].click();
+    for (const row of rows.slice(1)) {
+      await row.click({ modifiers: ['ControlOrMeta'] });
+    }
+    for (const row of rows) {
+      await expect(row, 'every exported record must be selected for "Download selected"').toHaveClass(/row-selected/, { timeout: 2000 });
+    }
+  }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+
+  // the actions menu shortcut keeps the selection (a click outside the table may clear it)
+  await page.keyboard.press('Alt+1');
+  const exportLink = page.locator('.subheader-container a.subheader-item[href*="/export/excel"]');
+  await exportLink.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  const href = await exportLink.getAttribute('href');
+  for (const recordId of recordIds) {
+    expect(href, `the export must hold record ${recordId}`).toContain(String(recordId));
+  }
+  const download = page.waitForEvent('download', { timeout: SLOW_ACTION_TIMEOUT });
+  await exportLink.click();
+  return await (await download).path();
 }
 
 function cellText(cell) {
