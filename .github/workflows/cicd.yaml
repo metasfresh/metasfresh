@@ -2054,10 +2054,12 @@ jobs:
       # Server logs for the `if: failure()` upload "Upload server logs" below. Collected here, before
       # `stop stack` removes the containers, i.e. before the test verdict is known (the verdict only
       # becomes a step failure in `assert success`); collecting is cheap, uploading is failure-only.
+      # `!cancelled()`: on a cancelled job the failure-only upload never runs, so collecting would
+      # only burn the shared 5-minute cancellation window that `stop stack after cancellation` needs.
       # Per service: its stdout plus the log files logback writes to ./log/ below the image's WORKDIR.
       # The mobile profile has no `webapi` service (the mobile UI talks to `app` directly).
       - name: collect server logs
-        if: always()
+        if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -2222,9 +2224,11 @@ jobs:
       # Server logs for the `if: failure()` upload "Upload server logs" below. Collected here, before
       # `stop stack` removes the containers, i.e. before the test verdict is known (the verdict only
       # becomes a step failure in `assert success`); collecting is cheap, uploading is failure-only.
+      # `!cancelled()`: on a cancelled job the failure-only upload never runs, so collecting would
+      # only burn the shared 5-minute cancellation window that `stop stack after cancellation` needs.
       # Per service: its stdout plus the log files logback writes to ./log/ below the image's WORKDIR.
       - name: collect server logs
-        if: always()
+        if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
