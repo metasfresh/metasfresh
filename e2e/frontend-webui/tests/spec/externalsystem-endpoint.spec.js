@@ -98,6 +98,19 @@ async function openNewEndpoint(page) {
   await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }
 
+/** What the WebUI shows for a stored password instead of its value. */
+const MASKED_PASSWORD = '********';
+
+/** B2 stored-value expectation: the stored Password column holds the typed value (pass/fail only, the value is never read back). */
+async function expectStoredPassword(title, recordId, expectedValue) {
+  await Backend.expect({
+    title,
+    records: {
+      password: { tableName: 'ExternalSystem_Endpoint', recordId: Number(recordId), columnName: 'Password', expectedValue },
+    },
+  });
+}
+
 /**
  * The record id the WebUI put in the URL once the draft was given one. A NEW record is given one
  * even while it is invalid, so the id alone does not prove the row persisted — assert that via the
@@ -567,7 +580,9 @@ a blank credential rather than failing.
     // A password typed into that field does reach the record — the field is editable, not just drawn.
     await fillPasswordField(page, 'oauth-secret');
     const withPassword = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), oauthV1RecordId);
-    expect(withPassword.fieldsByName.Password.value, 'the password an OAuth endpoint types must be stored').toBe('oauth-secret');
+    // The WebUI never shows a stored password: it shows ********. What was stored is checked server-side.
+    expect(withPassword.fieldsByName.Password.value, 'the WebUI must show a stored password as ********').toBe(MASKED_PASSWORD);
+    await expectStoredPassword('the password an OAuth endpoint types must be stored', oauthV1RecordId, 'oauth-secret');
   });
 
   test('TransportType=LOCAL_FILE reveals root location, polling interval and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
@@ -835,7 +850,9 @@ they cannot see is the only thing the clearing exists to prevent.
 
     const recordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the HTTP + Basic endpoint');
-    expect((await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId)).fieldsByName.Password.value).toBe('shared-secret');
+    // The WebUI shows ********; the stored value is checked server-side.
+    expect((await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId)).fieldsByName.Password.value).toBe(MASKED_PASSWORD);
+    await expectStoredPassword('the HTTP + Basic endpoint stores the typed password', recordId, 'shared-secret');
 
     await test.step('Switch the saved endpoint to SFTP with password authentication', async () => {
       await selectListValue(page, 'TransportType', 'SFTP');
@@ -852,7 +869,9 @@ they cannot see is the only thing the clearing exists to prevent.
     // ... so the value must still be there. Nobody re-typed it in this step.
     const sftpRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
     expect(sftpRecord.fieldsByName.TransportType.value.key).toBe('SFTP');
-    expect(sftpRecord.fieldsByName.Password.value, 'the password must survive a switch into a configuration that still shows it').toBe('shared-secret');
+    // The WebUI shows ********; the stored value must still be the typed one.
+    expect(sftpRecord.fieldsByName.Password.value, 'the WebUI must show the kept password as ********').toBe(MASKED_PASSWORD);
+    await expectStoredPassword('the password must survive a switch into a configuration that still shows it', recordId, 'shared-secret');
     // ... and with it the endpoint is complete, not left invalid pending a re-typed password
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint to SFTP + PASSWORD');
     // the HTTP-only settings are gone, though
