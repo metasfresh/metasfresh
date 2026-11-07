@@ -160,7 +160,7 @@ public class ProcessRestController
 	{
 		return JSONDocumentOptions.builder()
 				.userSession(userSession)
-				.unboxPasswordFields(true) // process parameters: "show password" needs the clear value
+				.isUnboxPasswordFields(true) // process parameters: "show password" needs the clear value
 				.build();
 	}
 

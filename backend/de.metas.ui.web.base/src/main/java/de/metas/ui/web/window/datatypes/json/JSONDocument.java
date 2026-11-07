@@ -78,11 +78,7 @@ public final class JSONDocument extends JSONDocumentBase
 			throw new AdempiereException("`hasComments`=" + hasComments + " passed for non-RootDocument. `hasComments` is only supported for RootDocuments.");
 		}
 
-		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
-		if (options.isUnboxPasswordFields())
-		{
-			jsonDocument.setUnboxPasswordFields();
-		}
+		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath(), options);
 
 		// fieldsBy
 		// Fields
@@ -230,11 +226,7 @@ public final class JSONDocument extends JSONDocumentBase
 		}
 
 		final DocumentPath documentPath = documentChangedEvents.getDocumentPath();
-		final JSONDocument jsonDocument = new JSONDocument(documentPath);
-		if (options.isUnboxPasswordFields())
-		{
-			jsonDocument.setUnboxPasswordFields();
-		}
+		final JSONDocument jsonDocument = new JSONDocument(documentPath, options);
 
 		// If the document was deleted, we just need to export that flag. All the other changes are not relevant.
 		if (documentChangedEvents.isDeleted())
@@ -355,9 +347,13 @@ public final class JSONDocument extends JSONDocumentBase
 	@Nullable
 	private Boolean hasComments;
 
-	private JSONDocument(final DocumentPath documentPath)
+	private JSONDocument(final DocumentPath documentPath, @NonNull final JSONDocumentOptions options)
 	{
 		super(documentPath);
+		if (options.isUnboxPasswordFields())
+		{
+			setUnboxPasswordFields();
+		}
 		this.websocketEndpoint = buildWebsocketEndpointOrNull(getWindowId(), getId());
 	}
 

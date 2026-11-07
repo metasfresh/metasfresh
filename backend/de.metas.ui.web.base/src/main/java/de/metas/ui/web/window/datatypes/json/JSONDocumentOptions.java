@@ -57,7 +57,7 @@ public class JSONDocumentOptions
 	 * If true, password fields are sent in clear text. Only for process parameters (e.g. "show password"); never for window records.
 	 */
 	@Getter
-	private final boolean unboxPasswordFields;
+	private final boolean isUnboxPasswordFields;
 
 	@NonNull private final JSONDocumentPermissions documentPermissions;
 
@@ -70,12 +70,12 @@ public class JSONDocumentOptions
 			@NonNull final UserSession userSession,
 			@Nullable final String showOnlyFieldsListStr,
 			final boolean showAdvancedFields,
-			final boolean unboxPasswordFields)
+			final boolean isUnboxPasswordFields)
 	{
 		this.jsonOpts = JSONOptions.of(userSession);
 		this.showOnlyFieldsListStr = showOnlyFieldsListStr;
 		this.showAdvancedFields = showAdvancedFields;
-		this.unboxPasswordFields = unboxPasswordFields;
+		this.isUnboxPasswordFields = isUnboxPasswordFields;
 		this.documentPermissions = new JSONDocumentPermissions(userSession.getUserRolePermissions());
 	}
 
