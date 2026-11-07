@@ -89,6 +89,13 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
 
         <!-- required to display ATP info in sales and purchase contexts -->
         <dependency>

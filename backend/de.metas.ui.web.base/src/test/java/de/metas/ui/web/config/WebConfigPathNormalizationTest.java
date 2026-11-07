@@ -24,35 +24,21 @@ package de.metas.ui.web.config;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.pattern.PathPatternParser;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static de.metas.util.web.filter.PathNormalizationTestSupport.assertOK;
+import static de.metas.util.web.filter.PathNormalizationTestSupport.mockMvcWithParameterlessFilters;
+import static de.metas.util.web.filter.PathNormalizationTestSupport.tomcatLikeGet;
 
 /**
  * Drives requests through the webui-api's own path-normalizing filters (every parameterless
- * {@code FilterRegistrationBean} bean of {@link WebConfig}, in registration order) into a real
- * {@code RequestMappingHandlerMapping} that uses {@link PathPatternParser} — the Spring Boot 3 default.
+ * {@code FilterRegistrationBean} bean of {@link WebConfig}) into a real handler mapping.
  * <p>
- * The request is shaped like Tomcat delivers it behind {@code frontend/docker/nginx/default.conf}'s
- * {@code location /rest { proxy_pass .../rest/; }}, which forwards {@code /rest/api/...} as {@code /rest//api/...}:
- * the raw {@code requestURI} keeps the double slash, the decoded {@code servletPath} is normalized by the container.
+ * The requests are shaped like Tomcat delivers them behind {@code frontend/docker/nginx/default.conf}'s
+ * {@code location /rest { proxy_pass .../rest/; }}, which forwards {@code /rest/api/...} as {@code /rest//api/...}.
  */
 class WebConfigPathNormalizationTest
 {
@@ -69,77 +55,30 @@ class WebConfigPathNormalizationTest
 	@BeforeEach
 	void beforeEach() throws Exception
 	{
-		final StandaloneMockMvcBuilder builder = MockMvcBuilders.standaloneSetup(new DummyRestController())
-				.setPatternParser(new PathPatternParser());
-		for (final FilterRegistrationBean<?> registration : parameterlessFilterRegistrations(new WebConfig()))
-		{
-			builder.addFilter(registration.getFilter(), registration.getUrlPatterns().toArray(new String[0]));
-		}
-		mockMvc = builder.build();
-	}
-
-	private static List<FilterRegistrationBean<?>> parameterlessFilterRegistrations(final Object configuration) throws Exception
-	{
-		final List<Method> beanMethods = Arrays.stream(configuration.getClass().getDeclaredMethods())
-				.filter(method -> method.isAnnotationPresent(Bean.class))
-				.filter(method -> method.getParameterCount() == 0)
-				.filter(method -> FilterRegistrationBean.class.isAssignableFrom(method.getReturnType()))
-				.toList();
-
-		final List<FilterRegistrationBean<?>> result = new ArrayList<>();
-		for (final Method beanMethod : beanMethods)
-		{
-			result.add((FilterRegistrationBean<?>)beanMethod.invoke(configuration));
-		}
-		result.sort(Comparator.comparingInt(FilterRegistrationBean::getOrder));
-		return result;
-	}
-
-	private static MockHttpServletRequestBuilder tomcatLikeGet(final String rawRequestURI, final String normalizedServletPath)
-	{
-		// NOTE: MockMvcRequestBuilders.get(String) collapses "//" while building the URI (UriComponentsBuilder), so we set the raw URI explicitly afterwards
-		return get(normalizedServletPath).with(request -> {
-			request.setRequestURI(rawRequestURI);
-			request.setServletPath(normalizedServletPath);
-			return request;
-		});
+		mockMvc = mockMvcWithParameterlessFilters(new DummyRestController(), new WebConfig());
 	}
 
 	@Test
 	void plainPath()
 	{
-		assertOK(tomcatLikeGet("/rest/api/login/isLoggedIn", "/rest/api/login/isLoggedIn"));
+		assertOK(mockMvc, tomcatLikeGet("/rest/api/login/isLoggedIn", "/rest/api/login/isLoggedIn"));
 	}
 
 	@Test
 	void trailingSlash()
 	{
-		assertOK(tomcatLikeGet("/rest/api/login/isLoggedIn/", "/rest/api/login/isLoggedIn/"));
+		assertOK(mockMvc, tomcatLikeGet("/rest/api/login/isLoggedIn/", "/rest/api/login/isLoggedIn/"));
 	}
 
 	@Test
 	void doubleSlashAfterRest_asSentByFrontendNginx()
 	{
-		assertOK(tomcatLikeGet("/rest//api/login/isLoggedIn", "/rest/api/login/isLoggedIn"));
+		assertOK(mockMvc, tomcatLikeGet("/rest//api/login/isLoggedIn", "/rest/api/login/isLoggedIn"));
 	}
 
 	@Test
 	void doubleSlashAndTrailingSlash()
 	{
-		assertOK(tomcatLikeGet("/rest//api/login/isLoggedIn/", "/rest/api/login/isLoggedIn/"));
-	}
-
-	private void assertOK(final MockHttpServletRequestBuilder request)
-	{
-		try
-		{
-			mockMvc.perform(request)
-					.andExpect(status().isOk())
-					.andExpect(content().string("OK"));
-		}
-		catch (final Exception e)
-		{
-			throw new AssertionError(e);
-		}
+		assertOK(mockMvc, tomcatLikeGet("/rest//api/login/isLoggedIn/", "/rest/api/login/isLoggedIn/"));
 	}
 }

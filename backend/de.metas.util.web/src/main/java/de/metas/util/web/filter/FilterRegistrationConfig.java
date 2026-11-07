@@ -35,7 +35,6 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.Ordered;
 import org.springframework.web.filter.UrlHandlerFilter;
 
 @Profile(Profiles.PROFILE_App)
@@ -48,28 +47,13 @@ public class FilterRegistrationConfig
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
 
 	/**
-	 * Restores trailing-slash tolerance for the REST API. Spring 6.0 switched trailing-slash matching off by default and deprecated the
-	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} switch (removed in Spring 7), so a request whose path ends in a
-	 * slash before the query string — e.g. {@code GET /api/v2/bpartner/byOrg/001/?since=…} — no longer matches
-	 * {@code @GetMapping("/byOrg/{orgCode}")} and fails with {@code NoResourceFoundException} (surfaced as 422).
-	 * <p>
-	 * We normalize the path with Spring's {@link UrlHandlerFilter} in {@code wrapRequest} (mutate) mode — NOT a
-	 * redirect, because API clients must not be bounced with a 308 — so the stripped path is visible to the whole
-	 * filter chain and the {@code DispatcherServlet}. Registered at {@link Ordered#HIGHEST_PRECEDENCE}{@code  + 1} (right after
-	 * {@link #duplicateSlashApiFilter()}) so every downstream filter (auth, audit) and the handler mapping all see the already-normalized path.
+	 * Restores trailing-slash tolerance for the REST API, e.g. {@code GET /api/v2/bpartner/byOrg/001/?since=…} must match
+	 * {@code @GetMapping("/byOrg/{orgCode}")}. See {@link PathNormalizingFilterRegistrations#trailingSlashRegistration(String, String)}.
 	 */
 	@Bean
 	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashApiUrlHandlerFilter()
 	{
-		final UrlHandlerFilter urlHandlerFilter = UrlHandlerFilter
-				.trailingSlashHandler(URL_PATHPATTERN_API)
-				.wrapRequest()
-				.build();
-
-		final FilterRegistrationBean<UrlHandlerFilter> registrationBean = new FilterRegistrationBean<>(urlHandlerFilter);
-		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
-		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
-		return registrationBean;
+		return PathNormalizingFilterRegistrations.trailingSlashRegistration(MetasfreshRestAPIConstants.URL_PATTERN_API, URL_PATHPATTERN_API);
 	}
 
 	/**
@@ -79,10 +63,7 @@ public class FilterRegistrationConfig
 	@Bean
 	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashApiFilter()
 	{
-		final FilterRegistrationBean<DuplicateSlashCollapsingFilter> registrationBean = new FilterRegistrationBean<>(new DuplicateSlashCollapsingFilter());
-		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
-		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-		return registrationBean;
+		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(MetasfreshRestAPIConstants.URL_PATTERN_API);
 	}
 
 	// NOTE: we are using standard spring CORS filter

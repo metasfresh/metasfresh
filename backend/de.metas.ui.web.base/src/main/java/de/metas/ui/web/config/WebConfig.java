@@ -25,10 +25,10 @@ package de.metas.ui.web.config;
 import de.metas.ui.web.CORSFilter;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.web.filter.DuplicateSlashCollapsingFilter;
+import de.metas.util.web.filter.PathNormalizingFilterRegistrations;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -62,50 +62,28 @@ public class WebConfig implements WebMvcConfigurer
 	private static final String URL_PATTERN_REST = "/rest/*";
 
 	/**
-	 * Restores trailing-slash tolerance for the webui-api REST endpoints (the {@code /rest/api/**} surface the
-	 * React frontend drives). Spring 6.0 switched trailing-slash matching off by default and deprecated the
-	 * {@code PathMatchConfigurer.setUseTrailingSlashMatch} switch (removed in Spring 7), so a request whose path ends in a slash
-	 * — e.g. the frontend's {@code GET /rest/api/window/{windowId}/{documentId}/} document load — no longer
-	 * matches {@code @GetMapping("/{windowId}/{documentId}")} and fails with {@code NoResourceFoundException}
-	 * (404). That 404 breaks every document window in the frontend (the window never renders its fields), which
-	 * is what hung all six {@code frontend webui test} shards to the 60-min CI timeout.
+	 * Restores trailing-slash tolerance for the webui-api REST endpoints (the {@code /rest/api/**} surface the React frontend drives),
+	 * e.g. the frontend's {@code GET /rest/api/window/{windowId}/{documentId}/} document load must match {@code @GetMapping("/{windowId}/{documentId}")}.
+	 * See {@link PathNormalizingFilterRegistrations#trailingSlashRegistration(String, String)}.
 	 * <p>
-	 * We normalize the path with Spring's {@link UrlHandlerFilter} in {@code wrapRequest} (mutate) mode — NOT a
-	 * redirect, because the frontend XHR clients must not be bounced with a 308 — so the stripped path is visible
-	 * to the whole filter chain (CORS, logging, auth) and the {@code DispatcherServlet}. Registered at
-	 * {@link Ordered#HIGHEST_PRECEDENCE}{@code  + 1} (right after {@link #duplicateSlashRestFilter()}) so every downstream filter and the handler mapping see the normalized path.
-	 * <p>
-	 * This mirrors {@code de.metas.util.web.filter.FilterRegistrationConfig}, which restored the same tolerance on
-	 * the app-server {@code /api} profile; the webui-api runs a separate Spring context and needs its own
-	 * registration here. Behaviour-restoring (the SB2-era base {@code new_dawn_uat} tolerated trailing slashes)
-	 * and forward-compatible.
+	 * The app server's {@code /api} gets the same filters in {@code de.metas.util.web.filter.FilterRegistrationConfig};
+	 * the webui-api runs a separate Spring context and needs its own registration here.
 	 */
 	@Bean
 	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashRestUrlHandlerFilter()
 	{
-		final UrlHandlerFilter urlHandlerFilter = UrlHandlerFilter
-				.trailingSlashHandler(URL_PATHPATTERN_REST)
-				.wrapRequest()
-				.build();
-
-		final FilterRegistrationBean<UrlHandlerFilter> registrationBean = new FilterRegistrationBean<>(urlHandlerFilter);
-		registrationBean.addUrlPatterns(URL_PATTERN_REST);
-		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
-		return registrationBean;
+		return PathNormalizingFilterRegistrations.trailingSlashRegistration(URL_PATTERN_REST, URL_PATHPATTERN_REST);
 	}
 
 	/**
 	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the webui-api REST path. {@code frontend/docker/nginx/default.conf}'s
 	 * {@code location /rest { proxy_pass .../rest/; }} forwards {@code /rest/api/x} as {@code /rest//api/x}.
-	 * See {@link DuplicateSlashCollapsingFilter}; runs right before {@link #trailingSlashRestUrlHandlerFilter()}.
+	 * See {@link DuplicateSlashCollapsingFilter}.
 	 */
 	@Bean
 	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashRestFilter()
 	{
-		final FilterRegistrationBean<DuplicateSlashCollapsingFilter> registrationBean = new FilterRegistrationBean<>(new DuplicateSlashCollapsingFilter());
-		registrationBean.addUrlPatterns(URL_PATTERN_REST);
-		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-		return registrationBean;
+		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(URL_PATTERN_REST);
 	}
 
 	@Bean
