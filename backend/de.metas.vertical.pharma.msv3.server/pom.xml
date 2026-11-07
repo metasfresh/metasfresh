@@ -46,9 +46,9 @@
 
 		<!-- java25 / Spring Boot 3 JAXB split: this is the only module on spring-boot-starter-data-jpa,
 		     and Hibernate ORM 6 (SB 3.5) references the jakarta.xml.bind namespace (4.0.x) at EMF
-		     bootstrap. The project-wide parent-pom pins jakarta.xml.bind-api to 2.3.3 (which still
-		     carries the javax.xml.bind namespace) for the committed xjc/SOAP sources; declaring these
-		     coordinates directly here overrides that inherited pin FOR THIS MODULE ONLY.
+		     bootstrap. The project-wide parent-pom provides both JAXB APIs (javax.xml.bind:jaxb-api 2.3.1 and
+		     jakarta.xml.bind-api 4.0.5) but only the javax-namespace runtime (jaxb-runtime 2.3.9); declaring
+		     these coordinates directly here overrides those inherited versions FOR THIS MODULE ONLY.
 		     - jakarta.xml.bind-api 4.0.2 + jaxb-runtime 4.0.5 (jakarta namespace) -> satisfies Hibernate.
 		     - javax.xml.bind:jaxb-api 2.3.1 + com.sun.xml.bind:jaxb-impl 2.3.3 (separate coordinates,
 		       javax namespace) -> keep this module's SOAP web-service sources (javax.xml.bind.JAXBElement

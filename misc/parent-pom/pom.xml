@@ -112,21 +112,47 @@
     </modules>
 
     <dependencies>
-        <!-- JAXB shipped inside the JDK through Java 8 and was removed in Java 11+.
-             The committed src/main/java-xjc sources (and other JAXB users) use the
-             javax.xml.bind namespace, so provide the API + runtime explicitly.
-             Versions are PINNED to the 2.3.x javax-namespace line on purpose: when
-             Spring Boot is later bumped to 3.x its BOM would otherwise force the 4.x
-             jakarta-namespace artifacts, which would not match the generated sources. -->
+        <!-- JAXB shipped inside the JDK through Java 8 and was removed in Java 11+. Both JAXB
+             namespaces are needed, so provide both APIs explicitly:
+             * javax.xml.bind: the committed src/main/java-xjc sources (and other JAXB users) use it.
+               The API comes from the legacy javax.xml.bind:jaxb-api coordinates and the runtime is
+               PINNED to the 2.3.x javax-namespace line, because the spring-boot BOM would otherwise
+               force the 4.x jakarta-namespace runtime, which does not match the generated sources.
+             * jakarta.xml.bind: swagger-core-jakarta (used by springdoc for /v3/api-docs) needs it;
+               without it the OpenAPI generation fails with
+               NoClassDefFoundError: jakarta/xml/bind/annotation/XmlRootElement.
+             The javax API must NOT come from jakarta.xml.bind:jakarta.xml.bind-api:2.3.x: that GA is
+             the same as the jakarta-namespace 4.x API, so only one of the two namespaces could be on
+             the classpath. Hence jaxb-runtime's transitive jakarta.xml.bind-api 2.3.x is excluded and
+             the GA is pinned to 4.0.5, the version the spring-boot 3.5.x BOM manages (jakarta-xml-bind.version). -->
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>2.3.3</version>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+            <exclusions>
+                <!-- javax.activation is already provided by jaxb-runtime's com.sun.activation:jakarta.activation -->
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>javax.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <version>2.3.9</version>
+            <exclusions>
+                <!-- its javax-namespace API is provided by javax.xml.bind:jaxb-api above -->
+                <exclusion>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.5</version>
         </dependency>
         <!-- SOAP/SAAJ was part of the JDK through Java 8 and removed in Java 11+, so provide
              the API + impl explicitly. Unlike JAXB above, SOAP moves to the jakarta.xml.soap
