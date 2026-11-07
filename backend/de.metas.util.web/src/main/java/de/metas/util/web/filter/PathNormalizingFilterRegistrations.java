@@ -32,8 +32,8 @@ import org.springframework.web.filter.UrlHandlerFilter;
  * Registrations of the two filters that normalize a REST request path before any other filter and the handler mapping see it:
  * first {@link DuplicateSlashCollapsingFilter}, then the trailing-slash stripping {@link UrlHandlerFilter}.
  * <p>
- * The trailing-slash filter runs after the duplicate-slash one, because a path like {@code /api//v2/x/} only matches its
- * {@code PathPattern} once the slashes are collapsed.
+ * Collapsing first means that a doubled trailing slash ({@code /api/v2/x//}) reaches the trailing-slash filter as a single
+ * one. Both run ahead of every other filter (auth, audit) and of the handler mapping.
  */
 @UtilityClass
 public class PathNormalizingFilterRegistrations
