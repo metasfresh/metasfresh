@@ -24,6 +24,7 @@ package de.metas.ui.web.config;
 
 import de.metas.ui.web.CORSFilter;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.util.web.filter.DuplicateSlashCollapsingFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,7 +58,7 @@ public class WebConfig implements WebMvcConfigurer
 	/** {@link org.springframework.web.util.pattern.PathPattern} matching every webui-api REST path (any depth) under the {@code /rest} root that {@link #ENDPOINT_ROOT} lives in. */
 	private static final String URL_PATHPATTERN_REST = "/rest/**";
 
-	/** Servlet URL pattern the {@link #trailingSlashRestUrlHandlerFilter()} is mapped to; the webui-api serves its whole REST surface under {@code /rest}. */
+	/** Servlet URL pattern the {@link #trailingSlashRestUrlHandlerFilter()} and {@link #duplicateSlashRestFilter()} are mapped to; the webui-api serves its whole REST surface under {@code /rest}. */
 	private static final String URL_PATTERN_REST = "/rest/*";
 
 	/**
@@ -72,7 +73,7 @@ public class WebConfig implements WebMvcConfigurer
 	 * We normalize the path with Spring's {@link UrlHandlerFilter} in {@code wrapRequest} (mutate) mode — NOT a
 	 * redirect, because the frontend XHR clients must not be bounced with a 308 — so the stripped path is visible
 	 * to the whole filter chain (CORS, logging, auth) and the {@code DispatcherServlet}. Registered at
-	 * {@link Ordered#HIGHEST_PRECEDENCE} so every downstream filter and the handler mapping see the normalized path.
+	 * {@link Ordered#HIGHEST_PRECEDENCE}{@code  + 1} (right after {@link #duplicateSlashRestFilter()}) so every downstream filter and the handler mapping see the normalized path.
 	 * <p>
 	 * This mirrors {@code de.metas.util.web.filter.FilterRegistrationConfig}, which restored the same tolerance on
 	 * the app-server {@code /api} profile; the webui-api runs a separate Spring context and needs its own
@@ -88,6 +89,20 @@ public class WebConfig implements WebMvcConfigurer
 				.build();
 
 		final FilterRegistrationBean<UrlHandlerFilter> registrationBean = new FilterRegistrationBean<>(urlHandlerFilter);
+		registrationBean.addUrlPatterns(URL_PATTERN_REST);
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+		return registrationBean;
+	}
+
+	/**
+	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the webui-api REST path. {@code frontend/docker/nginx/default.conf}'s
+	 * {@code location /rest { proxy_pass .../rest/; }} forwards {@code /rest/api/x} as {@code /rest//api/x}.
+	 * See {@link DuplicateSlashCollapsingFilter}; runs right before {@link #trailingSlashRestUrlHandlerFilter()}.
+	 */
+	@Bean
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashRestFilter()
+	{
+		final FilterRegistrationBean<DuplicateSlashCollapsingFilter> registrationBean = new FilterRegistrationBean<>(new DuplicateSlashCollapsingFilter());
 		registrationBean.addUrlPatterns(URL_PATTERN_REST);
 		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		return registrationBean;

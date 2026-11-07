@@ -55,8 +55,8 @@ public class FilterRegistrationConfig
 	 * <p>
 	 * We normalize the path with Spring's {@link UrlHandlerFilter} in {@code wrapRequest} (mutate) mode — NOT a
 	 * redirect, because API clients must not be bounced with a 308 — so the stripped path is visible to the whole
-	 * filter chain and the {@code DispatcherServlet}. Registered at {@link Ordered#HIGHEST_PRECEDENCE} so every
-	 * downstream filter (auth, audit) and the handler mapping all see the already-normalized path.
+	 * filter chain and the {@code DispatcherServlet}. Registered at {@link Ordered#HIGHEST_PRECEDENCE}{@code  + 1} (right after
+	 * {@link #duplicateSlashApiFilter()}) so every downstream filter (auth, audit) and the handler mapping all see the already-normalized path.
 	 */
 	@Bean
 	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashApiUrlHandlerFilter()
@@ -67,6 +67,19 @@ public class FilterRegistrationConfig
 				.build();
 
 		final FilterRegistrationBean<UrlHandlerFilter> registrationBean = new FilterRegistrationBean<>(urlHandlerFilter);
+		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+		return registrationBean;
+	}
+
+	/**
+	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the REST API path, e.g. {@code /api//v2/version}
+	 * as sent by a reverse proxy that maps {@code /app/api/...} to {@code /api//...}. See {@link DuplicateSlashCollapsingFilter}.
+	 */
+	@Bean
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashApiFilter()
+	{
+		final FilterRegistrationBean<DuplicateSlashCollapsingFilter> registrationBean = new FilterRegistrationBean<>(new DuplicateSlashCollapsingFilter());
 		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
 		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		return registrationBean;
