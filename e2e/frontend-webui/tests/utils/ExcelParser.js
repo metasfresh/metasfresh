@@ -117,10 +117,13 @@ export async function exportRecordsToExcel(page, windowId, recordIds) {
   await page.keyboard.press('Alt+1');
   const exportLink = page.locator('.subheader-container a.subheader-item[href*="/export/excel"]');
   await exportLink.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  // the export link names the selected rows in its selectedIds parameter (comma-separated)
   const href = await exportLink.getAttribute('href');
-  for (const recordId of recordIds) {
-    expect(href, `the export must hold record ${recordId}`).toContain(String(recordId));
-  }
+  const selectedIds = new URL(href, FRONTEND_BASE_URL).searchParams.get('selectedIds');
+  expect(selectedIds, `the export link must carry selectedIds: ${href}`).not.toBeNull();
+  expect(selectedIds.split(',').map(Number).sort((a, b) => a - b), 'the export must hold exactly the selected records').toEqual(
+    recordIds.map(Number).sort((a, b) => a - b)
+  );
   const download = page.waitForEvent('download', { timeout: SLOW_ACTION_TIMEOUT });
   await exportLink.click();
   return await (await download).path();

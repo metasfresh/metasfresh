@@ -3,8 +3,14 @@ import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { loginWithMasterdataUser } from '../utils/LoginHelper';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { columnTextsByFieldName, exportRecordsToExcel, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
+import {
+  expectStoredColumnValue,
+  openNewWindowDocument,
+  savedWindowRecordId,
+  typeIntoWindowField,
+  untickWindowCheckbox,
+} from '../utils/WindowFieldEntry';
 
 /**
  * EMail-Ausgangsserver (SMTP) window (AD_Window_ID=540080, table AD_MailBox) — the SMTP password is a
@@ -18,69 +24,25 @@ const MASK = '********';
 
 const newUnique = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-/** The response to the PATCH the WebUI issues for `fieldName` on this window's document. */
-function waitForFieldPatch(page, fieldName) {
-  return page.waitForResponse(
-    (response) =>
-      response.request().method() === 'PATCH' &&
-      response.url().includes(`/rest/api/window/${MAILBOX_WINDOW_ID}/`) &&
-      (response.request().postData() || '').includes(`"path":"${fieldName}"`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-}
-
-/** Types like a user: click into the input, press the keys, leave the field; waits for the PATCH. */
-async function typeAndLeave(page, fieldName, text) {
-  const input = page.locator(`.form-field-${fieldName} input`);
-  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  const patched = waitForFieldPatch(page, fieldName);
-  await input.click();
-  await input.pressSequentially(text);
-  await input.press('Tab');
-  const response = await patched;
-  expect(response.ok(), `PATCH of ${fieldName} failed: HTTP ${response.status()}`).toBe(true);
-}
-
-/** Unticks a checkbox field the way a user does (click on its box); waits for the PATCH. */
-async function untick(page, fieldName) {
-  const checkbox = page.locator(`.form-field-${fieldName} input[type="checkbox"]`).first();
-  await expect(checkbox, `${fieldName} starts ticked`).toBeChecked({ timeout: SLOW_ACTION_TIMEOUT });
-  const patched = waitForFieldPatch(page, fieldName);
-  await page.locator(`.form-field-${fieldName} label.input-checkbox`).first().click();
-  const response = await patched;
-  expect(response.ok(), `PATCH of ${fieldName} failed: HTTP ${response.status()}`).toBe(true);
-  await expect(checkbox, `${fieldName} is unticked`).not.toBeChecked();
-}
-
 /**
  * Creates a mailbox in the window by typing its fields; returns its record id once it is saved.
  * Without SMTP authorization (`smtpAuthorization: false`) login and password are not mandatory.
  */
 async function createMailbox(page, fields, { smtpAuthorization = true } = {}) {
-  const draftCreated = page.waitForResponse(
-    (response) => response.request().method() === 'PATCH' && response.url().includes(`/rest/api/window/${MAILBOX_WINDOW_ID}/NEW`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-  await page.goto(`${FRONTEND_BASE_URL}/window/${MAILBOX_WINDOW_ID}/NEW`);
-  await draftCreated;
+  await openNewWindowDocument(page, MAILBOX_WINDOW_ID);
   if (!smtpAuthorization) {
-    await untick(page, 'IsSmtpAuthorization');
+    await untickWindowCheckbox(page, MAILBOX_WINDOW_ID, 'IsSmtpAuthorization');
   }
   for (const [fieldName, value] of Object.entries(fields)) {
-    await typeAndLeave(page, fieldName, value);
+    await typeIntoWindowField(page, MAILBOX_WINDOW_ID, fieldName, page.locator(`.form-field-${fieldName} input`), value);
   }
-  await page.waitForURL((url) => !url.toString().includes('/NEW'), { timeout: SLOW_ACTION_TIMEOUT });
-  const recordId = Number(page.url().match(new RegExp(`/window/${MAILBOX_WINDOW_ID}/(\\d+)`))[1]);
+  const recordId = Number(await savedWindowRecordId(page, MAILBOX_WINDOW_ID));
   expect(recordId, 'the mailbox must be saved').toBeGreaterThan(0);
   return recordId;
 }
 
-/** B2 stored-value expectation; the answer is pass/fail only and never reveals the stored value. */
 async function expectStoredPassword(title, recordId, expectedValue) {
-  await Backend.expect({
-    title,
-    records: { password: { tableName: 'AD_MailBox', recordId, columnName: 'Password', expectedValue } },
-  });
+  await expectStoredColumnValue(title, { tableName: 'AD_MailBox', recordId, columnName: 'Password', expectedValue });
 }
 
 test.describe('EMail-Ausgangsserver (SMTP) — password in the grid and the Excel export', () => {

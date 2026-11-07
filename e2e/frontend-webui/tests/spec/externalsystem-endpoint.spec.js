@@ -7,6 +7,13 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { loginWithMasterdataUser } from '../utils/LoginHelper';
 import { columnTextsByFieldName, exportRecordsToExcel, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
+import {
+  commitWindowField,
+  expectStoredColumnValue,
+  openNewWindowDocument,
+  savedWindowRecordId,
+  typeIntoWindowField,
+} from '../utils/WindowFieldEntry';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -40,24 +47,6 @@ const OAUTH_V1 = 'OAuth';
 
 
 /**
- * The response to the PATCH the WebUI issues for `fieldName` on this window's document.
- *
- * The listener has to be armed BEFORE the action that commits the field, or a fast response is
- * missed and the wait runs into its timeout. The payload filter (`"path":"<ColumnName>"`) keeps it
- * from settling on a different field's PATCH, and skips the empty-payload PATCH .../NEW that only
- * creates the draft.
- */
-function endpointFieldPatch(page, fieldName) {
-  return page.waitForResponse(
-    (response) =>
-      response.request().method() === 'PATCH' &&
-      response.url().includes(`/rest/api/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) &&
-      (response.request().postData() || '').includes(`"path":"${fieldName}"`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-}
-
-/**
  * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return once the
  * server has answered it.
  *
@@ -75,29 +64,12 @@ function endpointFieldPatch(page, fieldName) {
  * back — is closed by clicking into each field before typing (see {@link fillFieldLocator}).
  */
 async function commitField(page, fieldName, commit) {
-  const patched = endpointFieldPatch(page, fieldName);
-  await commit();
-  const response = await patched;
-  expect(response.ok(), `the WebUI's PATCH of ${fieldName} was rejected: HTTP ${response.status()}`).toBe(true);
+  await commitWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, fieldName, commit);
 }
 
-/**
- * Open the window on a brand-new record and wait until its draft document exists.
- *
- * Opening `/NEW` makes the WebUI PATCH `.../NEW` with an empty payload; that response is what carries
- * the draft's id and its field data. Typing before it lands would patch a document the form does not
- * have yet.
- */
+/** Open the window on a brand-new record and wait until its draft document exists. */
 async function openNewEndpoint(page) {
-  const draftCreated = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'PATCH' &&
-      response.url().includes(`/rest/api/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-  await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-  await draftCreated;
-  await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await openNewWindowDocument(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID);
 }
 
 /** What the WebUI shows for a stored password instead of its value. */
@@ -105,12 +77,7 @@ const MASKED_PASSWORD = '********';
 
 /** B2 stored-value expectation: the stored Password column holds the typed value (pass/fail only, the value is never read back). */
 async function expectStoredPassword(title, recordId, expectedValue) {
-  await Backend.expect({
-    title,
-    records: {
-      password: { tableName: 'ExternalSystem_Endpoint', recordId: Number(recordId), columnName: 'Password', expectedValue },
-    },
-  });
+  await expectStoredColumnValue(title, { tableName: 'ExternalSystem_Endpoint', recordId, columnName: 'Password', expectedValue });
 }
 
 /**
@@ -119,14 +86,7 @@ async function expectStoredPassword(title, recordId, expectedValue) {
  * WebAPI.
  */
 async function savedRecordId(page) {
-  await page.waitForURL(
-    (url) => {
-      const urlStr = url.toString();
-      return urlStr.includes(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) && !urlStr.includes('/NEW');
-    },
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-  return page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+  return savedWindowRecordId(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID);
 }
 
 /**
@@ -971,19 +931,6 @@ translation is caught instead of being eyeballed on a screenshot.
   });
 });
 
-/**
- * Types `value` into `field` key by key, the way a user does, and leaves the field with Tab; waits for
- * the server's answer to the field's PATCH.
- */
-async function typeFieldLocator(page, fieldName, field, value) {
-  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await commitField(page, fieldName, async () => {
-    await field.click();
-    await field.pressSequentially(value);
-    await field.press('Tab');
-  });
-}
-
 test.describe('ExternalSystem Endpoint — password in the grid and the Excel export', () => {
   test('Password is not in the endpoint grid and nowhere in its Excel export', async ({ page }) => {
     allure.epic('E0182: System Configuration');
@@ -1017,16 +964,17 @@ appears in no grid cell and in no cell of the export, while it is stored as type
     await test.step('Create a SFTP endpoint with a typed password', async () => {
       await openNewEndpoint(page);
       await selectListValue(page, 'TransportType', 'SFTP');
-      await typeFieldLocator(page, 'SftpHost', page.locator('.form-field-SftpHost input[type="text"]'), 'sftp.example.com');
-      await typeFieldLocator(page, 'SftpUsername', page.locator('.form-field-SftpUsername input[type="text"]'), 'gridexcel');
+      await typeIntoWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, 'SftpHost', page.locator('.form-field-SftpHost input[type="text"]'), 'sftp.example.com');
+      await typeIntoWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, 'SftpUsername', page.locator('.form-field-SftpUsername input[type="text"]'), 'gridexcel');
       await selectListValue(page, 'SftpAuthType', 'PASSWORD');
-      await typeFieldLocator(
+      await typeIntoWindowField(
         page,
+        EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID,
         'Password',
         page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]'),
         typedPassword
       );
-      await typeFieldLocator(page, 'SftpRemotePath', page.locator('.form-field-SftpRemotePath input[type="text"]'), '/outbound/edi');
+      await typeIntoWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, 'SftpRemotePath', page.locator('.form-field-SftpRemotePath input[type="text"]'), '/outbound/edi');
     });
 
     const recordId = await savedRecordId(page);
