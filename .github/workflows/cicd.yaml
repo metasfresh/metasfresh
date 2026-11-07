@@ -2062,12 +2062,15 @@ jobs:
       # removes the containers, i.e. before the test verdict is known (the verdict only becomes a
       # step failure in `assert success`); collecting is cheap, uploading is failure/cancel-only.
       # `always()`, like `capture stack logs`: a job-level timeout concludes `cancelled`, and a hung
-      # server is the case these logs are most needed for. Each command is capped at 30 s so that,
-      # on a cancelled job, this step stays well inside the shared 5-minute cancellation window.
+      # server is the case these logs are most needed for. Each command is capped at 30 s and the step
+      # at 1 minute, so that on a cancelled job, together with `capture stack logs` (max. 2 minutes),
+      # at least 2 of the shared 5 cancellation minutes remain for the uploads and the teardown.
       # Per service: its stdout plus the log files logback writes to ./log/ below the image's WORKDIR.
       # The mobile profile has no `webapi` service (the mobile UI talks to `app` directly).
       - name: collect server logs
         if: always()
+        timeout-minutes: 1
+        continue-on-error: true # a slow collection must never turn a green job red
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -2234,11 +2237,14 @@ jobs:
       # removes the containers, i.e. before the test verdict is known (the verdict only becomes a
       # step failure in `assert success`); collecting is cheap, uploading is failure/cancel-only.
       # `always()`, like `capture stack logs`: a job-level timeout concludes `cancelled`, and a hung
-      # server is the case these logs are most needed for. Each command is capped at 30 s so that,
-      # on a cancelled job, this step stays well inside the shared 5-minute cancellation window.
+      # server is the case these logs are most needed for. Each command is capped at 30 s and the step
+      # at 1 minute, so that on a cancelled job, together with `capture stack logs` (max. 2 minutes),
+      # at least 2 of the shared 5 cancellation minutes remain for the uploads and the teardown.
       # Per service: its stdout plus the log files logback writes to ./log/ below the image's WORKDIR.
       - name: collect server logs
         if: always()
+        timeout-minutes: 1
+        continue-on-error: true # a slow collection must never turn a green job red
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
