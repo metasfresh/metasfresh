@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
@@ -22,7 +23,7 @@ import {
 const MAILBOX_WINDOW_ID = 540080;
 const MASK = '********';
 
-const newUnique = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+const newUnique = () => `${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
 
 /**
  * Creates a mailbox in the window by typing its fields; returns its record id once it is saved.

@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
@@ -67,7 +68,7 @@ const CARRIERS = {
   },
 };
 
-const newUnique = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+const newUnique = () => `${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
 
 /** Synthetic, obviously fake secret values, unique per test. */
 const newSecrets = (unique) => ({

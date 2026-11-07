@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
@@ -40,7 +41,7 @@ Runs the "Change password" process of the user window against a freshly created 
 3. After logging out, the target user can log in with the new password
 `);
 
-    const unique = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+    const unique = `${Date.now()}${randomBytes(3).toString('hex')}`;
     const newPassword = `New!Pass-${unique}`;
     const login = `b3cp${unique}`;
 

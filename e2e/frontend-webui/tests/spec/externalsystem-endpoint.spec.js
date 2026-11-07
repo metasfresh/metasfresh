@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
@@ -954,7 +955,7 @@ appears in no grid cell and in no cell of the export, while it is stored as type
 
     test.setTimeout(240000);
 
-    const typedPassword = `pw-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const typedPassword = `pw-${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
 
     const masterdata = await Backend.createMasterdata({
       request: { login: { user: { language: 'en_US' } } },
