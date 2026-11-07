@@ -2,10 +2,12 @@ package de.metas.frontend_testing.expectations;
 
 import de.metas.frontend_testing.expectations.request.JsonRecordColumnExpectation;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.POInfo;
-import org.compiere.util.DB;
 
 import java.util.Map;
 import java.util.Objects;
@@ -23,6 +25,7 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 @Builder
 class AssertRecordColumnExpectationsCommand
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final AssertExpectationsCommandServices services;
 	@NonNull private final MasterdataContext context;
 	@NonNull private final Map<String, JsonRecordColumnExpectation> expectations;
@@ -42,7 +45,6 @@ class AssertRecordColumnExpectationsCommand
 			final int recordId = expectation.getRecordId();
 			final String what = tableName + "." + columnName + " of record " + recordId;
 
-			// table, key and column names are validated against the application dictionary, so they are safe to put into the SQL
 			final POInfo poInfo = POInfo.getPOInfo(tableName);
 			if (poInfo == null)
 			{
@@ -62,14 +64,17 @@ class AssertRecordColumnExpectationsCommand
 				return;
 			}
 
-			final String recordExistsSql = "SELECT COUNT(1) FROM " + poInfo.getTableName() + " WHERE " + keyColumnName + "=?";
-			if (DB.getSQLValueEx(null, recordExistsSql, recordId) <= 0)
+			final Object record = queryBL.createQueryBuilderOutOfTrx(poInfo.getTableName())
+					.addEqualsFilter(keyColumnName, recordId)
+					.create()
+					.firstOnly(Object.class);
+			if (record == null)
 			{
 				fail(what + ": record not found");
 				return;
 			}
 
-			final String storedValue = DB.getSQLValueStringEx(null, "SELECT " + poInfo.getColumnName(columnIndex) + "::text FROM " + poInfo.getTableName() + " WHERE " + keyColumnName + "=?", recordId);
+			final String storedValue = InterfaceWrapperHelper.getPO(record).get_ValueAsString(poInfo.getColumnName(columnIndex));
 			if (!Objects.equals(storedValue, expectation.getExpectedValue()))
 			{
 				fail(what + ": stored value does not match expected");
