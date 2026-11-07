@@ -1176,7 +1176,7 @@ public class ImportHelper implements IImportHelper
 				{
 					paramSQL  = handleDateTime(cols[col], column, uniqueFormatLine);
 				}
-				else if (adReferenceId == DisplayType.String)
+				else if (adReferenceId == DisplayType.String || adReferenceId == DisplayType.Password)
 				{
 					paramSQL = cols[col];
 				}

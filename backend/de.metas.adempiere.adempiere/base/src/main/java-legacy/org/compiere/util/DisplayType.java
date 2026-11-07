@@ -96,6 +96,8 @@ public final class DisplayType
 	public static final int URL = 40;
 	/** Display Type 42	PrinterName	*/
 	public static final int PrinterName = 42;
+	/** Display Type 542152	Password (a String whose value is masked in the UI)	*/
+	public static final int Password = 542152;
 	//	Candidates: 
 
 	/** Maximum number of digits    */
@@ -168,15 +170,20 @@ public final class DisplayType
 		if (displayType == String || displayType == Text
 				|| displayType == TextLong || displayType == Memo
 				|| displayType == FilePath || displayType == FileName
-				|| displayType == URL || displayType == PrinterName)
+				|| displayType == URL || displayType == PrinterName
+				|| displayType == Password)
 			return true;
 		return false;
 	}    //	isText
 
 	public static boolean isPassword(final String columnName, final int displayType)
 	{
-		// TODO: introduce DisplayType.Password so we would not have to guess ;)
+		if (displayType == Password)
+		{
+			return true;
+		}
 
+		// fallback for columns which are not (yet) using DisplayType.Password: guess by name
 		if (!DisplayType.isText(displayType))
 		{
 			return false;
@@ -555,6 +562,8 @@ public final class DisplayType
 			return "URL";
 		if (displayType == PrinterName)
 			return "PrinterName";
+		if (displayType == Password)
+			return "Password";
 		//
 		return "UNKNOWN DisplayType=" + displayType;
 	}    //	getDescription

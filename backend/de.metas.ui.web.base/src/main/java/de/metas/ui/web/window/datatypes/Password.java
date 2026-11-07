@@ -9,6 +9,8 @@ import com.google.common.base.MoreObjects;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -35,10 +37,14 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class Password
 {
+	/**
+	 * @return {@code null} if the given password is {@code null} or empty; an empty password is no password, so it is never shown as set
+	 */
 	@JsonCreator
-	public static Password ofNullableString(final String password)
+	@Nullable
+	public static Password ofNullableString(@Nullable final String password)
 	{
-		return password != null ? new Password(password) : null;
+		return password != null && !password.isEmpty() ? new Password(password) : null;
 	}
 
 	public static Password cast(final Object value)

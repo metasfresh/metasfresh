@@ -19,6 +19,8 @@ import {
 import { getCurrentActiveLocale } from './locale';
 import { getSettingFromStateAsBoolean } from './settings';
 
+const PASSWORD_MASK = '********';
+
 export const containerPropTypes = {
   // from <DocumentList>
   // TODO: This needs to be fixed in all child components
@@ -345,6 +347,11 @@ export function fieldValueToString({
   precision = null,
   isGerman,
 }) {
+  // never show a password in a grid cell (or its title), even if the server sent it in clear text
+  if (fieldType === 'Password') {
+    return fieldValue ? PASSWORD_MASK : '';
+  }
+
   if (fieldValue === null) {
     return '';
   }

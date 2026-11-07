@@ -1,8 +1,7 @@
 package de.metas.shipper.gateway.dhl.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DHL_Shipper_Config
  *  @author metasfresh (generated) 
@@ -96,7 +95,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Set Application Token.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -105,7 +104,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Get Application Token.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -254,7 +253,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Set Signature.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -263,7 +262,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Get Signature.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
