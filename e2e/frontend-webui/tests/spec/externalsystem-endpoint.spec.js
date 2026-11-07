@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
