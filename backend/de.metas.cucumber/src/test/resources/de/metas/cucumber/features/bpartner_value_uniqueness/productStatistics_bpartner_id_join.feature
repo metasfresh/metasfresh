@@ -11,5 +11,3 @@ Feature: Product Statistics report uses C_BPartner_ID join instead of Value
   @from:cucumber
   Scenario: fresh_product_statistics_non0_report function is callable and returns c_bpartner_id column
     Then the fresh_product_statistics_non0_report function returns a result set with c_bpartner_id column
-    # DELIBERATE FAILURE to prove the server-log artifact upload; reverted in the next commit
-    And set sys config int value NOT_A_NUMBER for sys config PROOF_deliberate_failure

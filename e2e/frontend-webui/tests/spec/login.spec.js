@@ -57,9 +57,6 @@ Login with language selection and verify dashboard is visible.
       console.log(
         `Successfully logged in as ${username} with language ${language}`
       );
-
-      // DELIBERATE FAILURE to prove the server-log artifact upload; reverted in the next commit
-      throw new Error('deliberate failure: prove server-log artifact upload');
     });
   });
 });
