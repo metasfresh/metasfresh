@@ -4,6 +4,7 @@ import { allure } from "allure-playwright";
 import { Backend } from "../utils/Backend";
 import {
   FRONTEND_BASE_URL,
+  selectRows,
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from "../utils/common";
@@ -204,7 +205,7 @@ languageCases.forEach(({ language, label }) => {
     expect(rowCount).toBeGreaterThan(0);
 
     // Select first row
-    await page.locator("table tbody tr").first().click();
+    await selectRows([page.locator("table tbody tr").first()]);
     await page.waitForTimeout(1000);
 
     // Verify "Pick" quick action appeared with process-specific data-testid
@@ -267,8 +268,8 @@ languageCases.forEach(({ language, label }) => {
       .filter({ hasText: docNo })
       .first();
     if (await ourRow.isVisible().catch(() => false)) {
-      // Our row is visible (filterOnlyIds worked) — click it
-      await ourRow.click();
+      // Our row is visible (filterOnlyIds worked) — select it
+      await selectRows([ourRow]);
     } else {
       // filterOnlyIds not supported yet — find an unlocked row in the full view
       let targetRow = page.locator("table tbody tr").first();
@@ -284,7 +285,7 @@ languageCases.forEach(({ language, label }) => {
           break;
         }
       }
-      await targetRow.click();
+      await selectRows([targetRow]);
     }
     await page.waitForTimeout(1000);
 

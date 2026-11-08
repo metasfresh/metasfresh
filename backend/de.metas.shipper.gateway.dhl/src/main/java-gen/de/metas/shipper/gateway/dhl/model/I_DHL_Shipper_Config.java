@@ -118,7 +118,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Set Application Token.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -127,7 +127,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Get Application Token.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -276,7 +276,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Set Signature.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -285,7 +285,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Get Signature.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

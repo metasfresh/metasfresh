@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID } from '../utils/WindowIds';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
@@ -12,17 +12,6 @@ import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
 const MATERIAL_RECEIPT_WINDOW_ID = 184;
 const MATERIAL_RECEIPT_LINE_TAB_ID = 'AD_Tab-297';
-
-/**
- * Selects a grid row. The grid auto-selects its first row on load and a click on a selected row DESELECTS it, so
- * click only when the row is not selected yet, then assert it is.
- */
-const selectRow = async (row) => {
-  if (!/row-selected/.test((await row.getAttribute('class')) || '')) {
-    await row.click();
-  }
-  await expect(row).toHaveClass(/row-selected/);
-};
 
 /**
  * Opens the receipt-disposition delivery-planning window on a view scoped to exactly the given row ids
@@ -347,7 +336,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     await test.step('the packed-product row defaults to the HU receive, captioned with the configuration it resolved', async () => {
       const row = rowForProduct(packedProductName);
       await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      await selectRow(row);
+      await selectRows([row]);
 
       const quickActionButton = page.locator('[data-testid="quick-action-button"]');
       await expect(quickActionButton).toBeVisible();
@@ -363,7 +352,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 
     await test.step('the unpacked-product row keeps the HU default, captioned by the bare quantity', async () => {
       const row = rowForProduct(unpackedProductName);
-      await selectRow(row);
+      await selectRows([row]);
 
       const quickActionButton = page.locator('[data-testid="quick-action-button"]');
       await expect(quickActionButton).toBeVisible();
@@ -393,8 +382,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     });
 
     await test.step('the multi-row receive is reachable from the action menu only', async () => {
-      await rowForProduct(packedProductName).click();
-      await rowForProduct(unpackedProductName).click({ modifiers: ['Control'] });
+      await selectRows([rowForProduct(packedProductName), rowForProduct(unpackedProductName)]);
 
       // Both assertions run UNCONDITIONALLY. The action-menu half used to be guarded on a visibility check over
       // three test ids nothing in frontend/src renders, so the block never executed and the step reported green
@@ -580,7 +568,7 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
 
       const row = page.locator(`table tbody tr:has-text("${productName}")`).first();
       await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      await selectRow(row);
+      await selectRows([row]);
 
       await test.step('the dialog of "CUs annehmen mit Menge" labels the quantity "Menge CU"', async () => {
         await page.locator('[data-testid="quick-action-dropdown-toggle"]').click();
