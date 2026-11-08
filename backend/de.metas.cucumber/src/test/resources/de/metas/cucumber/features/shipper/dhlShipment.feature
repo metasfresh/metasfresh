@@ -612,3 +612,228 @@ Feature: Dhl Shipment
       | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | product | missingField |
       | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | V01PAK  | Kontonummer  |
     And no DHL request is logged for the DHL_ShipmentOrder of M_Package package1
+
+  # ##########################################################################
+  # ##########################################################################
+  @Id:S32526_TC3a
+  Scenario: DHL request carries the e-mail of the receiver's active default contact
+    # the receiver has an active default contact with an e-mail, and a second, non-default contact
+    Given metasfresh contains C_BPartners:
+      | Identifier           | Name                 | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName      | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_contact | dhl_customer_contact | ps_dhl_1                      | Y              | dhl_customer_contact | I               | 1000002                |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | dhl_location_contact     | DE          | addr 22      | 456        | locationCity_2 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier           | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | dhl_location_contact | 1122334455671 | dhl_customer_contact     | dhl_location_contact         | true         | true         |
+    # the receiver's contacts: the order has no contact and the location no e-mail, so the active default contact's e-mail goes to DHL
+    And metasfresh contains AD_Users:
+      | Identifier                   | Name                         | OPT.EMail                        | OPT.C_BPartner_ID.Identifier | IsDefaultContact |
+      | dhl_receiver_default_contact | dhl_receiver_default_contact | dhl.receiver.default@example.com | dhl_customer_contact         | Y                |
+      | dhl_receiver_other_contact   | dhl_receiver_other_contact   | dhl.receiver.other@example.com   | dhl_customer_contact         | N                |
+    And metasfresh contains External System
+      | Name                   | Value                  |
+      | TestSystem_S32526_TC3a | TestSystem_S32526_TC3a |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    """
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalHeaderId": "dhl_tc3a_01",
+      "externalLineId": "dhl_tc3a_01",
+      "externalSystemCode": "TestSystem_S32526_TC3a",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+          "bpartnerIdentifier": "gln-1122334455671",
+          "bpartnerLocationIdentifier": "gln-1122334455671"
+      },
+      "dateRequired": "2022-12-12",
+      "dateOrdered": "2022-12-12",
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-1000002",
+      "productIdentifier": "val-test_product_dhl_01",
+      "qty": 1,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "ref_tc3a_12301",
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "bpartnerName": "olCandBPartnerName",
+      "packingMaterialId": @dhl_huProductTU_X@,
+      "shipper": "val-Dhl"
+    }
+  ]
+}
+    """
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+    """
+{
+    "externalHeaderId": "dhl_tc3a_01",
+    "externalSystemCode": "TestSystem_S32526_TC3a",
+    "ship": true,
+    "invoice": false,
+    "closeOrder": false
+}
+    """
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier |
+      | order_1               | shipment_1            |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID | C_BPartner_ID        | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer_contact | dhl_location_contact   | 0.250         | package1     | 30         | 20        | 10         |
+    # the consignee e-mail is exactly the default contact's e-mail
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | consigneeEmail                   |
+      | V01PAK  | dhl.receiver.default@example.com |
+
+  # ##########################################################################
+  # ##########################################################################
+  @Id:S32526_TC3b
+  Scenario: DHL request without consignee e-mail when the receiver has no default contact
+    # the receiver has no contact at all, so there is no default contact e-mail; C_BPartner.EMail is not read (a project may redefine that virtual column, e.g. to "-")
+    Given metasfresh contains C_BPartners:
+      | Identifier              | Name                    | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName         | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_no_contact | dhl_customer_no_contact | ps_dhl_1                      | Y              | dhl_customer_no_contact | I               | 1000002                |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | dhl_location_no_contact  | DE          | addr 22      | 456        | locationCity_2 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | dhl_location_no_contact | 1122334455672 | dhl_customer_no_contact  | dhl_location_no_contact      | true         | true         |
+    And metasfresh contains External System
+      | Name                   | Value                  |
+      | TestSystem_S32526_TC3b | TestSystem_S32526_TC3b |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    """
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalHeaderId": "dhl_tc3b_01",
+      "externalLineId": "dhl_tc3b_01",
+      "externalSystemCode": "TestSystem_S32526_TC3b",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+          "bpartnerIdentifier": "gln-1122334455672",
+          "bpartnerLocationIdentifier": "gln-1122334455672"
+      },
+      "dateRequired": "2022-12-12",
+      "dateOrdered": "2022-12-12",
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-1000002",
+      "productIdentifier": "val-test_product_dhl_01",
+      "qty": 1,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "ref_tc3b_12301",
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "bpartnerName": "olCandBPartnerName",
+      "packingMaterialId": @dhl_huProductTU_X@,
+      "shipper": "val-Dhl"
+    }
+  ]
+}
+    """
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+    """
+{
+    "externalHeaderId": "dhl_tc3b_01",
+    "externalSystemCode": "TestSystem_S32526_TC3b",
+    "ship": true,
+    "invoice": false,
+    "closeOrder": false
+}
+    """
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier |
+      | order_1               | shipment_1            |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID | C_BPartner_ID           | C_BPartner_Location_ID  | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer_no_contact | dhl_location_no_contact | 0.250         | package1     | 30         | 20        | 10         |
+    # the request is built and logged without a consignee e-mail, i.e. the DHL order is not aborted by the e-mail check
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | consigneeEmail |
+      | V01PAK  | null           |
+
+  # ##########################################################################
+  # ##########################################################################
+  @Id:S32526_TC3c
+  Scenario: DHL request carries the e-mail of the shipment's contact, not the one of the receiver's default contact
+    # the receiver has an active default contact with an e-mail, and a second, non-default contact which is the contact of the order and thus of the shipment
+    Given metasfresh contains C_BPartners:
+      | Identifier                    | Name                          | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName               | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_shipment_contact | dhl_customer_shipment_contact | ps_dhl_1                      | Y              | dhl_customer_shipment_contact | I               | 1000002                |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier      | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | dhl_location_shipment_contact | DE          | addr 22      | 456        | locationCity_2 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                    | GLN           | C_BPartner_ID.Identifier      | OPT.C_Location_ID.Identifier  | OPT.IsShipTo | OPT.IsBillTo |
+      | dhl_location_shipment_contact | 1122334455673 | dhl_customer_shipment_contact | dhl_location_shipment_contact | true         | true         |
+    # the receiver's contacts: the order is placed with the non-default contact
+    And metasfresh contains AD_Users:
+      | Identifier                      | Name                            | OPT.EMail                           | OPT.C_BPartner_ID.Identifier  | IsDefaultContact | REST.Context.AD_User_ID      |
+      | dhl_receiver3c_default_contact  | dhl_receiver3c_default_contact  | dhl.receiver3c.default@example.com  | dhl_customer_shipment_contact | Y                |                              |
+      | dhl_receiver3c_shipment_contact | dhl_receiver3c_shipment_contact |                                     | dhl_customer_shipment_contact | N                | dhl_tc3c_shipment_contact_id |
+    And metasfresh contains External System
+      | Name                   | Value                  |
+      | TestSystem_S32526_TC3c | TestSystem_S32526_TC3c |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    """
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalHeaderId": "dhl_tc3c_01",
+      "externalLineId": "dhl_tc3c_01",
+      "externalSystemCode": "TestSystem_S32526_TC3c",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+          "bpartnerIdentifier": "gln-1122334455673",
+          "bpartnerLocationIdentifier": "gln-1122334455673",
+          "contactIdentifier": "@dhl_tc3c_shipment_contact_id@"
+      },
+      "dateRequired": "2022-12-12",
+      "dateOrdered": "2022-12-12",
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-1000002",
+      "productIdentifier": "val-test_product_dhl_01",
+      "qty": 1,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "ref_tc3c_12301",
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "bpartnerName": "olCandBPartnerName",
+      "packingMaterialId": @dhl_huProductTU_X@,
+      "shipper": "val-Dhl"
+    }
+  ]
+}
+    """
+    # the shipment contact gets its e-mail only now: the REST step also resolves context variables in its response, which fails on two e-mail addresses ("@...@") there
+    And update AD_User:
+      | AD_User_ID.Identifier           | OPT.EMail                           |
+      | dhl_receiver3c_shipment_contact | dhl.receiver3c.shipment@example.com |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+    """
+{
+    "externalHeaderId": "dhl_tc3c_01",
+    "externalSystemCode": "TestSystem_S32526_TC3c",
+    "ship": true,
+    "invoice": false,
+    "closeOrder": false
+}
+    """
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier |
+      | order_1               | shipment_1            |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID | C_BPartner_ID                 | C_BPartner_Location_ID        | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer_shipment_contact | dhl_location_shipment_contact | 0.250         | package1     | 30         | 20        | 10         |
+    # the shipment's contact wins over the receiver's default contact
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | consigneeEmail                      |
+      | V01PAK  | dhl.receiver3c.shipment@example.com |

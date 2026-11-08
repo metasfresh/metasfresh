@@ -50,6 +50,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.user.UserRepository;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
@@ -227,7 +228,7 @@ class DhlTestHelper
 		// create all structures
 
 		final DhlClientConfigRepository clientConfigRepository = DhlClientConfigRepository.newInstanceForUnitTesting();
-		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
+		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new UserRepository());
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
 		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), new CurrencyRepository(), orderRepository);
 
@@ -368,11 +369,10 @@ class DhlTestHelper
 
 		//
 		final I_C_BPartner deliverToBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getDeliveryAddress());
-		//noinspection deprecation,ConstantConditions
-		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
 		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
 		final int deliverToBPartnerLocationId = 0;
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
+		final String deliverToEmail = deliveryOrder.getDeliveryContact().getEmailAddress();
 
 		//
 		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
@@ -394,6 +394,7 @@ class DhlTestHelper
 				//deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
+				deliverToEmail,
 				detectedServiceType,
 				shipperId,
 				customerReference,

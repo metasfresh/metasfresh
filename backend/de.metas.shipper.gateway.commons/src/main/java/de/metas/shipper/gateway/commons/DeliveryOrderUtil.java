@@ -126,8 +126,7 @@ public final class DeliveryOrderUtil
 		final String rawPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
 		final String phoneNumber = rawPhoneNumber != null ? PhoneNumber.normalize(rawPhoneNumber) : null;
 
-		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
-		final String emailAddress = CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail(), bPartner.getEMail());
+		final String emailAddress = getEmailAddress(contact, bPLocation, bPartner.getEMail());
 
 		final Language bpLanguage = Language.asLanguage(bPartner.getAD_Language());
 		return ContactPerson.builder()
@@ -137,6 +136,19 @@ public final class DeliveryOrderUtil
 				.simplePhoneNumber(phoneNumber)
 				.languageCode(bpLanguage != null ? bpLanguage.getLanguageCode() : null)
 				.build();
+	}
+
+	/**
+	 * @return the first non-empty e-mail of: the given contact, the given partner location, the given partner fallback e-mail; {@code null} if all are empty
+	 */
+	@Nullable
+	public String getEmailAddress(
+			@Nullable final User contact,
+			@NonNull final I_C_BPartner_Location bPLocation,
+			@Nullable final String bPartnerFallbackEmail)
+	{
+		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
+		return CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail(), bPartnerFallbackEmail);
 	}
 
 }

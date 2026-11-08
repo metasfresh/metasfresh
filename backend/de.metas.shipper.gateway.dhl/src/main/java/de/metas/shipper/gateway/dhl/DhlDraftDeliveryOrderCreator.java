@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
@@ -42,10 +43,13 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -66,7 +70,9 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final DhlClientConfigRepository clientConfigRepository;
+	@NonNull private final UserRepository userRepository;
 
 	@Override
 	public ShipperGatewayId getShipperGatewayId()
@@ -101,6 +107,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_BPartner_Location deliverToBPLocation = InterfaceWrapperHelper.load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
+		final User deliverToContact = deliveryOrderKey.getDeliverContactId() != null ? userRepository.getByIdInTrx(deliveryOrderKey.getDeliverContactId()) : null;
+		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation, getDefaultContactEmailOrNull(deliverToBPartner));
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
@@ -166,6 +174,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				//deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
+				deliverToEmail,
 				detectedServiceType,
 				shipperId,
 				customerReference,
@@ -184,6 +193,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_BPartner deliverToBPartner,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
+			@Nullable final String deliverToEmail,
 			@NonNull final DhlShipperProduct serviceType,
 			final ShipperId shipperId,
 			final String customerReference,
@@ -221,7 +231,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.name(deliverToBPartner.getName())
-						.emailAddress(deliverToBPartner.getEMail())
+						.emailAddress(deliverToEmail)
 						.simplePhoneNumber(deliverToPhoneNumber)
 						.build())
 				//
@@ -229,6 +239,16 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryOrderParcels(deliveryOrderParcels)
 				//
 				.build();
+	}
+
+	/**
+	 * Reads the e-mail of the partner's active default contact from the contact record itself, not from the virtual column {@code C_BPartner.EMail}, which a project may redefine.
+	 */
+	@Nullable
+	private String getDefaultContactEmailOrNull(@NonNull final I_C_BPartner bpartner)
+	{
+		final I_AD_User defaultContact = bpartnerDAO.retrieveDefaultContactOrNull(bpartner, I_AD_User.class);
+		return defaultContact != null ? defaultContact.getEMail() : null;
 	}
 
 	/**
