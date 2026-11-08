@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DocumentProcessingInTrx;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -60,7 +61,6 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
@@ -104,7 +104,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -127,7 +126,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -180,8 +178,6 @@ public class M_InOut_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -566,7 +562,7 @@ public class M_InOut_StepDef
 	{
 		final I_M_InOut inout = inoutTable.get(identifier);
 		InterfaceWrapperHelper.refresh(inout);
-		processExInTrx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		DocumentProcessingInTrx.processEx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		final InOutId reversalId = InOutId.ofRepoId(inout.getReversal_ID());
 		final I_M_InOut reversal = inOutDAO.getById(reversalId);
@@ -600,44 +596,29 @@ public class M_InOut_StepDef
 		{
 			case completed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
 			case reactivated:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				break;
 			case reversed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			case voided:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case closed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled M_InOut action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
-	}
-
-	/**
-	 * Runs the doc-action <b>and</b> the subsequent save of the document header in ONE transaction, like the WebUI does
-	 * (it runs each document action within a transaction).
-	 * <p>
-	 * Without an enclosing transaction, {@link IDocumentBL#processEx(Object, String, String)} lets the document engine commit
-	 * its own transaction <i>before</i> it saves the header with the new {@code DocStatus}. An async consumer running in between
-	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
-	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the shipment as completed,
-	 * and the candidate keeps the pre-reactivation {@code QtyDelivered}.
-	 */
-	private void processExInTrx(@NonNull final I_M_InOut inout, @NonNull final String docAction, @Nullable final String expectedDocStatus)
-	{
-		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(inout, docAction, expectedDocStatus));
 	}
 
 	/**
@@ -712,7 +693,7 @@ public class M_InOut_StepDef
 		{
 			final I_M_InOut shipment = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
 			final String docAction = row.getAsString(I_M_InOut.COLUMNNAME_DocAction);
-			processExInTrx(shipment, docAction, null);
+			DocumentProcessingInTrx.processEx(shipment, docAction, null);
 		});
 	}
 
