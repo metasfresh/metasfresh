@@ -35,12 +35,12 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsResponse;
 import de.metas.common.util.time.SystemTime;
-import de.metas.cucumber.stepdefs.DocumentProcessingInTrx;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DocumentProcessingInTrx;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -1094,7 +1094,7 @@ public class M_InOut_StepDef
 	private void reverse(@NonNull final I_M_InOut shipment)
 	{
 		shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-		documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 	}
 
 	/**
