@@ -497,6 +497,8 @@ OAuthTokenUrl is accepted and the record persists).
     allure.epic('E0292: EDI');
     allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
     allure.tag('F00380');
+    allure.tag('F9111: Reference Type Password');
+    allure.tag('F9111');
     allure.story('AuthType OAuth display logic');
     allure.severity('critical');
 
@@ -781,6 +783,8 @@ stale configuration on the record.
     allure.epic('E0292: EDI');
     allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
     allure.tag('F00380');
+    allure.tag('F9111: Reference Type Password');
+    allure.tag('F9111');
     allure.story('A field the new configuration still shows keeps its value');
     allure.severity('critical');
 
