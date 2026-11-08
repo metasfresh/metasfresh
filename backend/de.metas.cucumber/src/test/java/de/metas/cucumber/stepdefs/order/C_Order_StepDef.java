@@ -110,6 +110,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -200,6 +201,7 @@ public class C_Order_StepDef
 
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -604,7 +606,7 @@ public class C_Order_StepDef
 		{
 			case reactivated:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				processExInTrx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
 				break;
 			case completed:
@@ -612,21 +614,36 @@ public class C_Order_StepDef
 				break;
 			case closed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				processExInTrx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			case voided:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				processExInTrx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case reversed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				processExInTrx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Runs the doc-action <b>and</b> the subsequent save of the order header in ONE transaction, like the WebUI does
+	 * (it runs each document action within a transaction).
+	 * <p>
+	 * Without an enclosing transaction, {@link IDocumentBL#processEx(Object, String, String)} lets the document engine commit
+	 * its own transaction <i>before</i> it saves the header with the new {@code DocStatus}. An async consumer running in between
+	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
+	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the order as completed,
+	 * so the candidate (and the refund based on it) keeps its pre-reactivation amount.
+	 */
+	private void processExInTrx(@NonNull final I_C_Order order, @NonNull final String docAction, @NonNull final String expectedDocStatus)
+	{
+		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(order, docAction, expectedDocStatus));
 	}
 
 	/**
