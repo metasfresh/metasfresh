@@ -271,7 +271,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 
 		// The locally-archived file content should match what we placed
-		assertThat(Files.readString(localDoneFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+		assertArchivedContent(localDoneFile, TEST_FILE_CONTENT);
 
 		// Nothing should have landed in the local error folder
 		try (var files = Files.list(localErrorDir))
@@ -366,7 +366,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(archivedLocally)
 				.as("Malformed payload should be archived to the LOCAL error folder within 10 seconds")
 				.isTrue();
-		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(MALFORMED_TEST_FILE_CONTENT);
+		assertArchivedContent(localErrorFile, MALFORMED_TEST_FILE_CONTENT);
 
 		// The remote file must still be CONSUMED (deleted) — never left in place, never moved remotely
 		assertRemoteFileConsumed(inboundFile);
@@ -570,6 +570,29 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(consumed)
 				.as("Remote file %s should be consumed (deleted) within 10 seconds", inboundFile)
 				.isTrue();
+	}
+
+	/**
+	 * Asserts that the locally archived file holds {@code expectedContent}. The archiver's {@code Files.writeString} creates
+	 * the file before it writes the bytes, so the file can already exist while still empty: its content must be awaited,
+	 * not read once right after the file appears.
+	 */
+	private static void assertArchivedContent(final Path archivedFile, final String expectedContent)
+	{
+		waitForCondition(() -> expectedContent.equals(readContentOrNull(archivedFile)), 10_000, 250);
+		assertThat(archivedFile).usingCharset(StandardCharsets.UTF_8).hasContent(expectedContent);
+	}
+
+	private static String readContentOrNull(final Path file)
+	{
+		try
+		{
+			return Files.readString(file, StandardCharsets.UTF_8);
+		}
+		catch (final IOException e)
+		{
+			return null;
+		}
 	}
 
 	/**
