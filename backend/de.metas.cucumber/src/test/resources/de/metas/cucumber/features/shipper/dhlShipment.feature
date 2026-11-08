@@ -663,6 +663,8 @@ Feature: Dhl Shipment
     And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
       | product | consigneeEmail                   |
       | V01PAK  | dhl.receiver.default@example.com |
+    # reset the global setting, so that following features start from the default
+    And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
 
   # ##########################################################################
   # ##########################################################################
@@ -707,6 +709,8 @@ Feature: Dhl Shipment
     And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
       | product | consigneeEmail |
       | V01PAK  | null           |
+    # reset the global setting, so that following features start from the default
+    And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
 
   # ##########################################################################
   # ##########################################################################
@@ -756,3 +760,5 @@ Feature: Dhl Shipment
     And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
       | product | consigneeEmail                      |
       | V01PAK  | dhl.receiver3c.shipment@example.com |
+    # reset the global setting, so that following features start from the default
+    And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
