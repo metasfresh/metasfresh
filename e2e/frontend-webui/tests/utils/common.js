@@ -16,7 +16,9 @@ export const getPage = () => global.currentPage;
 export const newUnique = () => `${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
 
 /**
- * Selects exactly the given grid rows: the first one with a plain click, the others with Ctrl/Cmd+click.
+ * Selects the given grid rows: the first one with a plain click, the others with Ctrl/Cmd+click. Starting
+ * from the WebUI's default single-row selection it selects nothing else; rows that are already selected
+ * besides the first row are not deselected.
  * The WebUI selects a table's first row by itself when the rows arrive, or when they change and no valid
  * selection is left (frontend `reducers/tables.js`, `CREATE_TABLE` / `UPDATE_TABLE`). A plain click on the
  * only selected row deselects it (frontend `Table.handleClick`), so the first row is clicked only when it is
