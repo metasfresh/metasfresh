@@ -22,6 +22,7 @@
 
 package de.metas.shipping;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -31,6 +32,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -46,6 +49,13 @@ import java.util.Set;
 @Repository
 public class ShipperRepository
 {
+	@VisibleForTesting
+	public static ShipperRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(ShipperRepository.class, ShipperRepository::new);
+	}
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final CCache<Integer, ShippersMap> cache = CCache.<Integer, ShippersMap>builder()

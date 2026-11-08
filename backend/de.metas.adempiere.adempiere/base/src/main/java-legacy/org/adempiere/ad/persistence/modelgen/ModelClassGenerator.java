@@ -394,7 +394,7 @@ public class ModelClassGenerator
 		}
 
 		String method = "get" + columnName + "()";
-		if (displayType != DisplayType.String)
+		if (!DisplayType.isString(displayType))
 		{
 			method = "String.valueOf(" + method + ")";
 		}

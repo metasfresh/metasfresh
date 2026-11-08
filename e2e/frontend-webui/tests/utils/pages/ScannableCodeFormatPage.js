@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, holdForCaptureIfEnabled, isUatCapture, SLOW_ACTION_TIMEOUT } from '../common';
+import { FRONTEND_BASE_URL, getPage, holdForCaptureIfEnabled, isUatCapture, selectRows, SLOW_ACTION_TIMEOUT } from '../common';
 
 export const SCANNABLE_CODE_FORMAT_WINDOW_ID = 541880;
 
@@ -209,7 +209,7 @@ export class ScannableCodeFormatPage {
   static async openFirstPartInAdvancedEdit() {
     await test.step('Open the part in Advanced edit (Alt+E)', async () => {
       const page = getPage();
-      await page.locator('.table-flex-wrapper tbody tr').first().click();
+      await selectRows([page.locator('.table-flex-wrapper tbody tr').first()]);
       await page.keyboard.press('Alt+e');
       await this.endNoField().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       this._formStill = '04-advanced-edit-end-no';

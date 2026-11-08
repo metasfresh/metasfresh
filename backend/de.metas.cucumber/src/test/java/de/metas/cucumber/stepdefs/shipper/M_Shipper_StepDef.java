@@ -78,6 +78,7 @@ public class M_Shipper_StepDef
 	 *   <b>PickupTimeTo</b> — (optional) defaults to 17:00<br>
 	 *   <b>InternalName</b> — (optional)<br>
 	 *   <b>ShipperGateway</b> — (optional)<br>
+	 *   <b>TrackingURL</b> — (optional)<br>
 	 *   <b>IsApiCarrierAdvise</b> — (optional)<br>
 	 *   <b>IsCreateDeliveryPlanning</b> — (optional)<br>
 	 *   <b>PriorityRule</b> — (optional) the shipper's priority rule code (1=Urgent, 3=High, 5=Medium,
@@ -129,6 +130,10 @@ public class M_Shipper_StepDef
 		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_ShipperGateway)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setShipperGateway);
+
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_TrackingURL)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setTrackingURL);
 
 		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsApiCarrierAdvise)
 				.ifPresent(record::setIsApiCarrierAdvise);

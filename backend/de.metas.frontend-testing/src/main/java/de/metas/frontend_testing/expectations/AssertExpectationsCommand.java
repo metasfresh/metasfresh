@@ -124,6 +124,15 @@ public class AssertExpectationsCommand
 						.build()
 						.execute();
 			}
+			if (expectations.getRecords() != null)
+			{
+				AssertRecordColumnExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getRecords())
+						.build()
+						.execute();
+			}
 			if (expectations.getMovements() != null)
 			{
 				AssertMovementExpectationsCommand.builder()
