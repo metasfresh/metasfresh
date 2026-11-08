@@ -115,7 +115,6 @@ public class TranslationDocSync extends JavaProcess
 		for (MColumn column : columns)
 		{
 			if (column.getAD_Reference_ID() == DisplayType.String
-				|| column.getAD_Reference_ID() == DisplayType.Password
 				|| column.getAD_Reference_ID() == DisplayType.Text)
 			{
 				String columnName = column.getColumnName();

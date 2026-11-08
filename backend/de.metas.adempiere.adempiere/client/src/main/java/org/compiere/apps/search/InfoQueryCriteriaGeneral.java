@@ -131,7 +131,7 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 				editor2 = vl2;
 			}
 		}
-		else if (DisplayType.String == displayType || DisplayType.Password == displayType)
+		else if (DisplayType.String == displayType)
 		{
 			VString field = new VString();
 			field.setBackground(AdempierePLAF.getInfoBackground());

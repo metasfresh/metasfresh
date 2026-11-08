@@ -129,7 +129,7 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 				editor2 = createLookupEditor(columnName + "_2", lookup, null);
 			}
 		}
-		else if (DisplayType.String == displayType || DisplayType.Password == displayType)
+		else if (DisplayType.String == displayType)
 		{
 			editor = createStringEditor(null);
 			//

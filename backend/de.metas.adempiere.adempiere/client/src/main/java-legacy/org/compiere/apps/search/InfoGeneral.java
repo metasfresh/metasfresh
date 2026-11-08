@@ -425,7 +425,7 @@ public class InfoGeneral extends Info
 					colClass = Double.class;
 				else if (displayType == DisplayType.Integer)
 					colClass = Integer.class;
-				else if (displayType == DisplayType.String || displayType == DisplayType.Password || displayType == DisplayType.Text || displayType == DisplayType.Memo)
+				else if (displayType == DisplayType.String || displayType == DisplayType.Text || displayType == DisplayType.Memo)
 					colClass = String.class;
 				else if (DisplayType.isDate(displayType))
 					colClass = Timestamp.class;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.MoreObjects;
+import de.metas.util.Check;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -44,7 +45,7 @@ public final class Password
 	@Nullable
 	public static Password ofNullableString(@Nullable final String password)
 	{
-		return password != null && !password.isEmpty() ? new Password(password) : null;
+		return Check.isEmpty(password) ? null : new Password(password);
 	}
 
 	public static Password cast(final Object value)

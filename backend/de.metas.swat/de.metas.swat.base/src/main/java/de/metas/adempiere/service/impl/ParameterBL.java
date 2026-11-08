@@ -112,7 +112,7 @@ public class ParameterBL implements IParameterBL
 	{
 		final Object result;
 
-		if (displayType == DisplayType.String || displayType == DisplayType.Password)
+		if (displayType == DisplayType.String)
 		{
 			result = valueStr;
 		}
@@ -140,7 +140,7 @@ public class ParameterBL implements IParameterBL
 	{
 		final String result;
 
-		if (displayType == DisplayType.String || displayType == DisplayType.Password)
+		if (displayType == DisplayType.String)
 		{
 			result = (String)valueObj;
 		}

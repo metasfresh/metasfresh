@@ -59,7 +59,7 @@ public class BoilerPlateMenuAction extends AbstractContextMenuAction
 		}
 
 		final int displayType = gridField.getDisplayType();
-		if (displayType == DisplayType.String || displayType == DisplayType.Password || displayType == DisplayType.Text || displayType == DisplayType.TextLong)
+		if (displayType == DisplayType.String || displayType == DisplayType.Text || displayType == DisplayType.TextLong)
 		{
 			return true;
 		}

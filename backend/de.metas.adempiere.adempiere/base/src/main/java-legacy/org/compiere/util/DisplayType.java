@@ -96,8 +96,8 @@ public final class DisplayType
 	public static final int URL = 40;
 	/** Display Type 42	PrinterName	*/
 	public static final int PrinterName = 42;
-	/** Display Type 542152	Password (a String whose value is masked in the UI)	*/
-	public static final int Password = 542152;
+	/** Display Type 43	Password (a String whose value is masked in the UI)	*/
+	public static final int Password = 43;
 	//	Candidates: 
 
 	/** Maximum number of digits    */
@@ -176,9 +176,22 @@ public final class DisplayType
 		return false;
 	}    //	isText
 
-	public static boolean isPassword(final String columnName, final int displayType)
+	/**
+	 * @return true if the display type holds a single-line string: {@link #String} or {@link #Password}
+	 */
+	public static boolean isString(final int displayType)
 	{
-		if (displayType == Password)
+		return displayType == String || displayType == Password;
+	}
+
+	public static boolean isPassword(final int displayType)
+	{
+		return displayType == Password;
+	}
+
+	public static boolean isPassword(@NonNull final String columnName, final int displayType)
+	{
+		if (isPassword(displayType))
 		{
 			return true;
 		}
@@ -189,7 +202,7 @@ public final class DisplayType
 			return false;
 		}
 
-		return columnName.toLowerCase().indexOf("password") >= 0
+		return columnName.toLowerCase().contains("password")
 				|| columnName.endsWith("PW")
 				|| columnName.equals("EMail_From_Pwd");
 	}

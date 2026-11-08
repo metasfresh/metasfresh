@@ -49,7 +49,6 @@ public class Parameter {
 		this.seqNo = seqNo;
 
 		if (displayType != DisplayType.String
-				&& displayType != DisplayType.Password
 				&& displayType != DisplayType.FilePath
 				&& displayType != DisplayType.Integer
 				&& displayType != DisplayType.Number

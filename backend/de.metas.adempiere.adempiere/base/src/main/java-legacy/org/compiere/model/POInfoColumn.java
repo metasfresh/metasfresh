@@ -79,7 +79,7 @@ public final class POInfoColumn implements Serializable
 		if (isString(tableName, columnName, displayTypeParam, ad_Reference_Value_ID, ad_Reference_Value_KeyColumn_DisplayType))
 		{
 			// a Password column keeps its display type, so that it can still be recognized as password; its value is a String anyway
-			this.displayType = org.compiere.util.DisplayType.Password == displayTypeParam ? displayTypeParam : org.compiere.util.DisplayType.String;
+			this.displayType = org.compiere.util.DisplayType.isPassword(displayTypeParam) ? displayTypeParam : org.compiere.util.DisplayType.String;
 			this.ColumnClass = String.class;
 		}
 		else if (columnName.equals("Posted") || columnName.equals("Processed") || columnName.equals("Processing"))
@@ -134,8 +134,7 @@ public final class POInfoColumn implements Serializable
 			@Nullable final ReferenceId ad_Reference_Value_ID,
 			final int ad_Reference_Value_KeyColumn_DisplayType)
 	{
-		if (org.compiere.util.DisplayType.String == displayType
-				|| org.compiere.util.DisplayType.Password == displayType)
+		if (org.compiere.util.DisplayType.isString(displayType))
 		{
 			return true;
 		}
