@@ -7,67 +7,77 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_Shipper;
 
-import java.util.List;
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DHL_Shipper_Config_StepDef
 {
-	private final DHL_Shipper_Config_StepDefData dhlConfigTable;
-	private final M_Shipper_StepDefData shipperTable;
+	@NonNull private final DHL_Shipper_Config_StepDefData dhlConfigTable;
+	@NonNull private final M_Shipper_StepDefData shipperTable;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+	/**
+	 * Creates or updates {@code DHL_Shipper_Config} records with dummy API credentials (no real DHL call is possible).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>DHL_Shipper_Config_ID.Identifier</b> — alias to store the config under; an existing alias is updated<br>
+	 *   <b>M_Shipper_ID.Identifier</b> — the shipper the config belongs to (used only when the config is created)<br>
+	 *   <b>AccountNumber</b> — national billing number (V01PAK); {@code null} leaves it empty<br>
+	 *   <b>AccountNumber_International</b> — (optional) international billing number (V53WPAK); {@code null} or omitted leaves it empty<br>
+	 * @cucumber.depends StepDefData: DHL_Shipper_Config_StepDefData, M_Shipper_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains DHL Configuration:
+	 *   | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
+	 *   | dhl1                             | shipper_DHL             | 33333333330102 | 33333333335301                  |
+	 * </pre>
+	 */
 	@Given("metasfresh contains DHL Configuration:")
-	public void metasfresh_contains_dhl_configuration(@NonNull final DataTable dataTable)
+	public void createOrUpdateConfigs(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-
-			final String configIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID, I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID);
-			final I_DHL_Shipper_Config config = dhlConfigTable.getOptional(configIdentifier)
-					.orElseGet(() -> this.createConfig(tableRow));
-
-			// the national billing number may be left empty ("null") to test a configuration that lacks it
-			final String accountNumber = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_DHL_Shipper_Config.COLUMNNAME_AccountNumber);
-			config.setAccountNumber(accountNumber);
-			config.setAccountNumber_International(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_DHL_Shipper_Config.COLUMNNAME_AccountNumber_International));
-
-			saveRecord(config);
-
-			dhlConfigTable.putOrReplace(configIdentifier, config);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID)
+				.forEach(this::createOrUpdateConfig);
 	}
 
-	private I_DHL_Shipper_Config createConfig(final Map<String, String> tableRow)
+	private void createOrUpdateConfig(@NonNull final DataTableRow row)
 	{
-		final String shipperIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DHL_Shipper_Config.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
-		assertThat(shipper).isNotNull();
+		final StepDefDataIdentifier configIdentifier = row.getAsIdentifier();
+		final I_DHL_Shipper_Config config = dhlConfigTable.getOptional(configIdentifier)
+				.orElseGet(() -> newConfig(row));
 
-		final I_DHL_Shipper_Config shipperConfig = InterfaceWrapperHelper.newInstance(I_DHL_Shipper_Config.class);
-		shipperConfig.setM_Shipper_ID(shipper.getM_Shipper_ID());
-		shipperConfig.setAD_Org_ID(shipper.getAD_Org_ID());
-		shipperConfig.setIsActive(true);
-		shipperConfig.setDhl_LenghtUOM_ID(uomDAO.getUomIdByX12DE355(X12DE355.CENTIMETRE).getRepoId());
-		//Dummy data, we don't want an actual call
-		shipperConfig.setdhl_api_url("http://definitely.bad.url/");
-		shipperConfig.setapplicationID("1");
-		shipperConfig.setApplicationToken("12");
-		shipperConfig.setUserName("123");
-		shipperConfig.setSignature("1234");
+		config.setAccountNumber(DataTableUtil.nullToken2Null(row.getAsString(I_DHL_Shipper_Config.COLUMNNAME_AccountNumber)));
+		config.setAccountNumber_International(row.getAsOptionalString(I_DHL_Shipper_Config.COLUMNNAME_AccountNumber_International)
+				.map(DataTableUtil::nullToken2Null)
+				.orElse(null));
+		saveRecord(config);
 
-		return shipperConfig;
+		dhlConfigTable.putOrReplace(configIdentifier, config);
 	}
 
+	@NonNull
+	private I_DHL_Shipper_Config newConfig(@NonNull final DataTableRow row)
+	{
+		final I_M_Shipper shipper = row.getAsIdentifier(I_DHL_Shipper_Config.COLUMNNAME_M_Shipper_ID).lookupNotNullIn(shipperTable);
+
+		final I_DHL_Shipper_Config config = newInstance(I_DHL_Shipper_Config.class);
+		config.setM_Shipper_ID(shipper.getM_Shipper_ID());
+		config.setAD_Org_ID(shipper.getAD_Org_ID());
+		config.setIsActive(true);
+		config.setDhl_LenghtUOM_ID(uomDAO.getUomIdByX12DE355(X12DE355.CENTIMETRE).getRepoId());
+		// dummy endpoint and credentials: no real DHL call can happen
+		config.setdhl_api_url("http://definitely.bad.url/");
+		config.setapplicationID("1");
+		config.setApplicationToken("12");
+		config.setUserName("123");
+		config.setSignature("1234");
+		return config;
+	}
 }
