@@ -97,7 +97,7 @@
 
     <build>
         <plugins>
-            <!-- Create tests JAR -->
+            <!-- Create tests JAR, e.g. for AppServerLikeRestTestServer -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

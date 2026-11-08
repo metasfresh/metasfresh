@@ -140,6 +140,7 @@ public class PricesRestController
 		{
 			return ResponseEntity
 					.status(HttpStatus.UNPROCESSABLE_ENTITY)
+					.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8) // the body is the raw exception message, not JSON
 					.body(ex.getMessage());
 		}
 	}
