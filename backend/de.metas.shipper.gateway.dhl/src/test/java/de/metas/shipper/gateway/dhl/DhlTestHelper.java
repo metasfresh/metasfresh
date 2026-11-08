@@ -30,6 +30,7 @@ import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
+import de.metas.shipper.gateway.dhl.model.DhlShipperConfigId;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
@@ -234,7 +235,7 @@ class DhlTestHelper
 		final UomId dummyUom = UomId.ofRepoId(1);
 
 		final DhlClientConfig config = DhlClientConfig.builder()
-				.shipperConfigId(1)
+				.shipperConfigId(DhlShipperConfigId.ofRepoId(1))
 				.shipperName("dummy")
 				.baseUrl(BASE_URL)
 				.applicationID(USER_NAME)

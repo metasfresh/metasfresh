@@ -42,7 +42,8 @@ public class DhlClientConfig
 	private static final AdMessageKey MSG_MissingBillingNumber = AdMessageKey.of("de.metas.shipper.gateway.dhl.MissingBillingNumber");
 
 
-	int shipperConfigId; // DHL_Shipper_Config_ID, named in error messages
+	@NonNull
+	DhlShipperConfigId shipperConfigId; // named in error messages
 
 	@NonNull
 	String shipperName; // name of the config's M_Shipper, named in error messages
@@ -98,7 +99,7 @@ public class DhlClientConfig
 
 		if (Check.isBlank(billingNumber))
 		{
-			throw new AdempiereException(MSG_MissingBillingNumber, String.valueOf(shipperConfigId), shipperName, product.getCode(), TranslatableStrings.adElementOrMessage(columnName));
+			throw new AdempiereException(MSG_MissingBillingNumber, String.valueOf(shipperConfigId.getRepoId()), shipperName, product.getCode(), TranslatableStrings.adElementOrMessage(columnName));
 		}
 		return billingNumber;
 	}

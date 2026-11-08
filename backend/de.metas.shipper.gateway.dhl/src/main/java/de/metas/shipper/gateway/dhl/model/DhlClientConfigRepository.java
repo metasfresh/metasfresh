@@ -76,7 +76,7 @@ public class DhlClientConfigRepository
 		final Shipper shipper = shipperRepository.findById(shipperId) // only active shippers
 				.orElseThrow(() -> new AdempiereException("The shipper of DHL_Shipper_Config_ID=" + configPO.getDHL_Shipper_Config_ID() + " is inactive; shipperId=" + shipperId.getRepoId()));
 		return DhlClientConfig.builder()
-				.shipperConfigId(configPO.getDHL_Shipper_Config_ID())
+				.shipperConfigId(DhlShipperConfigId.ofRepoId(configPO.getDHL_Shipper_Config_ID()))
 				.shipperName(shipper.getName())
 				.applicationID(configPO.getapplicationID())
 				.applicationToken(configPO.getApplicationToken())
