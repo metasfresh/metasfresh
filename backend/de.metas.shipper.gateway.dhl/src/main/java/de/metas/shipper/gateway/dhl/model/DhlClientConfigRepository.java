@@ -35,6 +35,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository Tables: DHL_Shipper_Config
+ * Repository Cluster: DhlClientConfigRepository
+ */
 @Repository
 @RequiredArgsConstructor
 public class DhlClientConfigRepository
@@ -69,7 +73,8 @@ public class DhlClientConfigRepository
 		{
 			throw new AdempiereException("No DHL shipper configuration found for shipperId=" + shipperId);
 		}
-		final Shipper shipper = shipperRepository.getById(shipperId);
+		final Shipper shipper = shipperRepository.findById(shipperId) // only active shippers
+				.orElseThrow(() -> new AdempiereException("The shipper of DHL_Shipper_Config_ID=" + configPO.getDHL_Shipper_Config_ID() + " is inactive; shipperId=" + shipperId.getRepoId()));
 		return DhlClientConfig.builder()
 				.shipperConfigId(configPO.getDHL_Shipper_Config_ID())
 				.shipperName(shipper.getName())

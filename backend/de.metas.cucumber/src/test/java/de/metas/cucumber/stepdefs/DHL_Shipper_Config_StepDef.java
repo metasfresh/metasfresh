@@ -14,6 +14,12 @@ import org.compiere.model.I_M_Shipper;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Step definitions for the DHL configuration ({@code DHL_Shipper_Config}) of a shipper.
+ *
+ * @see de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDef creates the shipper the configuration belongs to
+ * @see de.metas.cucumber.stepdefs.shipper.dhl.Dhl_ShipmentOrder_Log_StepDef asserts what was sent to DHL with this configuration
+ */
 @RequiredArgsConstructor
 public class DHL_Shipper_Config_StepDef
 {
@@ -38,6 +44,7 @@ public class DHL_Shipper_Config_StepDef
 	 *   | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
 	 *   | dhl1                             | shipper_DHL             | 33333333330102 | 33333333335301                  |
 	 * </pre>
+	 * @see de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDef#createOrUpdateShippers(DataTable)
 	 */
 	@Given("metasfresh contains DHL Configuration:")
 	public void createOrUpdateConfigs(@NonNull final DataTable dataTable)
