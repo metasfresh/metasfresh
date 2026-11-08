@@ -57,10 +57,10 @@ public class DhlClientConfig
 	String applicationToken; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
 
 	@Nullable
-	String accountNumber; // DHL Business Customer Portal (also presented as EKP); billing number of the national product
+	String accountNumber; // billing number ("Abrechnungsnummer") of the national product V01PAK: 10-digit EKP (customer number) + procedure 01 + 2-digit participation
 
 	@Nullable
-	String accountNumberInternational; // billing number of the international product
+	String accountNumberInternational; // billing number of the international product V53WPAK: 10-digit EKP + procedure 53 + 2-digit participation
 
 	@NonNull
 	String username; // DHL Business Customer Portal
