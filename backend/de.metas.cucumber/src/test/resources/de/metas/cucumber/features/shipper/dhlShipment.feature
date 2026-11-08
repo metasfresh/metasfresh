@@ -774,9 +774,9 @@ Feature: Dhl Shipment
       | dhl_location_shipment_contact | 1122334455673 | dhl_customer_shipment_contact | dhl_location_shipment_contact | true         | true         |
     # the receiver's contacts: the order is placed with the non-default contact
     And metasfresh contains AD_Users:
-      | Identifier                      | Name                            | OPT.EMail                           | OPT.C_BPartner_ID.Identifier  | IsDefaultContact | REST.Context.AD_User_ID      |
-      | dhl_receiver3c_default_contact  | dhl_receiver3c_default_contact  | dhl.receiver3c.default@example.com  | dhl_customer_shipment_contact | Y                |                              |
-      | dhl_receiver3c_shipment_contact | dhl_receiver3c_shipment_contact |                                     | dhl_customer_shipment_contact | N                | dhl_tc3c_shipment_contact_id |
+      | Identifier                      | Name                            | OPT.EMail                          | OPT.C_BPartner_ID.Identifier  | IsDefaultContact | REST.Context.AD_User_ID      |
+      | dhl_receiver3c_default_contact  | dhl_receiver3c_default_contact  | dhl.receiver3c.default@example.com | dhl_customer_shipment_contact | Y                |                              |
+      | dhl_receiver3c_shipment_contact | dhl_receiver3c_shipment_contact |                                    | dhl_customer_shipment_contact | N                | dhl_tc3c_shipment_contact_id |
     And metasfresh contains External System
       | Name                   | Value                  |
       | TestSystem_S32526_TC3c | TestSystem_S32526_TC3c |

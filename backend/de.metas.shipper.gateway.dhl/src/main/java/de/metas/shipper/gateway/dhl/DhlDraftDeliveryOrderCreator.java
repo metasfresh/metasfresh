@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
@@ -49,7 +50,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -108,7 +108,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 		final User deliverToContact = deliveryOrderKey.getDeliverContactId() != null ? userRepository.getByIdInTrx(deliveryOrderKey.getDeliverContactId()) : null;
-		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation, getDefaultContactEmailOrNull(deliverToBPartner));
+		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation, getDefaultContactEmailOrNull(BPartnerId.ofRepoId(deliverToBPartnerId)));
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
@@ -245,10 +245,12 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * Reads the e-mail of the partner's active default contact from the contact record itself, not from the virtual column {@code C_BPartner.EMail}, which a project may redefine.
 	 */
 	@Nullable
-	private String getDefaultContactEmailOrNull(@NonNull final I_C_BPartner bpartner)
+	private String getDefaultContactEmailOrNull(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_AD_User defaultContact = bpartnerDAO.retrieveDefaultContactOrNull(bpartner, I_AD_User.class);
-		return defaultContact != null ? defaultContact.getEMail() : null;
+		return bpartnerDAO.getDefaultContactId(bpartnerId)
+				.map(userRepository::getByIdInTrx)
+				.map(User::getEmailAddress)
+				.orElse(null);
 	}
 
 	/**
