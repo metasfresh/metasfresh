@@ -79,6 +79,28 @@ export function columnTextsByFieldName(sheet, gridFieldNames, fieldName) {
 }
 
 /**
+ * Selects exactly the given grid rows: the first one with a plain click, the others with Ctrl/Cmd+click.
+ * The WebUI selects a table's first row by itself when the rows arrive (frontend `reducers/tables.js`,
+ * `CREATE_TABLE`), and a plain click on the only selected row deselects it (frontend `Table.handleClick`),
+ * so the first row is clicked only when it is not selected yet.
+ *
+ * @param {import('@playwright/test').Locator[]} rows - visible grid rows (`tr[data-testid="table-row-<id>"]`)
+ */
+export async function selectRows(rows) {
+  const [firstRow, ...otherRows] = rows;
+  const isFirstRowSelected = await firstRow.evaluate((el) => el.classList.contains('row-selected'));
+  if (!isFirstRowSelected) {
+    await firstRow.click();
+  }
+  for (const row of otherRows) {
+    await row.click({ modifiers: ['ControlOrMeta'] });
+  }
+  for (const row of rows) {
+    await expect(row, 'every row must be selected').toHaveClass(/row-selected/);
+  }
+}
+
+/**
  * Opens the window's list view on exactly the given records, selects all of them and downloads them
  * through the actions menu's Excel export ("Download selected").
  *
@@ -102,16 +124,7 @@ export async function exportRecordsToExcel(page, windowId, recordIds) {
   for (const row of rows) {
     await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   }
-  // A click right after the grid renders does not always land as a selection - assert it, retrying.
-  await expect(async () => {
-    await rows[0].click();
-    for (const row of rows.slice(1)) {
-      await row.click({ modifiers: ['ControlOrMeta'] });
-    }
-    for (const row of rows) {
-      await expect(row, 'every exported record must be selected for "Download selected"').toHaveClass(/row-selected/, { timeout: 2000 });
-    }
-  }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+  await selectRows(rows);
 
   // the actions menu shortcut keeps the selection (a click outside the table may clear it)
   await page.keyboard.press('Alt+1');

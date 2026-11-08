@@ -6,7 +6,7 @@ import { Backend } from '../utils/Backend';
 import { loginWithMasterdataUser } from '../utils/LoginHelper';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
-import { columnTextsByFieldName, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
+import { columnTextsByFieldName, fetchViewGridFieldNames, readXlsx, selectRows } from '../utils/ExcelParser';
 
 /**
  * Shipper window (Lieferweg, 142) — carrier secrets are password fields.
@@ -307,10 +307,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
         await openTab(page, CARRIERS[carrierKey]);
         await onlyRowId(page);
         const row = tabPane(page).locator('tbody tr[data-testid^="table-row-"]').first();
-        await expect(async () => {
-          await row.click();
-          await expect(row).toHaveClass(/row-selected/, { timeout: 2000 });
-        }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+        await selectRows([row]);
         await page.keyboard.press('Alt+1');
         await page.locator('.subheader-container').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         // positive control: the menu rendered its items - the "about this document" item is offered on every record view
@@ -335,11 +332,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       await page.goto(`${FRONTEND_BASE_URL}/window/${SHIPPER_WINDOW_ID}?viewId=${viewId}`);
       const row = page.locator(`tr[data-testid="table-row-${shipperId}"]`);
       await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      // A click right after the grid renders does not always land as a selection - assert it, retrying.
-      await expect(async () => {
-        await row.click();
-        await expect(row, 'the test shipper must be selected for "Download selected"').toHaveClass(/row-selected/, { timeout: 2000 });
-      }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+      await selectRows([row]);
       // the actions menu shortcut keeps the selection (a click outside the table may clear it)
       await page.keyboard.press('Alt+1');
       await exportLink.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
