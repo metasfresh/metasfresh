@@ -178,17 +178,17 @@ public class OrderService
 	@NonNull
 	public I_C_Order reverseOrder(@NonNull final OrderId orderId)
 	{
+		if (orderDAO.hasDeliveredItems(orderId))
+		{
+			throw new AdempiereException(MSG_ERR_ORDER_HAS_DELIVERED_ITEMS, orderId);
+		}
+
 		return trxManager.callInThreadInheritedTrx(() -> reverseOrderInTrx(orderId));
 	}
 
 	@NonNull
 	private I_C_Order reverseOrderInTrx(@NonNull final OrderId orderId)
 	{
-		if (orderDAO.hasDeliveredItems(orderId))
-		{
-			throw new AdempiereException(MSG_ERR_ORDER_HAS_DELIVERED_ITEMS, orderId);
-		}
-
 		final I_C_Order documentRecord = orderDAO.getById(orderId);
 
 		documentBL.processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
