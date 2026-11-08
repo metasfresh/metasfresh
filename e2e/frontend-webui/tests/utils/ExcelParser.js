@@ -80,13 +80,14 @@ export function columnTextsByFieldName(sheet, gridFieldNames, fieldName) {
 
 /**
  * Selects exactly the given grid rows: the first one with a plain click, the others with Ctrl/Cmd+click.
- * The WebUI selects a table's first row by itself when the rows arrive (frontend `reducers/tables.js`,
- * `CREATE_TABLE`), and a plain click on the only selected row deselects it (frontend `Table.handleClick`),
+ * The WebUI selects a table's first row by itself when the rows arrive or change and no selection is left
+ * (frontend `reducers/tables.js`, `CREATE_TABLE` / `UPDATE_TABLE`), and a plain click on the only selected row deselects it (frontend `Table.handleClick`),
  * so the first row is clicked only when it is not selected yet.
  *
  * @param {import('@playwright/test').Locator[]} rows - visible grid rows (`tr[data-testid="table-row-<id>"]`)
  */
 export async function selectRows(rows) {
+  expect(rows.length, 'selectRows needs at least one row').toBeGreaterThan(0);
   const [firstRow, ...otherRows] = rows;
   const isFirstRowSelected = await firstRow.evaluate((el) => el.classList.contains('row-selected'));
   if (!isFirstRowSelected) {
