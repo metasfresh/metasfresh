@@ -170,11 +170,6 @@ public class OrderService
 		});
 	}
 
-	/**
-	 * Runs in a thread-inherited trx, like the WebUI's doc actions. Without one, the document engine commits the doc action
-	 * in its own trx before the order header is saved, so the doc action's side effects (e.g. invoice candidate recompute markers)
-	 * would be visible while the header still has its old DocStatus.
-	 */
 	@NonNull
 	public I_C_Order reverseOrder(@NonNull final OrderId orderId)
 	{
@@ -183,12 +178,6 @@ public class OrderService
 			throw new AdempiereException(MSG_ERR_ORDER_HAS_DELIVERED_ITEMS, orderId);
 		}
 
-		return trxManager.callInThreadInheritedTrx(() -> reverseOrderInTrx(orderId));
-	}
-
-	@NonNull
-	private I_C_Order reverseOrderInTrx(@NonNull final OrderId orderId)
-	{
 		final I_C_Order documentRecord = orderDAO.getById(orderId);
 
 		documentBL.processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);

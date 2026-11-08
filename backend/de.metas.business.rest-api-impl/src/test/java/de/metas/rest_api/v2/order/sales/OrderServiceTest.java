@@ -24,82 +24,71 @@ package de.metas.rest_api.v2.order.sales;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.order.IOrderDAO;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.order.OrderId;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.payment.PaymentService;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class OrderServiceTest
 {
-	private static final OrderId ORDER_ID = OrderId.ofRepoId(1000001);
-
-	private IDocumentBL documentBL;
-	private I_C_Order orderRecord;
 	private OrderService orderService;
+	private OrderId orderId;
+
+	/**
+	 * The order's DocStatus as persisted at the moment the reversal's transaction is committed
+	 */
+	private final List<String> persistedDocStatusOnCommit = new ArrayList<>();
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		documentBL = mock(IDocumentBL.class);
-		Services.registerService(IDocumentBL.class, documentBL);
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setDocStatus(IDocument.STATUS_Completed);
+		order.setDocAction(IDocument.ACTION_Close);
+		order.setProcessed(true);
+		InterfaceWrapperHelper.saveRecord(order);
+		orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
-		orderRecord = mock(I_C_Order.class);
-		final IOrderDAO orderDAO = mock(IOrderDAO.class);
-		when(orderDAO.hasDeliveredItems(ORDER_ID)).thenReturn(false);
-		when(orderDAO.getById(ORDER_ID)).thenReturn(orderRecord);
-		Services.registerService(IOrderDAO.class, orderDAO);
+		// stands in for the order's reversal: changes the order in memory, and, like the invoice candidate invalidation of a real reversal,
+		// has work that runs after its transaction is committed
+		final PlainDocumentBL documentBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
+		documentBL.registerProcessInterceptor(I_C_Order.Table_Name, IDocument.ACTION_Reverse_Correct, (doc, action) -> {
+			doc.setDocStatus(IDocument.STATUS_Reversed);
+			Services.get(ITrxManager.class)
+					.getCurrentTrxListenerManagerOrAutoCommit()
+					.runAfterCommit(() -> persistedDocStatusOnCommit.add(InterfaceWrapperHelper.loadOutOfTrx(orderId, I_C_Order.class).getDocStatus()));
+			return true;
+		});
 
 		orderService = new OrderService(mock(JsonServiceFactory.class), mock(CurrencyService.class), mock(PaymentService.class));
 	}
 
 	/**
-	 * If the document engine finds no thread-inherited trx, it runs the doc action in its own trx and commits it
-	 * before {@link IDocumentBL#processEx} saves the order header. The doc action's side effects (e.g. invoice candidate
-	 * recompute markers) then become visible while the header still has its old DocStatus.
-	 * Running the reversal in a thread-inherited trx commits both together.
+	 * The REST call has no transaction of its own. The reversed order must be committed together with the reversal,
+	 * otherwise the work that runs after the reversal's commit reads the order as still completed.
 	 */
 	@Test
-	void reverseOrder_processesTheDocumentInAThreadInheritedTrx()
+	void reverseOrder_orderIsCommittedTogetherWithTheReversal()
 	{
-		final AtomicBoolean processedInThreadInheritedTrx = new AtomicBoolean(false);
-		doAnswer(invocation -> {
-			processedInThreadInheritedTrx.set(Services.get(ITrxManager.class).hasThreadInheritedTrx());
-			return null;
-		}).when(documentBL).processEx(orderRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		final I_C_Order result = orderService.reverseOrder(orderId);
 
-		final I_C_Order result = orderService.reverseOrder(ORDER_ID);
-
-		assertThat(result).isSameAs(orderRecord);
-		assertThat(processedInThreadInheritedTrx).as("processEx shall run in a thread-inherited trx").isTrue();
-	}
-
-	@Test
-	void reverseOrder_propagatesTheDocumentEngineException()
-	{
-		final AdempiereException engineException = new AdempiereException("reversal failed");
-		doThrow(engineException).when(documentBL).processEx(any(), eq(IDocument.ACTION_Reverse_Correct), any());
-
-		assertThatThrownBy(() -> orderService.reverseOrder(ORDER_ID)).isSameAs(engineException);
+		assertThat(result.getDocStatus()).isEqualTo(IDocument.STATUS_Reversed);
+		assertThat(persistedDocStatusOnCommit).containsExactly(IDocument.STATUS_Reversed);
 	}
 }
