@@ -74,9 +74,7 @@ class DhlDraftDeliveryOrderCreatorTest
 
 		draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(DhlClientConfigRepository.newInstanceForUnitTesting(), new UserRepository());
 
-		countryDE = newInstance(I_C_Country.class);
-		countryDE.setCountryCode("DE");
-		saveRecord(countryDE);
+		countryDE = DhlDraftDeliveryOrderTestFixture.createCountry("DE");
 
 		fromOrgId = createOrgWithLinkedBPartner();
 	}
@@ -117,51 +115,22 @@ class DhlDraftDeliveryOrderCreatorTest
 
 	private DeliveryOrder createDraftDeliveryOrder(@NonNull final I_C_BPartner_Location deliverToBPLocation, @Nullable final UserId deliverToContactId)
 	{
-		final LocalDate pickupDate = LocalDate.parse("2026-11-09");
-		final DeliveryOrderKey deliveryOrderKey = DeliveryOrderKey.builder()
-				.shipperId(ShipperId.ofRepoId(1))
-				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
-				.fromOrgId(fromOrgId)
-				.deliverToBPartnerId(deliverToBPLocation.getC_BPartner_ID())
-				.deliverToBPartnerLocationId(deliverToBPLocation.getC_BPartner_Location_ID())
-				.deliverToContactId(deliverToContactId)
-				.pickupDate(pickupDate)
-				.timeFrom(LocalTime.of(8, 0))
-				.timeTo(LocalTime.of(17, 0))
-				.build();
-
-		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()
-				.packageId(PackageId.ofRepoId(1))
-				.packageDimension(PackageDimensions.builder().lengthInCM(10).widthInCM(10).heightInCM(10).build())
-				.build();
-
-		return draftDeliveryOrderCreator.createDraftDeliveryOrder(CreateDraftDeliveryOrderRequest.builder()
-				.deliveryOrderKey(deliveryOrderKey)
-				.packageInfos(ImmutableSet.of(packageInfo))
-				.build());
+		return DhlDraftDeliveryOrderTestFixture.createDraftDeliveryOrder(
+				draftDeliveryOrderCreator,
+				fromOrgId,
+				deliverToBPLocation,
+				deliverToContactId,
+				LocalDate.parse("2026-11-09"),
+				PackageId.ofRepoId(1),
+				null,
+				PackageDimensions.builder().lengthInCM(10).widthInCM(10).heightInCM(10).build());
 	}
 
 	private int createOrgWithLinkedBPartner()
 	{
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		org.setName("Shipper Org");
-		saveRecord(org);
-
-		final I_C_BPartner orgBPartner = newInstance(I_C_BPartner.class);
-		orgBPartner.setName("Shipper");
-		orgBPartner.setAD_OrgBP_ID(org.getAD_Org_ID());
-		saveRecord(orgBPartner);
-
-		final I_C_BPartner_Location orgBPLocation = createBPLocation(orgBPartner, null);
-
-		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
-		orgInfo.setOrg_BPartner_ID(orgBPartner.getC_BPartner_ID());
-		orgInfo.setOrgBP_Location_ID(orgBPLocation.getC_BPartner_Location_ID());
-		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Letzte4Stellen);
-		saveRecord(orgInfo);
-
-		return org.getAD_Org_ID();
+		return DhlDraftDeliveryOrderTestFixture.createOrgWithLinkedBPartner(
+				DhlDraftDeliveryOrderTestFixture.createBPartner("Shipper", null),
+				countryDE, "Musterstrasse 1", null, "53113", "Bonn");
 	}
 
 	/**
@@ -174,24 +143,7 @@ class DhlDraftDeliveryOrderCreatorTest
 		bpartner.setEMail(BPARTNER_VIRTUAL_COLUMN_EMAIL);
 		saveRecord(bpartner);
 
-		return createBPLocation(bpartner, locationEmail);
-	}
-
-	private I_C_BPartner_Location createBPLocation(@NonNull final I_C_BPartner bpartner, @Nullable final String email)
-	{
-		final I_C_Location location = newInstance(I_C_Location.class);
-		location.setAddress1("Musterstrasse 1");
-		location.setPostal("53113");
-		location.setCity("Bonn");
-		location.setC_Country_ID(countryDE.getC_Country_ID());
-		saveRecord(location);
-
-		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
-		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bpLocation.setC_Location_ID(location.getC_Location_ID());
-		bpLocation.setEMail(email);
-		saveRecord(bpLocation);
-		return bpLocation;
+		return DhlDraftDeliveryOrderTestFixture.createBPLocation(bpartner, countryDE, "Musterstrasse 1", null, "53113", "Bonn", locationEmail);
 	}
 
 	private void createDefaultContact(final int bpartnerId, @NonNull final String email)
