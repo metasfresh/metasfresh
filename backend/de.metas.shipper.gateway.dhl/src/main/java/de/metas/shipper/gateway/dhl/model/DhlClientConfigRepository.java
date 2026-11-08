@@ -39,9 +39,10 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class DhlClientConfigRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ShipperRepository shipperRepository;
 
-	private final CCache<Integer, DhlClientConfig> cache = CCache.<Integer, DhlClientConfig>builder()
+	private final CCache<ShipperId, DhlClientConfig> cache = CCache.<ShipperId, DhlClientConfig>builder()
 			.tableName(I_DHL_Shipper_Config.Table_Name)
 			.additionalTableNameToResetFor(I_M_Shipper.Table_Name)
 			.initialCapacity(1)
@@ -51,13 +52,13 @@ public class DhlClientConfigRepository
 	@NonNull
 	public DhlClientConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
-		final int repoId = shipperId.getRepoId();
-		return cache.getOrLoad(repoId, () -> retrieveConfig(repoId));
+		return cache.getOrLoadNonNull(shipperId, this::retrieveConfig);
 	}
 
-	private DhlClientConfig retrieveConfig(final int shipperId)
+	@NonNull
+	private DhlClientConfig retrieveConfig(@NonNull final ShipperId shipperId)
 	{
-		final I_DHL_Shipper_Config configPO = Services.get(IQueryBL.class)
+		final I_DHL_Shipper_Config configPO = queryBL
 				.createQueryBuilder(I_DHL_Shipper_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DHL_Shipper_Config.COLUMNNAME_M_Shipper_ID, shipperId)
@@ -68,7 +69,7 @@ public class DhlClientConfigRepository
 		{
 			throw new AdempiereException("No DHL shipper configuration found for shipperId=" + shipperId);
 		}
-		final Shipper shipper = shipperRepository.getById(ShipperId.ofRepoId(configPO.getM_Shipper_ID()));
+		final Shipper shipper = shipperRepository.getById(shipperId);
 		return DhlClientConfig.builder()
 				.shipperConfigId(configPO.getDHL_Shipper_Config_ID())
 				.shipperName(shipper.getName())
