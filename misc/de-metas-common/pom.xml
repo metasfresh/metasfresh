@@ -86,16 +86,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- OpenAPI 3 annotations (io.swagger.v3.oas.annotations.*), framework-agnostic (annotations only),
+             replacing springfox 3.0.0 which is javax.servlet-only and breaks on Spring Boot 3.
+             Version matches the swagger-core line springdoc 2.8.x brings into the backend. -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>3.0.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jackson-annotations</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+            <version>2.2.47</version>
         </dependency>
 
         <dependency>
@@ -104,13 +101,6 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- https://github.com/hoereth/springfox-enum-plugin -->
-        <dependency>
-            <groupId>de.pentabyte</groupId>
-            <artifactId>springfox-enum-plugin</artifactId>
-            <version>${springfox-enum-plugin.version}</version>
-        </dependency>
-        
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -133,6 +123,29 @@
     
     <build>
         <plugins>
+            <plugin>
+                <!-- These are pure JSON DTO / value libraries: NO Spring beans live here (no
+                     @Configuration/@Component/@Service), so the parent's `-parameters` arg (added
+                     for Spring 6.1 constructor bean-by-name) serves no purpose here. Worse, with
+                     Jackson 2.18 (Spring Boot 3) `-parameters` makes jackson-module-parameter-names
+                     expose the constructor parameter name as the SOLE deserialization name, dropping
+                     it as an alias: a @Value DTO whose @JsonCreator param carries @JsonProperty("x")
+                     but whose Lombok getter serializes as the field name "y" then round-trips as
+                     write "y" / read-accepts-only "x" -> the field silently deserializes to null (or
+                     fails @NonNull). Before the JDK 25 migration (no -parameters) Jackson accepted
+                     BOTH the @JsonProperty name and the getter/field name, so these DTOs round-tripped.
+                     Drop -parameters here (keep -Xpkginfo:always) to restore that behaviour for all
+                     de-metas-common DTOs; annotationProcessorPaths (Lombok) and source/target are
+                     inherited unchanged from the parent. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs combine.children="override">
+                        <arg>-Xpkginfo:always</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

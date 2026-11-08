@@ -79,7 +79,6 @@ class PickingWorkflowLaunchersProviderTest
 			this.nextPackageableIndex.set(1);
 		}
 
-		@Builder(builderMethodName = "mobileProfile", buildMethodName = "setup", builderClassName = "$SetupMobileProfileBuilder")
 		private void setupMobileProfile(PickingJobAggregationType aggregationType)
 		{
 			helper.updateMobileProfile((profile) -> profile.toBuilder()
@@ -96,7 +95,6 @@ class PickingWorkflowLaunchersProviderTest
 			helper.createVHU(p1_id, qtyOnHand);
 		}
 
-		@Builder(builderMethodName = "packageable", builderClassName = "$PackageableBuilder")
 		private Packageable createPackageable(@NonNull String qtyToDeliver)
 		{
 			final int index = nextPackageableIndex.getAndIncrement();
@@ -129,13 +127,13 @@ class PickingWorkflowLaunchersProviderTest
 		@Test
 		void salesOrderAggregation_standardCase()
 		{
-			mobileProfile().aggregationType(PickingJobAggregationType.SALES_ORDER).setup();
+			setupMobileProfile(PickingJobAggregationType.SALES_ORDER);
 			createQtyOnHand("130");
 
-			final Packageable item1 = packageable().qtyToDeliver("50").build();
-			final Packageable item2 = packageable().qtyToDeliver("50").build();
-			final Packageable item3 = packageable().qtyToDeliver("50").build();
-			packageable().qtyToDeliver("50").build();
+			final Packageable item1 = createPackageable("50");
+			final Packageable item2 = createPackageable("50");
+			final Packageable item3 = createPackageable("50");
+			createPackageable("50");
 
 			final List<PickingWFProcessStartParams> launchers = retrieveLaunchers();
 
@@ -161,13 +159,13 @@ class PickingWorkflowLaunchersProviderTest
 		@Test
 		void productAggregation_standardCase()
 		{
-			mobileProfile().aggregationType(PickingJobAggregationType.PRODUCT).setup();
+			setupMobileProfile(PickingJobAggregationType.PRODUCT);
 			createQtyOnHand("130");
 
-			packageable().qtyToDeliver("50").build();
-			packageable().qtyToDeliver("50").build();
-			packageable().qtyToDeliver("50").build();
-			packageable().qtyToDeliver("50").build();
+			createPackageable("50");
+			createPackageable("50");
+			createPackageable("50");
+			createPackageable("50");
 
 			final List<PickingWFProcessStartParams> launchers = retrieveLaunchers();
 
@@ -185,7 +183,7 @@ class PickingWorkflowLaunchersProviderTest
 		@Test
 		void productAvailableInSamePickingGroupWarehouse_isAvailable()
 		{
-			mobileProfile().aggregationType(PickingJobAggregationType.PRODUCT).setup();
+			setupMobileProfile(PickingJobAggregationType.PRODUCT);
 
 			// workplace's own warehouse A holds NO stock for the product;
 			// stock exists only in warehouse B, which shares A's M_Warehouse_PickingGroup_ID.
@@ -195,7 +193,7 @@ class PickingWorkflowLaunchersProviderTest
 
 			helper.createVHU(p1_id, "130", warehouseBLocatorId);
 
-			packageable().qtyToDeliver("50").build();
+			createPackageable("50");
 
 			final List<PickingWFProcessStartParams> launchers = retrieveLaunchers();
 
@@ -210,7 +208,7 @@ class PickingWorkflowLaunchersProviderTest
 		@Test
 		void pickFromLocatorSet_stillReportsPickingGroupAvailability()
 		{
-			mobileProfile().aggregationType(PickingJobAggregationType.PRODUCT).setup();
+			setupMobileProfile(PickingJobAggregationType.PRODUCT);
 
 			// workplace's own warehouse A holds NO stock for the product, and the workplace has
 			// C_Workplace.PickFrom_Locator_ID explicitly set to a locator in A that holds no stock either;
@@ -222,7 +220,7 @@ class PickingWorkflowLaunchersProviderTest
 
 			helper.createVHU(p1_id, "130", warehouseBLocatorId);
 
-			packageable().qtyToDeliver("50").build();
+			createPackageable("50");
 
 			final List<PickingWFProcessStartParams> launchers = retrieveLaunchers();
 

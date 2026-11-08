@@ -22,47 +22,57 @@ package de.metas.vertical.pharma.msv3.server.security;
  * #L%
  */
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 
+/**
+ * Spring Security configuration.
+ * <p>
+ * Migrated from the removed {@code WebSecurityConfigurerAdapter} (Spring Security 5) to the
+ * component-based model (Spring Security 6): a {@link SecurityFilterChain} bean replaces
+ * {@code configure(HttpSecurity)}, and a {@link WebSecurityCustomizer} bean replaces
+ * {@code configure(WebSecurity)}. The {@code UserDetailsService} is wired onto the
+ * {@link HttpSecurity} builder (was {@code configureGlobalSecurity(AuthenticationManagerBuilder)}).
+ * The authorization rules, realm, stateless session policy, CSRF-disabled state and OPTIONS
+ * pre-flight bypass are preserved 1:1.
+ */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter
+public class SecurityConfig
 {
 	private static final String REALM = "MSV3_SERVER";
 	public static final String ROLE_CLIENT = "ROLE_CLIENT";
 	public static final String ROLE_SERVER_ADMIN = "ROLE_SERVER_ADMIN";
 
-	@Autowired
-	public void configureGlobalSecurity(
-			final AuthenticationManagerBuilder auth,
+	@Bean
+	public SecurityFilterChain securityFilterChain(
+			final HttpSecurity http,
 			final MSV3ServerAuthenticationService msv3authService) throws Exception
 	{
-		auth.userDetailsService(msv3authService);
-	}
-
-	@Override
-	protected void configure(final HttpSecurity http) throws Exception
-	{
 		http
-				.csrf().disable()
-				.authorizeRequests()
-				.antMatchers(MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
-				.antMatchers(MSV3ServerConstants.REST_ENDPOINT_PATH + "/**").hasAuthority(ROLE_SERVER_ADMIN)
-				.and().httpBasic().realmName(REALM).authenticationEntryPoint(getBasicAuthEntryPoint())
-				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+				.userDetailsService(msv3authService)
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
+						.requestMatchers(MSV3ServerConstants.REST_ENDPOINT_PATH + "/**").hasAuthority(ROLE_SERVER_ADMIN)
+						// Preserve Spring Security 5 behaviour: the original adapter config had no anyRequest() rule,
+						// so requests matching neither endpoint (actuator, WSDL, /error, ...) were permitted. SS6
+						// authorizeHttpRequests denies unmatched requests by default, so make the permit explicit.
+						.anyRequest().permitAll())
+				.httpBasic(basic -> basic.realmName(REALM).authenticationEntryPoint(getBasicAuthEntryPoint()))
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+		return http.build();
 	}
 
 	@Bean
@@ -74,9 +84,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 	}
 
 	/* To allow Pre-flight [OPTIONS] request from browser */
-	@Override
-	public void configure(final WebSecurity web) throws Exception
+	@Bean
+	public WebSecurityCustomizer webSecurityCustomizer()
 	{
-		web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
+		return web -> web.ignoring().requestMatchers(HttpMethod.OPTIONS, "/**");
 	}
 }

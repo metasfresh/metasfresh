@@ -49,7 +49,7 @@ public class MetasfreshTimeBasedFileNamingAndTriggeringPolicy<E> extends Default
 		// Make sure we are starting a new log file on each boot
 		if (forceRollover.getAndSet(false))
 		{
-			nextCheck = 0; // i.e. check it now
+			atomicNextCheck.set(0); // i.e. check it now (logback 1.3+ replaced the long field `nextCheck` with AtomicLong `atomicNextCheck`)
 			//return true; // note: not returning directly because the underlying method is also updating the object status
 		}
 

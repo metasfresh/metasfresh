@@ -25,7 +25,7 @@ package de.metas.util.web.audit.dto;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 

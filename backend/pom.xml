@@ -52,7 +52,7 @@
         <poi.version>4.1.2</poi.version>
         <zxing.version>2.3.0</zxing.version>
 
-        <spring-boot.version>2.4.3</spring-boot.version>
+        <spring-boot.version>3.5.16</spring-boot.version>
         <lucene.version>8.6.2</lucene.version>
 
         <!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. -->
@@ -128,8 +128,6 @@
         <module>de.metas.dlm</module>
 
         <module>de.metas.edi</module>
-
-        <module>de.metas.elasticsearch</module>
 
         <module>de.metas.banking</module>
         <module>de.metas.contracts</module>
@@ -252,6 +250,26 @@
     <dependencyManagement>
         <dependencies>
 
+            <!-- Spring Boot 3's BOM no longer manages these (httpclient4 → httpclient5;
+                 codehaus-groovy dropped). Pin them here to preserve behaviour.
+                 Groovy: needs >= 3.0.25, because the ASM bundled in older versions rejects
+                 class-file major version 69 (Java 25); see ScriptExecutorGroovyTest. -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.14</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-jsr223</artifactId>
+                <version>3.0.25</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-console</artifactId>
+                <version>3.0.25</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.mchange</groupId>
                 <artifactId>c3p0</artifactId>
@@ -360,29 +378,11 @@
                 <version>0.2.1</version>
             </dependency>
 
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>3.1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>jstl</artifactId>
-                <version>1.2</version>
-            </dependency>
-
             <!-- Concordion for acceptance testing -->
             <dependency>
                 <groupId>org.concordion</groupId>
                 <artifactId>concordion</artifactId>
                 <version>1.5.1</version>
-            </dependency>
-
-            <!-- Swagger -->
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-boot-starter</artifactId>
-                <version>${springfox-swagger.version}</version>
             </dependency>
 
             <dependency>

@@ -20,14 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.Amount;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type contains a summary of cumulative costs and charges for all line items of an order, including item price, price adjustments, sales taxes, delivery costs, and order discounts.
  */
-@ApiModel(description = "This type contains a summary of cumulative costs and charges for all line items of an order, including item price, price adjustments, sales taxes, delivery costs, and order discounts.")
+@Schema(description = "This type contains a summary of cumulative costs and charges for all line items of an order, including item price, price adjustments, sales taxes, delivery costs, and order discounts.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class PricingSummary
 {
@@ -76,7 +75,7 @@ public class PricingSummary
 	 * @return adjustment
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getAdjustment()
 	{
@@ -101,7 +100,7 @@ public class PricingSummary
 	 * @return deliveryCost
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getDeliveryCost()
 	{
@@ -126,7 +125,7 @@ public class PricingSummary
 	 * @return deliveryDiscount
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getDeliveryDiscount()
 	{
@@ -151,7 +150,7 @@ public class PricingSummary
 	 * @return fee
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getFee()
 	{
@@ -176,7 +175,7 @@ public class PricingSummary
 	 * @return priceDiscountSubtotal
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getPriceDiscountSubtotal()
 	{
@@ -201,7 +200,7 @@ public class PricingSummary
 	 * @return priceSubtotal
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getPriceSubtotal()
 	{
@@ -226,7 +225,7 @@ public class PricingSummary
 	 * @return tax
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getTax()
 	{
@@ -251,7 +250,7 @@ public class PricingSummary
 	 * @return total
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getTotal()
 	{

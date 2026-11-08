@@ -74,12 +74,6 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.elasticsearch</groupId>
-            <artifactId>de.metas.elasticsearch</artifactId>
-            <version>${metasfresh.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business.rest-api</artifactId>
             <version>${metasfresh.version}</version>

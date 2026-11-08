@@ -65,16 +65,22 @@
             <artifactId>spring-context</artifactId>
         </dependency>
 
+        <!-- we use jakarta.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
+        <!-- Jakarta Mail 2.1 API (jakarta.mail namespace); version managed by the spring-boot-dependencies BOM -->
         <dependency>
-            <groupId>org.jolokia</groupId>
-            <artifactId>jolokia-core</artifactId>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+        </dependency>
+        <!-- Angus Mail: the provider implementing the jakarta.mail API (replaces com.sun.mail); version managed by the BOM.
+             Compile scope (not runtime): SMTPMailSender imports org.eclipse.angus.mail.smtp.SMTPMessage directly. -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
         </dependency>
 
-        <!-- we use jakarta.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>1.6.5</version>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
         <dependency>
@@ -283,13 +289,6 @@
             <artifactId>google-maps-services</artifactId>
             <version>0.10.1</version>
             <scope>compile</scope>
-        </dependency>
-
-        <!-- J2EE -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

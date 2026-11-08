@@ -5,7 +5,9 @@
 # Build context requires:
 #   - git.properties file (created from init job outputs)
 
-FROM maven:3.8.8-eclipse-temurin-8
+FROM maven:3.9.16-eclipse-temurin-25
+
+RUN apt-get -y update && apt-get -y install curl wget && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
 

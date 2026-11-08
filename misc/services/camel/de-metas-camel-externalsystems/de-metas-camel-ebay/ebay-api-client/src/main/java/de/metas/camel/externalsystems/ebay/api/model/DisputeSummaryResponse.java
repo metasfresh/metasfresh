@@ -20,8 +20,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.PaymentDisputeSummary;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
 /**
  * This type defines the base response payload of the getPaymentDisputeSummaries method. Each payment dispute that matches the input criteria is returned under the paymentDisputeSummaries array.
  */
-@ApiModel(description = "This type defines the base response payload of the getPaymentDisputeSummaries method. Each payment dispute that matches the input criteria is returned under the paymentDisputeSummaries array.")
+@Schema(description = "This type defines the base response payload of the getPaymentDisputeSummaries method. Each payment dispute that matches the input criteria is returned under the paymentDisputeSummaries array.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class DisputeSummaryResponse
 {
@@ -74,7 +73,7 @@ public class DisputeSummaryResponse
 	 * @return href
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The URI of the getPaymentDisputeSummaries call request that produced the current page of the result set.")
+	@Schema(description = "The URI of the getPaymentDisputeSummaries call request that produced the current page of the result set.")
 
 	public String getHref()
 	{
@@ -99,7 +98,7 @@ public class DisputeSummaryResponse
 	 * @return limit
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This value shows the maximum number of payment disputes that will appear on one page of the result set. The limit value can be passed in as a query parameter in the request, or if it is not used, it defaults to 200. If the value in the total field exceeds this limit value, there are multiple pages in the current result set. Min: 1; Max: 200; Default: 200")
+	@Schema(description = "This value shows the maximum number of payment disputes that will appear on one page of the result set. The limit value can be passed in as a query parameter in the request, or if it is not used, it defaults to 200. If the value in the total field exceeds this limit value, there are multiple pages in the current result set. Min: 1; Max: 200; Default: 200")
 
 	public Integer getLimit()
 	{
@@ -124,7 +123,7 @@ public class DisputeSummaryResponse
 	 * @return next
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The getPaymentDisputeSummaries call URI to use if you wish to view the next page of the result set. For example, the following URI returns records 11 thru 20 from the collection of payment disputes: path/payment_dispute_summary?limit=10&amp;offset=10 This field is only returned if there is a next page of results to view based on the current input criteria.")
+	@Schema(description = "The getPaymentDisputeSummaries call URI to use if you wish to view the next page of the result set. For example, the following URI returns records 11 thru 20 from the collection of payment disputes: path/payment_dispute_summary?limit=10&amp;offset=10 This field is only returned if there is a next page of results to view based on the current input criteria.")
 
 	public String getNext()
 	{
@@ -149,7 +148,7 @@ public class DisputeSummaryResponse
 	 * @return offset
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This integer value indicates the number of payment disputes skipped before listing the first payment dispute from the result set. The offset value can be passed in as a query parameter in the request, or if it is not used, it defaults to 0 and the first payment dispute of the result set is shown at the top of the response.")
+	@Schema(description = "This integer value indicates the number of payment disputes skipped before listing the first payment dispute from the result set. The offset value can be passed in as a query parameter in the request, or if it is not used, it defaults to 0 and the first payment dispute of the result set is shown at the top of the response.")
 
 	public Integer getOffset()
 	{
@@ -184,7 +183,7 @@ public class DisputeSummaryResponse
 	 * @return paymentDisputeSummaries
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "Each payment dispute that matches the input criteria is returned under this array. If no payment disputes are found, an empty array is returned.")
+	@Schema(description = "Each payment dispute that matches the input criteria is returned under this array. If no payment disputes are found, an empty array is returned.")
 
 	public List<PaymentDisputeSummary> getPaymentDisputeSummaries()
 	{
@@ -209,7 +208,7 @@ public class DisputeSummaryResponse
 	 * @return prev
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The getPaymentDisputeSummaries call URI to use if you wish to view the previous page of the result set. For example, the following URI returns records 1 thru 10 from the collection of payment disputes: path/payment_dispute_summary?limit=10&amp;offset=0 This field is only returned if there is a previous page of results to view based on the current input criteria.")
+	@Schema(description = "The getPaymentDisputeSummaries call URI to use if you wish to view the previous page of the result set. For example, the following URI returns records 1 thru 10 from the collection of payment disputes: path/payment_dispute_summary?limit=10&amp;offset=0 This field is only returned if there is a previous page of results to view based on the current input criteria.")
 
 	public String getPrev()
 	{
@@ -234,7 +233,7 @@ public class DisputeSummaryResponse
 	 * @return total
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This integer value is the total number of payment disputes that matched the input criteria. If the total number of entries exceeds the value that was set for limit in the request payload, you will have to make multiple API calls to see all pages of the results set. This field is returned even if it is 0.")
+	@Schema(description = "This integer value is the total number of payment disputes that matched the input criteria. If the total number of entries exceeds the value that was set for limit in the request payload, you will have to make multiple API calls to see all pages of the results set. This field is returned even if it is 0.")
 
 	public Integer getTotal()
 	{

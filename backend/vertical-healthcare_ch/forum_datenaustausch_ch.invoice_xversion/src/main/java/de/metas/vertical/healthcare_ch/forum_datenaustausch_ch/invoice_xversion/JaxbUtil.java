@@ -88,7 +88,11 @@ public class JaxbUtil
 			// background: some systems that shall be able to work with our XML have issues with the single quote in the XML header
 			// https://stackoverflow.com/questions/18451870/altering-the-xml-header-produced-by-the-jaxb-marshaller/32892565
 			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true); // let the marshaler *not* provide stupid single-quote header
-			marshaller.setProperty("com.sun.xml.internal.bind.xmlHeaders", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // let the marshaller provide our header
+			// Use the standalone JAXB RI (com.sun.xml.bind, jaxb-runtime) property name. The old "com.sun.xml.internal.bind.*"
+			// name belonged to the JDK-bundled JAXB implementation, which was removed after JDK 8; on JDK 11+/25 the active
+			// runtime is the standalone RI (com.sun.xml.bind.v2.runtime.MarshallerImpl), which rejects the "internal" name
+			// with a PropertyException. The produced header is identical.
+			marshaller.setProperty("com.sun.xml.bind.xmlHeaders", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // let the marshaller provide our header
 
 			marshaller.marshal(jaxbElement, outputStream);
 		}

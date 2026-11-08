@@ -20,14 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.SimpleAmount;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used by each payment dispute that is returned with the getPaymentDisputeSummaries method.
  */
-@ApiModel(description = "This type is used by each payment dispute that is returned with the getPaymentDisputeSummaries method.")
+@Schema(description = "This type is used by each payment dispute that is returned with the getPaymentDisputeSummaries method.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class PaymentDisputeSummary
 {
@@ -80,7 +79,7 @@ public class PaymentDisputeSummary
 	 * @return amount
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public SimpleAmount getAmount()
 	{
@@ -105,7 +104,7 @@ public class PaymentDisputeSummary
 	 * @return buyerUsername
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the buyer's eBay user ID. This field is returned for all payment disputes returned in the response.")
+	@Schema(description = "This is the buyer's eBay user ID. This field is returned for all payment disputes returned in the response.")
 
 	public String getBuyerUsername()
 	{
@@ -131,7 +130,7 @@ public class PaymentDisputeSummary
 	 * @return closedDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the payment dispute was closed, so this field is only returned for payment disputes in the CLOSED state. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the payment dispute was closed, so this field is only returned for payment disputes in the CLOSED state. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getClosedDate()
 	{
@@ -157,7 +156,7 @@ public class PaymentDisputeSummary
 	 * @return openDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the payment dispute was opened. This field is returned for payment disputes in all states. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the payment dispute was opened. This field is returned for payment disputes in all states. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getOpenDate()
 	{
@@ -182,7 +181,7 @@ public class PaymentDisputeSummary
 	 * @return orderId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the unique identifier of the order involved in the payment dispute. Note: eBay rolled out a new Order ID format in June 2019. The legacy APIs still support the old and new order ID format to identify orders, but only the new order ID format is supported in REST-based APIs.")
+	@Schema(description = "This is the unique identifier of the order involved in the payment dispute. Note: eBay rolled out a new Order ID format in June 2019. The legacy APIs still support the old and new order ID format to identify orders, but only the new order ID format is supported in REST-based APIs.")
 
 	public String getOrderId()
 	{
@@ -208,7 +207,7 @@ public class PaymentDisputeSummary
 	 * @return paymentDisputeId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the unique identifier of the payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay Managed Payments system. This identifier is passed in at the end of the getPaymentDispute call URI to retrieve a specific payment dispute. The getPaymentDispute method returns more details about a payment dispute than the getPaymentDisputeSummaries method.")
+	@Schema(description = "This is the unique identifier of the payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay Managed Payments system. This identifier is passed in at the end of the getPaymentDispute call URI to retrieve a specific payment dispute. The getPaymentDispute method returns more details about a payment dispute than the getPaymentDisputeSummaries method.")
 
 	public String getPaymentDisputeId()
 	{
@@ -233,7 +232,7 @@ public class PaymentDisputeSummary
 	 * @return paymentDisputeStatus
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The enumeration value in this field gives the current status of the payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeStateEnum'>eBay API documentation</a>")
+	@Schema(description = "The enumeration value in this field gives the current status of the payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeStateEnum'>eBay API documentation</a>")
 
 	public String getPaymentDisputeStatus()
 	{
@@ -259,7 +258,7 @@ public class PaymentDisputeSummary
 	 * @return reason
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The enumeration value in this field gives the reason why the buyer initiated the payment dispute. See DisputeReasonEnum type for a description of the supported reasons that buyers can give for initiating a payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeReasonEnum'>eBay API documentation</a>")
+	@Schema(description = "The enumeration value in this field gives the reason why the buyer initiated the payment dispute. See DisputeReasonEnum type for a description of the supported reasons that buyers can give for initiating a payment dispute. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:DisputeReasonEnum'>eBay API documentation</a>")
 
 	public String getReason()
 	{
@@ -285,7 +284,7 @@ public class PaymentDisputeSummary
 	 * @return respondByDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the seller must response to a payment dispute, so this field is only returned for payment disputes in the ACTION_NEEDED state. For payment disputes that require action by the seller, that same seller must call getPaymentDispute to see the next action(s) that they can take against the payment dispute. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the seller must response to a payment dispute, so this field is only returned for payment disputes in the ACTION_NEEDED state. For payment disputes that require action by the seller, that same seller must call getPaymentDispute to see the next action(s) that they can take against the payment dispute. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getRespondByDate()
 	{

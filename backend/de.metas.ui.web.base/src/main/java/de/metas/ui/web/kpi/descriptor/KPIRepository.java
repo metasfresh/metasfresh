@@ -36,8 +36,6 @@ import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.base.model.I_WEBUI_KPI_Field;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
-import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceDescriptor;
-import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceFieldDescriptor;
 import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
 import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceFieldDescriptor;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -55,7 +53,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.util.DisplayType;
-import org.elasticsearch.action.search.SearchType;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -176,16 +173,9 @@ public class KPIRepository
 				: null;
 
 		final KPIDatasourceType datasourceType = extractKPIDatasourceType(kpiDef);
-		final ElasticsearchDatasourceDescriptor elasticsearchDatasource;
 		final SQLDatasourceDescriptor sqlDatasource;
-		if (datasourceType == KPIDatasourceType.ELASTICSEARCH)
+		if (datasourceType == KPIDatasourceType.SQL)
 		{
-			elasticsearchDatasource = extractElasticsearchDatasourceDescriptor(kpiDef, loadingCtx);
-			sqlDatasource = null;
-		}
-		else if (datasourceType == KPIDatasourceType.SQL)
-		{
-			elasticsearchDatasource = null;
 			sqlDatasource = extractSQLDatasourceDescriptor(kpiDef, loadingCtx);
 		}
 		else
@@ -212,7 +202,6 @@ public class KPIRepository
 						.build())
 				//
 				.datasourceType(datasourceType)
-				.elasticsearchDatasource(elasticsearchDatasource)
 				.sqlDatasource(sqlDatasource)
 				//
 				.allowedStaleDuration(kpiDef.getKPI_AllowedStaledTimeInSec() > 0
@@ -230,33 +219,6 @@ public class KPIRepository
 	private static Optional<Duration> parseDuration(@Nullable final String durationStr)
 	{
 		return StringUtils.trimBlankToOptional(durationStr).map(Duration::parse);
-	}
-
-	private ElasticsearchDatasourceDescriptor extractElasticsearchDatasourceDescriptor(
-			@NonNull final I_WEBUI_KPI kpiDef,
-			@NonNull final KPILoadingContext loadingCtx)
-	{
-		return ElasticsearchDatasourceDescriptor.builder()
-				.esSearchIndex(kpiDef.getES_Index())
-				.esSearchTypes(SearchType.DEFAULT)
-				.esQuery(kpiDef.getES_Query())
-				.fields(loadingCtx
-						.getFields(KPIId.ofRepoId(kpiDef.getWEBUI_KPI_ID()))
-						.stream()
-						.map(kpiFieldDef -> extractElasticsearchDatasourceFieldDescriptor(kpiFieldDef, loadingCtx))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
-
-	private ElasticsearchDatasourceFieldDescriptor extractElasticsearchDatasourceFieldDescriptor(
-			@NonNull final I_WEBUI_KPI_Field kpiFieldDef,
-			@NonNull final KPILoadingContext loadingCtx)
-	{
-		return ElasticsearchDatasourceFieldDescriptor.builder()
-				.fieldName(extractFieldName(kpiFieldDef, loadingCtx))
-				.esPath(kpiFieldDef.getES_FieldPath())
-				.valueType(KPIFieldValueType.fromDisplayType(kpiFieldDef.getAD_Reference_ID()))
-				.build();
 	}
 
 	private SQLDatasourceDescriptor extractSQLDatasourceDescriptor(

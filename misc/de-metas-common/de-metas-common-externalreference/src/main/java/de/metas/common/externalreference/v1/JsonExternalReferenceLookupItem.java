@@ -24,7 +24,7 @@ package de.metas.common.externalreference.v1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,10 +32,10 @@ import lombok.Value;
 @Value
 public class JsonExternalReferenceLookupItem
 {
-	@ApiModelProperty(required = true, value = "Id which the externally referenced resource has in the external system")
+	@Schema(description = "Id which the externally referenced resource has in the external system", required = true)
 	String id;
 
-	@ApiModelProperty(required = true, value = "Type of the externally referenced resource. E.g. user, issue, timebooking")
+	@Schema(description = "Type of the externally referenced resource. E.g. user, issue, timebooking", required = true)
 	String type;
 
 	@JsonCreator

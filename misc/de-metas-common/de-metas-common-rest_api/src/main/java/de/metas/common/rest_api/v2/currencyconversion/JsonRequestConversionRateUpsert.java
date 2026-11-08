@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -38,13 +37,13 @@ import java.util.List;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
-@ApiModel(description = "Batch of normalized currency-conversion rates to upsert into C_Conversion_Rate.")
+@Schema(description = "Batch of normalized currency-conversion rates to upsert into C_Conversion_Rate.")
 public class JsonRequestConversionRateUpsert
 {
-	@ApiModelProperty(position = 10, required = true, value = "The conversion rates to upsert.")
+	@Schema(description = "The conversion rates to upsert.", required = true)
 	List<JsonRequestConversionRateUpsertItem> requestItems;
 
-	@ApiModelProperty(position = 20, value = "Default sync-advise for the batch; omitted defaults to CREATE_OR_MERGE.")
+	@Schema(description = "Default sync-advise for the batch; omitted defaults to CREATE_OR_MERGE.")
 	SyncAdvise syncAdvise;
 
 	@JsonCreator

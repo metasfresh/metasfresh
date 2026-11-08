@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -41,19 +41,19 @@ import lombok.Value;
 @Value
 public class JsonResponseBPartnerCompositeUpsertItem
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseUpsertItem responseBPartnerItem;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseUpsertItem> responseLocationItems;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseUpsertItem> responseContactItems;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseUpsertItem> responseBankAccountItems;
 

@@ -8,10 +8,14 @@ import java.security.KeyStore;
 import javax.net.ssl.SSLContext;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
+import org.apache.hc.client5.http.ssl.TrustSelfSignedStrategy;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -108,8 +112,13 @@ final class SecurPharmClientAuthenticator
 		{
 			final SSLContext sslContext = createSSLContext(config);
 
+			final TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
+			final HttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+					.setTlsSocketStrategy(tlsSocketStrategy)
+					.build();
+
 			final HttpClient client = HttpClients.custom()
-					.setSSLContext(sslContext)
+					.setConnectionManager(connectionManager)
 					.build();
 
 			final RestTemplate restTemplate = new RestTemplate();

@@ -23,7 +23,7 @@ import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Configuration
 @RequiredArgsConstructor

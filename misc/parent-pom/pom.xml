@@ -53,29 +53,37 @@
 
     <properties>
         <!-- this is our default; individual projects might need to specify their own settings -->
-        <metasfresh.java.version>1.8</metasfresh.java.version>
+        <metasfresh.java.version>25</metasfresh.java.version>
+        <lombok.version>1.18.48</lombok.version>
 
         <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <jackson.version>2.14.1</jackson.version>
-        <amqp-client.version>5.10.0</amqp-client.version>
+        <!-- Must match the spring-boot 3.5.x BOM (rabbit-amqp-client 5.25.0). spring-amqp in SB 3.5 calls
+             com.rabbitmq.client.ConnectionFactory.setMaxInboundMessageBodySize(int) (added in amqp-client
+             5.14), so the old 5.10.0 pin breaks rabbitConnectionFactory with NoSuchMethodError at boot. -->
+        <amqp-client.version>5.25.0</amqp-client.version>
 
         <jasperreports.version>6.21.2</jasperreports.version>
 
         <itextpdf.version>5.5.13.3</itextpdf.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
+        <spring-boot-admin.version>3.5.6</spring-boot-admin.version>
 
-        <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
+        <!-- 8.x targets logback 1.3+/1.5 and slf4j 2.x (the Spring Boot 3 line). The old 6.3 belonged to
+             the slf4j-1.7.x / logback-1.2.x era and dragged logback-classic 1.2.13 onto the server-assembly
+             and cucumber classpath, which is incompatible with slf4j-api 2.x (NoClassDefFoundError
+             org/slf4j/spi/LoggingEventAware at LoggerFactory init). -->
+        <logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
+        <!-- keep in sync with the spring-boot 3.5.x BOM (backend/pom.xml imports spring-boot-dependencies) -->
+        <logback.version>1.5.34</logback.version>
 
-        <springfox-swagger.version>3.0.0</springfox-swagger.version>
-        <!--        Compatibility with Springfox-->
-        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
-        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
+        <!-- springdoc-openapi: OpenAPI 3 / Swagger-UI for Spring Boot 3.5 (replaces springfox 3.0.0, which is javax.servlet-only and broken on Spring Boot 3). 2.8.x targets the Spring Boot 3.4/3.5 line; 2.8.9+ explicitly supports Spring Boot 3.5. -->
+        <springdoc.version>2.8.17</springdoc.version>
 
-        <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
-        <slf4j-api.version>1.7.25</slf4j-api.version>
+        <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors.
+             2.0.18 is managed by the spring-boot 3.5.16 BOM; the backend now runs on the slf4j-2.x API. -->
+        <slf4j-api.version>2.0.18</slf4j-api.version>
 
         <!-- test related versions -->
         <!--
@@ -88,7 +96,7 @@
         <archunit.version>1.4.2</archunit.version>
 
         <mockito.version>2.7.22</mockito.version>
-        <byte-buddy.version>1.12.20</byte-buddy.version>
+        <byte-buddy.version>1.17.8</byte-buddy.version>
         <objenesis.version>3.3</objenesis.version>
 
         <commons-io.version>2.11.0</commons-io.version>
@@ -104,6 +112,64 @@
     </modules>
 
     <dependencies>
+        <!-- JAXB shipped inside the JDK through Java 8 and was removed in Java 11+. Both JAXB
+             namespaces are needed, so provide both APIs explicitly:
+             * javax.xml.bind: the committed src/main/java-xjc sources (and other JAXB users) use it.
+               The API comes from the legacy javax.xml.bind:jaxb-api coordinates and the runtime is
+               PINNED to the 2.3.x javax-namespace line, because the spring-boot BOM would otherwise
+               force the 4.x jakarta-namespace runtime, which does not match the generated sources.
+             * jakarta.xml.bind: swagger-core-jakarta (used by springdoc for /v3/api-docs) needs it;
+               without it the OpenAPI generation fails with
+               NoClassDefFoundError: jakarta/xml/bind/annotation/XmlRootElement.
+             The javax API must NOT come from jakarta.xml.bind:jakarta.xml.bind-api:2.3.x: that GA is
+             the same as the jakarta-namespace 4.x API, so only one of the two namespaces could be on
+             the classpath. Hence jaxb-runtime's transitive jakarta.xml.bind-api 2.3.x is excluded and
+             the GA is pinned to 4.0.5, the version the spring-boot 3.5.x BOM manages (jakarta-xml-bind.version). -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+            <exclusions>
+                <!-- javax.activation is already provided by jaxb-runtime's com.sun.activation:jakarta.activation -->
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>javax.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.9</version>
+            <exclusions>
+                <!-- its javax-namespace API is provided by javax.xml.bind:jaxb-api above -->
+                <exclusion>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.5</version>
+        </dependency>
+        <!-- SOAP/SAAJ was part of the JDK through Java 8 and removed in Java 11+, so provide
+             the API + impl explicitly. Unlike JAXB above, SOAP moves to the jakarta.xml.soap
+             namespace: under Spring Boot 3 the only API consumer is Spring-WS 4.x
+             (SaajSoapMessageFactory), which is jakarta-only, so these are pinned to the
+             jakarta-namespace 3.0.x line matching the spring-boot-dependencies BOM
+             (jakarta-xml-soap 3.0.2 / saaj-impl 3.0.6). -->
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.messaging.saaj</groupId>
+            <artifactId>saaj-impl</artifactId>
+            <version>3.0.6</version>
+        </dependency>
         <dependency>
             <groupId>io.github.origin-energy</groupId>
             <artifactId>java-snapshot-testing-junit5</artifactId>
@@ -140,7 +206,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.18</version>
+                <version>${lombok.version}</version>
             </dependency>
 
             <dependency>
@@ -167,9 +233,9 @@
             <!-- ArchUnit — architecture enforcement library. Runs on Java 8.
                  Core artifact (not archunit-junit5): rules run from plain Jupiter @Test methods, so there is
                  no archunit JUnit-Platform engine to clash with the junit-platform version pinned here.
-                 slf4j-api is excluded: ArchUnit 1.4.x pulls slf4j-api 2.x transitively, but the backend runs
-                 on slf4j-api 1.7.x — ArchUnit uses only the stable Logger API, so it runs fine on 1.7.x and
-                 this avoids dragging slf4j 2.x onto consuming modules' test classpaths. -->
+                 slf4j-api is excluded so ArchUnit's own transitive slf4j-api pin cannot win Maven mediation
+                 over the version managed here. The backend now runs on slf4j-api 2.0.18 (the Spring Boot 3
+                 line); ArchUnit uses only the stable Logger API and runs fine against it. -->
             <dependency>
                 <groupId>com.tngtech.archunit</groupId>
                 <artifactId>archunit</artifactId>
@@ -225,10 +291,58 @@
                 <version>0.2.1</version>
             </dependency>
 
+            <!-- Enforce a single, consistent slf4j-2.x + logback-1.5.x stack for the modules that inherit
+                 this parent WITHOUT importing the spring-boot BOM (notably de.metas.cucumber and the
+                 misc/services/* modules). Without explicit management the transitive logback-classic
+                 1.2.13 / slf4j-api 1.7.x would win mediation and break LoggerFactory init on slf4j 2.x.
+                 (Modules that inherit de.metas.parent already get the 2.x versions from the spring-boot BOM.) -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>${slf4j-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+
+            <!-- Enforce the JDK-25-capable Byte Buddy for the modules that inherit this parent WITHOUT the
+                 spring-boot BOM (notably de.metas.cucumber). Mockito 2.7.22 drags byte-buddy 1.15.11 (officially
+                 Java 24 / class 68) + byte-buddy-agent 1.6.11 transitively, and the byte-buddy.version property
+                 alone does not override a transitive version without an explicit management entry; creating any
+                 Mockito mock on JDK 25 then throws "Java 25 (69) is not supported by the current version of Byte
+                 Buddy". (Spring-boot-BOM modules already get ${byte-buddy.version} from the BOM.) -->
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
             </dependency>
 
             <dependency>
@@ -342,7 +456,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.14.0</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
@@ -353,7 +467,24 @@
                              to repeatedly mark them as "stale" and trigger full module recompilation (JDK-6960424). -->
                         <compilerArgs>
                             <arg>-Xpkginfo:always</arg>
+                            <!-- Spring Framework 6.1 (Spring Boot 3) no longer infers constructor/method
+                                 parameter names for bean lookup unless classes are compiled with -parameters.
+                                 Without it, by-name disambiguation of multiple same-type beans (e.g. two
+                                 RestTemplate beans in de.metas.shipper.gateway.dhl.oauth2.OAuth2Config) fails
+                                 the boot with NoUniqueBeanDefinitionException. -->
+                            <arg>-parameters</arg>
                         </compilerArgs>
+                        <!-- JDK 23+ changed the default annotation-processing policy to "none": javac no longer
+                             runs processors discovered only on the classpath. Lombok is a plain dependency here,
+                             so without this explicit path its @UtilityClass/@Data/... transforms silently stop
+                             running on JDK 25. See projectlombok/lombok#3967, #3949. -->
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -460,7 +591,15 @@
                              Hence it is important to add those command-line params where @{argLine} holds those params.
                              Note that the @ is not a typo.
                              See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html and https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#argLine -->
-                        <argLine>@{argLine} -Xms256m -Xmx2048m -Dfile.encoding=UTF-8</argLine>
+                        <!-- add-opens: JDK 25 enforces strong encapsulation, so code doing reflective
+                             setAccessible on JDK internals throws InaccessibleObjectException in the test
+                             fork without an explicit open. Applies to every module's surefire fork via
+                             this parent.
+                             - java.base/java.lang: the Javassist-based JavaAssistInterceptor (and other
+                               code doing reflective ClassLoader.defineClass).
+                             - java.base/java.util: EnvTests reflects java.util.Properties.defaults
+                               (getDeclaredField("defaults").setAccessible(true)). -->
+                        <argLine>@{argLine} -Xms256m -Xmx2048m -Dfile.encoding=UTF-8 --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED</argLine>
                         <!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
                              When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0
                              or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.

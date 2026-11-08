@@ -338,6 +338,30 @@ public final class MetasfreshArchRules
 				.because("docs/coding-rules/architecture.md §8 — bounded-context dependency discipline; cycle-freedom is its structural corollary");
 	}
 
+	/**
+	 * No {@code @EnableWebMvc} and no {@code WebMvcConfigurationSupport} subclass in the main code that {@link #importWholeBackend()} imports
+	 * (the classpath of this module, i.e. the {@code ServerBoot} + {@code WebRestApiApplication} closure). Standalone applications outside that
+	 * closure are NOT covered here and need their own guard (e.g. the msv3 server's {@code JsonConfigurationTest}).
+	 * <p>
+	 * Either one makes Spring Boot's MVC auto-configuration back off in every application that component-scans the class
+	 * ({@code ServerBoot} and {@code WebRestApiApplication} scan all of {@code de.metas} and {@code org.adempiere}). Spring MVC then builds
+	 * its own default message converters and ignores the {@code MappingJackson2HttpMessageConverter} bean from
+	 * {@code de.metas.util.web.LenientRestMessageConverterConfiguration}, and springdoc loses its auto-configured MVC setup.
+	 * <p>
+	 * <b>Zero tolerance, NOT frozen</b>: main code has no such class today, so there is nothing to baseline, and callers {@code check(...)}
+	 * this rule directly. (A frozen rule only gates once its per-module baseline is committed; without one it would auto-record a violation
+	 * and pass.) Test code may use {@code @EnableWebMvc} for a standalone MVC context; {@link #importWholeBackend()} does not import tests.
+	 */
+	public static ArchRule noCustomSpringMvcConfiguration()
+	{
+		return noClasses()
+				.should().beMetaAnnotatedWith("org.springframework.web.servlet.config.annotation.EnableWebMvc")
+				.orShould().beAssignableTo("org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport")
+				.as("Main code must not use @EnableWebMvc or subclass WebMvcConfigurationSupport")
+				.because("they switch off Spring Boot's MVC auto-configuration in the scanning applications, so Spring MVC no longer uses "
+						+ "the lenient REST message converter bean (de.metas.util.web.LenientRestMessageConverterConfiguration)");
+	}
+
 	private static DescribedPredicate<JavaMethodCall> interfaceWrapperHelperWriteOrLoad()
 	{
 		return new DescribedPredicate<JavaMethodCall>("a call to InterfaceWrapperHelper.save/saveRecord/load")

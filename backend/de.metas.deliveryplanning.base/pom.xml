@@ -47,18 +47,21 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-		            <groupId>org.mockito</groupId>
-		            <artifactId>mockito-core</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
+        <!--
+            Use the Mockito version managed by the Spring Boot BOM (5.x) instead of the legacy
+            parent property mockito.version (2.7.22). Under JDK 25 the 2.7.22 inline mock maker
+            cannot instrument class-file v69 bytecode, so Mockito.mock of a concrete class produces a
+            mock that fails to intercept and the real method body runs; e.g.
+            M_ShipperTransportationTest hit a NullPointerException inside the real
+            DeliveryPlanningService (deliveryPlanningAllocRepository is null) instead of verifying a
+            delegated interaction. The BOM-managed Mockito 5.x mocks concrete classes correctly on
+            JDK 25.
+        -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 	</dependencies>

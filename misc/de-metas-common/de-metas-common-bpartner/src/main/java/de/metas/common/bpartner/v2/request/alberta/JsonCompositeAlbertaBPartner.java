@@ -23,8 +23,7 @@
 package de.metas.common.bpartner.v2.request.alberta;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -33,19 +32,19 @@ import java.util.List;
 
 @Value
 @Builder
-@ApiModel(description = "Contains the alberta bpartner details to be added or updated.")
+@Schema(description = "Contains the alberta bpartner details to be added or updated.")
 public class JsonCompositeAlbertaBPartner
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	JsonAlbertaBPartner jsonAlbertaBPartner;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	JsonBPartnerRole role;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	JsonAlbertaPatient jsonAlbertaPatient;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	List<JsonAlbertaCareGiver> jsonAlbertaCareGivers;
 
 	private JsonCompositeAlbertaBPartner(

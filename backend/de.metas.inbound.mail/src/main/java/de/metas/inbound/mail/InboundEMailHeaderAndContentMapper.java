@@ -2,7 +2,7 @@ package de.metas.inbound.mail;
 
 import java.util.Map;
 
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
 import org.springframework.integration.mail.support.DefaultMailHeaderMapper;

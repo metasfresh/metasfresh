@@ -35,7 +35,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;

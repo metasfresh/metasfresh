@@ -2,13 +2,19 @@ ARG REFNAME=local
 ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-api:$REFNAME AS api
 
-# instead of: FROM ubuntu:16.04 & apt get install openjdk-8-jdk-headless
-FROM eclipse-temurin:8-jre-jammy AS runtime
+# instead of: FROM ubuntu:16.04 & apt get install openjdk-25-jdk-headless
+FROM eclipse-temurin:25-jre-jammy AS runtime
 
-RUN apt-get -y update && apt-get -y install locales netcat && rm -rf /var/lib/apt/lists/*
+RUN apt-get -y update && apt-get -y install locales netcat curl wget && rm -rf /var/lib/apt/lists/*
 RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
+# -compat images are started by the customer's own start scripts, not by the CMD of Dockerfile.backend.api,
+# so the --add-opens that CMD passes is missing there; without it Java 25 refuses the reflective
+# ClassLoader.defineClass access (JavaAssistInterceptor) and the webapi dies at startup.
+# JDK_JAVA_OPTIONS is read by every `java` launcher invocation and is independent of JAVA_TOOL_OPTIONS.
+# A start script that sets its own JDK_JAVA_OPTIONS replaces this value, so it must keep the --add-opens.
+ENV JDK_JAVA_OPTIONS="--add-opens=java.base/java.lang=ALL-UNNAMED"
 
 WORKDIR /opt/metasfresh-webui-api
 

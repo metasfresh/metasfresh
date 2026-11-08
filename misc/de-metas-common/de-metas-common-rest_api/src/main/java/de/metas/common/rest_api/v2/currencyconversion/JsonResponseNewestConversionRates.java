@@ -24,14 +24,14 @@ package de.metas.common.rest_api.v2.currencyconversion;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
 
-@ApiModel("The newest stored conversion rate per (from, to, type) combo.")
+@Schema(name = "The newest stored conversion rate per (from, to, type) combo.")
 @Value
 @Builder
 @JsonDeserialize(builder = JsonResponseNewestConversionRates.JsonResponseNewestConversionRatesBuilder.class)

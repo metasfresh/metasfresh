@@ -29,8 +29,7 @@ import de.metas.camel.externalsystems.ebay.api.model.LineItemFulfillmentInstruct
 import de.metas.camel.externalsystems.ebay.api.model.LineItemProperties;
 import de.metas.camel.externalsystems.ebay.api.model.LineItemRefund;
 import de.metas.camel.externalsystems.ebay.api.model.Tax;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,7 @@ import java.util.List;
 /**
  * This type contains the details of each line item in an order.
  */
-@ApiModel(description = "This type contains the details of each line item in an order.")
+@Schema(description = "This type contains the details of each line item in an order.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class LineItem
 {
@@ -153,7 +152,7 @@ public class LineItem
 	 * @return appliedPromotions
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array contains information about one or more sales promotions or discounts applied to the line item. It is always returned, but will be returned as an empty array if no special sales promotions or discounts apply to the order line item.")
+	@Schema(description = "This array contains information about one or more sales promotions or discounts applied to the line item. It is always returned, but will be returned as an empty array if no special sales promotions or discounts apply to the order line item.")
 
 	public List<AppliedPromotion> getAppliedPromotions()
 	{
@@ -178,7 +177,7 @@ public class LineItem
 	 * @return deliveryCost
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public DeliveryCost getDeliveryCost()
 	{
@@ -203,7 +202,7 @@ public class LineItem
 	 * @return discountedLineItemCost
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getDiscountedLineItemCost()
 	{
@@ -239,7 +238,7 @@ public class LineItem
 	 * @return ebayCollectAndRemitTaxes
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This container will be returned if the order line item is subject to a 'Collect and Remit' tax that eBay will collect and remit to the proper taxing authority on the buyer's behalf. 'Collect and Remit' tax includes US state-mandated sales tax, 'Goods and Services' tax in Australia or New Zealand, and VAT collected for UK and EU countries. The amount of this tax is shown in the amount field, and the type of tax is shown in the taxType field. eBay will display the tax type and amount during checkout in accordance with the buyer's address, and handle collection and remittance of the tax without requiring the seller to take any action.")
+	@Schema(description = "This container will be returned if the order line item is subject to a 'Collect and Remit' tax that eBay will collect and remit to the proper taxing authority on the buyer's behalf. 'Collect and Remit' tax includes US state-mandated sales tax, 'Goods and Services' tax in Australia or New Zealand, and VAT collected for UK and EU countries. The amount of this tax is shown in the amount field, and the type of tax is shown in the taxType field. eBay will display the tax type and amount during checkout in accordance with the buyer's address, and handle collection and remittance of the tax without requiring the seller to take any action.")
 
 	public List<EbayCollectAndRemitTax> getEbayCollectAndRemitTaxes()
 	{
@@ -264,7 +263,7 @@ public class LineItem
 	 * @return giftDetails
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public GiftDetails getGiftDetails()
 	{
@@ -289,7 +288,7 @@ public class LineItem
 	 * @return itemLocation
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public ItemLocation getItemLocation()
 	{
@@ -314,7 +313,7 @@ public class LineItem
 	 * @return legacyItemId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The eBay-generated legacy listing item ID of the listing. Note that the unique identifier of a listing in REST-based APIs is called the listingId instead.")
+	@Schema(description = "The eBay-generated legacy listing item ID of the listing. Note that the unique identifier of a listing in REST-based APIs is called the listingId instead.")
 
 	public String getLegacyItemId()
 	{
@@ -339,7 +338,7 @@ public class LineItem
 	 * @return legacyVariationId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of a single variation within a multiple-variation listing. This field is only returned if the line item purchased was from a multiple-variation listing.")
+	@Schema(description = "The unique identifier of a single variation within a multiple-variation listing. This field is only returned if the line item purchased was from a multiple-variation listing.")
 
 	public String getLegacyVariationId()
 	{
@@ -364,7 +363,7 @@ public class LineItem
 	 * @return lineItemCost
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getLineItemCost()
 	{
@@ -389,7 +388,7 @@ public class LineItem
 	 * @return lineItemFulfillmentInstructions
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public LineItemFulfillmentInstructions getLineItemFulfillmentInstructions()
 	{
@@ -414,7 +413,7 @@ public class LineItem
 	 * @return lineItemFulfillmentStatus
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This enumeration value indicates the current fulfillment status of the line item. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:LineItemFulfillmentStatusEnum'>eBay API documentation</a>")
+	@Schema(description = "This enumeration value indicates the current fulfillment status of the line item. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:LineItemFulfillmentStatusEnum'>eBay API documentation</a>")
 
 	public String getLineItemFulfillmentStatus()
 	{
@@ -439,7 +438,7 @@ public class LineItem
 	 * @return lineItemId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the unique identifier of an eBay order line item. This field is created as soon as there is a commitment to buy from the seller.")
+	@Schema(description = "This is the unique identifier of an eBay order line item. This field is created as soon as there is a commitment to buy from the seller.")
 
 	public String getLineItemId()
 	{
@@ -464,7 +463,7 @@ public class LineItem
 	 * @return listingMarketplaceId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of the eBay marketplace where the line item was listed. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:MarketplaceIdEnum'>eBay API documentation</a>")
+	@Schema(description = "The unique identifier of the eBay marketplace where the line item was listed. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:MarketplaceIdEnum'>eBay API documentation</a>")
 
 	public String getListingMarketplaceId()
 	{
@@ -489,7 +488,7 @@ public class LineItem
 	 * @return properties
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public LineItemProperties getProperties()
 	{
@@ -515,7 +514,7 @@ public class LineItem
 	 * @return purchaseMarketplaceId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of the eBay marketplace where the line item was listed. Often, the listingMarketplaceId and the purchaseMarketplaceId identifier are the same, but there are occasions when an item will surface on multiple eBay marketplaces. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:MarketplaceIdEnum'>eBay API documentation</a>")
+	@Schema(description = "The unique identifier of the eBay marketplace where the line item was listed. Often, the listingMarketplaceId and the purchaseMarketplaceId identifier are the same, but there are occasions when an item will surface on multiple eBay marketplaces. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:MarketplaceIdEnum'>eBay API documentation</a>")
 
 	public String getPurchaseMarketplaceId()
 	{
@@ -540,7 +539,7 @@ public class LineItem
 	 * @return quantity
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The number of units of the line item in the order. These are represented as a group by a single lineItemId.")
+	@Schema(description = "The number of units of the line item in the order. These are represented as a group by a single lineItemId.")
 
 	public Integer getQuantity()
 	{
@@ -575,7 +574,7 @@ public class LineItem
 	 * @return refunds
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array is always returned, but is returned as an empty array unless the seller has submitted a partial or full refund to the buyer for the order. If a refund has occurred, the refund amount and refund date will be shown for each refund.")
+	@Schema(description = "This array is always returned, but is returned as an empty array unless the seller has submitted a partial or full refund to the buyer for the order. If a refund has occurred, the refund amount and refund date will be shown for each refund.")
 
 	public List<LineItemRefund> getRefunds()
 	{
@@ -600,7 +599,7 @@ public class LineItem
 	 * @return sku
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "Seller-defined Stock-Keeping Unit (SKU). This inventory identifier must be unique within the seller's eBay inventory. SKUs are optional when listing in the legacy/Trading API system, but SKUs are required when listing items through the Inventory API model.")
+	@Schema(description = "Seller-defined Stock-Keeping Unit (SKU). This inventory identifier must be unique within the seller's eBay inventory. SKUs are optional when listing in the legacy/Trading API system, but SKUs are required when listing items through the Inventory API model.")
 
 	public String getSku()
 	{
@@ -625,7 +624,7 @@ public class LineItem
 	 * @return soldFormat
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The eBay listing type of the line item. The most common listing types are AUCTION and FIXED_PRICE. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:SoldFormatEnum'>eBay API documentation</a>")
+	@Schema(description = "The eBay listing type of the line item. The most common listing types are AUCTION and FIXED_PRICE. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:SoldFormatEnum'>eBay API documentation</a>")
 
 	public String getSoldFormat()
 	{
@@ -660,7 +659,7 @@ public class LineItem
 	 * @return taxes
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "Contains a list of taxes applied to the line item, if any. This array is always returned, but will be returned as empty if no taxes are applicable to the line item.")
+	@Schema(description = "Contains a list of taxes applied to the line item, if any. This array is always returned, but will be returned as empty if no taxes are applicable to the line item.")
 
 	public List<Tax> getTaxes()
 	{
@@ -685,7 +684,7 @@ public class LineItem
 	 * @return title
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The title of the listing.")
+	@Schema(description = "The title of the listing.")
 
 	public String getTitle()
 	{
@@ -710,7 +709,7 @@ public class LineItem
 	 * @return total
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getTotal()
 	{

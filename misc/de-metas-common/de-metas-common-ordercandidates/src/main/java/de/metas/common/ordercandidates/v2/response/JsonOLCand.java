@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -81,7 +81,7 @@ public class JsonOLCand
 	BigDecimal qty;
 	int uomId;
 
-	@ApiModelProperty(value = "Effective number of items - in the product's stock UOM - the order line candidate was created with.")
+	@Schema(description = "Effective number of items - in the product's stock UOM - the order line candidate was created with.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
@@ -103,24 +103,24 @@ public class JsonOLCand
 	String description;
 	Integer line;
 
-	@ApiModelProperty(value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
+	@Schema(description = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
 			+ "Keys are column names; values are the column values.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Map<String, Object> extendedProps;
 
-	@ApiModelProperty(value = "Value of the promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
+	@Schema(description = "Value of the promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String promotionCode;
 
-	@ApiModelProperty(value = "Value of the second promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
+	@Schema(description = "Value of the second promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String promotionCode2;
 
-	@ApiModelProperty(value = "If true, the order line candidate was created without charge.")
+	@Schema(description = "If true, the order line candidate was created without charge.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isWithoutCharge;
 
-	@ApiModelProperty(value = "Free-text reason associated with the order line candidate.")
+	@Schema(description = "Free-text reason associated with the order line candidate.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String reason;
 

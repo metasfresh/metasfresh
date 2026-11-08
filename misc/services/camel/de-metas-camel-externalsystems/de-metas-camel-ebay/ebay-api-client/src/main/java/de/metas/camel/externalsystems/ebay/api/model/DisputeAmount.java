@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type defines the monetary value of an amount. It can provide the amount in both the currency used on the eBay site where an item is being offered and the conversion of that value into another currency, if applicable.
  */
-@ApiModel(description = "This type defines the monetary value of an amount. It can provide the amount in both the currency used on the eBay site where an item is being offered and the conversion of that value into another currency, if applicable.")
+@Schema(description = "This type defines the monetary value of an amount. It can provide the amount in both the currency used on the eBay site where an item is being offered and the conversion of that value into another currency, if applicable.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class DisputeAmount
 {
@@ -64,7 +63,7 @@ public class DisputeAmount
 	 * @return convertedFromCurrency
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The three-letter ISO 4217 code representing the currency of the amount in the convertedFromValue field. This value is the pre-conversion currency. This field is only returned if/when currency conversion was applied by eBay. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
+	@Schema(description = "The three-letter ISO 4217 code representing the currency of the amount in the convertedFromValue field. This value is the pre-conversion currency. This field is only returned if/when currency conversion was applied by eBay. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
 
 	public String getConvertedFromCurrency()
 	{
@@ -89,7 +88,7 @@ public class DisputeAmount
 	 * @return convertedFromValue
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is the pre-conversion amount. The value field contains the converted amount of this value, in the currency specified by the currency field. This field is only returned if/when currency conversion was applied by eBay.")
+	@Schema(description = "The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is the pre-conversion amount. The value field contains the converted amount of this value, in the currency specified by the currency field. This field is only returned if/when currency conversion was applied by eBay.")
 
 	public String getConvertedFromValue()
 	{
@@ -115,7 +114,7 @@ public class DisputeAmount
 	 * @return currency
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "A three-letter ISO 4217 code that indicates the currency of the amount in the value field. This field is always returned with any container using Amount type. Default: The currency of the authenticated user's country. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
+	@Schema(description = "A three-letter ISO 4217 code that indicates the currency of the amount in the value field. This field is always returned with any container using Amount type. Default: The currency of the authenticated user's country. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
 
 	public String getCurrency()
 	{
@@ -140,7 +139,7 @@ public class DisputeAmount
 	 * @return exchangeRate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The exchange rate used for the monetary conversion. This field shows the exchange rate used to convert the dollar value in the value field from the dollar value in the convertedFromValue field. This field is only returned if/when currency conversion was applied by eBay.")
+	@Schema(description = "The exchange rate used for the monetary conversion. This field shows the exchange rate used to convert the dollar value in the value field from the dollar value in the convertedFromValue field. This field is only returned if/when currency conversion was applied by eBay.")
 
 	public String getExchangeRate()
 	{
@@ -165,7 +164,7 @@ public class DisputeAmount
 	 * @return value
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The monetary amount, in the currency specified by the currency field. This field is always returned with any container using Amount type.")
+	@Schema(description = "The monetary amount, in the currency specified by the currency field. This field is always returned with any container using Amount type.")
 
 	public String getValue()
 	{

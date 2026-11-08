@@ -433,7 +433,6 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			return OrderId.ofRepoId(order.getC_Order_ID());
 		}
 
-		@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
 		private ShipmentScheduleWithHU createShipmentSchedule(
 				@NonNull final ProductId productId,
 				@NonNull final String qtyOrdered,
@@ -489,17 +488,16 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void allLinesAreCompleted()
 		{
-			final ShipmentScheduleBuilder candidateBuilder = shipmentSchedule()
-					.deliveryRule(DeliveryRule.COMPLETE_ORDER)
-					.orderId(order())
-					.productId(product("product", uom("uom")));
+			final OrderId candidateOrderId = order();
+			final ProductId candidateProductId = product("product", uom("uom"));
+			final DeliveryRule candidateDeliveryRule = DeliveryRule.COMPLETE_ORDER;
 
 			final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
-					candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build(), //
-					candidateBuilder.qtyOrdered("1").qtyToDeliver("1").build(), //
-					candidateBuilder.qtyOrdered("2").qtyToDeliver("2").build(), //
-					candidateBuilder.qtyOrdered("3").qtyToDeliver("3").build(), //
-					candidateBuilder.qtyOrdered("4").qtyToDeliver("4").build() //
+					createShipmentSchedule(candidateProductId, "100", "100", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "1", "1", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "2", "2", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "3", "3", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "4", "4", candidateDeliveryRule, candidateOrderId) //
 			);
 
 			final InOutGenerateResult result = process(candidates);
@@ -509,18 +507,17 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void allLinesAreCompleted_but_OneLineOutOfSelection()
 		{
-			final ShipmentScheduleBuilder candidateBuilder = shipmentSchedule()
-					.deliveryRule(DeliveryRule.COMPLETE_ORDER)
-					.orderId(order())
-					.productId(product("product", uom("uom")));
+			final OrderId candidateOrderId = order();
+			final ProductId candidateProductId = product("product", uom("uom"));
+			final DeliveryRule candidateDeliveryRule = DeliveryRule.COMPLETE_ORDER;
 
 			final List<ShipmentScheduleWithHU> candidates = Collections.singletonList(
-					candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build() //
+					createShipmentSchedule(candidateProductId, "100", "100", candidateDeliveryRule, candidateOrderId) //
 			);
 
 			// one line is out of our generate selection
 			// don't care if is completed or not
-			candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build();
+			createShipmentSchedule(candidateProductId, "100", "100", candidateDeliveryRule, candidateOrderId);
 
 			final InOutGenerateResult result = process(candidates);
 			assertThat(result.getInOuts()).isEmpty();
@@ -529,17 +526,16 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void oneIncompleteLine()
 		{
-			final ShipmentScheduleBuilder candidateBuilder = shipmentSchedule()
-					.deliveryRule(DeliveryRule.COMPLETE_ORDER)
-					.orderId(order())
-					.productId(product("product", uom("uom")));
+			final OrderId candidateOrderId = order();
+			final ProductId candidateProductId = product("product", uom("uom"));
+			final DeliveryRule candidateDeliveryRule = DeliveryRule.COMPLETE_ORDER;
 
 			final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
-					candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build(), //
-					candidateBuilder.qtyOrdered("1").qtyToDeliver("1").build(), //
-					candidateBuilder.qtyOrdered("2").qtyToDeliver("2").build(), //
-					candidateBuilder.qtyOrdered("3").qtyToDeliver("3").build(), //
-					candidateBuilder.qtyOrdered("4").qtyToDeliver("2").build() // incomplete line
+					createShipmentSchedule(candidateProductId, "100", "100", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "1", "1", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "2", "2", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "3", "3", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "4", "2", candidateDeliveryRule, candidateOrderId) // incomplete line
 			);
 
 			final InOutGenerateResult result = process(candidates);
@@ -549,17 +545,16 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void deliveryRule_not_CompleteOrder()
 		{
-			final ShipmentScheduleBuilder candidateBuilder = shipmentSchedule()
-					.deliveryRule(DeliveryRule.AVAILABILITY)
-					.orderId(order())
-					.productId(product("product", uom("uom")));
+			final OrderId candidateOrderId = order();
+			final ProductId candidateProductId = product("product", uom("uom"));
+			final DeliveryRule candidateDeliveryRule = DeliveryRule.AVAILABILITY;
 
 			final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
-					candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build(), //
-					candidateBuilder.qtyOrdered("1").qtyToDeliver("1").build(), //
-					candidateBuilder.qtyOrdered("2").qtyToDeliver("2").build(), //
-					candidateBuilder.qtyOrdered("3").qtyToDeliver("3").build(), //
-					candidateBuilder.qtyOrdered("4").qtyToDeliver("2").build() // incomplete line
+					createShipmentSchedule(candidateProductId, "100", "100", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "1", "1", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "2", "2", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "3", "3", candidateDeliveryRule, candidateOrderId), //
+					createShipmentSchedule(candidateProductId, "4", "2", candidateDeliveryRule, candidateOrderId) // incomplete line
 			);
 
 			final InOutGenerateResult result = process(candidates);

@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -106,7 +107,12 @@ public class PPOrderBLTest
 		@BeforeEach
 		public void beforeEach()
 		{
-			now = ZonedDateTime.now();
+			// Truncate to milliseconds so the reference matches SystemTime's clock: SystemTime (via
+			// FixedTimeSource) stores and returns time at millisecond precision, and production reads
+			// canBeExportedFrom through SystemTime. Under JDK 25 ZonedDateTime.now() carries
+			// sub-millisecond (micro/nano) digits that SystemTime drops, so an un-truncated reference
+			// would differ from the production value only below the millisecond.
+			now = ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 			SystemTime.setFixedTimeSource(now);
 		}
 

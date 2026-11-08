@@ -713,10 +713,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			final PriceListVersionId servicePriceListVersionId = createPriceListVersion(servicePriceListId);
 			createProductPrice(servicePriceListVersionId, serviceFeeProductId, uomEach, taxCategoryId);
 
-			serviceCompanyBPartnerAndLocationId = bpartnerAndLocation()
-					.purchasePricingSystemId(servicePricingSystemId)
-					.countryId(countryId)
-					.build();
+			serviceCompanyBPartnerAndLocationId = createBPartnerAndLocation(servicePricingSystemId, countryId);
 		}
 
 		private OrgId createOrg(final ZoneId timeZone)
@@ -749,7 +746,6 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			return ProductId.ofRepoId(product.getM_Product_ID());
 		}
 
-		@Builder(builderMethodName = "bpartnerAndLocation", builderClassName = "$BPartnerAndLocationBuilder")
 		private BPartnerLocationId createBPartnerAndLocation(
 				@NonNull final PricingSystemId purchasePricingSystemId,
 				@NonNull final CountryId countryId)

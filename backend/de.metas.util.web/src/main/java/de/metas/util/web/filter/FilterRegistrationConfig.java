@@ -35,12 +35,36 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.filter.UrlHandlerFilter;
 
 @Profile(Profiles.PROFILE_App)
 @Configuration
 public class FilterRegistrationConfig
 {
+	/** {@link org.springframework.web.util.pattern.PathPattern} that matches every path under {@code /api} (any depth). */
+	private static final String URL_PATHPATTERN_API = "/api/**";
+
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+
+	/**
+	 * Restores trailing-slash tolerance for the REST API, e.g. {@code GET /api/v2/bpartner/byOrg/001/?since=…} must match
+	 * {@code @GetMapping("/byOrg/{orgCode}")}. See {@link PathNormalizingFilterRegistrations#trailingSlashRegistration(String, String)}.
+	 */
+	@Bean
+	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashApiUrlHandlerFilter()
+	{
+		return PathNormalizingFilterRegistrations.trailingSlashRegistration(MetasfreshRestAPIConstants.URL_PATTERN_API, URL_PATHPATTERN_API);
+	}
+
+	/**
+	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the REST API path, e.g. {@code /api//v2/version}
+	 * as sent by a reverse proxy that maps {@code /app/api/...} to {@code /api//...}. See {@link DuplicateSlashCollapsingFilter}.
+	 */
+	@Bean
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashApiFilter()
+	{
+		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(MetasfreshRestAPIConstants.URL_PATTERN_API);
+	}
 
 	// NOTE: we are using standard spring CORS filter
 	// @Bean

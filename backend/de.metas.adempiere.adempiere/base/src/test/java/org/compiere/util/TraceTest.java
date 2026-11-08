@@ -1,0 +1,95 @@
+package org.compiere.util;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class TraceTest
+{
+	private static StackTraceElement frame(final String className, final String methodName, final int lineNumber)
+	{
+		return new StackTraceElement(className, methodName, className.substring(className.lastIndexOf('.') + 1) + ".java", lineNumber);
+	}
+
+	/**
+	 * The Java 8 / Spring Boot 2 call chain of a REST controller: reflection via {@code sun.reflect.*}, servlet via {@code javax.servlet.*}.
+	 */
+	@Test
+	void toOneLineStackTraceString_java8_reflectionAndJavaxServletFramesAreSkipped()
+	{
+		final StackTraceElement[] stacktrace = {
+				frame("de.metas.rest_api.v2.order.sales.SalesOrderRestController", "revertOrder", 241),
+				frame("sun.reflect.NativeMethodAccessorImpl", "invoke0", -2),
+				frame("sun.reflect.DelegatingMethodAccessorImpl", "invoke", 43),
+				frame("java.lang.reflect.Method", "invoke", 498),
+				frame("org.springframework.web.servlet.FrameworkServlet", "service", 883),
+				frame("javax.servlet.http.HttpServlet", "service", 764),
+				frame("de.metas.server.config.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
+		};
+
+		assertThat(Trace.toOneLineStackTraceString(stacktrace))
+				.isEqualTo("SalesOrderRestController.revertOrder:241 <~~~ WebConfig$ApiNoStoreCacheControlFilter.doFilter:80");
+	}
+
+	/**
+	 * The same call chain on JDK 18+ / Spring Boot 3: reflection goes through {@code jdk.internal.reflect.DirectMethodHandleAccessor}
+	 * and the servlet API lives in {@code jakarta.servlet.*}. The shortened trace must be the same as on Java 8.
+	 */
+	@Test
+	void toOneLineStackTraceString_jdk18_reflectionAndJakartaServletFramesAreSkipped()
+	{
+		final StackTraceElement[] stacktrace = {
+				frame("de.metas.rest_api.v2.order.sales.SalesOrderRestController", "revertOrder", 241),
+				frame("jdk.internal.reflect.DirectMethodHandleAccessor", "invoke", 104),
+				frame("java.lang.reflect.Method", "invoke", 580),
+				frame("org.springframework.web.servlet.FrameworkServlet", "service", 885),
+				frame("jakarta.servlet.http.HttpServlet", "service", 593),
+				frame("org.springframework.web.servlet.FrameworkServlet", "service", 885),
+				frame("jakarta.servlet.http.HttpServlet", "service", 658),
+				frame("org.apache.catalina.core.ApplicationFilterChain", "internalDoFilter", 195),
+				frame("de.metas.server.config.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
+		};
+
+		assertThat(Trace.toOneLineStackTraceString(stacktrace))
+				.isEqualTo("SalesOrderRestController.revertOrder:241 <~~~ WebConfig$ApiNoStoreCacheControlFilter.doFilter:80");
+	}
+
+	/**
+	 * JDK 17+ dynamic proxies live in {@code jdk.proxyN} and are skipped like the other {@code jdk.*} frames: they carry no line number,
+	 * the actual logic is in the {@code InvocationHandler}.
+	 */
+	@Test
+	void toOneLineStackTraceString_jdk17_dynamicProxyFramesAreSkipped()
+	{
+		final StackTraceElement[] stacktrace = {
+				frame("de.metas.rest_api.v2.order.sales.SalesOrderRestController", "revertOrder", 241),
+				frame("jdk.proxy2.$Proxy187", "revertOrder", -1),
+				frame("de.metas.server.config.WebConfig$ApiNoStoreCacheControlFilter", "doFilter", 80),
+		};
+
+		assertThat(Trace.toOneLineStackTraceString(stacktrace))
+				.isEqualTo("SalesOrderRestController.revertOrder:241 <~~~ WebConfig$ApiNoStoreCacheControlFilter.doFilter:80");
+	}
+}
