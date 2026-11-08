@@ -34,6 +34,7 @@ import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
+import de.metas.shipper.gateway.dhl.model.DhlShipperConfigId;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
@@ -225,7 +226,7 @@ class DhlTestHelper
 		//
 		// create all structures
 
-		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
+		final DhlClientConfigRepository clientConfigRepository = DhlClientConfigRepository.newInstanceForUnitTesting();
 		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
 		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), new CurrencyRepository(), orderRepository);
@@ -233,10 +234,13 @@ class DhlTestHelper
 		final UomId dummyUom = UomId.ofRepoId(1);
 
 		final DhlClientConfig config = DhlClientConfig.builder()
+				.shipperConfigId(DhlShipperConfigId.ofRepoId(1))
+				.shipperName("dummy")
 				.baseUrl(BASE_URL)
 				.applicationID(USER_NAME)
 				.applicationToken(APP_TOKEN)
 				.accountNumber(accountNumber) // special account number, depending on target country. why dhl why?????
+				.accountNumberInternational(accountNumber)
 				.signature(PASSWORD)
 				.username(USER_NAME)
 				.lengthUomId(dummyUom)
