@@ -72,7 +72,7 @@ class ManufacturingOrderRestControllerTest
 
 		assertThat(response.getStatusCode()).as("response: %s", response).isEqualTo(202);
 		assertThat(response.getBody()).isEqualTo("Manufacturing orders updated");
-		assertThat(response.isContentTypeCompatibleWith(MediaType.TEXT_PLAIN)).as("content type of response %s", response).isTrue();
+		assertThat(response.getMediaType()).as("content type of response %s", response).isEqualTo(MediaType.parseMediaType("text/plain;charset=UTF-8"));
 		assertThat(AppServerLikeRestTestServer.countRequestAudits()).as("the request must have gone through the audit").isEqualTo(1);
 	}
 

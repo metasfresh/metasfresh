@@ -99,6 +99,6 @@ class VersionRestControllerTest
 	{
 		assertThat(response.getStatusCode()).as("response: %s", response).isEqualTo(200);
 		assertThat(response.getBody()).isEqualTo(DB_VERSION);
-		assertThat(response.isContentTypeCompatibleWith(MediaType.TEXT_PLAIN)).as("content type of response %s", response).isTrue();
+		assertThat(response.getMediaType()).as("content type of response %s", response).isEqualTo(MediaType.parseMediaType("text/plain;charset=UTF-8"));
 	}
 }

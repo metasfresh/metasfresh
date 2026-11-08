@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -83,7 +82,7 @@ public class ReceiptCandidatesRestController
 			Loggables.withLogger(logger, Level.DEBUG).addLog("ReceiptCandidates status updated");
 			
 			return ResponseEntity.accepted()
-					.contentType(MediaType.TEXT_PLAIN)
+					.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
 					.body("ReceiptCandidates updated");
 		}
 	}

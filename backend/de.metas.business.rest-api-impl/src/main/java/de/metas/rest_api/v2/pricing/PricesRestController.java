@@ -36,7 +36,6 @@ import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -141,7 +140,7 @@ public class PricesRestController
 		{
 			return ResponseEntity
 					.status(HttpStatus.UNPROCESSABLE_ENTITY)
-					.contentType(MediaType.TEXT_PLAIN) // the body is the raw exception message, not JSON
+					.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8) // the body is the raw exception message, not JSON
 					.body(ex.getMessage());
 		}
 	}

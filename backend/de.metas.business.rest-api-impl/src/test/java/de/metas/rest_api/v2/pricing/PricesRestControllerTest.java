@@ -32,6 +32,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -47,7 +49,10 @@ class PricesRestControllerTest
 {
 	private static final String PATH = "/api/v2/prices/001/product/search";
 	private static final String REQUEST_BODY = "{\"bpartnerIdentifier\":\"val-1\",\"productIdentifier\":\"val-2\",\"targetDate\":\"2022-05-10\"}";
-	private static final String ERROR_MESSAGE = "No price found for the given product";
+	/**
+	 * Non-ASCII on purpose: the exception message may contain e.g. German product names, and must reach the client unchanged.
+	 */
+	private static final String ERROR_MESSAGE = "No price found for product Größe ä ö ü €";
 
 	private AppServerLikeRestTestServer server;
 
@@ -77,8 +82,8 @@ class PricesRestControllerTest
 		final Response response = server.postJson(PATH, "*/*", REQUEST_BODY);
 
 		assertThat(response.getStatusCode()).as("response: %s", response).isEqualTo(422);
-		assertThat(response.getBody()).isEqualTo(ERROR_MESSAGE);
-		assertThat(response.isContentTypeCompatibleWith(MediaType.TEXT_PLAIN)).as("content type of response %s", response).isTrue();
+		assertThat(response.getBodyBytes()).as("body bytes of response %s", response).isEqualTo(ERROR_MESSAGE.getBytes(StandardCharsets.UTF_8));
+		assertThat(response.getMediaType()).as("content type of response %s", response).isEqualTo(MediaType.parseMediaType("text/plain;charset=UTF-8"));
 		assertThat(AppServerLikeRestTestServer.countRequestAudits()).as("the request must have gone through the audit").isEqualTo(1);
 	}
 

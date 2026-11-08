@@ -183,7 +183,7 @@ public final class AppServerLikeRestTestServer implements AutoCloseable
 			}
 			out.flush();
 
-			return Response.parse(new String(readFully(socket.getInputStream()), StandardCharsets.UTF_8));
+			return Response.parse(readFully(socket.getInputStream()));
 		}
 		catch (final IOException e)
 		{
@@ -208,22 +208,50 @@ public final class AppServerLikeRestTestServer implements AutoCloseable
 	{
 		String statusLine;
 		@Nullable String contentType;
-		String body;
+		/**
+		 * The body bytes exactly as sent by the server (de-chunked).
+		 */
+		byte[] bodyBytes;
 
 		public int getStatusCode()
 		{
 			return Integer.parseInt(statusLine.split(" ")[1]);
 		}
 
-		public boolean isContentTypeCompatibleWith(@NonNull final MediaType mediaType)
+		/**
+		 * @return the body, decoded as UTF-8
+		 */
+		public String getBody()
 		{
-			return contentType != null && MediaType.parseMediaType(contentType).isCompatibleWith(mediaType);
+			return new String(bodyBytes, StandardCharsets.UTF_8);
 		}
 
-		private static Response parse(@NonNull final String raw)
+		@Nullable
+		public MediaType getMediaType()
 		{
-			final int headerEnd = raw.indexOf("\r\n\r\n");
-			final String[] headLines = raw.substring(0, headerEnd).split("\r\n");
+			return contentType != null ? MediaType.parseMediaType(contentType) : null;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "Response(statusLine=" + statusLine + ", contentType=" + contentType + ", body=" + getBody() + ")";
+		}
+
+		public boolean isContentTypeCompatibleWith(@NonNull final MediaType mediaType)
+		{
+			final MediaType actualMediaType = getMediaType();
+			return actualMediaType != null && actualMediaType.isCompatibleWith(mediaType);
+		}
+
+		/**
+		 * @param raw the raw HTTP response; it is handled as ISO-8859-1, which maps each byte to one char, so the body bytes are kept unchanged
+		 */
+		private static Response parse(@NonNull final byte[] raw)
+		{
+			final String rawString = new String(raw, StandardCharsets.ISO_8859_1);
+			final int headerEnd = rawString.indexOf("\r\n\r\n");
+			final String[] headLines = rawString.substring(0, headerEnd).split("\r\n");
 
 			String contentType = null;
 			boolean chunked = false;
@@ -240,8 +268,9 @@ public final class AppServerLikeRestTestServer implements AutoCloseable
 				}
 			}
 
-			final String rawBody = raw.substring(headerEnd + 4);
-			return new Response(headLines[0], contentType, chunked ? dechunk(rawBody) : rawBody);
+			final String rawBody = rawString.substring(headerEnd + 4);
+			final String body = chunked ? dechunk(rawBody) : rawBody;
+			return new Response(headLines[0], contentType, body.getBytes(StandardCharsets.ISO_8859_1));
 		}
 
 		private static String dechunk(@NonNull final String chunkedBody)

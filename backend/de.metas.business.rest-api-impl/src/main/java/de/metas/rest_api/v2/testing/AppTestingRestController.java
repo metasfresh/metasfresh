@@ -35,7 +35,6 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,7 +72,7 @@ public class AppTestingRestController
 		final String message = "sent: " + request;
 		logger.info("pingNotifications: {}", message);
 		return ResponseEntity.ok()
-				.contentType(MediaType.TEXT_PLAIN)
+				.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
 				.body(message);
 	}
 
