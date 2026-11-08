@@ -84,13 +84,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- JSP -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>jstl</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- Swagger / OpenAPI: springdoc-openapi (webmvc core + swagger-ui bundled) -->
 		<dependency>
 			<groupId>org.springdoc</groupId>

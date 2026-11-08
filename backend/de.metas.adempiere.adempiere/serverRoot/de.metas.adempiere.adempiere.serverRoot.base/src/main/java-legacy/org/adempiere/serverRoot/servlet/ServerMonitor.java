@@ -1028,7 +1028,7 @@ public class ServerMonitor extends HttpServlet
 	 * Init
 	 *
 	 * @param config config
-	 * @throws javax.servlet.ServletException
+	 * @throws ServletException
 	 */
 	@Override
 	public void init(ServletConfig config) throws ServletException
