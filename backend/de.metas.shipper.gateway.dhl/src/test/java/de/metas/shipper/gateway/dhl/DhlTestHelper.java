@@ -45,6 +45,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
@@ -225,7 +226,7 @@ class DhlTestHelper
 		//
 		// create all structures
 
-		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
+		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository(new ShipperRepository());
 		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
 		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), new CurrencyRepository(), orderRepository);

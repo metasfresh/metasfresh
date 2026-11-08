@@ -23,20 +23,30 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import de.metas.cache.CCache;
+import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperRepository;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 public class DhlClientConfigRepository
 {
-	private final CCache<Integer, DhlClientConfig> cache = CCache.newCache(I_DHL_Shipper_Config.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	@NonNull private final ShipperRepository shipperRepository;
+
+	private final CCache<Integer, DhlClientConfig> cache = CCache.<Integer, DhlClientConfig>builder()
+			.tableName(I_DHL_Shipper_Config.Table_Name)
+			.additionalTableNameToResetFor(I_M_Shipper.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@NonNull
 	public DhlClientConfig getByShipperId(@NonNull final ShipperId shipperId)
@@ -45,7 +55,7 @@ public class DhlClientConfigRepository
 		return cache.getOrLoad(repoId, () -> retrieveConfig(repoId));
 	}
 
-	private static DhlClientConfig retrieveConfig(final int shipperId)
+	private DhlClientConfig retrieveConfig(final int shipperId)
 	{
 		final I_DHL_Shipper_Config configPO = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DHL_Shipper_Config.class)
@@ -58,10 +68,10 @@ public class DhlClientConfigRepository
 		{
 			throw new AdempiereException("No DHL shipper configuration found for shipperId=" + shipperId);
 		}
-		final I_M_Shipper shipperPo = InterfaceWrapperHelper.load(configPO.getM_Shipper_ID(), I_M_Shipper.class);
+		final Shipper shipper = shipperRepository.getById(ShipperId.ofRepoId(configPO.getM_Shipper_ID()));
 		return DhlClientConfig.builder()
 				.shipperConfigId(configPO.getDHL_Shipper_Config_ID())
-				.shipperName(shipperPo.getName())
+				.shipperName(shipper.getName())
 				.applicationID(configPO.getapplicationID())
 				.applicationToken(configPO.getApplicationToken())
 				.baseUrl(configPO.getdhl_api_url())
@@ -70,7 +80,7 @@ public class DhlClientConfigRepository
 				.username(configPO.getUserName())
 				.signature(configPO.getSignature())
 				.lengthUomId(UomId.ofRepoId(configPO.getDhl_LenghtUOM_ID()))
-				.trackingUrlBase(shipperPo.getTrackingURL())
+				.trackingUrlBase(shipper.getTrackingUrl())
 				.build();
 	}
 }
