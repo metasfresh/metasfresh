@@ -5,9 +5,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.MoreObjects;
+import de.metas.util.Check;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -35,10 +38,14 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class Password
 {
+	/**
+	 * @return {@code null} if the given password is {@code null} or empty; an empty password is no password, so it is never shown as set
+	 */
 	@JsonCreator
-	public static Password ofNullableString(final String password)
+	@Nullable
+	public static Password ofNullableString(@Nullable final String password)
 	{
-		return password != null ? new Password(password) : null;
+		return Check.isEmpty(password) ? null : new Password(password);
 	}
 
 	public static Password cast(final Object value)
