@@ -28,6 +28,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class DhlShipperConfigId implements RepoIdAware
 {
@@ -37,6 +39,12 @@ public class DhlShipperConfigId implements RepoIdAware
 	public static DhlShipperConfigId ofRepoId(final int repoId)
 	{
 		return new DhlShipperConfigId(repoId);
+	}
+
+	@Nullable
+	public static DhlShipperConfigId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new DhlShipperConfigId(repoId) : null;
 	}
 
 	private DhlShipperConfigId(final int repoId)
