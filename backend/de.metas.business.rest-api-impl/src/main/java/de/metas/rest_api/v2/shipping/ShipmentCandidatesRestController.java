@@ -82,7 +82,9 @@ public class ShipmentCandidatesRestController
 			shipmentCandidateAPIService.updateStatus(status);
 			Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentCandidates status updated");
 
-			return ResponseEntity.accepted().body("ShipmentCandidates updated");
+			return ResponseEntity.accepted()
+					.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
+					.body("ShipmentCandidates updated");
 		}
 	}
 }
