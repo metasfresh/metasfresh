@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperId;
@@ -32,6 +33,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Repository;
 
@@ -43,6 +46,14 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class DhlClientConfigRepository
 {
+	@VisibleForTesting
+	public static DhlClientConfigRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(DhlClientConfigRepository.class, () -> new DhlClientConfigRepository(ShipperRepository.newInstanceForUnitTesting()));
+	}
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ShipperRepository shipperRepository;
 
