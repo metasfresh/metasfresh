@@ -232,6 +232,18 @@ Feature: API Audit GET http method
   @from:cucumber
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
+  @Id:S23944_010
+  Scenario: Testcase 150, GET of an endpoint with a plain-text response and caller waits for result
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/version | N                     | Y                                | Y                 |
+
+    # The version is returned as text/plain, so the synchronous audit must neither parse it as JSON nor answer with HTTP 500
+    When invoke 'GET' 'api/v2/version' with response code '200'
+
+  @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset
     And the following API_Audit_Config records are created:
