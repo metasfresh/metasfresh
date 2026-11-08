@@ -251,7 +251,9 @@
         <dependencies>
 
             <!-- Spring Boot 3's BOM no longer manages these (httpclient4 → httpclient5;
-                 codehaus-groovy dropped). Pin them here to preserve behaviour. -->
+                 codehaus-groovy dropped). Pin them here to preserve behaviour.
+                 Groovy: the ASM bundled in 3.0.25 reads Java 25 class files (major 69);
+                 3.0.22 fails with "Unsupported class file major version 69" (see ScriptExecutorGroovyTest). -->
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
@@ -260,12 +262,12 @@
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-jsr223</artifactId>
-                <version>3.0.22</version>
+                <version>3.0.25</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-console</artifactId>
-                <version>3.0.22</version>
+                <version>3.0.25</version>
             </dependency>
 
             <dependency>
