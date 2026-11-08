@@ -238,12 +238,6 @@ public final class AppServerLikeRestTestServer implements AutoCloseable
 			return "Response(statusLine=" + statusLine + ", contentType=" + contentType + ", body=" + getBody() + ")";
 		}
 
-		public boolean isContentTypeCompatibleWith(@NonNull final MediaType mediaType)
-		{
-			final MediaType actualMediaType = getMediaType();
-			return actualMediaType != null && actualMediaType.isCompatibleWith(mediaType);
-		}
-
 		/**
 		 * @param raw the raw HTTP response; it is handled as ISO-8859-1, which maps each byte to one char, so the body bytes are kept unchanged
 		 */

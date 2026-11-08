@@ -241,6 +241,13 @@ Feature: API Audit GET http method
     # The version is returned as text/plain, so the synchronous audit must neither parse it as JSON nor answer with HTTP 500
     When invoke 'GET' 'api/v2/version' with response code '200'
 
+    # api/v2/version is not authenticated, so the request is audited for the System user
+    Then after not more than 60s, find and add last API_Request_Audit_ID to context
+
+    And there are added records in API_Request_Audit
+      | Method | Path            | AD_User.Name | Status      |
+      | GET    | /api/v2/version | System       | Verarbeitet |
+
   @from:cucumber
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
