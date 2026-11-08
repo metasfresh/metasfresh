@@ -22,7 +22,7 @@ Feature: Dhl Shipment
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
     And metasfresh contains DHL Configuration:
-      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | AccountNumber_International     |
       | dhl1                             | shipper_DHL             | 33333333330102 | 33333333335301                  |
 
     #Karton
@@ -489,7 +489,7 @@ Feature: Dhl Shipment
       | Identifier         | Value      | Name       | OPT.ShipperGateway | OPT.TrackingURL               |
       | shipper_dhl_tc2_at | dhl_tc2_at | dhl_tc2_at | dhl                | https://dhl.test/track?id={0} |
     And metasfresh contains DHL Configuration:
-      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | AccountNumber_International     |
       | dhl_cfg_tc2_at                   | shipper_dhl_tc2_at      | 33333333330102 | null                            |
     And metasfresh contains External System
       | Name                   | Value                  |
@@ -554,7 +554,7 @@ Feature: Dhl Shipment
       | Identifier         | Value      | Name       | OPT.ShipperGateway | OPT.TrackingURL               |
       | shipper_dhl_tc2_de | dhl_tc2_de | dhl_tc2_de | dhl                | https://dhl.test/track?id={0} |
     And metasfresh contains DHL Configuration:
-      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber | OPT.AccountNumber_International |
+      | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber | AccountNumber_International     |
       | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | null          | 33333333335301                  |
     And metasfresh contains External System
       | Name                   | Value                  |

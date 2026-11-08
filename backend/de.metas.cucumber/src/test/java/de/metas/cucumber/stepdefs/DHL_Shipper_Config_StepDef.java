@@ -41,7 +41,7 @@ public class DHL_Shipper_Config_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains DHL Configuration:
-	 *   | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | OPT.AccountNumber_International |
+	 *   | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | AccountNumber  | AccountNumber_International     |
 	 *   | dhl1                             | shipper_DHL             | 33333333330102 | 33333333335301                  |
 	 * </pre>
 	 * @see de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDef#createOrUpdateShippers(DataTable)
