@@ -246,11 +246,9 @@ async function selectScheduleRow(page, productId, rowId) {
 
 
 /**
- * Navigate to the board and select TWO rows via ctrl-click (Table.js:191 `e.metaKey || e.ctrlKey` ->
- * "select more"). No precedent for multi-row selection exists anywhere in e2e/frontend-webui (both
- * material-cockpit-v2-jump-preconditions.spec.js and forecast-overlay-qty.spec.js select a single row);
- * this gesture was derived from frontend/src/components/table/Table.js and is verified by this test run
- * itself (both rows must show the row-selected class, independent of whether the jump action exists).
+ * Navigate to the board and select TWO rows: selectRows (tests/utils/common.js) ctrl-clicks the second row
+ * onto the first (Table.js `e.metaKey || e.ctrlKey` -> "select more") and asserts both rows show the
+ * row-selected class, independent of whether the jump action exists.
  */
 async function selectTwoBoardRows(page, rowIdFirst, rowIdSecond) {
   // A ctrl-click can only ADD to a selection when both rows render on the same grid page, so the pair

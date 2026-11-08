@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
@@ -91,7 +91,7 @@ Tests the Quick Actions feature:
       console.log(`Grid rows: ${rowCount}`);
 
       if (rowCount > 0) {
-        await gridRows.first().click();
+        await selectRows([gridRows.first()]);
         await page.waitForTimeout(500);
 
         // Check if quick actions dropdown appeared or changed

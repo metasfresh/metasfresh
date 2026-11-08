@@ -255,16 +255,6 @@ export class ReceiptCandidatesPage {
       });
 
       await selectRows([firstRow]);
-
-      // Verify selection by checking if Quick Actions button is visible
-      // (actions appear when rows are selected)
-      const modalQuickAction = page.locator('.panel-modal [data-testid="quick-action-button"], .modal-content [data-testid="quick-action-button"]');
-      const quickActionVisible = await modalQuickAction.isVisible().catch(() => false);
-
-      if (!quickActionVisible) {
-        // If no quick action visible, maybe selection failed - throw error
-        console.log('Warning: Quick Action not visible after row click - selection may have failed');
-      }
     });
   }
 
