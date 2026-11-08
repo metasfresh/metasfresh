@@ -1,9 +1,9 @@
-import { randomBytes } from 'node:crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { loginWithMasterdataUser } from '../utils/LoginHelper';
+import { newUnique } from '../utils/common';
 import { columnTextsByFieldName, exportRecordsToExcel, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
 import {
   expectStoredColumnValue,
@@ -22,8 +22,6 @@ import {
 
 const MAILBOX_WINDOW_ID = 540080;
 const MASK = '********';
-
-const newUnique = () => `${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
 
 /**
  * Creates a mailbox in the window by typing its fields; returns its record id once it is saved.

@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import { expect } from '@playwright/test';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from './common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, selectRows } from './common';
 import { WEBAPI_BASE_URL } from './WebAPIValidation';
 
 /**
@@ -76,30 +76,6 @@ export function columnTextsByFieldName(sheet, gridFieldNames, fieldName) {
     throw new Error(`the export has ${header ? header.length : 0} columns, the grid layout ${gridFieldNames.length}`);
   }
   return rows.map((row) => row[columnIndex] ?? '');
-}
-
-/**
- * Selects exactly the given grid rows: the first one with a plain click, the others with Ctrl/Cmd+click.
- * The WebUI selects a table's first row by itself when the rows arrive, or when they change and no valid
- * selection is left (frontend `reducers/tables.js`, `CREATE_TABLE` / `UPDATE_TABLE`). A plain click on the
- * only selected row deselects it (frontend `Table.handleClick`), so the first row is clicked only when it is
- * not selected yet.
- *
- * @param {import('@playwright/test').Locator[]} rows - visible grid rows (`tr[data-testid="table-row-<id>"]`)
- */
-export async function selectRows(rows) {
-  expect(rows.length, 'selectRows needs at least one row').toBeGreaterThan(0);
-  const [firstRow, ...otherRows] = rows;
-  const isFirstRowSelected = await firstRow.evaluate((el) => el.classList.contains('row-selected'));
-  if (!isFirstRowSelected) {
-    await firstRow.click();
-  }
-  for (const row of otherRows) {
-    await row.click({ modifiers: ['ControlOrMeta'] });
-  }
-  for (const row of rows) {
-    await expect(row, 'every row must be selected').toHaveClass(/row-selected/);
-  }
 }
 
 /**

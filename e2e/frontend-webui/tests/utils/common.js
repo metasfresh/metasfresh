@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { ErrorToast } from './components/ErrorToast';
 
@@ -9,6 +11,36 @@ export const SLOW_ACTION_TIMEOUT = 20000;        // 20 seconds
 export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
 
 export const getPage = () => global.currentPage;
+
+/** A short token that is unique per call (time in base 36 plus 2 random bytes), for test-data names and values. */
+export const newUnique = () => `${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
+
+/**
+ * Selects exactly the given grid rows: the first one with a plain click, the others with Ctrl/Cmd+click.
+ * The WebUI selects a table's first row by itself when the rows arrive, or when they change and no valid
+ * selection is left (frontend `reducers/tables.js`, `CREATE_TABLE` / `UPDATE_TABLE`). A plain click on the
+ * only selected row deselects it (frontend `Table.handleClick`), so the first row is clicked only when it is
+ * not selected yet.
+ *
+ * Use this for every row selection instead of a bare `row.click()`: a click on the auto-selected row
+ * deselects it, and retrying the click (`expect(...).toPass()`) only hides that.
+ *
+ * @param {import('@playwright/test').Locator[]} rows - visible grid rows (`tr[data-testid="table-row-<id>"]`)
+ */
+export async function selectRows(rows) {
+  expect(rows.length, 'selectRows needs at least one row').toBeGreaterThan(0);
+  const [firstRow, ...otherRows] = rows;
+  const isFirstRowSelected = await firstRow.evaluate((el) => el.classList.contains('row-selected'));
+  if (!isFirstRowSelected) {
+    await firstRow.click();
+  }
+  for (const row of otherRows) {
+    await row.click({ modifiers: ['ControlOrMeta'] });
+  }
+  for (const row of rows) {
+    await expect(row, 'every row must be selected').toHaveClass(/row-selected/);
+  }
+}
 
 /**
  * Waits for the next animation frame plus one timer turn, then sends a marker request from the

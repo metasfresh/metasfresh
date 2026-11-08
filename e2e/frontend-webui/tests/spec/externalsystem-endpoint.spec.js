@@ -1,8 +1,7 @@
-import { randomBytes } from 'node:crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, newUnique, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { assertRecordIsValid, getRecordData, getValidationStatus } from '../utils/WebAPIValidation';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
@@ -959,7 +958,7 @@ appears in no grid cell and in no cell of the export, while it is stored as type
 
     test.setTimeout(240000);
 
-    const typedPassword = `pw-${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
+    const typedPassword = `pw-${newUnique()}`;
 
     const masterdata = await Backend.createMasterdata({
       request: { login: { user: { language: 'en_US' } } },

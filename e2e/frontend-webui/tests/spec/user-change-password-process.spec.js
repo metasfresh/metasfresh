@@ -1,8 +1,7 @@
-import { randomBytes } from 'node:crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, newUnique, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { loginWithMasterdataUser } from '../utils/LoginHelper';
 import { Backend } from '../utils/Backend';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
@@ -41,7 +40,7 @@ Runs the "Change password" process of the user window against a freshly created 
 3. After logging out, the target user can log in with the new password
 `);
 
-    const unique = `${Date.now()}${randomBytes(3).toString('hex')}`;
+    const unique = newUnique();
     const newPassword = `New!Pass-${unique}`;
     const login = `b3cp${unique}`;
 

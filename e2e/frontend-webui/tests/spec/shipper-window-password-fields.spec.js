@@ -1,12 +1,13 @@
-import { randomBytes } from 'node:crypto';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { loginWithMasterdataUser } from '../utils/LoginHelper';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, flushPendingUiTasks, newUnique, selectRows } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
-import { columnTextsByFieldName, fetchViewGridFieldNames, readXlsx, selectRows } from '../utils/ExcelParser';
+import { columnTextsByFieldName, exportRecordsToExcel, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
+import { typeIntoWindowField, windowFieldPatch } from '../utils/WindowFieldEntry';
+import { closeModal } from '../utils/ContractWindowHelpers';
 
 /**
  * Shipper window (Lieferweg, 142) — carrier secrets are password fields.
@@ -68,8 +69,6 @@ const CARRIERS = {
   },
 };
 
-const newUnique = () => `${Date.now().toString(36)}${randomBytes(2).toString('hex')}`;
-
 /** Synthetic, obviously fake secret values, unique per test. */
 const newSecrets = (unique) => ({
   dhl: { ApplicationToken: `pw-dhl-token-${unique}`, Signature: `pw-dhl-sig-${unique}` },
@@ -84,27 +83,6 @@ function labelTest() {
   allure.tag('F9111');
   allure.story('Shipper window carrier secrets');
   allure.severity('critical');
-}
-
-/** Resolves on the PATCH of `fieldName` in the given tab (record view, advanced edit or grid). */
-function waitForFieldPatch(page, tabId, fieldName) {
-  return page.waitForResponse(
-    (response) =>
-      response.request().method() === 'PATCH' &&
-      response.url().includes(`/${tabId}/`) &&
-      (response.request().postData() || '').includes(`"path":"${fieldName}"`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-}
-
-/** Types like a user: click into the input, press the keys, leave the field; waits for the PATCH. */
-async function typeAndLeave(page, input, text, { tabId, fieldName }) {
-  const patched = waitForFieldPatch(page, tabId, fieldName);
-  await input.click();
-  await input.pressSequentially(text);
-  await input.press('Tab');
-  const response = await patched;
-  expect(response.ok(), `PATCH of ${fieldName} failed: HTTP ${response.status()}`).toBe(true);
 }
 
 /** Creates the shipper (no gateway), logs in and opens it. */
@@ -155,12 +133,6 @@ async function onlyRowId(page) {
   return Number(testId.replace('table-row-', ''));
 }
 
-async function closeModal(page) {
-  const modal = page.locator('.panel-modal');
-  await modal.getByTestId('process-modal-cancel-button').first().click();
-  await modal.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
-}
-
 /**
  * Creates the carrier's config record in its tab: "Add new", type the mandatory fields and the
  * given secrets, close. Returns the record id.
@@ -173,11 +145,9 @@ async function createCarrierConfig(page, carrierKey, secrets) {
     const modal = page.locator('.panel-modal');
     await modal.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     for (const [fieldName, value] of Object.entries({ ...carrier.mandatory, ...secrets })) {
-      const input = modal.locator(`.form-field-${fieldName} input`);
-      await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await typeAndLeave(page, input, value, { tabId: carrier.tabId, fieldName });
+      await typeIntoWindowField(page, SHIPPER_WINDOW_ID, fieldName, modal.locator(`.form-field-${fieldName} input`), value);
     }
-    await closeModal(page);
+    await closeModal(page.locator('.panel-modal'));
     return await onlyRowId(page);
   });
 }
@@ -188,7 +158,7 @@ async function openRecordView(page, carrierKey) {
   await openTab(page, carrier);
   await onlyRowId(page);
   const row = tabPane(page).locator('tbody tr[data-testid^="table-row-"]').first();
-  await row.click();
+  await selectRows([row]);
   await row.locator('td[data-cy^="cell-"]').first().click({ button: 'right' });
   const contextMenu = page.locator('.context-menu.context-menu-open');
   await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -224,7 +194,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       await modal.locator('.form-field-ApplicationToken input').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await expect.soft(modal.locator('.form-field-ApplicationToken input'), 'DHL ApplicationToken').toHaveAttribute('type', 'password');
       await expect.soft(modal.locator('.form-field-Signature input'), 'DHL Signature (Kennwort)').toHaveAttribute('type', 'password');
-      await closeModal(page);
+      await closeModal(page.locator('.panel-modal'));
     });
 
     await test.step('nShift record view', async () => {
@@ -233,7 +203,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       const modal = page.locator('.panel-modal');
       await modal.locator('.form-field-Client_Secret input').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await expect.soft(modal.locator('.form-field-Client_Secret input'), 'nShift Client_Secret').toHaveAttribute('type', 'password');
-      await closeModal(page);
+      await closeModal(page.locator('.panel-modal'));
     });
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
   });
@@ -323,23 +293,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
     let filePath;
     await test.step('Export the shipper from the shipper list view', async () => {
-      // The shipper list is paged and holds every other run's shippers: open a view of the test shipper only.
-      const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${SHIPPER_WINDOW_ID}`, {
-        data: { windowId: String(SHIPPER_WINDOW_ID), viewType: 'grid', filterOnlyIds: [shipperId] },
-      });
-      expect(viewResponse.ok(), `view of the test shipper: HTTP ${viewResponse.status()}`).toBe(true);
-      const { viewId } = await viewResponse.json();
-      await page.goto(`${FRONTEND_BASE_URL}/window/${SHIPPER_WINDOW_ID}?viewId=${viewId}`);
-      const row = page.locator(`tr[data-testid="table-row-${shipperId}"]`);
-      await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await selectRows([row]);
-      // the actions menu shortcut keeps the selection (a click outside the table may clear it)
-      await page.keyboard.press('Alt+1');
-      await exportLink.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      expect(await exportLink.getAttribute('href'), 'the export must hold the test shipper').toContain(String(shipperId));
-      const download = page.waitForEvent('download', { timeout: SLOW_ACTION_TIMEOUT });
-      await exportLink.click();
-      filePath = await (await download).path();
+      // on a view of the test shipper only; asserts the export link names exactly that shipper
+      filePath = await exportRecordsToExcel(page, SHIPPER_WINDOW_ID, [shipperId]);
     });
 
     await test.step('The export holds the shipper and no typed secret', async () => {
@@ -417,11 +372,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       await test.step(`Open the ${carrierKey} record view, edit another field, save`, async () => {
         const modal = await openRecordView(page, carrierKey);
         const carrier = CARRIERS[carrierKey];
-        await typeAndLeave(page, modal.locator(`.form-field-${carrier.otherField} input`), '-x', {
-          tabId: carrier.tabId,
-          fieldName: carrier.otherField,
-        });
-        await closeModal(page);
+        await typeIntoWindowField(page, SHIPPER_WINDOW_ID, carrier.otherField, modal.locator(`.form-field-${carrier.otherField} input`), '-x');
+        await closeModal(page.locator('.panel-modal'));
       });
     }
 
@@ -452,8 +404,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
     await test.step('Edit another field and save', async () => {
       const modal = await openRecordView(page, 'dhl');
-      await typeAndLeave(page, modal.locator('.form-field-UserName input'), 'pw-user', { tabId: CARRIERS.dhl.tabId, fieldName: 'UserName' });
-      await closeModal(page);
+      await typeIntoWindowField(page, SHIPPER_WINDOW_ID, 'UserName', modal.locator('.form-field-UserName input'), 'pw-user');
+      await closeModal(page.locator('.panel-modal'));
       await stored('secrets unchanged after saving another field');
       // positive control: the other field was saved (UserName starts empty)
       await expectStored('the other field was saved', [
@@ -469,7 +421,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
         await input.press('Tab');
       }
       await flushPendingUiTasks(page);
-      await closeModal(page);
+      await closeModal(page.locator('.panel-modal'));
       await stored('secrets unchanged after click in + out');
     });
     expect(dialogs, 'no leave-confirmation may come up').toEqual([]);
@@ -485,8 +437,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
     const typed = `pw-dhl-token-new-${unique}`;
     const modal = await openRecordView(page, 'dhl');
-    await typeAndLeave(page, modal.locator('.form-field-ApplicationToken input'), typed, { tabId: CARRIERS.dhl.tabId, fieldName: 'ApplicationToken' });
-    await closeModal(page);
+    await typeIntoWindowField(page, SHIPPER_WINDOW_ID, 'ApplicationToken', modal.locator('.form-field-ApplicationToken input'), typed);
+    await closeModal(page.locator('.panel-modal'));
     await expectStored('typed value stored exactly', [
       { tableName: 'DHL_Shipper_Config', recordId, columnName: 'ApplicationToken', expectedValue: typed },
     ]);
@@ -502,13 +454,13 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
     const modal = await openRecordView(page, 'dhl');
     const input = modal.locator('.form-field-ApplicationToken input');
-    const patched = waitForFieldPatch(page, CARRIERS.dhl.tabId, 'ApplicationToken');
+    const patched = windowFieldPatch(page, SHIPPER_WINDOW_ID, 'ApplicationToken');
     await input.click();
     await input.press('ControlOrMeta+a');
     await input.press('Backspace');
     await input.press('Tab');
     expect((await patched).ok(), 'PATCH of the cleared ApplicationToken').toBe(true);
-    await closeModal(page);
+    await closeModal(page.locator('.panel-modal'));
     await expectStored('cleared secret stored as NULL', [
       { tableName: 'DHL_Shipper_Config', recordId, columnName: 'ApplicationToken', expectedValue: null },
     ]);
@@ -524,8 +476,8 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
       const recordId = await createCarrierConfig(page, 'dhl', secrets.dhl);
 
       const modal = await openRecordView(page, 'dhl');
-      await typeAndLeave(page, modal.locator('.form-field-ApplicationToken input'), starValue, { tabId: CARRIERS.dhl.tabId, fieldName: 'ApplicationToken' });
-      await closeModal(page);
+      await typeIntoWindowField(page, SHIPPER_WINDOW_ID, 'ApplicationToken', modal.locator('.form-field-ApplicationToken input'), starValue);
+      await closeModal(page.locator('.panel-modal'));
       await expectStored(`"${starValue}" stored exactly`, [
         { tableName: 'DHL_Shipper_Config', recordId, columnName: 'ApplicationToken', expectedValue: starValue },
       ]);
@@ -610,7 +562,7 @@ test.describe('Shipper window — carrier secrets are password fields', () => {
 
       const typed = `pw-grid-token-${unique}`;
       const editor = await openCellEditor(page);
-      const patched = waitForFieldPatch(page, CARRIERS.dhl.tabId, 'ApplicationToken');
+      const patched = windowFieldPatch(page, SHIPPER_WINDOW_ID, 'ApplicationToken');
       await editor.pressSequentially(typed);
       await editor.press('Tab');
       expect((await patched).ok(), 'PATCH of the grid cell').toBe(true);

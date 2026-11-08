@@ -3,7 +3,7 @@ import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
-import { FRONTEND_BASE_URL } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows } from '../utils/common';
 
 /**
  * Confirm the dashboard rendered, without gating on networkidle: the dashboard's STOMP/websocket +
@@ -228,11 +228,7 @@ async function selectRowInView(page, windowId, viewId, rowId) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}?viewId=${viewId}`);
   const row = page.locator(`tbody tr[data-testid="table-row-${rowId}"]`);
   await row.waitFor({ state: 'visible', timeout: 30000 });
-  // A click right after the grid renders does not always land as a selection -- assert it, retrying.
-  await expect(async () => {
-    await row.click();
-    await expect(row).toHaveClass(/row-selected/, { timeout: 2000 });
-  }).toPass({ timeout: 30000 });
+  await selectRows([row]);
   return row;
 }
 
@@ -264,21 +260,12 @@ async function selectTwoBoardRows(page, rowIdFirst, rowIdSecond) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${ORDER_BOARD_WINDOW_ID}?viewId=${viewId}`);
 
   const firstRow = page.locator(`tbody tr[data-testid="table-row-${rowIdFirst}"]`);
-  await firstRow.waitFor({ state: 'visible', timeout: 30000 });
-  await expect(async () => {
-    await firstRow.click();
-    await expect(firstRow).toHaveClass(/row-selected/, { timeout: 2000 });
-  }).toPass({ timeout: 30000 });
-
   const secondRow = page.locator(`tbody tr[data-testid="table-row-${rowIdSecond}"]`);
+  await firstRow.waitFor({ state: 'visible', timeout: 30000 });
   await secondRow.waitFor({ state: 'visible', timeout: 30000 });
-  await expect(async () => {
-    await secondRow.click({ modifiers: ['Control'] });
-    await expect(secondRow).toHaveClass(/row-selected/, { timeout: 2000 });
-  }).toPass({ timeout: 30000 });
-
-  // The ctrl-click must ADD to the selection, not replace it -- assert the first row is still selected.
-  await expect(firstRow, 'ctrl-click on a second row must keep the first row selected too').toHaveClass(/row-selected/);
+  // selectRows ctrl-clicks the second row and then asserts BOTH rows are selected, i.e. the ctrl-click
+  // added to the selection instead of replacing it.
+  await selectRows([firstRow, secondRow]);
 
   return { firstRow, secondRow };
 }

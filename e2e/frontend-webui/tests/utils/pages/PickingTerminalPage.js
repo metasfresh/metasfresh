@@ -1,6 +1,5 @@
-import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FRONTEND_BASE_URL, getPage, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { PICKING_TERMINAL_V2_WINDOW_ID } from '../WindowIds';
 
 /**
@@ -55,7 +54,7 @@ export class PickingTerminalPage {
         }
 
         await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await row.click();
+        await selectRows([row]);
 
         // Wait for quick actions to update
         await page.waitForTimeout(500);
