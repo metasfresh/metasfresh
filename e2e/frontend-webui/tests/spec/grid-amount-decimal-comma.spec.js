@@ -3,7 +3,7 @@ import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_INVOICE_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
@@ -74,7 +74,7 @@ const discountCellOf = (page, invoiceDocumentNo) => {
 /** Opens the in-row editor of the invoice row's discount cell and returns its input */
 const openDiscountEditor = async ({ invoiceRow, discountCell }) => {
   await discountCell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await invoiceRow.locator('[data-cy="cell-documentNo"]').click(); // select the row
+  await selectRows([invoiceRow]);
   await discountCell.dblclick(); // on a selected row, a double click opens the in-row editor
   const input = discountCell.locator('input');
   await expect(input).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });

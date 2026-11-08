@@ -382,8 +382,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     });
 
     await test.step('the multi-row receive is reachable from the action menu only', async () => {
-      await rowForProduct(packedProductName).click();
-      await rowForProduct(unpackedProductName).click({ modifiers: ['Control'] });
+      await selectRows([rowForProduct(packedProductName), rowForProduct(unpackedProductName)]);
 
       // Both assertions run UNCONDITIONALLY. The action-menu half used to be guarded on a visibility check over
       // three test ids nothing in frontend/src renders, so the block never executed and the step reported green
