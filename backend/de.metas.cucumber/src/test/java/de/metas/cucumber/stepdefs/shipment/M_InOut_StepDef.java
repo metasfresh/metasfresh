@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DocumentProcessingInTrx;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -1031,7 +1032,7 @@ public class M_InOut_StepDef
 	{
 		final I_M_InOut inout = inoutTable.get(identifier);
 		InterfaceWrapperHelper.refresh(inout);
-		processExInTrx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		DocumentProcessingInTrx.processEx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		final InOutId reversalId = InOutId.ofRepoId(inout.getReversal_ID());
 		final I_M_InOut reversal = inOutDAO.getById(reversalId);
@@ -1065,23 +1066,23 @@ public class M_InOut_StepDef
 		{
 			case completed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
 			case reactivated:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				break;
 			case reversed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			case voided:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case closed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				processExInTrx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled M_InOut action")
@@ -1093,7 +1094,7 @@ public class M_InOut_StepDef
 	private void reverse(@NonNull final I_M_InOut shipment)
 	{
 		shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-		documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		DocumentProcessingInTrx.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 	}
 
 	/**
@@ -1153,21 +1154,6 @@ public class M_InOut_StepDef
 				.stream()
 				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
-
-	/**
-	 * Runs the doc-action <b>and</b> the subsequent save of the document header in ONE transaction, like the WebUI does
-	 * (it runs each document action within a transaction).
-	 * <p>
-	 * Without an enclosing transaction, {@link IDocumentBL#processEx(Object, String, String)} lets the document engine commit
-	 * its own transaction <i>before</i> it saves the header with the new {@code DocStatus}. An async consumer running in between
-	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
-	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the shipment as completed,
-	 * and the candidate keeps the pre-reactivation {@code QtyDelivered}.
-	 */
-	private void processExInTrx(@NonNull final I_M_InOut inout, @NonNull final String docAction, @Nullable final String expectedDocStatus)
-	{
-		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(inout, docAction, expectedDocStatus));
 	}
 
 	/**
@@ -1242,7 +1228,7 @@ public class M_InOut_StepDef
 		{
 			final I_M_InOut shipment = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
 			final String docAction = row.getAsString(I_M_InOut.COLUMNNAME_DocAction);
-			processExInTrx(shipment, docAction, null);
+			DocumentProcessingInTrx.processEx(shipment, docAction, null);
 		});
 	}
 
