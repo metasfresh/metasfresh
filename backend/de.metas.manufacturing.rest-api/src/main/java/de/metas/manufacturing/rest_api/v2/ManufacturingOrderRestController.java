@@ -38,6 +38,7 @@ import org.eevolution.api.PPOrderId;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,7 +87,9 @@ public class ManufacturingOrderRestController
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", request.getTransactionKey()))
 		{
 			manufacturingOrderAPIService.setExportStatus(request);
-			return ResponseEntity.accepted().body("Manufacturing orders updated");
+			return ResponseEntity.accepted()
+					.contentType(MediaType.TEXT_PLAIN)
+					.body("Manufacturing orders updated");
 		}
 	}
 

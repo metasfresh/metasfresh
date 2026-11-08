@@ -35,6 +35,7 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +58,7 @@ public class AppTestingRestController
 
 	/* when adding additional parameters, please also update https://github.com/metasfresh/metasfresh/issues/1577#issue-229774302 */
 	@GetMapping("/ping/notifications")
-	public String pingNotifications(@RequestParam(value = "noEmail", defaultValue = "false") final String noEmail)
+	public ResponseEntity<String> pingNotifications(@RequestParam(value = "noEmail", defaultValue = "false") final String noEmail)
 	{
 		final long id = nextNotificationId.getAndIncrement();
 
@@ -71,7 +72,9 @@ public class AppTestingRestController
 
 		final String message = "sent: " + request;
 		logger.info("pingNotifications: {}", message);
-		return message;
+		return ResponseEntity.ok()
+				.contentType(MediaType.TEXT_PLAIN)
+				.body(message);
 	}
 
 	@PutMapping(produces = "application/json")
