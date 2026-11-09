@@ -23,7 +23,6 @@
 package de.metas.shipper.gateway.commons;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.pair.IPair;
@@ -163,8 +162,7 @@ public final class DeliveryOrderUtil
 	@Nullable
 	private String getDefaultContactEmailOrNull(@NonNull final BPartnerId bpartnerId, @NonNull final UserRepository userRepository)
 	{
-		return Services.get(IBPartnerDAO.class).getDefaultContactId(bpartnerId)
-				.map(userRepository::getByIdInTrx)
+		return userRepository.getDefaultContact(bpartnerId)
 				.map(User::getEmailAddress)
 				.orElse(null);
 	}

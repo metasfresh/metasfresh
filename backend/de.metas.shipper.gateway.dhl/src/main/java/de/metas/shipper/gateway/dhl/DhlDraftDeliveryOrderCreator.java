@@ -173,7 +173,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(shipperTransportationId)
 				//
 
-				.shipperProduct(detectedServiceType) // todo this should be made user-selectable
+				.shipperProduct(detectedServiceType)
 				.customerReference(customerReference)
 				.customDeliveryData(dataBuilder.build())
 				//
