@@ -1402,3 +1402,184 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has no payment
     And card settlement settlement1 has 1 AD_Issue
     And the SumUp stub received 0 terminates
+
+  # ##########################################################################
+  # Late approval of a card payment the cashier released as abandoned: SumUp approves it after the release, so the
+  # money was taken and the approval is still booked. The settlement keeps IsAbandoned, so it never blocks the invoice
+  # again, whatever its booking ends in.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC15_stillOpen
+  Scenario: SumUp approves a card payment released as abandoned while the invoice is still open, so the card payment is allocated to the invoice
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub answers terminate with HTTP 4xx
+    And card settlement settlement1 is released by cashier metasfresh
+    And the release of card settlement settlement1 is confirmed by cashier metasfresh
+    And card settlement settlement1 has status ABANDONED and isAbandoned true
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status SUCCESSFUL and isAbandoned true
+    And card settlement settlement1 has payment cardPayment
+    And validate payments
+      | C_Payment_ID | IsReceipt | DocStatus | TenderType | PayAmt | C_BP_BankAccount_ID | C_BPartner_ID   | IsAllocated |
+      | cardPayment  | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer | true        |
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And card settlement settlement1 has 1 AD_Issue
+    And card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC15_paidInCash
+  Scenario: SumUp approves a card payment released as abandoned after the invoice was paid in cash, so the card payment is booked as customer credit and the back office is notified
+    Given POS terminal till is configured with SumUp and a default card reader
+    And metasfresh contains AD_Roles including the WebUI role:
+      | AD_Role_ID |
+      | backOffice |
+    And load AD_User:
+      | AD_User_ID.Identifier | Login      |
+      | cashier               | metasfresh |
+    And user has role
+      | AD_User_ID | AD_Role_ID |
+      | cashier    | backOffice |
+    And role backOffice is the only role notified of group 'de.metas.pos.InvoiceCardSettlement'
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub answers terminate with HTTP 4xx
+    And card settlement settlement1 is released by cashier metasfresh
+    And the release of card settlement settlement1 is confirmed by cashier metasfresh
+    And card settlement settlement1 has status ABANDONED and isAbandoned true
+    And the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status CREDIT_REFUND_PENDING and isAbandoned true
+    And card settlement settlement1 has payment cardPayment
+    And validate payments
+      | C_Payment_ID | IsReceipt | DocStatus | TenderType | PayAmt | C_BP_BankAccount_ID | C_BPartner_ID   | IsAllocated |
+      | cardPayment  | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer | false       |
+    And the partner of invoice invoice1 has 2 payments
+    And invoice invoice1 has 1 allocation line
+    And the card payment of card settlement settlement1 is allocated with 0 to its invoice
+    And the cash journal of POS terminal till contains lines:
+      | Type       | Amount |
+      | CASH_INOUT | 16.07  |
+      | CARD_PAY   | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And after not more than 30s, card settlement settlement1 has 1 notification with message 'de.metas.pos.InvoiceCardSettlement.CreditRefundPending'
+    And card settlement settlement1 has 1 AD_Issue
+    And card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+
+  # A newer card payment of the same invoice was started after the release and is still waiting when SumUp approves
+  # both at the same moment. Both bookings take the invoice lock before allocating, so they run one after the other:
+  # the first to get the lock pays the invoice, the second finds it paid and books customer credit. Both payments are
+  # booked; the invoice is paid exactly once.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC15_newerAttemptWaiting
+  Scenario: SumUp approves a card payment released as abandoned and a newer card payment of the same invoice at once, so both are booked and the second to finish as customer credit
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub answers terminate with HTTP 4xx
+    And card settlement settlement1 is released by cashier metasfresh
+    And the release of card settlement settlement1 is confirmed by cashier metasfresh
+    And card settlement settlement1 has status ABANDONED and isAbandoned true
+    And card settlement settlement2 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement2 has status PENDING and isAbandoned false
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And SumUp API stub reports transaction of card settlement settlement2 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement2 is set to SUCCESSFUL locally without a status event
+
+    When the SumUp status events of card settlements settlement1 and settlement2 are delivered at once
+
+    Then after not more than 30s of SumUp polls, of card settlements settlement1 and settlement2, one has status SUCCESSFUL and the other one status CREDIT_REFUND_PENDING
+    And card settlement settlement1 has payment cardPayment1
+    And card settlement settlement2 has payment cardPayment2
+    And validate payments
+      | C_Payment_ID | IsReceipt | DocStatus | TenderType | PayAmt | C_BP_BankAccount_ID | C_BPartner_ID   |
+      | cardPayment1 | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer |
+      | cardPayment2 | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer |
+    And the partner of invoice invoice1 has 2 payments
+    And invoice invoice1 has 1 allocation line
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+      | CARD_PAY | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement2
+    And card settlement settlement1 has 1 AD_Issue
+    And card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+    And card settlement settlement2 has 0 AD_Issues
+
+    And card settlement settlement1 has isAbandoned true
+    And card settlement settlement2 has isAbandoned false
+
+    When metasfresh polls SumUp
+
+    Then of card settlements settlement1 and settlement2, one has status SUCCESSFUL and the other one status CREDIT_REFUND_PENDING
+    And the partner of invoice invoice1 has 2 payments
+    And invoice invoice1 has 1 allocation line
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+      | CARD_PAY | 16.07  |
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC15_bookingFails
+  Scenario: The booking of a card payment released as abandoned and approved later fails, so it is a booking error for back office and the invoice stays free for another payment
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub answers terminate with HTTP 4xx
+    And card settlement settlement1 is released by cashier metasfresh
+    And the release of card settlement settlement1 is confirmed by cashier metasfresh
+    And card settlement settlement1 has status ABANDONED and isAbandoned true
+    And the accounting period is closed for today
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status BOOKING_ERROR and isAbandoned true
+    And card settlement settlement1 has no payment
+    And card settlement settlement1 has 2 AD_Issues
+    And card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+
+    When metasfresh polls SumUp
+
+    Then card settlement settlement1 has status BOOKING_ERROR and isAbandoned true
+    And card settlement settlement1 has 2 AD_Issues
+
+    When card settlement settlement2 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+
+    Then card settlement settlement2 has status PENDING and isAbandoned false
+    And invoice invoice1 has 2 card settlements
+    And the open invoice list of POS terminal till for invoice invoice1 shows blocking card settlement settlement2
+    And card settlement settlement1 has status BOOKING_ERROR and isAbandoned true

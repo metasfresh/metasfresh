@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.pos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
@@ -93,6 +94,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -121,6 +124,11 @@ public class POS_InvoiceCardSettlement_StepDef
 {
 	private static final String STUB_API_KEY = "stub-api-key";
 	private static final String STUB_MERCHANT_CODE = "STUBMERCHANT";
+	private static final ImmutableSet<POSInvoiceCardSettlementStatus> STATUSES_WAITING_FOR_BOOKING = ImmutableSet.of(
+			POSInvoiceCardSettlementStatus.PENDING,
+			POSInvoiceCardSettlementStatus.UNKNOWN,
+			POSInvoiceCardSettlementStatus.ABANDONED,
+			POSInvoiceCardSettlementStatus.APPROVED);
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
@@ -484,6 +492,8 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
+	 * Asserts the settlement's status and, optionally, its {@code IsAbandoned} flag.
+	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
@@ -507,6 +517,23 @@ public class POS_InvoiceCardSettlement_StepDef
 					.as("isAbandoned of card settlement %s", settlementIdentifier)
 					.isEqualTo(Boolean.parseBoolean(expectedIsAbandoned));
 		}
+	}
+
+	/**
+	 * Asserts the settlement's {@code IsAbandoned} flag.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then card settlement settlement1 has isAbandoned true
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has isAbandoned (true|false)$")
+	public void assertSettlementIsAbandoned(@NonNull final String settlementIdentifier, @NonNull final String expectedIsAbandoned)
+	{
+		assertThat(loadSettlement(settlementIdentifier).isAbandoned())
+				.as("isAbandoned of card settlement %s", settlementIdentifier)
+				.isEqualTo(Boolean.parseBoolean(expectedIsAbandoned));
 	}
 
 	/**
@@ -844,18 +871,7 @@ public class POS_InvoiceCardSettlement_StepDef
 			final int times,
 			@NonNull final String mode) throws Exception
 	{
-		final SumUpTransactionStatusChangedEvent event = SumUpTransactionStatusChangedEvent.ofNewTransaction(
-				getSumUpTransaction(loadSettlement(settlementIdentifier).getId()));
-		final Properties eventCtx = Env.newTemporaryCtx();
-		Env.setClientId(eventCtx, event.getClientId());
-		Env.setOrgId(eventCtx, event.getOrgId());
-		final Runnable delivery = () -> {
-			try (final IAutoCloseable ignored = Env.switchContext(eventCtx))
-			{
-				SpringContextHolder.instance.getBeansOfType(SumUpTransactionStatusChangedListener.class)
-						.forEach(listener -> listener.onStatusChanged(event));
-			}
-		};
+		final Runnable delivery = newStatusEventDelivery(settlementIdentifier);
 
 		if ("one after the other".equals(mode))
 		{
@@ -866,12 +882,61 @@ public class POS_InvoiceCardSettlement_StepDef
 			return;
 		}
 
+		runAtOnce(Collections.nCopies(times, delivery));
+	}
+
+	/**
+	 * Delivers the status events of two settlements' current SumUp transactions at the same moment, on separate
+	 * threads, as when SumUp approves two card payments almost at once.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the SumUp status events of card settlements settlement1 and settlement2 are delivered at once
+	 * </pre>
+	 */
+	@And("^the SumUp status events of card settlements (\\S+) and (\\S+) are delivered at once$")
+	public void deliverSumUpStatusEventsOfTwoSettlementsAtOnce(
+			@NonNull final String settlementIdentifier1,
+			@NonNull final String settlementIdentifier2) throws Exception
+	{
+		runAtOnce(ImmutableList.of(
+				newStatusEventDelivery(settlementIdentifier1),
+				newStatusEventDelivery(settlementIdentifier2)));
+	}
+
+	/**
+	 * @return a delivery of the status event of the settlement's current SumUp transaction to every
+	 * {@link SumUpTransactionStatusChangedListener}, in the event's client/org context, as the event bus does
+	 */
+	@NonNull
+	private Runnable newStatusEventDelivery(@NonNull final String settlementIdentifier)
+	{
+		final SumUpTransactionStatusChangedEvent event = SumUpTransactionStatusChangedEvent.ofNewTransaction(
+				getSumUpTransaction(loadSettlement(settlementIdentifier).getId()));
+		final Properties eventCtx = Env.newTemporaryCtx();
+		Env.setClientId(eventCtx, event.getClientId());
+		Env.setOrgId(eventCtx, event.getOrgId());
+		return () -> {
+			try (final IAutoCloseable ignored = Env.switchContext(eventCtx))
+			{
+				SpringContextHolder.instance.getBeansOfType(SumUpTransactionStatusChangedListener.class)
+						.forEach(listener -> listener.onStatusChanged(event));
+			}
+		};
+	}
+
+	/**
+	 * Runs the deliveries on separate threads, all released at the same moment, and waits until all are done.
+	 */
+	private static void runAtOnce(@NonNull final List<Runnable> deliveries) throws Exception
+	{
 		final CountDownLatch startSignal = new CountDownLatch(1);
-		final ExecutorService executor = Executors.newFixedThreadPool(times);
+		final ExecutorService executor = Executors.newFixedThreadPool(deliveries.size());
 		try
 		{
 			final List<Future<?>> futures = new ArrayList<>();
-			for (int i = 0; i < times; i++)
+			for (final Runnable delivery : deliveries)
 			{
 				futures.add(executor.submit(() -> {
 					startSignal.await();
@@ -889,6 +954,55 @@ public class POS_InvoiceCardSettlement_StepDef
 		{
 			executor.shutdownNow();
 		}
+	}
+
+	/**
+	 * Asserts that, of two settlements, one has the first status and the other one the second, in either order (e.g.
+	 * when two concurrent bookings of the same invoice serialise and it is not known which one finishes first).
+	 * <p>
+	 * With {@code after not more than Ns of SumUp polls}, it first lets the SumUp poll run (as the poller would) until
+	 * neither settlement is still waiting for its booking (PENDING, UNKNOWN, ABANDONED or APPROVED) or the time is up:
+	 * a booking that had to wait for the invoice lock longer than the booking lock timeout stays APPROVED and is
+	 * completed by the next poll. A booking that already finished is not changed by a poll, so this cannot hide two
+	 * bookings that both allocated.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then of card settlements settlement1 and settlement2, one has status SUCCESSFUL and the other one status CREDIT_REFUND_PENDING
+	 * Then after not more than 30s of SumUp polls, of card settlements settlement1 and settlement2, one has status SUCCESSFUL and the other one status CREDIT_REFUND_PENDING
+	 * </pre>
+	 */
+	@And("^(?:after not more than (\\d+)s of SumUp polls, )?of card settlements (\\S+) and (\\S+), one has status ([A-Z_]+) and the other one status ([A-Z_]+)$")
+	public void assertStatusesInEitherOrder(
+			@Nullable final String timeoutSec,
+			@NonNull final String settlementIdentifier1,
+			@NonNull final String settlementIdentifier2,
+			@NonNull final String expectedStatus1,
+			@NonNull final String expectedStatus2) throws InterruptedException
+	{
+		if (timeoutSec != null)
+		{
+			final Instant deadline = Instant.now().plusSeconds(Integer.parseInt(timeoutSec));
+			while (isWaitingForBooking(settlementIdentifier1, settlementIdentifier2) && Instant.now().isBefore(deadline))
+			{
+				pollSumUp(null);
+				Thread.sleep(500);
+			}
+		}
+
+		final List<POSInvoiceCardSettlementStatus> actualStatuses = ImmutableList.of(
+				loadSettlement(settlementIdentifier1).getStatus(),
+				loadSettlement(settlementIdentifier2).getStatus());
+		assertThat(actualStatuses)
+				.as("statuses of card settlements %s and %s", settlementIdentifier1, settlementIdentifier2)
+				.containsExactlyInAnyOrder(parseStatus(expectedStatus1), parseStatus(expectedStatus2));
+	}
+
+	private boolean isWaitingForBooking(@NonNull final String... settlementIdentifiers)
+	{
+		return Arrays.stream(settlementIdentifiers)
+				.anyMatch(identifier -> STATUSES_WAITING_FOR_BOOKING.contains(loadSettlement(identifier).getStatus()));
 	}
 
 	/**
