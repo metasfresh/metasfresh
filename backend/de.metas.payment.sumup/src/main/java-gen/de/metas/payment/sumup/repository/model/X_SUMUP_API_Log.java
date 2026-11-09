@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_API_Log extends org.compiere.model.PO implements I_SUMUP_API_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1645854555L;
+	private static final long serialVersionUID = -209519107L;
 
     /** Standard Constructor */
     public X_SUMUP_API_Log (final Properties ctx, final int SUMUP_API_Log_ID, @Nullable final String trxName)
@@ -47,6 +47,21 @@ public class X_SUMUP_API_Log extends org.compiere.model.PO implements I_SUMUP_AP
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+	}
+
+	@Override
+	public void setC_POS_InvoiceCardSettlement_ID (final int C_POS_InvoiceCardSettlement_ID)
+	{
+		if (C_POS_InvoiceCardSettlement_ID < 1) 
+			set_Value (COLUMNNAME_C_POS_InvoiceCardSettlement_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_POS_InvoiceCardSettlement_ID, C_POS_InvoiceCardSettlement_ID);
+	}
+
+	@Override
+	public int getC_POS_InvoiceCardSettlement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_POS_InvoiceCardSettlement_ID);
 	}
 
 	@Override
@@ -175,18 +190,6 @@ public class X_SUMUP_API_Log extends org.compiere.model.PO implements I_SUMUP_AP
 	public int getSUMUP_API_Log_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SUMUP_API_Log_ID);
-	}
-
-	@Override
-	public de.metas.payment.sumup.repository.model.I_SUMUP_Config getSUMUP_Config()
-	{
-		return get_ValueAsPO(COLUMNNAME_SUMUP_Config_ID, de.metas.payment.sumup.repository.model.I_SUMUP_Config.class);
-	}
-
-	@Override
-	public void setSUMUP_Config(final de.metas.payment.sumup.repository.model.I_SUMUP_Config SUMUP_Config)
-	{
-		set_ValueFromPO(COLUMNNAME_SUMUP_Config_ID, de.metas.payment.sumup.repository.model.I_SUMUP_Config.class, SUMUP_Config);
 	}
 
 	@Override
