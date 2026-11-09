@@ -1082,6 +1082,7 @@ public class C_Order_StepDef
 	 *   <li>{@code IsReprintOrderCheckup} – whether completing the order reprints the Bestellkontrolle</li>
 	 *   <li>{@code PaymentRule}</li>
 	 *   <li>{@code PreparationDate}</li>
+	 *   <li>{@code DatePromised} — note: setting it fires the order's preparation-date interceptor, which may recompute {@code PreparationDate}</li>
 	 *   <li>{@code LC_Date}</li>
 	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
 	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
@@ -1141,6 +1142,8 @@ public class C_Order_StepDef
 				.ifPresent(order::setPaymentRule);
 		tableRow.getAsOptionalInstant(COLUMNNAME_PreparationDate)
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
+		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> order.setDatePromised(Timestamp.from(datePromised)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
 		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
