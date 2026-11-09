@@ -24,6 +24,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -145,24 +146,32 @@ public class POSInvoiceCardSettlementRepository
 
 	/**
 	 * Sweep candidates: PE, UN, AP, plus ABANDONED settlements whose linked SumUp transaction is
-	 * still PENDING or SUCCESSFUL.
+	 * still PENDING, or SUCCESSFUL and not refunded ({@code RefundAmt = 0}). A refunded one stays abandoned and leaves the sweep set.
 	 * The SumUp transaction is linked via the back-reference {@code SUMUP_Transaction.C_POS_InvoiceCardSettlement_ID}
 	 * (set at send time); later steps must resolve the SumUp transaction the same way.
 	 */
 	public Stream<POSInvoiceCardSettlementId> streamSweepCandidateIds()
 	{
+		// live = still PENDING, or SUCCESSFUL and not (even partly) refunded; a refunded one stays abandoned
+		final ICompositeQueryFilter<I_SUMUP_Transaction> pending = queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+				.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_Status, SumUpTransactionStatus.PENDING.getCode());
+		final ICompositeQueryFilter<I_SUMUP_Transaction> successfulNotRefunded = queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+				.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_Status, SumUpTransactionStatus.SUCCESSFUL.getCode())
+				.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_RefundAmt, BigDecimal.ZERO);
 		final IQuery<I_SUMUP_Transaction> liveSumUpTransactions = queryBL.createQueryBuilder(I_SUMUP_Transaction.class)
-				.addInArrayFilter(I_SUMUP_Transaction.COLUMNNAME_Status,
-						SumUpTransactionStatus.PENDING.getCode(), SumUpTransactionStatus.SUCCESSFUL.getCode())
+				.filter(queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+						.setJoinOr()
+						.addFilter(pending)
+						.addFilter(successfulNotRefunded))
 				.create();
 
 		final ICompositeQueryFilter<I_C_POS_InvoiceCardSettlement> openStatuses = queryBL.createCompositeQueryFilter(I_C_POS_InvoiceCardSettlement.class)
 				.addInArrayFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Status,
-						POSInvoiceCardSettlementStatus.PENDING.getCode(),
-						POSInvoiceCardSettlementStatus.UNKNOWN.getCode(),
-						POSInvoiceCardSettlementStatus.APPROVED.getCode());
+						POSInvoiceCardSettlementStatus.PENDING,
+						POSInvoiceCardSettlementStatus.UNKNOWN,
+						POSInvoiceCardSettlementStatus.APPROVED);
 		final ICompositeQueryFilter<I_C_POS_InvoiceCardSettlement> abandonedWithLiveTransaction = queryBL.createCompositeQueryFilter(I_C_POS_InvoiceCardSettlement.class)
-				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Status, POSInvoiceCardSettlementStatus.ABANDONED.getCode())
+				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Status, POSInvoiceCardSettlementStatus.ABANDONED)
 				.addInSubQueryFilter(
 						I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_POS_InvoiceCardSettlement_ID,
 						I_SUMUP_Transaction.COLUMNNAME_C_POS_InvoiceCardSettlement_ID,

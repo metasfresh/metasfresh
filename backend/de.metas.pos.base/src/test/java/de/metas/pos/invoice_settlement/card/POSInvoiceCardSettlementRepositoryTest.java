@@ -67,10 +67,15 @@ class POSInvoiceCardSettlementRepositoryTest
 
 	private void linkSumUpTransaction(final POSInvoiceCardSettlement settlement, final SumUpTransactionStatus status)
 	{
+		linkSumUpTransaction(settlement, status, BigDecimal.ZERO);
+	}
+
+	private void linkSumUpTransaction(final POSInvoiceCardSettlement settlement, final SumUpTransactionStatus status, final BigDecimal refundAmt)
+	{
 		final I_SUMUP_Transaction tx = InterfaceWrapperHelper.newInstance(I_SUMUP_Transaction.class);
 		tx.setC_POS_InvoiceCardSettlement_ID(settlement.getId().getRepoId());
 		tx.setStatus(status.getCode());
-		tx.setRefundAmt(BigDecimal.ZERO);
+		tx.setRefundAmt(refundAmt);
 		InterfaceWrapperHelper.save(tx);
 	}
 
@@ -191,5 +196,25 @@ class POSInvoiceCardSettlementRepositoryTest
 		assertThat(streamed).containsExactlyInAnyOrder(
 				pe.getId(), un.getId(), ap.getId(), abPending.getId(), abSuccessful.getId());
 		assertThat(streamed).doesNotContain(abFailed.getId(), abNoTx.getId(), su.getId(), cr.getId(), rf.getId(), fa.getId(), ca.getId(), be.getId());
+	}
+
+	@Test
+	void streamSweepCandidateIds_excludesRefundedAbandoned()
+	{
+		final POSInvoiceCardSettlement abRefunded = createWith(POSInvoiceCardSettlementStatus.ABANDONED, false);
+		linkSumUpTransaction(abRefunded, SumUpTransactionStatus.SUCCESSFUL, new BigDecimal("12.50"));
+		final POSInvoiceCardSettlement abNotRefunded = createWith(POSInvoiceCardSettlementStatus.ABANDONED, false);
+		linkSumUpTransaction(abNotRefunded, SumUpTransactionStatus.SUCCESSFUL, BigDecimal.ZERO);
+		final POSInvoiceCardSettlement abPending = createWith(POSInvoiceCardSettlementStatus.ABANDONED, false);
+		linkSumUpTransaction(abPending, SumUpTransactionStatus.PENDING);
+
+		final List<POSInvoiceCardSettlementId> streamed;
+		try (Stream<POSInvoiceCardSettlementId> stream = repository.streamSweepCandidateIds())
+		{
+			streamed = stream.collect(Collectors.toList());
+		}
+
+		assertThat(streamed).containsExactlyInAnyOrder(abNotRefunded.getId(), abPending.getId());
+		assertThat(streamed).doesNotContain(abRefunded.getId());
 	}
 }
