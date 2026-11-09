@@ -23,8 +23,6 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
@@ -54,7 +52,6 @@ import org.compiere.model.I_C_Location;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -68,7 +65,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
-	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final DhlClientConfigRepository clientConfigRepository;
 	@NonNull private final UserRepository userRepository;
 
@@ -106,7 +102,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 		final User deliverToContact = deliveryOrderKey.getDeliverContactId() != null ? userRepository.getByIdInTrx(deliveryOrderKey.getDeliverContactId()) : null;
-		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation, getDefaultContactEmailOrNull(BPartnerId.ofRepoId(deliverToBPartnerId)));
+		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation);
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
@@ -202,18 +198,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryOrderParcels(deliveryOrderParcels)
 				//
 				.build();
-	}
-
-	/**
-	 * Reads the e-mail of the partner's active default contact from the contact record itself, not from the virtual column {@code C_BPartner.EMail}, which a project may redefine.
-	 */
-	@Nullable
-	private String getDefaultContactEmailOrNull(@NonNull final BPartnerId bpartnerId)
-	{
-		return bpartnerDAO.getDefaultContactId(bpartnerId)
-				.map(userRepository::getByIdInTrx)
-				.map(User::getEmailAddress)
-				.orElse(null);
 	}
 
 	/**

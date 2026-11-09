@@ -11,8 +11,6 @@ Feature: Dhl Shipment
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
-    # completed shipments are added to the daily transport order only in the scenarios that switch this on
-    And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     # Read the HU's WeightGross attribute first, with product nominal gross as fallback. The last scenario
     # in this feature resets WeightSourceTypes to the default ProductWeight to cover the fallback path.
     And set sys config String value HUWeightGross,ProductWeight for sys config de.metas.shipping.WeightSourceTypes

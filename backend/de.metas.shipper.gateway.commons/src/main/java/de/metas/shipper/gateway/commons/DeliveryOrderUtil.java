@@ -22,6 +22,8 @@
 
 package de.metas.shipper.gateway.commons;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.pair.IPair;
@@ -35,10 +37,12 @@ import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -126,7 +130,7 @@ public final class DeliveryOrderUtil
 		final String rawPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
 		final String phoneNumber = rawPhoneNumber != null ? PhoneNumber.normalize(rawPhoneNumber) : null;
 
-		final String emailAddress = getEmailAddress(contact, bPLocation, bPartner.getEMail());
+		final String emailAddress = getEmailAddress(contact, bPLocation);
 
 		final Language bpLanguage = Language.asLanguage(bPartner.getAD_Language());
 		return ContactPerson.builder()
@@ -139,16 +143,30 @@ public final class DeliveryOrderUtil
 	}
 
 	/**
-	 * @return the first non-empty e-mail of: the given contact, the given partner location, the given partner fallback e-mail; {@code null} if all are empty
+	 * @return the first non-empty e-mail of: the given contact, the given partner location, the partner's default contact; {@code null} if all are empty
 	 */
 	@Nullable
 	public String getEmailAddress(
 			@Nullable final User contact,
-			@NonNull final I_C_BPartner_Location bPLocation,
-			@Nullable final String bPartnerFallbackEmail)
+			@NonNull final I_C_BPartner_Location bPLocation)
 	{
 		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
-		return CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail(), bPartnerFallbackEmail);
+		final String contactOrLocationMail = CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail());
+		if (contactOrLocationMail != null)
+		{
+			return contactOrLocationMail;
+		}
+		return StringUtils.trimBlankToNull(getDefaultContactEmailOrNull(BPartnerId.ofRepoId(bPLocation.getC_BPartner_ID())));
+	}
+
+	@Nullable
+	private String getDefaultContactEmailOrNull(@NonNull final BPartnerId bpartnerId)
+	{
+		final UserRepository userRepository = SpringContextHolder.getBeanOrSupply(UserRepository.class, UserRepository::new);
+		return Services.get(IBPartnerDAO.class).getDefaultContactId(bpartnerId)
+				.map(userRepository::getByIdInTrx)
+				.map(User::getEmailAddress)
+				.orElse(null);
 	}
 
 }
