@@ -140,4 +140,37 @@ class MPaymentTest
 			assertThat(allocAmt).isEqualTo(eur("101.6"));
 		}
 	}
+
+	@Nested
+	class computeTenderTypeForOrgBankAccount
+	{
+		@Test
+		void explicitCreditCard_isKept_onCashBank()
+		{
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(X_C_Payment.TENDERTYPE_CreditCard, true)).isEqualTo(X_C_Payment.TENDERTYPE_CreditCard);
+		}
+
+		@Test
+		void explicitCreditCard_isKept_onNonCashBank()
+		{
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(X_C_Payment.TENDERTYPE_CreditCard, false)).isEqualTo(X_C_Payment.TENDERTYPE_CreditCard);
+		}
+
+		@Test
+		void otherTenderTypes_onCashBank_becomeCash()
+		{
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(null, true)).isEqualTo(X_C_Payment.TENDERTYPE_Cash);
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(X_C_Payment.TENDERTYPE_DirectDeposit, true)).isEqualTo(X_C_Payment.TENDERTYPE_Cash);
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(X_C_Payment.TENDERTYPE_Check, true)).isEqualTo(X_C_Payment.TENDERTYPE_Cash);
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(X_C_Payment.TENDERTYPE_Cash, true)).isEqualTo(X_C_Payment.TENDERTYPE_Cash);
+		}
+
+		@Test
+		void otherTenderTypes_onNonCashBank_becomeDirectDeposit()
+		{
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(null, false)).isEqualTo(X_C_Payment.TENDERTYPE_DirectDeposit);
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(X_C_Payment.TENDERTYPE_Cash, false)).isEqualTo(X_C_Payment.TENDERTYPE_DirectDeposit);
+			assertThat(MPayment.computeTenderTypeForOrgBankAccount(X_C_Payment.TENDERTYPE_DirectDebit, false)).isEqualTo(X_C_Payment.TENDERTYPE_DirectDeposit);
+		}
+	}
 }
