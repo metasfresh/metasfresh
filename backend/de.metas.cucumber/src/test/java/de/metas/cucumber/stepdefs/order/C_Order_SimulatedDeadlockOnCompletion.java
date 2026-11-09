@@ -23,11 +23,13 @@
 package de.metas.cucumber.stepdefs.order;
 
 import de.metas.order.OrderId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelInterceptor2ModelValidatorWrapper;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Client;
@@ -49,12 +51,16 @@ import java.util.Set;
  * <p>
  * Optionally, the armed completion's attempts (the deadlocked one and its retry) first set the given description and save the order, like an
  * interceptor that saves the order in {@code AFTER_COMPLETE}: the deadlocked attempt's save is rolled back with the attempt.
+ * <p>
+ * Alternatively ({@link #armAtCommit(OrderId)}), the deadlock is raised when the completion's transaction is committed, i.e. after the document engine
+ * saved the completed order in that transaction: the deadlocked attempt's header save is rolled back with the attempt.
  */
 final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 {
 	private static final C_Order_SimulatedDeadlockOnCompletion INSTANCE = new C_Order_SimulatedDeadlockOnCompletion();
 
 	private final Set<OrderId> armedOrderIds = new HashSet<>();
+	private final Set<OrderId> armedAtCommitOrderIds = new HashSet<>();
 	private final Set<OrderId> hitOrderIds = new HashSet<>();
 	private final Map<OrderId, String> descriptionsToSave = new HashMap<>();
 	/** the same wrapper for every registration, so that an engine never accumulates several of them */
@@ -78,6 +84,13 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 		}
 	}
 
+	static synchronized void armAtCommit(@NonNull final OrderId orderId)
+	{
+		INSTANCE.registerIfNeeded();
+		INSTANCE.armedAtCommitOrderIds.add(orderId);
+		INSTANCE.hitOrderIds.remove(orderId);
+	}
+
 	/**
 	 * @return whether a completion of the given order ran into the deadlock since it was armed
 	 */
@@ -92,6 +105,7 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 	static synchronized void disarmAll()
 	{
 		INSTANCE.armedOrderIds.clear();
+		INSTANCE.armedAtCommitOrderIds.clear();
 		INSTANCE.hitOrderIds.clear();
 		INSTANCE.descriptionsToSave.clear();
 		INSTANCE.unregister();
@@ -136,6 +150,17 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 		final OrderId orderId = OrderId.ofRepoId(InterfaceWrapperHelper.getId(model));
 		synchronized (C_Order_SimulatedDeadlockOnCompletion.class)
 		{
+			if (armedAtCommitOrderIds.remove(orderId))
+			{
+				hitOrderIds.add(orderId);
+				final ITrxManager trxManager = Services.get(ITrxManager.class);
+				trxManager.assertThreadInheritedTrxExists();
+				trxManager.getCurrentTrxListenerManagerOrAutoCommit().runBeforeCommit(() -> {
+					throw newSimulatedDeadlock(orderId);
+				});
+				return;
+			}
+
 			final String descriptionToSave = descriptionsToSave.get(orderId);
 			if (descriptionToSave != null)
 			{
@@ -153,7 +178,12 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 			hitOrderIds.add(orderId);
 		}
 
-		throw new AdempiereException(
+		throw newSimulatedDeadlock(orderId);
+	}
+
+	private static AdempiereException newSimulatedDeadlock(@NonNull final OrderId orderId)
+	{
+		return new AdempiereException(
 				"Simulated DB deadlock while completing " + orderId,
 				new SQLException("ERROR: deadlock detected (simulated)", "40P01"));
 	}
