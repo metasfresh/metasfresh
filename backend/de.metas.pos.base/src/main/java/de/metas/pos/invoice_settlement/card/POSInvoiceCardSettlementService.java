@@ -4,12 +4,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.payment.sumup.SumUpPOSRef;
-import de.metas.payment.sumup.SumUpTransactionId;
-import de.metas.payment.sumup.repository.SumUpTransactionRepository;
+import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.pos.POSPaymentProcessingStatus;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
@@ -19,7 +19,6 @@ import de.metas.pos.invoice_settlement.POSInvoiceSettlementService.SettleableInv
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
-import de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +26,8 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -36,15 +35,16 @@ import java.util.Optional;
 
 /**
  * Settles an existing, still-open sales invoice by card on the till's SumUp reader. Every attempt is a persisted
- * {@link POSInvoiceCardSettlement} with a small state machine (DESIGN, "State machine"); every status change is made
- * under the settlement's row lock and conditional on the status it expects.
+ * {@link POSInvoiceCardSettlement} with a small state machine; every status change is made under the settlement's
+ * row lock and conditional on the status it expects.
  * <p>
- * Lock order (DESIGN decision 7): invoice before settlement, wherever both are needed.
+ * Lock order: invoice before settlement, wherever both are needed.
  */
 @Service
 @RequiredArgsConstructor
 public class POSInvoiceCardSettlementService
 {
+	private static final Logger logger = LogManager.getLogger(POSInvoiceCardSettlementService.class);
 	private static final int ERRORMSG_MAX_LENGTH = 4000;
 	private static final String BLOCKING_INDEX_NAME = "c_pos_invoicecardsettlement_blocking_uq";
 	private static final AdMessageKey MSG_CardPaymentStillOpen = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen");
@@ -57,7 +57,7 @@ public class POSInvoiceCardSettlementService
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSPaymentProcessorService paymentProcessorService;
 	@NonNull private final MoneyService moneyService;
-	@NonNull private final SumUpTransactionRepository sumUpTransactionRepository;
+	@NonNull private final POSInvoiceCardSettlementBooking booking;
 
 	@NonNull
 	public POSInvoiceCardSettlement getById(@NonNull final POSInvoiceCardSettlementId id)
@@ -75,7 +75,7 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * Starts a card settlement of the invoice's full open amount (DESIGN decision 5):
+	 * Starts a card settlement of the invoice's full open amount as follows:
 	 * <ol>
 	 * <li>in one transaction: lock the invoice, apply the cash guards, check that no blocking settlement exists and
 	 * that a journal is open, insert the settlement as PENDING, commit;</li>
@@ -174,7 +174,7 @@ public class POSInvoiceCardSettlementService
 			// the processors report their failures in the response; this is something unexpected around the call,
 			// so whether the reader got the request is unknown
 			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex)
-					.setRecord(TableRecordReference.of(I_C_POS_InvoiceCardSettlement.Table_Name, settlement.getId().getRepoId()));
+					.setRecord(settlement.getId().toRecordRef());
 			return POSPaymentProcessResponse.errorIndeterminate(
 					started.getPaymentProcessorConfig(),
 					AdempiereException.extractMessage(metasfreshException),
@@ -183,7 +183,7 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * Applies the send result under the settlement lock (DESIGN decision 5, step 3, with ruling R2):
+	 * Applies the send result under the settlement lock:
 	 * <ul>
 	 * <li>a definite rejection (an error response from SumUp, or a configuration error before any call) → FAILED, if
 	 * the status is still PENDING, or UNKNOWN without a SumUp transaction (an orphan flip);</li>
@@ -200,13 +200,7 @@ public class POSInvoiceCardSettlementService
 			final POSInvoiceCardSettlement settlementBefore = repository.getByIdForUpdate(settlementId);
 			POSInvoiceCardSettlement settlement = settlementBefore;
 
-			final SumUpTransactionId sumUpTransactionId = settlement.getSumUpTransactionId() == null
-					? retrieveSumUpTransactionId(settlementId)
-					: null;
-			if (sumUpTransactionId != null)
-			{
-				settlement = settlement.toBuilder().sumUpTransactionId(sumUpTransactionId).build();
-			}
+			settlement = settlement.toBuilder().sumUpTransactionId(booking.getLinkedOrResolvedSumUpTransactionId(settlement)).build();
 
 			if (response.getStatus() == POSPaymentProcessingStatus.FAILED)
 			{
@@ -236,15 +230,71 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * Resolves the settlement's SumUp transaction via the back-reference
-	 * {@code SUMUP_Transaction.C_POS_InvoiceCardSettlement_ID}, which the checkout sets when it saves the transaction.
+	 * Applies a status change of the settlement's SumUp transaction (as stored locally): declined / cancelled → FAILED /
+	 * CANCELLED, approved → booking steps A and B. Safe to call any number of times, also concurrently.
+	 * <p>
+	 * Never throws: a failure is logged and recorded as an AD_Issue of the settlement, whose status stays as it was, so
+	 * the caller (the SumUp event dispatcher) still notifies its other listeners.
 	 */
-	@Nullable
-	private SumUpTransactionId retrieveSumUpTransactionId(@NonNull final POSInvoiceCardSettlementId settlementId)
+	public void onSumUpTransactionChanged(@NonNull final POSInvoiceCardSettlementId id)
 	{
-		return sumUpTransactionRepository.findIdByPOSRef(SumUpPOSRef.builder()
-				.posInvoiceCardSettlementId(settlementId.getRepoId())
-				.build());
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		try
+		{
+			applySumUpTransactionStatus(id);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed applying the SumUp transaction status to card settlement {}", id, ex);
+			errorManager.createIssue(AdempiereException.wrapIfNeeded(ex).setRecord(id.toRecordRef()));
+		}
+	}
+
+	private void applySumUpTransactionStatus(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		final SumUpTransaction sumUpTrx = booking.findSumUpTransaction(id).orElse(null);
+		if (sumUpTrx == null)
+		{
+			return;
+		}
+
+		final SumUpTransactionStatus sumUpStatus = sumUpTrx.getStatus();
+		if (SumUpTransactionStatus.FAILED.equals(sumUpStatus))
+		{
+			applyRejectedBySumUp(id, POSInvoiceCardSettlementStatus.FAILED);
+		}
+		else if (SumUpTransactionStatus.CANCELLED.equals(sumUpStatus))
+		{
+			applyRejectedBySumUp(id, POSInvoiceCardSettlementStatus.CANCELLED);
+		}
+		else if (SumUpTransactionStatus.SUCCESSFUL.equals(sumUpStatus))
+		{
+			booking.bookPaymentIfApproved(id);
+			booking.completeBooking(id);
+		}
+	}
+
+	/**
+	 * Declined / cancelled on the reader: changes the status under the settlement lock, only from PENDING / UNKNOWN.
+	 */
+	private void applyRejectedBySumUp(
+			@NonNull final POSInvoiceCardSettlementId id,
+			@NonNull final POSInvoiceCardSettlementStatus newStatus)
+	{
+		trxManager.runInNewTrx(() -> {
+			final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
+			if (settlement.getStatus() != POSInvoiceCardSettlementStatus.PENDING
+					&& settlement.getStatus() != POSInvoiceCardSettlementStatus.UNKNOWN)
+			{
+				return;
+			}
+
+			repository.save(settlement.toBuilder()
+					.status(newStatus)
+					.sumUpTransactionId(booking.getLinkedOrResolvedSumUpTransactionId(settlement))
+					.build());
+		});
 	}
 
 	@Nullable

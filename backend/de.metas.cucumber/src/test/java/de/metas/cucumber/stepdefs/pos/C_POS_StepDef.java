@@ -52,6 +52,12 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpService;
+import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.payment.sumup.repository.SumUpTransactionQuery;
+import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalLine;
 import de.metas.pos.POSCashJournalLineType;
@@ -288,6 +294,36 @@ public class C_POS_StepDef
 	@And("^a POS cash sale is made at (\\S+):$")
 	public void posCashSale(@NonNull final String terminalIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		posSale(terminalIdentifier, dataTable, POSPaymentMethod.CASH);
+	}
+
+	/**
+	 * Like {@code a POS cash sale is made at}, but the sale is paid by card: the checkout is sent to the terminal's
+	 * SumUp reader (the cucumber SumUp API stub), the stub approves the charge, and metasfresh learns it with one
+	 * SumUp poll, as in real life. The terminal must be configured with SumUp and a default card reader. Same columns
+	 * and the same registered identifiers ({@code <Identifier>} invoice, {@code <Identifier>Receipt} payment).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, C_TaxCategory_StepDefData,
+	 * C_Payment_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And a POS card sale is made at till and approved on the card reader:
+	 *   | M_Product_ID | Price | C_TaxCategory_ID | Identifier |
+	 *   | product      | 2.50  | taxCategory      | cardSale   |
+	 * </pre>
+	 */
+	@And("^a POS card sale is made at (\\S+) and approved on the card reader:$")
+	public void posCardSale(@NonNull final String terminalIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		posSale(terminalIdentifier, dataTable, POSPaymentMethod.CARD);
+	}
+
+	private void posSale(
+			@NonNull final String terminalIdentifier,
+			@NonNull final DataTable dataTable,
+			@NonNull final POSPaymentMethod paymentMethod) throws InterruptedException
+	{
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
 		final UserId cashierId = StepDefUtil.getUserIdByLogin(METASFRESH_VALUE);
 
@@ -328,7 +364,7 @@ public class C_POS_StepDef
 						.lines(lines.build())
 						.payments(ImmutableList.of(RemotePOSPayment.builder()
 								.uuid(paymentExternalId)
-								.paymentMethod(POSPaymentMethod.CASH)
+								.paymentMethod(paymentMethod)
 								.amount(totalAmount)
 								.build()))
 						.build(),
@@ -341,9 +377,16 @@ public class C_POS_StepDef
 				.posOrderExternalId(orderExternalId)
 				.posPaymentExternalId(paymentExternalId)
 				.userId(cashierId)
-				.cashTenderedAmount(totalAmount)
+				.cashTenderedAmount(paymentMethod.isCash() ? totalAmount : null)
 				.build());
-		afterCheckout.assertCompleted();
+		if (paymentMethod.isCash())
+		{
+			afterCheckout.assertCompleted();
+		}
+		else
+		{
+			approveCardPaymentOnTheReader(afterCheckout);
+		}
 
 		final POSOrder completedOrder = StepDefUtil.tryAndWaitForItem(
 				ASYNC_INVOICE_TIMEOUT_SEC,
@@ -379,6 +422,28 @@ public class C_POS_StepDef
 		// distinct identifier from the invoice's: IdentifiersResolver (used e.g. by "Fact_Acct records are
 		// matching") probes every StepDefData table for a given identifier and fails if more than one matches.
 		paymentTable.putOrReplace(StepDefDataIdentifier.ofString(saleIdentifier.getAsString() + "Receipt"), paymentReceipt);
+	}
+
+	/**
+	 * The card checkout of the order's (single) payment is pending at SumUp: let the stub approve it and poll SumUp,
+	 * so the status event completes the order.
+	 */
+	private void approveCardPaymentOnTheReader(@NonNull final POSOrder order) throws InterruptedException
+	{
+		final POSPayment posPayment = order.getPaymentsNotDeleted().get(0);
+		final SumUpTransaction sumUpTrx = SpringContextHolder.instance.getBean(SumUpTransactionRepository.class)
+				.stream(SumUpTransactionQuery.builder()
+						.posRef(SumUpPOSRef.builder()
+								.posOrderId(order.getLocalIdNotNull().getRepoId())
+								.posPaymentId(posPayment.getLocalIdNotNull().getRepoId())
+								.build())
+						.build())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No SumUp transaction for the POS card payment").setParameter("posPayment", posPayment));
+
+		SumUpApiStub.setTransactionStatus(sumUpTrx.getClientTransactionId().getAsString(), SumUpTransactionStatus.SUCCESSFUL.getCode(), null);
+		SpringContextHolder.instance.getBean(SumUpService.class).bulkUpdatePendingTransactions(false);
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**

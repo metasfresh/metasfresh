@@ -7,7 +7,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -25,10 +27,17 @@ import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpPollerCycleListener;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.payment.sumup.SumUpTransactionStatusChangedEvent;
+import de.metas.payment.sumup.SumUpTransactionStatusChangedListener;
 import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Config;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
+import de.metas.pos.POSCashJournal;
+import de.metas.pos.POSCashJournalLineType;
+import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
@@ -40,6 +49,8 @@ import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStartRequest
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStatus;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement;
+import de.metas.pos.rest_api.json.JsonCashJournalSummary;
+import de.metas.pos.rest_api.json.JsonContext;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.java.Before;
@@ -56,12 +67,14 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_POS;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -78,7 +91,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.CLIENT_ID;
-import static de.metas.cucumber.stepdefs.StepDefConstants.METASFRESH_VALUE;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -101,6 +113,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final C_POS_StepDefData posTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_POS_InvoiceCardSettlement_StepDefData settlementTable;
+	@NonNull private final C_Payment_StepDefData paymentTable;
 
 	// outcomes of the last concurrent start; a step-def instance lives for one scenario
 	private final List<StartOutcome> concurrentStartOutcomes = new ArrayList<>();
@@ -352,7 +365,8 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	/**
 	 * Runs one poller cycle: updates the PENDING SumUp transactions from the stub, then calls every
-	 * {@link SumUpPollerCycleListener}.
+	 * {@link SumUpPollerCycleListener}. SumUp status events are handled asynchronously; the step returns only after
+	 * every event the cycle fired was handled (see {@link SumUpEventsTestProbe#waitUntilFiredEventsAreHandled}).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -361,15 +375,17 @@ public class POS_InvoiceCardSettlement_StepDef
 	 * </pre>
 	 */
 	@And("^metasfresh polls SumUp$")
-	public void pollSumUp()
+	public void pollSumUp() throws InterruptedException
 	{
 		sumUpService().bulkUpdatePendingTransactions(false);
 		SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class)
 				.forEach(SumUpPollerCycleListener::afterPollCycle);
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**
-	 * Updates the settlement's SumUp transaction from the stub only ({@link SumUpService#updateTransactionFromRemote}).
+	 * Updates the settlement's SumUp transaction from the stub only ({@link SumUpService#updateTransactionFromRemote}),
+	 * and returns after the status event it fired (if any) was handled.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -378,10 +394,11 @@ public class POS_InvoiceCardSettlement_StepDef
 	 * </pre>
 	 */
 	@And("^the SumUp transaction of card settlement (\\S+) is updated from remote$")
-	public void updateTransactionFromRemote(@NonNull final String settlementIdentifier)
+	public void updateTransactionFromRemote(@NonNull final String settlementIdentifier) throws InterruptedException
 	{
 		final SumUpTransaction trx = getSumUpTransaction(loadSettlement(settlementIdentifier).getId());
 		sumUpService().updateTransactionFromRemote(trx.getClientTransactionId());
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**
@@ -744,6 +761,237 @@ public class POS_InvoiceCardSettlement_StepDef
 		assertThat(openInvoice.getBlockingCardSettlement()).as("blocking card settlement").isNotNull();
 		assertThat(openInvoice.getBlockingCardSettlement().getId()).isEqualTo(expectedId);
 	}
+
+	/**
+	 * Sets the settlement's local SumUp transaction to SUCCESSFUL by saving the record directly, so that no status event
+	 * is fired. In real life the transaction is updated by the callback or the poller and the event is delivered by the
+	 * event bus; here the scenario delivers the event itself (step below), so it controls how often and how concurrently.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+	 * </pre>
+	 */
+	@And("^the SumUp transaction of card settlement (\\S+) is set to SUCCESSFUL locally without a status event$")
+	public void setSumUpTransactionSuccessfulWithoutEvent(@NonNull final String settlementIdentifier)
+	{
+		final POSInvoiceCardSettlementId settlementId = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final I_SUMUP_Transaction record = queryBL.createQueryBuilder(I_SUMUP_Transaction.class)
+				.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_C_POS_InvoiceCardSettlement_ID, settlementId)
+				.create()
+				.firstOnlyNotNull(I_SUMUP_Transaction.class);
+		// saved via the model, not SumUpTransactionRepository: the repository would fire the status event
+		record.setStatus(SumUpTransactionStatus.SUCCESSFUL.getCode());
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * Delivers the status event of the settlement's current SumUp transaction to every
+	 * {@link SumUpTransactionStatusChangedListener}, as the event bus does (same client/org context), either several
+	 * times one after the other or several times at the same moment on separate threads.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the SumUp status event of card settlement settlement1 is delivered 2 times one after the other
+	 * When the SumUp status event of card settlement settlement1 is delivered 2 times at once
+	 * </pre>
+	 */
+	@And("^the SumUp status event of card settlement (\\S+) is delivered (\\d+) times (one after the other|at once)$")
+	public void deliverSumUpStatusEvent(
+			@NonNull final String settlementIdentifier,
+			final int times,
+			@NonNull final String mode) throws Exception
+	{
+		final SumUpTransactionStatusChangedEvent event = SumUpTransactionStatusChangedEvent.ofNewTransaction(
+				getSumUpTransaction(loadSettlement(settlementIdentifier).getId()));
+		final Properties eventCtx = Env.newTemporaryCtx();
+		Env.setClientId(eventCtx, event.getClientId());
+		Env.setOrgId(eventCtx, event.getOrgId());
+		final Runnable delivery = () -> {
+			try (final IAutoCloseable ignored = Env.switchContext(eventCtx))
+			{
+				SpringContextHolder.instance.getBeansOfType(SumUpTransactionStatusChangedListener.class)
+						.forEach(listener -> listener.onStatusChanged(event));
+			}
+		};
+
+		if ("one after the other".equals(mode))
+		{
+			for (int i = 0; i < times; i++)
+			{
+				delivery.run();
+			}
+			return;
+		}
+
+		final CountDownLatch startSignal = new CountDownLatch(1);
+		final ExecutorService executor = Executors.newFixedThreadPool(times);
+		try
+		{
+			final List<Future<?>> futures = new ArrayList<>();
+			for (int i = 0; i < times; i++)
+			{
+				futures.add(executor.submit(() -> {
+					startSignal.await();
+					delivery.run();
+					return null;
+				}));
+			}
+			startSignal.countDown();
+			for (final Future<?> future : futures)
+			{
+				future.get(120, TimeUnit.SECONDS); // an exception outside the listeners fails the step; the POS listener records its own failures as AD_Issues of the settlement, so scenarios assert those
+			}
+		}
+		finally
+		{
+			executor.shutdownNow();
+		}
+	}
+
+	/**
+	 * Asserts the settlement's {@code ErrorMsg}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And card settlement settlement1 has error message 'refunded at SumUp'
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has error message '(.*)'$")
+	public void assertSettlementErrorMsg(@NonNull final String settlementIdentifier, @NonNull final String expectedErrorMsg)
+	{
+		assertThat(loadSettlement(settlementIdentifier).getErrorMsg())
+				.as("ErrorMsg of card settlement %s", settlementIdentifier)
+				.isEqualTo(expectedErrorMsg);
+	}
+
+	/**
+	 * Registers the settlement's booked {@code C_Payment} under the given identifier, for {@code validate payments}
+	 * and the other payment steps; fails if the settlement has no payment.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_InvoiceCardSettlement_StepDefData, C_Payment_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And card settlement settlement1 has payment cardPayment
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has payment (\\S+)$")
+	public void registerSettlementPayment(@NonNull final String settlementIdentifier, @NonNull final String paymentIdentifier)
+	{
+		final POSInvoiceCardSettlement settlement = loadSettlement(settlementIdentifier);
+		assertThat(settlement.getPaymentId()).as("C_Payment_ID of card settlement %s", settlementIdentifier).isNotNull();
+		paymentTable.putOrReplace(
+				StepDefDataIdentifier.ofString(paymentIdentifier),
+				Services.get(IPaymentDAO.class).getById(settlement.getPaymentId()));
+	}
+
+	/**
+	 * Counts the {@code C_Payment} rows of the invoice's business partner (each scenario creates its own partner).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the partner of invoice invoice1 has 1 payment
+	 * </pre>
+	 */
+	@And("^the partner of invoice (\\S+) has (\\d+) payments?$")
+	public void assertPartnerPaymentCount(@NonNull final String invoiceIdentifier, final int expectedCount)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		assertThat(Services.get(IPaymentDAO.class).streamPaymentIdsByBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).count())
+				.as("payments of the partner of invoice %s", invoiceIdentifier)
+				.isEqualTo(expectedCount);
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And invoice invoice1 has 1 allocation line
+	 * </pre>
+	 */
+	@And("^invoice (\\S+) has (\\d+) allocation lines?$")
+	public void assertInvoiceAllocationLineCount(@NonNull final String invoiceIdentifier, final int expectedCount)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		assertThat(queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.create()
+				.count())
+				.as("allocation lines of invoice %s", invoiceIdentifier)
+				.isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts the number of card payment lines of the terminal's open cash journal that reference the settlement.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+	 * </pre>
+	 */
+	@And("^the cash journal of POS terminal (\\S+) has (\\d+) card payment lines? referencing card settlement (\\S+)$")
+	public void assertJournalLinesReferencingSettlement(
+			@NonNull final String terminalIdentifier,
+			final int expectedCount,
+			@NonNull final String settlementIdentifier)
+	{
+		final POSInvoiceCardSettlementId settlementId = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final long actualCount = getCurrentCashJournal(terminalIdentifier).getLines()
+				.stream()
+				.filter(line -> line.getType() == POSCashJournalLineType.CARD_PAYMENT)
+				.filter(line -> settlementId.equals(line.getPosInvoiceCardSettlementId()))
+				.count();
+		assertThat(actualCount).as("card payment lines referencing card settlement %s", settlementIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts the totals of the closing summary the till shows for the terminal's open cash journal
+	 * ({@link JsonCashJournalSummary}): the card total and the cash (drawer) total.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the closing summary of the cash journal of POS terminal till shows card total 16.07 and cash total 100
+	 * </pre>
+	 */
+	@And("^the closing summary of the cash journal of POS terminal (\\S+) shows card total (\\S+) and cash total (\\S+)$")
+	public void assertClosingSummaryTotals(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String expectedCardTotal,
+			@NonNull final String expectedCashTotal)
+	{
+		final JsonCashJournalSummary summary = JsonCashJournalSummary.of(
+				getCurrentCashJournal(terminalIdentifier),
+				JsonContext.builder()
+						.currencyRepository(SpringContextHolder.instance.getBean(CurrencyRepository.class))
+						.adLanguage(Env.getADLanguageOrBaseLanguage())
+						.build());
+		assertThat(getPaymentMethodTotal(summary, POSPaymentMethod.CARD)).as("card total").isEqualByComparingTo(new BigDecimal(expectedCardTotal));
+		assertThat(getPaymentMethodTotal(summary, POSPaymentMethod.CASH)).as("cash total").isEqualByComparingTo(new BigDecimal(expectedCashTotal));
+	}
+
+	private static BigDecimal getPaymentMethodTotal(@NonNull final JsonCashJournalSummary summary, @NonNull final POSPaymentMethod paymentMethod)
+	{
+		return summary.getPaymentMethods()
+				.stream()
+				.filter(method -> method.getPaymentMethod() == paymentMethod)
+				.map(JsonCashJournalSummary.JsonPaymentMethodSummary::getAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	private POSCashJournal getCurrentCashJournal(@NonNull final String terminalIdentifier)
+	{
+		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
+		return SpringContextHolder.instance.getBean(POSService.class).getCurrentCashJournal(posTerminalId)
+				.orElseThrow(() -> new AdempiereException("No open cash journal for POS terminal " + terminalIdentifier));
+	}
+
 
 	private POSInvoiceCardSettlementService settlementService() {return SpringContextHolder.instance.getBean(POSInvoiceCardSettlementService.class);}
 

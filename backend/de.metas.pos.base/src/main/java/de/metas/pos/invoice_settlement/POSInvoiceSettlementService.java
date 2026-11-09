@@ -168,7 +168,7 @@ public class POSInvoiceSettlementService
 				.bpartnerName(bpartnerDAO.getBPartnerNameById(bpartnerId))
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), zoneId))
 				.grandTotal(Money.of(invoice.getGrandTotal(), currencyId))
-				.openAmt(allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true))
+				.openAmt(getOpenAmt(invoice))
 				.blockingCardSettlement(cardSettlementRepository.findBlockingByInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())).orElse(null))
 				.build();
 	}
@@ -274,23 +274,9 @@ public class POSInvoiceSettlementService
 				.dateTrx(dateTrx)
 				.createAndProcess();
 
-		allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+		allocateFully(invoice, payment);
 
-		// post-condition: autoAllocateSpecificPayment silently no-ops on a receipt↔purchase mismatch, a
-		// non-financial invoice, or an already-paid one. If it left the invoice open, the cash + journal line
-		// would be booked against an invoice that is still unpaid — throw so the whole transaction rolls back.
-		final Money openAfterAllocation = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
-		if (openAfterAllocation.signum() != 0)
-		{
-			throw new AdempiereException(MSG_AllocationIncomplete)
-					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
-					.setParameter("openAfterAllocation", openAfterAllocation);
-		}
-
-		final String description = msgBL.getMsg(
-				Env.getADLanguageOrBaseLanguage(),
-				MSG_JournalDescription,
-				new Object[] { invoice.getDocumentNo() });
+		final String description = getJournalDescription(invoice);
 		final POSCashJournal journal = posCashJournalService.changeJournalById(
 				terminal.getCashJournalIdNotNull(),
 				cashJournal -> cashJournal.addCashInOut(open, request.getCashierId(), description));
@@ -301,6 +287,47 @@ public class POSInvoiceSettlementService
 				.documentNo(invoice.getDocumentNo())
 				.journal(journal)
 				.build();
+	}
+
+	/**
+	 * Allocates the payment to the invoice and throws {@code AllocationIncomplete} if the invoice is still open
+	 * afterwards; must run in the transaction that books the payment, so the throw rolls the booking back.
+	 */
+	public void allocateFully(@NonNull final I_C_Invoice invoice, @NonNull final I_C_Payment payment)
+	{
+		allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+
+		// post-condition: autoAllocateSpecificPayment silently no-ops on a receipt↔purchase mismatch, a
+		// non-financial invoice, or an already-paid one. If it left the invoice open, the payment + journal line
+		// would be booked against an invoice that is still unpaid — throw so the whole transaction rolls back.
+		final Money openAfterAllocation = getOpenAmt(invoice);
+		if (openAfterAllocation.signum() != 0)
+		{
+			throw new AdempiereException(MSG_AllocationIncomplete)
+					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
+					.setParameter("openAfterAllocation", openAfterAllocation);
+		}
+	}
+
+	/**
+	 * @return the invoice's open amount in the invoice currency (allocations and discounts considered)
+	 */
+	@NonNull
+	public Money getOpenAmt(@NonNull final I_C_Invoice invoice)
+	{
+		return allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
+	}
+
+	/**
+	 * @return the description of the till's cash journal line that books a settlement of the invoice
+	 */
+	@NonNull
+	public String getJournalDescription(@NonNull final I_C_Invoice invoice)
+	{
+		return msgBL.getMsg(
+				Env.getADLanguageOrBaseLanguage(),
+				MSG_JournalDescription,
+				new Object[] { invoice.getDocumentNo() });
 	}
 
 	/**
@@ -334,7 +361,7 @@ public class POSInvoiceSettlementService
 			throw new AdempiereException(MSG_NotEligibleForSettlement).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
 		}
 
-		final Money open = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
+		final Money open = getOpenAmt(invoice);
 		if (open.signum() <= 0)
 		{
 			throw new AdempiereException(MSG_NoLongerOpen).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
@@ -346,7 +373,7 @@ public class POSInvoiceSettlementService
 	}
 
 	/**
-	 * Refuses a new payment of the invoice while a card settlement of it is unfinished (DESIGN decision 6). Call it
+	 * Refuses a new payment of the invoice while a card settlement of it is unfinished. Call it
 	 * right after the invoice lock, in the same transaction.
 	 */
 	public void assertNoBlockingCardSettlement(@NonNull final InvoiceId invoiceId)
@@ -359,6 +386,17 @@ public class POSInvoiceSettlementService
 					.setParameter("C_POS_InvoiceCardSettlement_ID", blocking.getId())
 					.setParameter("status", blocking.getStatus());
 		}
+	}
+
+	/**
+	 * Takes the invoice row lock that every settlement path takes first (lock order: invoice before settlement)
+	 * and returns the invoice as read under that lock. Must be called inside a transaction.
+	 */
+	@NonNull
+	public I_C_Invoice lockInvoice(@NonNull final InvoiceId invoiceId)
+	{
+		trxManager.assertThreadInheritedTrxExists();
+		return getByIdInTrxWithRowLock(invoiceId);
 	}
 
 	@Value

@@ -144,7 +144,7 @@ public class POSInvoiceCardSettlementRepository
 	}
 
 	/**
-	 * Sweep candidates (DESIGN decision 9): PE, UN, AP, plus ABANDONED settlements whose linked SumUp transaction is
+	 * Sweep candidates: PE, UN, AP, plus ABANDONED settlements whose linked SumUp transaction is
 	 * still PENDING or SUCCESSFUL.
 	 * The SumUp transaction is linked via the back-reference {@code SUMUP_Transaction.C_POS_InvoiceCardSettlement_ID}
 	 * (set at send time); later steps must resolve the SumUp transaction the same way.
