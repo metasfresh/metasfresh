@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * <ul>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}. A checkout can be held ({@link #holdNextCheckout()}) and answered later ({@link #answerHeldCheckout})</li>
  *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure; an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
- *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 204 or the programmed 4xx</li>
+ *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 204 or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
  * State is static: one stub per JVM, reset between scenarios via {@link #reset()}.
  */
@@ -85,6 +85,8 @@ public final class SumUpApiStub
 	@Nullable private static CountDownLatch heldCheckoutRelease;
 	@Nullable private static CountDownLatch heldCheckoutReceived;
 	private static final List<ReceivedCheckout> receivedCheckouts = new ArrayList<>();
+	// the reader ids of the terminate requests received, in order
+	private static final List<String> receivedTerminateReaderIds = new ArrayList<>();
 	private static final Map<String, TransactionState> transactionsByClientTransactionId = new LinkedHashMap<>();
 
 	private SumUpApiStub() {}
@@ -131,6 +133,7 @@ public final class SumUpApiStub
 			terminateFails = false;
 			releaseHeldCheckout();
 			receivedCheckouts.clear();
+			receivedTerminateReaderIds.clear();
 			transactionsByClientTransactionId.clear();
 		}
 	}
@@ -242,6 +245,17 @@ public final class SumUpApiStub
 		}
 	}
 
+	/**
+	 * @return the reader ids of the terminate requests received since the last {@link #reset()}, whatever they were answered
+	 */
+	public static List<String> getReceivedTerminateReaderIds()
+	{
+		synchronized (lock)
+		{
+			return new ArrayList<>(receivedTerminateReaderIds);
+		}
+	}
+
 	public static List<ReceivedCheckout> getReceivedCheckouts()
 	{
 		synchronized (lock)
@@ -269,7 +283,7 @@ public final class SumUpApiStub
 			}
 			else if ("POST".equals(method) && segments.length == 6 && "merchants".equals(segments[1]) && "readers".equals(segments[3]) && "terminate".equals(segments[5]))
 			{
-				handleTerminate(exchange);
+				handleTerminate(exchange, segments[4]);
 			}
 			else if ("GET".equals(method) && segments.length == 3 && "me".equals(segments[1]) && "transactions".equals(segments[2]))
 			{
@@ -375,12 +389,13 @@ public final class SumUpApiStub
 		}
 	}
 
-	private static void handleTerminate(final HttpExchange exchange) throws IOException
+	private static void handleTerminate(final HttpExchange exchange, final String readerId) throws IOException
 	{
 		readBody(exchange);
 		final boolean fails;
 		synchronized (lock)
 		{
+			receivedTerminateReaderIds.add(readerId);
 			fails = terminateFails;
 		}
 

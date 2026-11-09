@@ -778,7 +778,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has 5 booking attempts
     And card settlement settlement1 has 1 AD_Issue
     And card settlement settlement1 has payment cardPayment
-    And the other transaction releases its invoice lock
+    And the other transaction releases its row lock
     And invoice invoice1 has 0 allocation lines
     And the cash journal of POS terminal till contains lines:
       | Type | Amount |
@@ -1086,7 +1086,7 @@ Feature: POS invoice card settlement
     And the card payment of card settlement settlement2 is allocated with 16.07 to its invoice
     And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement2
 
-    When the other transaction releases its invoice lock
+    When the other transaction releases its row lock
     And metasfresh polls SumUp
 
     Then card settlement settlement1 has status SUCCESSFUL
@@ -1099,3 +1099,306 @@ Feature: POS invoice card settlement
       | Type     | Amount |
       | CARD_PAY | 16.07  |
       | CARD_PAY | 16.07  |
+
+  # ##########################################################################
+  # Release after the configured wait (AD_SysConfig de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds, default
+  # 180 s, values below 150 s raised to 150 s). Earlier, the release is refused and nothing is sent to SumUp.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_tooEarly
+  Scenario: A configured wait below 150 s is raised to 150 s, so a card payment started 100 s ago cannot be released yet
+    Given temporarily set sys config int value 60 for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
+    And POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 100 seconds ago
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleaseNotYetAllowed' for 150 seconds
+    And card settlement settlement1 has status PENDING and isAbandoned false
+    And the SumUp stub received 0 terminates
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_configuredLonger
+  Scenario: A configured wait of 300 s applies, so a card payment started 200 s ago cannot be released yet
+    Given temporarily set sys config int value 300 for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
+    And POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleaseNotYetAllowed' for 300 seconds
+    And card settlement settlement1 has status PENDING and isAbandoned false
+    And the SumUp stub received 0 terminates
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_default
+  Scenario: Without a configured wait the default of 180 s applies: refused after 160 s, allowed after 181 s
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 160 seconds ago
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleaseNotYetAllowed' for 180 seconds
+    And card settlement settlement1 has status PENDING and isAbandoned false
+
+    When card settlement settlement1 was created 181 seconds ago
+    And card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true
+    And card settlement settlement1 has status PENDING and isAbandoned false
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_floorAllowed
+  Scenario: A configured wait below 150 s is raised to 150 s, so a card payment started 151 s ago can be released
+    Given temporarily set sys config int value 60 for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
+    And POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 151 seconds ago
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true
+
+  # ##########################################################################
+  # The release re-checks SumUp and acts on the result: approved → booked, failed → nothing to release, still pending
+  # → released only after the cashier confirms that the card was not charged, with an AD_Issue for back office.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_approved
+  Scenario: SumUp approved the card payment meanwhile, so the release books it instead of releasing it
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status SUCCESSFUL with confirmationRequired false
+    And card settlement settlement1 has status SUCCESSFUL and isAbandoned false
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And the partner of invoice invoice1 has 1 payment
+    And card settlement settlement1 has 0 AD_Issues with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_failed
+  Scenario: SumUp declined the card payment meanwhile, so the release ends it as failed and the invoice can be paid in cash
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub reports transaction of card settlement settlement1 as FAILED
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status FAILED with confirmationRequired false
+    And card settlement settlement1 has status FAILED and isAbandoned false
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+  # A terminate rejected by SumUp (4xx) is only logged: the release goes on.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_pending
+  Scenario: The card payment is still pending at SumUp, so it is released as abandoned only after the cashier confirms, and the invoice can be paid in cash
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub answers terminate with HTTP 4xx
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true and checkFailed false
+    And card settlement settlement1 has status PENDING and isAbandoned false
+    And card settlement settlement1 has 0 AD_Issues with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+
+    When the release of card settlement settlement1 is confirmed by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status ABANDONED with confirmationRequired false
+    And card settlement settlement1 has status ABANDONED and isAbandoned true
+    And card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+  # The confirmation waits for the settlement lock at most the booking lock timeout: while another transaction (e.g. a
+  # booking) holds it, nothing is released and the till gets the unchanged state, so it can ask again.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_confirmLocked
+  Scenario: The card settlement is locked by another transaction when the cashier confirms the release, so nothing is released until the lock is gone
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And card settlement settlement1 is released by cashier metasfresh
+    And the release of card settlement settlement1 returned status PENDING with confirmationRequired true
+    And the row of card settlement settlement1 is locked by another transaction
+
+    When the release of card settlement settlement1 is confirmed by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true
+    And card settlement settlement1 has status PENDING and isAbandoned false
+    And card settlement settlement1 has 0 AD_Issues with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+
+    When the other transaction releases its row lock
+    And the release of card settlement settlement1 is confirmed by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status ABANDONED with confirmationRequired false
+    And card settlement settlement1 has status ABANDONED and isAbandoned true
+    And card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC13_terminateCalled
+  Scenario: The release cancels the checkout on the terminal's card reader before it re-checks SumUp
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the SumUp stub received 1 terminate on reader reader-till
+    And the release of card settlement settlement1 returned status PENDING with confirmationRequired true
+
+  # The confirmation releases only if the status is still the one the prompt showed; otherwise it returns the new state.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC14
+  Scenario: SumUp approves the card payment between the release prompt and the confirmation, so the confirmation returns the booked payment and releases nothing
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And card settlement settlement1 is released by cashier metasfresh
+    And the release of card settlement settlement1 returned status PENDING with confirmationRequired true
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    When the release of card settlement settlement1 is confirmed by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status SUCCESSFUL with confirmationRequired false
+    And card settlement settlement1 has status SUCCESSFUL and isAbandoned false
+    And card settlement settlement1 has 0 AD_Issues with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC19_release
+  Scenario: The SumUp status lookup fails during the release, so the status is unchanged and the release still needs the cashier's confirmation
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub fails the status lookup
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true and checkFailed true
+    And card settlement settlement1 has status PENDING and isAbandoned false
+
+  # An orphan (the system stopped between saving and sending, so no SumUp transaction exists) is releasable: the
+  # terminate still goes to the terminal's default reader, the re-check has nothing to ask SumUp about.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC18_release
+  Scenario: A card settlement without a SumUp transaction is unknown, and the cashier releases it as abandoned after confirming, so the invoice can be paid in cash
+    Given POS terminal till is configured with SumUp and a default card reader
+    And SumUp API stub holds the next checkout
+    And card settlement settlement1 is being started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 151 seconds ago
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status UNKNOWN
+    And card settlement settlement1 was created 200 seconds ago
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the SumUp stub received 1 terminate on reader reader-till
+    And the release of card settlement settlement1 returned status UNKNOWN with confirmationRequired true and checkFailed false
+
+    When the release of card settlement settlement1 is confirmed by cashier metasfresh
+
+    Then the release of card settlement settlement1 returned status ABANDONED with confirmationRequired false
+    And card settlement settlement1 has status ABANDONED and isAbandoned true
+    And card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+    When SumUp API stub answers the held checkout with HTTP 4xx
+
+    Then card settlement settlement1 has status ABANDONED and isAbandoned true
+
+  # Release is refused once SumUp approved the card payment: the money was taken and the booking is pending.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC8_releaseRefused
+  Scenario: SumUp approved the card payment but its booking cannot complete yet, so the release is refused
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the invoice row of invoice invoice1 is locked by another transaction
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleaseRefusedApproved'
+    And card settlement settlement1 has status APPROVED and isAbandoned false
+    And card settlement settlement1 has 0 AD_Issues with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+    And the other transaction releases its row lock
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC8_releaseRefusedBookingError
+  Scenario: The booking of an approved card payment failed, so the release is refused and the settlement stays a booking error
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the accounting period is closed for today
+    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 was created 200 seconds ago
+
+    When card settlement settlement1 is released by cashier metasfresh
+
+    Then the release of card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleaseRefusedApproved'
+    And card settlement settlement1 has status BOOKING_ERROR and isAbandoned false
+    And card settlement settlement1 has no payment
+    And card settlement settlement1 has 1 AD_Issue
+    And the SumUp stub received 0 terminates

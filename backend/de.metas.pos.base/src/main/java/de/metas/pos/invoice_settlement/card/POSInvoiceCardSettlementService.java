@@ -4,12 +4,17 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.sumup.SumUpConfig;
+import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.payment.sumup.SumUpContext;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionStatus;
@@ -22,6 +27,8 @@ import de.metas.pos.invoice_settlement.POSInvoiceSettlementService.SettleableInv
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
+import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +37,13 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -51,6 +61,13 @@ public class POSInvoiceCardSettlementService
 	private static final Logger logger = LogManager.getLogger(POSInvoiceCardSettlementService.class);
 	private static final String BLOCKING_INDEX_NAME = "c_pos_invoicecardsettlement_blocking_uq";
 	private static final AdMessageKey MSG_CardPaymentStillOpen = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen");
+	private static final AdMessageKey MSG_ReleaseNotYetAllowed = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.ReleaseNotYetAllowed");
+	private static final AdMessageKey MSG_ReleaseRefusedApproved = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.ReleaseRefusedApproved");
+	private static final AdMessageKey MSG_ReleasedAsAbandoned = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned");
+
+	private static final String SYSCONFIG_ReleaseAfterSeconds = "de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds";
+	private static final int DEFAULT_ReleaseAfterSeconds = 180;
+	private static final int MIN_ReleaseAfterSeconds = 150;
 
 	/**
 	 * A PENDING settlement without a SumUp transaction that is older than this is an orphan: its checkout got no answer
@@ -60,6 +77,8 @@ public class POSInvoiceCardSettlementService
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@NonNull private final POSInvoiceCardSettlementRepository repository;
 	@NonNull private final POSInvoiceSettlementService invoiceSettlementService;
@@ -272,7 +291,7 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * The till's check (AC12): refreshes the settlement's SumUp transaction from SumUp, if it has one, and then
+	 * The till's check, also run by the release: refreshes the settlement's SumUp transaction from SumUp, if it has one, and then
 	 * reconciles the settlement with it ({@link #reconcileLocally}). A failed SumUp lookup leaves the transaction as it
 	 * was ({@link SumUpService#updateTransactionFromRemote} records the error on it); the settlement is then reconciled
 	 * with the last known state and {@code checkFailed} is set.
@@ -427,6 +446,231 @@ public class POSInvoiceCardSettlementService
 				throw ex;
 			}
 			logger.info("Card settlement {} is locked by another transaction; leaving it for the next check", id, ex);
+		}
+	}
+
+	/**
+	 * The cashier's release of a settlement whose result is not known, after the configured wait, in two steps:
+	 * <ol>
+	 * <li>without confirmation: allowed for PENDING / UNKNOWN settlements older than the configured wait
+	 * ({@link #getReleaseAfter}); cancels the checkout on the terminal's default card reader (best effort), then re-checks
+	 * the settlement ({@link #check}, outside the settlement lock). If it is still PENDING / UNKNOWN, the cashier must
+	 * confirm that the card was not charged ({@code confirmationRequired}); otherwise the booked, failed or cancelled
+	 * settlement is returned;</li>
+	 * <li>with confirmation: under the settlement lock, sets ABANDONED (and {@code IsAbandoned}, so the invoice is no longer
+	 * blocked) only if the status is still {@code expectedStatus}; otherwise the current state is returned. The release
+	 * is recorded as an AD_Issue of the settlement for back office ({@link #recordReleasedAsAbandoned}). If the
+	 * settlement lock is not got within the booking lock timeout, nothing is released and the current state is
+	 * returned.</li>
+	 * </ol>
+	 * Refused (nothing changed): before the configured wait ({@code ReleaseNotYetAllowed}); once SumUp approved the
+	 * payment, i.e. the settlement is APPROVED / BOOKING_ERROR, or its SumUp transaction is approved
+	 * ({@code ReleaseRefusedApproved}).
+	 */
+	@NonNull
+	public POSInvoiceCardSettlementReleaseResult release(@NonNull final POSInvoiceCardSettlementReleaseRequest request)
+	{
+		// check() and the release run their own transactions, and check() must not run under the settlement lock
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		return request.isConfirmNotCharged()
+				? confirmRelease(request)
+				: checkBeforeRelease(request.getId());
+	}
+
+	@NonNull
+	private POSInvoiceCardSettlementReleaseResult checkBeforeRelease(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		final POSInvoiceCardSettlement settlement = repository.getById(id);
+		if (!isReleasableStatus(settlement.getStatus()))
+		{
+			return toReleaseResult(settlement, false);
+		}
+
+		final POSInvoiceCardSettlementReleaseResult notYetAllowed = refuseIfTooEarly(settlement);
+		if (notYetAllowed != null)
+		{
+			return notYetAllowed;
+		}
+
+		terminateCheckoutOnReader(settlement);
+
+		final POSInvoiceCardSettlementCheckResult checkResult = check(id);
+		return toReleaseResult(checkResult.getSettlement(), checkResult.isCheckFailed());
+	}
+
+	@NonNull
+	private POSInvoiceCardSettlementReleaseResult confirmRelease(@NonNull final POSInvoiceCardSettlementReleaseRequest request)
+	{
+		final POSInvoiceCardSettlementId id = request.getId();
+		final POSInvoiceCardSettlementStatus expectedStatus = request.getExpectedStatus();
+		if (expectedStatus == null || !isReleasableStatus(expectedStatus))
+		{
+			throw new AdempiereException("The confirmation of a card settlement release needs the expected status PENDING or UNKNOWN")
+					.setParameter("expectedStatus", expectedStatus)
+					.setRecord(id.toRecordRef());
+		}
+
+		final POSInvoiceCardSettlement settlementBefore = repository.getById(id);
+		if (settlementBefore.getStatus() != expectedStatus)
+		{
+			return toReleaseResult(settlementBefore, false);
+		}
+
+		// the first step checked the age already; repeated here so that no request can release earlier
+		final POSInvoiceCardSettlementReleaseResult notYetAllowed = refuseIfTooEarly(settlementBefore);
+		if (notYetAllowed != null)
+		{
+			return notYetAllowed;
+		}
+
+		final POSInvoiceCardSettlement released;
+		try
+		{
+			released = trxManager.callInNewTrx(() -> {
+				booking.setLockTimeout();
+				final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
+				if (settlement.getStatus() != expectedStatus || isApprovedAtSumUp(id))
+				{
+					return null;
+				}
+				final POSInvoiceCardSettlement abandoned = repository.save(settlement.toBuilder()
+						.status(POSInvoiceCardSettlementStatus.ABANDONED)
+						.isAbandoned(true)
+						.build());
+				recordReleasedAsAbandoned(abandoned, request.getCashierId());
+				return abandoned;
+			});
+		}
+		catch (final Exception ex)
+		{
+			if (DBException.findSQLExceptionInCauseChainOrNull(ex, DBException::isLockNotAvailable) == null)
+			{
+				throw ex;
+			}
+			// e.g. a booking holds the lock: nothing released; the till gets the current state (and asks again if unchanged)
+			logger.info("Card settlement {} is locked by another transaction; not released", id, ex);
+			return toReleaseResult(repository.getById(id), false);
+		}
+
+		if (released == null)
+		{
+			// changed meanwhile, or approved at SumUp (then refused)
+			return toReleaseResult(repository.getById(id), false);
+		}
+
+		return toReleaseResult(released, false);
+	}
+
+	/**
+	 * @return the release result for the settlement as it is now: refused if SumUp approved its payment, a confirmation
+	 * prompt if it is still PENDING / UNKNOWN, else the settlement (nothing to release)
+	 */
+	@NonNull
+	private POSInvoiceCardSettlementReleaseResult toReleaseResult(@NonNull final POSInvoiceCardSettlement settlement, final boolean checkFailed)
+	{
+		final POSInvoiceCardSettlementStatus status = settlement.getStatus();
+		if (status == POSInvoiceCardSettlementStatus.APPROVED
+				|| status == POSInvoiceCardSettlementStatus.BOOKING_ERROR
+				|| (isReleasableStatus(status) && isApprovedAtSumUp(settlement.getId())))
+		{
+			return POSInvoiceCardSettlementReleaseResult.builder()
+					.settlement(settlement)
+					.checkFailed(checkFailed)
+					.refusedMessageKey(MSG_ReleaseRefusedApproved)
+					.refusedMessage(TranslatableStrings.adMessage(MSG_ReleaseRefusedApproved))
+					.build();
+		}
+
+		return POSInvoiceCardSettlementReleaseResult.builder()
+				.settlement(settlement)
+				.confirmationRequired(isReleasableStatus(status))
+				.checkFailed(checkFailed)
+				.build();
+	}
+
+	private static boolean isReleasableStatus(@NonNull final POSInvoiceCardSettlementStatus status)
+	{
+		return status == POSInvoiceCardSettlementStatus.PENDING || status == POSInvoiceCardSettlementStatus.UNKNOWN;
+	}
+
+	/**
+	 * @return whether the settlement's SumUp transaction, as stored locally, is approved and not refunded (a refunded
+	 * charge is never booked, see {@link POSInvoiceCardSettlementBooking})
+	 */
+	private boolean isApprovedAtSumUp(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		return booking.findSumUpTransaction(id)
+				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
+				.orElse(false);
+	}
+
+	@Nullable
+	private POSInvoiceCardSettlementReleaseResult refuseIfTooEarly(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		final Duration releaseAfter = getReleaseAfter(settlement.getClientAndOrgId());
+		if (settlement.getCreated().plus(releaseAfter).isBefore(SystemTime.asInstant()))
+		{
+			return null;
+		}
+
+		return POSInvoiceCardSettlementReleaseResult.builder()
+				.settlement(settlement)
+				.refusedMessageKey(MSG_ReleaseNotYetAllowed)
+				.refusedMessage(TranslatableStrings.adMessage(MSG_ReleaseNotYetAllowed, String.valueOf(releaseAfter.getSeconds())))
+				.build();
+	}
+
+	/**
+	 * @return the wait after which the cashier may release a settlement: AD_SysConfig {@link #SYSCONFIG_ReleaseAfterSeconds},
+	 * default {@link #DEFAULT_ReleaseAfterSeconds}; a value below {@link #MIN_ReleaseAfterSeconds} (above the worst-case
+	 * send of 2 × 60 s) is raised to it
+	 */
+	@NonNull
+	private Duration getReleaseAfter(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final int seconds = sysConfigBL.getIntValue(SYSCONFIG_ReleaseAfterSeconds, DEFAULT_ReleaseAfterSeconds, clientAndOrgId);
+		return Duration.ofSeconds(Math.max(seconds, MIN_ReleaseAfterSeconds));
+	}
+
+	/**
+	 * Asks the terminal's default card reader to abort its checkout. Best effort: SumUp does not confirm it, and a
+	 * failure (e.g. a 4xx because the reader has no checkout running) is only logged; the re-check decides.
+	 */
+	private void terminateCheckoutOnReader(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		try
+		{
+			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminalService.getPOSTerminalById(settlement.getPosTerminalId()).getPaymentProcessorConfigNotNull();
+			final SumUpConfigId sumUpConfigId = Check.assumeNotNull(paymentProcessorConfig.getSumUpConfigId(), "sumUpConfigId is set for {}", paymentProcessorConfig);
+			final SumUpConfig sumUpConfig = sumUpService.getConfig(sumUpConfigId);
+			sumUpService.terminateCardReaderCheckout(sumUpConfigId, sumUpConfig.getDefaultCardReaderExternalIdNotNull());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Could not terminate the card reader checkout of card settlement {}; releasing anyway", settlement.getId(), ex);
+		}
+	}
+
+	/**
+	 * Records the release as an AD_Issue of the settlement, in the settlement's client / org (not the cashier's login
+	 * context), so that back office reconciles it with SumUp. Called inside the release transaction, under the settlement
+	 * lock.
+	 * <p>
+	 * The AD_Issue is committed in its own transaction, before the release commits ({@link IErrorManager#createIssue}).
+	 * If writing it fails, the release is rolled back and the cashier can try again. If the release commit fails after
+	 * the issue was written, a stray issue remains for a settlement that is not ABANDONED, and a repeated release records
+	 * a second one. This is deliberate, as for the booking's issues ({@link POSInvoiceCardSettlementBooking}): a duplicate
+	 * issue is better than a release that back office never hears of.
+	 */
+	private void recordReleasedAsAbandoned(@NonNull final POSInvoiceCardSettlement settlement, @NonNull final UserId cashierId)
+	{
+		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(settlement.getClientAndOrgId()))
+		{
+			final String invoiceDocumentNo = invoiceBL.getById(settlement.getInvoiceId()).getDocumentNo();
+			errorManager.createIssue(new AdempiereException(MSG_ReleasedAsAbandoned, String.valueOf(settlement.getId().getRepoId()), invoiceDocumentNo)
+					.setParameter("ReleasedBy_User_ID", cashierId.getRepoId())
+					.setRecord(settlement.getId().toRecordRef()));
 		}
 	}
 

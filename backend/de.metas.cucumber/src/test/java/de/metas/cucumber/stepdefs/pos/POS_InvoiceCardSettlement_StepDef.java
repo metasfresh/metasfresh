@@ -46,6 +46,8 @@ import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementBooking;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementCheckResult;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementReleaseRequest;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementReleaseResult;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementService;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStartRequest;
@@ -129,8 +131,8 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final AD_Role_StepDefData roleTable;
 
-	// the transaction of "another user" that holds an invoice row lock; released by a step or, at the latest, after the scenario
-	@Nullable private String invoiceLockHolderTrxName;
+	// the transaction of "another user" that holds an invoice or settlement row lock; released by a step or, at the latest, after the scenario
+	@Nullable private String rowLockHolderTrxName;
 	// accounting schemas whose automatic period control a scenario changed, with the original Period_OpenFuture; restored
 	// after the scenario, because all scenarios share them
 	private final List<I_C_AcctSchema> changedAcctSchemas = new ArrayList<>();
@@ -144,6 +146,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@Nullable private Future<POSInvoiceCardSettlement> backgroundStart;
 
 	@Nullable private POSInvoiceCardSettlementCheckResult lastCheckResult;
+	@Nullable private POSInvoiceCardSettlementReleaseResult lastReleaseResult;
 
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
 	private SumUpService sumUpService() {return SpringContextHolder.instance.getBean(SumUpService.class);}
@@ -1301,6 +1304,163 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
+	 * The cashier releases the settlement as the till does, first step ({@link POSInvoiceCardSettlementService#release}
+	 * without confirmation); the result is asserted by the {@code the release of card settlement ...} steps.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When card settlement settlement1 is released by cashier metasfresh
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) is released by cashier (\\S+)$")
+	public void releaseSettlement(@NonNull final String settlementIdentifier, @NonNull final String cashierLogin) throws InterruptedException
+	{
+		lastReleaseResult = settlementService().release(POSInvoiceCardSettlementReleaseRequest.builder()
+				.id(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)))
+				.cashierId(StepDefUtil.getUserIdByLogin(cashierLogin))
+				.confirmNotCharged(false)
+				.build());
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
+	}
+
+	/**
+	 * The cashier confirms the release prompt of the last release: sends the confirmation with the status the prompt
+	 * showed (the status returned by the last release) as expected status.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the release of card settlement settlement1 is confirmed by cashier metasfresh
+	 * </pre>
+	 */
+	@And("^the release of card settlement (\\S+) is confirmed by cashier (\\S+)$")
+	public void confirmRelease(@NonNull final String settlementIdentifier, @NonNull final String cashierLogin) throws InterruptedException
+	{
+		final POSInvoiceCardSettlementReleaseResult prompt = lastReleaseResult;
+		assertThat(prompt).as("result of the last release").isNotNull();
+		assertThat(prompt.isConfirmationRequired()).as("the last release asked for a confirmation").isTrue();
+
+		lastReleaseResult = settlementService().release(POSInvoiceCardSettlementReleaseRequest.builder()
+				.id(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)))
+				.cashierId(StepDefUtil.getUserIdByLogin(cashierLogin))
+				.confirmNotCharged(true)
+				.expectedStatus(prompt.getSettlement().getStatus())
+				.build());
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
+	}
+
+	/**
+	 * Asserts that the last release (or its confirmation) was not refused and returned the given status and flags.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true
+	 * Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true and checkFailed true
+	 * </pre>
+	 */
+	@And("^the release of card settlement (\\S+) returned status ([A-Z_]+) with confirmationRequired (true|false)(?: and checkFailed (true|false))?$")
+	public void assertReleaseResult(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String expectedStatus,
+			@NonNull final String expectedConfirmationRequired,
+			@Nullable final String expectedCheckFailed)
+	{
+		final POSInvoiceCardSettlementReleaseResult result = assertLastReleaseResultOf(settlementIdentifier);
+		assertThat(result.getRefusedMessageKey()).as("refusal of the release").isNull();
+		assertThat(result.getSettlement().getStatus()).as("status returned by the release").isEqualTo(parseStatus(expectedStatus));
+		assertThat(result.isConfirmationRequired()).as("confirmationRequired returned by the release").isEqualTo(Boolean.parseBoolean(expectedConfirmationRequired));
+		if (expectedCheckFailed != null)
+		{
+			assertThat(result.isCheckFailed()).as("checkFailed returned by the release").isEqualTo(Boolean.parseBoolean(expectedCheckFailed));
+		}
+	}
+
+	/**
+	 * Asserts that the last release (or its confirmation) was refused with the given AD_Message, without asking for a
+	 * confirmation; optionally that the message names the given number of seconds.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the release of card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleaseNotYetAllowed' for 150 seconds
+	 * Then the release of card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleaseRefusedApproved'
+	 * </pre>
+	 */
+	@And("^the release of card settlement (\\S+) is refused with AD_Message '(.*)'(?: for (\\d+) seconds)?$")
+	public void assertReleaseRefused(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String expectedAdMessage,
+			@Nullable final String expectedSeconds)
+	{
+		final POSInvoiceCardSettlementReleaseResult result = assertLastReleaseResultOf(settlementIdentifier);
+		assertThat(result.getRefusedMessageKey()).as("refusal of the release").isEqualTo(AdMessageKey.of(expectedAdMessage));
+		assertThat(result.getRefusedMessage()).as("refusal text of the release").isNotNull();
+		assertThat(result.isConfirmationRequired()).as("confirmationRequired of a refused release").isFalse();
+		if (expectedSeconds != null)
+		{
+			assertThat(result.getRefusedMessage().translate(Env.getADLanguageOrBaseLanguage())).as("refusal text of the release").contains(expectedSeconds);
+		}
+	}
+
+	private POSInvoiceCardSettlementReleaseResult assertLastReleaseResultOf(@NonNull final String settlementIdentifier)
+	{
+		final POSInvoiceCardSettlementReleaseResult result = lastReleaseResult;
+		assertThat(result).as("result of the last release").isNotNull();
+		assertThat(result.getSettlement().getId()).as("released card settlement").isEqualTo(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
+		return result;
+	}
+
+	/**
+	 * Asserts how many terminate requests the stub received, optionally that each was for the given reader.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the SumUp stub received 1 terminate on reader reader-till
+	 * Then the SumUp stub received 0 terminates
+	 * </pre>
+	 */
+	@And("^the SumUp stub received (\\d+) terminates?(?: on reader (\\S+))?$")
+	public void assertStubReceivedTerminates(final int expectedCount, @Nullable final String expectedReader)
+	{
+		final List<String> readerIds = SumUpApiStub.getReceivedTerminateReaderIds();
+		assertThat(readerIds).as("terminate requests received by the SumUp stub").hasSize(expectedCount);
+		if (expectedReader != null)
+		{
+			assertThat(readerIds).as("readers of the terminate requests").allMatch(expectedReader::equals);
+		}
+	}
+
+	/**
+	 * Counts the AD_Issue rows tagged with the settlement whose error code is the given AD_Message's. (That the issue is
+	 * written in the settlement's client and organization is pinned by a unit test: here the scenario runs in the same
+	 * client and organization as the settlement.)
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then card settlement settlement1 has 1 AD_Issue with AD_Message 'de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned'
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has (\\d+) AD_Issues? with AD_Message '(.*)'$")
+	public void assertSettlementIssuesWithMessage(
+			@NonNull final String settlementIdentifier,
+			final int expectedCount,
+			@NonNull final String adMessage)
+	{
+		final TableRecordReference recordRef = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)).toRecordRef();
+		final int actualCount = queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_ErrorCode, expectedErrorCode(adMessage))
+				.create()
+				.count();
+		assertThat(actualCount).as("AD_Issues of card settlement %s with AD_Message %s", settlementIdentifier, adMessage).isEqualTo(expectedCount);
+	}
+
+	/**
 	 * Ends a background start the scenario left running, releasing its held checkout.
 	 */
 	@After
@@ -1317,15 +1477,15 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
-	 * Releases what the scenario left behind for the next ones: an invoice row lock still held by "another user", and
+	 * Releases what the scenario left behind for the next ones: an invoice or settlement row lock still held by "another user", and
 	 * a closed accounting period (the accounting schema is shared by all scenarios).
 	 */
 	@After
-	public void releaseInvoiceLockAndReopenPeriod()
+	public void releaseHeldRowLockAndReopenPeriod()
 	{
 		try
 		{
-			releaseInvoiceLock();
+			releaseHeldRowLock();
 		}
 		finally
 		{
@@ -1343,7 +1503,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	/**
 	 * Locks the invoice row ({@code FOR UPDATE}) in a separate, still open transaction, as a concurrent user or process
 	 * would; a booking that needs the invoice lock meanwhile waits until its lock timeout. The lock is held until
-	 * {@link #releaseInvoiceLock()} (step or after-scenario hook).
+	 * {@link #releaseHeldRowLock()} (step or after-scenario hook).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
@@ -1355,31 +1515,54 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^the invoice row of invoice (\\S+) is locked by another transaction$")
 	public void lockInvoiceInOtherTransaction(@NonNull final String invoiceIdentifier)
 	{
-		assertThat(invoiceLockHolderTrxName).as("an invoice lock is already held").isNull();
+		assertThat(rowLockHolderTrxName).as("a row lock of another transaction is already held").isNull();
 		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
 		final String trxName = Services.get(ITrxManager.class).createTrxName("cucumber-invoice-lock-holder", true);
-		invoiceLockHolderTrxName = trxName;
+		rowLockHolderTrxName = trxName;
 		DB.getSQLValueEx(trxName, "SELECT C_Invoice_ID FROM C_Invoice WHERE C_Invoice_ID=? FOR UPDATE", invoiceId.getRepoId());
 	}
 
 	/**
-	 * Ends the transaction that holds the invoice row lock (see {@link #lockInvoiceInOtherTransaction}).
+	 * Locks the settlement row ({@code FOR UPDATE}) in a separate, still open transaction, as a concurrent booking would;
+	 * a release confirmation that needs the settlement lock meanwhile waits until its lock timeout. The lock is held until
+	 * {@link #releaseHeldRowLock()} (step or after-scenario hook).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_InvoiceCardSettlement_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the row of card settlement settlement1 is locked by another transaction
+	 * </pre>
+	 */
+	@And("^the row of card settlement (\\S+) is locked by another transaction$")
+	public void lockSettlementInOtherTransaction(@NonNull final String settlementIdentifier)
+	{
+		assertThat(rowLockHolderTrxName).as("a row lock of another transaction is already held").isNull();
+		final POSInvoiceCardSettlementId id = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final String trxName = Services.get(ITrxManager.class).createTrxName("cucumber-settlement-lock-holder", true);
+		rowLockHolderTrxName = trxName;
+		DB.getSQLValueEx(trxName, "SELECT C_POS_InvoiceCardSettlement_ID FROM C_POS_InvoiceCardSettlement WHERE C_POS_InvoiceCardSettlement_ID=? FOR UPDATE", id.getRepoId());
+	}
+
+	/**
+	 * Ends the transaction that holds the invoice or settlement row lock (see {@link #lockInvoiceInOtherTransaction},
+	 * {@link #lockSettlementInOtherTransaction}).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * And the other transaction releases its invoice lock
+	 * And the other transaction releases its row lock
 	 * </pre>
 	 */
-	@And("^the other transaction releases its invoice lock$")
-	public void releaseInvoiceLock()
+	@And("^the other transaction releases its row lock$")
+	public void releaseHeldRowLock()
 	{
-		final String trxName = invoiceLockHolderTrxName;
+		final String trxName = rowLockHolderTrxName;
 		if (trxName == null)
 		{
 			return;
 		}
-		invoiceLockHolderTrxName = null;
+		rowLockHolderTrxName = null;
 
 		final ITrx trx = Services.get(ITrxManager.class).getTrxOrNull(trxName);
 		if (trx != null)

@@ -84,6 +84,15 @@ public class SumUpTransaction
 		return amount.signum() != 0 && amountRefunded.signum() != 0;
 	}
 
+	/**
+	 * @return whether the card was charged and the charge was not refunded (fully or partly), i.e. the money is still taken
+	 */
+	@JsonIgnore
+	public boolean isSuccessfulAndNotRefunded()
+	{
+		return SumUpTransactionStatus.SUCCESSFUL.equals(status) && !isRefunded();
+	}
+
 	//
 	//
 	//
