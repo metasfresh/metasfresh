@@ -150,13 +150,10 @@ public final class DeliveryOrderUtil
 			@NonNull final I_C_BPartner_Location bPLocation,
 			@NonNull final UserRepository userRepository)
 	{
-		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
-		final String contactOrLocationMail = CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail());
-		if (contactOrLocationMail != null)
-		{
-			return contactOrLocationMail;
-		}
-		return StringUtils.trimBlankToNull(getDefaultContactEmailOrNull(BPartnerId.ofRepoId(bPLocation.getC_BPartner_ID()), userRepository));
+		return CoalesceUtil.firstNotBlank(
+				() -> contact != null ? contact.getEmailAddress() : null,
+				bPLocation::getEMail,
+				() -> getDefaultContactEmailOrNull(BPartnerId.ofRepoId(bPLocation.getC_BPartner_ID()), userRepository));
 	}
 
 	@Nullable
