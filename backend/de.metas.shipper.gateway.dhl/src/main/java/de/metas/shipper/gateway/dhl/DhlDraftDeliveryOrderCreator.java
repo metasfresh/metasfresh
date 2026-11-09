@@ -102,7 +102,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 		final User deliverToContact = deliveryOrderKey.getDeliverContactId() != null ? userRepository.getByIdInTrx(deliveryOrderKey.getDeliverContactId()) : null;
-		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPartner, deliverToBPLocation, userRepository);
+		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation, userRepository);
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();

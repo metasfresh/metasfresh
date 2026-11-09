@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
@@ -41,7 +42,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -130,7 +130,7 @@ public final class DeliveryOrderUtil
 		final String rawPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
 		final String phoneNumber = rawPhoneNumber != null ? PhoneNumber.normalize(rawPhoneNumber) : null;
 
-		final String emailAddress = getEmailAddress(contact, bPartner, bPLocation, userRepository);
+		final String emailAddress = getEmailAddress(contact, bPLocation, userRepository);
 
 		final Language bpLanguage = Language.asLanguage(bPartner.getAD_Language());
 		return ContactPerson.builder()
@@ -143,12 +143,11 @@ public final class DeliveryOrderUtil
 	}
 
 	/**
-	 * @return the first non-empty e-mail of: the given contact, the given partner location, the partner's active default contact; {@code null} if all are empty
+	 * @return the first non-empty e-mail of: the given contact, the given partner location, the partner's default contact; {@code null} if all are empty
 	 */
 	@Nullable
 	public String getEmailAddress(
 			@Nullable final User contact,
-			@NonNull final I_C_BPartner bPartner,
 			@NonNull final I_C_BPartner_Location bPLocation,
 			@NonNull final UserRepository userRepository)
 	{
@@ -158,16 +157,16 @@ public final class DeliveryOrderUtil
 		{
 			return contactOrLocationMail;
 		}
-		return StringUtils.trimBlankToNull(getDefaultContactEmailOrNull(bPartner, userRepository));
+		return StringUtils.trimBlankToNull(getDefaultContactEmailOrNull(BPartnerId.ofRepoId(bPLocation.getC_BPartner_ID()), userRepository));
 	}
 
 	@Nullable
-	private String getDefaultContactEmailOrNull(@NonNull final I_C_BPartner bPartner, @NonNull final UserRepository userRepository)
+	private String getDefaultContactEmailOrNull(@NonNull final BPartnerId bpartnerId, @NonNull final UserRepository userRepository)
 	{
-		final I_AD_User defaultContactRecord = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bPartner, I_AD_User.class);
-		return defaultContactRecord != null
-				? userRepository.ofRecord(defaultContactRecord).getEmailAddress()
-				: null;
+		return Services.get(IBPartnerDAO.class).getDefaultContactId(bpartnerId)
+				.map(userRepository::getByIdInTrx)
+				.map(User::getEmailAddress)
+				.orElse(null);
 	}
 
 }
