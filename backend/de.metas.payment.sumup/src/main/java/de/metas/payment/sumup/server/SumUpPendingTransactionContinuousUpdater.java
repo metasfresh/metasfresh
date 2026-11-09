@@ -11,6 +11,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Profile(Profiles.PROFILE_App)
+// enabled by default; cucumber switches it off so that its explicit "poll SumUp" step is the only driver
+@ConditionalOnProperty(name = "sumup.pendingTransactionsUpdater.enabled", havingValue = "true", matchIfMissing = true)
 public class SumUpPendingTransactionContinuousUpdater implements SumUpTransactionStatusChangedListener
 {
 	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.payment.sumup.pendingTransactionsUpdate.pollIntervalInSeconds";
