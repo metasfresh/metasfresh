@@ -216,6 +216,7 @@ public class M_InOut_StepDef
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final int shipmentScheduleTableId = InterfaceWrapperHelper.getTableId(I_M_ShipmentSchedule.class);
 
