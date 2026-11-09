@@ -22,7 +22,6 @@
 
 package de.metas.shipper.gateway.dhl;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
@@ -35,13 +34,14 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,6 @@ import org.compiere.model.I_C_Location;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -67,6 +66,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@NonNull private final DhlClientConfigRepository clientConfigRepository;
+	@NonNull private final UserRepository userRepository;
 
 	@Override
 	public ShipperGatewayId getShipperGatewayId()
@@ -101,6 +101,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_BPartner_Location deliverToBPLocation = InterfaceWrapperHelper.load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
+		final User deliverToContact = deliveryOrderKey.getDeliverContactId() != null ? userRepository.getByIdInTrx(deliveryOrderKey.getDeliverContactId()) : null;
+		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation, userRepository);
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
@@ -157,41 +159,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			dataBuilder.detail(dataDetailBuilder.build());
 		}
 
-		return createDeliveryOrderFromParams(
-				request.getPackageInfos(),
-				pickupFromBPartner,
-				pickupFromLocation,
-				pickupDate,
-				deliverToBPartner,
-				//deliverToBPartnerLocationId,
-				deliverToLocation,
-				deliverToPhoneNumber,
-				detectedServiceType,
-				shipperId,
-				customerReference,
-				shipperTransportationId,
-				getPackageDimensions(request.getPackageInfos()),
-				dataBuilder.build());
-
-	}
-
-	@VisibleForTesting
-	DeliveryOrder createDeliveryOrderFromParams(
-			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos,
-			@NonNull final I_C_BPartner pickupFromBPartner,
-			@NonNull final I_C_Location pickupFromLocation,
-			@NonNull final LocalDate pickupDate,
-			@NonNull final I_C_BPartner deliverToBPartner,
-			@NonNull final I_C_Location deliverToLocation,
-			@Nullable final String deliverToPhoneNumber,
-			@NonNull final DhlShipperProduct serviceType,
-			final ShipperId shipperId,
-			final String customerReference,
-			final ShipperTransportationId shipperTransportationId,
-			@NonNull final PackageDimensions packageDimensions,
-			final CustomDeliveryData customDeliveryData)
-	{
-		final List<DeliveryOrderParcel> deliveryOrderParcels = packageInfos.stream()
+		final PackageDimensions packageDimensions = getPackageDimensions(request.getPackageInfos());
+		final List<DeliveryOrderParcel> deliveryOrderParcels = request.getPackageInfos().stream()
 				.map(packageInfo -> DeliveryOrderParcel.builder()
 						.packageDimensions(packageDimensions)
 						.packageId(packageInfo.getPackageId())
@@ -204,9 +173,9 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(shipperTransportationId)
 				//
 
-				.shipperProduct(serviceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.shipperProduct(detectedServiceType)
 				.customerReference(customerReference)
-				.customDeliveryData(customDeliveryData)
+				.customDeliveryData(dataBuilder.build())
 				//
 				// Pickup aka Shipper
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner)
@@ -221,7 +190,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.name(deliverToBPartner.getName())
-						.emailAddress(deliverToBPartner.getEMail())
+						.emailAddress(deliverToEmail)
 						.simplePhoneNumber(deliverToPhoneNumber)
 						.build())
 				//
