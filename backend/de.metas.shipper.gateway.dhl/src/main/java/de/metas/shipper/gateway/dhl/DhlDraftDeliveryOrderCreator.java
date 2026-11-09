@@ -102,7 +102,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 		final User deliverToContact = deliveryOrderKey.getDeliverContactId() != null ? userRepository.getByIdInTrx(deliveryOrderKey.getDeliverContactId()) : null;
-		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPLocation);
+		final String deliverToEmail = DeliveryOrderUtil.getEmailAddress(deliverToContact, deliverToBPartner, deliverToBPLocation, userRepository);
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
@@ -173,7 +173,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(shipperTransportationId)
 				//
 
-				.shipperProduct(detectedServiceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.shipperProduct(detectedServiceType) // todo this should be made user-selectable
 				.customerReference(customerReference)
 				.customDeliveryData(dataBuilder.build())
 				//
