@@ -620,22 +620,22 @@ Feature: Dhl Shipment
   @Id:S32526_TC3a
   Scenario: DHL request carries the e-mail of the receiver's active default contact
     # completing the shipment adds it to the daily DHL transport order, which sends the parcel to DHL
-    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder'
     # the receiver has an active default contact with an e-mail, and a second, non-default contact
     And metasfresh contains C_BPartners:
-      | Identifier           | Name                 | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName      | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
-      | dhl_customer_contact | dhl_customer_contact | ps_dhl_1                      | Y              | dhl_customer_contact | I               | 1000002                |
+      | Identifier           | Name                 | M_PricingSystem_ID | IsCustomer | CompanyName          | InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_contact | dhl_customer_contact | ps_dhl_1           | Y          | dhl_customer_contact | I           | 1000002                |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
       | dhl_location_contact     | DE          | addr 22      | 456        | locationCity_2 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier           | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
-      | dhl_location_contact | 1122334455671 | dhl_customer_contact     | dhl_location_contact         | true         | true         |
+      | Identifier           | GLN           | C_BPartner_ID        | OPT.C_Location_ID.Identifier | IsShipTo | IsBillTo |
+      | dhl_location_contact | 1122334455671 | dhl_customer_contact | dhl_location_contact         | true     | true     |
     # the receiver's contacts: the order has no contact and the location no e-mail, so the active default contact's e-mail goes to DHL
     And metasfresh contains AD_Users:
-      | Identifier                   | Name                         | OPT.EMail                        | OPT.C_BPartner_ID.Identifier | IsDefaultContact |
-      | dhl_receiver_default_contact | dhl_receiver_default_contact | dhl.receiver.default@example.com | dhl_customer_contact         | Y                |
-      | dhl_receiver_other_contact   | dhl_receiver_other_contact   | dhl.receiver.other@example.com   | dhl_customer_contact         | N                |
+      | Identifier                   | Name                         | EMail                            | C_BPartner_ID        | IsDefaultContact |
+      | dhl_receiver_default_contact | dhl_receiver_default_contact | dhl.receiver.default@example.com | dhl_customer_contact | Y                |
+      | dhl_receiver_other_contact   | dhl_receiver_other_contact   | dhl.receiver.other@example.com   | dhl_customer_contact | N                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID        | C_BPartner_Location_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.DeliveryViaRule |
       | order      | true    | dhl_customer_contact | dhl_location_contact   | 2022-12-12  | 540008         | shipper_DHL  | S                   |
@@ -663,25 +663,23 @@ Feature: Dhl Shipment
     And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
       | product | consigneeEmail                   |
       | V01PAK  | dhl.receiver.default@example.com |
-    # reset the global setting, so that following features start from the default
-    And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
 
   # ##########################################################################
   # ##########################################################################
   @Id:S32526_TC3b
   Scenario: DHL request without consignee e-mail when the receiver has no default contact
     # completing the shipment adds it to the daily DHL transport order, which sends the parcel to DHL
-    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder'
     # the receiver has no contact at all, so there is no default contact e-mail; C_BPartner.EMail is not read (a project may redefine that virtual column, e.g. to "-")
     And metasfresh contains C_BPartners:
-      | Identifier              | Name                    | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName         | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
-      | dhl_customer_no_contact | dhl_customer_no_contact | ps_dhl_1                      | Y              | dhl_customer_no_contact | I               | 1000002                |
+      | Identifier              | Name                    | M_PricingSystem_ID | IsCustomer | CompanyName             | InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_no_contact | dhl_customer_no_contact | ps_dhl_1           | Y          | dhl_customer_no_contact | I           | 1000002                |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
       | dhl_location_no_contact  | DE          | addr 22      | 456        | locationCity_2 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
-      | dhl_location_no_contact | 1122334455672 | dhl_customer_no_contact  | dhl_location_no_contact      | true         | true         |
+      | Identifier              | GLN           | C_BPartner_ID           | OPT.C_Location_ID.Identifier | IsShipTo | IsBillTo |
+      | dhl_location_no_contact | 1122334455672 | dhl_customer_no_contact | dhl_location_no_contact      | true     | true     |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID           | C_BPartner_Location_ID  | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.DeliveryViaRule |
       | order      | true    | dhl_customer_no_contact | dhl_location_no_contact | 2022-12-12  | 540008         | shipper_DHL  | S                   |
@@ -709,28 +707,26 @@ Feature: Dhl Shipment
     And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
       | product | consigneeEmail |
       | V01PAK  | null           |
-    # reset the global setting, so that following features start from the default
-    And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
 
   # ##########################################################################
   # ##########################################################################
   @Id:S32526_TC3c
   Scenario: DHL request carries the e-mail of the shipment's contact, not the one of the receiver's default contact
     # completing the shipment adds it to the daily DHL transport order, which sends the parcel to DHL
-    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder'
     # the receiver has an active default contact with an e-mail, and a second, non-default contact which is the contact of the order and thus of the shipment
     And metasfresh contains C_BPartners:
-      | Identifier                    | Name                          | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName               | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
-      | dhl_customer_shipment_contact | dhl_customer_shipment_contact | ps_dhl_1                      | Y              | dhl_customer_shipment_contact | I               | 1000002                |
+      | Identifier                    | Name                          | M_PricingSystem_ID | IsCustomer | CompanyName                   | InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_shipment_contact | dhl_customer_shipment_contact | ps_dhl_1           | Y          | dhl_customer_shipment_contact | I           | 1000002                |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier      | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
       | dhl_location_shipment_contact | DE          | addr 22      | 456        | locationCity_2 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier                    | GLN           | C_BPartner_ID.Identifier      | OPT.C_Location_ID.Identifier  | OPT.IsShipTo | OPT.IsBillTo |
-      | dhl_location_shipment_contact | 1122334455673 | dhl_customer_shipment_contact | dhl_location_shipment_contact | true         | true         |
+      | Identifier                    | GLN           | C_BPartner_ID                 | OPT.C_Location_ID.Identifier  | IsShipTo | IsBillTo |
+      | dhl_location_shipment_contact | 1122334455673 | dhl_customer_shipment_contact | dhl_location_shipment_contact | true     | true     |
     # the receiver's contacts: the order is placed with the non-default contact
     And metasfresh contains AD_Users:
-      | Identifier                      | Name                            | OPT.EMail                           | OPT.C_BPartner_ID.Identifier  | IsDefaultContact |
+      | Identifier                      | Name                            | EMail                               | C_BPartner_ID                 | IsDefaultContact |
       | dhl_receiver3c_default_contact  | dhl_receiver3c_default_contact  | dhl.receiver3c.default@example.com  | dhl_customer_shipment_contact | Y                |
       | dhl_receiver3c_shipment_contact | dhl_receiver3c_shipment_contact | dhl.receiver3c.shipment@example.com | dhl_customer_shipment_contact | N                |
     And metasfresh contains C_Orders:
@@ -760,5 +756,3 @@ Feature: Dhl Shipment
     And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
       | product | consigneeEmail                      |
       | V01PAK  | dhl.receiver3c.shipment@example.com |
-    # reset the global setting, so that following features start from the default
-    And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
