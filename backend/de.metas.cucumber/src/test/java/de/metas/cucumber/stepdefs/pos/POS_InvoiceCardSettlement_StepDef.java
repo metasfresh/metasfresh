@@ -55,6 +55,7 @@ import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonContext;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -74,6 +75,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_NotificationGroup;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_POS;
@@ -124,6 +126,13 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final C_POS_InvoiceCardSettlement_StepDefData settlementTable;
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final AD_Role_StepDefData roleTable;
+
+	// the transaction of "another user" that holds an invoice row lock; released by a step or, at the latest, after the scenario
+	@Nullable private String invoiceLockHolderTrxName;
+	// accounting schemas whose automatic period control a scenario changed, with the original Period_OpenFuture; restored
+	// after the scenario, because all scenarios share them
+	private final List<I_C_AcctSchema> changedAcctSchemas = new ArrayList<>();
+	private final List<Integer> originalPeriodOpenFuture = new ArrayList<>();
 
 	// outcomes of the last concurrent start; a step-def instance lives for one scenario
 	private final List<StartOutcome> concurrentStartOutcomes = new ArrayList<>();
@@ -1102,6 +1111,167 @@ public class POS_InvoiceCardSettlement_StepDef
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
 		return SpringContextHolder.instance.getBean(POSService.class).getCurrentCashJournal(posTerminalId)
 				.orElseThrow(() -> new AdempiereException("No open cash journal for POS terminal " + terminalIdentifier));
+	}
+
+
+	/**
+	 * Releases what the scenario left behind for the next ones: an invoice row lock still held by "another user", and
+	 * a closed accounting period (the accounting schema is shared by all scenarios).
+	 */
+	@After
+	public void releaseInvoiceLockAndReopenPeriod()
+	{
+		try
+		{
+			releaseInvoiceLock();
+		}
+		finally
+		{
+			for (int i = 0; i < changedAcctSchemas.size(); i++)
+			{
+				final I_C_AcctSchema acctSchema = changedAcctSchemas.get(i);
+				acctSchema.setPeriod_OpenFuture(originalPeriodOpenFuture.get(i));
+				InterfaceWrapperHelper.saveRecord(acctSchema);
+			}
+			changedAcctSchemas.clear();
+			originalPeriodOpenFuture.clear();
+		}
+	}
+
+	/**
+	 * Locks the invoice row ({@code FOR UPDATE}) in a separate, still open transaction, as a concurrent user or process
+	 * would; a booking that needs the invoice lock meanwhile waits until its lock timeout. The lock is held until
+	 * {@link #releaseInvoiceLock()} (step or after-scenario hook).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the invoice row of invoice invoice1 is locked by another transaction
+	 * </pre>
+	 */
+	@And("^the invoice row of invoice (\\S+) is locked by another transaction$")
+	public void lockInvoiceInOtherTransaction(@NonNull final String invoiceIdentifier)
+	{
+		assertThat(invoiceLockHolderTrxName).as("an invoice lock is already held").isNull();
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		final String trxName = Services.get(ITrxManager.class).createTrxName("cucumber-invoice-lock-holder", true);
+		invoiceLockHolderTrxName = trxName;
+		DB.getSQLValueEx(trxName, "SELECT C_Invoice_ID FROM C_Invoice WHERE C_Invoice_ID=? FOR UPDATE", invoiceId.getRepoId());
+	}
+
+	/**
+	 * Ends the transaction that holds the invoice row lock (see {@link #lockInvoiceInOtherTransaction}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the other transaction releases its invoice lock
+	 * </pre>
+	 */
+	@And("^the other transaction releases its invoice lock$")
+	public void releaseInvoiceLock()
+	{
+		final String trxName = invoiceLockHolderTrxName;
+		if (trxName == null)
+		{
+			return;
+		}
+		invoiceLockHolderTrxName = null;
+
+		final ITrx trx = Services.get(ITrxManager.class).getTrxOrNull(trxName);
+		if (trx != null)
+		{
+			try
+			{
+				trx.rollback();
+			}
+			finally
+			{
+				trx.close();
+			}
+		}
+	}
+
+	/**
+	 * Closes the accounting period for today's date (the cucumber-frozen current date): the client's accounting schemas,
+	 * which use automatic period control, get no open day in the future, so their last open day is yesterday and no
+	 * document dated today can be completed ("period closed"). Reopened after the scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the accounting period is closed for today
+	 * </pre>
+	 */
+	@And("^the accounting period is closed for today$")
+	public void closePeriodForToday()
+	{
+		final List<I_C_AcctSchema> acctSchemas = queryBL.createQueryBuilder(I_C_AcctSchema.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AcctSchema.COLUMNNAME_AD_Client_ID, CLIENT_ID)
+				.create()
+				.list();
+		assertThat(acctSchemas).as("accounting schemas of the client").isNotEmpty();
+		for (final I_C_AcctSchema acctSchema : acctSchemas)
+		{
+			assertThat(acctSchema.isAutoPeriodControl()).as("automatic period control of %s", acctSchema.getName()).isTrue();
+			changedAcctSchemas.add(acctSchema);
+			originalPeriodOpenFuture.add(acctSchema.getPeriod_OpenFuture());
+			acctSchema.setPeriod_OpenFuture(-1);
+			InterfaceWrapperHelper.saveRecord(acctSchema);
+		}
+	}
+
+	/**
+	 * Asserts the settlement's {@code BookingAttempts} (failed booking attempts counted so far).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And card settlement settlement1 has 5 booking attempts
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has (\\d+) booking attempts?$")
+	public void assertBookingAttempts(@NonNull final String settlementIdentifier, final int expectedAttempts)
+	{
+		assertThat(loadSettlement(settlementIdentifier).getBookingAttempts())
+				.as("BookingAttempts of card settlement %s", settlementIdentifier)
+				.isEqualTo(expectedAttempts);
+	}
+
+	/**
+	 * Asserts the settlement has no {@code C_Payment_ID} (no card payment was booked).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And card settlement settlement1 has no payment
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has no payment$")
+	public void assertNoPayment(@NonNull final String settlementIdentifier)
+	{
+		assertThat(loadSettlement(settlementIdentifier).getPaymentId())
+				.as("C_Payment_ID of card settlement %s", settlementIdentifier)
+				.isNull();
+	}
+
+	/**
+	 * Asserts the settlement's {@code ErrorMsg} is empty.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And card settlement settlement1 has no error message
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has no error message$")
+	public void assertNoErrorMsg(@NonNull final String settlementIdentifier)
+	{
+		assertThat(loadSettlement(settlementIdentifier).getErrorMsg())
+				.as("ErrorMsg of card settlement %s", settlementIdentifier)
+				.isNull();
 	}
 
 

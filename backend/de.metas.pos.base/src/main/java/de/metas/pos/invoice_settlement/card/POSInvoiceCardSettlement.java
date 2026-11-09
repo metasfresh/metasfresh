@@ -18,6 +18,8 @@ import java.time.Instant;
 @Builder(toBuilder = true)
 public class POSInvoiceCardSettlement
 {
+	private static final int ERRORMSG_MAX_LENGTH = 4000;
+
 	@NonNull POSInvoiceCardSettlementId id;
 	@NonNull POSTerminalId posTerminalId;
 	@NonNull InvoiceId invoiceId;
@@ -36,5 +38,14 @@ public class POSInvoiceCardSettlement
 	public boolean isBlocking()
 	{
 		return status.isBlockingCandidate() && !isAbandoned;
+	}
+
+	/**
+	 * @return the message cut to the length of the {@code ErrorMsg} column
+	 */
+	@Nullable
+	static String truncateErrorMsg(@Nullable final String errorMsg)
+	{
+		return errorMsg != null && errorMsg.length() > ERRORMSG_MAX_LENGTH ? errorMsg.substring(0, ERRORMSG_MAX_LENGTH) : errorMsg;
 	}
 }

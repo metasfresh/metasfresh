@@ -69,6 +69,7 @@ import de.metas.pos.POSPaymentCheckoutRequest;
 import de.metas.pos.POSPaymentExternalId;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSService;
+import de.metas.pos.POSTerminalCloseJournalRequest;
 import de.metas.pos.POSTerminalCreateRequest;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
@@ -256,6 +257,28 @@ public class C_POS_StepDef
 				.cashierId(cashierId)
 				.dateTrx(SystemTime.asInstant())
 				.cashBeginningBalance(new BigDecimal(beginningBalance))
+				.build());
+	}
+
+	/**
+	 * Closes the POS terminal's open cash journal with a counted closing cash balance, via {@link POSService#closeCashJournal}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the cash journal of POS terminal till is closed with 100 by metasfresh
+	 * </pre>
+	 */
+	@And("^the cash journal of POS terminal (\\S+) is closed with (\\S+) by (\\S+)$")
+	public void closeCashJournal(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String closingBalance,
+			@NonNull final String userLogin)
+	{
+		posService.closeCashJournal(POSTerminalCloseJournalRequest.builder()
+				.posTerminalId(posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier)))
+				.cashierId(StepDefUtil.getUserIdByLogin(userLogin))
+				.cashClosingBalance(new BigDecimal(closingBalance))
 				.build());
 	}
 

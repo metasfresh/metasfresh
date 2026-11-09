@@ -1,8 +1,11 @@
 package de.metas.pos.invoice_settlement.card;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.NotificationGroupName;
@@ -24,14 +27,21 @@ import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -39,6 +49,12 @@ import java.util.Optional;
  * ({@link #bookPaymentIfApproved}), step B journals and allocates it ({@link #completeBooking}). Each step re-reads
  * the settlement under its row lock and acts only on the status it expects, so a repeated or concurrent delivery of
  * the same approval books exactly once.
+ * <p>
+ * {@link #book} runs both steps and handles their errors: a retryable one (serialization failure, lock timeout,
+ * connection error) only counts the attempt, up to {@value #MAX_BOOKING_ATTEMPTS} attempts; any other one, and a
+ * retryable one on the last attempt, ends the settlement as BOOKING_ERROR with one AD_Issue for back office. No open
+ * cash journal is no error: the settlement waits as APPROVED until a journal is open (one AD_Issue, however often it
+ * is retried).
  */
 @Component
 @RequiredArgsConstructor
@@ -49,19 +65,175 @@ public class POSInvoiceCardSettlementBooking
 	 */
 	public static final String ERRORMSG_RefundedAtSumUp = "refunded at SumUp";
 
+	/**
+	 * {@code ErrorMsg} of an APPROVED settlement whose booking waits for the terminal's next open cash journal.
+	 */
+	public static final String ERRORMSG_NoOpenCashJournal = "no open cash journal";
+
+	/**
+	 * {@code ErrorMsg} of a FAILED / CANCELLED settlement whose charge SumUp reports as approved after all.
+	 */
+	private static final String ERRORMSG_ApprovedAfterRejected = "SumUp reports the card charge as successful, but the card settlement was already rejected; nothing was booked";
+
+	/**
+	 * Booking attempts after which a retryable error is no longer retried.
+	 */
+	static final int MAX_BOOKING_ATTEMPTS = 5;
+
+	/**
+	 * PostgreSQL {@code lock_timeout} of each booking transaction: a booking never waits long for a row (invoice,
+	 * settlement) locked by another transaction; it fails retryably and the next attempt tries again.
+	 */
+	private static final String SYSCONFIG_LockTimeoutMillis = "de.metas.pos.InvoiceCardSettlement.BookingLockTimeoutMillis";
+	private static final int DEFAULT_LockTimeoutMillis = 5000;
+
+	private static final ImmutableSet<POSInvoiceCardSettlementStatus> STATUSES_BeforePayment = ImmutableSet.of(
+			POSInvoiceCardSettlementStatus.PENDING,
+			POSInvoiceCardSettlementStatus.UNKNOWN,
+			POSInvoiceCardSettlementStatus.ABANDONED);
+	private static final ImmutableSet<POSInvoiceCardSettlementStatus> STATUSES_PaymentCreated = ImmutableSet.of(POSInvoiceCardSettlementStatus.APPROVED);
+
+	private static final Logger logger = LogManager.getLogger(POSInvoiceCardSettlementBooking.class);
+
 	private static final NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.pos.InvoiceCardSettlement");
 	private static final AdMessageKey MSG_CreditRefundPending = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CreditRefundPending");
+	private static final AdMessageKey MSG_CashJournalNotOpen = AdMessageKey.of("de.metas.pos.CashJournalNotOpen");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final POSInvoiceCardSettlementRepository repository;
 	@NonNull private final POSInvoiceSettlementService invoiceSettlementService;
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSCashJournalService posCashJournalService;
 	@NonNull private final SumUpTransactionRepository sumUpTransactionRepository;
+
+	/**
+	 * Runs step A and then step B, each in its own transaction, and handles their errors (see the class comment).
+	 * A booking error is handled here and not thrown; only a failure while recording that error (e.g. the connection
+	 * is lost) is thrown, so callers that must not fail (the SumUp event dispatcher) still need their own catch.
+	 */
+	public void book(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		try
+		{
+			bookPaymentIfApproved(id);
+		}
+		catch (final Exception ex)
+		{
+			handleBookingError(id, ex, STATUSES_BeforePayment);
+			return;
+		}
+
+		try
+		{
+			completeBooking(id);
+		}
+		catch (final Exception ex)
+		{
+			handleBookingError(id, ex, STATUSES_PaymentCreated);
+		}
+	}
+
+	/**
+	 * Under the settlement lock, if the failed step still applies to the settlement's status (otherwise a concurrent
+	 * booking moved it on): counts the attempt; a non-retryable error, or a retryable one on the last attempt, sets
+	 * BOOKING_ERROR and records one AD_Issue (the status change happens once).
+	 * <p>
+	 * The settlement lock is waited for at most the booking lock timeout; if it is not got in time, the settlement is
+	 * left unchanged (the attempt is not counted), so that the next delivery or sweep retries the booking.
+	 * <p>
+	 * The AD_Issue is committed in its own transaction, before the transaction that sets BOOKING_ERROR commits
+	 * ({@link IErrorManager#createIssue}). If that commit fails, the next attempt records a second issue. This is
+	 * deliberate: a duplicate issue is better than a booking error that back office never hears of, which an issue
+	 * written only after the commit would risk. The same holds for the other once-only issues of this class.
+	 */
+	@VisibleForTesting
+	void handleBookingError(
+			@NonNull final POSInvoiceCardSettlementId id,
+			@NonNull final Exception bookingError,
+			@NonNull final ImmutableSet<POSInvoiceCardSettlementStatus> statusesOfFailedStep)
+	{
+		try
+		{
+			// own trx: the failed step's trx was rolled back, and the error must be recorded even so
+			trxManager.runInNewTrx(() -> handleBookingErrorInTrx(id, bookingError, statusesOfFailedStep));
+		}
+		catch (final Exception ex)
+		{
+			if (DBException.findSQLExceptionInCauseChainOrNull(ex, DBException::isLockNotAvailable) == null)
+			{
+				throw ex;
+			}
+			logger.warn("Could not lock card settlement {} to record its booking error in time; leaving it as it is, the next attempt retries the booking", id, bookingError);
+		}
+	}
+
+	private void handleBookingErrorInTrx(
+			@NonNull final POSInvoiceCardSettlementId id,
+			@NonNull final Exception bookingError,
+			@NonNull final ImmutableSet<POSInvoiceCardSettlementStatus> statusesOfFailedStep)
+	{
+		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(bookingError).setRecord(id.toRecordRef());
+		final boolean isRetryable = isRetryable(bookingError);
+
+		setLockTimeout();
+		final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
+		if (!statusesOfFailedStep.contains(settlement.getStatus()))
+		{
+			logger.warn("Booking card settlement {} failed, but its status is already {}; leaving it as it is", id, settlement.getStatus(), bookingError);
+			return;
+		}
+
+		final int bookingAttempts = settlement.getBookingAttempts() + 1;
+		if (isRetryable && bookingAttempts < MAX_BOOKING_ATTEMPTS)
+		{
+			logger.info("Booking card settlement {} failed with a retryable error (attempt {} of {}); the next attempt retries it", id, bookingAttempts, MAX_BOOKING_ATTEMPTS, bookingError);
+			repository.save(settlement.toBuilder().bookingAttempts(bookingAttempts).build());
+			return;
+		}
+
+		repository.save(settlement.toBuilder()
+				.status(POSInvoiceCardSettlementStatus.BOOKING_ERROR)
+				.bookingAttempts(bookingAttempts)
+				.sumUpTransactionId(getLinkedOrResolvedSumUpTransactionId(settlement))
+				.errorMsg(POSInvoiceCardSettlement.truncateErrorMsg(AdempiereException.extractMessage(metasfreshException)))
+				.build());
+		errorManager.createIssue(metasfreshException);
+	}
+
+	/**
+	 * @return whether a booking error is transient, so that a later attempt can succeed: a serialization failure or
+	 * deadlock, a lock timeout, or a connection error
+	 */
+	static boolean isRetryable(@NonNull final Throwable bookingError)
+	{
+		return DBException.findSQLExceptionInCauseChainOrNull(bookingError, POSInvoiceCardSettlementBooking::isRetryableSQLException) != null;
+	}
+
+	private static boolean isRetryableSQLException(@NonNull final SQLException sqlException)
+	{
+		final String sqlState = sqlException.getSQLState();
+		return DBException.isLockNotAvailable(sqlException) // lock_timeout expired
+				|| "40001".equals(sqlState) // serialization_failure
+				|| "40P01".equals(sqlState) // deadlock_detected
+				|| (sqlState != null && sqlState.startsWith("08")); // connection exception
+	}
+
+	/**
+	 * Lets the current booking transaction wait at most {@link #SYSCONFIG_LockTimeoutMillis} for a row lock.
+	 */
+	private void setLockTimeout()
+	{
+		final int lockTimeoutMillis = sysConfigBL.getIntValue(SYSCONFIG_LockTimeoutMillis, DEFAULT_LockTimeoutMillis);
+		if (lockTimeoutMillis > 0)
+		{
+			DB.executeUpdateAndThrowExceptionOnFail("SET LOCAL lock_timeout = " + lockTimeoutMillis, ITrx.TRXNAME_ThreadInherited);
+		}
+	}
 
 	/**
 	 * Step A, under the settlement lock: if the settlement's SumUp transaction is approved, creates the credit-card
@@ -74,6 +246,7 @@ public class POSInvoiceCardSettlementBooking
 
 	private void bookPaymentIfApprovedInTrx(@NonNull final POSInvoiceCardSettlementId id)
 	{
+		setLockTimeout();
 		final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
 		final SumUpTransaction sumUpTrx = findSumUpTransaction(id).orElse(null);
 		if (sumUpTrx == null || !SumUpTransactionStatus.SUCCESSFUL.equals(sumUpTrx.getStatus()))
@@ -96,9 +269,7 @@ public class POSInvoiceCardSettlementBooking
 			return;
 		}
 
-		if (status == POSInvoiceCardSettlementStatus.PENDING
-				|| status == POSInvoiceCardSettlementStatus.UNKNOWN
-				|| status == POSInvoiceCardSettlementStatus.ABANDONED)
+		if (STATUSES_BeforePayment.contains(status))
 		{
 			final PaymentId paymentId = createPayment(settlement);
 			repository.save(settlement.toBuilder()
@@ -107,10 +278,15 @@ public class POSInvoiceCardSettlementBooking
 					.sumUpTransactionId(getLinkedOrResolvedSumUpTransactionId(settlement))
 					.build());
 		}
-		else if (status == POSInvoiceCardSettlementStatus.FAILED || status == POSInvoiceCardSettlementStatus.CANCELLED)
+		else if ((status == POSInvoiceCardSettlementStatus.FAILED || status == POSInvoiceCardSettlementStatus.CANCELLED)
+				&& !ERRORMSG_ApprovedAfterRejected.equals(settlement.getErrorMsg()))
 		{
-			// the reader took money for a settlement metasfresh had already given up on: back office must reconcile it
-			errorManager.createIssue(new AdempiereException("SumUp reports the card charge as successful, but the card settlement was already " + status + "; nothing was booked")
+			// the reader took money for a settlement metasfresh had already given up on: back office must reconcile it;
+			// recorded once, however often the approval is reported
+			repository.save(settlement.toBuilder().errorMsg(ERRORMSG_ApprovedAfterRejected).build());
+			errorManager.createIssue(new AdempiereException(ERRORMSG_ApprovedAfterRejected)
+					.setParameter("status", status)
+					.setParameter("previousErrorMsg", settlement.getErrorMsg())
 					.setParameter("SumUpClientTransactionId", sumUpTrx.getClientTransactionId())
 					.setParameter("amount", sumUpTrx.getAmount())
 					.setRecord(id.toRecordRef()));
@@ -138,8 +314,9 @@ public class POSInvoiceCardSettlementBooking
 	 * Step B, under the invoice lock and then the settlement lock, only while APPROVED, all in one transaction:
 	 * allocates the payment to the invoice up to its open amount (nothing if the invoice is no longer open), adds the
 	 * card line to the terminal's open cash journal, and sets SUCCESSFUL, or CREDIT_REFUND_PENDING (plus a
-	 * notification to the back office) if part of the payment stays unallocated. Throws, leaving the settlement
-	 * APPROVED, if the invoice is still open but the payment could not be allocated.
+	 * notification to the back office) if part of the payment stays unallocated. Without an open cash journal it only
+	 * records that (see {@link #recordNoOpenCashJournal}) and the settlement stays APPROVED. Throws, rolling back, if
+	 * the invoice is still open but the payment could not be allocated.
 	 */
 	public void completeBooking(@NonNull final POSInvoiceCardSettlementId id)
 	{
@@ -154,6 +331,7 @@ public class POSInvoiceCardSettlementBooking
 
 	private void completeBookingInTrx(@NonNull final POSInvoiceCardSettlementId id)
 	{
+		setLockTimeout();
 		// the settlement's invoice never changes, so it can be read before taking the locks
 		final I_C_Invoice invoice = invoiceSettlementService.lockInvoice(repository.getById(id).getInvoiceId());
 		final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
@@ -166,6 +344,13 @@ public class POSInvoiceCardSettlementBooking
 		if (paymentId == null)
 		{
 			throw new AdempiereException("APPROVED card settlement without C_Payment_ID").setRecord(id.toRecordRef());
+		}
+
+		final POSTerminal terminal = posTerminalService.getPOSTerminalById(settlement.getPosTerminalId());
+		if (!terminal.isCashJournalOpen())
+		{
+			recordNoOpenCashJournal(settlement);
+			return;
 		}
 
 		final Money amount = settlement.getAmount();
@@ -190,7 +375,6 @@ public class POSInvoiceCardSettlementBooking
 					.setRecord(id.toRecordRef());
 		}
 
-		final POSTerminal terminal = posTerminalService.getPOSTerminalById(settlement.getPosTerminalId());
 		final String description = invoiceSettlementService.getJournalDescription(invoice);
 		posCashJournalService.changeJournalById(
 				terminal.getCashJournalIdNotNull(),
@@ -205,6 +389,24 @@ public class POSInvoiceCardSettlementBooking
 		{
 			notifyCreditRefundPending(settlement, paymentId, invoice);
 		}
+	}
+
+	/**
+	 * The terminal has no open cash journal (closed after the card was charged): the settlement stays APPROVED, and
+	 * the next booking attempt after a journal was opened completes it. Back office gets one AD_Issue: it is recorded
+	 * only when the settlement's {@code ErrorMsg} changes to {@link #ERRORMSG_NoOpenCashJournal}, not on every retry.
+	 */
+	private void recordNoOpenCashJournal(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		if (Objects.equals(settlement.getErrorMsg(), ERRORMSG_NoOpenCashJournal))
+		{
+			return;
+		}
+
+		repository.save(settlement.toBuilder().errorMsg(ERRORMSG_NoOpenCashJournal).build());
+		errorManager.createIssue(new AdempiereException(MSG_CashJournalNotOpen)
+				.setParameter("C_POS_ID", settlement.getPosTerminalId().getRepoId())
+				.setRecord(settlement.getId().toRecordRef()));
 	}
 
 	/**

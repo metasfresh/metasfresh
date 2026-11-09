@@ -31,7 +31,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -46,7 +45,6 @@ import java.util.Optional;
 public class POSInvoiceCardSettlementService
 {
 	private static final Logger logger = LogManager.getLogger(POSInvoiceCardSettlementService.class);
-	private static final int ERRORMSG_MAX_LENGTH = 4000;
 	private static final String BLOCKING_INDEX_NAME = "c_pos_invoicecardsettlement_blocking_uq";
 	private static final AdMessageKey MSG_CardPaymentStillOpen = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen");
 
@@ -222,7 +220,7 @@ public class POSInvoiceCardSettlementService
 					{
 						settlement = settlement.toBuilder()
 								.status(POSInvoiceCardSettlementStatus.UNKNOWN)
-								.errorMsg(truncateErrorMsg(response.getErrorMessage()))
+								.errorMsg(POSInvoiceCardSettlement.truncateErrorMsg(response.getErrorMessage()))
 								.build();
 					}
 				}
@@ -231,7 +229,7 @@ public class POSInvoiceCardSettlementService
 				{
 					settlement = settlement.toBuilder()
 							.status(POSInvoiceCardSettlementStatus.FAILED)
-							.errorMsg(truncateErrorMsg(response.getErrorMessage()))
+							.errorMsg(POSInvoiceCardSettlement.truncateErrorMsg(response.getErrorMessage()))
 							.build();
 				}
 			}
@@ -242,10 +240,11 @@ public class POSInvoiceCardSettlementService
 
 	/**
 	 * Applies a status change of the settlement's SumUp transaction (as stored locally): declined / cancelled → FAILED /
-	 * CANCELLED, approved → booking steps A and B. Safe to call any number of times, also concurrently.
+	 * CANCELLED, approved → booking ({@link POSInvoiceCardSettlementBooking#book}, which handles its own booking errors).
+	 * Safe to call any number of times, also concurrently.
 	 * <p>
-	 * Never throws: a failure is logged and recorded as an AD_Issue of the settlement, whose status stays as it was, so
-	 * the caller (the SumUp event dispatcher) still notifies its other listeners.
+	 * Never throws: any other failure is logged and recorded as an AD_Issue of the settlement, whose status stays as it
+	 * was, so the caller (the SumUp event dispatcher) still notifies its other listeners.
 	 */
 	public void onSumUpTransactionChanged(@NonNull final POSInvoiceCardSettlementId id)
 	{
@@ -281,8 +280,7 @@ public class POSInvoiceCardSettlementService
 		}
 		else if (SumUpTransactionStatus.SUCCESSFUL.equals(sumUpStatus))
 		{
-			booking.bookPaymentIfApproved(id);
-			booking.completeBooking(id);
+			booking.book(id);
 		}
 	}
 
@@ -306,12 +304,6 @@ public class POSInvoiceCardSettlementService
 					.sumUpTransactionId(booking.getLinkedOrResolvedSumUpTransactionId(settlement))
 					.build());
 		});
-	}
-
-	@Nullable
-	private static String truncateErrorMsg(@Nullable final String errorMsg)
-	{
-		return errorMsg != null && errorMsg.length() > ERRORMSG_MAX_LENGTH ? errorMsg.substring(0, ERRORMSG_MAX_LENGTH) : errorMsg;
 	}
 
 	@Value
