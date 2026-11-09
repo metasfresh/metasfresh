@@ -1081,6 +1081,7 @@ public class C_Order_StepDef
 	 *   <li>{@code DocBaseType} + {@code DocSubType} – both together select a new C_DocType / C_DocTypeTarget</li>
 	 *   <li>{@code IsReprintOrderCheckup} – whether completing the order reprints the Bestellkontrolle</li>
 	 *   <li>{@code PaymentRule}</li>
+	 *   <li>{@code DateOrdered} — date (yyyy-MM-dd)</li>
 	 *   <li>{@code PreparationDate}</li>
 	 *   <li>{@code DatePromised} — note: setting it fires the order's preparation-date interceptor, which may recompute {@code PreparationDate}</li>
 	 *   <li>{@code LC_Date}</li>
@@ -1140,6 +1141,8 @@ public class C_Order_StepDef
 				.ifPresent(order::setIsReprintOrderCheckup);
 		tableRow.getAsOptionalString(COLUMNNAME_PaymentRule)
 				.ifPresent(order::setPaymentRule);
+		tableRow.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateOrdered)
+				.ifPresent(order::setDateOrdered);
 		tableRow.getAsOptionalInstant(COLUMNNAME_PreparationDate)
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised)

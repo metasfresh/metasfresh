@@ -55,10 +55,31 @@ public class C_Order
 
 	/**
 	 * Search for matching {@link I_M_DeliveryDay} and set order's preparation date from it.
+	 * <p>
+	 * Before that, if the shipper lead-time forward calc applies, sets the order's DatePromised from DateOrdered;
+	 * this is done first (above the "PreparationDate was set explicitly" guard) so that a save in which the UI callout
+	 * also set PreparationDate still gets its DatePromised, and so the preparation date derives from the new DatePromised.
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised, I_C_Order.COLUMNNAME_PreparationDate })
-	public void setPreparationDate(final I_C_Order order)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
+			I_C_Order.COLUMNNAME_DatePromised,
+			I_C_Order.COLUMNNAME_PreparationDate,
+			I_C_Order.COLUMNNAME_DateOrdered,
+			I_C_Order.COLUMNNAME_M_Shipper_ID,
+			I_C_Order.COLUMNNAME_IsFixedDatePromised,
+			I_C_Order.COLUMNNAME_IsFixedPreparationDate })
+	public void setPreparationDate(final I_C_Order order, final int timing)
 	{
+		// Forward: DateOrdered / shipper changed (or a new order). A manual DatePromised edit with DateOrdered and
+		// M_Shipper_ID unchanged is NOT a forward trigger: the manual value sticks and PreparationDate derives from it.
+		final boolean isForwardTrigger = timing == ModelValidator.TYPE_BEFORE_NEW
+				|| isValueChanged(order, I_C_Order.COLUMNNAME_DateOrdered)
+				|| isValueChanged(order, I_C_Order.COLUMNNAME_M_Shipper_ID);
+		if (isForwardTrigger)
+		{
+			orderDeliveryDayBL.setDatePromisedFromLeadTime(order);
+		}
+
 		//
 		// If PreparationDate was explicitelly set by user, don't change it
 		if (isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate)

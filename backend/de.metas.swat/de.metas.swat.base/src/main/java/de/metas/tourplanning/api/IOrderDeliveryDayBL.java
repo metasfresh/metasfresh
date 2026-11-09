@@ -31,6 +31,19 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	boolean setPreparationDateAndTour(I_C_Order order, boolean fallbackToDatePromised);
 
 	/**
+	 * Forward direction of the shipper lead time: sets {@code DatePromised = workday(DateOrdered, +LeadTimeDays)}
+	 * (Mon-Fri business days).
+	 * <p>
+	 * Only fires for a non-processed sales order, when the forward opt-in sysconfig
+	 * {@code de.metas.tourplanning.LeadTimeForwardCalc.Enabled} is on for the order's client+org, the order's shipper
+	 * has a lead time, {@code DateOrdered} is set and {@code IsFixedDatePromised} is not set. Otherwise leaves the
+	 * order untouched. Does NOT save the order and does NOT touch PreparationDate.
+	 *
+	 * @return true if DatePromised was set.
+	 */
+	boolean setDatePromisedFromLeadTime(@NonNull I_C_Order order);
+
+	/**
 	 * Resolves the per-line preparation date for the shipment-schedule provider: if
 	 * {@code C_OrderLine.PreparationDate} is set (normally the derived value written back by
 	 * {@link #setLinePreparationDate}) it is returned as-is; otherwise it is derived fresh from the given

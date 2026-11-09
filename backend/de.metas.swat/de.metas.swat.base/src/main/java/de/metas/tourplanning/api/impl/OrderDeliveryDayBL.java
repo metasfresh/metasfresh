@@ -41,6 +41,9 @@ import java.time.temporal.TemporalUnit;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
+	/** Forward opt-in: if Y, DatePromised is derived from DateOrdered + the shipper lead time. Default N. */
+	private static final String SYSCONFIG_LeadTimeForwardCalc_Enabled = "de.metas.tourplanning.LeadTimeForwardCalc.Enabled";
+
 	private static final String SYSCONFIG_Fallback_PreparationDate = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate";
 
 	private static final String SYSCONFIG_Fallback_PreparationDate_Offset_Hours = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours";
@@ -100,6 +103,37 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		order.setPreparationDate(TimeUtil.asTimestamp(preparationDateAndTour.getPreparationDate()));
 		order.setM_Tour_ID(TourId.toRepoId(preparationDateAndTour.getTourId()));
 
+		return true;
+	}
+
+	@Override
+	public boolean setDatePromisedFromLeadTime(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx() || order.isFixedDatePromised() || order.isProcessed())
+		{
+			return false;
+		}
+
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_LeadTimeForwardCalc_Enabled, false, order.getAD_Client_ID(), order.getAD_Org_ID()))
+		{
+			return false;
+		}
+
+		final Integer leadTimeDays = getLeadTimeDaysOrNull(order);
+		if (leadTimeDays == null)
+		{
+			return false;
+		}
+
+		final ZoneId timeZone = orderBL.getTimeZone(order);
+		final ZonedDateTime dateOrdered = TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone);
+		if (dateOrdered == null)
+		{
+			return false;
+		}
+
+		final LocalDate datePromised = WorkdayCalculator.workday(dateOrdered.toLocalDate(), leadTimeDays);
+		order.setDatePromised(TimeUtil.asTimestamp(datePromised.atStartOfDay(timeZone)));
 		return true;
 	}
 
