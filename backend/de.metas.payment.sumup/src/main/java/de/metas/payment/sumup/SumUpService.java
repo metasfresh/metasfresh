@@ -154,6 +154,12 @@ public class SumUpService
 		return trx;
 	}
 
+	public void terminateCardReaderCheckout(@NonNull final SumUpConfigId configId, @NonNull final SumUpCardReaderExternalId cardReaderId)
+	{
+		final SumUpConfig config = configRepository.getById(configId);
+		clientFactory.newClient(config).terminateCardReaderCheckout(cardReaderId);
+	}
+
 	private static String getValidCallbackUrlOrNull(@NonNull SumUpCardReaderCheckoutRequest request)
 	{
 		final String callbackUrl = StringUtils.trimBlankToNull(request.getCallbackUrl());

@@ -8,6 +8,7 @@ import de.metas.payment.sumup.repository.SumUpLogRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,12 +19,15 @@ public class SumUpClientFactory
 	@NonNull private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 	@NonNull private final SumUpLogRepository logRepository;
 
+	@Value("${sumup.baseUrl:https://api.sumup.com/v0.1}") private String baseUrl;
+
 	public SumUpClient newClient(@NonNull final SumUpConfig config)
 	{
 		return SumUpClient.builder()
 				.errorManager(errorManager)
 				.logRepository(logRepository)
 				.jsonObjectMapper(jsonObjectMapper)
+				.baseUrl(baseUrl)
 				//
 				.configId(config.getId())
 				.apiKey(config.getApiKey())

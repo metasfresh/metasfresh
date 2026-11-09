@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.payment.sumup.SumUpCallException;
 import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
@@ -30,6 +31,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -38,8 +40,6 @@ import java.time.Duration;
 
 public class SumUpClient
 {
-	private static final String BASE_URL = "https://api.sumup.com/v0.1";
-
 	@NonNull private final IErrorManager errorManager;
 	@NonNull private final SumUpLogRepository logRepository;
 	@NonNull private final ObjectMapper jsonObjectMapper;
@@ -47,6 +47,7 @@ public class SumUpClient
 	@NonNull private final SumUpConfigId configId;
 	@NonNull private final String apiKey;
 	@NonNull private final SumUpMerchantCode merchantCode;
+	@NonNull private final String baseUrl;
 
 	@NonNull private final RestTemplate restTemplate;
 
@@ -60,7 +61,9 @@ public class SumUpClient
 			//
 			@NonNull final SumUpConfigId configId,
 			@NonNull final String apiKey,
-			@NonNull final SumUpMerchantCode merchantCode)
+			@NonNull final SumUpMerchantCode merchantCode,
+			@NonNull final String baseUrl,
+			@Nullable final RestTemplate restTemplate)
 	{
 		this.errorManager = errorManager;
 		this.logRepository = logRepository;
@@ -69,8 +72,11 @@ public class SumUpClient
 		this.configId = configId;
 		this.apiKey = apiKey;
 		this.merchantCode = merchantCode;
+		this.baseUrl = baseUrl;
 
-		this.restTemplate = new RestTemplateBuilder()
+		this.restTemplate = restTemplate != null
+				? restTemplate
+				: new RestTemplateBuilder()
 				.defaultHeader("Authorization", "Bearer " + apiKey)
 				.setConnectTimeout(Duration.ofSeconds(60))
 				.setReadTimeout(Duration.ofSeconds(60))
@@ -132,7 +138,9 @@ public class SumUpClient
 		}
 		catch (Exception ex)
 		{
-			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+			// 4xx: SumUp definitely rejected the request. Anything else (5xx, timeout/IO, parse errors)
+			// leaves it open whether the request took effect.
+			final SumUpCallException metasfreshException = new SumUpCallException(ex, ex instanceof HttpClientErrorException);
 			final AdIssueId adIssueId = errorManager.createIssue(metasfreshException);
 			log.adIssueId(adIssueId);
 
@@ -149,7 +157,7 @@ public class SumUpClient
 	 */
 	public JsonGetReadersResponse getCardReaders()
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
 				.pathSegment("merchants", merchantCode.getAsString(), "readers")
 				.toUriString();
 
@@ -161,7 +169,7 @@ public class SumUpClient
 	 */
 	public void pairCardReader(@NonNull JsonPairReaderRequest request)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
 				.pathSegment("merchants", merchantCode.getAsString(), "readers")
 				.toUriString();
 
@@ -173,7 +181,7 @@ public class SumUpClient
 	 */
 	public void deleteCardReader(@NonNull SumUpCardReaderExternalId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
 				.pathSegment("merchants", merchantCode.getAsString(), "readers", id.getAsString())
 				.toUriString();
 
@@ -185,7 +193,7 @@ public class SumUpClient
 	 */
 	public JsonReaderCheckoutResponse cardReaderCheckout(@NonNull final SumUpCardReaderExternalId id, @NonNull final JsonReaderCheckoutRequest request)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
 				.pathSegment("merchants", merchantCode.getAsString(), "readers", id.getAsString(), "checkout")
 				.toUriString();
 
@@ -193,11 +201,25 @@ public class SumUpClient
 	}
 
 	/**
+	 * Asks the reader to abort its current checkout. SumUp processes this asynchronously and does not confirm it.
+	 *
+	 * @implSpec <a href="https://developer.sumup.com/api/readers">spec ("Terminate a Reader Checkout")</a>
+	 */
+	public void terminateCardReaderCheckout(@NonNull final SumUpCardReaderExternalId id)
+	{
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
+				.pathSegment("merchants", merchantCode.getAsString(), "readers", id.getAsString(), "terminate")
+				.toUriString();
+
+		httpCall(uri, HttpMethod.POST, null, null);
+	}
+
+	/**
 	 * @implSpec <a href="https://developer.sumup.com/api/transactions/get">spec</a>
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpClientTransactionId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
 				.pathSegment("me", "transactions")
 				.queryParam("client_transaction_id", id.getAsString())
 				.toUriString();
@@ -220,7 +242,7 @@ public class SumUpClient
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpTransactionExternalId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
 				.pathSegment("me", "transactions")
 				.queryParam("id", id.getAsString())
 				.toUriString();
@@ -240,7 +262,7 @@ public class SumUpClient
 
 	public void refundTransaction(@NonNull final SumUpTransactionExternalId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
 				.pathSegment("me", "refund", id.getAsString())
 				.toUriString();
 
