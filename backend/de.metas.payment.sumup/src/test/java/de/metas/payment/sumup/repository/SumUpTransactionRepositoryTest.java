@@ -11,6 +11,7 @@ import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SumUpTransactionRepositoryTest
 {
@@ -60,6 +62,25 @@ class SumUpTransactionRepositoryTest
 		assertThat(reloaded.getPosRef().getPosInvoiceCardSettlementId()).isEqualTo(123);
 		assertThat(reloaded.getPosRef().getPosOrderId()).isEqualTo(-1);
 		assertThat(reloaded.getPosRef().getPosPaymentId()).isEqualTo(-1);
+	}
+
+	@Test
+	void findIdByPOSRef_findsTheTransactionOfTheSettlement()
+	{
+		repository.saveNew(newTrx(SumUpPOSRef.builder().posInvoiceCardSettlementId(111).build()));
+		repository.saveNew(newTrx(SumUpPOSRef.builder().posInvoiceCardSettlementId(222).build()));
+
+		assertThat(repository.findIdByPOSRef(SumUpPOSRef.builder().posInvoiceCardSettlementId(222).build())).isNotNull();
+		assertThat(repository.findIdByPOSRef(SumUpPOSRef.builder().posInvoiceCardSettlementId(333).build())).isNull();
+	}
+
+	@Test
+	void findIdByPOSRef_emptyPosRef_isRejected()
+	{
+		repository.saveNew(newTrx(SumUpPOSRef.builder().posInvoiceCardSettlementId(111).build()));
+
+		assertThatThrownBy(() -> repository.findIdByPOSRef(SumUpPOSRef.builder().build()))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test

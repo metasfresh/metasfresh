@@ -25,6 +25,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -141,6 +142,11 @@ public class SumUpClient
 			// 4xx: SumUp definitely rejected the request. Anything else (5xx, timeout/IO, parse errors)
 			// leaves it open whether the request took effect.
 			final SumUpCallException metasfreshException = new SumUpCallException(ex, ex instanceof HttpClientErrorException);
+			final TableRecordReference settlementRef = posRef != null ? posRef.toPOSInvoiceCardSettlementRecordRefOrNull() : null;
+			if (settlementRef != null)
+			{
+				metasfreshException.setRecord(settlementRef);
+			}
 			final AdIssueId adIssueId = errorManager.createIssue(metasfreshException);
 			log.adIssueId(adIssueId);
 

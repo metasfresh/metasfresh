@@ -53,6 +53,7 @@ public final class SumUpApiStub
 		@NonNull BigDecimal amount;
 		@NonNull String currency;
 		@Nullable String clientTransactionId;
+		@Nullable String description;
 	}
 
 	@Value
@@ -245,6 +246,7 @@ public final class SumUpApiStub
 					.amount(amount)
 					.currency(currency)
 					.clientTransactionId(behavior == CheckoutBehavior.SUCCESS ? clientTransactionId : null)
+					.description(body.hasNonNull("description") ? body.get("description").asText() : null)
 					.build());
 
 			if (behavior == CheckoutBehavior.SUCCESS)

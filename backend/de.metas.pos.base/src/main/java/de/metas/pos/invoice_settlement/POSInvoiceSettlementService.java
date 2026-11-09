@@ -25,9 +25,12 @@ import de.metas.pos.POSCashJournalService;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -60,6 +63,7 @@ public class POSInvoiceSettlementService
 	private static final AdMessageKey MSG_NotEligibleForSettlement = AdMessageKey.of("de.metas.pos.InvoiceSettlement.NotEligibleForSettlement");
 	private static final AdMessageKey MSG_AllocationIncomplete = AdMessageKey.of("de.metas.pos.InvoiceSettlement.AllocationIncomplete");
 	private static final AdMessageKey MSG_JournalDescription = AdMessageKey.of("de.metas.pos.InvoiceSettlement.JournalDescription");
+	private static final AdMessageKey MSG_CardPaymentStillOpen = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -77,6 +81,7 @@ public class POSInvoiceSettlementService
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSCashJournalService posCashJournalService;
+	@NonNull private final POSInvoiceCardSettlementRepository cardSettlementRepository;
 
 	/**
 	 * @return the terminal org's sales invoices whose {@code DocumentNo} <b>ends with</b> {@code documentNo}
@@ -164,6 +169,7 @@ public class POSInvoiceSettlementService
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), zoneId))
 				.grandTotal(Money.of(invoice.getGrandTotal(), currencyId))
 				.openAmt(allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true))
+				.blockingCardSettlement(cardSettlementRepository.findBlockingByInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())).orElse(null))
 				.build();
 	}
 
@@ -236,28 +242,10 @@ public class POSInvoiceSettlementService
 	{
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
 
-		// re-read in-trx under a row lock (see getByIdInTrxWithRowLock): the caller's earlier open amount may be
-		// stale, and the lock serializes concurrent settlements of the same invoice.
-		final I_C_Invoice invoice = getByIdInTrxWithRowLock(request.getInvoiceId());
-
-		assertInvoiceBelongsToTerminalOrg(invoice, terminal);
-
-		// re-guard here: invoiceId is client-supplied and this path is not org-scoped by findOpenInvoices. See
-		// isCompletedSalesInvoice for why IsPaid is excluded (already-paid falls through to the open-amount check below
-		// as NoLongerOpen).
-		if (!isCompletedSalesInvoice(invoice))
-		{
-			throw new AdempiereException(MSG_NotEligibleForSettlement).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
-		}
-
-		final Money open = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
-		if (open.signum() <= 0)
-		{
-			throw new AdempiereException(MSG_NoLongerOpen).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
-		}
-
+		final SettleableInvoice settleableInvoice = lockAndAssertSettleable(terminal, request.getInvoiceId());
+		final I_C_Invoice invoice = settleableInvoice.getInvoice();
+		final Money open = settleableInvoice.getOpen();
 		final CurrencyId invoiceCurrencyId = open.getCurrencyId();
-		assertInvoiceCurrencyMatchesTerminal(invoice, invoiceCurrencyId, terminal);
 
 		final BigDecimal cashTenderedAmount = request.getCashTenderedAmount();
 		if (cashTenderedAmount != null)
@@ -313,6 +301,72 @@ public class POSInvoiceSettlementService
 				.documentNo(invoice.getDocumentNo())
 				.journal(journal)
 				.build();
+	}
+
+	/**
+	 * The guards shared by the cash and the card settlement start. Must be called inside a transaction: it
+	 * re-reads the invoice under a row lock (see {@link #getByIdInTrxWithRowLock}) — the caller's earlier open amount
+	 * may be stale, and the lock serializes concurrent settlements of the same invoice — and then, in this order:
+	 * <ol>
+	 * <li>refuses while a card settlement of the invoice is unfinished ({@link #assertNoBlockingCardSettlement}),</li>
+	 * <li>the org ({@link #assertInvoiceBelongsToTerminalOrg}),</li>
+	 * <li>eligibility ({@link #isCompletedSalesInvoice}: invoiceId is client-supplied and this path is not org-scoped
+	 * by findOpenInvoices; IsPaid is excluded, so an already-paid invoice falls through to the open-amount check as
+	 * {@code NoLongerOpen}),</li>
+	 * <li>the open amount ({@code NoLongerOpen}) and</li>
+	 * <li>the currency ({@link #assertInvoiceCurrencyMatchesTerminal}).</li>
+	 * </ol>
+	 */
+	@NonNull
+	public SettleableInvoice lockAndAssertSettleable(@NonNull final POSTerminal terminal, @NonNull final InvoiceId invoiceId)
+	{
+		// the row lock below is released at once outside a transaction, which would silently void the serialization
+		trxManager.assertThreadInheritedTrxExists();
+
+		final I_C_Invoice invoice = getByIdInTrxWithRowLock(invoiceId);
+
+		assertNoBlockingCardSettlement(invoiceId);
+
+		assertInvoiceBelongsToTerminalOrg(invoice, terminal);
+
+		if (!isCompletedSalesInvoice(invoice))
+		{
+			throw new AdempiereException(MSG_NotEligibleForSettlement).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
+		}
+
+		final Money open = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
+		if (open.signum() <= 0)
+		{
+			throw new AdempiereException(MSG_NoLongerOpen).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
+		}
+
+		assertInvoiceCurrencyMatchesTerminal(invoice, open.getCurrencyId(), terminal);
+
+		return new SettleableInvoice(invoice, open);
+	}
+
+	/**
+	 * Refuses a new payment of the invoice while a card settlement of it is unfinished (DESIGN decision 6). Call it
+	 * right after the invoice lock, in the same transaction.
+	 */
+	public void assertNoBlockingCardSettlement(@NonNull final InvoiceId invoiceId)
+	{
+		final POSInvoiceCardSettlement blocking = cardSettlementRepository.findBlockingByInvoiceId(invoiceId).orElse(null);
+		if (blocking != null)
+		{
+			throw new AdempiereException(MSG_CardPaymentStillOpen)
+					.setParameter("C_Invoice_ID", invoiceId)
+					.setParameter("C_POS_InvoiceCardSettlement_ID", blocking.getId())
+					.setParameter("status", blocking.getStatus());
+		}
+	}
+
+	@Value
+	public static class SettleableInvoice
+	{
+		@NonNull I_C_Invoice invoice;
+		/** Open amount (&gt; 0), in the invoice's own currency. */
+		@NonNull Money open;
 	}
 
 	/**

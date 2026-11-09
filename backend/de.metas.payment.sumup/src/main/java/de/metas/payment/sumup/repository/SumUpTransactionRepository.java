@@ -17,6 +17,7 @@ import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
+import de.metas.payment.sumup.SumUpTransactionId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.util.Check;
@@ -66,6 +67,20 @@ public class SumUpTransactionRepository
 	public List<SumUpTransaction> list(@NonNull final SumUpTransactionQuery query)
 	{
 		return stream(query).collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0): an empty reference would match any transaction
+	 * @return the record id of the (single) transaction that carries the given POS reference, or null if there is none
+	 */
+	@Nullable
+	public SumUpTransactionId findIdByPOSRef(@NonNull final SumUpPOSRef posRef)
+	{
+		Check.assume(posRef.getPosOrderId() > 0 || posRef.getPosPaymentId() > 0 || posRef.getPosInvoiceCardSettlementId() > 0,
+				"posRef references something: {}", posRef);
+		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).build())
+				.create()
+				.firstIdOnly(SumUpTransactionId::ofRepoIdOrNull);
 	}
 
 	public Stream<SumUpTransaction> stream(@NonNull final SumUpTransactionQuery query)

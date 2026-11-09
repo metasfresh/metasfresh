@@ -1,20 +1,24 @@
 package de.metas.cucumber.stepdefs.pos;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.Amount;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.currency.Amount;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.sumup.SumUpCardReader;
-import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
+import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpPOSRef;
@@ -25,10 +29,14 @@ import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Config;
+import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementService;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStartRequest;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStatus;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement;
@@ -38,26 +46,42 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_POS;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.CLIENT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.METASFRESH_VALUE;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Step definitions for POS invoice card settlements: wiring a POS terminal to the in-process SumUp API stub
@@ -77,6 +101,9 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final C_POS_StepDefData posTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_POS_InvoiceCardSettlement_StepDefData settlementTable;
+
+	// outcomes of the last concurrent start; a step-def instance lives for one scenario
+	private final List<StartOutcome> concurrentStartOutcomes = new ArrayList<>();
 
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
 	private SumUpService sumUpService() {return SpringContextHolder.instance.getBean(SumUpService.class);}
@@ -110,6 +137,28 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^POS terminal (\\S+) is configured with SumUp and a default card reader$")
 	public void configurePOSTerminalWithSumUp(@NonNull final String terminalIdentifier)
 	{
+		configurePOSTerminalWithSumUp(terminalIdentifier, true);
+	}
+
+	/**
+	 * Like the step above, but the config has no card reader (hence no default one), so a checkout fails with a
+	 * configuration error before any SumUp call.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Given POS terminal till is configured with SumUp and no default card reader
+	 * </pre>
+	 */
+	@And("^POS terminal (\\S+) is configured with SumUp and no default card reader$")
+	public void configurePOSTerminalWithSumUpWithoutDefaultReader(@NonNull final String terminalIdentifier)
+	{
+		configurePOSTerminalWithSumUp(terminalIdentifier, false);
+	}
+
+	private void configurePOSTerminalWithSumUp(@NonNull final String terminalIdentifier, final boolean withDefaultReader)
+	{
 		final I_C_POS posRecord = posTable.get(StepDefDataIdentifier.ofString(terminalIdentifier));
 
 		// SumUpConfigRepository can only update an existing config, so the config record itself is created directly
@@ -124,12 +173,15 @@ public class POS_InvoiceCardSettlement_StepDef
 		// the card reader and the default-reader link go through the repository
 		final SumUpCardReaderExternalId cardReaderExternalId = SumUpCardReaderExternalId.ofString(cardReaderExternalId(terminalIdentifier));
 		sumUpConfigRepository().updateById(sumUpConfigId, config -> config.toBuilder()
-				.cardReaders(ImmutableList.of(SumUpCardReader.builder()
+				// SumUpConfig picks the only reader as default, so "no default reader" means "no reader at all"
+				.cardReaders(withDefaultReader
+						? ImmutableList.of(SumUpCardReader.builder()
 						.name("Stub reader " + terminalIdentifier)
 						.externalId(cardReaderExternalId)
 						.isActive(true)
-						.build()))
-				.defaultCardReaderExternalId(cardReaderExternalId)
+						.build())
+						: ImmutableList.of())
+				.defaultCardReaderExternalId(withDefaultReader ? cardReaderExternalId : null)
 				.build());
 
 		// POSTerminalRepository has no API to set the payment processor of an existing terminal
@@ -455,6 +507,282 @@ public class POS_InvoiceCardSettlement_StepDef
 				.create()
 				.count();
 		assertThat(actualCount).as("AD_Issues of card settlement %s", settlementIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Starts a card settlement of the invoice's open amount ({@link POSInvoiceCardSettlementService#start}) and
+	 * registers it under the given identifier.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) is started for invoice (\\S+) at POS terminal (\\S+) by cashier (\\S+)$")
+	public void startSettlement(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String terminalIdentifier,
+			@NonNull final String cashierLogin)
+	{
+		final POSInvoiceCardSettlement settlement = settlementService().start(toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin));
+		settlementTable.putOrReplace(
+				StepDefDataIdentifier.ofString(settlementIdentifier),
+				InterfaceWrapperHelper.load(settlement.getId(), I_C_POS_InvoiceCardSettlement.class));
+	}
+
+	/**
+	 * Asserts that starting a card settlement is refused with the given AD_Message and that no settlement was
+	 * created by the attempt.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then starting a card settlement for invoice invoice1 at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceSettlement.NoLongerOpen'
+	 * </pre>
+	 */
+	@And("^starting a card settlement for invoice (\\S+) at POS terminal (\\S+) by cashier (\\S+) fails with AD_Message '(.*)'$")
+	public void startSettlementFails(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String terminalIdentifier,
+			@NonNull final String cashierLogin,
+			@NonNull final String expectedAdMessage)
+	{
+		final POSInvoiceCardSettlementStartRequest request = toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin);
+		final long countBefore = countSettlements(request.getInvoiceId());
+
+		assertThatThrownBy(() -> settlementService().start(request))
+				.as("card settlement start must be refused")
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode(expectedAdMessage)));
+
+		assertThat(countSettlements(request.getInvoiceId())).as("card settlements of the invoice after the refused start").isEqualTo(countBefore);
+	}
+
+	/**
+	 * Two threads start a card settlement of the same invoice at the same moment; the outcomes are asserted by
+	 * {@link #assertConcurrentStartOutcome}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When two card settlements are started at once for invoice invoice1 at POS terminal till by cashier metasfresh
+	 * </pre>
+	 */
+	@And("^two card settlements are started at once for invoice (\\S+) at POS terminal (\\S+) by cashier (\\S+)$")
+	public void startTwoSettlementsConcurrently(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String terminalIdentifier,
+			@NonNull final String cashierLogin) throws Exception
+	{
+		final POSInvoiceCardSettlementStartRequest request = toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin);
+		final Properties ctx = Env.getCtx();
+		final CountDownLatch startSignal = new CountDownLatch(1);
+		final ExecutorService executor = Executors.newFixedThreadPool(2);
+		try
+		{
+			final List<Future<POSInvoiceCardSettlement>> futures = new ArrayList<>();
+			for (int i = 0; i < 2; i++)
+			{
+				futures.add(executor.submit(() -> {
+					try (final IAutoCloseable ignored = Env.switchContext(ctx))
+					{
+						startSignal.await();
+						return settlementService().start(request);
+					}
+				}));
+			}
+			startSignal.countDown();
+
+			concurrentStartOutcomes.clear();
+			for (final Future<POSInvoiceCardSettlement> future : futures)
+			{
+				try
+				{
+					concurrentStartOutcomes.add(StartOutcome.success(future.get(120, TimeUnit.SECONDS)));
+				}
+				catch (final ExecutionException ex)
+				{
+					concurrentStartOutcomes.add(StartOutcome.failure(ex.getCause()));
+				}
+			}
+		}
+		finally
+		{
+			executor.shutdownNow();
+		}
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then exactly one of them succeeded with status PENDING and the other failed with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen'
+	 * </pre>
+	 */
+	@And("^exactly one of them succeeded with status (\\w+) and the other failed with AD_Message '(.*)'$")
+	public void assertConcurrentStartOutcome(@NonNull final String expectedStatus, @NonNull final String expectedAdMessage)
+	{
+		assertThat(concurrentStartOutcomes).as("outcomes of the concurrent starts").hasSize(2);
+		final List<StartOutcome> successes = concurrentStartOutcomes.stream().filter(o -> o.getSettlement() != null).collect(Collectors.toList());
+		final List<StartOutcome> failures = concurrentStartOutcomes.stream().filter(o -> o.getSettlement() == null).collect(Collectors.toList());
+		assertThat(successes).as("successful starts (failures: %s)", failures).hasSize(1);
+		assertThat(successes.get(0).getSettlement().getStatus()).isEqualTo(parseStatus(expectedStatus));
+		final Throwable failure = failures.get(0).getError();
+		assertThat(failure).isInstanceOfSatisfying(AdempiereException.class,
+				ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode(expectedAdMessage)));
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then invoice invoice1 has 0 card settlements
+	 * </pre>
+	 */
+	@And("^invoice (\\S+) has (\\d+) card settlements?$")
+	public void assertSettlementCount(@NonNull final String invoiceIdentifier, final int expectedCount)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		assertThat(countSettlements(invoiceId)).as("card settlements of invoice %s", invoiceIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Fixture: forces the settlement's status and IsAbandoned flag, as the states that are reached by later steps
+	 * of the state machine would leave them.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And card settlement settlement1 is set to status UN with isAbandoned false
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) is set to status ([A-Z_]+) with isAbandoned (true|false)$")
+	public void forceSettlementStatus(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String status,
+			@NonNull final String isAbandoned)
+	{
+		final POSInvoiceCardSettlementId id = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		Services.get(ITrxManager.class).runInNewTrx(() -> {
+			final POSInvoiceCardSettlement settlement = settlementRepository().getByIdForUpdate(id);
+			settlementRepository().save(settlement.toBuilder()
+					.status(parseStatus(status))
+					.isAbandoned(Boolean.parseBoolean(isAbandoned))
+					.build());
+		});
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the SumUp stub received a checkout described by card settlement settlement1
+	 * </pre>
+	 */
+	@And("^the SumUp stub received a checkout described by card settlement (\\S+)$")
+	public void assertStubCheckoutDescription(@NonNull final String settlementIdentifier)
+	{
+		final String expected = String.valueOf(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)).getRepoId());
+		assertThat(SumUpApiStub.getReceivedCheckouts())
+				.as("checkouts received by the SumUp stub")
+				.extracting(SumUpApiStub.ReceivedCheckout::getDescription)
+				.contains(expected);
+	}
+
+	/**
+	 * Asserts the invoice has no payment and no allocation and is still open for the given amount.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And nothing is booked for invoice invoice1 and its open amount is 16.07
+	 * </pre>
+	 */
+	@And("^nothing is booked for invoice (\\S+) and its open amount is (\\S+)$")
+	public void assertNothingBooked(@NonNull final String invoiceIdentifier, @NonNull final String expectedOpenAmt)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		InterfaceWrapperHelper.refresh(invoice);
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		assertThat(paymentDAO.streamPaymentIdsByBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).count())
+				.as("payments of the invoice's business partner")
+				.isZero();
+		assertThat(Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal())
+				.as("open amount of invoice %s", invoiceIdentifier)
+				.isEqualByComparingTo(new BigDecimal(expectedOpenAmt));
+	}
+
+	/**
+	 * Asserts that the till's open-invoice list ({@link POSService#findOpenInvoices}) shows the invoice together
+	 * with the given blocking settlement.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the open invoice list of POS terminal till2 for invoice invoice1 shows blocking card settlement settlement1
+	 * </pre>
+	 */
+	@And("^the open invoice list of POS terminal (\\S+) for invoice (\\S+) shows blocking card settlement (\\S+)$")
+	public void assertOpenInvoiceShowsBlockingSettlement(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String settlementIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		InterfaceWrapperHelper.refresh(invoice);
+		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
+		final POSInvoiceCardSettlementId expectedId = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+
+		final POSOpenInvoice openInvoice = SpringContextHolder.instance.getBean(POSService.class)
+				.findOpenInvoices(posTerminalId, invoice.getDocumentNo())
+				.stream()
+				.filter(candidate -> candidate.getInvoiceId().getRepoId() == invoice.getC_Invoice_ID())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("Invoice not in the open invoice list: " + invoiceIdentifier));
+		assertThat(openInvoice.getBlockingCardSettlement()).as("blocking card settlement").isNotNull();
+		assertThat(openInvoice.getBlockingCardSettlement().getId()).isEqualTo(expectedId);
+	}
+
+	private POSInvoiceCardSettlementService settlementService() {return SpringContextHolder.instance.getBean(POSInvoiceCardSettlementService.class);}
+
+	private POSInvoiceCardSettlementStartRequest toStartRequest(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String terminalIdentifier,
+			@NonNull final String cashierLogin)
+	{
+		return POSInvoiceCardSettlementStartRequest.builder()
+				.posTerminalId(posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier)))
+				.cashierId(StepDefUtil.getUserIdByLogin(cashierLogin))
+				.invoiceId(invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier)))
+				.build();
+	}
+
+	private long countSettlements(@NonNull final InvoiceId invoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_POS_InvoiceCardSettlement.class)
+				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.create()
+				.count();
+	}
+
+	private static String expectedErrorCode(@NonNull final String adMessage)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final AdMessageKey key = AdMessageKey.of(adMessage);
+		return Optional.ofNullable(msgBL.getErrorCode(key)).orElseGet(key::toAD_Message);
+	}
+
+	@Value
+	private static class StartOutcome
+	{
+		@Nullable POSInvoiceCardSettlement settlement;
+		@Nullable Throwable error;
+
+		static StartOutcome success(final POSInvoiceCardSettlement settlement) {return new StartOutcome(settlement, null);}
+
+		static StartOutcome failure(final Throwable error) {return new StartOutcome(null, error);}
 	}
 
 	//

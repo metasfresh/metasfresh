@@ -11,17 +11,20 @@ import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessor;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.payment_gateway.POSRefundRequest;
+import de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -61,6 +64,12 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 		catch (final Exception ex)
 		{
 			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+			// tag the issue with the settlement (no-op if the SumUp client already reported and tagged it)
+			final POSInvoiceCardSettlementId settlementId = request.getPosInvoiceCardSettlementId();
+			if (settlementId != null)
+			{
+				metasfreshException.setRecord(TableRecordReference.of(I_C_POS_InvoiceCardSettlement.Table_Name, settlementId.getRepoId()));
+			}
 			final String errorMessage = AdempiereException.extractMessage(metasfreshException);
 			final AdIssueId errorId = errorManager.createIssue(metasfreshException);
 
