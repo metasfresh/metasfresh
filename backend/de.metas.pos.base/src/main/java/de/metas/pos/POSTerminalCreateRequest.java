@@ -10,8 +10,11 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
+
 /**
- * Creates a {@code C_POS} record with no payment processor, no cash journal and a zero cash balance.
+ * Creates a {@code C_POS} record with no cash journal and a zero cash balance; the payment processor is set only when
+ * {@link #getPaymentProcessorConfig()} is given.
  */
 @Value
 @Builder
@@ -24,4 +27,5 @@ public class POSTerminalCreateRequest
 	@NonNull DocTypeId salesOrderDocTypeId;
 	@NonNull PriceListId priceListId;
 	@NonNull WarehouseId shipFromWarehouseId;
+	@Nullable POSTerminalPaymentProcessorConfig paymentProcessorConfig;
 }

@@ -65,6 +65,12 @@ public interface IPaymentTermRepository extends ISingletonService
 	@NonNull
 	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
 
+	/**
+	 * Creates an active, plain (non-installment, no discount) payment term with the given value and name.
+	 */
+	@NonNull
+	PaymentTermId createPaymentTerm(@NonNull OrgId orgId, @NonNull String value, @NonNull String name);
+
 	PaymentTermLoaderAndSaver newLoaderAndSaver();
 
 	@Nullable

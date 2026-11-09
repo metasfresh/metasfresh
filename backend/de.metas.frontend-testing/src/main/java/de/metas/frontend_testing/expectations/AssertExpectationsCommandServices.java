@@ -51,6 +51,8 @@ import de.metas.pos.POSOrderQuery;
 import de.metas.pos.POSOrdersRepository;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.pos.returns.POSReturnRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -120,6 +122,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final POSOrdersRepository posOrdersRepository;
 	@NonNull private final POSReturnRepository posReturnRepository;
 	@NonNull private final POSService posService;
+	@NonNull private final POSInvoiceCardSettlementRepository posInvoiceCardSettlementRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -335,6 +338,11 @@ public class AssertExpectationsCommandServices
 	public I_C_Order getOrderById(@NonNull final OrderId orderId)
 	{
 		return orderDAO.getById(orderId);
+	}
+
+	public List<POSInvoiceCardSettlement> getCardSettlementsByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return posInvoiceCardSettlementRepository.listByInvoiceId(invoiceId);
 	}
 
 	public List<I_C_Invoice> getInvoicesByOrderId(@NonNull final OrderId orderId)

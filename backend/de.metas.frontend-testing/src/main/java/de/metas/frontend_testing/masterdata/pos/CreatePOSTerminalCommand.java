@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.pos;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccountId;
@@ -32,10 +33,17 @@ import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.sumup.SumUpCardReader;
+import de.metas.payment.sumup.SumUpCardReaderExternalId;
+import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.payment.sumup.SumUpMerchantCode;
+import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalCreateRequest;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.POSTerminalPaymentProcessorConfig;
 import de.metas.pos.POSTerminalRepository;
+import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
@@ -82,7 +90,9 @@ import java.util.Optional;
  * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing: a dedicated cashbook, a fresh
  * sales pricing setup ({@code M_PricingSystem} + {@code M_PriceList} + {@code M_PriceList_Version} with
  * {@code M_ProductPrice} for the requested products), a walk-in customer, a ship-from warehouse and the
- * sales-order document type. Also grants the {@code pos} mobile application to {@link RoleId#WEBUI} and, when requested,
+ * sales-order document type. When {@code CARD} is among the requested payment methods it also creates a SumUp
+ * config with dummy credentials and one active default card reader and points the terminal's payment processor at it.
+ * Also grants the {@code pos} mobile application to {@link RoleId#WEBUI} and, when requested,
  * creates the cash withdrawal categories (see {@link JsonPOSTerminalRequest#getCashWithdrawalCategories()}).
  */
 @Builder
@@ -91,6 +101,9 @@ public class CreatePOSTerminalCommand
 	private static final String POS_MOBILE_APPLICATION_VALUE = "pos";
 	static final String POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME = "POS_LineLevelTest";
 	static final BigDecimal DEFAULT_LINE_LEVEL_TAX_RATE_PERCENT = BigDecimal.valueOf(19);
+	static final String SUMUP_API_KEY = "test-api-key";
+	static final String SUMUP_MERCHANT_CODE = "M-TEST";
+	static final String SUMUP_CARD_READER_EXTERNAL_ID = "R-TEST";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -111,6 +124,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final PriceListVersionRepository priceListVersionRepository;
 	@NonNull private final ChargeRepository chargeRepository;
 	@NonNull private final BankRepository bankRepository;
+	@NonNull private final SumUpConfigRepository sumUpConfigRepository;
 
 	@NonNull private final MasterdataContext context;
 	/**
@@ -123,8 +137,6 @@ public class CreatePOSTerminalCommand
 
 	public JsonPOSTerminalResponse execute()
 	{
-		assertOnlyCashPaymentMethod();
-
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(request.getPriceListCurrency());
 
 		final BankAccountId bankAccountId = createCashbookBankAccount(currencyId);
@@ -147,6 +159,9 @@ public class CreatePOSTerminalCommand
 
 		grantPOSMobileApplicationAccess();
 
+		final boolean isCardTerminal = request.getPaymentMethods().contains(POSPaymentMethod.CARD);
+		final SumUpConfigId sumUpConfigId = isCardTerminal ? createSumUpConfigWithDefaultCardReader() : null;
+
 		final String name = identifier.toUniqueString();
 		final POSTerminalId posTerminalId = posTerminalRepository.createPOSTerminal(POSTerminalCreateRequest.builder()
 				.orgId(orgId)
@@ -156,6 +171,9 @@ public class CreatePOSTerminalCommand
 				.salesOrderDocTypeId(salesOrderDocTypeId)
 				.priceListId(pricingSetup.getPriceListId())
 				.shipFromWarehouseId(warehouseId)
+				.paymentProcessorConfig(sumUpConfigId != null
+						? POSTerminalPaymentProcessorConfig.builder().type(POSPaymentProcessorType.SumUp).sumUpConfigId(sumUpConfigId).build()
+						: null)
 				.build());
 		context.putIdentifier(identifier, posTerminalId);
 
@@ -168,6 +186,8 @@ public class CreatePOSTerminalCommand
 				.bankAccountId(bankAccountId)
 				.isCashJournalOpen(false)
 				.cashWithdrawalCategories(cashWithdrawalCategories)
+				.sumUpMerchantCode(isCardTerminal ? SUMUP_MERCHANT_CODE : null)
+				.sumUpCardReaderId(isCardTerminal ? SUMUP_CARD_READER_EXTERNAL_ID : null)
 				.build();
 	}
 
@@ -228,17 +248,24 @@ public class CreatePOSTerminalCommand
 	}
 
 	/**
-	 * Only {@code CASH} is provisioned so far (no SumUp/card payment-processor config wiring in this
-	 * command) — fail loud rather than silently ignore an unsupported {@code paymentMethods} entry.
+	 * Dummy credentials of the SumUp config created for a {@code CARD} terminal; specs stub the SumUp API, so these are never sent anywhere real.
 	 */
-	private void assertOnlyCashPaymentMethod()
+	@NonNull
+	private SumUpConfigId createSumUpConfigWithDefaultCardReader()
 	{
-		final List<POSPaymentMethod> paymentMethods = request.getPaymentMethods();
-		final boolean isOnlyCash = paymentMethods.stream().allMatch(POSPaymentMethod::isCash);
-		if (!isOnlyCash)
-		{
-			throw new AdempiereException("CreatePOSTerminalCommand currently supports only the CASH payment method; got: " + paymentMethods);
-		}
+		final SumUpConfigId sumUpConfigId = sumUpConfigRepository.createConfig(orgId, SUMUP_API_KEY, SumUpMerchantCode.ofString(SUMUP_MERCHANT_CODE));
+
+		final SumUpCardReaderExternalId cardReaderExternalId = SumUpCardReaderExternalId.ofString(SUMUP_CARD_READER_EXTERNAL_ID);
+		sumUpConfigRepository.updateById(sumUpConfigId, config -> config.toBuilder()
+				.cardReaders(ImmutableList.of(SumUpCardReader.builder()
+						.name("Test reader " + identifier.toUniqueString())
+						.externalId(cardReaderExternalId)
+						.isActive(true)
+						.build()))
+				.defaultCardReaderExternalId(cardReaderExternalId)
+				.build());
+
+		return sumUpConfigId;
 	}
 
 	private BankAccountId createCashbookBankAccount(@NonNull final CurrencyId currencyId)

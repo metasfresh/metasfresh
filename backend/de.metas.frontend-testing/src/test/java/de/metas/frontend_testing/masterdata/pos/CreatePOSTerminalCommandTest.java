@@ -29,8 +29,12 @@ import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.sumup.repository.SumUpConfigRepository;
+import de.metas.payment.sumup.repository.model.I_SUMUP_CardReader;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Config;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalRepository;
+import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
@@ -191,6 +195,7 @@ public class CreatePOSTerminalCommandTest
 				.priceListVersionRepository(new PriceListVersionRepository())
 				.chargeRepository(new ChargeRepository())
 				.bankRepository(new BankRepository())
+				.sumUpConfigRepository(new SumUpConfigRepository())
 				.context(context)
 				.previousSysconfigsCollector(previousSysconfigs);
 	}
@@ -543,22 +548,69 @@ public class CreatePOSTerminalCommandTest
 	}
 
 	@Test
-	public void execute_withNonCashPaymentMethod_shouldThrow()
+	public void cardTerminal_hasSumUpConfigAndDefaultReader()
 	{
 		// given
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
 				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
-				.paymentMethods(ImmutableList.of(POSPaymentMethod.CARD))
+				.paymentMethods(ImmutableList.of(POSPaymentMethod.CASH, POSPaymentMethod.CARD))
 				.build();
 
-		final CreatePOSTerminalCommand command = commandBuilder()
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
 				.request(request)
 				.identifier(Identifier.ofString("T_CARD"))
+				.build()
+				.execute();
+
+		// then
+		assertThat(response.getSumUpMerchantCode()).isEqualTo("M-TEST");
+		assertThat(response.getSumUpCardReaderId()).isEqualTo("R-TEST");
+
+		final I_C_POS posRecord = InterfaceWrapperHelper.load(response.getId(), I_C_POS.class);
+		assertThat(posRecord.getPOSPaymentProcessor()).isEqualTo(POSPaymentProcessorType.SumUp.getCode());
+		assertThat(posRecord.getSUMUP_Config_ID()).isGreaterThan(0);
+
+		final I_SUMUP_Config configRecord = InterfaceWrapperHelper.load(posRecord.getSUMUP_Config_ID(), I_SUMUP_Config.class);
+		assertThat(configRecord.isActive()).isTrue();
+		assertThat(configRecord.getSUMUP_merchant_code()).isEqualTo("M-TEST");
+		assertThat(configRecord.getApiKey()).isNotBlank();
+
+		final List<I_SUMUP_CardReader> readers = queryBL.createQueryBuilder(I_SUMUP_CardReader.class)
+				.addEqualsFilter(I_SUMUP_CardReader.COLUMNNAME_SUMUP_Config_ID, configRecord.getSUMUP_Config_ID())
+				.create()
+				.list();
+		assertThat(readers).hasSize(1);
+		assertThat(readers.get(0).getExternalId()).isEqualTo("R-TEST");
+		assertThat(readers.get(0).isActive()).isTrue();
+		assertThat(configRecord.getSUMUP_CardReader_ID()).isEqualTo(readers.get(0).getSUMUP_CardReader_ID());
+	}
+
+	@Test
+	public void cashOnlyTerminal_hasNoSumUpConfig()
+	{
+		// given
+		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.isTaxIncluded(false)
 				.build();
 
-		// when / then
-		assertThatThrownBy(command::execute).isInstanceOf(AdempiereException.class);
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
+				.request(request)
+				.identifier(Identifier.ofString("T_CASHONLY"))
+				.build()
+				.execute();
+
+		// then
+		assertThat(response.getSumUpMerchantCode()).isNull();
+		assertThat(response.getSumUpCardReaderId()).isNull();
+
+		final I_C_POS posRecord = InterfaceWrapperHelper.load(response.getId(), I_C_POS.class);
+		assertThat(posRecord.getPOSPaymentProcessor()).isNull();
+		assertThat(posRecord.getSUMUP_Config_ID()).isLessThanOrEqualTo(0);
+		assertThat(queryBL.createQueryBuilder(I_SUMUP_Config.class).create().anyMatch()).isFalse();
 	}
 
 	@Test

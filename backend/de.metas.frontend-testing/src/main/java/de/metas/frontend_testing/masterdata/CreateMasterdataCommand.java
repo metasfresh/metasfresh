@@ -469,6 +469,7 @@ public class CreateMasterdataCommand
 				.posTerminalRepository(services.posTerminalRepository)
 				.chargeRepository(services.chargeRepository)
 				.bankRepository(services.bankRepository)
+				.sumUpConfigRepository(services.sumUpConfigRepository)
 				.context(context)
 				.previousSysconfigsCollector(previousSysconfigs)
 				.request(request)

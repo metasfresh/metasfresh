@@ -21,6 +21,7 @@ import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.mobile.MobileConfigService;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.pos.POSTerminalRepository;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
@@ -70,4 +71,5 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final PriceListVersionRepository priceListVersionRepository;
 	@NonNull public final ChargeRepository chargeRepository;
 	@NonNull public final BankRepository bankRepository;
+	@NonNull public final SumUpConfigRepository sumUpConfigRepository;
 }

@@ -24,6 +24,7 @@ package de.metas.payment.paymentterm.repository.impl;
 
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -53,6 +54,26 @@ public class PaymentTermRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		paymentTermRepository = new PaymentTermRepository();
+	}
+
+	@Test
+	public void createPaymentTerm_persistsGivenFields_andCanBeReadBack()
+	{
+		// load the repository's cache first, so we also see that creating a term is picked up afterwards
+		final PaymentTermId otherId = createPaymentTerm("other", CLIENT_ID, ORG_ID, 0, false, false, true);
+		assertThat(paymentTermRepository.getById(otherId).getName()).isEqualTo("other");
+
+		final PaymentTermId id = paymentTermRepository.createPaymentTerm(ORG_ID, "1000", "Term 1000_run1");
+
+		final I_C_PaymentTerm record = InterfaceWrapperHelper.load(id, I_C_PaymentTerm.class);
+		assertThat(record.getValue()).isEqualTo("1000");
+		assertThat(record.getName()).isEqualTo("Term 1000_run1");
+		assertThat(record.getAD_Org_ID()).isEqualTo(ORG_ID.getRepoId());
+		assertThat(record.isActive()).isTrue();
+		assertThat(record.isComplex()).isFalse();
+
+		assertThat(paymentTermRepository.getById(id).getName()).isEqualTo("Term 1000_run1");
+		assertThat(paymentTermRepository.firstIdOnly(PaymentTermQuery.builder().orgId(ORG_ID).value("1000").build())).contains(id);
 	}
 
 	@Test

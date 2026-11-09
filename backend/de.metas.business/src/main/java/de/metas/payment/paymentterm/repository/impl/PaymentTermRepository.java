@@ -194,6 +194,18 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	}
 
 	@Override
+	public @NonNull PaymentTermId createPaymentTerm(@NonNull final OrgId orgId, @NonNull final String value, @NonNull final String name)
+	{
+		final I_C_PaymentTerm record = newInstance(I_C_PaymentTerm.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setValue(value);
+		record.setName(name);
+		record.setIsActive(true);
+		saveRecord(record);
+		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+	}
+
+	@Override
 	public PaymentTermLoaderAndSaver newLoaderAndSaver()
 	{
 		return PaymentTermLoaderAndSaver.builder()

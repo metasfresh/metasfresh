@@ -1,5 +1,6 @@
 package de.metas.pos.invoice_settlement.card;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -131,6 +133,20 @@ public class POSInvoiceCardSettlementRepository
 		record.setStatus(newStatus.getCode());
 		InterfaceWrapperHelper.save(record);
 		return true;
+	}
+
+	/**
+	 * @return all settlements of the invoice, whatever their status, oldest first
+	 */
+	public List<POSInvoiceCardSettlement> listByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_POS_InvoiceCardSettlement.class)
+				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.orderBy(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_POS_InvoiceCardSettlement_ID)
+				.create()
+				.stream()
+				.map(POSInvoiceCardSettlementRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Optional<POSInvoiceCardSettlement> findBlockingByInvoiceId(@NonNull final InvoiceId invoiceId)
