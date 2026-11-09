@@ -51,6 +51,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -616,14 +617,33 @@ public class POSInvoiceCardSettlementService
 				.orElse(false);
 	}
 
+	/**
+	 * @return the instant from which the cashier may release the settlement, see {@link #getReleaseAfter}
+	 */
+	@NonNull
+	public Instant getReleasableAt(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		return settlement.getCreated().plus(getReleaseAfter(settlement.getClientAndOrgId()));
+	}
+
+	/**
+	 * @return the document number of the settlement's invoice
+	 */
+	@NonNull
+	public String getInvoiceDocumentNo(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		return invoiceBL.getById(settlement.getInvoiceId()).getDocumentNo();
+	}
+
 	@Nullable
 	private POSInvoiceCardSettlementReleaseResult refuseIfTooEarly(@NonNull final POSInvoiceCardSettlement settlement)
 	{
-		final Duration releaseAfter = getReleaseAfter(settlement.getClientAndOrgId());
-		if (settlement.getCreated().plus(releaseAfter).isBefore(SystemTime.asInstant()))
+		if (getReleasableAt(settlement).isBefore(SystemTime.asInstant()))
 		{
 			return null;
 		}
+
+		final Duration releaseAfter = getReleaseAfter(settlement.getClientAndOrgId());
 
 		return POSInvoiceCardSettlementReleaseResult.builder()
 				.settlement(settlement)
@@ -678,7 +698,7 @@ public class POSInvoiceCardSettlementService
 	{
 		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(settlement.getClientAndOrgId()))
 		{
-			final String invoiceDocumentNo = invoiceBL.getById(settlement.getInvoiceId()).getDocumentNo();
+			final String invoiceDocumentNo = getInvoiceDocumentNo(settlement);
 			errorManager.createIssue(new AdempiereException(MSG_ReleasedAsAbandoned, String.valueOf(settlement.getId().getRepoId()), invoiceDocumentNo)
 					.setParameter("ReleasedBy_User_ID", cashierId.getRepoId())
 					.setRecord(settlement.getId().toRecordRef()));

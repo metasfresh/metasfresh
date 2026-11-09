@@ -18,6 +18,11 @@ public class JsonContext
 		return currencyRepository.getById(currencyId).getSymbol().translate(adLanguage);
 	}
 
+	public String getCurrencyCode(final CurrencyId currencyId)
+	{
+		return currencyRepository.getById(currencyId).getCurrencyCode().toThreeLetterCode();
+	}
+
 	public CurrencyPrecision getCurrencyPrecision(final CurrencyId currencyId)
 	{
 		return currencyRepository.getById(currencyId).getPrecision();

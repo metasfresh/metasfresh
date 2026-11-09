@@ -8,11 +8,15 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.costing.ChargeId;
 import de.metas.invoice.InvoiceId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentDetail;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentMethodSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlement;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
 import de.metas.pos.rest_api.json.JsonPOSOpenInvoice;
@@ -36,6 +40,8 @@ import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -437,6 +443,91 @@ class JsonSerializeDeserializeTest
 												.build()
 								))
 								.build())
+						.build()
+		);
+	}
+
+	private static JsonPOSInvoiceCardSettlement newJsonPOSInvoiceCardSettlement(final String status, final String allocatedAmount)
+	{
+		return JsonPOSInvoiceCardSettlement.builder()
+				.id(POSInvoiceCardSettlementId.ofRepoId(1))
+				.invoiceId(InvoiceId.ofRepoId(2))
+				.documentNo("INV-001")
+				.amount(new BigDecimal("75.50"))
+				.allocatedAmount(new BigDecimal(allocatedAmount))
+				.currencyCode("EUR")
+				.status(status)
+				.isAbandoned(false)
+				.releasableAt(Instant.parse("2026-09-24T10:18:30Z"))
+				.checkFailed(false)
+				.build();
+	}
+
+	@Test
+	void test_JsonPOSInvoiceCardSettlement() throws JsonProcessingException
+	{
+		testSerializeDeserialize(newJsonPOSInvoiceCardSettlement("PE", "0"));
+	}
+
+	/**
+	 * The till shows "booking pending" (AP), "booking failed, inform the back office" (BE), "booked as customer credit"
+	 * (CR, nothing allocated) and "invoice paid, remainder booked as customer credit" (CR, partly allocated) from the
+	 * status code and the allocated amount alone.
+	 */
+	@ParameterizedTest
+	@CsvSource({ "AP,0", "BE,0", "CR,0", "CR,50.00" })
+	void test_JsonPOSInvoiceCardSettlement_tillStates(final String status, final String allocatedAmount) throws JsonProcessingException
+	{
+		final JsonPOSInvoiceCardSettlement settlement = newJsonPOSInvoiceCardSettlement(status, allocatedAmount);
+		testSerializeDeserialize(settlement);
+
+		final String json = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(settlement);
+		assertThat(json).contains("\"status\":\"" + status + "\"");
+		assertThat(json).contains("\"isAbandoned\":false").doesNotContain("\"abandoned\"").contains("\"checkFailed\":false");
+		assertThat(json).contains("\"releasableAt\":\"2026-09-24T10:18:30Z\"");
+		assertThat(settlement.getAllocatedAmount()).isEqualByComparingTo(allocatedAmount);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceCardSettlementReleaseRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceCardSettlementReleaseRequest.builder()
+						.confirmNotCharged(true)
+						.expectedStatus("UN")
+						.build()
+		);
+		testSerializeDeserialize(
+				JsonPOSInvoiceCardSettlementReleaseRequest.builder()
+						.confirmNotCharged(false)
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceCardSettlementReleaseResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceCardSettlementReleaseResponse.builder()
+						.settlement(newJsonPOSInvoiceCardSettlement("PE", "0"))
+						.confirmationRequired(false)
+						.refusedMessage("The release is not yet allowed")
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSOpenInvoice_withBlockingSettlement() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSOpenInvoice.builder()
+						.invoiceId(InvoiceId.ofRepoId(2))
+						.documentNo("INV-001")
+						.bpartnerName("Customer Name")
+						.dateInvoiced(LocalDate.of(2026, 9, 24))
+						.grandTotal(new BigDecimal("100.00"))
+						.openAmt(new BigDecimal("75.50"))
+						.blockingCardSettlement(newJsonPOSInvoiceCardSettlement("UN", "0"))
 						.build()
 		);
 	}
