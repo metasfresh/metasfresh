@@ -124,7 +124,7 @@ public class JsonPOSExpectation
 	@Jacksonized
 	public static class JsonPOSAllocatedPaymentExpectation
 	{
-		/** {@code C_Payment.TenderType} code, e.g. {@code 'X'} for cash or {@code 'K'} for credit card. */
+		/** {@code C_Payment.TenderType} code, e.g. {@code 'X'} for cash or {@code 'C'} for credit card. */
 		@Nullable String tenderType;
 	}
 

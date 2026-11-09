@@ -175,7 +175,33 @@
       "search": "Suchen",
       "back": "Zurück",
       "cancel": "Abbrechen",
-      "close": "Schließen"
+      "close": "Schließen",
+      "payByCash": "Barzahlung",
+      "payByCard": "Kartenzahlung"
+    },
+    "customer": "Kunde",
+    "openAmt": "Offener Betrag",
+    "card": {
+      "waiting": "Warte auf Kartenterminal",
+      "unknown": "Ergebnis unbekannt — bitte Kartenterminal prüfen",
+      "failed": "Kartenzahlung nicht erfolgreich",
+      "bookingPending": "Mit Karte bezahlt – Buchung ausstehend",
+      "bookingFailed": "Mit Karte bezahlt – Buchung fehlgeschlagen, bitte Backoffice informieren",
+      "paid": "Rechnung %(docNo)s bezahlt",
+      "paidRemainderAsCustomerCredit": "Rechnung bezahlt – Restbetrag als Kundenguthaben gebucht, Backoffice informiert",
+      "bookedAsCustomerCredit": "Mit Karte bezahlt – als Kundenguthaben gebucht, Backoffice informiert",
+      "refunded": "Kartenzahlung erstattet",
+      "released": "Freigegeben",
+      "otherStatus": "Kartenzahlung: Status %(status)s",
+      "checkFailed": "SumUp nicht erreichbar – angezeigt ist der zuletzt bekannte Stand",
+      "releaseConfirmation": "Ich habe das Kartenterminal geprüft: Die Karte wurde nicht belastet",
+      "cardPaymentOpen": "Kartenzahlung offen",
+      "cardPaymentStillOpen": "Für diese Rechnung ist noch eine Kartenzahlung offen",
+      "actions": {
+        "release": "Kartenzahlung prüfen / freigeben",
+        "confirmRelease": "Bestätigen",
+        "cancelRelease": "Abbrechen"
+      }
     }
   }
 }

@@ -73,8 +73,8 @@ class AssertPOSExpectationsCommandTest
 	{
 		assertThatCode(() -> AssertPOSExpectationsCommand.assertAllocatedTenderTypes(
 				INVOICE_ID,
-				ImmutableList.of("K"),
-				ImmutableList.of(JsonPOSAllocatedPaymentExpectation.builder().tenderType("K").build())))
+				ImmutableList.of("C"),
+				ImmutableList.of(JsonPOSAllocatedPaymentExpectation.builder().tenderType("C").build())))
 				.doesNotThrowAnyException();
 	}
 
@@ -84,8 +84,8 @@ class AssertPOSExpectationsCommandTest
 		assertThatThrownBy(() -> AssertPOSExpectationsCommand.assertAllocatedTenderTypes(
 				INVOICE_ID,
 				ImmutableList.of("X"),
-				ImmutableList.of(JsonPOSAllocatedPaymentExpectation.builder().tenderType("K").build())))
-				.hasMessageContaining("tenderType=K");
+				ImmutableList.of(JsonPOSAllocatedPaymentExpectation.builder().tenderType("C").build())))
+				.hasMessageContaining("tenderType=C");
 	}
 
 	//

@@ -51,4 +51,24 @@ export const POSCashJournalModals = {
             await expect(cashRow.getByTestId('pos-cash-journal-summary-booked-amount')).toContainText(exactTextMatch(endingBalance));
         }
     }),
+
+    /**
+     * Asserts the booked total of one payment method in the closing summary, e.g. `CARD` (card payments, never in the
+     * drawer) or `CASH` (the drawer). `amount` is the rendered display string, e.g. `'16,07'` for a `de_DE` login.
+     */
+    expectPaymentMethodTotal: async ({ paymentMethod, amount }) => await test.step(`${NAME} - Expect ${paymentMethod} total ${amount}`, async () => {
+        await closingModalElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        const row = page.locator(`[data-testid="pos-cash-journal-summary-row"][data-payment-method="${paymentMethod}"]`);
+        await expect(row.getByTestId('pos-cash-journal-summary-booked-amount')).toContainText(exactTextMatch(amount), { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Closes the cash journal from the open closing panel (`closeButtonCaption` is the button's caption in the login
+     * language, e.g. `'Schließen'`). The till then requires a new journal to be opened.
+     */
+    closeJournal: async ({ closeButtonCaption }) => await test.step(`${NAME} - Close cash journal`, async () => {
+        await closingModalElement().getByRole('button', { name: closeButtonCaption, exact: true }).tap({ timeout: SLOW_ACTION_TIMEOUT });
+        await closingModalElement().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await page.getByTestId('pos-cash-journal-open-modal').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
 };
