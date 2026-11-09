@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1820310047L;
+	private static final long serialVersionUID = -1042660192L;
 
     /** Standard Constructor */
     public X_M_Shipper (final Properties ctx, final int M_Shipper_ID, @Nullable final String trxName)
@@ -121,6 +121,18 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+	}
+
+	@Override
+	public void setLeadTimeDays (final int LeadTimeDays)
+	{
+		set_Value (COLUMNNAME_LeadTimeDays, LeadTimeDays);
+	}
+
+	@Override
+	public int getLeadTimeDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LeadTimeDays);
 	}
 
 	@Override
