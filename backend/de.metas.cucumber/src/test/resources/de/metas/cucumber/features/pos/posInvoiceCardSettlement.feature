@@ -688,7 +688,7 @@ Feature: POS invoice card settlement
       | CARD_PAY | 2.50   |
 
   # ##########################################################################
-  # Booking errors after the reader approved (AC10). A non-retryable error ends the settlement as BOOKING_ERROR with
+  # Booking errors after the reader approved. A non-retryable error ends the settlement as BOOKING_ERROR with
   # exactly one AD_Issue for back office; the invoice stays blocked, so it cannot be paid twice. The error is forced by
   # closing the accounting period (the payment, resp. the allocation, cannot be completed in it).
   @from:cucumber
@@ -753,7 +753,8 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has 1 AD_Issue
 
   # A retryable error (here: the invoice row stays locked by another transaction beyond the booking's lock timeout) is
-  # retried by the next booking attempts without an AD_Issue; the 5th failed attempt ends the settlement as BOOKING_ERROR.
+  # retried by the background check of the next SumUp polls without an AD_Issue; the 5th failed attempt ends the
+  # settlement as BOOKING_ERROR.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
@@ -765,13 +766,13 @@ Feature: POS invoice card settlement
     And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
     And the invoice row of invoice invoice1 is locked by another transaction
 
-    When the SumUp status event of card settlement settlement1 is delivered 4 times one after the other
+    When metasfresh polls SumUp 4 times
 
     Then card settlement settlement1 has status APPROVED
     And card settlement settlement1 has 4 booking attempts
     And card settlement settlement1 has 0 AD_Issues
 
-    When the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    When metasfresh polls SumUp
 
     Then card settlement settlement1 has status BOOKING_ERROR
     And card settlement settlement1 has 5 booking attempts
@@ -825,7 +826,7 @@ Feature: POS invoice card settlement
     And nothing is booked for invoice invoice1 and its open amount is 16.07
 
   # ##########################################################################
-  # The till's cash journal was closed between the approval and the booking (AC4, AC10): the booking waits, blocking,
+  # The till's cash journal was closed between the approval and the booking: the booking waits, blocking,
   # with one AD_Issue however often it is retried, and completes on the next opened journal.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
@@ -847,14 +848,14 @@ Feature: POS invoice card settlement
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
 
-    When the SumUp status event of card settlement settlement1 is delivered 2 times one after the other
+    When metasfresh polls SumUp 2 times
 
     Then card settlement settlement1 has status APPROVED
     And card settlement settlement1 has 1 AD_Issue
     And card settlement settlement1 has 0 booking attempts
 
     When the cash journal of POS terminal till is opened with 50 by metasfresh
-    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And metasfresh polls SumUp
 
     Then card settlement settlement1 has status SUCCESSFUL
     And card settlement settlement1 has no error message
@@ -891,7 +892,7 @@ Feature: POS invoice card settlement
       | bankPayment  | invoice1     |
 
     When the cash journal of POS terminal till is opened with 50 by metasfresh
-    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And metasfresh polls SumUp
 
     Then card settlement settlement1 has status CREDIT_REFUND_PENDING
     And card settlement settlement1 has no error message
@@ -904,8 +905,9 @@ Feature: POS invoice card settlement
     And the closing summary of the cash journal of POS terminal till shows card total 16.07 and cash total 50
 
   # ##########################################################################
-  # The system stopped between creating the card payment and completing the booking (AC14): the settlement waits as
-  # APPROVED with its unallocated payment, still blocking, and the next booking attempt completes it with no second payment.
+  # The system stopped between creating the card payment and completing the booking: the settlement waits as
+  # APPROVED with its unallocated payment, still blocking, and the background check of the next SumUp poll completes it
+  # with no second payment.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
@@ -924,7 +926,7 @@ Feature: POS invoice card settlement
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
 
-    When the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    When metasfresh polls SumUp
 
     Then card settlement settlement1 has status SUCCESSFUL
     And the partner of invoice invoice1 has 1 payment
@@ -936,3 +938,164 @@ Feature: POS invoice card settlement
       | Type     | Amount |
       | CARD_PAY | 16.07  |
     And card settlement settlement1 has 0 AD_Issues
+
+  # ##########################################################################
+  # Reconcile without the till: the background check that runs in every SumUp poll books an approval although
+  # nobody reopens the dialog, also one whose status notification never reached the settlement.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC6_1
+  Scenario: The reader approves after the dialog was closed and nobody reopens it, so the next SumUp poll books the card payment
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 has status PENDING
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has payment cardPayment
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And card settlement settlement1 has 0 AD_Issues
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC16_1
+  Scenario: SumUp approved the card payment but no status notification reached the settlement, so the next SumUp poll books it
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And card settlement settlement1 has status PENDING
+
+    When metasfresh polls SumUp
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has payment cardPayment
+    And the payment of card settlement settlement1 belongs to the client and organization of POS terminal till
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And card settlement settlement1 has 0 AD_Issues
+
+  # A settlement whose checkout never got an answer has no SumUp transaction. Older than 150 s, it is an orphan: the
+  # background check sets it UNKNOWN, so it still blocks the invoice and can be released. A definite
+  # rejection of the checkout that still arrives later ends it as FAILED. The checkout is held by the stub, so the send is
+  # still in flight while the settlement ages.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC18_1
+  Scenario: A card settlement has no SumUp transaction for more than 150 s, so a SumUp poll sets it unknown, and the checkout rejected later fails it
+    Given POS terminal till is configured with SumUp and a default card reader
+    And SumUp API stub holds the next checkout
+    And card settlement settlement1 is being started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 149 seconds ago
+
+    When metasfresh polls SumUp
+
+    Then card settlement settlement1 has status PENDING
+
+    When card settlement settlement1 was created 151 seconds ago
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status UNKNOWN
+    And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
+      | C_Invoice_ID | CashTenderedAmount |
+      | invoice1     | 16.07              |
+
+    When SumUp API stub answers the held checkout with HTTP 4xx
+
+    Then card settlement settlement1 has status FAILED
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+
+  # The till checks a settlement: the check asks SumUp for the current status first; if SumUp cannot be asked,
+  # the status stays as it was and the till is told that the check failed.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC19_1
+  Scenario: The SumUp status lookup fails when the till checks a card settlement, so its status is unchanged and the check reports the failure
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And SumUp API stub fails the status lookup
+
+    When card settlement settlement1 is checked
+
+    Then the check of card settlement settlement1 returned status PENDING with checkFailed true
+    And card settlement settlement1 has status PENDING
+    And the SumUp transaction of card settlement settlement1 has status PENDING
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+
+    When SumUp API stub answers the status lookup again
+    And card settlement settlement1 is checked
+
+    Then the check of card settlement settlement1 returned status SUCCESSFUL with checkFailed false
+    And card settlement settlement1 has payment cardPayment
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+
+  # The background check handles every settlement on its own: the booking of one settlement fails (its invoice row is
+  # locked by another transaction beyond the booking's lock timeout), and another settlement is still booked in the
+  # same poll; the next poll books the first one.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SWEEP1
+  Scenario: The booking of one approved card payment fails in a SumUp poll, and another approved card payment is still booked in the same poll
+    Given POS terminal till is configured with SumUp and a default card reader
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | invoice2   | invoiceCustomer | 2026-09-24   | Spot                     | true    | EUR           | term1000         |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoice2L1 | invoice2     | product1     | 1 PCE       |
+      | invoice2L2 | invoice2     | product2     | 1 PCE       |
+    And the invoice identified by invoice2 is completed
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement2 is started for invoice invoice2 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And SumUp API stub reports transaction of card settlement settlement2 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement2 is set to SUCCESSFUL locally without a status event
+    And the invoice row of invoice invoice1 is locked by another transaction
+
+    When metasfresh polls SumUp
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has 1 booking attempt
+    And card settlement settlement2 has status SUCCESSFUL
+    And the card payment of card settlement settlement2 is allocated with 16.07 to its invoice
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement2
+
+    When the other transaction releases its invoice lock
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+      | invoice2     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+      | CARD_PAY | 16.07  |

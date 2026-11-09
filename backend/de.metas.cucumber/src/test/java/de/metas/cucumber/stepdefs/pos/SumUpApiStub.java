@@ -25,7 +25,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * In-process stand-in for the SumUp REST API, for cucumber. A JDK {@link HttpServer} on an ephemeral port; the base
@@ -33,7 +35,7 @@ import java.util.concurrent.Executors;
  * <p>
  * Endpoints (all below {@code /v0.1}):
  * <ul>
- *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}</li>
+ *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}. A checkout can be held ({@link #holdNextCheckout()}) and answered later ({@link #answerHeldCheckout})</li>
  *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure; an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 204 or the programmed 4xx</li>
  * </ul>
@@ -79,6 +81,9 @@ public final class SumUpApiStub
 	private static CheckoutBehavior nextCheckoutBehavior = CheckoutBehavior.SUCCESS;
 	private static boolean failStatusLookup;
 	private static boolean terminateFails;
+	// set while the next checkout is to be held; the held request waits until the latch is counted down
+	@Nullable private static CountDownLatch heldCheckoutRelease;
+	@Nullable private static CountDownLatch heldCheckoutReceived;
 	private static final List<ReceivedCheckout> receivedCheckouts = new ArrayList<>();
 	private static final Map<String, TransactionState> transactionsByClientTransactionId = new LinkedHashMap<>();
 
@@ -124,6 +129,7 @@ public final class SumUpApiStub
 			nextCheckoutBehavior = CheckoutBehavior.SUCCESS;
 			failStatusLookup = false;
 			terminateFails = false;
+			releaseHeldCheckout();
 			receivedCheckouts.clear();
 			transactionsByClientTransactionId.clear();
 		}
@@ -181,6 +187,61 @@ public final class SumUpApiStub
 		}
 	}
 
+	/**
+	 * The next checkout request is not answered until {@link #answerHeldCheckout} is called, as when the reader
+	 * request is slow; meanwhile the caller's send is still in flight.
+	 */
+	public static void holdNextCheckout()
+	{
+		synchronized (lock)
+		{
+			heldCheckoutRelease = new CountDownLatch(1);
+			heldCheckoutReceived = new CountDownLatch(1);
+		}
+	}
+
+	/**
+	 * Waits until the held checkout request has arrived, then answers it per the given behavior.
+	 */
+	public static void answerHeldCheckout(@NonNull final CheckoutBehavior behavior) throws InterruptedException
+	{
+		final CountDownLatch received;
+		synchronized (lock)
+		{
+			received = heldCheckoutReceived;
+		}
+		if (received == null)
+		{
+			throw new IllegalStateException("No checkout is held");
+		}
+		if (!received.await(60, TimeUnit.SECONDS))
+		{
+			throw new IllegalStateException("The held checkout request did not arrive within 60 s");
+		}
+
+		synchronized (lock)
+		{
+			nextCheckoutBehavior = behavior;
+			releaseHeldCheckout();
+		}
+	}
+
+	/**
+	 * Lets a held checkout go on (answered per the programmed behavior) and stops holding.
+	 */
+	public static void releaseHeldCheckout()
+	{
+		synchronized (lock)
+		{
+			if (heldCheckoutRelease != null)
+			{
+				heldCheckoutRelease.countDown();
+			}
+			heldCheckoutRelease = null;
+			heldCheckoutReceived = null;
+		}
+	}
+
 	public static List<ReceivedCheckout> getReceivedCheckouts()
 	{
 		synchronized (lock)
@@ -225,6 +286,34 @@ public final class SumUpApiStub
 		}
 	}
 
+	private static void awaitReleaseIfHeld()
+	{
+		final CountDownLatch release;
+		synchronized (lock)
+		{
+			release = heldCheckoutRelease;
+			// only the next checkout is held, later ones are answered at once
+			if (release == null || heldCheckoutReceived == null || heldCheckoutReceived.getCount() == 0)
+			{
+				return;
+			}
+			heldCheckoutReceived.countDown();
+		}
+
+		try
+		{
+			if (!release.await(60, TimeUnit.SECONDS))
+			{
+				throw new IllegalStateException("The held checkout was not answered within 60 s");
+			}
+		}
+		catch (final InterruptedException ex)
+		{
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException("Interrupted while holding the checkout", ex);
+		}
+	}
+
 	private static void handleCheckout(final HttpExchange exchange, final String merchantCode, final String readerId) throws IOException
 	{
 		final JsonNode body = jsonMapper.readTree(readBody(exchange));
@@ -232,6 +321,8 @@ public final class SumUpApiStub
 		final int minorUnit = totalAmount.get("minor_unit").asInt();
 		final BigDecimal amount = BigDecimal.valueOf(totalAmount.get("value").asLong(), minorUnit);
 		final String currency = totalAmount.get("currency").asText();
+
+		awaitReleaseIfHeld();
 
 		final CheckoutBehavior behavior;
 		final String clientTransactionId = UUID.randomUUID().toString();

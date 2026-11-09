@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.sumup.SumUpTransactionId;
@@ -202,6 +203,7 @@ public class POSInvoiceCardSettlementRepository
 	{
 		return POSInvoiceCardSettlement.builder()
 				.id(POSInvoiceCardSettlementId.ofRepoId(record.getC_POS_InvoiceCardSettlement_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.posTerminalId(POSTerminalId.ofRepoId(record.getC_POS_ID()))
 				.invoiceId(InvoiceId.ofRepoId(record.getC_Invoice_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))

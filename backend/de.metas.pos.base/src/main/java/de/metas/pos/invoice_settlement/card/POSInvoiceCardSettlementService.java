@@ -1,6 +1,7 @@
 package de.metas.pos.invoice_settlement.card;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
@@ -9,6 +10,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.pos.POSPaymentProcessingStatus;
@@ -26,11 +28,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -48,6 +52,12 @@ public class POSInvoiceCardSettlementService
 	private static final String BLOCKING_INDEX_NAME = "c_pos_invoicecardsettlement_blocking_uq";
 	private static final AdMessageKey MSG_CardPaymentStillOpen = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen");
 
+	/**
+	 * A PENDING settlement without a SumUp transaction that is older than this is an orphan: its checkout got no answer
+	 * (the system stopped between saving and sending), since a send takes at most 2 × 60 s.
+	 */
+	private static final Duration ORPHAN_AGE = Duration.ofSeconds(150);
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
@@ -57,6 +67,7 @@ public class POSInvoiceCardSettlementService
 	@NonNull private final POSPaymentProcessorService paymentProcessorService;
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final POSInvoiceCardSettlementBooking booking;
+	@NonNull private final SumUpService sumUpService;
 
 	@NonNull
 	public POSInvoiceCardSettlement getById(@NonNull final POSInvoiceCardSettlementId id)
@@ -239,12 +250,11 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * Applies a status change of the settlement's SumUp transaction (as stored locally): declined / cancelled → FAILED /
-	 * CANCELLED, approved → booking ({@link POSInvoiceCardSettlementBooking#book}, which handles its own booking errors).
+	 * Applies a status change of the settlement's SumUp transaction (as stored locally), see {@link #reconcileLocally}.
 	 * Safe to call any number of times, also concurrently.
 	 * <p>
-	 * Never throws: any other failure is logged and recorded as an AD_Issue of the settlement, whose status stays as it
-	 * was, so the caller (the SumUp event dispatcher) still notifies its other listeners.
+	 * Never throws: any failure is logged and recorded as an AD_Issue of the settlement, whose status stays as it was, so
+	 * the caller (the SumUp event dispatcher) still notifies its other listeners.
 	 */
 	public void onSumUpTransactionChanged(@NonNull final POSInvoiceCardSettlementId id)
 	{
@@ -252,7 +262,7 @@ public class POSInvoiceCardSettlementService
 
 		try
 		{
-			applySumUpTransactionStatus(id);
+			reconcileLocally(id);
 		}
 		catch (final Exception ex)
 		{
@@ -261,16 +271,81 @@ public class POSInvoiceCardSettlementService
 		}
 	}
 
-	private void applySumUpTransactionStatus(@NonNull final POSInvoiceCardSettlementId id)
+	/**
+	 * The till's check (AC12): refreshes the settlement's SumUp transaction from SumUp, if it has one, and then
+	 * reconciles the settlement with it ({@link #reconcileLocally}). A failed SumUp lookup leaves the transaction as it
+	 * was ({@link SumUpService#updateTransactionFromRemote} records the error on it); the settlement is then reconciled
+	 * with the last known state and {@code checkFailed} is set.
+	 */
+	@NonNull
+	public POSInvoiceCardSettlementCheckResult check(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		final boolean checkFailed = !refreshSumUpTransactionFromRemote(id);
+		reconcileLocally(id);
+
+		return POSInvoiceCardSettlementCheckResult.builder()
+				.settlement(repository.getById(id))
+				.checkFailed(checkFailed)
+				.build();
+	}
+
+	/**
+	 * @return false if SumUp could not be asked (the lookup failed, or the refresh failed before it); true if the
+	 * transaction was refreshed, or if the settlement has no SumUp transaction (nothing to ask SumUp about)
+	 */
+	private boolean refreshSumUpTransactionFromRemote(@NonNull final POSInvoiceCardSettlementId id)
 	{
 		final SumUpTransaction sumUpTrx = booking.findSumUpTransaction(id).orElse(null);
 		if (sumUpTrx == null)
 		{
-			return;
+			return true;
 		}
 
-		final SumUpTransactionStatus sumUpStatus = sumUpTrx.getStatus();
-		if (SumUpTransactionStatus.FAILED.equals(sumUpStatus))
+		try
+		{
+			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId());
+		}
+		catch (final Exception ex)
+		{
+			// the SumUp lookup errors are recorded on the transaction by the call itself; this is a failure around it
+			// (e.g. no active SumUp config, so no client could be built): the transaction stays as it was
+			// no AD_Issue: the till may check again and again while the config stays broken; it is told checkFailed
+			logger.warn("Could not refresh the SumUp transaction of card settlement {}", id, ex);
+			return false;
+		}
+
+		final SumUpTransaction sumUpTrxRefreshed = booking.findSumUpTransaction(id).orElseThrow(() -> new AdempiereException("SumUp transaction disappeared")
+				.setParameter("SumUpClientTransactionId", sumUpTrx.getClientTransactionId())
+				.setRecord(id.toRecordRef()));
+		final SumUpTransaction.LastSync lastSync = sumUpTrxRefreshed.getLastSync();
+		return lastSync == null || lastSync.getStatus() != SumUpTransaction.LastSyncStatus.Error;
+	}
+
+	/**
+	 * Reconciles the settlement with its SumUp transaction as stored locally (no SumUp call); used by the SumUp status
+	 * events, the till's check and the background sweep:
+	 * <ul>
+	 * <li>approved at SumUp, or the booking was not finished (APPROVED) → booking ({@link POSInvoiceCardSettlementBooking#book},
+	 * which handles its own booking errors);</li>
+	 * <li>declined / cancelled at SumUp → FAILED / CANCELLED, only from PENDING / UNKNOWN;</li>
+	 * <li>no SumUp transaction → the orphan rule ({@link #markUnknownIfOrphan}).</li>
+	 * </ul>
+	 * Each status change runs in its own transaction, so this must be called outside any transaction (asserted).
+	 */
+	public void reconcileLocally(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		final SumUpTransaction sumUpTrx = booking.findSumUpTransaction(id).orElse(null);
+		final SumUpTransactionStatus sumUpStatus = sumUpTrx != null ? sumUpTrx.getStatus() : null;
+		if (SumUpTransactionStatus.SUCCESSFUL.equals(sumUpStatus)
+				|| repository.getById(id).getStatus() == POSInvoiceCardSettlementStatus.APPROVED)
+		{
+			booking.book(id);
+		}
+		else if (SumUpTransactionStatus.FAILED.equals(sumUpStatus))
 		{
 			applyRejectedBySumUp(id, POSInvoiceCardSettlementStatus.FAILED);
 		}
@@ -278,10 +353,35 @@ public class POSInvoiceCardSettlementService
 		{
 			applyRejectedBySumUp(id, POSInvoiceCardSettlementStatus.CANCELLED);
 		}
-		else if (SumUpTransactionStatus.SUCCESSFUL.equals(sumUpStatus))
+		else if (sumUpTrx == null)
 		{
-			booking.book(id);
+			markUnknownIfOrphan(id);
 		}
+	}
+
+	/**
+	 * Orphan rule, under the settlement lock: a PENDING settlement without a SumUp transaction that was created more than
+	 * {@link #ORPHAN_AGE} ago → UNKNOWN (still blocking, and releasable). A definite rejection of its checkout that still
+	 * arrives later moves it to FAILED ({@link #applySendResult}).
+	 */
+	private void markUnknownIfOrphan(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		runInNewTrxUnlessLocked(id, () -> {
+			final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
+			if (settlement.getStatus() != POSInvoiceCardSettlementStatus.PENDING
+					|| booking.getLinkedOrResolvedSumUpTransactionId(settlement) != null
+					|| !isOlderThanOrphanAge(settlement))
+			{
+				return;
+			}
+
+			repository.save(settlement.toBuilder().status(POSInvoiceCardSettlementStatus.UNKNOWN).build());
+		});
+	}
+
+	private static boolean isOlderThanOrphanAge(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		return settlement.getCreated().plus(ORPHAN_AGE).isBefore(SystemTime.asInstant());
 	}
 
 	/**
@@ -291,7 +391,7 @@ public class POSInvoiceCardSettlementService
 			@NonNull final POSInvoiceCardSettlementId id,
 			@NonNull final POSInvoiceCardSettlementStatus newStatus)
 	{
-		trxManager.runInNewTrx(() -> {
+		runInNewTrxUnlessLocked(id, () -> {
 			final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
 			if (settlement.getStatus() != POSInvoiceCardSettlementStatus.PENDING
 					&& settlement.getStatus() != POSInvoiceCardSettlementStatus.UNKNOWN)
@@ -304,6 +404,30 @@ public class POSInvoiceCardSettlementService
 					.sumUpTransactionId(booking.getLinkedOrResolvedSumUpTransactionId(settlement))
 					.build());
 		});
+	}
+
+	/**
+	 * Runs a status change in a new transaction with the booking lock timeout. If a needed row lock is not got in time
+	 * (another transaction holds it), the settlement is left as it is and the next reconcile (the next sweep cycle)
+	 * tries again; any other error is thrown.
+	 */
+	private void runInNewTrxUnlessLocked(@NonNull final POSInvoiceCardSettlementId id, @NonNull final Runnable statusChange)
+	{
+		try
+		{
+			trxManager.runInNewTrx(() -> {
+				booking.setLockTimeout();
+				statusChange.run();
+			});
+		}
+		catch (final Exception ex)
+		{
+			if (DBException.findSQLExceptionInCauseChainOrNull(ex, DBException::isLockNotAvailable) == null)
+			{
+				throw ex;
+			}
+			logger.info("Card settlement {} is locked by another transaction; leaving it for the next check", id, ex);
+		}
 	}
 
 	@Value

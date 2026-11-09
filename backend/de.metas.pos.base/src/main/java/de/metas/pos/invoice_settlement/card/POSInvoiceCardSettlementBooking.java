@@ -224,9 +224,11 @@ public class POSInvoiceCardSettlementBooking
 	}
 
 	/**
-	 * Lets the current booking transaction wait at most {@link #SYSCONFIG_LockTimeoutMillis} for a row lock.
+	 * Lets the current transaction wait at most {@link #SYSCONFIG_LockTimeoutMillis} for a row lock. Used by the booking
+	 * transactions and by the other status changes of the background sweep, so that a lock held long by another
+	 * transaction never stalls the SumUp poller.
 	 */
-	private void setLockTimeout()
+	void setLockTimeout()
 	{
 		final int lockTimeoutMillis = sysConfigBL.getIntValue(SYSCONFIG_LockTimeoutMillis, DEFAULT_LockTimeoutMillis);
 		if (lockTimeoutMillis > 0)

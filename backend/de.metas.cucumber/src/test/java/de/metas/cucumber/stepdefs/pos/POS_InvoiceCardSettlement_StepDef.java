@@ -44,6 +44,7 @@ import de.metas.pos.POSTerminalId;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementBooking;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementCheckResult;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementService;
@@ -79,6 +80,7 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_POS;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_AD_User_NotificationGroup;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -136,6 +138,12 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	// outcomes of the last concurrent start; a step-def instance lives for one scenario
 	private final List<StartOutcome> concurrentStartOutcomes = new ArrayList<>();
+
+	// a start whose checkout the stub holds, see startSettlementInBackground
+	@Nullable private ExecutorService backgroundStartExecutor;
+	@Nullable private Future<POSInvoiceCardSettlement> backgroundStart;
+
+	@Nullable private POSInvoiceCardSettlementCheckResult lastCheckResult;
 
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
 	private SumUpService sumUpService() {return SpringContextHolder.instance.getBean(SumUpService.class);}
@@ -311,23 +319,24 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^SumUp API stub answers the next checkout with (SUCCESS|HTTP 4xx|HTTP 5xx|CONNECTION_RESET)$")
 	public void stubAnswersNextCheckout(@NonNull final String behavior)
 	{
-		final SumUpApiStub.CheckoutBehavior checkoutBehavior;
+		SumUpApiStub.setNextCheckoutBehavior(toCheckoutBehavior(behavior));
+	}
+
+	private static SumUpApiStub.CheckoutBehavior toCheckoutBehavior(@NonNull final String behavior)
+	{
 		switch (behavior)
 		{
 			case "SUCCESS":
-				checkoutBehavior = SumUpApiStub.CheckoutBehavior.SUCCESS;
-				break;
+				return SumUpApiStub.CheckoutBehavior.SUCCESS;
 			case "HTTP 4xx":
-				checkoutBehavior = SumUpApiStub.CheckoutBehavior.HTTP_4XX;
-				break;
+				return SumUpApiStub.CheckoutBehavior.HTTP_4XX;
 			case "HTTP 5xx":
-				checkoutBehavior = SumUpApiStub.CheckoutBehavior.HTTP_5XX;
-				break;
+				return SumUpApiStub.CheckoutBehavior.HTTP_5XX;
+			case "CONNECTION_RESET":
+				return SumUpApiStub.CheckoutBehavior.CONNECTION_RESET;
 			default:
-				checkoutBehavior = SumUpApiStub.CheckoutBehavior.CONNECTION_RESET;
-				break;
+				throw new IllegalArgumentException("Unknown checkout behavior: " + behavior);
 		}
-		SumUpApiStub.setNextCheckoutBehavior(checkoutBehavior);
 	}
 
 	/**
@@ -383,23 +392,32 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
-	 * Runs one poller cycle: updates the PENDING SumUp transactions from the stub, then calls every
-	 * {@link SumUpPollerCycleListener}. SumUp status events are handled asynchronously; the step returns only after
-	 * every event the cycle fired was handled (see {@link SumUpEventsTestProbe#waitUntilFiredEventsAreHandled}).
+	 * Runs one poller cycle, or the given number of cycles one after the other: updates the PENDING SumUp transactions
+	 * from the stub, then calls every {@link SumUpPollerCycleListener} (the card settlement sweep) in an empty context,
+	 * as the poller's own thread has no login context. SumUp status events are handled asynchronously; each cycle
+	 * returns only after every event it fired was handled (see {@link SumUpEventsTestProbe#waitUntilFiredEventsAreHandled}).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh polls SumUp
+	 * And metasfresh polls SumUp 4 times
 	 * </pre>
 	 */
-	@And("^metasfresh polls SumUp$")
-	public void pollSumUp() throws InterruptedException
+	@And("^metasfresh polls SumUp(?: (\\d+) times)?$")
+	public void pollSumUp(@Nullable final String times) throws InterruptedException
 	{
-		sumUpService().bulkUpdatePendingTransactions(false);
-		SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class)
-				.forEach(SumUpPollerCycleListener::afterPollCycle);
-		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
+		final int cycles = times != null ? Integer.parseInt(times) : 1;
+		for (int i = 0; i < cycles; i++)
+		{
+			sumUpService().bulkUpdatePendingTransactions(false);
+			try (final IAutoCloseable ignored = Env.switchContext(Env.newTemporaryCtx()))
+			{
+				SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class)
+						.forEach(SumUpPollerCycleListener::afterPollCycle);
+			}
+			SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
+		}
 	}
 
 	/**
@@ -1113,6 +1131,190 @@ public class POS_InvoiceCardSettlement_StepDef
 				.orElseThrow(() -> new AdempiereException("No open cash journal for POS terminal " + terminalIdentifier));
 	}
 
+
+	/**
+	 * Asserts that the settlement's card payment was created in the client and organization of the POS terminal (and not
+	 * in the context of whatever thread booked it).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the payment of card settlement settlement1 belongs to the client and organization of POS terminal till
+	 * </pre>
+	 */
+	@And("^the payment of card settlement (\\S+) belongs to the client and organization of POS terminal (\\S+)$")
+	public void assertPaymentClientAndOrg(@NonNull final String settlementIdentifier, @NonNull final String terminalIdentifier)
+	{
+		final POSInvoiceCardSettlement settlement = loadSettlement(settlementIdentifier);
+		assertThat(settlement.getPaymentId()).as("C_Payment_ID of card settlement %s", settlementIdentifier).isNotNull();
+		final I_C_Payment payment = InterfaceWrapperHelper.load(settlement.getPaymentId(), I_C_Payment.class);
+		final I_C_POS posRecord = posTable.get(StepDefDataIdentifier.ofString(terminalIdentifier));
+		InterfaceWrapperHelper.refresh(posRecord);
+
+		assertThat(payment.getAD_Client_ID()).as("AD_Client_ID of the card payment").isEqualTo(posRecord.getAD_Client_ID());
+		assertThat(payment.getAD_Org_ID()).as("AD_Org_ID of the card payment").isEqualTo(posRecord.getAD_Org_ID());
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And SumUp API stub answers the status lookup again
+	 * </pre>
+	 */
+	@And("^SumUp API stub answers the status lookup again$")
+	public void stubAnswersStatusLookupAgain()
+	{
+		SumUpApiStub.setFailStatusLookup(false);
+	}
+
+	/**
+	 * The stub does not answer the next checkout until {@code SumUp API stub answers the held checkout with ...}, so the
+	 * send of a settlement started meanwhile stays in flight.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And SumUp API stub holds the next checkout
+	 * </pre>
+	 */
+	@And("^SumUp API stub holds the next checkout$")
+	public void stubHoldsNextCheckout()
+	{
+		SumUpApiStub.holdNextCheckout();
+	}
+
+	/**
+	 * Starts a card settlement as the till does ({@link POSInvoiceCardSettlementService#start}), but on a separate thread,
+	 * because its checkout is held by the stub; returns as soon as the settlement exists (status PENDING, send in flight)
+	 * and registers it under the given identifier. The start completes with
+	 * {@code SumUp API stub answers the held checkout with ...}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When card settlement settlement1 is being started for invoice invoice1 at POS terminal till by cashier metasfresh
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) is being started for invoice (\\S+) at POS terminal (\\S+) by cashier (\\S+)$")
+	public void startSettlementInBackground(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String terminalIdentifier,
+			@NonNull final String cashierLogin) throws InterruptedException
+	{
+		assertThat(backgroundStart).as("a background start is already running").isNull();
+		final POSInvoiceCardSettlementStartRequest request = toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin);
+		final long countBefore = countSettlements(request.getInvoiceId());
+
+		final Properties ctx = Env.getCtx();
+		backgroundStartExecutor = Executors.newSingleThreadExecutor();
+		backgroundStart = backgroundStartExecutor.submit(() -> {
+			try (final IAutoCloseable ignored = Env.switchContext(ctx))
+			{
+				return settlementService().start(request);
+			}
+		});
+
+		final long deadline = System.currentTimeMillis() + 30_000;
+		while (countSettlements(request.getInvoiceId()) <= countBefore)
+		{
+			assertThat(System.currentTimeMillis()).as("the started card settlement was not created within 30 s").isLessThan(deadline);
+			assertThat(backgroundStart.isDone()).as("the card settlement start ended before the settlement was created").isFalse();
+			Thread.sleep(100);
+		}
+
+		final I_C_POS_InvoiceCardSettlement record = queryBL.createQueryBuilder(I_C_POS_InvoiceCardSettlement.class)
+				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_Invoice_ID, request.getInvoiceId())
+				.orderByDescending(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_POS_InvoiceCardSettlement_ID)
+				.create()
+				.first(I_C_POS_InvoiceCardSettlement.class);
+		settlementTable.putOrReplace(StepDefDataIdentifier.ofString(settlementIdentifier), record);
+	}
+
+	/**
+	 * Answers the checkout the stub holds, then waits until the card settlement start that sent it has applied the
+	 * answer.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When SumUp API stub answers the held checkout with HTTP 4xx
+	 * </pre>
+	 */
+	@And("^SumUp API stub answers the held checkout with (SUCCESS|HTTP 4xx|HTTP 5xx|CONNECTION_RESET)$")
+	public void stubAnswersHeldCheckout(@NonNull final String behavior) throws Exception
+	{
+		final Future<POSInvoiceCardSettlement> start = backgroundStart;
+		assertThat(start).as("no card settlement is being started").isNotNull();
+
+		SumUpApiStub.answerHeldCheckout(toCheckoutBehavior(behavior));
+		try
+		{
+			start.get(120, TimeUnit.SECONDS);
+		}
+		finally
+		{
+			stopBackgroundStart();
+		}
+	}
+
+	/**
+	 * Checks the settlement as the till does ({@link POSInvoiceCardSettlementService#check}); the result is asserted by
+	 * {@link #assertCheckResult}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When card settlement settlement1 is checked
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) is checked$")
+	public void checkSettlement(@NonNull final String settlementIdentifier) throws InterruptedException
+	{
+		lastCheckResult = settlementService().check(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
+	}
+
+	/**
+	 * Asserts the result of the last {@code card settlement ... is checked}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the check of card settlement settlement1 returned status PENDING with checkFailed true
+	 * </pre>
+	 */
+	@And("^the check of card settlement (\\S+) returned status ([A-Z_]+) with checkFailed (true|false)$")
+	public void assertCheckResult(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String expectedStatus,
+			@NonNull final String expectedCheckFailed)
+	{
+		final POSInvoiceCardSettlementCheckResult result = lastCheckResult;
+		assertThat(result).as("result of the last check").isNotNull();
+		assertThat(result.getSettlement().getId()).as("checked card settlement").isEqualTo(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
+		assertThat(result.getSettlement().getStatus()).as("status returned by the check").isEqualTo(parseStatus(expectedStatus));
+		assertThat(result.isCheckFailed()).as("checkFailed returned by the check").isEqualTo(Boolean.parseBoolean(expectedCheckFailed));
+	}
+
+	/**
+	 * Ends a background start the scenario left running, releasing its held checkout.
+	 */
+	@After
+	public void stopBackgroundStart()
+	{
+		final ExecutorService executor = backgroundStartExecutor;
+		backgroundStart = null;
+		backgroundStartExecutor = null;
+		if (executor != null)
+		{
+			SumUpApiStub.releaseHeldCheckout();
+			executor.shutdown();
+		}
+	}
 
 	/**
 	 * Releases what the scenario left behind for the next ones: an invoice row lock still held by "another user", and

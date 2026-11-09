@@ -3,6 +3,7 @@ package de.metas.pos.invoice_settlement.card;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.sumup.SumUpTransactionId;
 import de.metas.pos.POSTerminalId;
@@ -21,6 +22,7 @@ public class POSInvoiceCardSettlement
 	private static final int ERRORMSG_MAX_LENGTH = 4000;
 
 	@NonNull POSInvoiceCardSettlementId id;
+	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull POSTerminalId posTerminalId;
 	@NonNull InvoiceId invoiceId;
 	@NonNull BPartnerId bpartnerId;
