@@ -84,6 +84,8 @@ public class M_Shipper_StepDef
 	 *     7=Low, 9=Minor); left empty (the AD column default) when omitted<br>
 	 *   <b>DocumentCopies</b> — (optional) number of delivery-note copies printed for shipments with this
 	 *     shipper; 0 means "print nothing"; left NULL (fall back to the partner / doc-type copies) when omitted<br>
+	 *   <b>LeadTimeDays</b> — (optional) the shipper's lead time in working days (Mon-Fri); opts the shipper's
+	 *     orders into the lead-time preparation-date calc; left NULL (no calc) when omitted<br>
 	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -142,6 +144,9 @@ public class M_Shipper_StepDef
 
 		row.getAsOptionalBigDecimal(I_M_Shipper.COLUMNNAME_DocumentCopies)
 				.ifPresent(record::setDocumentCopies);
+
+		row.getAsOptionalInt(I_M_Shipper.COLUMNNAME_LeadTimeDays)
+				.ifPresent(record::setLeadTimeDays);
 
 		InterfaceWrapperHelper.save(record);
 

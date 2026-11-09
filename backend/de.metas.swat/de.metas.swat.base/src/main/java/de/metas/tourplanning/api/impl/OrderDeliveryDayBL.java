@@ -10,8 +10,11 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
+import de.metas.tourplanning.api.WorkdayCalculator;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -23,12 +26,14 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -44,6 +49,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
@@ -63,6 +69,17 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
+		final ZoneId timeZone = orderBL.getTimeZone(order);
+
+		// Shipper lead time (field presence = opt-in): PreparationDate is derived backward from DatePromised.
+		// Sales orders only: purchase orders keep their existing transport-days / offset path.
+		// Placed before the location guard: it needs neither tour nor C_BPartner_Location_ID.
+		final Integer leadTimeDays = order.isSOTrx() ? getLeadTimeDaysOrNull(order) : null;
+		if (leadTimeDays != null)
+		{
+			return setPreparationDateFromLeadTime(order, leadTimeDays, timeZone);
+		}
+
 		//
 		// Extract parameters from order
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
@@ -71,7 +88,6 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
-		final ZoneId timeZone = Services.get(IOrderBL.class).getTimeZone(order);
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
 		if (datePromised == null)
 		{
@@ -85,6 +101,45 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		order.setM_Tour_ID(TourId.toRepoId(preparationDateAndTour.getTourId()));
 
 		return true;
+	}
+
+	/**
+	 * Sets {@code PreparationDate = workday(DatePromised, -leadTimeDays + 1)} (Mon-Fri business days).
+	 * An order with {@code IsFixedPreparationDate='Y'} keeps its manually set PreparationDate.
+	 */
+	private boolean setPreparationDateFromLeadTime(@NonNull final I_C_Order order, final int leadTimeDays, @NonNull final ZoneId timeZone)
+	{
+		if (order.isFixedPreparationDate())
+		{
+			return false;
+		}
+
+		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
+		if (datePromised == null)
+		{
+			return false;
+		}
+
+		final LocalDate preparationDate = WorkdayCalculator.workday(datePromised.toLocalDate(), -leadTimeDays + 1);
+		order.setPreparationDate(TimeUtil.asTimestamp(preparationDate.atStartOfDay(timeZone)));
+		return true;
+	}
+
+	/**
+	 * @return the order's shipper's {@code LeadTimeDays}, or {@code null} when the order has no shipper or the shipper's
+	 * lead time is NULL. NULL (opt-out) must stay distinguishable from 0, which {@code I_M_Shipper#getLeadTimeDays()} cannot do.
+	 */
+	@Nullable
+	private Integer getLeadTimeDaysOrNull(@NonNull final I_C_Order order)
+	{
+		final int shipperId = order.getM_Shipper_ID();
+		if (shipperId <= 0)
+		{
+			return null;
+		}
+
+		final I_M_Shipper shipper = shipperDAO.getById(ShipperId.ofRepoId(shipperId));
+		return InterfaceWrapperHelper.getValueOrNull(shipper, I_M_Shipper.COLUMNNAME_LeadTimeDays);
 	}
 
 	// Derive the preparation date from a (per-line) deliveryDate using the same tour / no-tour-fallback / offset /
