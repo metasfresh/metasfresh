@@ -136,7 +136,7 @@ public class M_Product_StepDef
 	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
 	 *         compensation-group schema.</li>
 	 *     <li>{@code GroupCompensationAmtType} (optional) — {@code P} (percent) or {@code Q} (fixed amount) of a compensation-group discount product.</li>
-	 *     <li>{@code GroupCompensationType} (optional) — {@code D} (discount), {@code S} (surcharge) or {@code O} (other) of a compensation-group product.</li>
+	 *     <li>{@code GroupCompensationType} (optional) — {@code D} (discount) or {@code S} (surcharge) of a compensation-group product.</li>
 	 *      <li>{@code ProductLifeCycleStatus} — (optional) BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}</li>
 	 * </ul>
 	 * <pre>{@code
