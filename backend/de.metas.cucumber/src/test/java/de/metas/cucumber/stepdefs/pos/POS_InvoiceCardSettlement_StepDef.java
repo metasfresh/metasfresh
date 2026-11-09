@@ -8,6 +8,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
@@ -42,6 +43,7 @@ import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementBooking;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementService;
@@ -67,9 +69,15 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
+import org.compiere.model.I_AD_Message;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_NotificationGroup;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Role_NotificationGroup;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_POS;
+import org.compiere.model.X_AD_User_NotificationGroup;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -88,6 +96,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.CLIENT_ID;
@@ -114,6 +123,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_POS_InvoiceCardSettlement_StepDefData settlementTable;
 	@NonNull private final C_Payment_StepDefData paymentTable;
+	@NonNull private final AD_Role_StepDefData roleTable;
 
 	// outcomes of the last concurrent start; a step-def instance lives for one scenario
 	private final List<StartOutcome> concurrentStartOutcomes = new ArrayList<>();
@@ -866,6 +876,108 @@ public class POS_InvoiceCardSettlement_StepDef
 		assertThat(loadSettlement(settlementIdentifier).getErrorMsg())
 				.as("ErrorMsg of card settlement %s", settlementIdentifier)
 				.isEqualTo(expectedErrorMsg);
+	}
+
+	/**
+	 * Asserts the part of the settlement's card payment that is allocated to the settlement's invoice
+	 * ({@link POSInvoiceCardSettlementService#getAllocatedAmount}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the card payment of card settlement settlement1 is allocated with 10.00 to its invoice
+	 * </pre>
+	 */
+	@And("^the card payment of card settlement (\\S+) is allocated with (\\S+) to its invoice$")
+	public void assertAllocatedAmount(@NonNull final String settlementIdentifier, @NonNull final String expectedAmount)
+	{
+		assertThat(settlementService().getAllocatedAmount(loadSettlement(settlementIdentifier)).toBigDecimal())
+				.as("allocated amount of the card payment of card settlement %s", settlementIdentifier)
+				.isEqualByComparingTo(new BigDecimal(expectedAmount));
+	}
+
+	/**
+	 * Makes the role the only one that gets the notification group, so that exactly the users of this role are
+	 * notified, however many roles earlier runs of the scenarios left behind. Notifies by internal message.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Role_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And role backOffice is the only role notified of group 'de.metas.pos.InvoiceCardSettlement'
+	 * </pre>
+	 */
+	@And("^role (\\S+) is the only role notified of group '(.*)'$")
+	public void setOnlyRoleNotifiedOfGroup(@NonNull final String roleIdentifier, @NonNull final String groupInternalName)
+	{
+		final I_AD_Role role = roleTable.get(StepDefDataIdentifier.ofString(roleIdentifier));
+		final I_AD_NotificationGroup group = queryBL.createQueryBuilder(I_AD_NotificationGroup.class)
+				.addEqualsFilter(I_AD_NotificationGroup.COLUMNNAME_InternalName, groupInternalName)
+				.create()
+				.firstOnlyNotNull(I_AD_NotificationGroup.class);
+
+		queryBL.createQueryBuilder(I_AD_Role_NotificationGroup.class)
+				.addEqualsFilter(I_AD_Role_NotificationGroup.COLUMNNAME_AD_NotificationGroup_ID, group.getAD_NotificationGroup_ID())
+				.create()
+				.delete();
+
+		final I_AD_Role_NotificationGroup roleGroup = InterfaceWrapperHelper.newInstance(I_AD_Role_NotificationGroup.class);
+		roleGroup.setAD_Role_ID(role.getAD_Role_ID());
+		roleGroup.setAD_NotificationGroup_ID(group.getAD_NotificationGroup_ID());
+		roleGroup.setNotificationType(X_AD_User_NotificationGroup.NOTIFICATIONTYPE_Notice);
+		InterfaceWrapperHelper.saveRecord(roleGroup);
+	}
+
+	/**
+	 * Waits until the settlement has exactly the given number of notifications (AD_Note) with the AD_Message, then
+	 * checks once more after a second that no further one arrived: notifications are created asynchronously.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 30s, card settlement settlement1 has 1 notification with message 'de.metas.pos.InvoiceCardSettlement.CreditRefundPending'
+	 * </pre>
+	 */
+	@And("^after not more than (\\d+)s, card settlement (\\S+) has (\\d+) notifications? with message '(.*)'$")
+	public void assertSettlementNotificationCount(
+			final int timeoutSec,
+			@NonNull final String settlementIdentifier,
+			final int expectedCount,
+			@NonNull final String adMessageValue) throws InterruptedException
+	{
+		final POSInvoiceCardSettlementId id = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final TableRecordReference recordRef = TableRecordReference.of(I_C_POS_InvoiceCardSettlement.Table_Name, id.getRepoId());
+		final Supplier<Integer> countSupplier = () -> queryBL.createQueryBuilder(I_AD_Note.class)
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.addInSubQueryFilter(
+						I_AD_Note.COLUMNNAME_AD_Message_ID,
+						I_AD_Message.COLUMNNAME_AD_Message_ID,
+						queryBL.createQueryBuilder(I_AD_Message.class).addEqualsFilter(I_AD_Message.COLUMNNAME_Value, adMessageValue).create())
+				.create()
+				.count();
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> countSupplier.get() >= expectedCount);
+		Thread.sleep(1000);
+		assertThat(countSupplier.get()).as("notifications %s of card settlement %s", adMessageValue, settlementIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Runs only the first booking step ({@link POSInvoiceCardSettlementBooking#bookPaymentIfApproved}): the settlement's
+	 * SumUp transaction is approved, so the card payment is created and the settlement is APPROVED, but the payment is
+	 * not allocated yet. This is the state in which a crash or a retryable error leaves a settlement between the two steps.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the payment of card settlement settlement1 is booked without being allocated
+	 * </pre>
+	 */
+	@And("^the payment of card settlement (\\S+) is booked without being allocated$")
+	public void bookPaymentWithoutAllocating(@NonNull final String settlementIdentifier)
+	{
+		SpringContextHolder.instance.getBean(POSInvoiceCardSettlementBooking.class)
+				.bookPaymentIfApproved(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
 	}
 
 	/**

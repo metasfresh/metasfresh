@@ -470,6 +470,184 @@ Feature: POS invoice card settlement
       | invoice1     | true   |
 
   # ##########################################################################
+  # The invoice was paid or reversed elsewhere while the card payment waited: the approved card payment is booked as
+  # customer credit (an unallocated credit-card receipt) and the back office is notified, so it can refund it.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC7_1
+  Scenario: The invoice is paid by a bank payment meanwhile, so the late card approval is booked as customer credit and the back office is notified
+    Given POS terminal till is configured with SumUp and a default card reader
+    And metasfresh contains AD_Roles including the WebUI role:
+      | AD_Role_ID |
+      | backOffice |
+    And load AD_User:
+      | AD_User_ID.Identifier | Login      |
+      | cashier               | metasfresh |
+    And user has role
+      | AD_User_ID | AD_Role_ID |
+      | cashier    | backOffice |
+    And role backOffice is the only role notified of group 'de.metas.pos.InvoiceCardSettlement'
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And metasfresh contains C_Payment
+      | Identifier  | C_BPartner_ID   | PayAmt    | IsReceipt |
+      | bankPayment | invoiceCustomer | 16.07 EUR | true      |
+    And the payment identified by bankPayment is completed
+    And allocate payments to invoices
+      | C_Payment_ID | C_Invoice_ID |
+      | bankPayment  | invoice1     |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status CREDIT_REFUND_PENDING
+    And card settlement settlement1 has payment cardPayment
+    And validate payments
+      | C_Payment_ID | IsReceipt | DocStatus | TenderType | PayAmt | C_BP_BankAccount_ID | C_BPartner_ID   | IsAllocated |
+      | cardPayment  | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer | false       |
+    And the partner of invoice invoice1 has 2 payments
+    And invoice invoice1 has 1 allocation line
+    And the card payment of card settlement settlement1 is allocated with 0 to its invoice
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And after not more than 30s, card settlement settlement1 has 1 notification with message 'de.metas.pos.InvoiceCardSettlement.CreditRefundPending'
+    And card settlement settlement1 has 0 AD_Issues
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC7_2
+  Scenario: The invoice is reversed meanwhile, so the late card approval is booked as customer credit and nothing is allocated to the reversed invoice
+    Given POS terminal till is configured with SumUp and a default card reader
+    And metasfresh contains AD_Roles including the WebUI role:
+      | AD_Role_ID |
+      | backOffice |
+    And load AD_User:
+      | AD_User_ID.Identifier | Login      |
+      | cashier               | metasfresh |
+    And user has role
+      | AD_User_ID | AD_Role_ID |
+      | cashier    | backOffice |
+    And role backOffice is the only role notified of group 'de.metas.pos.InvoiceCardSettlement'
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the invoice identified by invoice1 is reversed
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status CREDIT_REFUND_PENDING
+    And card settlement settlement1 has payment cardPayment
+    And validate payments
+      | C_Payment_ID | IsReceipt | DocStatus | TenderType | PayAmt | C_BP_BankAccount_ID | C_BPartner_ID   | IsAllocated |
+      | cardPayment  | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer | false       |
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 0 to its invoice
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And after not more than 30s, card settlement settlement1 has 1 notification with message 'de.metas.pos.InvoiceCardSettlement.CreditRefundPending'
+    And card settlement settlement1 has 0 AD_Issues
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC7_3
+  Scenario: The invoice is partly paid by a bank payment meanwhile, so the late card payment pays the rest and the surplus is booked as customer credit
+    Given POS terminal till is configured with SumUp and a default card reader
+    And metasfresh contains AD_Roles including the WebUI role:
+      | AD_Role_ID |
+      | backOffice |
+    And load AD_User:
+      | AD_User_ID.Identifier | Login      |
+      | cashier               | metasfresh |
+    And user has role
+      | AD_User_ID | AD_Role_ID |
+      | cashier    | backOffice |
+    And role backOffice is the only role notified of group 'de.metas.pos.InvoiceCardSettlement'
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And metasfresh contains C_Payment
+      | Identifier  | C_BPartner_ID   | PayAmt   | IsReceipt |
+      | bankPayment | invoiceCustomer | 6.07 EUR | true      |
+    And the payment identified by bankPayment is completed
+    And allocate payments to invoices
+      | C_Payment_ID | C_Invoice_ID |
+      | bankPayment  | invoice1     |
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status CREDIT_REFUND_PENDING
+    And card settlement settlement1 has payment cardPayment
+    And validate payments
+      | C_Payment_ID | IsReceipt | DocStatus | TenderType | PayAmt | C_BP_BankAccount_ID | C_BPartner_ID   | IsAllocated |
+      | cardPayment  | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer | false       |
+    And the card payment of card settlement settlement1 is allocated with 10.00 to its invoice
+    And invoice invoice1 has 2 allocation lines
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And after not more than 30s, card settlement settlement1 has 1 notification with message 'de.metas.pos.InvoiceCardSettlement.CreditRefundPending'
+    And card settlement settlement1 has 0 AD_Issues
+
+  # The card payment is visible in the payment allocation as soon as it is created, so the back office can allocate it
+  # to another invoice of the customer before the booking is completed. The invoice then stays open although the payment
+  # is used up: that is a booking error, never customer credit.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC7_4
+  Scenario: The card payment is allocated to another invoice before the booking is completed, so the booking fails and the invoice stays blocked
+    Given POS terminal till is configured with SumUp and a default card reader
+    And metasfresh contains AD_Roles including the WebUI role:
+      | AD_Role_ID |
+      | backOffice |
+    And load AD_User:
+      | AD_User_ID.Identifier | Login      |
+      | cashier               | metasfresh |
+    And user has role
+      | AD_User_ID | AD_Role_ID |
+      | cashier    | backOffice |
+    And role backOffice is the only role notified of group 'de.metas.pos.InvoiceCardSettlement'
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | invoice2   | invoiceCustomer | 2026-09-24   | Spot                     | true    | EUR           | term1000         |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoice2L1 | invoice2     | product1     | 1 PCE       |
+      | invoice2L2 | invoice2     | product2     | 1 PCE       |
+    And the invoice identified by invoice2 is completed
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the payment of card settlement settlement1 is booked without being allocated
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has payment cardPayment
+    And allocate payments to invoices
+      | C_Payment_ID | C_Invoice_ID |
+      | cardPayment  | invoice2     |
+
+    When the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has 1 AD_Issue
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | false  |
+      | invoice2     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+    And after not more than 1s, card settlement settlement1 has 0 notifications with message 'de.metas.pos.InvoiceCardSettlement.CreditRefundPending'
+
+  # ##########################################################################
   # A card sale at the till is booked as a credit-card receipt on the till's cashbook (a cash bank); as it is not cash,
   # it gets no line in the cashbook's cash statement.
   @from:cucumber

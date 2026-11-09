@@ -41,6 +41,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -295,7 +296,7 @@ public class POSInvoiceSettlementService
 	 */
 	public void allocateFully(@NonNull final I_C_Invoice invoice, @NonNull final I_C_Payment payment)
 	{
-		allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+		allocateUpToOpenAmt(invoice, payment);
 
 		// post-condition: autoAllocateSpecificPayment silently no-ops on a receipt↔purchase mismatch, a
 		// non-financial invoice, or an already-paid one. If it left the invoice open, the payment + journal line
@@ -307,6 +308,39 @@ public class POSInvoiceSettlementService
 					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
 					.setParameter("openAfterAllocation", openAfterAllocation);
 		}
+	}
+
+	/**
+	 * Allocates as much of the payment to the invoice as the invoice is open for, i.e. the smaller of the payment's
+	 * available amount and the invoice's open amount. Does nothing if the invoice cannot take the payment (already
+	 * paid, a credit memo, another partner, ...).
+	 */
+	public void allocateUpToOpenAmt(@NonNull final I_C_Invoice invoice, @NonNull final I_C_Payment payment)
+	{
+		allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+	}
+
+	/**
+	 * @return the part of the payment that is allocated to the invoice, in the given currency (that of both documents);
+	 * zero if {@code paymentId} is {@code null}
+	 */
+	@NonNull
+	public Money getAllocatedAmt(@NonNull final InvoiceId invoiceId, @Nullable final PaymentId paymentId, @NonNull final CurrencyId currencyId)
+	{
+		if (paymentId == null)
+		{
+			return Money.zero(currencyId);
+		}
+		return Money.of(allocationDAO.retrieveAllocatedAmtBetween(invoiceId, paymentId), currencyId);
+	}
+
+	/**
+	 * @return {@code true} if the invoice is still a completed/closed sales invoice with an open amount &gt; 0; a
+	 * reversed, voided or fully paid invoice is not
+	 */
+	public boolean isStillOpen(@NonNull final I_C_Invoice invoice)
+	{
+		return isCompletedSalesInvoice(invoice) && getOpenAmt(invoice).signum() > 0;
 	}
 
 	/**

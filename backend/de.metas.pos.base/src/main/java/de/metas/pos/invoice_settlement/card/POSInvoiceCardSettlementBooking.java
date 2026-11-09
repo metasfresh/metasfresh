@@ -2,7 +2,12 @@ package de.metas.pos.invoice_settlement.card;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.Money;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.NotificationGroupName;
+import de.metas.notification.Recipient;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
@@ -21,6 +26,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Component;
@@ -43,9 +49,13 @@ public class POSInvoiceCardSettlementBooking
 	 */
 	public static final String ERRORMSG_RefundedAtSumUp = "refunded at SumUp";
 
+	private static final NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.pos.InvoiceCardSettlement");
+	private static final AdMessageKey MSG_CreditRefundPending = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CreditRefundPending");
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	@NonNull private final POSInvoiceCardSettlementRepository repository;
 	@NonNull private final POSInvoiceSettlementService invoiceSettlementService;
@@ -125,8 +135,11 @@ public class POSInvoiceCardSettlementBooking
 	}
 
 	/**
-	 * Step B, under the invoice lock and then the settlement lock, only while APPROVED: allocates the payment to the
-	 * invoice, adds the card line to the terminal's open cash journal and sets SUCCESSFUL, all in one transaction.
+	 * Step B, under the invoice lock and then the settlement lock, only while APPROVED, all in one transaction:
+	 * allocates the payment to the invoice up to its open amount (nothing if the invoice is no longer open), adds the
+	 * card line to the terminal's open cash journal, and sets SUCCESSFUL, or CREDIT_REFUND_PENDING (plus a
+	 * notification to the back office) if part of the payment stays unallocated. Throws, leaving the settlement
+	 * APPROVED, if the invoice is still open but the payment could not be allocated.
 	 */
 	public void completeBooking(@NonNull final POSInvoiceCardSettlementId id)
 	{
@@ -156,17 +169,26 @@ public class POSInvoiceCardSettlementBooking
 		}
 
 		final Money amount = settlement.getAmount();
-		final Money openAmt = invoiceSettlementService.getOpenAmt(invoice);
-		if (!openAmt.isEqualByComparingTo(amount))
+
+		// an invoice that is no longer open (paid or reversed meanwhile) takes nothing; one that is still open takes the
+		// payment up to its open amount. Whatever stays unallocated is customer credit that back office has to refund.
+		final boolean isInvoiceOpen = invoiceSettlementService.isStillOpen(invoice);
+		if (isInvoiceOpen)
 		{
-			// TODO: the invoice was paid (partly or fully) meanwhile: book the payment as customer credit
-			throw new AdempiereException("Booking a card settlement whose invoice was paid meanwhile is not supported yet")
-					.setParameter("openAmt", openAmt)
+			invoiceSettlementService.allocateUpToOpenAmt(invoice, paymentBL.getById(paymentId));
+		}
+		final boolean isCreditRefundPending = amount.subtract(getAllocatedAmount(settlement)).signum() > 0;
+
+		if (isInvoiceOpen && isCreditRefundPending && invoiceSettlementService.isStillOpen(invoice))
+		{
+			// the allocation silently did nothing (e.g. the payment was allocated elsewhere meanwhile): the invoice is
+			// still open and the payment is not used up, so this is no customer credit but a booking that did not work
+			throw new AdempiereException("Card payment could not be allocated to the invoice that is still open")
+					.setParameter("openAmt", invoiceSettlementService.getOpenAmt(invoice))
 					.setParameter("amount", amount)
+					.setParameter("allocatedAmount", getAllocatedAmount(settlement))
 					.setRecord(id.toRecordRef());
 		}
-
-		invoiceSettlementService.allocateFully(invoice, paymentBL.getById(paymentId));
 
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(settlement.getPosTerminalId());
 		final String description = invoiceSettlementService.getJournalDescription(invoice);
@@ -175,9 +197,42 @@ public class POSInvoiceCardSettlementBooking
 				cashJournal -> cashJournal.addCardSettlementPayment(amount, settlement.getCashierId(), id, description));
 
 		repository.save(settlement.toBuilder()
-				.status(POSInvoiceCardSettlementStatus.SUCCESSFUL)
+				.status(isCreditRefundPending ? POSInvoiceCardSettlementStatus.CREDIT_REFUND_PENDING : POSInvoiceCardSettlementStatus.SUCCESSFUL)
 				.errorMsg(null)
 				.build());
+
+		if (isCreditRefundPending)
+		{
+			notifyCreditRefundPending(settlement, paymentId, invoice);
+		}
+	}
+
+	/**
+	 * Tells the back office, after the booking transaction committed, that a card payment waits to be refunded.
+	 */
+	private void notifyCreditRefundPending(
+			@NonNull final POSInvoiceCardSettlement settlement,
+			@NonNull final PaymentId paymentId,
+			@NonNull final I_C_Invoice invoice)
+	{
+		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
+				.notificationGroupName(NOTIFICATION_GROUP_NAME)
+				.recipient(Recipient.allRolesContainingGroup(NOTIFICATION_GROUP_NAME))
+				.contentADMessage(MSG_CreditRefundPending)
+				.contentADMessageParam(TableRecordReference.of(I_C_Payment.Table_Name, paymentId.getRepoId()))
+				.contentADMessageParam(TableRecordReference.of(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID()))
+				.targetAction(UserNotificationRequest.TargetRecordAction.of(settlement.getId().toRecordRef()))
+				.build());
+	}
+
+	/**
+	 * @return the part of the settlement's card payment that is allocated to the settlement's invoice; zero while the
+	 * settlement has no payment
+	 */
+	@NonNull
+	Money getAllocatedAmount(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		return invoiceSettlementService.getAllocatedAmt(settlement.getInvoiceId(), settlement.getPaymentId(), settlement.getAmount().getCurrencyId());
 	}
 
 	/**

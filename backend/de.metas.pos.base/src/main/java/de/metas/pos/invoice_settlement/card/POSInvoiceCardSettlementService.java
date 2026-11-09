@@ -5,6 +5,7 @@ import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -63,6 +64,16 @@ public class POSInvoiceCardSettlementService
 	public POSInvoiceCardSettlement getById(@NonNull final POSInvoiceCardSettlementId id)
 	{
 		return repository.getById(id);
+	}
+
+	/**
+	 * @return the part of the settlement's card payment that is allocated to the settlement's invoice; zero while the
+	 * settlement has no payment
+	 */
+	@NonNull
+	public Money getAllocatedAmount(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		return invoiceSettlementService.getAllocatedAmt(settlement.getInvoiceId(), settlement.getPaymentId(), settlement.getAmount().getCurrencyId());
 	}
 
 	/**
