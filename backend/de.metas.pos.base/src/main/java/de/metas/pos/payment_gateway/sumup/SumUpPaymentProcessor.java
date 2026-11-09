@@ -1,7 +1,9 @@
 package de.metas.pos.payment_gateway.sumup;
 
+import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.payment.sumup.SumUp;
+import de.metas.payment.sumup.SumUpCallException;
 import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
@@ -49,7 +51,8 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 							.amount(request.getAmount())
 							.callbackUrl(getCallbackUrl())
 							.clientAndOrgId(request.getClientAndOrgId())
-							.posRef(SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId()))
+							.description(request.getDescription())
+							.posRef(SumUpUtils.toPOSRef(request))
 							.build()
 			);
 
@@ -58,11 +61,14 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 		catch (final Exception ex)
 		{
 			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
-			return POSPaymentProcessResponse.error(
-					request.getPaymentProcessorConfig(),
-					AdempiereException.extractMessage(metasfreshException),
-					errorManager.createIssue(metasfreshException)
-			);
+			final String errorMessage = AdempiereException.extractMessage(metasfreshException);
+			final AdIssueId errorId = errorManager.createIssue(metasfreshException);
+
+			// only a failed SumUp call can leave the outcome unknown; anything else (e.g. config error before the call) is definite
+			final boolean isIndeterminate = ex instanceof SumUpCallException && !((SumUpCallException)ex).isDefiniteRejection();
+			return isIndeterminate
+					? POSPaymentProcessResponse.errorIndeterminate(request.getPaymentProcessorConfig(), errorMessage, errorId)
+					: POSPaymentProcessResponse.error(request.getPaymentProcessorConfig(), errorMessage, errorId);
 		}
 	}
 

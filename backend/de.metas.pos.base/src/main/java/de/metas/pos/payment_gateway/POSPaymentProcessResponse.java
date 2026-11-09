@@ -23,6 +23,9 @@ public class POSPaymentProcessResponse
 	@Nullable String errorMessage;
 	@Nullable AdIssueId errorId;
 
+	/** true if the outcome of the call is unknown (the processor may or may not have acted on the request) */
+	boolean isIndeterminate;
+
 	public static POSPaymentProcessResponse error(
 			final POSTerminalPaymentProcessorConfig config,
 			final String errorMessage,
@@ -33,6 +36,20 @@ public class POSPaymentProcessResponse
 				.config(config)
 				.errorMessage(errorMessage)
 				.errorId(errorId)
+				.build();
+	}
+
+	public static POSPaymentProcessResponse errorIndeterminate(
+			final POSTerminalPaymentProcessorConfig config,
+			final String errorMessage,
+			final AdIssueId errorId)
+	{
+		return builder()
+				.status(POSPaymentProcessingStatus.FAILED)
+				.config(config)
+				.errorMessage(errorMessage)
+				.errorId(errorId)
+				.isIndeterminate(true)
 				.build();
 	}
 }
