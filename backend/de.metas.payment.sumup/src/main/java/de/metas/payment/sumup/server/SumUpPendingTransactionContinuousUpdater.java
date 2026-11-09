@@ -2,13 +2,13 @@ package de.metas.payment.sumup.server;
 
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.payment.sumup.SumUpPollerCycleListener;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedEvent;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedListener;
 import de.metas.payment.sumup.repository.BulkUpdateByQueryResult;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -16,11 +16,13 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Profile(Profiles.PROFILE_App)
-@RequiredArgsConstructor
 public class SumUpPendingTransactionContinuousUpdater implements SumUpTransactionStatusChangedListener
 {
 	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.payment.sumup.pendingTransactionsUpdate.pollIntervalInSeconds";
@@ -31,8 +33,17 @@ public class SumUpPendingTransactionContinuousUpdater implements SumUpTransactio
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpPendingTransactionContinuousUpdater.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final SumUpService sumUpService;
+	@NonNull private final List<SumUpPollerCycleListener> pollerCycleListeners;
 
 	@NonNull private final AtomicBoolean pendingTransactionsDetected = new AtomicBoolean(false);
+
+	public SumUpPendingTransactionContinuousUpdater(
+			@NonNull final SumUpService sumUpService,
+			@NonNull final Optional<List<SumUpPollerCycleListener>> pollerCycleListeners)
+	{
+		this.sumUpService = sumUpService;
+		this.pollerCycleListeners = pollerCycleListeners.orElseGet(Collections::emptyList);
+	}
 
 	@PostConstruct
 	public void postConstruct()
@@ -65,6 +76,22 @@ public class SumUpPendingTransactionContinuousUpdater implements SumUpTransactio
 			}
 
 			bulkUpdatePendingTransactionsNoFail();
+			firePollerCycleListenersNoFail();
+		}
+	}
+
+	private void firePollerCycleListenersNoFail()
+	{
+		for (final SumUpPollerCycleListener listener : pollerCycleListeners)
+		{
+			try
+			{
+				listener.afterPollCycle();
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Poller cycle listener {} failed. Ignored.", listener.getClass().getSimpleName(), ex);
+			}
 		}
 	}
 

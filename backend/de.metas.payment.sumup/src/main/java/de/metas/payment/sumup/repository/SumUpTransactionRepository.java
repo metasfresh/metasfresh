@@ -142,6 +142,7 @@ public class SumUpTransactionRepository
 		record.setJsonResponse(from.getJson());
 		record.setC_POS_Order_ID(from.getPosRef() != null ? from.getPosRef().getPosOrderId() : -1);
 		record.setC_POS_Payment_ID(from.getPosRef() != null ? from.getPosRef().getPosPaymentId() : -1);
+		record.setC_POS_InvoiceCardSettlement_ID(from.getPosRef() != null ? from.getPosRef().getPosInvoiceCardSettlementId() : -1);
 		updateRecord(record, from.getLastSync());
 	}
 
@@ -226,7 +227,8 @@ public class SumUpTransactionRepository
 	{
 		final int posOrderId = record.getC_POS_Order_ID();
 		final int posPaymentId = record.getC_POS_Payment_ID();
-		if (posOrderId <= 0 && posPaymentId <= 0)
+		final int posInvoiceCardSettlementId = record.getC_POS_InvoiceCardSettlement_ID();
+		if (posOrderId <= 0 && posPaymentId <= 0 && posInvoiceCardSettlementId <= 0)
 		{
 			return null;
 		}
@@ -234,6 +236,7 @@ public class SumUpTransactionRepository
 		return SumUpPOSRef.builder()
 				.posOrderId(posOrderId)
 				.posPaymentId(posPaymentId)
+				.posInvoiceCardSettlementId(posInvoiceCardSettlementId)
 				.build();
 	}
 
@@ -299,6 +302,10 @@ public class SumUpTransactionRepository
 			if (posRef.getPosPaymentId() > 0)
 			{
 				sqlQueryBuilder.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_C_POS_Payment_ID, posRef.getPosPaymentId());
+			}
+			if (posRef.getPosInvoiceCardSettlementId() > 0)
+			{
+				sqlQueryBuilder.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_C_POS_InvoiceCardSettlement_ID, posRef.getPosInvoiceCardSettlementId());
 			}
 		}
 

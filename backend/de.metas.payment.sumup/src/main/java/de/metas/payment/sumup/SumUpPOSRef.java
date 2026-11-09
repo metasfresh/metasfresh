@@ -11,4 +11,5 @@ public class SumUpPOSRef
 {
 	@Builder.Default int posOrderId = -1;
 	@Builder.Default int posPaymentId = -1;
+	@Builder.Default int posInvoiceCardSettlementId = -1;
 }
