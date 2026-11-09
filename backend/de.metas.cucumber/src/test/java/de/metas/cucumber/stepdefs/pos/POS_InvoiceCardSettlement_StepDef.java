@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.pos;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationDAO;
@@ -9,12 +10,14 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.cucumber.stepdefs.process.AD_Process_Run_StepDef;
 import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -57,6 +60,14 @@ import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonContext;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.SelectionSize;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.java.After;
@@ -66,9 +77,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -107,6 +122,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.CLIENT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
@@ -132,12 +148,14 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@NonNull private final C_POS_StepDefData posTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_POS_InvoiceCardSettlement_StepDefData settlementTable;
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final AD_Role_StepDefData roleTable;
+	@NonNull private final AD_Process_Run_StepDef processRunStepDef;
 
 	// the transaction of "another user" that holds an invoice or settlement row lock; released by a step or, at the latest, after the scenario
 	@Nullable private String rowLockHolderTrxName;
@@ -155,6 +173,7 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	@Nullable private POSInvoiceCardSettlementCheckResult lastCheckResult;
 	@Nullable private POSInvoiceCardSettlementReleaseResult lastReleaseResult;
+	@Nullable private String lastBackOfficeProcessSummary;
 
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
 	private SumUpService sumUpService() {return SpringContextHolder.instance.getBean(SumUpService.class);}
@@ -1603,15 +1622,20 @@ public class POS_InvoiceCardSettlement_StepDef
 		}
 		finally
 		{
-			for (int i = 0; i < changedAcctSchemas.size(); i++)
-			{
-				final I_C_AcctSchema acctSchema = changedAcctSchemas.get(i);
-				acctSchema.setPeriod_OpenFuture(originalPeriodOpenFuture.get(i));
-				InterfaceWrapperHelper.saveRecord(acctSchema);
-			}
-			changedAcctSchemas.clear();
-			originalPeriodOpenFuture.clear();
+			restoreChangedAcctSchemas();
 		}
+	}
+
+	private void restoreChangedAcctSchemas()
+	{
+		for (int i = 0; i < changedAcctSchemas.size(); i++)
+		{
+			final I_C_AcctSchema acctSchema = changedAcctSchemas.get(i);
+			acctSchema.setPeriod_OpenFuture(originalPeriodOpenFuture.get(i));
+			InterfaceWrapperHelper.saveRecord(acctSchema);
+		}
+		changedAcctSchemas.clear();
+		originalPeriodOpenFuture.clear();
 	}
 
 	/**
@@ -1771,6 +1795,297 @@ public class POS_InvoiceCardSettlement_StepDef
 		assertThat(loadSettlement(settlementIdentifier).getErrorMsg())
 				.as("ErrorMsg of card settlement %s", settlementIdentifier)
 				.isNull();
+	}
+
+	/**
+	 * Reopens the accounting period that {@link #closePeriodForToday()} closed, as back office would after fixing the
+	 * cause of a booking error.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the accounting period is reopened
+	 * </pre>
+	 */
+	@And("^the accounting period is reopened$")
+	public void reopenPeriod()
+	{
+		assertThat(changedAcctSchemas).as("accounting schemas closed by this scenario").isNotEmpty();
+		restoreChangedAcctSchemas();
+	}
+
+	/**
+	 * Asserts whether the process's precondition offers it for the settlement, i.e. whether back office sees the process
+	 * on that row of the card settlement window.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And process C_POS_InvoiceCardSettlement_RetryBooking is available for card settlement settlement1
+	 * And process C_POS_InvoiceCardSettlement_MarkRefunded is not available for card settlement settlement1
+	 * </pre>
+	 */
+	@And("^process (\\S+) is (available|not available) for card settlement (\\S+)$")
+	public void assertProcessAvailable(
+			@NonNull final String processValue,
+			@NonNull final String availability,
+			@NonNull final String settlementIdentifier)
+	{
+		final ProcessPreconditionsResolution resolution = checkPreconditions(processValue, settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
+		assertThat(resolution.isRejected())
+				.as("precondition of process %s for card settlement %s rejects (reason: %s)", processValue, settlementIdentifier, resolution.getRejectReason())
+				.isEqualTo("not available".equals(availability));
+	}
+
+	/**
+	 * Back office starts the process on the settlement's row of the card settlement window: the process must be offered
+	 * for it (precondition), and then runs like a user's process (client context + {@code WebUI} role). Fails if the
+	 * process reports an error.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When back office runs process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1
+	 * When back office runs process C_POS_InvoiceCardSettlement_MarkRefunded on card settlement settlement1 with note 'refunded'
+	 * </pre>
+	 */
+	@And("^back office runs process (\\S+) on card settlement (\\S+)(?: with note '(.*)')?$")
+	public void runBackOfficeProcess(
+			@NonNull final String processValue,
+			@NonNull final String settlementIdentifier,
+			@Nullable final String note)
+	{
+		runBackOfficeProcessAndGetError(processValue, settlementIdentifier, note).ifPresent(error -> {
+			throw AdempiereException.wrapIfNeeded(error);
+		});
+	}
+
+	/**
+	 * As {@link #runBackOfficeProcess}, but the process must refuse with the given AD_Message.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When back office running process C_POS_InvoiceCardSettlement_MarkResolvedManually on card settlement settlement1 with note 'resolved' is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.MarkResolvedRefused'
+	 * When back office running process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.RetryBookingNotCompleted'
+	 * </pre>
+	 */
+	@And("^back office running process (\\S+) on card settlement (\\S+)(?: with note '(.*)')? is refused with AD_Message '(.*)'$")
+	public void runBackOfficeProcessRefused(
+			@NonNull final String processValue,
+			@NonNull final String settlementIdentifier,
+			@Nullable final String note,
+			@NonNull final String expectedAdMessage)
+	{
+		final Throwable error = runBackOfficeProcessAndGetError(processValue, settlementIdentifier, note)
+				.orElseThrow(() -> new AssertionError("process " + processValue + " must be refused"));
+		assertThat(error).isInstanceOfSatisfying(AdempiereException.class,
+				ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode(expectedAdMessage)));
+	}
+
+	/**
+	 * As {@link #runBackOfficeProcess}, but the process must refuse because the note is empty.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When back office running process C_POS_InvoiceCardSettlement_MarkRefunded on card settlement settlement1 with note '' is refused because the note is missing
+	 * </pre>
+	 */
+	@And("^back office running process (\\S+) on card settlement (\\S+) with note '(.*)' is refused because the note is missing$")
+	public void runBackOfficeProcessRefusedForMissingNote(
+			@NonNull final String processValue,
+			@NonNull final String settlementIdentifier,
+			@NonNull final String note)
+	{
+		final Throwable error = runBackOfficeProcessAndGetError(processValue, settlementIdentifier, note)
+				.orElseThrow(() -> new AssertionError("process " + processValue + " must be refused"));
+		assertThat(Throwables.getCausalChain(error))
+				.as("refusal of process %s for a missing note: %s", processValue, error)
+				.anyMatch(FillMandatoryException.class::isInstance);
+	}
+
+	/**
+	 * Asserts the message the last back-office process run reported to back office (its summary), in any of the
+	 * AD_Message's languages.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the back-office process reports AD_Message 'de.metas.pos.InvoiceCardSettlement.RetryBookingWillRetry'
+	 * </pre>
+	 */
+	@And("^the back-office process reports AD_Message '(.*)'$")
+	public void assertBackOfficeProcessSummary(@NonNull final String expectedAdMessage)
+	{
+		final ITranslatableString expected = Services.get(IMsgBL.class).getTranslatableMsgText(AdMessageKey.of(expectedAdMessage));
+		assertThat(lastBackOfficeProcessSummary)
+				.as("summary of the last back-office process")
+				.isIn(expected.translate("de_DE"), expected.translate("en_US"), expected.getDefaultValue());
+	}
+
+	private Optional<Throwable> runBackOfficeProcessAndGetError(
+			@NonNull final String processValue,
+			@NonNull final String settlementIdentifier,
+			@Nullable final String note)
+	{
+		final POSInvoiceCardSettlementId id = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final ProcessPreconditionsResolution resolution = checkPreconditions(processValue, id);
+		assertThat(resolution.isRejected())
+				.as("precondition of process %s for card settlement %s rejects (reason: %s)", processValue, settlementIdentifier, resolution.getRejectReason())
+				.isFalse();
+
+		final ProcessInfo.ProcessInfoBuilder processInfo = processRunStepDef.newProcessInfoBuilder(adProcessDAO.retrieveProcessIdByValue(processValue))
+				.setRecord(id.toRecordRef());
+		if (note != null)
+		{
+			processInfo.addParameter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Note, note);
+		}
+		final ProcessExecutionResult result = processInfo.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult();
+		lastBackOfficeProcessSummary = result.getSummary();
+		if (!result.isError())
+		{
+			return Optional.empty();
+		}
+		return Optional.of(result.getThrowable() != null ? result.getThrowable() : new AdempiereException(result.getSummary()));
+	}
+
+	private ProcessPreconditionsResolution checkPreconditions(@NonNull final String processValue, @NonNull final POSInvoiceCardSettlementId id)
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(processValue);
+		assertThat(processId).as("AD_Process with Value=%s", processValue).isNotNull();
+		final String classname = adProcessDAO.getById(processId).getClassname();
+		final IProcessPrecondition process;
+		try
+		{
+			process = (IProcessPrecondition)Class.forName(classname).newInstance();
+		}
+		catch (final ReflectiveOperationException ex)
+		{
+			throw new AdempiereException("Cannot instantiate process " + classname, ex);
+		}
+		return process.checkPreconditionsApplicable(new SingleSettlementPreconditionsContext(id));
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then card settlement settlement1 has note 'refunded'
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has note '(.*)'$")
+	public void assertNote(@NonNull final String settlementIdentifier, @NonNull final String expectedNote)
+	{
+		assertThat(loadSettlement(settlementIdentifier).getNote())
+				.as("Note of card settlement %s", settlementIdentifier)
+				.isEqualTo(expectedNote);
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then card settlement settlement1 has no note
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) has no note$")
+	public void assertNoNote(@NonNull final String settlementIdentifier)
+	{
+		assertThat(loadSettlement(settlementIdentifier).getNote())
+				.as("Note of card settlement %s", settlementIdentifier)
+				.isNull();
+	}
+
+	/**
+	 * Asserts whether the settlement is among the {@code C_POS_InvoiceCardSettlement} rows with the given status, as a
+	 * proxy for the card settlement window filtered by that status (e.g. CREDIT_REFUND_PENDING, the refund worklist);
+	 * it queries the table, not the window's filter.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then card settlement settlement1 is listed under status CREDIT_REFUND_PENDING
+	 * Then card settlement settlement1 is not listed under status CREDIT_REFUND_PENDING
+	 * </pre>
+	 */
+	@And("^card settlement (\\S+) is (listed|not listed) under status ([A-Z_]+)$")
+	public void assertListedUnderStatus(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String listed,
+			@NonNull final String status)
+	{
+		final POSInvoiceCardSettlementId id = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final List<POSInvoiceCardSettlementId> idsWithStatus = queryBL.createQueryBuilder(I_C_POS_InvoiceCardSettlement.class)
+				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Status, parseStatus(status).getCode())
+				.create()
+				.listIds(POSInvoiceCardSettlementId::ofRepoId)
+				.asList();
+		assertThat(idsWithStatus.contains(id))
+				.as("card settlement %s is among the settlements with status %s", settlementIdentifier, status)
+				.isEqualTo("listed".equals(listed));
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then invoice invoice1 is not blocked by a card settlement
+	 * </pre>
+	 */
+	@And("^invoice (\\S+) is not blocked by a card settlement$")
+	public void assertInvoiceNotBlocked(@NonNull final String invoiceIdentifier)
+	{
+		assertThat(settlementService().getBlockingByInvoiceId(invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier))))
+				.as("blocking card settlement of invoice %s", invoiceIdentifier)
+				.isEmpty();
+	}
+
+	/**
+	 * The single row of the card settlement window a back-office process is started on, in the shape the processes'
+	 * preconditions read it. Implements only what they read (the table, the single selected record); every other method
+	 * throws, so a precondition that starts reading something else fails loudly here.
+	 */
+	@RequiredArgsConstructor
+	private static class SingleSettlementPreconditionsContext implements IProcessPreconditionsContext
+	{
+		@NonNull private final POSInvoiceCardSettlementId id;
+
+		@Override
+		public AdWindowId getAdWindowId() {throw notImplemented("getAdWindowId");}
+
+		@Override
+		public AdTabId getAdTabId() {throw notImplemented("getAdTabId");}
+
+		@Override
+		public String getTableName() {return I_C_POS_InvoiceCardSettlement.Table_Name;}
+
+		@Override
+		public <T> T getSelectedModel(final Class<T> modelClass) {throw notImplemented("getSelectedModel");}
+
+		@Override
+		public <T> List<T> getSelectedModels(final Class<T> modelClass) {throw notImplemented("getSelectedModels");}
+
+		@NonNull
+		@Override
+		public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass) {throw notImplemented("streamSelectedModels");}
+
+		@Override
+		public int getSingleSelectedRecordId() {return id.getRepoId();}
+
+		@Override
+		public SelectionSize getSelectionSize() {return SelectionSize.ofSize(1);}
+
+		@Override
+		public <T> IQueryFilter<T> getQueryFilter(@NonNull final Class<T> recordClass) {throw notImplemented("getQueryFilter");}
+
+		private static UnsupportedOperationException notImplemented(@NonNull final String methodName)
+		{
+			return new UnsupportedOperationException(SingleSettlementPreconditionsContext.class.getSimpleName() + " does not implement " + methodName);
+		}
 	}
 
 

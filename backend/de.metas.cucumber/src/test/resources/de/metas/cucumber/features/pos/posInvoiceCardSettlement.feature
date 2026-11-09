@@ -1583,3 +1583,392 @@ Feature: POS invoice card settlement
     And invoice invoice1 has 2 card settlements
     And the open invoice list of POS terminal till for invoice invoice1 shows blocking card settlement settlement2
     And card settlement settlement1 has status BOOKING_ERROR and isAbandoned true
+
+  # ##########################################################################
+  # Back office resolves card settlements in the card settlement window: "retry booking" re-runs the booking of a
+  # booking error (or of an approved settlement that waits for a journal) with a fresh attempt budget, "mark resolved
+  # manually" ends a booking error that back office fixed by hand, "mark refunded" ends a customer credit that back
+  # office refunded. Each process is offered only for the statuses it applies to.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_retry
+  Scenario: The booking of an approved card payment failed after 5 attempts, and back office retries it with a fresh attempt budget, so it is booked
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the invoice row of invoice invoice1 is locked by another transaction
+    And metasfresh polls SumUp 5 times
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has 5 booking attempts
+    And card settlement settlement1 has 1 AD_Issue
+    And card settlement settlement1 has payment cardPayment
+    And process C_POS_InvoiceCardSettlement_RetryBooking is available for card settlement settlement1
+    And process C_POS_InvoiceCardSettlement_MarkResolvedManually is available for card settlement settlement1
+    And process C_POS_InvoiceCardSettlement_MarkRefunded is not available for card settlement settlement1
+
+    # the invoice is still locked: the retry fails retryably, and with a fresh budget that is its 1st attempt, not a booking error
+    When back office runs process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1
+
+    Then the back-office process reports AD_Message 'de.metas.pos.InvoiceCardSettlement.RetryBookingWillRetry'
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has 1 booking attempt
+    And card settlement settlement1 has 1 AD_Issue
+
+    When the other transaction releases its row lock
+    And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
+      | C_Invoice_ID | CashTenderedAmount |
+      | invoice1     | 16.07              |
+    And back office runs process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has payment cardPayment
+    And card settlement settlement1 has no error message
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And card settlement settlement1 has 1 AD_Issue
+    And process C_POS_InvoiceCardSettlement_RetryBooking is not available for card settlement settlement1
+    And process C_POS_InvoiceCardSettlement_MarkResolvedManually is not available for card settlement settlement1
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_retryNoPayment
+  Scenario: Creating the payment of an approved card payment failed, and back office retries the booking, so the payment is created and booked
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the accounting period is closed for today
+    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has no payment
+    And card settlement settlement1 has 1 AD_Issue
+
+    # the cause is not fixed yet: the retry fails again, is recorded for back office once more, and back office is told
+    When back office running process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.RetryBookingNotCompleted'
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has no payment
+    And card settlement settlement1 has 2 AD_Issues
+
+    When the accounting period is reopened
+    And back office runs process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has payment cardPayment
+    And card settlement settlement1 has 0 booking attempts
+    And validate payments
+      | C_Payment_ID | IsReceipt | DocStatus | TenderType | PayAmt | C_BP_BankAccount_ID | C_BPartner_ID   | IsAllocated |
+      | cardPayment  | true      | CO        | C          | 16.07  | cashbook            | invoiceCustomer | true        |
+    And the partner of invoice invoice1 has 1 payment
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And card settlement settlement1 has 2 AD_Issues
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_retryRefunded
+  Scenario: Creating the payment of an approved card payment failed and back office refunded the charge at SumUp, so the retry fails the settlement without booking and the invoice can be paid again
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the accounting period is closed for today
+    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has no payment
+    And the accounting period is reopened
+    # back office refunded the charge in the SumUp dashboard; the retry asks SumUp before it creates a payment
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL refunded 16.07
+
+    When back office runs process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1
+
+    Then card settlement settlement1 has status FAILED
+    And card settlement settlement1 has error message 'refunded at SumUp'
+    And card settlement settlement1 has no payment
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_retryRefundedAbandoned
+  Scenario: Creating the payment of a card payment released as abandoned and approved later failed, and back office refunded the charge at SumUp, so the retry leaves it abandoned without booking
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 was created 200 seconds ago
+    And SumUp API stub answers terminate with HTTP 4xx
+    And card settlement settlement1 is released by cashier metasfresh
+    And the release of card settlement settlement1 is confirmed by cashier metasfresh
+    And the accounting period is closed for today
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status BOOKING_ERROR and isAbandoned true
+    And card settlement settlement1 has no payment
+    And the accounting period is reopened
+    # back office refunded the charge in the SumUp dashboard
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL refunded 16.07
+
+    When back office runs process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1
+
+    Then card settlement settlement1 has status ABANDONED and isAbandoned true
+    And card settlement settlement1 has no payment
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_resolved
+  Scenario: Completing the booking of an approved card payment failed and back office allocated the payment by hand, so it marks the settlement resolved with a note and nothing more is booked
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the payment of card settlement settlement1 is booked without being allocated
+    And the accounting period is closed for today
+    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has payment cardPayment
+    And the accounting period is reopened
+    And allocate payments to invoices
+      | C_Payment_ID | C_Invoice_ID |
+      | cardPayment  | invoice1     |
+
+    When back office runs process C_POS_InvoiceCardSettlement_MarkResolvedManually on card settlement settlement1 with note 'card payment allocated by hand'
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has note 'card payment allocated by hand'
+    And invoice invoice1 is not blocked by a card settlement
+    And the partner of invoice invoice1 has 1 payment
+    And invoice invoice1 has 1 allocation line
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+    And card settlement settlement1 has 1 AD_Issue
+    And process C_POS_InvoiceCardSettlement_MarkResolvedManually is not available for card settlement settlement1
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_resolveRefused
+  Scenario: Completing the booking of an approved card payment failed and the payment is still unallocated, so marking the settlement resolved is refused while the invoice is open
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the payment of card settlement settlement1 is booked without being allocated
+    And the accounting period is closed for today
+    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has payment cardPayment
+    And the accounting period is reopened
+
+    When back office running process C_POS_InvoiceCardSettlement_MarkResolvedManually on card settlement settlement1 with note 'resolved' is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.MarkResolvedRefused'
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has no note
+    And the card payment of card settlement settlement1 is allocated with 0 to its invoice
+    And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
+      | C_Invoice_ID | CashTenderedAmount |
+      | invoice1     | 16.07              |
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_resolveRefusedNoPayment
+  Scenario: Creating the payment of an approved card payment failed, so marking the settlement resolved is refused while the invoice is open, and retry booking stays available
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the accounting period is closed for today
+    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has no payment
+
+    When back office running process C_POS_InvoiceCardSettlement_MarkResolvedManually on card settlement settlement1 with note 'resolved' is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.MarkResolvedRefused'
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has no note
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+    And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
+      | C_Invoice_ID | CashTenderedAmount |
+      | invoice1     | 16.07              |
+    And process C_POS_InvoiceCardSettlement_RetryBooking is available for card settlement settlement1
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_waitingJournal
+  Scenario: An approved card payment waits for an open cash journal with its payment unallocated, so marking it resolved is refused while the invoice is open
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'no open cash journal'
+    And process C_POS_InvoiceCardSettlement_MarkResolvedManually is available for card settlement settlement1
+
+    When back office running process C_POS_InvoiceCardSettlement_MarkResolvedManually on card settlement settlement1 with note 'resolved' is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.MarkResolvedRefused'
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has no note
+    And the card payment of card settlement settlement1 is allocated with 0 to its invoice
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_retryWaitingJournal
+  Scenario: An approved card payment waits for an open cash journal, a journal is opened, and back office retries the booking, so it is booked at once on the new journal
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'no open cash journal'
+    And card settlement settlement1 has 1 AD_Issue
+    And process C_POS_InvoiceCardSettlement_RetryBooking is available for card settlement settlement1
+
+    # no journal is open yet: the retry cannot complete the booking, and back office is told
+    When back office running process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1 is refused with AD_Message 'de.metas.pos.InvoiceCardSettlement.RetryBookingNotCompleted'
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'no open cash journal'
+    And card settlement settlement1 has 1 AD_Issue
+
+    When the cash journal of POS terminal till is opened with 50 by metasfresh
+    And back office runs process C_POS_InvoiceCardSettlement_RetryBooking on card settlement settlement1
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has no error message
+    And card settlement settlement1 has 1 AD_Issue
+    And the partner of invoice invoice1 has 1 payment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And the cash journal of POS terminal till contains lines:
+      | Type     | Amount |
+      | CARD_PAY | 16.07  |
+    And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And the closing summary of the cash journal of POS terminal till shows card total 16.07 and cash total 50
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC21_emptyNote
+  Scenario: Back office marks a booking error resolved without a note, so it is refused
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And the SumUp transaction of card settlement settlement1 is set to SUCCESSFUL locally without a status event
+    And the payment of card settlement settlement1 is booked without being allocated
+    And the accounting period is closed for today
+    And the SumUp status event of card settlement settlement1 is delivered 1 times one after the other
+    And card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has payment cardPayment
+    And the accounting period is reopened
+    And allocate payments to invoices
+      | C_Payment_ID | C_Invoice_ID |
+      | cardPayment  | invoice1     |
+
+    When back office running process C_POS_InvoiceCardSettlement_MarkResolvedManually on card settlement settlement1 with note '  ' is refused because the note is missing
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has no note
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC15_markRefunded
+  Scenario: A late card approval was booked as customer credit and back office refunded it, so it marks the settlement refunded with a note and the settlement leaves the refund worklist
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And metasfresh contains C_Payment
+      | Identifier  | C_BPartner_ID   | PayAmt    | IsReceipt |
+      | bankPayment | invoiceCustomer | 16.07 EUR | true      |
+    And the payment identified by bankPayment is completed
+    And allocate payments to invoices
+      | C_Payment_ID | C_Invoice_ID |
+      | bankPayment  | invoice1     |
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status CREDIT_REFUND_PENDING
+    And card settlement settlement1 is listed under status CREDIT_REFUND_PENDING
+    And process C_POS_InvoiceCardSettlement_MarkRefunded is available for card settlement settlement1
+    And process C_POS_InvoiceCardSettlement_RetryBooking is not available for card settlement settlement1
+    And process C_POS_InvoiceCardSettlement_MarkResolvedManually is not available for card settlement settlement1
+
+    When back office running process C_POS_InvoiceCardSettlement_MarkRefunded on card settlement settlement1 with note '' is refused because the note is missing
+
+    Then card settlement settlement1 has status CREDIT_REFUND_PENDING
+    And card settlement settlement1 has no note
+
+    When back office runs process C_POS_InvoiceCardSettlement_MarkRefunded on card settlement settlement1 with note 'refunded to the customer in cash'
+
+    Then card settlement settlement1 has status REFUNDED
+    And card settlement settlement1 has note 'refunded to the customer in cash'
+    And card settlement settlement1 is not listed under status CREDIT_REFUND_PENDING
+    And card settlement settlement1 is listed under status REFUNDED
+    And process C_POS_InvoiceCardSettlement_MarkRefunded is not available for card settlement settlement1
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC15_markRefunded_partlyAllocated
+  Scenario: A late card payment partly paid the invoice and the surplus is customer credit, and back office refunded the surplus, so it marks the settlement refunded with a note
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And metasfresh contains C_Payment
+      | Identifier  | C_BPartner_ID   | PayAmt   | IsReceipt |
+      | bankPayment | invoiceCustomer | 6.07 EUR | true      |
+    And the payment identified by bankPayment is completed
+    And allocate payments to invoices
+      | C_Payment_ID | C_Invoice_ID |
+      | bankPayment  | invoice1     |
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status CREDIT_REFUND_PENDING
+    And the card payment of card settlement settlement1 is allocated with 10.00 to its invoice
+    And card settlement settlement1 is listed under status CREDIT_REFUND_PENDING
+    And process C_POS_InvoiceCardSettlement_MarkRefunded is available for card settlement settlement1
+
+    When back office runs process C_POS_InvoiceCardSettlement_MarkRefunded on card settlement settlement1 with note 'surplus of 6.07 refunded at SumUp'
+
+    Then card settlement settlement1 has status REFUNDED
+    And card settlement settlement1 has note 'surplus of 6.07 refunded at SumUp'
+    And card settlement settlement1 is not listed under status CREDIT_REFUND_PENDING
+    And the card payment of card settlement settlement1 is allocated with 10.00 to its invoice

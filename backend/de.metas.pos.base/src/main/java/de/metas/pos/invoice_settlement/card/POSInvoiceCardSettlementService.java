@@ -12,6 +12,8 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpContext;
@@ -27,9 +29,11 @@ import de.metas.pos.invoice_settlement.POSInvoiceSettlementService.SettleableInv
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
+import de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -37,14 +41,17 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -64,6 +71,9 @@ public class POSInvoiceCardSettlementService
 	private static final AdMessageKey MSG_ReleaseNotYetAllowed = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.ReleaseNotYetAllowed");
 	private static final AdMessageKey MSG_ReleaseRefusedApproved = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.ReleaseRefusedApproved");
 	private static final AdMessageKey MSG_ReleasedAsAbandoned = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.ReleasedAsAbandoned");
+	private static final AdMessageKey MSG_MarkResolvedRefused = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.MarkResolvedRefused");
+	private static final AdMessageKey MSG_RetryRefusedSumUpNotReachable = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.RetryRefusedSumUpNotReachable");
+	public static final AdMessageKey MSG_NotPossibleForStatus = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.NotPossibleForStatus");
 
 	private static final String SYSCONFIG_ReleaseAfterSeconds = "de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds";
 	private static final int DEFAULT_ReleaseAfterSeconds = 180;
@@ -79,6 +89,7 @@ public class POSInvoiceCardSettlementService
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	@NonNull private final POSInvoiceCardSettlementRepository repository;
 	@NonNull private final POSInvoiceSettlementService invoiceSettlementService;
@@ -671,6 +682,198 @@ public class POSInvoiceCardSettlementService
 			errorManager.createIssue(new AdempiereException(MSG_ReleasedAsAbandoned, String.valueOf(settlement.getId().getRepoId()), invoiceDocumentNo)
 					.setParameter("ReleasedBy_User_ID", cashierId.getRepoId())
 					.setRecord(settlement.getId().toRecordRef()));
+		}
+	}
+
+	/**
+	 * Back office's "retry booking" of a BOOKING_ERROR settlement, or of an APPROVED one that waits for a journal:
+	 * under the settlement lock, prepares the settlement so that {@link POSInvoiceCardSettlementBooking#book} books it
+	 * again with a fresh attempt budget ({@code BookingAttempts} = 0), then books it right away:
+	 * <ul>
+	 * <li>BOOKING_ERROR with a payment (step B failed) → APPROVED, so that step B runs again;</li>
+	 * <li>BOOKING_ERROR without a payment (step A failed) → UNKNOWN (ABANDONED if it was released as abandoned), so
+	 * that step A creates the payment first. Its SumUp transaction is refreshed from SumUp before, so that step A sees
+	 * a charge refunded meanwhile and books nothing (UNKNOWN → FAILED "refunded at SumUp"; an abandoned one stays
+	 * ABANDONED);</li>
+	 * <li>APPROVED stays APPROVED (its {@code ErrorMsg} is kept, so a still missing journal is not reported again).</li>
+	 * </ul>
+	 * The SumUp lookup and the booking run in the settlement's client / org, so their AD_Issues land there, not in back
+	 * office's login context. The booking handles its own errors ({@link POSInvoiceCardSettlementBooking#book}): the
+	 * caller reads the outcome from the returned settlement.
+	 *
+	 * @return the settlement after the retry
+	 * @throws AdempiereException {@code RetryRefusedSumUpNotReachable} — the settlement has no payment yet and SumUp
+	 * could not be asked whether the charge was refunded; {@code NotPossibleForStatus} — the settlement is in another
+	 * status. In both cases nothing is changed.
+	 */
+	@NonNull
+	public POSInvoiceCardSettlement retryBooking(@NonNull final POSInvoiceCardSettlementId id)
+	{
+		// the SumUp lookup and the booking run their own transactions
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		// the SumUp lookup and the booking write their AD_Issues and SumUp API logs in the settlement's client / org
+		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(repository.getById(id).getClientAndOrgId()))
+		{
+			// back office may have refunded the charge in the SumUp dashboard; the poller does not refresh a successful transaction
+			final POSInvoiceCardSettlement settlementBefore = repository.getById(id);
+			if (settlementBefore.getStatus() == POSInvoiceCardSettlementStatus.BOOKING_ERROR
+					&& settlementBefore.getPaymentId() == null
+					&& !refreshSumUpTransactionFromRemote(id))
+			{
+				// a payment must not be created for a charge that may have been refunded
+				throw new AdempiereException(MSG_RetryRefusedSumUpNotReachable)
+						.markAsUserValidationError()
+						.setRecord(id.toRecordRef());
+			}
+
+			trxManager.runInNewTrx(() -> {
+				booking.setLockTimeout();
+				final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
+				assertStatusIn(settlement, POSInvoiceCardSettlementStatus.BOOKING_ERROR, POSInvoiceCardSettlementStatus.APPROVED);
+				repository.save(toRetry(settlement));
+			});
+
+			booking.book(id);
+		}
+
+		return repository.getById(id);
+	}
+
+	/**
+	 * @return whether the settlement waits for the background sweep ({@link POSInvoiceCardSettlementRepository#streamSweepCandidateIds})
+	 * to book it, i.e. a booking attempt failed with a transient error and is retried without back office: UNKNOWN (the
+	 * payment is not created yet), APPROVED without an error (a missing journal is an error back office must see), or
+	 * ABANDONED while SumUp reports its charge as approved and not refunded (an abandoned one whose charge was refunded
+	 * is final)
+	 */
+	public boolean isAwaitingAutomaticBooking(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		switch (settlement.getStatus())
+		{
+			case UNKNOWN:
+				return true;
+			case APPROVED:
+				return settlement.getErrorMsg() == null;
+			case ABANDONED:
+				return isApprovedAtSumUp(settlement.getId());
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * @return the settlement as {@link POSInvoiceCardSettlementBooking#book} must find it to book it again, with a fresh
+	 * attempt budget
+	 */
+	@NonNull
+	private static POSInvoiceCardSettlement toRetry(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		final POSInvoiceCardSettlement.POSInvoiceCardSettlementBuilder retry = settlement.toBuilder().bookingAttempts(0);
+		if (settlement.getStatus() != POSInvoiceCardSettlementStatus.BOOKING_ERROR)
+		{
+			return retry.build(); // APPROVED keeps its ErrorMsg, so that a still missing journal is not reported again
+		}
+
+		if (settlement.getPaymentId() != null)
+		{
+			// step B failed: run it again
+			return retry.status(POSInvoiceCardSettlementStatus.APPROVED).errorMsg(null).build();
+		}
+
+		// step A failed: run it again; it also handles a charge refunded at SumUp meanwhile
+		return retry.status(settlement.isAbandoned() ? POSInvoiceCardSettlementStatus.ABANDONED : POSInvoiceCardSettlementStatus.UNKNOWN)
+				.errorMsg(null)
+				.build();
+	}
+
+	/**
+	 * Back office's "mark resolved manually" of a BOOKING_ERROR settlement, or of an APPROVED one that waits for a
+	 * journal, after it fixed the booking by hand: under the invoice lock and then the settlement lock, sets SUCCESSFUL
+	 * and stores the note; nothing is booked. The invoice is no longer blocked.
+	 *
+	 * @throws AdempiereException {@code MarkResolvedRefused} — the invoice is still open while the card payment is not
+	 * (fully) allocated or was not even created: unblocking the invoice would let it be paid a second time;
+	 * {@link FillMandatoryException} — the note is empty; {@code NotPossibleForStatus} — the settlement is in another
+	 * status
+	 */
+	@NonNull
+	public POSInvoiceCardSettlement markResolvedManually(@NonNull final POSInvoiceCardSettlementId id, @Nullable final String note)
+	{
+		final String noteNorm = assertNoteNotBlank(note);
+
+		return trxManager.callInNewTrx(() -> {
+			booking.setLockTimeout();
+			// lock order: invoice before settlement; the settlement's invoice never changes
+			final I_C_Invoice invoice = invoiceSettlementService.lockInvoice(repository.getById(id).getInvoiceId());
+			final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
+			assertStatusIn(settlement, POSInvoiceCardSettlementStatus.BOOKING_ERROR, POSInvoiceCardSettlementStatus.APPROVED);
+
+			if (invoiceSettlementService.isStillOpen(invoice) && !isPaymentFullyAllocated(settlement))
+			{
+				throw new AdempiereException(MSG_MarkResolvedRefused)
+						.markAsUserValidationError()
+						.setRecord(id.toRecordRef());
+			}
+
+			return repository.save(settlement.toBuilder()
+					.status(POSInvoiceCardSettlementStatus.SUCCESSFUL)
+					.note(noteNorm)
+					.build());
+		});
+	}
+
+	private boolean isPaymentFullyAllocated(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		final PaymentId paymentId = settlement.getPaymentId();
+		return paymentId != null && paymentDAO.getAvailableAmount(paymentId).signum() == 0;
+	}
+
+	/**
+	 * Back office's "mark refunded" of a CREDIT_REFUND_PENDING settlement, after it refunded or reallocated the customer
+	 * credit, whatever part of the card payment is allocated: under the settlement lock, sets REFUNDED and stores the
+	 * note.
+	 *
+	 * @throws AdempiereException {@link FillMandatoryException} — the note is empty; {@code NotPossibleForStatus} — the settlement is in
+	 * another status
+	 */
+	@NonNull
+	public POSInvoiceCardSettlement markRefunded(@NonNull final POSInvoiceCardSettlementId id, @Nullable final String note)
+	{
+		final String noteNorm = assertNoteNotBlank(note);
+
+		return trxManager.callInNewTrx(() -> {
+			booking.setLockTimeout();
+			final POSInvoiceCardSettlement settlement = repository.getByIdForUpdate(id);
+			assertStatusIn(settlement, POSInvoiceCardSettlementStatus.CREDIT_REFUND_PENDING);
+
+			return repository.save(settlement.toBuilder()
+					.status(POSInvoiceCardSettlementStatus.REFUNDED)
+					.note(noteNorm)
+					.build());
+		});
+	}
+
+	@NonNull
+	private static String assertNoteNotBlank(@Nullable final String note)
+	{
+		final String noteNorm = StringUtils.trimBlankToNull(note);
+		if (noteNorm == null)
+		{
+			throw new FillMandatoryException(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Note);
+		}
+		return noteNorm;
+	}
+
+	private static void assertStatusIn(@NonNull final POSInvoiceCardSettlement settlement, @NonNull final POSInvoiceCardSettlementStatus... expectedStatuses)
+	{
+		if (!Arrays.asList(expectedStatuses).contains(settlement.getStatus()))
+		{
+			throw new AdempiereException(MSG_NotPossibleForStatus)
+					.markAsUserValidationError()
+					.setParameter("status", settlement.getStatus())
+					.setParameter("expectedStatuses", Arrays.toString(expectedStatuses))
+					.setRecord(settlement.getId().toRecordRef());
 		}
 	}
 
