@@ -612,3 +612,145 @@ Feature: Dhl Shipment
       | DHL_Shipper_Config_ID.Identifier | M_Shipper_ID.Identifier | product | missingField |
       | dhl_cfg_tc2_de                   | shipper_dhl_tc2_de      | V01PAK  | Kontonummer  |
     And no DHL request is logged for the DHL_ShipmentOrder of M_Package package1
+
+  # ##########################################################################
+  # ##########################################################################
+  @Id:S32526_TC3a
+  Scenario: DHL request carries the e-mail of the receiver's active default contact
+    # completing the shipment adds it to the daily DHL transport order, which sends the parcel to DHL
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder'
+    # the receiver has an active default contact with an e-mail, and a second, non-default contact
+    And metasfresh contains C_BPartners:
+      | Identifier           | Name                 | M_PricingSystem_ID | IsCustomer | CompanyName          | InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_contact | dhl_customer_contact | ps_dhl_1           | Y          | dhl_customer_contact | I           | 1000002                |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | dhl_location_contact     | DE          | addr 22      | 456        | locationCity_2 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier           | GLN           | C_BPartner_ID        | OPT.C_Location_ID.Identifier | IsShipTo | IsBillTo |
+      | dhl_location_contact | 1122334455671 | dhl_customer_contact | dhl_location_contact         | true     | true     |
+    # the receiver's contacts: the order has no contact and the location no e-mail, so the active default contact's e-mail goes to DHL
+    And metasfresh contains AD_Users:
+      | Identifier                   | Name                         | EMail                            | C_BPartner_ID        | IsDefaultContact |
+      | dhl_receiver_default_contact | dhl_receiver_default_contact | dhl.receiver.default@example.com | dhl_customer_contact | Y                |
+      | dhl_receiver_other_contact   | dhl_receiver_other_contact   | dhl.receiver.other@example.com   | dhl_customer_contact | N                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID        | C_BPartner_Location_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.DeliveryViaRule |
+      | order      | true    | dhl_customer_contact | dhl_location_contact   | 2022-12-12  | 540008         | shipper_DHL  | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID        | QtyEntered | M_HU_PI_Item_Product_ID |
+      | orderLine  | order      | test_product_dhl_01 | 1          | dhl_huProductTU_X       |
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+    # the shipment is generated as from the shipment schedule window: the picked CUs are packed into the order line's TU
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
+      | shipmentSchedule      | D            | true                | false       | true                                |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | shipmentSchedule      | shipment   | CO        |
+    Then after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | shipment   | transportOrder             |
+    And validate M_Packages for shipment shipment
+      | M_Shipper_ID | C_BPartner_ID        | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer_contact | dhl_location_contact   | 0.250         | package1     | 30         | 20        | 10         |
+    # the consignee e-mail is exactly the default contact's e-mail
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | consigneeEmail                   |
+      | V01PAK  | dhl.receiver.default@example.com |
+
+  # ##########################################################################
+  # ##########################################################################
+  @Id:S32526_TC3b
+  Scenario: DHL request without consignee e-mail when the receiver has no default contact
+    # completing the shipment adds it to the daily DHL transport order, which sends the parcel to DHL
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder'
+    # the receiver has no contact at all, so there is no default contact e-mail; C_BPartner.EMail is not read (a project may redefine that virtual column, e.g. to "-")
+    And metasfresh contains C_BPartners:
+      | Identifier              | Name                    | M_PricingSystem_ID | IsCustomer | CompanyName             | InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_no_contact | dhl_customer_no_contact | ps_dhl_1           | Y          | dhl_customer_no_contact | I           | 1000002                |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | dhl_location_no_contact  | DE          | addr 22      | 456        | locationCity_2 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier              | GLN           | C_BPartner_ID           | OPT.C_Location_ID.Identifier | IsShipTo | IsBillTo |
+      | dhl_location_no_contact | 1122334455672 | dhl_customer_no_contact | dhl_location_no_contact      | true     | true     |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID           | C_BPartner_Location_ID  | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.DeliveryViaRule |
+      | order      | true    | dhl_customer_no_contact | dhl_location_no_contact | 2022-12-12  | 540008         | shipper_DHL  | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID        | QtyEntered | M_HU_PI_Item_Product_ID |
+      | orderLine  | order      | test_product_dhl_01 | 1          | dhl_huProductTU_X       |
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+    # the shipment is generated as from the shipment schedule window: the picked CUs are packed into the order line's TU
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
+      | shipmentSchedule      | D            | true                | false       | true                                |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | shipmentSchedule      | shipment   | CO        |
+    Then after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | shipment   | transportOrder             |
+    And validate M_Packages for shipment shipment
+      | M_Shipper_ID | C_BPartner_ID           | C_BPartner_Location_ID  | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer_no_contact | dhl_location_no_contact | 0.250         | package1     | 30         | 20        | 10         |
+    # the request is built and logged without a consignee e-mail, i.e. the DHL order is not aborted by the e-mail check
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | consigneeEmail |
+      | V01PAK  | null           |
+
+  # ##########################################################################
+  # ##########################################################################
+  @Id:S32526_TC3c
+  Scenario: DHL request carries the e-mail of the shipment's contact, not the one of the receiver's default contact
+    # completing the shipment adds it to the daily DHL transport order, which sends the parcel to DHL
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder'
+    # the receiver has an active default contact with an e-mail, and a second, non-default contact which is the contact of the order and thus of the shipment
+    And metasfresh contains C_BPartners:
+      | Identifier                    | Name                          | M_PricingSystem_ID | IsCustomer | CompanyName                   | InvoiceRule | C_PaymentTerm_ID.Value |
+      | dhl_customer_shipment_contact | dhl_customer_shipment_contact | ps_dhl_1           | Y          | dhl_customer_shipment_contact | I           | 1000002                |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier      | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | dhl_location_shipment_contact | DE          | addr 22      | 456        | locationCity_2 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                    | GLN           | C_BPartner_ID                 | OPT.C_Location_ID.Identifier  | IsShipTo | IsBillTo |
+      | dhl_location_shipment_contact | 1122334455673 | dhl_customer_shipment_contact | dhl_location_shipment_contact | true     | true     |
+    # the receiver's contacts: the order is placed with the non-default contact
+    And metasfresh contains AD_Users:
+      | Identifier                      | Name                            | EMail                               | C_BPartner_ID                 | IsDefaultContact |
+      | dhl_receiver3c_default_contact  | dhl_receiver3c_default_contact  | dhl.receiver3c.default@example.com  | dhl_customer_shipment_contact | Y                |
+      | dhl_receiver3c_shipment_contact | dhl_receiver3c_shipment_contact | dhl.receiver3c.shipment@example.com | dhl_customer_shipment_contact | N                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID                 | C_BPartner_Location_ID        | AD_User_ID                      | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.DeliveryViaRule |
+      | order      | true    | dhl_customer_shipment_contact | dhl_location_shipment_contact | dhl_receiver3c_shipment_contact | 2022-12-12  | 540008         | shipper_DHL  | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID        | QtyEntered | M_HU_PI_Item_Product_ID |
+      | orderLine  | order      | test_product_dhl_01 | 1          | dhl_huProductTU_X       |
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+    # the shipment is generated as from the shipment schedule window: the picked CUs are packed into the order line's TU
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
+      | shipmentSchedule      | D            | true                | false       | true                                |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | shipmentSchedule      | shipment   | CO        |
+    Then after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | shipment   | transportOrder             |
+    And validate M_Packages for shipment shipment
+      | M_Shipper_ID | C_BPartner_ID                 | C_BPartner_Location_ID        | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer_shipment_contact | dhl_location_shipment_contact | 0.250         | package1     | 30         | 20        | 10         |
+    # the shipment's contact wins over the receiver's default contact
+    And the DHL request logged for the DHL_ShipmentOrder of M_Package package1 has:
+      | product | consigneeEmail                      |
+      | V01PAK  | dhl.receiver3c.shipment@example.com |

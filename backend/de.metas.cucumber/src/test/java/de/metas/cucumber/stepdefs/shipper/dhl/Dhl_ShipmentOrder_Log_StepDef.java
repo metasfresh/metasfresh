@@ -8,6 +8,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.cucumber.stepdefs.DHL_Shipper_Config_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -56,6 +57,7 @@ public class Dhl_ShipmentOrder_Log_StepDef
 	 * @cucumber.columns
 	 *   <b>product</b> - (optional) expected {@code shipments[0].product} of the logged DHL request<br>
 	 *   <b>billingNumber</b> - (optional) expected {@code shipments[0].billingNumber} of the logged DHL request<br>
+	 *   <b>consigneeEmail</b> - (optional) expected {@code shipments[0].consignee.email} of the logged DHL request; {@code null} means the request carries no consignee e-mail<br>
 	 * @cucumber.depends StepDefData: M_Package_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -72,7 +74,13 @@ public class Dhl_ShipmentOrder_Log_StepDef
 				.orElseThrow(() -> new AdempiereException("No DHL_ShipmentOrder found for " + packageId));
 
 		// the DHL request is sent by an async work package, so wait for its log record
-		StepDefUtil.tryAndWait(WAIT_SECONDS, 500, () -> retrieveLatestLog(shipmentOrder).isPresent());
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.workerFromBooleanSupplier(() -> retrieveLatestLog(shipmentOrder).isPresent())
+				// a request that fails while being built is never logged; the failed work package says why
+				.logContext(() -> "failed DHL work package error: " + retrieveFailedWorkPackage(shipmentOrder).map(I_C_Queue_WorkPackage::getErrorMsg).orElse("<none>"))
+				.maxWaitSeconds(WAIT_SECONDS)
+				.checkingIntervalMs(500L)
+				.execute();
 		final I_Dhl_ShipmentOrder_Log log = retrieveLatestLog(shipmentOrder)
 				.orElseThrow(() -> new AdempiereException("No Dhl_ShipmentOrder_Log found within " + WAIT_SECONDS + "s for DHL_ShipmentOrderRequest_ID=" + shipmentOrder.getDHL_ShipmentOrderRequest_ID()));
 
@@ -84,6 +92,17 @@ public class Dhl_ShipmentOrder_Log_StepDef
 				.ifPresent(product -> softly.assertThat(shipment.path("product").asText()).as("product").isEqualTo(product));
 		row.getAsOptionalString("billingNumber")
 				.ifPresent(billingNumber -> softly.assertThat(shipment.path("billingNumber").asText()).as("billingNumber").isEqualTo(billingNumber));
+		row.getAsOptionalString("consigneeEmail").ifPresent(expectedEmail -> {
+			final JsonNode email = shipment.path("consignee").path("email");
+			if (DataTableUtil.nullToken2Null(expectedEmail) == null)
+			{
+				softly.assertThat(email.isTextual()).as("consignee.email is absent, but is %s", email).isFalse();
+			}
+			else
+			{
+				softly.assertThat(email.asText()).as("consignee.email").isEqualTo(expectedEmail);
+			}
+		});
 		softly.assertAll();
 	}
 
