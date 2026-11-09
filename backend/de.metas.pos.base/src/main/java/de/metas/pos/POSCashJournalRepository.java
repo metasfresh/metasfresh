@@ -3,6 +3,7 @@ package de.metas.pos;
 import com.google.common.collect.ImmutableList;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.repository.model.I_C_POS_Journal;
 import de.metas.pos.repository.model.I_C_POS_JournalLine;
 import de.metas.user.UserId;
@@ -113,6 +114,7 @@ public class POSCashJournalRepository
 				.cashierId(UserId.ofRepoId(record.getCashier_ID()))
 				.description(record.getDescription())
 				.posOrderAndPaymentId(POSOrderAndPaymentId.ofRepoIdsOrNull(record.getC_POS_Order_ID(), record.getC_POS_Payment_ID()))
+				.posInvoiceCardSettlementId(POSInvoiceCardSettlementId.ofRepoIdOrNull(record.getC_POS_InvoiceCardSettlement_ID()))
 				.build();
 	}
 
@@ -136,6 +138,7 @@ public class POSCashJournalRepository
 		record.setDescription(from.getDescription());
 		record.setC_POS_Order_ID(from.getPosOrderAndPaymentId() != null ? from.getPosOrderAndPaymentId().getOrderId().getRepoId() : -1);
 		record.setC_POS_Payment_ID(from.getPosOrderAndPaymentId() != null ? from.getPosOrderAndPaymentId().getPaymentId().getRepoId() : -1);
+		record.setC_POS_InvoiceCardSettlement_ID(from.getPosInvoiceCardSettlementId() != null ? from.getPosInvoiceCardSettlementId().getRepoId() : -1);
 	}
 
 	public POSCashJournal changeJournalById(@NonNull final POSCashJournalId cashJournalId, @NonNull final Consumer<POSCashJournal> updater)

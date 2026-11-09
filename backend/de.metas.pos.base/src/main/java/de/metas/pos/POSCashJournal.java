@@ -3,6 +3,7 @@ package de.metas.pos;
 import com.google.common.collect.ImmutableList;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -84,12 +85,7 @@ public class POSCashJournal
 
 	public void addCashInOut(@NonNull final Money signedAmount, @NonNull final UserId cashierId, @NonNull final String description)
 	{
-		signedAmount.assertCurrencyId(currencyId);
-
-		if (isClosed)
-		{
-			throw new AdempiereException("Already closed");
-		}
+		assertOpenAndCurrency(signedAmount);
 
 		add(POSCashJournalLine.builder()
 				.type(POSCashJournalLineType.CASH_IN_OUT)
@@ -97,6 +93,37 @@ public class POSCashJournal
 				.cashierId(cashierId)
 				.description(description)
 				.build()); // zero amount rejected by POSCashJournalLine
+	}
+
+	public void addCardSettlementPayment(
+			@NonNull final Money amount,
+			@NonNull final UserId cashierId,
+			@NonNull final POSInvoiceCardSettlementId posInvoiceCardSettlementId,
+			@Nullable final String description)
+	{
+		assertOpenAndCurrency(amount);
+		if (amount.signum() <= 0)
+		{
+			throw new AdempiereException("amount must be positive: " + amount);
+		}
+
+		add(POSCashJournalLine.builder()
+				.type(POSCashJournalLineType.CARD_PAYMENT)
+				.amount(amount)
+				.cashierId(cashierId)
+				.description(description)
+				.posInvoiceCardSettlementId(posInvoiceCardSettlementId)
+				.build());
+	}
+
+	private void assertOpenAndCurrency(@NonNull final Money amount)
+	{
+		amount.assertCurrencyId(currencyId);
+
+		if (isClosed)
+		{
+			throw new AdempiereException("Already closed");
+		}
 	}
 
 	private void addClosingDifference(@NonNull final Money closingDifferenceAmt, @NonNull final UserId cashierId, @Nullable final String description)
