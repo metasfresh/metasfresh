@@ -17,8 +17,8 @@ import CashPaymentDetailsModal from '../payment_panel/CashPaymentDetailsModal';
 import CardSettlementStatusPanel, {
   CARD_STATUS_SUCCESSFUL,
   isBlockingCardSettlement,
+  isNewPaymentAllowed,
   isReleasableStatus,
-  isRetryableCardSettlement,
 } from './CardSettlementStatusPanel';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { toastError } from '../../../../utils/toast';
@@ -305,7 +305,7 @@ const InvoiceSettlementModal = () => {
     // The selected invoice with the payment choice and, once a card payment exists, its state.
     const isCardStage = stage === STAGE_CARD;
     const isStartingCardPayment = isCardStage && !cardSettlement && isSubmitting;
-    const isPaymentChoiceAllowed = !isCardStage || isRetryableCardSettlement(cardSettlement);
+    const isPaymentChoiceAllowed = !isCardStage || isNewPaymentAllowed(cardSettlement);
     const isCashRefused = isCardStage && (isCardSettlementBlocking || isStartingCardPayment);
     const isReleaseShown = isCardStage && isReleasableStatus(cardSettlement);
     const isReleaseEnabled = isReleaseShown && now >= Date.parse(cardSettlement.releasableAt);

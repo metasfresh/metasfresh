@@ -27,10 +27,14 @@ export const isBlockingCardSettlement = (settlement) =>
   );
 
 /**
- * @returns whether the cashier may try again: by card or in cash (the card payment did not go through, or was released)
+ * @returns whether the cashier may pay the invoice again, by card or in cash: the card payment did not go through or
+ * was released, or it was released as abandoned and SumUp approved it later (being booked, or its booking failed) —
+ * an abandoned settlement never blocks its invoice, see {@link isBlockingCardSettlement}
  */
-export const isRetryableCardSettlement = (settlement) =>
-  !!settlement && [CARD_STATUS_FAILED, CARD_STATUS_CANCELLED, CARD_STATUS_ABANDONED].includes(settlement.status);
+export const isNewPaymentAllowed = (settlement) =>
+  !!settlement &&
+  ([CARD_STATUS_FAILED, CARD_STATUS_CANCELLED, CARD_STATUS_ABANDONED].includes(settlement.status) ||
+    (!!settlement.isAbandoned && [CARD_STATUS_APPROVED, CARD_STATUS_BOOKING_ERROR].includes(settlement.status)));
 
 /**
  * @returns whether the cashier may check / release the settlement (only a waiting or unknown one)
