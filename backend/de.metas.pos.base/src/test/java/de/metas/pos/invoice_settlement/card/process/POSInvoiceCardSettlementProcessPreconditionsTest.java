@@ -9,6 +9,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.payment.sumup.SumUpService;
+import de.metas.pos.POSCardReaderCheckoutTerminator;
 import de.metas.pos.POSCardReleaseWait;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
@@ -61,7 +62,8 @@ class POSInvoiceCardSettlementProcessPreconditionsTest
 				mock(MoneyService.class),
 				mock(POSInvoiceCardSettlementBooking.class),
 				mock(SumUpService.class),
-				new POSCardReleaseWait()));
+				new POSCardReleaseWait(),
+				new POSCardReaderCheckoutTerminator(mock(POSTerminalService.class), mock(SumUpService.class))));
 	}
 
 	private POSInvoiceCardSettlementId settlementWithStatus(@NonNull final POSInvoiceCardSettlementStatus status)

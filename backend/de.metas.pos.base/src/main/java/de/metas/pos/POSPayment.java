@@ -203,6 +203,8 @@ public class POSPayment
 	 * A late SumUp approval never revives a payment the till already gave up on:
 	 * <ul>
 	 * <li>an event of the released checkout leaves the payment unchanged (a SUCCESSFUL one is flagged: not booked, to be reviewed);</li>
+	 * <li>so does an event of any other earlier checkout of this payment, i.e. one naming a SumUp transaction other than the one of
+	 * the payment's current checkout (e.g. a checkout released before the last release);</li>
 	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged and flagged (a stale SUCCESSFUL event processed after a refund is flagged too: a harmless extra record for the back office);</li>
 	 * <li>PENDING on an UNKNOWN payment keeps it UNKNOWN;</li>
 	 * <li>everything else, including SUCCESSFUL on a plain FAILED / CANCELLED payment, is applied as is.</li>
@@ -215,6 +217,10 @@ public class POSPayment
 		final POSPaymentProcessingStatus remoteStatus = response.getStatus();
 
 		if (releasedSumUpClientTransactionId != null && releasedSumUpClientTransactionId.equals(response.getClientTransactionId()))
+		{
+			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful());
+		}
+		if (isOfAnotherCheckoutThanTheCurrentOne(response))
 		{
 			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful());
 		}
@@ -240,6 +246,20 @@ public class POSPayment
 						.build())
 				.build();
 		return POSPaymentRemoteUpdateResult.of(paymentChanged, false);
+	}
+
+	/**
+	 * @return whether the result is of an earlier checkout: both the result and the payment's current checkout name a SumUp
+	 * transaction, and they differ. While the current checkout names none yet (between its start and the storing of SumUp's
+	 * answer), a result cannot be told apart from the current checkout's own and is applied: SumUp's status event of a new
+	 * checkout may arrive before its answer is stored.
+	 */
+	private boolean isOfAnotherCheckoutThanTheCurrentOne(@NonNull final POSPaymentProcessResponse response)
+	{
+		final String remoteClientTransactionId = response.getClientTransactionId();
+		return sumUpClientTransactionId != null
+				&& remoteClientTransactionId != null
+				&& !sumUpClientTransactionId.equals(remoteClientTransactionId);
 	}
 
 	/**

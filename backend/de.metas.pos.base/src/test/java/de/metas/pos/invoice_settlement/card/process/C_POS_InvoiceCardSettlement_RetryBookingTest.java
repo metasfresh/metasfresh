@@ -17,6 +17,7 @@ import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.pos.POSCardReaderCheckoutTerminator;
 import de.metas.pos.POSCardReleaseWait;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
@@ -73,7 +74,8 @@ class C_POS_InvoiceCardSettlement_RetryBookingTest
 				mock(MoneyService.class),
 				booking,
 				mock(SumUpService.class),
-				new POSCardReleaseWait()));
+				new POSCardReleaseWait(),
+				new POSCardReaderCheckoutTerminator(mock(POSTerminalService.class), mock(SumUpService.class))));
 	}
 
 	private POSInvoiceCardSettlementId settlement(

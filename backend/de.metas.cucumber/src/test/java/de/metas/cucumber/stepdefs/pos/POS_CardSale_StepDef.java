@@ -690,6 +690,29 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
+	 * Asserts that the sale's card payment does not carry the card details (SumUp's transaction id) of the first SumUp
+	 * transaction the stub accepted for it, as metasfresh saved that transaction: a result of that checkout was not applied.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the card payment of POS sale sale1 does not carry the card details of the first SumUp transaction
+	 * </pre>
+	 */
+	@And("^the card payment of POS sale (\\S+) does not carry the card details of the first SumUp transaction$")
+	public void assertCardPaymentDoesNotCarryFirstTransaction(@NonNull final String saleIdentifier)
+	{
+		final Sale sale = getSale(saleIdentifier);
+		final String firstClientTransactionId = getAcceptedClientTransactionId(sale, true);
+		final List<SumUpTransaction> firstTrxs = sumUpTransactionRepository.list(SumUpTransactionQuery.ofClientTransactionId(SumUpClientTransactionId.ofString(firstClientTransactionId)));
+		assertThat(firstTrxs).as("first SumUp transaction of POS sale %s saved by metasfresh", saleIdentifier).hasSize(1);
+
+		assertThat(loadCardPaymentRecord(sale).getPOSPaymentProcessing_TrxId())
+				.as("SumUp transaction id on the card payment of POS sale %s", saleIdentifier)
+				.isNotEqualTo(firstTrxs.get(0).getExternalId().getAsString());
+	}
+
+	/**
 	 * Asserts the open amount of the sale (its total minus its payments that are not deleted), as the till shows it.
 	 *
 	 * @cucumber.stepdef

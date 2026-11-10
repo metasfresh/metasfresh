@@ -22,6 +22,7 @@ import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.pos.POSCardReaderCheckoutTerminator;
 import de.metas.pos.POSCardReleaseWait;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
@@ -95,7 +96,8 @@ class POSInvoiceCardSettlementServiceTest
 				mock(MoneyService.class),
 				booking,
 				sumUpService,
-				new POSCardReleaseWait());
+				new POSCardReleaseWait(),
+				new POSCardReaderCheckoutTerminator(mock(POSTerminalService.class), sumUpService));
 	}
 
 	@Test

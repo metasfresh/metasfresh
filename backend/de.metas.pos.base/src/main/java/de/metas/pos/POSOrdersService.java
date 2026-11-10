@@ -76,6 +76,7 @@ public class POSOrdersService
 	@NonNull private final POSOrderProcessingServices posOrderProcessingServices;
 	@NonNull private final SumUpService sumUpService;
 	@NonNull private final POSCardReleaseWait cardReleaseWait;
+	@NonNull private final POSCardReaderCheckoutTerminator cardReaderCheckoutTerminator;
 	@NonNull private final Sleeper sleeper;
 
 	/**
@@ -94,9 +95,10 @@ public class POSOrdersService
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
 			@NonNull final SumUpService sumUpService,
-			@NonNull final POSCardReleaseWait cardReleaseWait)
+			@NonNull final POSCardReleaseWait cardReleaseWait,
+			@NonNull final POSCardReaderCheckoutTerminator cardReaderCheckoutTerminator)
 	{
-		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, sumUpService, cardReleaseWait, POSOrdersService::sleepUninterruptibly);
+		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, sumUpService, cardReleaseWait, cardReaderCheckoutTerminator, POSOrdersService::sleepUninterruptibly);
 	}
 
 	@VisibleForTesting
@@ -107,6 +109,7 @@ public class POSOrdersService
 			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
 			@NonNull final SumUpService sumUpService,
 			@NonNull final POSCardReleaseWait cardReleaseWait,
+			@NonNull final POSCardReaderCheckoutTerminator cardReaderCheckoutTerminator,
 			@NonNull final Sleeper sleeper)
 	{
 		this.posTerminalService = posTerminalService;
@@ -115,6 +118,7 @@ public class POSOrdersService
 		this.posOrderProcessingServices = posOrderProcessingServices;
 		this.sumUpService = sumUpService;
 		this.cardReleaseWait = cardReleaseWait;
+		this.cardReaderCheckoutTerminator = cardReaderCheckoutTerminator;
 		this.sleeper = sleeper;
 	}
 
@@ -803,7 +807,7 @@ public class POSOrdersService
 		}
 		if (isCardPaymentReleaseTooEarly(order, payment))
 		{
-			return refusedRelease(order, MSG_ReleaseNotYetAllowed);
+			return refusedReleaseTooEarly(order);
 		}
 
 		terminateCardReaderCheckoutUnlessFinished(request, order, payment);
@@ -835,7 +839,7 @@ public class POSOrdersService
 		// the first request checked the wait already; repeated so that no request can release earlier
 		if (isCardPaymentReleaseTooEarly(order, payment))
 		{
-			return refusedRelease(order, MSG_ReleaseNotYetAllowed);
+			return refusedReleaseTooEarly(order);
 		}
 
 		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), payment.getLocalIdNotNull());
@@ -867,9 +871,9 @@ public class POSOrdersService
 				.orElseThrow(() -> new AdempiereException("No payment found for " + posPaymentExternalId));
 		final Optional<SumUpTransaction> ownTransaction = findOwnSumUpTransaction(payment);
 
-		final boolean approved = ownTransaction
-				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
-				.orElseGet(payment::isSuccessful);
+		final boolean approved = ownTransaction.isPresent()
+				? POSCardReaderCheckoutTerminator.isApprovedAtSumUp(ownTransaction.get())
+				: payment.isSuccessful();
 		if (approved)
 		{
 			return POSCardPaymentReleaseResult.builder()
@@ -898,6 +902,16 @@ public class POSOrdersService
 				.build();
 	}
 
+	private POSCardPaymentReleaseResult refusedReleaseTooEarly(@NonNull final POSOrder order)
+	{
+		final long releaseAfterSeconds = cardReleaseWait.getReleaseAfter(order.getClientAndOrgId()).getSeconds();
+		return POSCardPaymentReleaseResult.builder()
+				.order(order)
+				.refusedMessageKey(MSG_ReleaseNotYetAllowed)
+				.refusedMessage(TranslatableStrings.adMessage(MSG_ReleaseNotYetAllowed, String.valueOf(releaseAfterSeconds)))
+				.build();
+	}
+
 	private static boolean isUnknownCardPayment(@NonNull final POSPayment payment)
 	{
 		return payment.getPaymentMethod().isCard() && payment.isUnknown();
@@ -915,52 +929,27 @@ public class POSOrdersService
 	}
 
 	/**
-	 * Asks the terminal's default card reader to abort its checkout, unless the payment's own SumUp transaction is known and
-	 * no longer PENDING after it was refreshed from SumUp: SumUp's terminate aborts whatever checkout the reader runs (it takes
-	 * no checkout id), which then can only be another one (e.g. another till's, on a shared reader). So:
-	 * <ul>
-	 * <li>the payment names no SumUp transaction (timeout, network error, SumUp 5xx, or a stopped checkout) → terminate: the
-	 * reader may still run this payment's checkout;</li>
-	 * <li>otherwise the payment is checked first ({@link #checkCardPayment}: its transaction is refreshed, or imported) →
-	 * terminate unless that transaction is stored and no longer PENDING (a failed lookup leaves the last known status).</li>
-	 * </ul>
-	 * The check after the terminate (see {@link #releaseCardPayment}) sees what the reader did meanwhile.
+	 * Cancels the checkout on the terminal's default card reader unless the payment's own SumUp transaction, refreshed from
+	 * SumUp first, is no longer PENDING (see {@link POSCardReaderCheckoutTerminator#terminateUnlessFinished}). The refresh is
+	 * the check ({@link #checkCardPayment}: the transaction is refreshed, or imported), run only if the payment names a SumUp
+	 * transaction. The check after the terminate (see {@link #releaseCardPayment}) sees what the reader did meanwhile.
 	 */
 	private void terminateCardReaderCheckoutUnlessFinished(
 			@NonNull final POSCardPaymentReleaseRequest request,
 			@NonNull final POSOrder order,
 			@NonNull final POSPayment payment)
 	{
-		if (payment.getSumUpClientTransactionId() != null)
-		{
-			checkCardPayment(request.getPosTerminalId(), request.getPosOrderExternalId(), request.getPosPaymentExternalId(), request.getCashierId());
-			final boolean isFinishedAtSumUp = findOwnSumUpTransaction(payment)
-					.map(sumUpTrx -> !sumUpTrx.getStatus().isPending())
-					.orElse(false);
-			if (isFinishedAtSumUp)
-			{
-				return;
-			}
-		}
-
-		terminateCardReaderCheckout(order);
-	}
-
-	/**
-	 * Asks the terminal's default card reader to abort its checkout. Best effort: SumUp does not confirm it, and a failure
-	 * (e.g. a 4xx because the reader runs no checkout) is only logged; the check that follows decides.
-	 */
-	private void terminateCardReaderCheckout(@NonNull final POSOrder order)
-	{
-		try
-		{
-			final SumUpConfigId sumUpConfigId = getSumUpConfigId(order);
-			sumUpService.terminateCardReaderCheckout(sumUpConfigId, sumUpService.getConfig(sumUpConfigId).getDefaultCardReaderExternalIdNotNull());
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Could not terminate the card reader checkout of POS order {}; releasing anyway", order.getExternalId(), ex);
-		}
+		cardReaderCheckoutTerminator.terminateUnlessFinished(
+				order.getPosTerminalId(),
+				() -> {
+					if (payment.getSumUpClientTransactionId() == null)
+					{
+						return Optional.empty();
+					}
+					checkCardPayment(request.getPosTerminalId(), request.getPosOrderExternalId(), request.getPosPaymentExternalId(), request.getCashierId());
+					return findOwnSumUpTransaction(payment);
+				},
+				"the card payment " + payment.getExternalId() + " of POS order " + order.getExternalId());
 	}
 
 	/**
@@ -968,9 +957,7 @@ public class POSOrdersService
 	 */
 	private boolean isApprovedAtSumUp(@NonNull final POSPayment payment)
 	{
-		return findOwnSumUpTransaction(payment)
-				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
-				.orElse(false);
+		return POSCardReaderCheckoutTerminator.isApprovedAtSumUp(findOwnSumUpTransaction(payment).orElse(null));
 	}
 
 	/**
@@ -1002,7 +989,7 @@ public class POSOrdersService
 			errorManager.createIssue(new AdempiereException(MSG_ReleasedAsNotCharged)
 					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
 					.setParameter("sumUpClientTransactionId", released.getSumUpClientTransactionId())
-					.setParameter("ReleasedBy_User_ID", cashierId.getRepoId())
+					.setParameter("releasedByUserId", cashierId.getRepoId())
 					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId())));
 		}
 	}

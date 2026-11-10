@@ -101,7 +101,7 @@ class POSCardPaymentReleaseTest
 		final POSTerminalService posTerminalService = mock(POSTerminalService.class);
 		when(posTerminalService.getPOSTerminalById(TERMINAL_ID)).thenReturn(terminal);
 
-		service = new POSOrdersService(posTerminalService, ordersRepository, mock(CurrencyRepository.class), mock(POSOrderProcessingServices.class), sumUpService, new POSCardReleaseWait());
+		service = new POSOrdersService(posTerminalService, ordersRepository, mock(CurrencyRepository.class), mock(POSOrderProcessingServices.class), sumUpService, new POSCardReleaseWait(), new POSCardReaderCheckoutTerminator(posTerminalService, sumUpService));
 	}
 
 	@AfterEach

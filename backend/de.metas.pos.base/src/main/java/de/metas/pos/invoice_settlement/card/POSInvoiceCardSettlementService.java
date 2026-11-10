@@ -14,12 +14,11 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.payment.sumup.SumUpConfig;
-import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpContext;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.pos.POSCardReaderCheckoutTerminator;
 import de.metas.pos.POSCardReleaseWait;
 import de.metas.pos.POSPaymentProcessingStatus;
 import de.metas.pos.POSTerminal;
@@ -32,7 +31,6 @@ import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
 import de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -95,6 +93,7 @@ public class POSInvoiceCardSettlementService
 	@NonNull private final POSInvoiceCardSettlementBooking booking;
 	@NonNull private final SumUpService sumUpService;
 	@NonNull private final POSCardReleaseWait releaseWait;
+	@NonNull private final POSCardReaderCheckoutTerminator cardReaderCheckoutTerminator;
 
 	@NonNull
 	public POSInvoiceCardSettlement getById(@NonNull final POSInvoiceCardSettlementId id)
@@ -651,9 +650,7 @@ public class POSInvoiceCardSettlementService
 	 */
 	private boolean isApprovedAtSumUp(@NonNull final POSInvoiceCardSettlementId id)
 	{
-		return booking.findSumUpTransaction(id)
-				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
-				.orElse(false);
+		return POSCardReaderCheckoutTerminator.isApprovedAtSumUp(booking.findSumUpTransaction(id).orElse(null));
 	}
 
 	/**
@@ -701,54 +698,26 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * Asks the terminal's default card reader to abort its checkout, unless the settlement's own SumUp transaction is
-	 * known and SumUp reports it as no longer PENDING: SumUp's terminate aborts whatever checkout the reader runs (it
-	 * takes no checkout id), which then can only be another one (e.g. another till's, on a shared reader). So:
-	 * <ul>
-	 * <li>no SumUp transaction (an orphan, or UNKNOWN because metasfresh failed right after SumUp accepted the checkout)
-	 * → terminate: the reader may still run this settlement's checkout;</li>
-	 * <li>otherwise the transaction is refreshed from SumUp first (a failed lookup leaves the last known status, see
-	 * {@link #refreshSumUpTransactionFromRemote}) → terminate only if it is still PENDING.</li>
-	 * </ul>
-	 * This lookup is not the one of the re-check that follows ({@link #check}): that one, after the terminate, sees what
-	 * the reader did meanwhile. Residual limit: while this settlement's transaction is PENDING, a shared reader may already
-	 * run another checkout; SumUp offers no way to tell.
+	 * Cancels the checkout on the terminal's default card reader unless the settlement's own SumUp transaction, refreshed
+	 * from SumUp first, is no longer PENDING (see {@link POSCardReaderCheckoutTerminator#terminateUnlessFinished}). This
+	 * lookup is not the one of the re-check that follows ({@link #check}): that one, after the terminate, sees what the
+	 * reader did meanwhile.
 	 */
 	private void terminateCheckoutOnReaderUnlessFinished(@NonNull final POSInvoiceCardSettlement settlement)
 	{
 		final POSInvoiceCardSettlementId id = settlement.getId();
-		if (booking.findSumUpTransaction(id).isPresent())
-		{
-			refreshSumUpTransactionFromRemote(id);
-			final boolean isFinishedAtSumUp = booking.findSumUpTransaction(id)
-					.map(sumUpTrx -> !sumUpTrx.getStatus().isPending())
-					.orElse(false);
-			if (isFinishedAtSumUp)
-			{
-				return;
-			}
-		}
-
-		terminateCheckoutOnReader(settlement);
-	}
-
-	/**
-	 * Asks the terminal's default card reader to abort its checkout. Best effort: SumUp does not confirm it, and a
-	 * failure (e.g. a 4xx because the reader has no checkout running) is only logged; the re-check decides.
-	 */
-	private void terminateCheckoutOnReader(@NonNull final POSInvoiceCardSettlement settlement)
-	{
-		try
-		{
-			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminalService.getPOSTerminalById(settlement.getPosTerminalId()).getPaymentProcessorConfigNotNull();
-			final SumUpConfigId sumUpConfigId = Check.assumeNotNull(paymentProcessorConfig.getSumUpConfigId(), "sumUpConfigId is set for {}", paymentProcessorConfig);
-			final SumUpConfig sumUpConfig = sumUpService.getConfig(sumUpConfigId);
-			sumUpService.terminateCardReaderCheckout(sumUpConfigId, sumUpConfig.getDefaultCardReaderExternalIdNotNull());
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Could not terminate the card reader checkout of card settlement {}; releasing anyway", settlement.getId(), ex);
-		}
+		cardReaderCheckoutTerminator.terminateUnlessFinished(
+				settlement.getPosTerminalId(),
+				() -> {
+					if (!booking.findSumUpTransaction(id).isPresent())
+					{
+						return Optional.empty();
+					}
+					// a failed lookup leaves the last known status, see refreshSumUpTransactionFromRemote
+					refreshSumUpTransactionFromRemote(id);
+					return booking.findSumUpTransaction(id);
+				},
+				"card settlement " + id);
 	}
 
 	/**

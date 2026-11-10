@@ -265,4 +265,33 @@ class POSPaymentTest
 		assertThatThrownBy(() -> cardPayment(POSPaymentProcessingStatus.PENDING).changingStatusToReleasedAsNotCharged())
 				.isInstanceOf(AdempiereException.class);
 	}
+
+	@Test
+	void remote_ofAnEarlierCheckout_unchanged_successfulFlagged()
+	{
+		// checkout RELEASED_TRX was released, the retry OTHER_TRX was released too: only the latter is remembered as released
+		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.FAILED)
+				.sumUpClientTransactionId(OTHER_TRX)
+				.releasedSumUpClientTransactionId(OTHER_TRX)
+				.build();
+
+		for (final POSPaymentProcessingStatus status : POSPaymentProcessingStatus.values())
+		{
+			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response(status, RELEASED_TRX));
+			assertThat(result.getPayment()).as("status " + status).isEqualTo(payment);
+			assertThat(result.isLateApprovalNotBooked()).as("flag for " + status).isEqualTo(status == POSPaymentProcessingStatus.SUCCESSFUL);
+		}
+	}
+
+	@Test
+	void remote_ofTheCurrentCheckout_applied()
+	{
+		final POSPayment pending = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).sumUpClientTransactionId(OTHER_TRX).build();
+
+		final POSPaymentRemoteUpdateResult result = pending.changingStatusFromRemote(response(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX));
+
+		assertThat(result.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+		assertThat(result.getPayment().getCardProcessingDetails().getTransactionId()).isEqualTo("ext-1");
+		assertThat(result.isLateApprovalNotBooked()).isFalse();
+	}
 }
