@@ -154,11 +154,15 @@ UPDATE AD_Column_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-10 09:00
 ;
 
 
-ALTER TABLE C_POS_Payment ADD COLUMN CardCheckoutStartedAt TIMESTAMP WITH TIME ZONE, ADD COLUMN SUMUP_ClientTransactionID VARCHAR(255), ADD COLUMN ReleasedSUMUPClientTransactionID VARCHAR(255), ADD COLUMN CardLookupFailingSince TIMESTAMP WITH TIME ZONE
+/* DDL */ SELECT public.db_alter_table('C_POS_Payment','ALTER TABLE public.C_POS_Payment ADD COLUMN CardCheckoutStartedAt TIMESTAMP WITH TIME ZONE, ADD COLUMN SUMUP_ClientTransactionID VARCHAR(255), ADD COLUMN ReleasedSUMUPClientTransactionID VARCHAR(255), ADD COLUMN CardLookupFailingSince TIMESTAMP WITH TIME ZONE')
 ;
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
 VALUES (0,546005 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:00:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Ergebnis der Kartenzahlung unbekannt — bitte Kartenterminal prüfen','E',TO_TIMESTAMP('2026-11-10 09:00:46','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.CardPaymentResultUnknown')
+;
+
+UPDATE AD_Message SET ErrorCode='POS_PAYMENT_CARD_RESULT_UNKNOWN', Updated=TO_TIMESTAMP('2026-11-10 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Message_ID=546005
 ;
 
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546005 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
@@ -179,6 +183,10 @@ INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,E
 VALUES (0,546006 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:00:50','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Freigeben ist nur bei unbekanntem Ergebnis möglich','E',TO_TIMESTAMP('2026-11-10 09:00:51','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.ReleaseOnlyIfResultUnknown')
 ;
 
+UPDATE AD_Message SET ErrorCode='POS_PAYMENT_RELEASE_NOT_UNKNOWN', Updated=TO_TIMESTAMP('2026-11-10 10:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Message_ID=546006
+;
+
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546006 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
 
@@ -195,6 +203,10 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-10 09:0
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
 VALUES (0,546007 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:00:55','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Freigabe erst nach Ablauf der Wartezeit möglich','E',TO_TIMESTAMP('2026-11-10 09:00:56','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.ReleaseNotYetAllowed')
+;
+
+UPDATE AD_Message SET ErrorCode='POS_PAYMENT_RELEASE_NOT_YET_ALLOWED', Updated=TO_TIMESTAMP('2026-11-10 10:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Message_ID=546007
 ;
 
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546007 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
@@ -215,6 +227,10 @@ INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,E
 VALUES (0,546008 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','SumUp hat die Zahlung genehmigt; Freigabe nicht möglich','E',TO_TIMESTAMP('2026-11-10 09:01:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.ReleaseRefusedApproved')
 ;
 
+UPDATE AD_Message SET ErrorCode='POS_PAYMENT_RELEASE_REFUSED_APPROVED', Updated=TO_TIMESTAMP('2026-11-10 10:00:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Message_ID=546008
+;
+
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546008 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
 
@@ -230,7 +246,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-10 09:0
 
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,546009 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Kartenzahlung vom Kassierer als nicht belastet freigegeben','E',TO_TIMESTAMP('2026-11-10 09:01:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.ReleasedAsNotCharged')
+VALUES (0,546009 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Kartenzahlung vom Kassierer als nicht belastet freigegeben','I',TO_TIMESTAMP('2026-11-10 09:01:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.ReleasedAsNotCharged')
 ;
 
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546009 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
@@ -248,7 +264,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-10 09:0
 
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,546010 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Ergebnis der Kartenzahlung konnte nicht gespeichert werden (SumUp-Transaktion: {0}) — bitte im SumUp-Dashboard prüfen','E',TO_TIMESTAMP('2026-11-10 09:01:11','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.CardResultNotStored')
+VALUES (0,546010 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Ergebnis der Kartenzahlung konnte nicht gespeichert werden (SumUp-Transaktion: {0}) — bitte im SumUp-Dashboard prüfen','I',TO_TIMESTAMP('2026-11-10 09:01:11','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.CardResultNotStored')
 ;
 
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546010 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
@@ -266,7 +282,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-10 09:0
 
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,546011 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:15','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','SumUp-Abfrage der Kartenzahlung fehlgeschlagen','E',TO_TIMESTAMP('2026-11-10 09:01:16','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.SumUpLookupFailed')
+VALUES (0,546011 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:15','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','SumUp-Abfrage der Kartenzahlung fehlgeschlagen','I',TO_TIMESTAMP('2026-11-10 09:01:16','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.SumUpLookupFailed')
 ;
 
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546011 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
@@ -284,7 +300,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-10 09:0
 
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,546012 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Späte SumUp-Genehmigung einer gelöschten oder freigegebenen Kartenzahlung — nicht gebucht, bitte prüfen','E',TO_TIMESTAMP('2026-11-10 09:01:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.LateApprovalNotBooked')
+VALUES (0,546012 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-10 09:01:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Späte SumUp-Genehmigung einer gelöschten oder freigegebenen Kartenzahlung — nicht gebucht, bitte prüfen','I',TO_TIMESTAMP('2026-11-10 09:01:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.POSPayment.LateApprovalNotBooked')
 ;
 
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID,t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546012 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
