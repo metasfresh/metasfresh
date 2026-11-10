@@ -3,7 +3,6 @@ package de.metas.pos;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
-import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpContext;
@@ -20,7 +19,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
  * Background check of the till's card payments whose SumUp result has not reached them, run in every cycle of the SumUp
@@ -32,7 +30,7 @@ import java.util.stream.Stream;
  * per such payment per cycle, outside any transaction and without a lock held; while SumUp is unreachable the payment stays
  * unknown, and back office gets one AD_Issue per payment per outage;</li>
  * <li>(b) the orphan rule: a PENDING card payment whose checkout started more than
- * {@link POSOrdersService#CARD_CHECKOUT_ORPHAN_AGE} ago and stopped before SumUp's answer was stored → UNKNOWN
+ * 150 s ago ({@link POSOrdersService#getOrphanCardPaymentIds}) and stopped before SumUp's answer was stored → UNKNOWN
  * ({@link POSOrdersService#markCardPaymentUnknownIfOrphan}).</li>
  * </ul>
  * Each card payment is swept on its own, oldest first, in its own transactions, in its order's client/org context (the
@@ -50,7 +48,6 @@ public class POSCardPaymentSweeper implements SumUpPollerCycleListener
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final POSOrdersService ordersService;
 
 	/**
@@ -64,16 +61,8 @@ public class POSCardPaymentSweeper implements SumUpPollerCycleListener
 		// each payment runs its own transactions; an ambient one would join them, so one failure would roll back all
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		final ImmutableList<POSOrderAndPaymentId> idsToImport;
-		try (final Stream<POSOrderAndPaymentId> stream = ordersRepository.streamCardPaymentsToImport())
-		{
-			idsToImport = stream.collect(ImmutableList.toImmutableList());
-		}
-		final ImmutableList<POSOrderAndPaymentId> orphanIds;
-		try (final Stream<POSOrderAndPaymentId> stream = ordersRepository.streamOrphanCardPaymentIds(SystemTime.asInstant().minus(POSOrdersService.CARD_CHECKOUT_ORPHAN_AGE)))
-		{
-			orphanIds = stream.collect(ImmutableList.toImmutableList());
-		}
+		final ImmutableList<POSOrderAndPaymentId> idsToImport = ordersService.getCardPaymentIdsToImport();
+		final ImmutableList<POSOrderAndPaymentId> orphanIds = ordersService.getOrphanCardPaymentIds();
 
 		// forget payments that are no longer swept
 		failureRecorder.retainOnly(ImmutableSet.<POSOrderAndPaymentId>builder().addAll(idsToImport).addAll(orphanIds).build());
@@ -93,7 +82,7 @@ public class POSCardPaymentSweeper implements SumUpPollerCycleListener
 		final ClientAndOrgId clientAndOrgId;
 		try
 		{
-			clientAndOrgId = ordersRepository.getById(id.getOrderId()).getClientAndOrgId();
+			clientAndOrgId = ordersService.getClientAndOrgId(id.getOrderId());
 		}
 		catch (final Exception ex)
 		{

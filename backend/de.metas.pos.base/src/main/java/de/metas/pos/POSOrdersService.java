@@ -9,6 +9,7 @@ import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpContext;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 @Service
 public class POSOrdersService
@@ -55,7 +57,7 @@ public class POSOrdersService
 	 * A PENDING card payment whose checkout started longer ago than this without SumUp's answer stored is an orphan: the
 	 * send is bounded by the SumUp client's timeouts (2 x 60 s), so its checkout stopped (see {@link #markCardPaymentUnknownIfOrphan}).
 	 */
-	public static final Duration CARD_CHECKOUT_ORPHAN_AGE = Duration.ofSeconds(150);
+	private static final Duration CARD_CHECKOUT_ORPHAN_AGE = Duration.ofSeconds(150);
 	/** waits between the attempts of storing a card checkout's answer; one attempt more than waits */
 	private static final ImmutableList<Duration> CARD_SEND_RESULT_RETRY_BACKOFFS = ImmutableList.of(Duration.ofMillis(200), Duration.ofSeconds(1));
 	private static final int CARD_SEND_RESULT_MAX_ATTEMPTS = CARD_SEND_RESULT_RETRY_BACKOFFS.size() + 1;
@@ -546,6 +548,36 @@ public class POSOrdersService
 				.order(ordersRepository.getById(orderId))
 				.checkFailed(lookupFailure != null)
 				.build();
+	}
+
+	/**
+	 * @return the card payments whose SumUp transaction is to be imported by the background sweep, case (a), oldest first:
+	 * their result is unknown and they name a SumUp transaction metasfresh does not have (see {@link #importCardPaymentSumUpTransaction})
+	 */
+	public ImmutableList<POSOrderAndPaymentId> getCardPaymentIdsToImport()
+	{
+		try (final Stream<POSOrderAndPaymentId> stream = ordersRepository.streamCardPaymentsToImport())
+		{
+			return stream.collect(ImmutableList.toImmutableList());
+		}
+	}
+
+	/**
+	 * @return the candidates of the background sweep's orphan rule, case (b), oldest first: PENDING card payments naming no
+	 * SumUp transaction whose checkout started more than {@link #CARD_CHECKOUT_ORPHAN_AGE} ago (by {@link SystemTime}) and has
+	 * no SumUp transaction of its own (see {@link #markCardPaymentUnknownIfOrphan}, which checks again under the order lock)
+	 */
+	public ImmutableList<POSOrderAndPaymentId> getOrphanCardPaymentIds()
+	{
+		try (final Stream<POSOrderAndPaymentId> stream = ordersRepository.streamOrphanCardPaymentIds(SystemTime.asInstant().minus(CARD_CHECKOUT_ORPHAN_AGE)))
+		{
+			return stream.collect(ImmutableList.toImmutableList());
+		}
+	}
+
+	public ClientAndOrgId getClientAndOrgId(@NonNull final POSOrderId posOrderId)
+	{
+		return ordersRepository.getById(posOrderId).getClientAndOrgId();
 	}
 
 	/**
