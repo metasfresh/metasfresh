@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStatus;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -17,6 +18,6 @@ public class JsonPOSInvoiceCardSettlementReleaseRequest
 {
 	boolean confirmNotCharged;
 
-	/** Status code the confirmation prompt showed; required if {@link #confirmNotCharged}. */
-	@Nullable String expectedStatus;
+	/** The status the confirmation prompt showed (in JSON its status code); required if {@link #confirmNotCharged}. */
+	@Nullable POSInvoiceCardSettlementStatus expectedStatus;
 }

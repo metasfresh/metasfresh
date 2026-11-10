@@ -9,6 +9,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.costing.ChargeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStatus;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentDetail;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentMethodSummary;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -456,7 +458,7 @@ class JsonSerializeDeserializeTest
 				.amount(new BigDecimal("75.50"))
 				.allocatedAmount(new BigDecimal(allocatedAmount))
 				.currencyCode("EUR")
-				.status(status)
+				.status(POSInvoiceCardSettlementStatus.ofCode(status))
 				.isAbandoned(false)
 				.releasableAt(Instant.parse("2026-09-24T10:18:30Z"))
 				.checkFailed(false)
@@ -494,7 +496,7 @@ class JsonSerializeDeserializeTest
 		testSerializeDeserialize(
 				JsonPOSInvoiceCardSettlementReleaseRequest.builder()
 						.confirmNotCharged(true)
-						.expectedStatus("UN")
+						.expectedStatus(POSInvoiceCardSettlementStatus.UNKNOWN)
 						.build()
 		);
 		testSerializeDeserialize(
@@ -502,6 +504,25 @@ class JsonSerializeDeserializeTest
 						.confirmNotCharged(false)
 						.build()
 		);
+	}
+
+	/**
+	 * The status is the enum in Java and its 2-letter code on the wire, for every status, in both directions.
+	 */
+	@ParameterizedTest
+	@EnumSource(POSInvoiceCardSettlementStatus.class)
+	void test_JsonPOSInvoiceCardSettlement_statusWireFormIsTheCode(final POSInvoiceCardSettlementStatus status) throws JsonProcessingException
+	{
+		final JsonPOSInvoiceCardSettlement settlement = newJsonPOSInvoiceCardSettlement(status.getCode(), "0");
+		testSerializeDeserialize(settlement);
+
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		assertThat(jsonObjectMapper.writeValueAsString(settlement)).contains("\"status\":\"" + status.getCode() + "\"");
+		assertThat(jsonObjectMapper.writeValueAsString(JsonPOSInvoiceCardSettlementReleaseRequest.builder().confirmNotCharged(true).expectedStatus(status).build()))
+				.contains("\"expectedStatus\":\"" + status.getCode() + "\"");
+		assertThat(jsonObjectMapper.readValue("{\"confirmNotCharged\":true,\"expectedStatus\":\"" + status.getCode() + "\"}", JsonPOSInvoiceCardSettlementReleaseRequest.class)
+				.getExpectedStatus())
+				.isEqualTo(status);
 	}
 
 	@Test

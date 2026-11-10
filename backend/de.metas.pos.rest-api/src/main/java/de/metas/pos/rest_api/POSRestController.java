@@ -31,7 +31,6 @@ import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementReleaseReque
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementReleaseResult;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementService;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStartRequest;
-import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStatus;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalCategory;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
@@ -456,7 +455,7 @@ public class POSRestController
 				.id(POSInvoiceCardSettlementId.ofString(idStr))
 				.cashierId(getLoggedUserId())
 				.confirmNotCharged(request.isConfirmNotCharged())
-				.expectedStatus(request.getExpectedStatus() != null ? POSInvoiceCardSettlementStatus.ofCode(request.getExpectedStatus()) : null)
+				.expectedStatus(request.getExpectedStatus())
 				.build());
 
 		final JsonContext jsonContext = newJsonContext();

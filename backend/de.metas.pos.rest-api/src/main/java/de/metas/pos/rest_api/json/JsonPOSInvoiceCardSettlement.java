@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.invoice.InvoiceId;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,8 +36,8 @@ public class JsonPOSInvoiceCardSettlement
 
 	@NonNull String currencyCode;
 
-	/** Status code: PE, UN, AP, BE, SU, CR, RF, FA, CA or AB. */
-	@NonNull String status;
+	/** In JSON the status code: PE, UN, AP, BE, SU, CR, RF, FA, CA or AB. */
+	@NonNull POSInvoiceCardSettlementStatus status;
 
 	@JsonProperty("isAbandoned") boolean isAbandoned;
 
@@ -64,7 +65,7 @@ public class JsonPOSInvoiceCardSettlement
 				.amount(settlement.getAmount().toBigDecimal())
 				.allocatedAmount(allocatedAmount)
 				.currencyCode(currencyCode)
-				.status(settlement.getStatus().getCode())
+				.status(settlement.getStatus())
 				.isAbandoned(settlement.isAbandoned())
 				.releasableAt(releasableAt)
 				.checkFailed(checkFailed)

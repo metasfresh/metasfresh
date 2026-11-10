@@ -45,7 +45,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -199,7 +198,7 @@ public class POSInvoiceCardSettlementService
 				request.getCashierId(),
 				settleableInvoice.getOpen());
 
-		return new StartedSettlement(settlement, paymentProcessorConfig, ClientAndOrgId.ofClientAndOrg(Env.getClientId(), orgId));
+		return new StartedSettlement(settlement, paymentProcessorConfig);
 	}
 
 	/**
@@ -214,7 +213,7 @@ public class POSInvoiceCardSettlementService
 		{
 			return paymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
 					.paymentProcessorConfig(started.getPaymentProcessorConfig())
-					.clientAndOrgId(started.getClientAndOrgId())
+					.clientAndOrgId(settlement.getClientAndOrgId())
 					.posInvoiceCardSettlementId(settlement.getId())
 					.description(String.valueOf(settlement.getId().getRepoId()))
 					.amount(settlement.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
@@ -902,6 +901,5 @@ public class POSInvoiceCardSettlementService
 	{
 		@NonNull POSInvoiceCardSettlement settlement;
 		@NonNull POSTerminalPaymentProcessorConfig paymentProcessorConfig;
-		@NonNull ClientAndOrgId clientAndOrgId;
 	}
 }

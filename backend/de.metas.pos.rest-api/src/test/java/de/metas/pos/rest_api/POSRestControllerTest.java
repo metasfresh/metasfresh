@@ -239,7 +239,7 @@ class POSRestControllerTest
 
 		assertThat(response.getId()).isEqualTo(SETTLEMENT_ID);
 		assertThat(response.getDocumentNo()).isEqualTo("INV-001");
-		assertThat(response.getStatus()).isEqualTo("PE");
+		assertThat(response.getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.PENDING);
 		assertThat(response.getAmount()).isEqualByComparingTo("75.50");
 		assertThat(response.getAllocatedAmount()).isEqualByComparingTo("0");
 		assertThat(response.getCurrencyCode()).isEqualTo("EUR");
@@ -257,7 +257,7 @@ class POSRestControllerTest
 
 		final JsonPOSInvoiceCardSettlement response = controller.checkInvoiceCardSettlement("9");
 
-		assertThat(response.getStatus()).isEqualTo("CR");
+		assertThat(response.getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.CREDIT_REFUND_PENDING);
 		assertThat(response.getAllocatedAmount()).isEqualByComparingTo("50.00");
 		assertThat(response.isCheckFailed()).isTrue();
 		assertThat(response.isAbandoned()).isFalse();
@@ -277,7 +277,7 @@ class POSRestControllerTest
 
 		final JsonPOSInvoiceCardSettlementReleaseResponse response = controller.releaseInvoiceCardSettlement(
 				"9",
-				JsonPOSInvoiceCardSettlementReleaseRequest.builder().confirmNotCharged(true).expectedStatus("UN").build());
+				JsonPOSInvoiceCardSettlementReleaseRequest.builder().confirmNotCharged(true).expectedStatus(POSInvoiceCardSettlementStatus.UNKNOWN).build());
 
 		final ArgumentCaptor<POSInvoiceCardSettlementReleaseRequest> captor = ArgumentCaptor.forClass(POSInvoiceCardSettlementReleaseRequest.class);
 		Mockito.verify(cardSettlementService).release(captor.capture());
@@ -335,7 +335,7 @@ class POSRestControllerTest
 
 		assertThat(list.getList()).hasSize(2);
 		assertThat(list.getList().get(0).getBlockingCardSettlement().getDocumentNo()).isEqualTo("INV-001");
-		assertThat(list.getList().get(0).getBlockingCardSettlement().getStatus()).isEqualTo("AP");
+		assertThat(list.getList().get(0).getBlockingCardSettlement().getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.APPROVED);
 		assertThat(list.getList().get(1).getBlockingCardSettlement()).isNull();
 		Mockito.verify(cardSettlementService, Mockito.never()).getInvoiceDocumentNo(any());
 	}

@@ -1,6 +1,7 @@
 package de.metas.pos.invoice_settlement.card;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
@@ -20,18 +21,27 @@ import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: C_POS_InvoiceCardSettlement, SUMUP_Transaction (read only, in the sweep candidate subquery)
+ * Repository Cluster: POSInvoiceCardSettlementRepository, {@link de.metas.payment.sumup.repository.SumUpTransactionRepository}
+ */
 @Repository
 public class POSInvoiceCardSettlementRepository
 {
@@ -108,34 +118,6 @@ public class POSInvoiceCardSettlementRepository
 	}
 
 	/**
-	 * Conditional status change: updates only if the current status equals {@code expected}.
-	 * Lock + read + save, so it is atomic only inside a transaction (asserted).
-	 *
-	 * @return true if the status was changed, false if the current status was not {@code expected}
-	 */
-	public boolean changeStatus(
-			@NonNull final POSInvoiceCardSettlementId id,
-			@NonNull final POSInvoiceCardSettlementStatus expected,
-			@NonNull final POSInvoiceCardSettlementStatus newStatus)
-	{
-		trxManager.assertThreadInheritedTrxExists();
-		final I_C_POS_InvoiceCardSettlement record = queryBL.createQueryBuilder(I_C_POS_InvoiceCardSettlement.class)
-				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_POS_InvoiceCardSettlement_ID, id)
-				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Status, expected.getCode())
-				.create()
-				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
-				.firstOnly(I_C_POS_InvoiceCardSettlement.class);
-		if (record == null)
-		{
-			return false;
-		}
-
-		record.setStatus(newStatus.getCode());
-		InterfaceWrapperHelper.save(record);
-		return true;
-	}
-
-	/**
 	 * @return all settlements of the invoice, whatever their status, oldest first
 	 */
 	public List<POSInvoiceCardSettlement> listByInvoiceId(@NonNull final InvoiceId invoiceId)
@@ -159,6 +141,41 @@ public class POSInvoiceCardSettlementRepository
 				.create()
 				.firstOnlyOptional(I_C_POS_InvoiceCardSettlement.class)
 				.map(POSInvoiceCardSettlementRepository::fromRecord);
+	}
+
+	/**
+	 * Batched variant of {@link #findBlockingByInvoiceId}, for showing many invoices at once.
+	 *
+	 * @return the blocking settlement of each given invoice that has one; invoices without a blocking settlement are not in the map
+	 */
+	public ImmutableMap<InvoiceId, POSInvoiceCardSettlement> findBlockingByInvoiceIds(@NonNull final Set<InvoiceId> invoiceIds)
+	{
+		if (invoiceIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		// the blocking index allows at most one blocking settlement per invoice; if there were more, the oldest wins, as in findBlockingByInvoiceId
+		final Map<InvoiceId, POSInvoiceCardSettlement> result = new HashMap<>();
+		queryBL.createQueryBuilder(I_C_POS_InvoiceCardSettlement.class)
+				.addInArrayFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_Invoice_ID, invoiceIds)
+				.addInArrayFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_Status, blockingCandidateCodes())
+				.addEqualsFilter(I_C_POS_InvoiceCardSettlement.COLUMNNAME_IsAbandoned, false)
+				.orderBy(I_C_POS_InvoiceCardSettlement.COLUMNNAME_C_POS_InvoiceCardSettlement_ID)
+				.create()
+				.stream()
+				.map(POSInvoiceCardSettlementRepository::fromRecord)
+				.forEach(settlement -> result.putIfAbsent(settlement.getInvoiceId(), settlement));
+		return ImmutableMap.copyOf(result);
+	}
+
+	/**
+	 * Lets the current (thread-inherited) transaction wait at most {@code lockTimeout} for a row lock
+	 * ({@code SET LOCAL lock_timeout}); it applies until that transaction ends.
+	 */
+	public void setLockTimeoutForCurrentTrx(@NonNull final Duration lockTimeout)
+	{
+		DB.executeUpdateAndThrowExceptionOnFail("SET LOCAL lock_timeout = " + lockTimeout.toMillis(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**

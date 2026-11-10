@@ -1,5 +1,6 @@
 package de.metas.pos.invoice_settlement.card;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
@@ -23,6 +24,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,33 +103,13 @@ class POSInvoiceCardSettlementRepositoryTest
 	}
 
 	@Test
-	void changeStatus_onlyWhenExpected_returnsFalseOtherwise()
-	{
-		final POSInvoiceCardSettlement settlement = createSettlement(newInvoiceId());
-		final POSInvoiceCardSettlementId id = settlement.getId();
-
-		assertThat(changeStatusInTrx(id, POSInvoiceCardSettlementStatus.UNKNOWN, POSInvoiceCardSettlementStatus.APPROVED)).isFalse();
-		assertThat(repository.getById(id).getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.PENDING);
-
-		assertThat(changeStatusInTrx(id, POSInvoiceCardSettlementStatus.PENDING, POSInvoiceCardSettlementStatus.APPROVED)).isTrue();
-		assertThat(repository.getById(id).getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.APPROVED);
-	}
-
-	@Test
-	void changeStatusAndGetByIdForUpdate_outsideTransaction_throw()
+	void getByIdForUpdate_outsideTransaction_throws()
 	{
 		final POSInvoiceCardSettlementId id = createSettlement(newInvoiceId()).getId();
 
-		assertThatThrownBy(() -> repository.changeStatus(id, POSInvoiceCardSettlementStatus.PENDING, POSInvoiceCardSettlementStatus.APPROVED))
-				.hasMessageContaining("ThreadInherited transaction");
 		assertThatThrownBy(() -> repository.getByIdForUpdate(id))
 				.hasMessageContaining("ThreadInherited transaction");
 		assertThat(repository.getById(id).getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.PENDING);
-	}
-
-	private boolean changeStatusInTrx(final POSInvoiceCardSettlementId id, final POSInvoiceCardSettlementStatus expected, final POSInvoiceCardSettlementStatus newStatus)
-	{
-		return trxManager.callInNewTrx(() -> repository.changeStatus(id, expected, newStatus));
 	}
 
 	static Stream<Arguments> statusAndAbandonedFlag()
@@ -161,6 +143,29 @@ class POSInvoiceCardSettlementRepositoryTest
 		final Optional<POSInvoiceCardSettlement> found = repository.findBlockingByInvoiceId(invoiceId);
 		assertThat(found).isPresent();
 		assertThat(found.get().getId()).isEqualTo(active.getId()).isNotEqualTo(abandoned.getId());
+	}
+
+	@Test
+	void findBlockingByInvoiceIds_returnsTheBlockingSettlementPerInvoice()
+	{
+		final InvoiceId invoiceWithBlocking = newInvoiceId();
+		repository.save(createSettlement(invoiceWithBlocking).toBuilder().status(POSInvoiceCardSettlementStatus.FAILED).build());
+		final POSInvoiceCardSettlement blocking = repository.save(createSettlement(invoiceWithBlocking).toBuilder().status(POSInvoiceCardSettlementStatus.UNKNOWN).build());
+
+		final InvoiceId invoiceWithAbandonedOnly = newInvoiceId();
+		repository.save(createSettlement(invoiceWithAbandonedOnly).toBuilder().isAbandoned(true).build());
+
+		final InvoiceId invoiceWithoutSettlement = newInvoiceId();
+
+		final InvoiceId otherInvoiceWithBlocking = newInvoiceId();
+		createSettlement(otherInvoiceWithBlocking);
+
+		final Map<InvoiceId, POSInvoiceCardSettlement> result = repository.findBlockingByInvoiceIds(
+				ImmutableSet.of(invoiceWithBlocking, invoiceWithAbandonedOnly, invoiceWithoutSettlement));
+
+		assertThat(result).containsOnlyKeys(invoiceWithBlocking);
+		assertThat(result.get(invoiceWithBlocking).getId()).isEqualTo(blocking.getId());
+		assertThat(repository.findBlockingByInvoiceIds(ImmutableSet.of())).isEmpty();
 	}
 
 	@Test

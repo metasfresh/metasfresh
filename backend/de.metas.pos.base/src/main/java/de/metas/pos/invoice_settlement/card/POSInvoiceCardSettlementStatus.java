@@ -1,8 +1,9 @@
 package de.metas.pos.invoice_settlement.card;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -23,8 +24,17 @@ public enum POSInvoiceCardSettlementStatus implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<POSInvoiceCardSettlementStatus> index = ReferenceListAwareEnums.index(values());
 
-	@Getter @NonNull private final String code;
+	@NonNull private final String code;
 
+	/**
+	 * The JSON form is the 2-letter status code, the same as in the DB.
+	 */
+	@Override
+	@JsonValue
+	@NonNull
+	public String getCode() {return code;}
+
+	@JsonCreator
 	@NonNull
 	public static POSInvoiceCardSettlementStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 

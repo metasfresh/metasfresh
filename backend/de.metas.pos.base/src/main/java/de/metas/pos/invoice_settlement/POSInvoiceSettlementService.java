@@ -2,6 +2,8 @@ package de.metas.pos.invoice_settlement;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
@@ -108,15 +110,23 @@ public class POSInvoiceSettlementService
 		final OrgId orgId = terminal.getOrgId();
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
-		final ImmutableList.Builder<POSOpenInvoice> result = ImmutableList.builder();
-		for (final I_C_Invoice invoice : invoiceDAO.getByDocumentNoEndingWith(searchSuffix, orgId, I_C_Invoice.class))
+		final ImmutableList<I_C_Invoice> eligibleInvoices = invoiceDAO.getByDocumentNoEndingWith(searchSuffix, orgId, I_C_Invoice.class)
+				.stream()
+				.filter(this::isEligibleForCashSettlement)
+				.collect(ImmutableList.toImmutableList());
+		if (eligibleInvoices.isEmpty())
 		{
-			if (isEligibleForCashSettlement(invoice))
-			{
-				result.add(toOpenInvoice(invoice, zoneId));
-			}
+			return ImmutableList.of();
 		}
-		return result.build();
+
+		final ImmutableMap<InvoiceId, POSInvoiceCardSettlement> blockingCardSettlements = cardSettlementRepository.findBlockingByInvoiceIds(
+				eligibleInvoices.stream()
+						.map(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+						.collect(ImmutableSet.toImmutableSet()));
+
+		return eligibleInvoices.stream()
+				.map(invoice -> toOpenInvoice(invoice, zoneId, blockingCardSettlements))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static boolean isValidSearchSuffix(@NonNull final String searchSuffix)
@@ -158,19 +168,23 @@ public class POSInvoiceSettlementService
 	}
 
 	@NonNull
-	private POSOpenInvoice toOpenInvoice(@NonNull final I_C_Invoice invoice, @NonNull final ZoneId zoneId)
+	private POSOpenInvoice toOpenInvoice(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final ZoneId zoneId,
+			@NonNull final ImmutableMap<InvoiceId, POSInvoiceCardSettlement> blockingCardSettlements)
 	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
 		return POSOpenInvoice.builder()
-				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.invoiceId(invoiceId)
 				.documentNo(invoice.getDocumentNo())
 				.bpartnerName(bpartnerDAO.getBPartnerNameById(bpartnerId))
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), zoneId))
 				.grandTotal(Money.of(invoice.getGrandTotal(), currencyId))
 				.openAmt(getOpenAmt(invoice))
-				.blockingCardSettlement(cardSettlementRepository.findBlockingByInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())).orElse(null))
+				.blockingCardSettlement(blockingCardSettlements.get(invoiceId))
 				.build();
 	}
 
@@ -277,7 +291,7 @@ public class POSInvoiceSettlementService
 
 		allocateFully(invoice, payment);
 
-		final String description = getJournalDescription(invoice);
+		final String description = getJournalDescription(MSG_JournalDescription, invoice);
 		final POSCashJournal journal = posCashJournalService.changeJournalById(
 				terminal.getCashJournalIdNotNull(),
 				cashJournal -> cashJournal.addCashInOut(open, request.getCashierId(), description));
@@ -353,14 +367,16 @@ public class POSInvoiceSettlementService
 	}
 
 	/**
+	 * @param messageKey the AD_Message of the line text, with the invoice's document number as its only parameter
+	 *                   ({@code {0}}); the cash and the card settlement each have their own
 	 * @return the description of the till's cash journal line that books a settlement of the invoice
 	 */
 	@NonNull
-	public String getJournalDescription(@NonNull final I_C_Invoice invoice)
+	public String getJournalDescription(@NonNull final AdMessageKey messageKey, @NonNull final I_C_Invoice invoice)
 	{
 		return msgBL.getMsg(
 				Env.getADLanguageOrBaseLanguage(),
-				MSG_JournalDescription,
+				messageKey,
 				new Object[] { invoice.getDocumentNo() });
 	}
 
@@ -410,7 +426,7 @@ public class POSInvoiceSettlementService
 	 * Refuses a new payment of the invoice while a card settlement of it is unfinished. Call it
 	 * right after the invoice lock, in the same transaction.
 	 */
-	public void assertNoBlockingCardSettlement(@NonNull final InvoiceId invoiceId)
+	private void assertNoBlockingCardSettlement(@NonNull final InvoiceId invoiceId)
 	{
 		final POSInvoiceCardSettlement blocking = cardSettlementRepository.findBlockingByInvoiceId(invoiceId).orElse(null);
 		if (blocking != null)

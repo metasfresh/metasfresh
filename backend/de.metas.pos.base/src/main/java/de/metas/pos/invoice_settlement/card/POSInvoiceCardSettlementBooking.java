@@ -27,7 +27,6 @@ import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -35,12 +34,12 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -97,6 +96,7 @@ public class POSInvoiceCardSettlementBooking
 
 	private static final NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.pos.InvoiceCardSettlement");
 	private static final AdMessageKey MSG_CreditRefundPending = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.CreditRefundPending");
+	private static final AdMessageKey MSG_JournalDescription = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.JournalDescription");
 	private static final AdMessageKey MSG_CashJournalNotOpen = AdMessageKey.of("de.metas.pos.CashJournalNotOpen");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -233,7 +233,7 @@ public class POSInvoiceCardSettlementBooking
 		final int lockTimeoutMillis = sysConfigBL.getIntValue(SYSCONFIG_LockTimeoutMillis, DEFAULT_LockTimeoutMillis);
 		if (lockTimeoutMillis > 0)
 		{
-			DB.executeUpdateAndThrowExceptionOnFail("SET LOCAL lock_timeout = " + lockTimeoutMillis, ITrx.TRXNAME_ThreadInherited);
+			repository.setLockTimeoutForCurrentTrx(Duration.ofMillis(lockTimeoutMillis));
 		}
 	}
 
@@ -377,7 +377,7 @@ public class POSInvoiceCardSettlementBooking
 					.setRecord(id.toRecordRef());
 		}
 
-		final String description = invoiceSettlementService.getJournalDescription(invoice);
+		final String description = invoiceSettlementService.getJournalDescription(MSG_JournalDescription, invoice);
 		posCashJournalService.changeJournalById(
 				terminal.getCashJournalIdNotNull(),
 				cashJournal -> cashJournal.addCardSettlementPayment(amount, settlement.getCashierId(), id, description));
