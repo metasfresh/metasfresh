@@ -69,7 +69,8 @@ public interface IPaymentTermRepository extends ISingletonService
 	/**
 	 * Creates an active, plain (non-installment, no discount) payment term with the given value and name.
 	 * <p>
-	 * Only for test masterdata (the E2E masterdata API); production code never creates payment terms this way.
+	 * Only for test masterdata: its sole caller is the E2E masterdata API ({@code PaymentTermGetOrCreateCommand} in
+	 * {@code de.metas.frontend-testing}); business code never creates payment terms this way.
 	 */
 	@VisibleForTesting
 	@NonNull
