@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -41,14 +40,14 @@ public class POSCardReaderCheckoutTerminator
 	 * Must run outside any transaction and without a lock held. Residual limit: while the own transaction is PENDING, a
 	 * shared reader may already run another checkout; SumUp offers no way to tell.
 	 *
-	 * @param refreshOwnTransaction refreshes the payment's own SumUp transaction from SumUp and returns it as then stored;
-	 *                              empty if the payment has none
-	 * @param releasedPayment       the payment being released, only for logging
+	 * @param refreshOwnTransaction      refreshes the payment's own SumUp transaction from SumUp and returns it as then stored;
+	 *                                   empty if the payment has none
+	 * @param releasedPaymentDescription the payment being released, only for logging
 	 */
 	public void terminateUnlessFinished(
 			@NonNull final POSTerminalId posTerminalId,
 			@NonNull final Supplier<Optional<SumUpTransaction>> refreshOwnTransaction,
-			@NonNull final Object releasedPayment)
+			@NonNull final String releasedPaymentDescription)
 	{
 		final boolean isFinishedAtSumUp = refreshOwnTransaction.get()
 				.map(sumUpTrx -> !sumUpTrx.getStatus().isPending())
@@ -58,14 +57,14 @@ public class POSCardReaderCheckoutTerminator
 			return;
 		}
 
-		terminate(posTerminalId, releasedPayment);
+		terminate(posTerminalId, releasedPaymentDescription);
 	}
 
 	/**
 	 * Asks the terminal's default card reader to abort its checkout. Best effort: SumUp does not confirm it, and a failure
 	 * (e.g. a 4xx because the reader runs no checkout) is only logged; the re-check that follows decides.
 	 */
-	private void terminate(@NonNull final POSTerminalId posTerminalId, @NonNull final Object releasedPayment)
+	private void terminate(@NonNull final POSTerminalId posTerminalId, @NonNull final String releasedPaymentDescription)
 	{
 		try
 		{
@@ -75,16 +74,7 @@ public class POSCardReaderCheckoutTerminator
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Could not terminate the card reader checkout of {}; releasing anyway", releasedPayment, ex);
+			logger.warn("Could not terminate the card reader checkout of {}; releasing anyway", releasedPaymentDescription, ex);
 		}
-	}
-
-	/**
-	 * @return whether the payment's own SumUp transaction, as stored, is approved and not refunded: such a payment is never
-	 * released
-	 */
-	public static boolean isApprovedAtSumUp(@Nullable final SumUpTransaction ownTransaction)
-	{
-		return ownTransaction != null && ownTransaction.isSuccessfulAndNotRefunded();
 	}
 }

@@ -650,7 +650,9 @@ public class POSInvoiceCardSettlementService
 	 */
 	private boolean isApprovedAtSumUp(@NonNull final POSInvoiceCardSettlementId id)
 	{
-		return POSCardReaderCheckoutTerminator.isApprovedAtSumUp(booking.findSumUpTransaction(id).orElse(null));
+		return booking.findSumUpTransaction(id)
+				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
+				.orElse(false);
 	}
 
 	/**

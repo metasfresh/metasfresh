@@ -872,7 +872,7 @@ public class POSOrdersService
 		final Optional<SumUpTransaction> ownTransaction = findOwnSumUpTransaction(payment);
 
 		final boolean approved = ownTransaction.isPresent()
-				? POSCardReaderCheckoutTerminator.isApprovedAtSumUp(ownTransaction.get())
+				? ownTransaction.get().isSuccessfulAndNotRefunded()
 				: payment.isSuccessful();
 		if (approved)
 		{
@@ -957,7 +957,9 @@ public class POSOrdersService
 	 */
 	private boolean isApprovedAtSumUp(@NonNull final POSPayment payment)
 	{
-		return POSCardReaderCheckoutTerminator.isApprovedAtSumUp(findOwnSumUpTransaction(payment).orElse(null));
+		return findOwnSumUpTransaction(payment)
+				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
+				.orElse(false);
 	}
 
 	/**
