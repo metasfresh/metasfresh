@@ -209,6 +209,26 @@ public final class SumUpApiStub
 	}
 
 	/**
+	 * Waits until the held checkout request has arrived (it stays held: the caller's send is still in flight).
+	 */
+	public static void awaitHeldCheckoutReceived() throws InterruptedException
+	{
+		final CountDownLatch received;
+		synchronized (lock)
+		{
+			received = heldCheckoutReceived;
+		}
+		if (received == null)
+		{
+			throw new IllegalStateException("No checkout is held");
+		}
+		if (!received.await(60, TimeUnit.SECONDS))
+		{
+			throw new IllegalStateException("The held checkout request did not arrive within 60 s");
+		}
+	}
+
+	/**
 	 * Waits until the held checkout request has arrived, then answers it per the given behavior.
 	 */
 	public static void answerHeldCheckout(@NonNull final CheckoutBehavior behavior) throws InterruptedException

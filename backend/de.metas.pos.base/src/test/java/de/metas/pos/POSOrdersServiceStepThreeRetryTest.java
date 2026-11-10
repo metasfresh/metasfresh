@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -146,5 +147,32 @@ class POSOrdersServiceStepThreeRetryTest
 		assertThat(issues).hasSize(1);
 		assertThat(issues.get(0).getErrorCode()).isEqualTo("de.metas.pos.POSPayment.CardResultNotStored");
 		assertThat(issues.get(0).getIssueSummary()).contains(ACCEPTED_TRX);
+	}
+
+	@Test
+	void stepThree_nonDatabaseFailure_notRetried_rethrown()
+	{
+		final POSOrder order = newOrderWithNewCardPayment();
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		when(posOrderProcessingServices.sendCardPayment(any(), any()))
+				.thenReturn(POSPaymentProcessResponse.errorIndeterminate(
+						POSTerminalPaymentProcessorConfig.builder().type(POSPaymentProcessorType.SumUp).build(),
+						"timeout",
+						null,
+						null));
+		doThrow(new IllegalStateException("not a database failure"))
+				.when(ordersRepository).updatePaymentByIdForUpdate(any(), any());
+
+		assertThatThrownBy(() -> service.checkoutPayment(POSPaymentCheckoutRequest.builder()
+				.posTerminalId(TERMINAL_ID)
+				.posOrderExternalId(order.getExternalId())
+				.posPaymentExternalId(cardPayment.getExternalId())
+				.userId(CASHIER_ID)
+				.build()))
+				.hasMessageContaining("not a database failure");
+
+		verify(ordersRepository, times(1)).updatePaymentByIdForUpdate(any(), any());
+		assertThat(sleeps).isEmpty();
+		assertThat(retrieveIssues(cardPayment.getLocalIdNotNull())).isEmpty();
 	}
 }

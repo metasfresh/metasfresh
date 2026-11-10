@@ -42,8 +42,9 @@ public class POSOrdersService
 	@NonNull private static final Logger logger = LogManager.getLogger(POSOrdersService.class);
 	private static final AdMessageKey MSG_LateApprovalNotBooked = AdMessageKey.of("de.metas.pos.POSPayment.LateApprovalNotBooked");
 	private static final AdMessageKey MSG_CardResultNotStored = AdMessageKey.of("de.metas.pos.POSPayment.CardResultNotStored");
-	private static final int CARD_SEND_RESULT_MAX_ATTEMPTS = 3;
+	/** waits between the attempts of storing a card checkout's answer; one attempt more than waits */
 	private static final ImmutableList<Duration> CARD_SEND_RESULT_RETRY_BACKOFFS = ImmutableList.of(Duration.ofMillis(200), Duration.ofSeconds(1));
+	private static final int CARD_SEND_RESULT_MAX_ATTEMPTS = CARD_SEND_RESULT_RETRY_BACKOFFS.size() + 1;
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
@@ -116,7 +117,8 @@ public class POSOrdersService
 			@NonNull final POSOrderStatus nextStatus,
 			@NonNull final UserId userId)
 	{
-		return ordersRepository.updateByExternalId(externalId, order -> {
+		// order lock first (a completion then updates the cash journal), as every completer does, see tryCompleteNoFail
+		return ordersRepository.updateByExternalIdForUpdate(externalId, order -> {
 			assertCanEdit(posTerminalId, order, userId);
 			order.changeStatusTo(nextStatus, posOrderProcessingServices);
 		});
@@ -175,7 +177,8 @@ public class POSOrdersService
 	{
 		try
 		{
-			// under the order lock: the card checkout and a SumUp status event may both try to complete the order at the same time
+			// under the order lock: the card checkout and a SumUp status event may both try to complete the order at the same time.
+			// Every completer locks the order first, then (completing) the cash journal: changeStatusTo and the cash checkout, too.
 			ordersRepository.updateByIdForUpdate(posOrderId, this::tryCompleteNoFail);
 		}
 		catch (final Exception ex)
@@ -286,31 +289,25 @@ public class POSOrdersService
 		final POSPaymentExternalId posPaymentExternalId = request.getPosPaymentExternalId();
 		final UserId userId = request.getUserId();
 
-		return ordersRepository.updateByExternalId(posOrderExternalId, posOrder -> {
+		// order lock first (before the completion updates the cash journal), as every completer does, see tryCompleteNoFail
+		return ordersRepository.updateByExternalIdForUpdate(posOrderExternalId, posOrder -> {
 			assertCanEdit(posTerminalId, posOrder, userId);
 			posOrder.assertWaitingForPayment();
 
-			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> checkoutPayment(request, posPayment, posOrder));
+			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> checkoutCashPayment(request, posPayment));
 			tryCompleteNoFail(posOrder);
 		});
 	}
 
-	private POSPayment checkoutPayment(@NonNull POSPaymentCheckoutRequest request, @NonNull final POSPayment posPaymentToProcess, @NonNull final POSOrder posOrder)
+	private POSPayment checkoutCashPayment(@NonNull final POSPaymentCheckoutRequest request, @NonNull final POSPayment posPaymentToProcess)
 	{
 		POSPayment posPayment = posPaymentToProcess;
-
-		if (posPayment.getPaymentMethod().isCard() && request.getCardPayAmount() != null)
-		{
-			posPayment = posPayment.withCardPayAmount(request.getCardPayAmount());
-		}
-
 		if (posPayment.getPaymentMethod().isCash() && request.getCashTenderedAmount() != null)
 		{
 			posPayment = posPayment.withCashTenderedAmount(request.getCashTenderedAmount());
 		}
 
-		return posOrderProcessingServices.processPOSPayment(posPayment, posOrder);
-
+		return posOrderProcessingServices.processPOSPayment(posPayment);
 	}
 
 	/**
@@ -375,6 +372,7 @@ public class POSOrdersService
 		return trxManager.callInNewTrx(() -> ordersRepository.updateByExternalIdForUpdate(request.getPosOrderExternalId(), posOrder -> {
 			assertCanEdit(posTerminalId, posOrder, userId);
 			posOrder.assertWaitingForPayment();
+			posOrderProcessingServices.assertCardPaymentCanBeSent(posOrder);
 
 			posOrder.updatePaymentByExternalId(request.getPosPaymentExternalId(), posPayment -> {
 				POSPayment payment = posPayment;
@@ -389,7 +387,7 @@ public class POSOrdersService
 
 	/**
 	 * Step 3 of a card checkout: applies SumUp's answer to the card payment, in a new transaction under the order lock. While
-	 * the database fails, it is tried {@value #CARD_SEND_RESULT_MAX_ATTEMPTS} times in all, each time re-locking and re-reading the
+	 * the database fails, it is tried up to 3 times in all ({@link #CARD_SEND_RESULT_MAX_ATTEMPTS}), each time re-locking and re-reading the
 	 * order, waiting {@link #CARD_SEND_RESULT_RETRY_BACKOFFS} in between. If all attempts fail, the answer is logged at ERROR
 	 * and recorded as an AD_Issue on the payment (best effort): the payment stays PENDING, without SumUp's id, as saved by step 1.
 	 *
@@ -437,10 +435,6 @@ public class POSOrdersService
 			if (cause instanceof DBException || cause instanceof SQLException)
 			{
 				return true;
-			}
-			if (cause.getCause() == cause)
-			{
-				break;
 			}
 		}
 		return false;

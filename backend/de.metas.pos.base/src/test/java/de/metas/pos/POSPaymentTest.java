@@ -208,4 +208,26 @@ class POSPaymentTest
 		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.FAILED);
 		assertThat(payment.getSumUpClientTransactionId()).isNull();
 	}
+
+	@Test
+	void sendAccepted_toPendingNamingTheAttempt()
+	{
+		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).build()
+				.changingStatusFromSendResult(response(POSPaymentProcessingStatus.PENDING, "accepted-trx"));
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
+		assertThat(payment.getSumUpClientTransactionId()).isEqualTo("accepted-trx");
+	}
+
+	@Test
+	void sendResult_onPaymentNoLongerPending_unchanged()
+	{
+		// a status event (e.g. SumUp's approval) was applied before the checkout's answer: the later result is kept
+		final POSPayment successful = cardPaymentBuilder(POSPaymentProcessingStatus.SUCCESSFUL).sumUpClientTransactionId("accepted-trx").build();
+
+		assertThat(successful.changingStatusFromSendResult(POSPaymentProcessResponse.errorIndeterminate(SUMUP_CONFIG, "timeout", null, null)))
+				.isSameAs(successful);
+		assertThat(successful.changingStatusFromSendResult(response(POSPaymentProcessingStatus.PENDING, "accepted-trx")))
+				.isSameAs(successful);
+	}
 }

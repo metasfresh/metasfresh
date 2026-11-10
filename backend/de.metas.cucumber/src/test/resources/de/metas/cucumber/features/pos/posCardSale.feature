@@ -461,6 +461,7 @@ Feature: POS till card sale with an unknown card result
     Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId of the latest transaction
     And the till's card checkout of POS sale sale1 answered the card payment with status UNKNOWN and sumUpClientTransactionId set
     And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.CardResultNotStored'
+    And saving a SumUp transaction works again
 
   # ##########################################################################
   # Cause (i), and the database keeps failing for all 3 attempts to store SumUp's answer (database-failure sub-case of the
@@ -516,3 +517,18 @@ Feature: POS till card sale with an unknown card result
     And the invoice of POS sale sale1 is paid
     And POS sale sale1 has 1 payment receipt
     And POS sale sale1 was completed 1 time
+
+  # ##########################################################################
+  # A card charge is sent only by the till's card checkout, never by completing the sale: completing a sale whose card
+  # payment was not checked out yet (a status event or a direct completion request) sends nothing and leaves it waiting.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_22
+  Scenario: Completing a sale does not send its card payment that was not checked out yet
+    Given a POS card sale sale1 is prepared at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    When completing POS sale sale1 fails
+    Then the card payment of POS sale sale1 has status NEW
+    And the SumUp stub received 0 checkouts

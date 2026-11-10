@@ -71,6 +71,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -859,10 +860,17 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * The till checks out the card payment of the sale on a background thread, while this thread runs SumUp polls until that
-	 * checkout returned: the stub accepts the checkout and, as soon as it knows the new transaction, reports it SUCCESSFUL, so a
-	 * poll can import the approval (and its status event can update the payment) while the checkout still applies SumUp's
-	 * answer. One more poll runs after the checkout returned. Fails if the checkout fails or takes longer than 60 s.
+	 * The till checks out the card payment of the sale on a background thread while SumUp's approval is imported, in this order:
+	 * <ol>
+	 * <li>the stub holds the checkout's send; meanwhile another transaction locks the sale's {@code C_POS_Order} row (as the
+	 * checkout's own steps do);</li>
+	 * <li>the stub accepts the checkout; the checkout saves the new SumUp transaction, whose status event then waits on that
+	 * lock, and waits on it itself to store SumUp's answer (its step 3);</li>
+	 * <li>the stub reports the new transaction SUCCESSFUL and a SumUp poll imports it while step 3 still waits; the approval's
+	 * status event is queued behind the lock, too;</li>
+	 * <li>the lock is released; step 3 and the status events then each apply under the lock, and each may try to complete the sale.</li>
+	 * </ol>
+	 * Then it waits for the checkout (at most 60 s) and the SumUp events, and runs one more poll.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends the sale was created by {@code a POS card sale ... is prepared at ...}
@@ -875,9 +883,12 @@ public class POS_CardSale_StepDef
 	public void cardPaymentCheckedOutWhilePolling(@NonNull final String saleIdentifier) throws Exception
 	{
 		final Sale sale = getSale(saleIdentifier);
-		SumUpApiStub.setNextCheckoutBehavior(SumUpApiStub.CheckoutBehavior.SUCCESS);
+		final int orderId = loadOrderRecord(sale).getC_POS_Order_ID();
 		final int checkoutsBefore = SumUpApiStub.getReceivedCheckouts().size();
+		SumUpApiStub.setNextCheckoutBehavior(SumUpApiStub.CheckoutBehavior.SUCCESS);
+		SumUpApiStub.holdNextCheckout();
 
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final Properties ctx = Env.getCtx();
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		try
@@ -889,30 +900,69 @@ public class POS_CardSale_StepDef
 				}
 			});
 
-			boolean approvalReported = false;
-			final long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60);
-			while (!checkout.isDone() && System.currentTimeMillis() < deadline)
+			// the checkout's step 1 has committed and its send reached the card reader (held there)
+			SumUpApiStub.awaitHeldCheckoutReceived();
+
+			// 1. lock the order, in the checkout's own lock mode (which still lets the SumUp transaction's insert reference the order)
+			final String lockHolderTrxName = trxManager.createTrxName("cucumber-pos-order-lock-holder", true);
+			try
 			{
-				if (!approvalReported)
-				{
-					approvalReported = tryReportNewTransactionSuccessful(checkoutsBefore);
-				}
-				settlementStepDef.pollSumUp(null);
+				DB.getSQLValueEx(lockHolderTrxName, "SELECT C_POS_Order_ID FROM C_POS_Order WHERE C_POS_Order_ID=? FOR NO KEY UPDATE", orderId);
+
+				// 2. SumUp accepts; the checkout saves the SumUp transaction (whose status event waits for the lock), then waits
+				// for the lock in its step 3: two sessions wait
+				SumUpApiStub.answerHeldCheckout(SumUpApiStub.CheckoutBehavior.SUCCESS);
+				StepDefUtil.tryAndWait(30, 100, () -> tryReportNewTransactionSuccessful(checkoutsBefore));
+				StepDefUtil.tryAndWait(30, 100, () -> countSessionsWaitingForOrderLock() >= 2);
+
+				// 3. SumUp's approval is imported while step 3 waits; its status event is queued behind the lock, too
+				sumUpService.bulkUpdatePendingTransactions(false);
+				Thread.sleep(500);
+			}
+			finally
+			{
+				// 4. release the lock
+				rollbackAndClose(trxManager, lockHolderTrxName);
+				SumUpApiStub.releaseHeldCheckout();
 			}
 
-			sale.lastCheckoutAnswer = checkout.get(1, TimeUnit.SECONDS);
-			if (!approvalReported)
-			{
-				approvalReported = tryReportNewTransactionSuccessful(checkoutsBefore);
-			}
-			assertThat(approvalReported).as("the SumUp stub accepted the checkout of POS sale %s and reported it SUCCESSFUL", saleIdentifier).isTrue();
-			settlementStepDef.pollSumUp(null);
+			sale.lastCheckoutAnswer = checkout.get(60, TimeUnit.SECONDS);
 		}
 		finally
 		{
 			executor.shutdownNow();
 		}
+
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
+		settlementStepDef.pollSumUp(null);
 		assignAcceptedStubCheckouts(sale);
+	}
+
+	/**
+	 * @return how many database sessions wait for a row lock on {@code C_POS_Order} (the order lock of the till's card
+	 * checkout and of the SumUp status events)
+	 */
+	private static int countSessionsWaitingForOrderLock()
+	{
+		return DB.getSQLValueEx(
+				ITrx.TRXNAME_None,
+				"SELECT COUNT(1) FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE '%C_POS_Order%FOR NO KEY UPDATE%'");
+	}
+
+	private static void rollbackAndClose(@NonNull final ITrxManager trxManager, @NonNull final String trxName)
+	{
+		final ITrx trx = trxManager.getTrxOrNull(trxName);
+		if (trx != null)
+		{
+			try
+			{
+				trx.rollback();
+			}
+			finally
+			{
+				trx.close();
+			}
+		}
 	}
 
 	/**
