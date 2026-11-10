@@ -61,9 +61,9 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_unknown
+  @Id:POS_CARD_SALE_TC23_1
   Scenario Outline: An unknown card result (<cause>) leaves the card payment UNKNOWN: no retry, no delete, no void, no completion
-    Given the SumUp card checkout fails with <cause>
+    Given the card checkout's result is made unknown by <cause>
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -86,9 +86,9 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_notRemovable
+  @Id:POS_CARD_SALE_TC23_2
   Scenario: The till cannot remove the UNKNOWN card payment from its order
-    Given the SumUp card checkout fails with HTTP 5xx
+    Given SumUp API stub answers the next checkout with HTTP 5xx
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -101,9 +101,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_afterAccept_approved
+  @Id:POS_CARD_SALE_TC23_3
   Scenario: A later SUCCESSFUL result from SumUp resolves an UNKNOWN card payment and completes the sale
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -123,9 +124,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_afterAccept_declined
+  @Id:POS_CARD_SALE_TC23_4
   Scenario Outline: A later <status> result from SumUp resolves an UNKNOWN card payment; a retry then completes the sale
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -150,9 +152,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_afterAccept_stillPending
+  @Id:POS_CARD_SALE_TC23_5
   Scenario: A PENDING result from SumUp imports the transaction, the card payment stays UNKNOWN
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -168,7 +171,7 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_orphan
+  @Id:POS_CARD_SALE_TC23_6
   Scenario: A card checkout that stopped after saving the payment becomes UNKNOWN after 150 seconds
     Given a POS card sale sale1 is prepared at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
@@ -186,10 +189,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_release_tooEarly
+  @Id:POS_CARD_SALE_TC23_7
   Scenario: A release before the configured wait is refused
     Given temporarily set sys config int value 60 for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
-    And the SumUp card checkout fails with HTTP 5xx
+    And SumUp API stub answers the next checkout with HTTP 5xx
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -203,7 +206,7 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_release_pendingRefused
+  @Id:POS_CARD_SALE_TC23_8
   Scenario: Only a card payment whose result is unknown can be released
     Given a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
@@ -219,9 +222,9 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_release_thenRetry
+  @Id:POS_CARD_SALE_TC23_9
   Scenario: A released card payment is FAILED with a back-office record, and a retry completes the sale
-    Given the SumUp card checkout fails with HTTP 5xx
+    Given SumUp API stub answers the next checkout with HTTP 5xx
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -244,9 +247,9 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_release_thenDeleteAndCash
+  @Id:POS_CARD_SALE_TC23_10
   Scenario: A released card payment can be deleted and the sale paid in cash
-    Given the SumUp card checkout fails with HTTP 5xx
+    Given SumUp API stub answers the next checkout with HTTP 5xx
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -264,9 +267,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_release_refusedApproved
+  @Id:POS_CARD_SALE_TC23_11
   Scenario: The release check imports an approved charge and refuses the release; the sale completes
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -275,7 +279,9 @@ Feature: POS till card sale with an unknown card result
     And metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
     And SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
     When the card payment of POS sale sale1 is released by cashier metasfresh
-    Then the release of the card payment of POS sale sale1 returned status UNKNOWN with confirmationRequired false and checkFailed false and refused with AD_Message 'de.metas.pos.POSPayment.ReleaseRefusedApproved'
+    Then the release of the card payment of POS sale sale1 returned confirmationRequired false and checkFailed false and refused with AD_Message 'de.metas.pos.POSPayment.ReleaseRefusedApproved'
+    And metasfresh handled the SumUp events
+    And after not more than 30s, the card payment of POS sale sale1 has status SUCCESSFUL
     And after not more than 30s, POS sale sale1 is completed
     And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.ReleasedAsNotCharged'
 
@@ -284,9 +290,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_release_checkFailed
+  @Id:POS_CARD_SALE_TC23_12
   Scenario: A release while SumUp cannot be asked still needs the cashier's confirmation
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -303,9 +310,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_approvedBetweenCheckAndConfirm
+  @Id:POS_CARD_SALE_TC23_13
   Scenario: A charge approved between the check and the confirmation is not released
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -315,6 +323,7 @@ Feature: POS till card sale with an unknown card result
     And SumUp API stub reports the transaction of POS sale sale1 as PENDING
     When the card payment of POS sale sale1 is released by cashier metasfresh
     Then the release of the card payment of POS sale sale1 returned status UNKNOWN with confirmationRequired true and checkFailed false
+    And the SumUp transaction of POS sale sale1 is saved with status PENDING
     When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
     And metasfresh polls SumUp
     Then the card payment of POS sale sale1 has status SUCCESSFUL
@@ -328,9 +337,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_lateApprovalOfReleased
+  @Id:POS_CARD_SALE_TC23_14
   Scenario: A late approval of a released card payment is not booked and is recorded once for back office
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -345,6 +355,7 @@ Feature: POS till card sale with an unknown card result
     And metasfresh polls SumUp
     Then the card payment of POS sale sale1 has status FAILED
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+    And the card payment of POS sale sale1 has no payment receipt
     When SumUp calls back for the transaction of POS sale sale1
     Then the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
     When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL refunded 2.50
@@ -352,15 +363,18 @@ Feature: POS till card sale with an unknown card result
     And metasfresh handled the SumUp events
     Then the first SumUp transaction of POS sale sale1 has refund amount 2.50
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+    And the card payment of POS sale sale1 has no payment receipt
 
   # ##########################################################################
   # Cause (i). Review focus 1: the retry's new transaction stays PENDING; the first checkout's results are ignored.
+  # The CANCELLED leg uses a callback, not a poll: the first row is already SUCCESSFUL locally and the poller re-reads only PENDING rows.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_releasedThenRetried
+  @Id:POS_CARD_SALE_TC23_15
   Scenario: Late results of the released first checkout do not touch the retried card payment
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -374,11 +388,11 @@ Feature: POS till card sale with an unknown card result
     When the card payment of POS sale sale1 is retried and the stub answers SUCCESS
     And SumUp API stub reports the first transaction of POS sale sale1 as SUCCESSFUL
     And metasfresh polls SumUp
-    Then the card payment of POS sale sale1 has status PENDING
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
     When SumUp API stub reports the first transaction of POS sale sale1 as CANCELLED
     And SumUp calls back for the first transaction of POS sale sale1
-    Then the card payment of POS sale sale1 has status PENDING
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
 
   # ##########################################################################
   # Cause (i). The released transaction is still PENDING at SumUp, so the poller still polls it. The released-checkout rule
@@ -386,9 +400,10 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_lateApprovalOfDeleted
+  @Id:POS_CARD_SALE_TC23_16
   Scenario: A late approval of a deleted card payment is not booked and is recorded for back office
-    Given the SumUp card checkout fails with DB_SAVE_FAILS
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
     When a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |
       | product1     | 2.50  | taxCategory07    |
@@ -405,6 +420,7 @@ Feature: POS till card sale with an unknown card result
     And metasfresh polls SumUp
     Then the card payment of POS sale sale1 has status DELETED
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+    And the card payment of POS sale sale1 has no payment receipt
 
   # ##########################################################################
   # REGRESSION GUARD, green from the start: pins the code rule that changingStatusFromRemote accepts a later remote
@@ -414,7 +430,7 @@ Feature: POS till card sale with an unknown card result
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_SALE_CARD_TC23_plainFailedUnchanged
+  @Id:POS_CARD_SALE_TC23_17
   Scenario: A plain FAILED card payment still accepts a later SUCCESSFUL result, as before
     Given a POS card sale sale1 is checked out at shopTill for:
       | M_Product_ID | Price | C_TaxCategory_ID |

@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.pos;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -73,7 +74,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
-import de.metas.adempiere.model.I_C_Invoice;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
@@ -269,19 +269,21 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * Programs how the SumUp side fails for the next card checkout, by cause of an unknown result: {@code HTTP 5xx} and
-	 * {@code CONNECTION_RESET} (cause ii: no SumUp transaction id is known to metasfresh), or {@code DB_SAVE_FAILS} (cause i:
-	 * SumUp accepts the checkout, but metasfresh cannot save its transaction; installs the test-only trigger of
+	 * Makes the result of the next card checkout unknown, by cause: {@code HTTP 5xx} and {@code CONNECTION_RESET} (cause ii: no SumUp
+	 * transaction id is known to metasfresh), or {@code DB_SAVE_FAILS} (cause i: SumUp accepts the checkout, but metasfresh's save
+	 * of the SumUp transaction afterwards fails). Only for the outline that runs all causes; a scenario of one cause uses the
+	 * visible levers directly ({@code SumUp API stub answers the next checkout with ...}, and for cause i
 	 * {@code saving a SumUp transaction fails with a database error}, lifted by {@code saving a SumUp transaction works again}).
+	 * {@code DB_SAVE_FAILS} installs that same test-only trigger and lets the stub answer {@code SUCCESS}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * Given the SumUp card checkout fails with DB_SAVE_FAILS
+	 * Given the card checkout's result is made unknown by DB_SAVE_FAILS
 	 * </pre>
 	 */
-	@And("^the SumUp card checkout fails with (HTTP 5xx|CONNECTION_RESET|DB_SAVE_FAILS)$")
-	public void sumUpCardCheckoutFails(@NonNull final String cause)
+	@And("^the card checkout's result is made unknown by (HTTP 5xx|CONNECTION_RESET|DB_SAVE_FAILS)$")
+	public void cardCheckoutResultMadeUnknownBy(@NonNull final String cause)
 	{
 		if ("DB_SAVE_FAILS".equals(cause))
 		{
@@ -459,8 +461,9 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * The cashier completes the sale (the order's transition to "completed"); the call must fail. (Completing needs every
-	 * payment of the sale to be successful.)
+	 * The cashier tries to complete the sale (the order's transition to "completed"); it must not end completed. Completing needs
+	 * every payment of the sale to be successful (the order's "all payments successful" rule): the call is either refused with an
+	 * {@link AdempiereException} or leaves the order waiting for payment. Anything else (e.g. another exception type) fails the step.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -472,9 +475,15 @@ public class POS_CardSale_StepDef
 	public void completingSaleFails(@NonNull final String saleIdentifier)
 	{
 		final Sale sale = getSale(saleIdentifier);
-		assertThatThrownBy(() -> posService.changeStatusTo(sale.terminalId, sale.orderExternalId, POSOrderStatus.Completed, sale.cashierId))
-				.as("completing POS sale %s must be refused", saleIdentifier)
-				.isInstanceOf(AdempiereException.class);
+		try
+		{
+			posService.changeStatusTo(sale.terminalId, sale.orderExternalId, POSOrderStatus.Completed, sale.cashierId);
+		}
+		catch (final AdempiereException ex)
+		{
+			// refused, as expected
+		}
+		assertThat(isCompleted(sale)).as("POS sale %s must not be completed while a card payment is not successful", saleIdentifier).isFalse();
 	}
 
 	//
@@ -485,7 +494,8 @@ public class POS_CardSale_StepDef
 
 	/**
 	 * Asserts the stored processing status of the sale's card payment (read from {@code C_POS_Payment}, so also a status
-	 * that the till's order model does not map) and, optionally, whether the payment names a SumUp client transaction id.
+	 * that the till's order model does not map) and, optionally, whether the payment names a SumUp client transaction id, or that it names the first / latest transaction
+	 * the SumUp stub accepted for the sale (the payment always names its current attempt).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -493,9 +503,10 @@ public class POS_CardSale_StepDef
 	 * Then the card payment of POS sale sale1 has status UNKNOWN
 	 * Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId set
 	 * Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId empty
+	 * Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
 	 * </pre>
 	 */
-	@And("^the card payment of POS sale (\\S+) has status ([A-Z]+)(?: and sumUpClientTransactionId (set|empty))?$")
+	@And("^the card payment of POS sale (\\S+) has status ([A-Z]+)(?: and sumUpClientTransactionId (set|empty|of the (?:first|latest) transaction))?$")
 	public void assertCardPaymentStatus(
 			@NonNull final String saleIdentifier,
 			@NonNull final String expectedStatus,
@@ -505,8 +516,16 @@ public class POS_CardSale_StepDef
 		assertThat(payment.getPOSPaymentProcessingStatus()).as("status of the card payment of POS sale %s", saleIdentifier).isEqualTo(expectedStatus);
 		if (expectedClientTransactionIdState != null)
 		{
-			final boolean isSet = StringUtils.trimBlankToNull(payment.getSUMUP_ClientTransactionID()) != null;
-			assertThat(isSet).as("card payment of POS sale %s names a SumUp client transaction id", saleIdentifier).isEqualTo("set".equals(expectedClientTransactionIdState));
+			final String actualClientTransactionId = StringUtils.trimBlankToNull(payment.getSUMUP_ClientTransactionID());
+			if (expectedClientTransactionIdState.startsWith("of the"))
+			{
+				final String expectedClientTransactionId = getAcceptedClientTransactionId(getSale(saleIdentifier), expectedClientTransactionIdState.contains("first"));
+				assertThat(actualClientTransactionId).as("SumUp client transaction id named by the card payment of POS sale %s", saleIdentifier).isEqualTo(expectedClientTransactionId);
+			}
+			else
+			{
+				assertThat(actualClientTransactionId != null).as("card payment of POS sale %s names a SumUp client transaction id", saleIdentifier).isEqualTo("set".equals(expectedClientTransactionIdState));
+			}
 		}
 	}
 
@@ -575,7 +594,7 @@ public class POS_CardSale_StepDef
 	@And("^POS sale (\\S+) is not completed$")
 	public void assertSaleNotCompleted(@NonNull final String saleIdentifier)
 	{
-		assertThat(isCompleted(getSale(saleIdentifier))).as("POS sale %s is completed", saleIdentifier).isFalse();
+		assertThat(isCompleted(getSale(saleIdentifier))).as("POS sale %s is not completed", saleIdentifier).isFalse();
 	}
 
 	/**
@@ -624,6 +643,24 @@ public class POS_CardSale_StepDef
 		assertThat(invoices).as("invoices of the sales order of POS sale %s", saleIdentifier).hasSize(1);
 		assertThat(invoices.get(0).isPaid()).as("POS sale %s invoice IsPaid", saleIdentifier).isTrue();
 		invoiceTable.putOrReplace(StepDefDataIdentifier.ofString(saleIdentifier), invoices.get(0));
+	}
+
+	/**
+	 * Asserts that no payment receipt ({@code C_Payment}) was booked for the sale's card payment, i.e. a SumUp approval was
+	 * not booked.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the card payment of POS sale sale1 has no payment receipt
+	 * </pre>
+	 */
+	@And("^the card payment of POS sale (\\S+) has no payment receipt$")
+	public void assertCardPaymentHasNoReceipt(@NonNull final String saleIdentifier)
+	{
+		assertThat(loadCardPaymentRecord(getSale(saleIdentifier)).getC_Payment_ID())
+				.as("C_Payment of the card payment of POS sale %s", saleIdentifier)
+				.isLessThanOrEqualTo(0);
 	}
 
 	/**
@@ -835,7 +872,8 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * Asserts the result of the last release of the sale's card payment: the payment's status in the returned order, whether
+	 * Asserts the result of the last release of the sale's card payment: the payment's status in the returned order (only if given:
+	 * leave it out where an asynchronous status event may still change it; assert the stored status with a waiting step instead), whether
 	 * the cashier must confirm, whether SumUp could not be asked, and, if given, that the release was refused with the
 	 * AD_Message (otherwise it must not have been refused).
 	 *
@@ -844,12 +882,13 @@ public class POS_CardSale_StepDef
 	 * <pre>
 	 * Then the release of the card payment of POS sale sale1 returned status UNKNOWN with confirmationRequired true and checkFailed false
 	 * Then the release of the card payment of POS sale sale1 returned status UNKNOWN with confirmationRequired false and checkFailed false and refused with AD_Message 'de.metas.pos.POSPayment.ReleaseNotYetAllowed'
+	 * Then the release of the card payment of POS sale sale1 returned confirmationRequired false and checkFailed false and refused with AD_Message 'de.metas.pos.POSPayment.ReleaseRefusedApproved'
 	 * </pre>
 	 */
-	@And("^the release of the card payment of POS sale (\\S+) returned status ([A-Z]+) with confirmationRequired (true|false) and checkFailed (true|false)(?: and refused with AD_Message '(.*)')?$")
+	@And("^the release of the card payment of POS sale (\\S+) returned (?:status ([A-Z]+) with )?confirmationRequired (true|false) and checkFailed (true|false)(?: and refused with AD_Message '(.*)')?$")
 	public void assertReleaseResult(
 			@NonNull final String saleIdentifier,
-			@NonNull final String expectedStatus,
+			@Nullable final String expectedStatus,
 			@NonNull final String expectedConfirmationRequired,
 			@NonNull final String expectedCheckFailed,
 			@Nullable final String expectedRefusalAdMessage)
@@ -858,12 +897,15 @@ public class POS_CardSale_StepDef
 		final POSCardPaymentReleaseResult result = sale.lastReleaseResult;
 		assertThat(result).as("result of the last release of the card payment of POS sale %s", saleIdentifier).isNotNull();
 
-		final POSPayment payment = result.getOrder().getAllPayments()
-				.stream()
-				.filter(p -> POSPaymentExternalId.equals(p.getExternalId(), sale.cardPaymentExternalId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("The order returned by the release has no card payment of POS sale " + saleIdentifier));
-		assertThat(payment.getPaymentProcessingStatus().name()).as("status returned by the release").isEqualTo(expectedStatus);
+		if (expectedStatus != null)
+		{
+			final POSPayment payment = result.getOrder().getAllPayments()
+					.stream()
+					.filter(p -> POSPaymentExternalId.equals(p.getExternalId(), sale.cardPaymentExternalId))
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("The order returned by the release has no card payment of POS sale " + saleIdentifier));
+			assertThat(payment.getPaymentProcessingStatus().name()).as("status returned by the release").isEqualTo(expectedStatus);
+		}
 		assertThat(result.isConfirmationRequired()).as("confirmationRequired returned by the release").isEqualTo(Boolean.parseBoolean(expectedConfirmationRequired));
 		assertThat(result.isCheckFailed()).as("checkFailed returned by the release").isEqualTo(Boolean.parseBoolean(expectedCheckFailed));
 
