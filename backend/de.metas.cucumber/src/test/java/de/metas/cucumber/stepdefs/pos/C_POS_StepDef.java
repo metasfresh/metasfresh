@@ -355,45 +355,15 @@ public class C_POS_StepDef
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
 		final StepDefDataIdentifier saleIdentifier = rows.get(0).getAsOptionalIdentifier().orElseGet(() -> StepDefDataIdentifier.ofString(terminalIdentifier));
 
-		BigDecimal totalAmount = BigDecimal.ZERO;
-		final ImmutableList.Builder<RemotePOSOrderLine> lines = ImmutableList.builder();
-		for (final DataTableRow row : rows)
-		{
-			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-			final TaxCategoryId taxCategoryId = row.getAsIdentifier("C_TaxCategory_ID").lookupNotNullIdIn(taxCategoryTable);
-			final BigDecimal price = row.getAsBigDecimal("Price");
-			final BigDecimal qty = row.getAsOptionalBigDecimal("Qty").orElse(BigDecimal.ONE);
-			final UomId uomId = productBL.getStockUOMId(productId);
-
-			lines.add(RemotePOSOrderLine.builder()
-					.uuid(UUID.randomUUID().toString())
-					.productId(productId)
-					.productName(product.getName())
-					.taxCategoryId(taxCategoryId)
-					.price(price)
-					.qty(qty)
-					.uomId(uomId)
-					.build());
-
-			totalAmount = totalAmount.add(price.multiply(qty));
-		}
-
 		final POSOrderExternalId orderExternalId = POSOrderExternalId.ofString(UUID.randomUUID().toString());
 		final POSPaymentExternalId paymentExternalId = POSPaymentExternalId.ofString(UUID.randomUUID().toString());
 
-		posService.updateOrderFromRemote(
-				RemotePOSOrder.builder()
-						.uuid(orderExternalId)
-						.posTerminalId(posTerminalId)
-						.lines(lines.build())
-						.payments(ImmutableList.of(RemotePOSPayment.builder()
-								.uuid(paymentExternalId)
-								.paymentMethod(paymentMethod)
-								.amount(totalAmount)
-								.build()))
-						.build(),
-				cashierId);
+		final RemotePOSOrder remoteOrder = newRemotePOSOrder(
+				posTerminalId, orderExternalId, paymentExternalId, paymentMethod, rows,
+				productTable, taxCategoryTable, productBL);
+		final BigDecimal totalAmount = remoteOrder.getPayments().get(0).getAmount();
+
+		posService.updateOrderFromRemote(remoteOrder, cashierId);
 
 		posService.changeStatusTo(posTerminalId, orderExternalId, POSOrderStatus.WaitingPayment, cashierId);
 
@@ -447,6 +417,58 @@ public class C_POS_StepDef
 		// distinct identifier from the invoice's: IdentifiersResolver (used e.g. by "Fact_Acct records are
 		// matching") probes every StepDefData table for a given identifier and fails if more than one matches.
 		paymentTable.putOrReplace(StepDefDataIdentifier.ofString(saleIdentifier.getAsString() + "Receipt"), paymentReceipt);
+	}
+
+	/**
+	 * Builds the remote order of a POS sale as the mobile POS client sends it: one line per data-table row and a single
+	 * payment of the given method for the lines' total. Shared by the cash/card sale steps here and by the till card sale steps.
+	 *
+	 * @param rows the sale's lines, with the columns {@code M_Product_ID}, {@code Price}, {@code C_TaxCategory_ID} and optional {@code Qty}
+	 */
+	static RemotePOSOrder newRemotePOSOrder(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId orderExternalId,
+			@NonNull final POSPaymentExternalId paymentExternalId,
+			@NonNull final POSPaymentMethod paymentMethod,
+			@NonNull final List<DataTableRow> rows,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
+			@NonNull final IProductBL productBL)
+	{
+		BigDecimal totalAmount = BigDecimal.ZERO;
+		final ImmutableList.Builder<RemotePOSOrderLine> lines = ImmutableList.builder();
+		for (final DataTableRow row : rows)
+		{
+			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+			final TaxCategoryId taxCategoryId = row.getAsIdentifier("C_TaxCategory_ID").lookupNotNullIdIn(taxCategoryTable);
+			final BigDecimal price = row.getAsBigDecimal("Price");
+			final BigDecimal qty = row.getAsOptionalBigDecimal("Qty").orElse(BigDecimal.ONE);
+			final UomId uomId = productBL.getStockUOMId(productId);
+
+			lines.add(RemotePOSOrderLine.builder()
+					.uuid(UUID.randomUUID().toString())
+					.productId(productId)
+					.productName(product.getName())
+					.taxCategoryId(taxCategoryId)
+					.price(price)
+					.qty(qty)
+					.uomId(uomId)
+					.build());
+
+			totalAmount = totalAmount.add(price.multiply(qty));
+		}
+
+		return RemotePOSOrder.builder()
+				.uuid(orderExternalId)
+				.posTerminalId(posTerminalId)
+				.lines(lines.build())
+				.payments(ImmutableList.of(RemotePOSPayment.builder()
+						.uuid(paymentExternalId)
+						.paymentMethod(paymentMethod)
+						.amount(totalAmount)
+						.build()))
+				.build();
 	}
 
 	/**

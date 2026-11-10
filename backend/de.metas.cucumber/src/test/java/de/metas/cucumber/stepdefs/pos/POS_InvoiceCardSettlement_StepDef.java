@@ -181,7 +181,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@Nullable private String lastBackOfficeProcessSummary;
 
 	// test-only trigger that makes every SUMUP_Transaction insert fail; see failSumUpTransactionInsert
-	private static final String SUMUP_TRX_INSERT_FAILURE = "cucumber_sumup_transaction_insert_fails";
+	static final String SUMUP_TRX_INSERT_FAILURE = "cucumber_sumup_transaction_insert_fails";
 
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
 	@NonNull private final SpringContextHolder.Lazy<SumUpService> sumUpService = SpringContextHolder.lazyBean(SumUpService.class);

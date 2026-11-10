@@ -194,6 +194,28 @@ public class POSOrdersService
 
 	}
 
+	// TODO TC23 RED: stub, replaced by the three-step card checkout (step 1: the order is locked, the payment is saved as PENDING)
+	public POSOrder startCardCheckout(@NonNull final POSPaymentCheckoutRequest request)
+	{
+		throw new UnsupportedOperationException("TC23 RED");
+	}
+
+	// TODO TC23 RED: stub, replaced by the check of an unknown card payment
+	public POSCardPaymentCheckResult checkCardPayment(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
+	{
+		throw new UnsupportedOperationException("TC23 RED");
+	}
+
+	// TODO TC23 RED: stub, replaced by the release of an unknown card payment
+	public POSCardPaymentReleaseResult releaseCardPayment(@NonNull final POSCardPaymentReleaseRequest request)
+	{
+		throw new UnsupportedOperationException("TC23 RED");
+	}
+
 	public POSOrder refundPayment(
 			@NonNull final POSTerminalId posTerminalId,
 			@NonNull final POSOrderExternalId posOrderExternalId,
