@@ -71,10 +71,17 @@ class POSInvoiceCardSettlementServiceTest
 	private SumUpService sumUpService;
 	private POSInvoiceCardSettlementService service;
 
+	private IQueryBL queryBL;
+	private IErrorManager errorManager;
+	private IMsgBL msgBL;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
+		errorManager = Services.get(IErrorManager.class);
+		msgBL = Services.get(IMsgBL.class);
 		repository = new POSInvoiceCardSettlementRepository();
 		booking = mock(POSInvoiceCardSettlementBooking.class);
 		sumUpService = mock(SumUpService.class);
@@ -169,7 +176,7 @@ class POSInvoiceCardSettlementServiceTest
 		private List<I_AD_Issue> issuesOf(@NonNull final POSInvoiceCardSettlementId id)
 		{
 			final TableRecordReference recordRef = id.toRecordRef();
-			return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Issue.class)
+			return queryBL.createQueryBuilder(I_AD_Issue.class)
 					.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 					.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 					.create()
@@ -327,7 +334,7 @@ class POSInvoiceCardSettlementServiceTest
 			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.BOOKING_ERROR, false, null, 1);
 			when(booking.findSumUpTransaction(settlement.getId())).thenReturn(Optional.of(successfulSumUpTransaction()));
 			// as SumUpService does when the lookup fails: it records an AD_Issue in the current context
-			doAnswer(invocation -> Services.get(IErrorManager.class).createIssue(new AdempiereException("SumUp lookup failed").setRecord(settlement.getId().toRecordRef())))
+			doAnswer(invocation -> errorManager.createIssue(new AdempiereException("SumUp lookup failed").setRecord(settlement.getId().toRecordRef())))
 					.when(sumUpService).updateTransactionFromRemote(any());
 
 			service.retryBooking(settlement.getId());
@@ -378,7 +385,7 @@ class POSInvoiceCardSettlementServiceTest
 		private List<I_AD_Issue> issuesOf(@NonNull final POSInvoiceCardSettlementId id)
 		{
 			final TableRecordReference recordRef = id.toRecordRef();
-			return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Issue.class)
+			return queryBL.createQueryBuilder(I_AD_Issue.class)
 					.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 					.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 					.create()
@@ -455,10 +462,10 @@ class POSInvoiceCardSettlementServiceTest
 		return pendingSumUpTransaction().toBuilder().status(SumUpTransactionStatus.SUCCESSFUL).build();
 	}
 
-	private static String errorCodeOf(@NonNull final String adMessage)
+	private String errorCodeOf(@NonNull final String adMessage)
 	{
 		final AdMessageKey key = AdMessageKey.of(adMessage);
-		return Optional.ofNullable(Services.get(IMsgBL.class).getErrorCode(key)).orElseGet(key::toAD_Message);
+		return Optional.ofNullable(msgBL.getErrorCode(key)).orElseGet(key::toAD_Message);
 	}
 
 	private static SumUpTransaction pendingSumUpTransaction()

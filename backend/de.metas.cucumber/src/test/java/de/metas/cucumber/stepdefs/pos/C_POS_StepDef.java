@@ -127,6 +127,8 @@ public class C_POS_StepDef
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	@NonNull private final POSService posService = SpringContextHolder.instance.getBean(POSService.class);
 	@NonNull private final POSTerminalRepository posTerminalRepository = SpringContextHolder.instance.getBean(POSTerminalRepository.class);
+	@NonNull private final SumUpTransactionRepository sumUpTransactionRepository = SpringContextHolder.instance.getBean(SumUpTransactionRepository.class);
+	@NonNull private final SumUpService sumUpService = SpringContextHolder.instance.getBean(SumUpService.class);
 
 	/** Seconds to wait for the async {@code C_POSOrder_CreateInvoiceAndShipment} work package (sales order + invoice + shipment) to land. */
 	private static final int ASYNC_INVOICE_TIMEOUT_SEC = 60;
@@ -454,7 +456,7 @@ public class C_POS_StepDef
 	private void approveCardPaymentOnTheReader(@NonNull final POSOrder order) throws InterruptedException
 	{
 		final POSPayment posPayment = order.getPaymentsNotDeleted().get(0);
-		final SumUpTransaction sumUpTrx = SpringContextHolder.instance.getBean(SumUpTransactionRepository.class)
+		final SumUpTransaction sumUpTrx = sumUpTransactionRepository
 				.stream(SumUpTransactionQuery.builder()
 						.posRef(SumUpPOSRef.builder()
 								.posOrderId(order.getLocalIdNotNull().getRepoId())
@@ -465,7 +467,7 @@ public class C_POS_StepDef
 				.orElseThrow(() -> new AdempiereException("No SumUp transaction for the POS card payment").setParameter("posPayment", posPayment));
 
 		SumUpApiStub.setTransactionStatus(sumUpTrx.getClientTransactionId().getAsString(), SumUpTransactionStatus.SUCCESSFUL.getCode(), null);
-		SpringContextHolder.instance.getBean(SumUpService.class).bulkUpdatePendingTransactions(false);
+		sumUpService.bulkUpdatePendingTransactions(false);
 		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 

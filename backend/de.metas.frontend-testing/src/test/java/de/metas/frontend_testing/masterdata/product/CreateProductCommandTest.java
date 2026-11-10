@@ -17,6 +17,8 @@ import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -63,6 +65,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateProductCommandTest
 {
+	private IQueryBL queryBL;
 	private ProductRepository productRepository;
 	private ICurrentCostsRepository currentCostsRepository;
 	private MasterdataContext context;
@@ -71,6 +74,7 @@ public class CreateProductCommandTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		productRepository = new ProductRepository();
 		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		context = new MasterdataContext();
@@ -388,7 +392,7 @@ public class CreateProductCommandTest
 				.build()
 				.execute();
 
-		return de.metas.util.Services.get(org.adempiere.ad.dao.IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ProductPrice.class)
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, response.getId())
 				.create()

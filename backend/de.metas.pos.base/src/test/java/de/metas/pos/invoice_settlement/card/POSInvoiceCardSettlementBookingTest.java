@@ -44,10 +44,13 @@ class POSInvoiceCardSettlementBookingTest
 	private POSInvoiceCardSettlementRepository repository;
 	private POSInvoiceCardSettlementBooking booking;
 
+	private IQueryBL queryBL;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		// the in-memory test DB cannot run "SET LOCAL lock_timeout"; 0 = no lock timeout
 		Services.get(ISysConfigBL.class).setValue("de.metas.pos.InvoiceCardSettlement.BookingLockTimeoutMillis", 0, ClientId.SYSTEM, OrgId.ANY);
 
@@ -75,7 +78,7 @@ class POSInvoiceCardSettlementBookingTest
 	private int countIssues(final POSInvoiceCardSettlementId id)
 	{
 		final TableRecordReference recordRef = id.toRecordRef();
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Issue.class)
+		return queryBL.createQueryBuilder(I_AD_Issue.class)
 				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 				.create()

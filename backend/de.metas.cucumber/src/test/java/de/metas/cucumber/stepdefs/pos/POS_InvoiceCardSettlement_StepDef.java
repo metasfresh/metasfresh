@@ -149,6 +149,10 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final C_POS_StepDefData posTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
@@ -176,13 +180,14 @@ public class POS_InvoiceCardSettlement_StepDef
 	@Nullable private String lastBackOfficeProcessSummary;
 
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
-	private SumUpService sumUpService() {return SpringContextHolder.instance.getBean(SumUpService.class);}
-
-	private SumUpTransactionRepository sumUpTransactionRepository() {return SpringContextHolder.instance.getBean(SumUpTransactionRepository.class);}
-
-	private SumUpConfigRepository sumUpConfigRepository() {return SpringContextHolder.instance.getBean(SumUpConfigRepository.class);}
-
-	private POSInvoiceCardSettlementRepository settlementRepository() {return SpringContextHolder.instance.getBean(POSInvoiceCardSettlementRepository.class);}
+	@NonNull private final SpringContextHolder.Lazy<SumUpService> sumUpService = SpringContextHolder.lazyBean(SumUpService.class);
+	@NonNull private final SpringContextHolder.Lazy<SumUpTransactionRepository> sumUpTransactionRepository = SpringContextHolder.lazyBean(SumUpTransactionRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<SumUpConfigRepository> sumUpConfigRepository = SpringContextHolder.lazyBean(SumUpConfigRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<POSInvoiceCardSettlementRepository> settlementRepository = SpringContextHolder.lazyBean(POSInvoiceCardSettlementRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<POSInvoiceCardSettlementService> settlementService = SpringContextHolder.lazyBean(POSInvoiceCardSettlementService.class);
+	@NonNull private final SpringContextHolder.Lazy<POSInvoiceCardSettlementBooking> settlementBooking = SpringContextHolder.lazyBean(POSInvoiceCardSettlementBooking.class);
+	@NonNull private final SpringContextHolder.Lazy<POSService> posService = SpringContextHolder.lazyBean(POSService.class);
+	@NonNull private final SpringContextHolder.Lazy<CurrencyRepository> currencyRepository = SpringContextHolder.lazyBean(CurrencyRepository.class);
 
 	/**
 	 * Every scenario starts with a clean stub: no programmed answers, no recorded checkouts, no known transactions.
@@ -242,7 +247,7 @@ public class POS_InvoiceCardSettlement_StepDef
 
 		// the card reader and the default-reader link go through the repository
 		final SumUpCardReaderExternalId cardReaderExternalId = SumUpCardReaderExternalId.ofString(cardReaderExternalId(terminalIdentifier));
-		sumUpConfigRepository().updateById(sumUpConfigId, config -> config.toBuilder()
+		sumUpConfigRepository.get().updateById(sumUpConfigId, config -> config.toBuilder()
 				// SumUpConfig picks the only reader as default, so "no default reader" means "no reader at all"
 				.cardReaders(withDefaultReader
 						? ImmutableList.of(SumUpCardReader.builder()
@@ -287,7 +292,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
 		final UserId cashierId = StepDefUtil.getUserIdByLogin(cashierLogin);
 
-		final POSInvoiceCardSettlement settlement = settlementRepository().create(
+		final POSInvoiceCardSettlement settlement = settlementRepository.get().create(
 				ORG_ID,
 				posTerminalId,
 				InvoiceId.ofRepoId(invoice.getC_Invoice_ID()),
@@ -318,13 +323,13 @@ public class POS_InvoiceCardSettlement_StepDef
 		final POSInvoiceCardSettlement settlement = loadSettlement(settlementIdentifier);
 		final I_C_POS posRecord = InterfaceWrapperHelper.load(settlement.getPosTerminalId(), I_C_POS.class);
 		final SumUpConfigId sumUpConfigId = SumUpConfigId.ofRepoId(posRecord.getSUMUP_Config_ID());
-		final SumUpConfig sumUpConfig = sumUpService().getConfig(sumUpConfigId);
+		final SumUpConfig sumUpConfig = sumUpService.get().getConfig(sumUpConfigId);
 
 		final Amount amount = Amount.of(
 				settlement.getAmount().toBigDecimal(),
 				currencyDAO.getCurrencyCodeById(settlement.getAmount().getCurrencyId()));
 
-		sumUpService().cardReaderCheckout(SumUpCardReaderCheckoutRequest.builder()
+		sumUpService.get().cardReaderCheckout(SumUpCardReaderCheckoutRequest.builder()
 				.configId(sumUpConfigId)
 				.cardReaderId(sumUpConfig.getDefaultCardReaderExternalIdNotNull())
 				.amount(amount)
@@ -441,7 +446,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		final int cycles = times != null ? Integer.parseInt(times) : 1;
 		for (int i = 0; i < cycles; i++)
 		{
-			sumUpService().bulkUpdatePendingTransactions(false);
+			sumUpService.get().bulkUpdatePendingTransactions(false);
 			try (final IAutoCloseable ignored = Env.switchContext(Env.newTemporaryCtx()))
 			{
 				SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class)
@@ -465,7 +470,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	public void updateTransactionFromRemote(@NonNull final String settlementIdentifier) throws InterruptedException
 	{
 		final SumUpTransaction trx = getSumUpTransaction(loadSettlement(settlementIdentifier).getId());
-		sumUpService().updateTransactionFromRemote(trx.getClientTransactionId());
+		sumUpService.get().updateTransactionFromRemote(trx.getClientTransactionId());
 		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
@@ -633,7 +638,7 @@ public class POS_InvoiceCardSettlement_StepDef
 			@NonNull final String terminalIdentifier,
 			@NonNull final String cashierLogin) throws InterruptedException
 	{
-		final POSInvoiceCardSettlement settlement = settlementService().start(toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin));
+		final POSInvoiceCardSettlement settlement = settlementService.get().start(toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin));
 		settlementTable.putOrReplace(
 				StepDefDataIdentifier.ofString(settlementIdentifier),
 				InterfaceWrapperHelper.load(settlement.getId(), I_C_POS_InvoiceCardSettlement.class));
@@ -660,7 +665,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		final POSInvoiceCardSettlementStartRequest request = toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin);
 		final long countBefore = countSettlements(request.getInvoiceId());
 
-		assertThatThrownBy(() -> settlementService().start(request))
+		assertThatThrownBy(() -> settlementService.get().start(request))
 				.as("card settlement start must be refused")
 				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode(expectedAdMessage)));
 
@@ -696,7 +701,7 @@ public class POS_InvoiceCardSettlement_StepDef
 					try (final IAutoCloseable ignored = Env.switchContext(ctx))
 					{
 						startSignal.await();
-						return settlementService().start(request);
+						return settlementService.get().start(request);
 					}
 				}));
 			}
@@ -773,9 +778,9 @@ public class POS_InvoiceCardSettlement_StepDef
 			@NonNull final String isAbandoned)
 	{
 		final POSInvoiceCardSettlementId id = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
-		Services.get(ITrxManager.class).runInNewTrx(() -> {
-			final POSInvoiceCardSettlement settlement = settlementRepository().getByIdForUpdate(id);
-			settlementRepository().save(settlement.toBuilder()
+		trxManager.runInNewTrx(() -> {
+			final POSInvoiceCardSettlement settlement = settlementRepository.get().getByIdForUpdate(id);
+			settlementRepository.get().save(settlement.toBuilder()
 					.status(parseStatus(status))
 					.isAbandoned(Boolean.parseBoolean(isAbandoned))
 					.build());
@@ -813,11 +818,10 @@ public class POS_InvoiceCardSettlement_StepDef
 	{
 		final I_C_Invoice invoice = invoiceTable.get(StepDefDataIdentifier.ofString(invoiceIdentifier));
 		InterfaceWrapperHelper.refresh(invoice);
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 		assertThat(paymentDAO.streamPaymentIdsByBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).count())
 				.as("payments of the invoice's business partner")
 				.isZero();
-		assertThat(Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal())
+		assertThat(allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal())
 				.as("open amount of invoice %s", invoiceIdentifier)
 				.isEqualByComparingTo(new BigDecimal(expectedOpenAmt));
 	}
@@ -843,7 +847,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
 		final POSInvoiceCardSettlementId expectedId = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
 
-		final POSOpenInvoice openInvoice = SpringContextHolder.instance.getBean(POSService.class)
+		final POSOpenInvoice openInvoice = posService.get()
 				.findOpenInvoices(posTerminalId, invoice.getDocumentNo())
 				.stream()
 				.filter(candidate -> candidate.getInvoiceId().getRepoId() == invoice.getC_Invoice_ID())
@@ -1059,7 +1063,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^the card payment of card settlement (\\S+) is allocated with (\\S+) to its invoice$")
 	public void assertAllocatedAmount(@NonNull final String settlementIdentifier, @NonNull final String expectedAmount)
 	{
-		assertThat(settlementService().getAllocatedAmount(loadSettlement(settlementIdentifier)).toBigDecimal())
+		assertThat(settlementService.get().getAllocatedAmount(loadSettlement(settlementIdentifier)).toBigDecimal())
 				.as("allocated amount of the card payment of card settlement %s", settlementIdentifier)
 				.isEqualByComparingTo(new BigDecimal(expectedAmount));
 	}
@@ -1144,7 +1148,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^the payment of card settlement (\\S+) is booked without being allocated$")
 	public void bookPaymentWithoutAllocating(@NonNull final String settlementIdentifier)
 	{
-		SpringContextHolder.instance.getBean(POSInvoiceCardSettlementBooking.class)
+		settlementBooking.get()
 				.bookPaymentIfApproved(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
 	}
 
@@ -1166,7 +1170,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		assertThat(settlement.getPaymentId()).as("C_Payment_ID of card settlement %s", settlementIdentifier).isNotNull();
 		paymentTable.putOrReplace(
 				StepDefDataIdentifier.ofString(paymentIdentifier),
-				Services.get(IPaymentDAO.class).getById(settlement.getPaymentId()));
+				paymentDAO.getById(settlement.getPaymentId()));
 	}
 
 	/**
@@ -1182,7 +1186,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	public void assertPartnerPaymentCount(@NonNull final String invoiceIdentifier, final int expectedCount)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(StepDefDataIdentifier.ofString(invoiceIdentifier));
-		assertThat(Services.get(IPaymentDAO.class).streamPaymentIdsByBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).count())
+		assertThat(paymentDAO.streamPaymentIdsByBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).count())
 				.as("payments of the partner of invoice %s", invoiceIdentifier)
 				.isEqualTo(expectedCount);
 	}
@@ -1282,7 +1286,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		final JsonCashJournalSummary summary = JsonCashJournalSummary.of(
 				getCurrentCashJournal(terminalIdentifier),
 				JsonContext.builder()
-						.currencyRepository(SpringContextHolder.instance.getBean(CurrencyRepository.class))
+						.currencyRepository(currencyRepository.get())
 						.adLanguage(Env.getADLanguageOrBaseLanguage())
 						.build());
 		assertThat(getPaymentMethodTotal(summary, POSPaymentMethod.CARD)).as("card total").isEqualByComparingTo(new BigDecimal(expectedCardTotal));
@@ -1301,7 +1305,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	private POSCashJournal getCurrentCashJournal(@NonNull final String terminalIdentifier)
 	{
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
-		return SpringContextHolder.instance.getBean(POSService.class).getCurrentCashJournal(posTerminalId)
+		return posService.get().getCurrentCashJournal(posTerminalId)
 				.orElseThrow(() -> new AdempiereException("No open cash journal for POS terminal " + terminalIdentifier));
 	}
 
@@ -1388,7 +1392,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		backgroundStart = backgroundStartExecutor.submit(() -> {
 			try (final IAutoCloseable ignored = Env.switchContext(ctx))
 			{
-				return settlementService().start(request);
+				return settlementService.get().start(request);
 			}
 		});
 
@@ -1449,7 +1453,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^card settlement (\\S+) is checked$")
 	public void checkSettlement(@NonNull final String settlementIdentifier) throws InterruptedException
 	{
-		lastCheckResult = settlementService().check(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
+		lastCheckResult = settlementService.get().check(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
 		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
@@ -1488,7 +1492,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^card settlement (\\S+) is released by cashier (\\S+)$")
 	public void releaseSettlement(@NonNull final String settlementIdentifier, @NonNull final String cashierLogin) throws InterruptedException
 	{
-		lastReleaseResult = settlementService().release(POSInvoiceCardSettlementReleaseRequest.builder()
+		lastReleaseResult = settlementService.get().release(POSInvoiceCardSettlementReleaseRequest.builder()
 				.id(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)))
 				.cashierId(StepDefUtil.getUserIdByLogin(cashierLogin))
 				.confirmNotCharged(false)
@@ -1513,7 +1517,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		assertThat(prompt).as("result of the last release").isNotNull();
 		assertThat(prompt.isConfirmationRequired()).as("the last release asked for a confirmation").isTrue();
 
-		lastReleaseResult = settlementService().release(POSInvoiceCardSettlementReleaseRequest.builder()
+		lastReleaseResult = settlementService.get().release(POSInvoiceCardSettlementReleaseRequest.builder()
 				.id(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)))
 				.cashierId(StepDefUtil.getUserIdByLogin(cashierLogin))
 				.confirmNotCharged(true)
@@ -1694,7 +1698,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	{
 		assertThat(rowLockHolderTrxName).as("a row lock of another transaction is already held").isNull();
 		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
-		final String trxName = Services.get(ITrxManager.class).createTrxName("cucumber-invoice-lock-holder", true);
+		final String trxName = trxManager.createTrxName("cucumber-invoice-lock-holder", true);
 		rowLockHolderTrxName = trxName;
 		DB.getSQLValueEx(trxName, "SELECT C_Invoice_ID FROM C_Invoice WHERE C_Invoice_ID=? FOR UPDATE", invoiceId.getRepoId());
 	}
@@ -1716,7 +1720,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	{
 		assertThat(rowLockHolderTrxName).as("a row lock of another transaction is already held").isNull();
 		final POSInvoiceCardSettlementId id = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
-		final String trxName = Services.get(ITrxManager.class).createTrxName("cucumber-settlement-lock-holder", true);
+		final String trxName = trxManager.createTrxName("cucumber-settlement-lock-holder", true);
 		rowLockHolderTrxName = trxName;
 		DB.getSQLValueEx(trxName, "SELECT C_POS_InvoiceCardSettlement_ID FROM C_POS_InvoiceCardSettlement WHERE C_POS_InvoiceCardSettlement_ID=? FOR UPDATE", id.getRepoId());
 	}
@@ -1741,7 +1745,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		}
 		rowLockHolderTrxName = null;
 
-		final ITrx trx = Services.get(ITrxManager.class).getTrxOrNull(trxName);
+		final ITrx trx = trxManager.getTrxOrNull(trxName);
 		if (trx != null)
 		{
 			try
@@ -1957,7 +1961,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^the back-office process reports AD_Message '(.*)'$")
 	public void assertBackOfficeProcessSummary(@NonNull final String expectedAdMessage)
 	{
-		final ITranslatableString expected = Services.get(IMsgBL.class).getTranslatableMsgText(AdMessageKey.of(expectedAdMessage));
+		final ITranslatableString expected = msgBL.getTranslatableMsgText(AdMessageKey.of(expectedAdMessage));
 		assertThat(lastBackOfficeProcessSummary)
 				.as("summary of the last back-office process")
 				.isIn(expected.translate("de_DE"), expected.translate("en_US"), expected.getDefaultValue());
@@ -2078,7 +2082,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^invoice (\\S+) is not blocked by a card settlement$")
 	public void assertInvoiceNotBlocked(@NonNull final String invoiceIdentifier)
 	{
-		assertThat(settlementService().getBlockingByInvoiceId(invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier))))
+		assertThat(settlementService.get().getBlockingByInvoiceId(invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier))))
 				.as("blocking card settlement of invoice %s", invoiceIdentifier)
 				.isEmpty();
 	}
@@ -2128,7 +2132,6 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 
-	private POSInvoiceCardSettlementService settlementService() {return SpringContextHolder.instance.getBean(POSInvoiceCardSettlementService.class);}
 
 	private POSInvoiceCardSettlementStartRequest toStartRequest(
 			@NonNull final String invoiceIdentifier,
@@ -2150,9 +2153,8 @@ public class POS_InvoiceCardSettlement_StepDef
 				.count();
 	}
 
-	private static String expectedErrorCode(@NonNull final String adMessage)
+	private String expectedErrorCode(@NonNull final String adMessage)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final AdMessageKey key = AdMessageKey.of(adMessage);
 		return Optional.ofNullable(msgBL.getErrorCode(key)).orElseGet(key::toAD_Message);
 	}
@@ -2174,7 +2176,7 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	private POSInvoiceCardSettlement loadSettlement(@NonNull final String settlementIdentifier)
 	{
-		return settlementRepository().getById(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
+		return settlementRepository.get().getById(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
 	}
 
 	/**
@@ -2182,7 +2184,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	 */
 	private SumUpTransaction getSumUpTransaction(@NonNull final POSInvoiceCardSettlementId settlementId)
 	{
-		final List<SumUpTransaction> trxs = sumUpTransactionRepository().list(SumUpTransactionQuery.builder()
+		final List<SumUpTransaction> trxs = sumUpTransactionRepository.get().list(SumUpTransactionQuery.builder()
 				.posRef(SumUpPOSRef.builder().posInvoiceCardSettlementId(settlementId.getRepoId()).build())
 				.build());
 		assertThat(trxs).as("SumUp transactions referencing card settlement %s", settlementId).hasSize(1);

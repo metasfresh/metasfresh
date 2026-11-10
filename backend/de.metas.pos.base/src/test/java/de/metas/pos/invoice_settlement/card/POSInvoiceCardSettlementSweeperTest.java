@@ -37,10 +37,13 @@ class POSInvoiceCardSettlementSweeperTest
 	private POSInvoiceCardSettlementService service;
 	private POSInvoiceCardSettlementSweeper sweeper;
 
+	private IQueryBL queryBL;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		repository = new POSInvoiceCardSettlementRepository();
 		service = mock(POSInvoiceCardSettlementService.class);
 		sweeper = new POSInvoiceCardSettlementSweeper(repository, service);
@@ -185,15 +188,15 @@ class POSInvoiceCardSettlementSweeperTest
 		assertThat(countIssues(failing)).isEqualTo(2);
 	}
 
-	private static int countIssues(final POSInvoiceCardSettlementId id)
+	private int countIssues(final POSInvoiceCardSettlementId id)
 	{
 		return queryIssues(id).count();
 	}
 
-	private static IQuery<I_AD_Issue> queryIssues(final POSInvoiceCardSettlementId id)
+	private IQuery<I_AD_Issue> queryIssues(final POSInvoiceCardSettlementId id)
 	{
 		final TableRecordReference recordRef = id.toRecordRef();
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Issue.class)
+		return queryBL.createQueryBuilder(I_AD_Issue.class)
 				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 				.create();
