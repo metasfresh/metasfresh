@@ -119,8 +119,13 @@ public class POSInvoiceCardSettlementBooking
 	 * Runs step A and then step B, each in its own transaction, and handles their errors (see the class comment).
 	 * A booking error is handled here and not thrown; only a failure while recording that error (e.g. the connection
 	 * is lost) is thrown, so callers that must not fail (the SumUp event dispatcher) still need their own catch.
+	 * <p>
+	 * Step B may ask SumUp once (see {@link #completeBooking}); so this must run outside any transaction.
+	 *
+	 * @param isSumUpTransactionRefreshed the caller has just refreshed the settlement's SumUp transaction from SumUp, so
+	 *                                    step B does not ask SumUp again
 	 */
-	public void book(@NonNull final POSInvoiceCardSettlementId id)
+	public void book(@NonNull final POSInvoiceCardSettlementId id, final boolean isSumUpTransactionRefreshed)
 	{
 		try
 		{
@@ -134,7 +139,7 @@ public class POSInvoiceCardSettlementBooking
 
 		try
 		{
-			completeBooking(id);
+			completeBooking(id, isSumUpTransactionRefreshed);
 		}
 		catch (final Exception ex)
 		{
@@ -326,12 +331,20 @@ public class POSInvoiceCardSettlementBooking
 	 * the invoice is still open but the payment could not be allocated.
 	 * <p>
 	 * The charge may have been refunded at SumUp since step A created the payment (e.g. while the settlement waited for a
-	 * journal), and the poller does not refresh a successful transaction. So, before allocating, the SumUp transaction is
-	 * refreshed from SumUp (outside any transaction, see {@link #refreshSumUpTransactionFromRemote}); if SumUp reports it
-	 * refunded, nothing is allocated or journaled ({@link #recordRefundedAfterPaymentCreated}).
+	 * journal), and the poller does not refresh a successful transaction. So, unless the caller has just done so
+	 * ({@code isSumUpTransactionRefreshed}), the SumUp transaction is refreshed from SumUp before allocating
+	 * ({@link #refreshSumUpTransactionBeforeAllocating}): one lookup, outside any transaction and without holding a lock, and
+	 * only when a cash journal is open, i.e. when the booking can complete now (never on each retry while the settlement
+	 * waits for a journal). The SumUp client's timeouts apply to it. A failed lookup does not stop the booking: a payment
+	 * exists already for this approval, so it goes on with the transaction as last known. If the transaction is refunded
+	 * (as known after that), nothing is allocated or journaled ({@link #recordRefundedAfterPaymentCreated}); this is
+	 * checked before the journal, so a refund known already is reported also while no journal is open.
 	 */
-	public void completeBooking(@NonNull final POSInvoiceCardSettlementId id)
+	public void completeBooking(@NonNull final POSInvoiceCardSettlementId id, final boolean isSumUpTransactionRefreshed)
 	{
+		// the SumUp lookup below must not run inside a transaction (it would hold its locks while waiting for SumUp)
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		// cheap pre-check without locks; re-checked below under the locks
 		final POSInvoiceCardSettlement settlement = repository.getById(id);
 		if (settlement.getStatus() != POSInvoiceCardSettlementStatus.APPROVED)
@@ -339,23 +352,24 @@ public class POSInvoiceCardSettlementBooking
 			return;
 		}
 
-		// only when the booking can complete now: no SumUp call per retry while the settlement waits for a journal
-		if (posTerminalService.getPOSTerminalById(settlement.getPosTerminalId()).isCashJournalOpen())
+		if (!isSumUpTransactionRefreshed
+				&& posTerminalService.getPOSTerminalById(settlement.getPosTerminalId()).isCashJournalOpen())
 		{
-			refreshSumUpTransactionFromRemote(settlement);
+			refreshSumUpTransactionBeforeAllocating(settlement);
 		}
 
 		trxManager.runInNewTrx(() -> completeBookingInTrx(id));
 	}
 
 	/**
-	 * Refreshes the settlement's SumUp transaction from SumUp, in the settlement's client / org (so that the AD_Issue of
-	 * a failed lookup lands there). Best effort: a failed lookup is recorded on the transaction by
-	 * {@link SumUpService#updateTransactionFromRemote}, and a failure around it is only logged; the booking then goes on
-	 * with the transaction as last known. A payment exists already for this approval, so a SumUp outage must not stop
-	 * every booking; the refund check is as good as the last SumUp lookup.
+	 * Step B's refund check: refreshes the settlement's SumUp transaction from SumUp, in the settlement's client / org
+	 * (so that the AD_Issue and API log of the lookup land there). Best effort: a failed lookup is recorded on the
+	 * transaction by {@link SumUpService#updateTransactionFromRemote}, a failure around it is only logged; the booking
+	 * then goes on with the transaction as last known. (The till's check and the release use
+	 * {@code POSInvoiceCardSettlementService.refreshSumUpTransactionFromRemote}, which reports whether SumUp could be
+	 * asked.)
 	 */
-	private void refreshSumUpTransactionFromRemote(@NonNull final POSInvoiceCardSettlement settlement)
+	private void refreshSumUpTransactionBeforeAllocating(@NonNull final POSInvoiceCardSettlement settlement)
 	{
 		final SumUpTransaction sumUpTrx = findSumUpTransaction(settlement.getId()).orElse(null);
 		if (sumUpTrx == null)
@@ -390,16 +404,16 @@ public class POSInvoiceCardSettlementBooking
 			throw new AdempiereException("APPROVED card settlement without C_Payment_ID").setRecord(id.toRecordRef());
 		}
 
+		if (findSumUpTransaction(id).map(SumUpTransaction::isRefunded).orElse(false))
+		{
+			recordRefundedAfterPaymentCreated(settlement);
+			return;
+		}
+
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(settlement.getPosTerminalId());
 		if (!terminal.isCashJournalOpen())
 		{
 			recordNoOpenCashJournal(settlement);
-			return;
-		}
-
-		if (findSumUpTransaction(id).map(SumUpTransaction::isRefunded).orElse(false))
-		{
-			recordRefundedAfterPaymentCreated(settlement);
 			return;
 		}
 
@@ -472,7 +486,7 @@ public class POSInvoiceCardSettlementBooking
 				.errorMsg(ERRORMSG_RefundedAtSumUp)
 				.sumUpTransactionId(getLinkedOrResolvedSumUpTransactionId(settlement))
 				.build());
-		errorManager.createIssue(new AdempiereException("SumUp reports the card charge as refunded, but its card payment was already created; nothing was allocated or journaled, the card payment is kept unallocated")
+		errorManager.createIssue(new AdempiereException("SumUp reports the card charge as refunded, but its card payment was already created; nothing was allocated or journaled, the card payment is kept unallocated. To close this: reverse the card payment, then mark the card settlement resolved")
 				.setParameter("C_Payment_ID", settlement.getPaymentId())
 				.setRecord(settlement.getId().toRecordRef()));
 	}

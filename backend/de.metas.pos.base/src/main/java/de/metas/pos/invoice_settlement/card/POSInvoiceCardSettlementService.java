@@ -302,9 +302,10 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * The till's check, also run by the release: refreshes the settlement's SumUp transaction from SumUp, if it has one, and then
-	 * reconciles the settlement with it ({@link #reconcileLocally}). A failed SumUp lookup leaves the transaction as it
-	 * was ({@link SumUpService#updateTransactionFromRemote} records the error on it); the settlement is then reconciled
+	 * The till's check, also run by the release: refreshes the settlement's SumUp transaction from SumUp, if it has one
+	 * ({@link #refreshSumUpTransactionFromRemote}), and then reconciles the settlement with it ({@link #reconcileLocally};
+	 * its booking does not ask SumUp again). A failed SumUp lookup leaves the transaction as
+	 * it was ({@link SumUpService#updateTransactionFromRemote} records the error on it); the settlement is then reconciled
 	 * with the last known state and {@code checkFailed} is set.
 	 */
 	@NonNull
@@ -313,7 +314,7 @@ public class POSInvoiceCardSettlementService
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		final boolean checkFailed = !refreshSumUpTransactionFromRemote(id);
-		reconcileLocally(id);
+		reconcileLocally(id, true);
 
 		return POSInvoiceCardSettlementCheckResult.builder()
 				.settlement(repository.getById(id))
@@ -354,8 +355,10 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * Reconciles the settlement with its SumUp transaction as stored locally (no SumUp call); used by the SumUp status
-	 * events, the till's check and the background sweep:
+	 * Reconciles the settlement with its SumUp transaction as stored locally; used by the SumUp status events, the till's
+	 * check and the background sweep. It decides on the local state; only the booking's step B asks SumUp once more,
+	 * whether the charge was refunded meanwhile, right before it allocates (one lookup, outside any transaction and
+	 * without a lock held, only when a cash journal is open; see {@link POSInvoiceCardSettlementBooking#completeBooking}):
 	 * <ul>
 	 * <li>charged at SumUp (SUCCESSFUL, or REFUNDED since), or the booking was not finished (APPROVED) → booking
 	 * ({@link POSInvoiceCardSettlementBooking#book}, which handles its own booking errors and never books a refunded
@@ -367,6 +370,15 @@ public class POSInvoiceCardSettlementService
 	 */
 	public void reconcileLocally(@NonNull final POSInvoiceCardSettlementId id)
 	{
+		reconcileLocally(id, false);
+	}
+
+	/**
+	 * @param isSumUpTransactionRefreshed the caller has just refreshed the SumUp transaction from SumUp, so the booking
+	 *                                    does not ask SumUp again
+	 */
+	private void reconcileLocally(@NonNull final POSInvoiceCardSettlementId id, final boolean isSumUpTransactionRefreshed)
+	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		final SumUpTransaction sumUpTrx = booking.findSumUpTransaction(id).orElse(null);
@@ -374,7 +386,7 @@ public class POSInvoiceCardSettlementService
 		if ((sumUpTrx != null && sumUpTrx.isCharged())
 				|| repository.getById(id).getStatus() == POSInvoiceCardSettlementStatus.APPROVED)
 		{
-			booking.book(id);
+			booking.book(id, isSumUpTransactionRefreshed);
 		}
 		else if (SumUpTransactionStatus.FAILED.equals(sumUpStatus))
 		{
@@ -770,9 +782,9 @@ public class POSInvoiceCardSettlementService
 		{
 			// back office may have refunded the charge in the SumUp dashboard; the poller does not refresh a successful transaction
 			final POSInvoiceCardSettlement settlementBefore = repository.getById(id);
-			if (settlementBefore.getStatus() == POSInvoiceCardSettlementStatus.BOOKING_ERROR
-					&& settlementBefore.getPaymentId() == null
-					&& !refreshSumUpTransactionFromRemote(id))
+			final boolean isSumUpTransactionRefreshed = settlementBefore.getStatus() == POSInvoiceCardSettlementStatus.BOOKING_ERROR
+					&& settlementBefore.getPaymentId() == null;
+			if (isSumUpTransactionRefreshed && !refreshSumUpTransactionFromRemote(id))
 			{
 				// a payment must not be created for a charge that may have been refunded
 				throw new AdempiereException(MSG_RetryRefusedSumUpNotReachable)
@@ -787,7 +799,8 @@ public class POSInvoiceCardSettlementService
 				repository.save(toRetry(settlement));
 			});
 
-			booking.book(id);
+			// with a payment, step B asks SumUp itself (refund check before allocating)
+			booking.book(id, isSumUpTransactionRefreshed);
 		}
 
 		return repository.getById(id);

@@ -26,9 +26,16 @@ import java.util.stream.Stream;
 /**
  * Background check of the card settlements, run in every cycle of the SumUp poller (after the poller refreshed the
  * PENDING SumUp transactions): reconciles each sweep candidate ({@link POSInvoiceCardSettlementRepository#streamSweepCandidateIds})
- * with its SumUp transaction as stored locally ({@link POSInvoiceCardSettlementService#reconcileLocally}); it never
- * calls SumUp. So an approval is booked even if its status event was lost or nobody reopens the till dialog, an
- * interrupted booking is completed, and an orphan is set UNKNOWN.
+ * with its SumUp transaction as stored locally ({@link POSInvoiceCardSettlementService#reconcileLocally}). So an
+ * approval is booked even if its status event was lost or nobody reopens the till dialog, an interrupted booking is
+ * completed, and an orphan is set UNKNOWN.
+ * <p>
+ * The sweep itself does not refresh transactions from SumUp, but a booking it runs asks SumUp once whether the charge
+ * was refunded, right before step B allocates ({@link POSInvoiceCardSettlementBooking#completeBooking}): outside any
+ * transaction and without a lock held, only while the terminal's cash journal is open (none while a settlement waits
+ * for a journal). So a cycle makes at most one SumUp lookup per settlement whose step B runs in it: a newly approved one,
+ * or an APPROVED one retried after a retryable step-B error (at most {@code MAX_BOOKING_ATTEMPTS} times). Each lookup is
+ * bounded by the SumUp client's timeouts, which therefore also delay the poller's next cycle while SumUp hangs.
  * <p>
  * Each settlement is reconciled on its own, in its own transactions, in the settlement's client/org context (the
  * poller thread has no login context), and with its own error capture: a failure is logged, recorded once as an

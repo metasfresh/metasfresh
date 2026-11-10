@@ -56,6 +56,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -272,7 +273,7 @@ class POSInvoiceCardSettlementServiceTest
 				settlementsWhenBooked.add(repository.getById(settlement.getId()));
 				contextsWhenBooked.add(Env.getClientAndOrgId());
 				return null;
-			}).when(booking).book(settlement.getId());
+			}).when(booking).book(settlement.getId(), false);
 
 			service.retryBooking(settlement.getId());
 
@@ -290,7 +291,7 @@ class POSInvoiceCardSettlementServiceTest
 		{
 			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.BOOKING_ERROR, false, null, 1);
 			final List<POSInvoiceCardSettlement> settlementsWhenBooked = new ArrayList<>();
-			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId());
+			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId(), true);
 
 			service.retryBooking(settlement.getId());
 
@@ -305,7 +306,7 @@ class POSInvoiceCardSettlementServiceTest
 		{
 			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.BOOKING_ERROR, true, null, 1);
 			final List<POSInvoiceCardSettlement> settlementsWhenBooked = new ArrayList<>();
-			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId());
+			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId(), true);
 
 			service.retryBooking(settlement.getId());
 
@@ -325,7 +326,7 @@ class POSInvoiceCardSettlementServiceTest
 			// the booking's step A sees a charge refunded meanwhile and books nothing
 			final InOrder inOrder = inOrder(sumUpService, booking);
 			inOrder.verify(sumUpService).updateTransactionFromRemote(successfulSumUpTransaction().getClientTransactionId());
-			inOrder.verify(booking).book(settlement.getId());
+			inOrder.verify(booking).book(settlement.getId(), true); // refreshed just before: step B does not ask SumUp again
 		}
 
 		@Test
@@ -379,7 +380,7 @@ class POSInvoiceCardSettlementServiceTest
 
 			assertThat(repository.getById(settlement.getId()).getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.BOOKING_ERROR);
 			assertThat(repository.getById(settlement.getId()).getBookingAttempts()).isEqualTo(1);
-			verify(booking, never()).book(any());
+			verify(booking, never()).book(any(), anyBoolean());
 		}
 
 		private List<I_AD_Issue> issuesOf(@NonNull final POSInvoiceCardSettlementId id)
@@ -397,7 +398,7 @@ class POSInvoiceCardSettlementServiceTest
 		{
 			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.APPROVED, false, PaymentId.ofRepoId(7), 3);
 			final List<POSInvoiceCardSettlement> settlementsWhenBooked = new ArrayList<>();
-			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId());
+			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId(), false);
 
 			service.retryBooking(settlement.getId());
 
@@ -415,7 +416,7 @@ class POSInvoiceCardSettlementServiceTest
 			assertThatThrownBy(() -> service.retryBooking(settlement.getId()))
 					.isInstanceOfSatisfying(AdempiereException.class,
 							ex -> assertThat(ex.getErrorCode()).isEqualTo(errorCodeOf("de.metas.pos.InvoiceCardSettlement.NotPossibleForStatus")));
-			verify(booking, never()).book(any());
+			verify(booking, never()).book(any(), anyBoolean());
 		}
 
 		@Test

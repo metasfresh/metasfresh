@@ -998,6 +998,47 @@ Feature: POS invoice card settlement
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
 
+    # back office closes the case: it reverses the card payment of the refunded charge, then marks the settlement resolved
+    When the payment identified by cardPayment is reversed
+    And back office runs process C_POS_InvoiceCardSettlement_MarkResolvedManually on card settlement settlement1 with note 'charge refunded at SumUp, card payment reversed'
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has note 'charge refunded at SumUp, card payment reversed'
+    And invoice invoice1 is not blocked by a card settlement
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+  # The refund is learned while the approved card payment still waits for a journal (here: the till's check asks SumUp):
+  # it is reported at once as refunded, not only after a journal is opened.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC20_4
+  Scenario: The card payment is approved while no cash journal is open and the till's check learns that it was refunded at SumUp, so it is a booking error at once and nothing is allocated or journaled
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has payment cardPayment
+    And card settlement settlement1 has error message 'no open cash journal'
+    And SumUp API stub reports transaction of card settlement settlement1 as REFUNDED refunded 16.07
+
+    When card settlement settlement1 is checked
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has error message 'refunded at SumUp'
+    And card settlement settlement1 has payment cardPayment
+    And card settlement settlement1 has 2 AD_Issues
+    And invoice invoice1 has 0 allocation lines
+
   # ##########################################################################
   # The system stopped between creating the card payment and completing the booking: the settlement waits as
   # APPROVED with its unallocated payment, still blocking, and the background check of the next SumUp poll completes it
