@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonCashJournalLineExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSAllocatedPaymentExpectation;
+import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCardPaymentExpectation;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -222,5 +223,81 @@ class AssertPOSExpectationsCommandTest
 				ImmutableList.of(),
 				ImmutableList.of(settlement(1, POSInvoiceCardSettlementStatus.PENDING))))
 				.hasMessageContaining("card settlements");
+	}
+
+	//
+	// cardPayments[]{status, issueMessages[]}
+	//
+
+	private static final POSTerminalId TERMINAL_ID = POSTerminalId.ofRepoId(1);
+
+	private static AssertPOSExpectationsCommand.ActualCardPayment actualCardPayment(final String status, final String... issueErrorCodes)
+	{
+		return new AssertPOSExpectationsCommand.ActualCardPayment(status, ImmutableList.copyOf(issueErrorCodes));
+	}
+
+	private static JsonPOSCardPaymentExpectation expectedCardPayment(final String status, final String... issueMessages)
+	{
+		return JsonPOSCardPaymentExpectation.builder().status(status).issueMessages(ImmutableList.copyOf(issueMessages)).build();
+	}
+
+	@Test
+	void cardPayments_pass_whenStatusesAndIssuesMatchInOrder()
+	{
+		assertThatCode(() -> AssertPOSExpectationsCommand.assertCardPayments(
+				TERMINAL_ID,
+				ImmutableList.of(expectedCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"), expectedCardPayment("SUCCESSFUL")),
+				ImmutableList.of(actualCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"), actualCardPayment("SUCCESSFUL"))))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void cardPayments_fail_whenCountDiffers()
+	{
+		assertThatThrownBy(() -> AssertPOSExpectationsCommand.assertCardPayments(
+				TERMINAL_ID,
+				ImmutableList.of(expectedCardPayment("UNKNOWN")),
+				ImmutableList.of()))
+				.hasMessageContaining("card payments");
+	}
+
+	@Test
+	void cardPayments_fail_whenStatusDiffers()
+	{
+		assertThatThrownBy(() -> AssertPOSExpectationsCommand.assertCardPayments(
+				TERMINAL_ID,
+				ImmutableList.of(expectedCardPayment("SUCCESSFUL")),
+				ImmutableList.of(actualCardPayment("UNKNOWN"))))
+				.hasMessageContaining("status");
+	}
+
+	@Test
+	void cardPayments_fail_whenIssueMissing()
+	{
+		assertThatThrownBy(() -> AssertPOSExpectationsCommand.assertCardPayments(
+				TERMINAL_ID,
+				ImmutableList.of(expectedCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN")),
+				ImmutableList.of(actualCardPayment("UNKNOWN"))))
+				.hasMessageContaining("issues");
+	}
+
+	@Test
+	void cardPayments_fail_whenUnexpectedIssuePresent_andEmptyIssueListStated()
+	{
+		assertThatThrownBy(() -> AssertPOSExpectationsCommand.assertCardPayments(
+				TERMINAL_ID,
+				ImmutableList.of(expectedCardPayment("UNKNOWN")),
+				ImmutableList.of(actualCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"))))
+				.hasMessageContaining("issues");
+	}
+
+	@Test
+	void cardPayments_doNotCheckIssues_whenIssueMessagesNotStated()
+	{
+		assertThatCode(() -> AssertPOSExpectationsCommand.assertCardPayments(
+				TERMINAL_ID,
+				ImmutableList.of(JsonPOSCardPaymentExpectation.builder().status("UNKNOWN").build()),
+				ImmutableList.of(actualCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"))))
+				.doesNotThrowAnyException();
 	}
 }

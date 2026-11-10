@@ -1,6 +1,8 @@
 package de.metas.pos;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.pos.repository.model.I_C_POS_Order;
+import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +10,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Issue;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -68,6 +72,40 @@ public class POSOrdersRepository
 		}
 
 		return sqlQueryBuilder;
+	}
+
+	/**
+	 * The card payments of all orders of the terminal, oldest first, as raw {@code C_POS_Payment} id and status code
+	 * (inactive ones included). The status is NOT mapped to {@link POSPaymentProcessingStatus}, so it also reports
+	 * statuses the till domain does not model.
+	 */
+	public List<POSCardPaymentStatus> listCardPaymentStatusesByTerminalId(@NonNull final POSTerminalId posTerminalId)
+	{
+		final IQueryBuilder<I_C_POS_Order> orderIdsQuery = queryBL.createQueryBuilder(I_C_POS_Order.class)
+				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_C_POS_ID, posTerminalId);
+
+		return queryBL.createQueryBuilder(I_C_POS_Payment.class)
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
+				.addInSubQueryFilter(I_C_POS_Payment.COLUMNNAME_C_POS_Order_ID, I_C_POS_Order.COLUMNNAME_C_POS_Order_ID, orderIdsQuery.create())
+				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
+				.create()
+				.stream()
+				.map(record -> new POSCardPaymentStatus(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()), record.getPOSPaymentProcessingStatus()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/** The {@code ErrorCode}s of the AD_Issues recorded for the given payment, oldest first. */
+	public List<String> listIssueErrorCodesByPaymentId(@NonNull final POSPaymentId posPaymentId)
+	{
+		final TableRecordReference paymentRef = TableRecordReference.of(I_C_POS_Payment.Table_Name, posPaymentId);
+		return queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, paymentRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, paymentRef.getRecord_ID())
+				.orderBy(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
+				.create()
+				.stream()
+				.map(I_AD_Issue::getErrorCode)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public POSOrder getById(@NonNull final POSOrderId posOrderId)

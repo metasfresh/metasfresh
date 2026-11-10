@@ -3,6 +3,7 @@ package de.metas.frontend_testing.expectations;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonCashJournalLineExpectation;
+import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCardPaymentExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCardSettlementExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCreditMemoExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCreditMemoLineExpectation;
@@ -13,6 +14,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.pos.POSCardPaymentStatus;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalLine;
 import de.metas.pos.POSTerminalId;
@@ -22,6 +24,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
@@ -98,6 +101,71 @@ class AssertPOSExpectationsCommand
 		{
 			assertCardSettlements(expectation.getCardSettlements());
 		}
+
+		if (expectation.getCardPayments() != null)
+		{
+			final String posTerminalStr = expectation.getPosTerminal();
+			if (posTerminalStr == null)
+			{
+				throw new AdempiereException("JsonPOSExpectation.posTerminal is required when cardPayments is asserted");
+			}
+
+			final POSTerminalId posTerminalId = context.getId(Identifier.ofString(posTerminalStr), POSTerminalId.class);
+			assertCardPayments(posTerminalId, expectation.getCardPayments(), loadCardPayments(posTerminalId));
+		}
+	}
+
+	/** A card payment as found in the DB: its raw status code and the {@code ErrorCode}s of its AD_Issues. */
+	@Value
+	static class ActualCardPayment
+	{
+		@NonNull String status;
+		@NonNull List<String> issueErrorCodes;
+	}
+
+	private List<ActualCardPayment> loadCardPayments(@NonNull final POSTerminalId posTerminalId)
+	{
+		return services.getCardPaymentStatusesByTerminalId(posTerminalId)
+				.stream()
+				.map(payment -> new ActualCardPayment(payment.getStatusCode(), services.getIssueErrorCodesByPaymentId(payment.getPaymentId())))
+				.collect(Collectors.toList());
+	}
+
+	private static List<String> sorted(@NonNull final List<String> list)
+	{
+		return list.stream().sorted().collect(Collectors.toList());
+	}
+
+	static void assertCardPayments(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final List<JsonPOSCardPaymentExpectation> expectedPayments,
+			@NonNull final List<ActualCardPayment> actualPayments)
+	{
+		softly(() -> {
+			softlyPutContext("posTerminalId", posTerminalId);
+			softlyPutContext("cardPaymentExpectations", expectedPayments);
+			softlyPutContext("actualCardPayments", actualPayments);
+
+			assertThat(actualPayments).as("card payments of POS terminal " + posTerminalId).hasSameSize(expectedPayments);
+
+			final int count = Math.min(actualPayments.size(), expectedPayments.size());
+			for (int i = 0; i < count; i++)
+			{
+				final JsonPOSCardPaymentExpectation expected = expectedPayments.get(i);
+				final ActualCardPayment actual = actualPayments.get(i);
+
+				if (expected.getStatus() != null)
+				{
+					assertThat(actual.getStatus()).as("status of card payment[" + i + "] of POS terminal " + posTerminalId).isEqualTo(expected.getStatus());
+				}
+				if (expected.getIssueMessages() != null)
+				{
+					assertThat(sorted(actual.getIssueErrorCodes()))
+							.as("issues (AD_Issue ErrorCodes, any order) of card payment[" + i + "] of POS terminal " + posTerminalId)
+							.isEqualTo(sorted(expected.getIssueMessages()));
+				}
+			}
+		});
 	}
 
 	private void assertReturnLines(@NonNull final InOutId returnInOutId, @NonNull final List<JsonPOSReturnLineExpectation> lineExpectations)

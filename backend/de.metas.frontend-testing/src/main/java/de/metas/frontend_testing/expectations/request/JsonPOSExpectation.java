@@ -66,6 +66,13 @@ public class JsonPOSExpectation
 	 */
 	@Nullable List<JsonPOSCardSettlementExpectation> cardSettlements;
 
+	/**
+	 * The card payments ({@code C_POS_Payment}, method CARD) of the terminal {@link #posTerminal}, oldest first,
+	 * matched positionally against the stated entries; their number must be equal. An empty list asserts that the
+	 * terminal has no card payment at all. Requires {@code posTerminal}.
+	 */
+	@Nullable List<JsonPOSCardPaymentExpectation> cardPayments;
+
 	/** One line of the return's own {@code M_InOut} — the goods received into the quality-return warehouse. */
 	@Value
 	@Builder
@@ -155,5 +162,22 @@ public class JsonPOSExpectation
 
 		/** Settlement status code; omit it to assert that the invoice has no card settlement at all. */
 		@Nullable String status;
+	}
+
+	/** One card payment of the terminal. */
+	@Value
+	@Builder
+	@Jacksonized
+	public static class JsonPOSCardPaymentExpectation
+	{
+		/** Payment processing status code ({@code UNKNOWN}, {@code SUCCESSFUL}, ...); omit it to skip the check. */
+		@Nullable String status;
+
+		/**
+		 * The {@code AD_Issue.ErrorCode} values (e.g. {@code POS_PAYMENT_CARD_RESULT_UNKNOWN}) of the AD_Issues whose
+		 * {@code AD_Table_ID} / {@code Record_ID} point to this payment, matched as a multiset (order ignored). An
+		 * empty list asserts the payment has no AD_Issue; omit it to skip the check.
+		 */
+		@Nullable List<String> issueMessages;
 	}
 }

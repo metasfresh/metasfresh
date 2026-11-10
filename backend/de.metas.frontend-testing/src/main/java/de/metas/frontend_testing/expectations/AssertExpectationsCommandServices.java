@@ -45,10 +45,12 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.pos.POSCardPaymentStatus;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderQuery;
 import de.metas.pos.POSOrdersRepository;
+import de.metas.pos.POSPaymentId;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
@@ -338,6 +340,16 @@ public class AssertExpectationsCommandServices
 	public I_C_Order getOrderById(@NonNull final OrderId orderId)
 	{
 		return orderDAO.getById(orderId);
+	}
+
+	public List<POSCardPaymentStatus> getCardPaymentStatusesByTerminalId(@NonNull final POSTerminalId posTerminalId)
+	{
+		return posOrdersRepository.listCardPaymentStatusesByTerminalId(posTerminalId);
+	}
+
+	public List<String> getIssueErrorCodesByPaymentId(@NonNull final POSPaymentId posPaymentId)
+	{
+		return posOrdersRepository.listIssueErrorCodesByPaymentId(posPaymentId);
 	}
 
 	public List<POSInvoiceCardSettlement> getCardSettlementsByInvoiceId(@NonNull final InvoiceId invoiceId)
