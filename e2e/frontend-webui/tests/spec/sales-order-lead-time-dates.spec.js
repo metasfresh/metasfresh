@@ -143,16 +143,16 @@ test.describe('Sales order - lead-time DatePromised / PreparationDate', () => {
     };
 
     await test.step('Select the lead-time shipper (route)', async () => {
-      const shipperInput = p.locator('#lookup_M_Shipper_ID input.input-field');
-      await shipperInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await shipperInput.click();
-      await shipperInput.fill(shipperName);
-      await p.locator('.input-dropdown-list-option').getByText(shipperName).first().click();
-      await p
-        .locator('.input-dropdown-list')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-      await p.keyboard.press('Tab');
+      // M_Shipper_ID is a Table-Direct reference that the WebUI renders as a List / select-dropdown
+      // widget (`.form-field-M_Shipper_ID`, widgetType-List) - its input is readonly, so open the
+      // dropdown and click the option; it is NOT a typeable `#lookup_` search widget.
+      const shipperField = p.locator('.form-field-M_Shipper_ID');
+      await shipperField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await shipperField.locator('.input-dropdown').click();
+      const dropdownList = p.locator('.input-dropdown-list');
+      await dropdownList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await p.locator('.input-dropdown-list-option').filter({ hasText: shipperName }).first().click();
+      await dropdownList.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       await waitIdle();
     });
 
@@ -160,19 +160,22 @@ test.describe('Sales order - lead-time DatePromised / PreparationDate', () => {
       await typeDate('DateOrdered', ORDER_DATE);
 
       // Live = shown by the callout response, no save/reload in between.
+      // The shipper selection already filled DatePromised from the default order date (today), so
+      // "has a value" is not enough: wait until the callout for the typed order date has replaced it.
+      const dateNumbers = async (column) => (await dateInput(column).inputValue()).match(/\d+/g)?.map(Number) ?? [];
       await expect
-        .poll(async () => dateInput('DatePromised').inputValue(), {
+        .poll(async () => dateNumbers('DatePromised'), {
           timeout: SLOW_ACTION_TIMEOUT,
           message: 'DatePromised shown live',
         })
-        .toMatch(/\d/);
+        .toEqual(expect.arrayContaining([EXPECTED_PROMISED.year, EXPECTED_PROMISED.month, EXPECTED_PROMISED.day]));
       expectNumbersMatch(await dateInput('DatePromised').inputValue(), EXPECTED_PROMISED, 'DatePromised (live)');
       await expect
-        .poll(async () => dateInput('PreparationDate').inputValue(), {
+        .poll(async () => dateNumbers('PreparationDate'), {
           timeout: SLOW_ACTION_TIMEOUT,
           message: 'PreparationDate shown live',
         })
-        .toMatch(/\d/);
+        .toEqual(expect.arrayContaining([EXPECTED_PREP.year, EXPECTED_PREP.month, EXPECTED_PREP.day]));
       expectNumbersMatch(await dateInput('PreparationDate').inputValue(), EXPECTED_PREP, 'PreparationDate (live)');
 
       // ... and what the server holds agrees (calendar part only, timezone-safe).
