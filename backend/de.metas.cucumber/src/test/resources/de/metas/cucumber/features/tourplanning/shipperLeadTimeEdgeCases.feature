@@ -175,3 +175,27 @@ Feature: Tour planning — shipper lead-time edge cases (weekend straddle, fix-f
       | Identifier | DateOrdered | DatePromised | PreparationDate |
       | so         | 2026-08-10  | 2026-08-10   | 2026-08-10      |
 
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @Id:S28993_TC11
+  Scenario: Negative lead time — forward is clamped so DatePromised is never before DateOrdered
+    ## A route mis-configured with a negative LeadTimeDays must not place DatePromised before DateOrdered:
+    ## the forward step is clamped to >= 0, so DatePromised = DateOrdered, and the backward step (clamped <= 0)
+    ## keeps PreparationDate = DatePromised. Negative behaves like 0 (invariant: PreparationDate <= DatePromised).
+    Given temporarily set sys config boolean value true for sys config 'de.metas.tourplanning.LeadTimeForwardCalc.Enabled'
+    And contains M_Shippers
+      | Identifier | LeadTimeDays |
+      | shipper    | -2           |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | C_BPartner_Location_ID | M_Shipper_ID |
+      | so         | Y       | customer      | 2026-08-10  | ps                 | customerLocation       | shipper      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol        | so         | product      | 10         |
+    Then validate the created orders
+      | Identifier | DateOrdered | DatePromised | PreparationDate |
+      | so         | 2026-08-10  | 2026-08-10   | 2026-08-10      |

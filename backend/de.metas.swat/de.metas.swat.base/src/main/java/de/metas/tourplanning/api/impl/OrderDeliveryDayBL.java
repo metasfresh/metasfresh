@@ -132,9 +132,23 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
-		final LocalDate datePromised = WorkdayCalculator.workday(dateOrdered.toLocalDate(), leadTimeDays);
+		// Clamp the forward step to >= 0 so a (mis-configured) negative lead time never places DatePromised before
+		// DateOrdered; a negative lead time then behaves like 0. The backward step is clamped symmetrically to <= 0.
+		final LocalDate datePromised = WorkdayCalculator.workday(dateOrdered.toLocalDate(), Math.max(leadTimeDays, 0));
 		order.setDatePromised(TimeUtil.asTimestamp(datePromised.atStartOfDay(timeZone)));
 		return true;
+	}
+
+	@Override
+	public boolean isDatePromisedSuppliedAtCreation(@NonNull final I_C_Order order)
+	{
+		// The MOrder constructor seeds DatePromised with SystemTime.asDayTimestamp() ("today" at 00:00, task 06269),
+		// so a brand-new order always reports DatePromised as changed and is_ValueChanged cannot tell. A value counts
+		// as "supplied by the creator" (webui callout / REST / OLCand-EDI import / copied order) only when it is
+		// non-null AND differs from that today-seed; the seed equals asDayTimestamp() exactly (both are today
+		// truncated to the day). Edge (accepted): a delivery date equal to the creation day is treated as the seed.
+		final Timestamp datePromised = order.getDatePromised();
+		return datePromised != null && !datePromised.equals(SystemTime.asDayTimestamp());
 	}
 
 	/**

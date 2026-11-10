@@ -36,7 +36,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
-import de.metas.common.util.time.SystemTime;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.util.Services;
@@ -76,15 +75,10 @@ public class C_Order
 		if (timing == ModelValidator.TYPE_BEFORE_NEW)
 		{
 			// At creation, derive DatePromised ONLY when the creator did not supply one, so an explicit value is
-			// preserved (webui callout / REST / OLCand-EDI import / copied order). This cannot use is_ValueChanged:
-			// the MOrder constructor seeds DatePromised with SystemTime.asDayTimestamp() ("today" at 00:00, MOrder.java
-			// task 06269), so every new order reports DatePromised as changed. Treat null, or that untouched today-seed,
-			// as "not supplied"; the seed equals asDayTimestamp() exactly (both are today truncated to the day).
-			// Edge (accepted): an order whose delivery date equals its creation day is treated as the seed and recomputed.
-			final Timestamp datePromised = order.getDatePromised();
-			final boolean datePromisedNotSupplied = datePromised == null
-					|| datePromised.equals(SystemTime.asDayTimestamp());
-			isForwardTrigger = datePromisedNotSupplied;
+			// preserved (webui callout / REST / OLCand-EDI import / copied order). "Was DatePromised supplied?" is a
+			// business rule (the MOrder constructor seeds DatePromised with today, so is_ValueChanged cannot tell) and
+			// lives in the BL; the interceptor stays thin glue.
+			isForwardTrigger = !orderDeliveryDayBL.isDatePromisedSuppliedAtCreation(order);
 		}
 		else
 		{
@@ -103,6 +97,19 @@ public class C_Order
 		// If PreparationDate was explicitelly set by user, don't change it
 		if (isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate)
 				&& order.getPreparationDate() != null)
+		{
+			return;
+		}
+
+		// (Re)derive PreparationDate + tour only when a column that DRIVES it changed: the delivery location, the
+		// DatePromised (including one the forward calc above just set), or an explicitly cleared PreparationDate.
+		// A bare DateOrdered / M_Shipper_ID change on a no-lead-time order must NOT re-run the tour/fallback recompute
+		// (AC5a: no-lead-time behaviour unchanged); those columns are watched only to drive the forward lead-time calc
+		// above, which in turn marks DatePromised changed when it applies.
+		final boolean preparationDrivingColumnChanged = isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
+				|| isValueChanged(order, I_C_Order.COLUMNNAME_DatePromised)
+				|| isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate);
+		if (!preparationDrivingColumnChanged)
 		{
 			return;
 		}

@@ -44,6 +44,16 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	boolean setDatePromisedFromLeadTime(@NonNull I_C_Order order);
 
 	/**
+	 * Whether the order's {@code DatePromised} was supplied by the creator rather than left at the {@code MOrder}
+	 * constructor's "today" seed. Used by the create-time interceptor to decide whether to derive DatePromised from
+	 * the shipper lead time (derive only when NOT supplied, so an explicit value from webui / REST / OLCand-EDI /
+	 * a copied order is preserved).
+	 *
+	 * @return true if DatePromised is non-null and differs from today's day-truncated seed.
+	 */
+	boolean isDatePromisedSuppliedAtCreation(@NonNull I_C_Order order);
+
+	/**
 	 * Resolves the per-line preparation date for the shipment-schedule provider: if
 	 * {@code C_OrderLine.PreparationDate} is set (normally the derived value written back by
 	 * {@link #setLinePreparationDate}) it is returned as-is; otherwise it is derived fresh from the given

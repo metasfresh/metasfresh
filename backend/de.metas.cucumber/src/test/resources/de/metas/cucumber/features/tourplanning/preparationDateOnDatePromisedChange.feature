@@ -100,3 +100,32 @@ Feature: Tour planning — PreparationDate when the sales order's DatePromised c
     Then validate the created orders
       | Identifier | DatePromised | PreparationDate |
       | so         | 2022-06-16   | 2022-06-13      |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @Id:S28993_TC10
+  Scenario: No lead time — a DateOrdered change does not recompute a manually set PreparationDate (AC5a legacy unchanged)
+    ## A no-lead-time order with a manually set PreparationDate: changing only DateOrdered must NOT re-run the
+    ## tour/fallback recompute. The interceptor derives PreparationDate only when a date/location that drives it
+    ## changes (C_BPartner_Location_ID / DatePromised / PreparationDate), not on a bare DateOrdered edit.
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | PreparationDate | M_PricingSystem_ID | C_BPartner_Location_ID | M_Shipper_ID |
+      | so         | Y       | customer      | 2022-06-01  | 2022-06-20Z  | 2022-06-10Z     | ps                 | customerLocation       | shipper      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol        | so         | product      | 10         |
+    And validate the created orders
+      | Identifier | DateOrdered | DatePromised | PreparationDate |
+      | so         | 2022-06-01  | 2022-06-20   | 2022-06-10      |
+
+    When update order
+      | C_Order_ID | DateOrdered |
+      | so         | 2022-06-08  |
+
+    Then validate the created orders
+      | Identifier | DateOrdered | DatePromised | PreparationDate |
+      | so         | 2022-06-08  | 2022-06-20   | 2022-06-10      |
