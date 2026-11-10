@@ -302,7 +302,8 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	/**
 	 * Sends a card checkout for the settlement's amount on the terminal's default reader via
-	 * {@link SumUpService#cardReaderCheckout}, with a posRef naming the settlement, as the till does.
+	 * {@link SumUpService#cardReaderCheckout}, with a posRef naming the settlement, as the till does. Returns only after
+	 * the SumUp events the checkout fired were handled (see {@link SumUpEventsTestProbe#waitUntilFiredEventsAreHandled}).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: C_POS_StepDefData (via the settlement's terminal), C_POS_InvoiceCardSettlement_StepDefData
@@ -312,7 +313,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	 * </pre>
 	 */
 	@And("^a SumUp card checkout is sent for card settlement (\\S+)$")
-	public void sendCheckout(@NonNull final String settlementIdentifier)
+	public void sendCheckout(@NonNull final String settlementIdentifier) throws InterruptedException
 	{
 		final POSInvoiceCardSettlement settlement = loadSettlement(settlementIdentifier);
 		final I_C_POS posRecord = InterfaceWrapperHelper.load(settlement.getPosTerminalId(), I_C_POS.class);
@@ -333,6 +334,7 @@ public class POS_InvoiceCardSettlement_StepDef
 						.posInvoiceCardSettlementId(settlement.getId().getRepoId())
 						.build())
 				.build());
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**
