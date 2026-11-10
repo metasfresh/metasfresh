@@ -71,7 +71,6 @@ class POSPaymentTest
 		assertThat(POSPaymentProcessingStatus.UNKNOWN.checkAllowDelete(POSPaymentMethod.CARD).getReasonAsString())
 				.contains(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
 		assertRefusedAsResultUnknown(payment::assertAllowDelete);
-		assertRefusedAsResultUnknown(payment::assertAllowCheckout);
 		assertThatThrownBy(payment::assertAllowCheckout)
 				.extracting(ex -> ((AdempiereException)ex).getErrorCode())
 				.isEqualTo(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
