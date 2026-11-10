@@ -613,7 +613,9 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	/**
 	 * Starts a card settlement of the invoice's open amount ({@link POSInvoiceCardSettlementService#start}) and
-	 * registers it under the given identifier.
+	 * registers it under the given identifier. SumUp status events are handled asynchronously; the step returns only
+	 * after the new-transaction event the start fired was handled (see {@link SumUpEventsTestProbe#waitUntilFiredEventsAreHandled}),
+	 * so that a late handler cannot book the payment during a later step.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: C_POS_StepDefData, C_Invoice_StepDefData
@@ -627,12 +629,13 @@ public class POS_InvoiceCardSettlement_StepDef
 			@NonNull final String settlementIdentifier,
 			@NonNull final String invoiceIdentifier,
 			@NonNull final String terminalIdentifier,
-			@NonNull final String cashierLogin)
+			@NonNull final String cashierLogin) throws InterruptedException
 	{
 		final POSInvoiceCardSettlement settlement = settlementService().start(toStartRequest(invoiceIdentifier, terminalIdentifier, cashierLogin));
 		settlementTable.putOrReplace(
 				StepDefDataIdentifier.ofString(settlementIdentifier),
 				InterfaceWrapperHelper.load(settlement.getId(), I_C_POS_InvoiceCardSettlement.class));
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**
@@ -664,7 +667,7 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	/**
 	 * Two threads start a card settlement of the same invoice at the same moment; the outcomes are asserted by
-	 * {@link #assertConcurrentStartOutcome}.
+	 * {@link #assertConcurrentStartOutcome}. Returns after the fired SumUp events are handled.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -714,6 +717,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		{
 			executor.shutdownNow();
 		}
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**
@@ -1404,7 +1408,7 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	/**
 	 * Answers the checkout the stub holds, then waits until the card settlement start that sent it has applied the
-	 * answer.
+	 * answer and the SumUp events it fired were handled.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -1427,6 +1431,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		{
 			stopBackgroundStart();
 		}
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**
