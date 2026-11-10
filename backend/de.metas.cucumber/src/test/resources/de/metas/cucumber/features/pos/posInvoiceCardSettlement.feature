@@ -264,6 +264,13 @@ Feature: POS invoice card settlement
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
 
+    # the reader may still run the accepted checkout: the release cancels it, although metasfresh has no SumUp transaction
+    When card settlement settlement1 was created 200 seconds ago
+    And card settlement settlement1 is released by cashier metasfresh
+
+    Then the SumUp stub received 1 terminate on reader reader-till
+    And the release of card settlement settlement1 returned status UNKNOWN with confirmationRequired true and checkFailed false
+
   # ##########################################################################
   # The reader approves; the poller learns it and the approval is booked: a credit-card receipt allocated to
   # the invoice, and a card line on the open cash journal that raises the card total, not the cash total.
@@ -1413,9 +1420,8 @@ Feature: POS invoice card settlement
     Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true and checkFailed true
     And card settlement settlement1 has status PENDING and isAbandoned false
 
-  # An orphan (the system stopped between saving and sending, so no SumUp transaction exists) is releasable: no
-  # terminate is sent (the reader's current checkout is not this settlement's, as far as metasfresh knows), and the
-  # re-check has nothing to ask SumUp about.
+  # An orphan (the system stopped between saving and sending, so no SumUp transaction exists) is releasable: the
+  # terminate still goes to the terminal's default reader, the re-check has nothing to ask SumUp about.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
@@ -1431,7 +1437,7 @@ Feature: POS invoice card settlement
 
     When card settlement settlement1 is released by cashier metasfresh
 
-    Then the SumUp stub received 0 terminates
+    Then the SumUp stub received 1 terminate on reader reader-till
     And the release of card settlement settlement1 returned status UNKNOWN with confirmationRequired true and checkFailed false
 
     When the release of card settlement settlement1 is confirmed by cashier metasfresh

@@ -465,8 +465,8 @@ public class POSInvoiceCardSettlementService
 	 * The cashier's release of a settlement whose result is not known, after the configured wait, in two steps:
 	 * <ol>
 	 * <li>without confirmation: allowed for PENDING / UNKNOWN settlements older than the configured wait
-	 * ({@link #getReleaseAfter}); cancels the checkout on the terminal's default card reader if the settlement's own SumUp
-	 * transaction is still PENDING (best effort, see {@link #terminateCheckoutOnReaderIfStillPending}), then re-checks
+	 * ({@link #getReleaseAfter}); cancels the checkout on the terminal's default card reader unless the settlement's own
+	 * SumUp transaction is known and no longer PENDING (best effort, see {@link #terminateCheckoutOnReaderUnlessFinished}), then re-checks
 	 * the settlement ({@link #check}, outside the settlement lock). If it is still PENDING / UNKNOWN, the cashier must
 	 * confirm that the card was not charged ({@code confirmationRequired}); otherwise the booked, failed or cancelled
 	 * settlement is returned;</li>
@@ -506,7 +506,7 @@ public class POSInvoiceCardSettlementService
 			return notYetAllowed;
 		}
 
-		terminateCheckoutOnReaderIfStillPending(settlement);
+		terminateCheckoutOnReaderUnlessFinished(settlement);
 
 		final POSInvoiceCardSettlementCheckResult checkResult = check(id);
 		return toReleaseResult(checkResult.getSettlement(), checkResult.isCheckFailed());
@@ -666,32 +666,32 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * Asks the terminal's default card reader to abort its checkout, but only if that checkout can still be this
-	 * settlement's: SumUp's terminate aborts whatever checkout the reader runs (it takes no checkout id), which may be
-	 * another till's on a shared reader. So nothing is sent
+	 * Asks the terminal's default card reader to abort its checkout, unless the settlement's own SumUp transaction is
+	 * known and SumUp reports it as no longer PENDING: SumUp's terminate aborts whatever checkout the reader runs (it
+	 * takes no checkout id), which then can only be another one (e.g. another till's, on a shared reader). So:
 	 * <ul>
-	 * <li>for an orphan (no SumUp transaction: as far as metasfresh knows, the reader never got this checkout), and</li>
-	 * <li>if SumUp reports the settlement's transaction as no longer PENDING; its status is refreshed from SumUp first
-	 * (a failed lookup leaves the last known status, see {@link #refreshSumUpTransactionFromRemote}).</li>
+	 * <li>no SumUp transaction (an orphan, or UNKNOWN because metasfresh failed right after SumUp accepted the checkout)
+	 * → terminate: the reader may still run this settlement's checkout;</li>
+	 * <li>otherwise the transaction is refreshed from SumUp first (a failed lookup leaves the last known status, see
+	 * {@link #refreshSumUpTransactionFromRemote}) → terminate only if it is still PENDING.</li>
 	 * </ul>
-	 * Residual limit: while this settlement's transaction is PENDING, a shared reader may already run another checkout;
-	 * SumUp offers no way to tell.
+	 * This lookup is not the one of the re-check that follows ({@link #check}): that one, after the terminate, sees what
+	 * the reader did meanwhile. Residual limit: while this settlement's transaction is PENDING, a shared reader may already
+	 * run another checkout; SumUp offers no way to tell.
 	 */
-	private void terminateCheckoutOnReaderIfStillPending(@NonNull final POSInvoiceCardSettlement settlement)
+	private void terminateCheckoutOnReaderUnlessFinished(@NonNull final POSInvoiceCardSettlement settlement)
 	{
 		final POSInvoiceCardSettlementId id = settlement.getId();
-		if (!booking.findSumUpTransaction(id).isPresent())
+		if (booking.findSumUpTransaction(id).isPresent())
 		{
-			return;
-		}
-
-		refreshSumUpTransactionFromRemote(id);
-		final boolean isPendingAtSumUp = booking.findSumUpTransaction(id)
-				.map(sumUpTrx -> sumUpTrx.getStatus().isPending())
-				.orElse(false);
-		if (!isPendingAtSumUp)
-		{
-			return;
+			refreshSumUpTransactionFromRemote(id);
+			final boolean isFinishedAtSumUp = booking.findSumUpTransaction(id)
+					.map(sumUpTrx -> !sumUpTrx.getStatus().isPending())
+					.orElse(false);
+			if (isFinishedAtSumUp)
+			{
+				return;
+			}
 		}
 
 		terminateCheckoutOnReader(settlement);
