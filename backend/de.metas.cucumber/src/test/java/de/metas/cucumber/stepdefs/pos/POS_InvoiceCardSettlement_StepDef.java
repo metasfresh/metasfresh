@@ -32,6 +32,7 @@ import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpPollerCycleListener;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransactionId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedEvent;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedListener;
@@ -1592,6 +1593,29 @@ public class POS_InvoiceCardSettlement_StepDef
 		assertThat(result).as("result of the last release").isNotNull();
 		assertThat(result.getSettlement().getId()).as("released card settlement").isEqualTo(settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)));
 		return result;
+	}
+
+	/**
+	 * Back office's "update from SumUp" of the settlement's SumUp transaction, as the processes on SUMUP_Transaction do
+	 * ({@code SUMUP_Transaction_UpdateSingleDocument}: {@link SumUpService#bulkUpdateTransactions} with the status event
+	 * forced, also when nothing changed or the lookup failed); returns after the status event it fired was handled.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When back office updates the SumUp transaction of card settlement settlement1 from SumUp
+	 * </pre>
+	 */
+	@And("^back office updates the SumUp transaction of card settlement (\\S+) from SumUp$")
+	public void backOfficeUpdatesSumUpTransaction(@NonNull final String settlementIdentifier) throws InterruptedException
+	{
+		final POSInvoiceCardSettlementId settlementId = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final I_SUMUP_Transaction record = queryBL.createQueryBuilder(I_SUMUP_Transaction.class)
+				.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_C_POS_InvoiceCardSettlement_ID, settlementId)
+				.create()
+				.firstOnlyNotNull(I_SUMUP_Transaction.class);
+		sumUpService.get().bulkUpdateTransactions(SumUpTransactionQuery.ofLocalId(SumUpTransactionId.ofRepoId(record.getSUMUP_Transaction_ID())), true);
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**

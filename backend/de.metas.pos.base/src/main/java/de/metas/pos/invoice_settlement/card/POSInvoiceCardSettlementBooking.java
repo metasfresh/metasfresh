@@ -73,6 +73,13 @@ public class POSInvoiceCardSettlementBooking
 	public static final String ERRORMSG_NoOpenCashJournal = "no open cash journal";
 
 	/**
+	 * {@code ErrorMsg} of an APPROVED settlement whose step B waits because SumUp could not be asked whether the charge
+	 * was refunded meanwhile: nothing is allocated or journaled until a later lookup succeeds (next sweep, till's check,
+	 * back office's retry).
+	 */
+	public static final String ERRORMSG_SumUpNotReachable = "SumUp not reachable";
+
+	/**
 	 * {@code ErrorMsg} of a FAILED / CANCELLED settlement whose charge SumUp reports as approved after all.
 	 */
 	private static final String ERRORMSG_ApprovedAfterRejected = "SumUp reports the card charge as successful, but the card settlement was already rejected; nothing was booked";
@@ -331,14 +338,20 @@ public class POSInvoiceCardSettlementBooking
 	 * the invoice is still open but the payment could not be allocated.
 	 * <p>
 	 * The charge may have been refunded at SumUp since step A created the payment (e.g. while the settlement waited for a
-	 * journal), and the poller does not refresh a successful transaction. So, unless it was just refreshed
-	 * ({@code isSumUpTransactionRefreshed}: a status event, the till's check, back office's retry), the SumUp transaction is refreshed from SumUp before allocating
-	 * ({@link #refreshSumUpTransactionBeforeAllocating}): one lookup, outside any transaction and without holding a lock, and
-	 * only when a cash journal is open, i.e. when the booking can complete now (never on each retry while the settlement
-	 * waits for a journal). The SumUp client's timeouts apply to it. A failed lookup does not stop the booking: a payment
-	 * exists already for this approval, so it goes on with the transaction as last known. If the transaction is refunded
-	 * (as known after that), nothing is allocated or journaled ({@link #recordRefundedAfterPaymentCreated}); this is
-	 * checked before the journal, so a refund known already is reported also while no journal is open.
+	 * journal), and the poller does not refresh a successful transaction. So step B allocates only on a refund state that
+	 * a successful SumUp lookup confirmed ({@link #checkRefundStateBeforeAllocating}):
+	 * <ul>
+	 * <li>if the caller just refreshed the transaction ({@code isSumUpTransactionRefreshed}: a status event, the till's
+	 * check, back office's retry) and that lookup succeeded, step B does not ask SumUp again;</li>
+	 * <li>otherwise (also after a forced status event whose lookup failed) it asks SumUp itself: one lookup, outside any
+	 * transaction and without holding a lock, and only when a cash journal is open, i.e. when the booking can complete
+	 * now (never on each retry while the settlement waits for a journal). The SumUp client's timeouts apply to it.</li>
+	 * </ul>
+	 * Under the locks: a refund known locally → BOOKING_ERROR, nothing allocated or journaled
+	 * ({@link #recordRefundedAfterPaymentCreated}), checked before the journal, so a refund known already is reported also
+	 * while no journal is open; no open journal → waits ({@link #recordNoOpenCashJournal}); the refund state not
+	 * confirmed because SumUp could not be asked → nothing allocated or journaled, the settlement stays APPROVED with
+	 * {@link #ERRORMSG_SumUpNotReachable} ({@link #recordSumUpNotReachable}); the next sweep cycle asks again.
 	 */
 	public void completeBooking(@NonNull final POSInvoiceCardSettlementId id, final boolean isSumUpTransactionRefreshed)
 	{
@@ -352,42 +365,88 @@ public class POSInvoiceCardSettlementBooking
 			return;
 		}
 
-		if (!isSumUpTransactionRefreshed
-				&& posTerminalService.getPOSTerminalById(settlement.getPosTerminalId()).isCashJournalOpen())
-		{
-			refreshSumUpTransactionBeforeAllocating(settlement);
-		}
+		final RefundState refundState = checkRefundStateBeforeAllocating(settlement, isSumUpTransactionRefreshed);
 
-		trxManager.runInNewTrx(() -> completeBookingInTrx(id));
+		trxManager.runInNewTrx(() -> completeBookingInTrx(id, refundState));
 	}
 
 	/**
-	 * Step B's refund check: refreshes the settlement's SumUp transaction from SumUp, in the settlement's client / org
-	 * (so that the AD_Issue and API log of the lookup land there). Best effort: a failed lookup is recorded on the
-	 * transaction by {@link SumUpService#updateTransactionFromRemote}, a failure around it is only logged; the booking
-	 * then goes on with the transaction as last known. (The till's check and the release use
-	 * {@code POSInvoiceCardSettlementService.refreshSumUpTransactionFromRemote}, which reports whether SumUp could be
-	 * asked.)
+	 * What step B knows about a refund of the charge, before it takes its locks.
 	 */
-	private void refreshSumUpTransactionBeforeAllocating(@NonNull final POSInvoiceCardSettlement settlement)
+	private enum RefundState
+	{
+		/**
+		 * a successful SumUp lookup gave the transaction as stored (or there is no SumUp transaction to ask about)
+		 */
+		CONFIRMED,
+		/**
+		 * SumUp could not be asked: the stored state may miss a refund
+		 */
+		SUMUP_NOT_REACHABLE,
+		/**
+		 * not asked, because no journal was open (the booking would only wait); if a journal was opened meanwhile, the
+		 * next booking attempt asks
+		 */
+		NOT_ASKED
+	}
+
+	@NonNull
+	private RefundState checkRefundStateBeforeAllocating(@NonNull final POSInvoiceCardSettlement settlement, final boolean isSumUpTransactionRefreshed)
 	{
 		final SumUpTransaction sumUpTrx = findSumUpTransaction(settlement.getId()).orElse(null);
 		if (sumUpTrx == null)
 		{
-			return;
+			return RefundState.CONFIRMED;
+		}
+		if (isSumUpTransactionRefreshed && isLastSyncOk(sumUpTrx))
+		{
+			return RefundState.CONFIRMED;
+		}
+		if (!posTerminalService.getPOSTerminalById(settlement.getPosTerminalId()).isCashJournalOpen())
+		{
+			return RefundState.NOT_ASKED;
 		}
 
+		return refreshSumUpTransactionBeforeAllocating(settlement, sumUpTrx)
+				? RefundState.CONFIRMED
+				: RefundState.SUMUP_NOT_REACHABLE;
+	}
+
+	/**
+	 * Step B's refund check: refreshes the settlement's SumUp transaction from SumUp, in the settlement's client / org
+	 * (so that the AD_Issue and API log of the lookup land there). A failed lookup is recorded on the transaction by
+	 * {@link SumUpService#updateTransactionFromRemote}; a failure around it is only logged. (The till's check and the
+	 * release use {@code POSInvoiceCardSettlementService.refreshSumUpTransactionFromRemote}.)
+	 *
+	 * @return whether SumUp was asked successfully
+	 */
+	private boolean refreshSumUpTransactionBeforeAllocating(@NonNull final POSInvoiceCardSettlement settlement, @NonNull final SumUpTransaction sumUpTrx)
+	{
 		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(settlement.getClientAndOrgId()))
 		{
 			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId());
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Could not refresh the SumUp transaction of card settlement {} before completing its booking; going on with its last known state", settlement.getId(), ex);
+			logger.warn("Could not refresh the SumUp transaction of card settlement {} before completing its booking; nothing is allocated", settlement.getId(), ex);
+			return false;
 		}
+
+		return findSumUpTransaction(settlement.getId())
+				.map(POSInvoiceCardSettlementBooking::isLastSyncOk)
+				.orElse(false);
 	}
 
-	private void completeBookingInTrx(@NonNull final POSInvoiceCardSettlementId id)
+	/**
+	 * @return whether the transaction's last SumUp lookup succeeded (or it was never looked up after the checkout)
+	 */
+	static boolean isLastSyncOk(@NonNull final SumUpTransaction sumUpTrx)
+	{
+		final SumUpTransaction.LastSync lastSync = sumUpTrx.getLastSync();
+		return lastSync == null || lastSync.getStatus() != SumUpTransaction.LastSyncStatus.Error;
+	}
+
+	private void completeBookingInTrx(@NonNull final POSInvoiceCardSettlementId id, @NonNull final RefundState refundState)
 	{
 		setLockTimeout();
 		// the settlement's invoice never changes, so it can be read before taking the locks
@@ -414,6 +473,17 @@ public class POSInvoiceCardSettlementBooking
 		if (!terminal.isCashJournalOpen())
 		{
 			recordNoOpenCashJournal(settlement);
+			return;
+		}
+
+		if (refundState == RefundState.SUMUP_NOT_REACHABLE)
+		{
+			recordSumUpNotReachable(settlement);
+			return;
+		}
+		if (refundState == RefundState.NOT_ASKED)
+		{
+			// a journal was opened after the pre-check: the next booking attempt asks SumUp first
 			return;
 		}
 
@@ -471,6 +541,22 @@ public class POSInvoiceCardSettlementBooking
 		errorManager.createIssue(new AdempiereException(MSG_CashJournalNotOpen)
 				.setParameter("C_POS_ID", settlement.getPosTerminalId().getRepoId())
 				.setRecord(settlement.getId().toRecordRef()));
+	}
+
+	/**
+	 * SumUp could not be asked whether the charge was refunded since the payment was created: nothing is allocated or
+	 * journaled, the settlement stays APPROVED (still blocking the invoice) with {@link #ERRORMSG_SumUpNotReachable};
+	 * not counted as a booking attempt (an outage must not end as a booking error), and no AD_Issue here: the failed
+	 * lookup is recorded on the SumUp transaction. The next sweep cycle, the till's check or back office's retry asks
+	 * again.
+	 */
+	private void recordSumUpNotReachable(@NonNull final POSInvoiceCardSettlement settlement)
+	{
+		if (Objects.equals(settlement.getErrorMsg(), ERRORMSG_SumUpNotReachable))
+		{
+			return;
+		}
+		repository.save(settlement.toBuilder().errorMsg(ERRORMSG_SumUpNotReachable).build());
 	}
 
 	/**

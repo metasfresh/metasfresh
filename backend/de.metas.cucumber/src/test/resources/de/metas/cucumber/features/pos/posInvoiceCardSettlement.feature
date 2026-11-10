@@ -1056,6 +1056,99 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has 2 AD_Issues
     And invoice invoice1 has 0 allocation lines
 
+  # Whether the charge was refunded is asked before allocating; while SumUp cannot be asked, nothing is allocated or
+  # journaled: the approved card payment waits (APPROVED, "SumUp not reachable"), and a later check books or rejects it.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC20_5
+  Scenario: A journal is opened for an approved card payment that was refunded at SumUp while SumUp cannot be asked, so a SumUp poll books nothing until SumUp answers again and then reports the refund
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has payment cardPayment
+    And SumUp API stub reports transaction of card settlement settlement1 as REFUNDED refunded 16.07
+    And SumUp API stub fails the status lookup
+    And the cash journal of POS terminal till is opened with 50 by metasfresh
+
+    When metasfresh polls SumUp
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'SumUp not reachable'
+    And card settlement settlement1 has payment cardPayment
+    And invoice invoice1 has 0 allocation lines
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+    When SumUp API stub answers the status lookup again
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has error message 'refunded at SumUp'
+    And invoice invoice1 has 0 allocation lines
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC20_6
+  Scenario: Back office updates an approved card payment that was refunded at SumUp from SumUp while SumUp cannot be asked, so nothing is booked until SumUp answers again and then the refund is reported
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has payment cardPayment
+    And SumUp API stub reports transaction of card settlement settlement1 as REFUNDED refunded 16.07
+    And SumUp API stub fails the status lookup
+    And the cash journal of POS terminal till is opened with 50 by metasfresh
+
+    When back office updates the SumUp transaction of card settlement settlement1 from SumUp
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'SumUp not reachable'
+    And invoice invoice1 has 0 allocation lines
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+    When SumUp API stub answers the status lookup again
+    And back office updates the SumUp transaction of card settlement settlement1 from SumUp
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has error message 'refunded at SumUp'
+    And invoice invoice1 has 0 allocation lines
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC20_7
+  Scenario: The till checks an approved card payment that was refunded at SumUp while SumUp cannot be asked, so nothing is booked and the check reports the failure
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has payment cardPayment
+    And SumUp API stub reports transaction of card settlement settlement1 as REFUNDED refunded 16.07
+    And SumUp API stub fails the status lookup
+    And the cash journal of POS terminal till is opened with 50 by metasfresh
+
+    When card settlement settlement1 is checked
+
+    Then the check of card settlement settlement1 returned status APPROVED with checkFailed true
+    And card settlement settlement1 has error message 'SumUp not reachable'
+    And invoice invoice1 has 0 allocation lines
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
   # ##########################################################################
   # The system stopped between creating the card payment and completing the booking: the settlement waits as
   # APPROVED with its unallocated payment, still blocking, and the background check of the next SumUp poll completes it

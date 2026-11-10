@@ -117,6 +117,28 @@ class POSInvoiceCardSettlementServiceTest
 		assertThat(result.getSettlement().getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.PENDING);
 	}
 
+	@Test
+	void check_refreshFails_doesNotTellTheBookingThatTheTransactionWasRefreshed()
+	{
+		final POSInvoiceCardSettlementId id = repository.create(
+						OrgId.ofRepoId(1),
+						POSTerminalId.ofRepoId(1),
+						InvoiceId.ofRepoId(100),
+						BPartnerId.ofRepoId(2),
+						UserId.ofRepoId(3),
+						Money.of(new BigDecimal("16.07"), CurrencyId.ofRepoId(102)))
+				.getId();
+		// approved as last known; whether it was refunded since is unknown, because SumUp cannot be asked
+		when(booking.findSumUpTransaction(id)).thenReturn(Optional.of(successfulSumUpTransaction()));
+		doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any());
+
+		final POSInvoiceCardSettlementCheckResult result = service.check(id);
+
+		assertThat(result.isCheckFailed()).isTrue();
+		verify(booking).book(id, false);
+		verify(booking, never()).book(id, true);
+	}
+
 	@Nested
 	class release
 	{
@@ -273,7 +295,7 @@ class POSInvoiceCardSettlementServiceTest
 				settlementsWhenBooked.add(repository.getById(settlement.getId()));
 				contextsWhenBooked.add(Env.getClientAndOrgId());
 				return null;
-			}).when(booking).book(settlement.getId(), false);
+			}).when(booking).book(settlement.getId(), true); // refreshed by the retry before booking
 
 			service.retryBooking(settlement.getId());
 
@@ -370,6 +392,33 @@ class POSInvoiceCardSettlementServiceTest
 			assertRetryRefusedBecauseSumUpCannotBeAsked(settlement);
 		}
 
+		@Test
+		void retryBooking_bookingErrorWithPayment_sumUpLookupFails_isRefusedWithoutBooking()
+		{
+			// step B failed; the charge may have been refunded since: it must not be allocated on unknown data
+			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.BOOKING_ERROR, false, PaymentId.ofRepoId(7), 1);
+			when(booking.findSumUpTransaction(settlement.getId())).thenReturn(Optional.of(successfulSumUpTransaction().toBuilder()
+					.lastSync(SumUpTransaction.LastSync.error(AdIssueId.ofRepoId(1)))
+					.build()));
+
+			assertRetryRefusedBecauseSumUpCannotBeAsked(settlement);
+		}
+
+		@Test
+		void retryBooking_approvedWithPayment_sumUpCannotBeAsked_isRefusedWithoutBooking()
+		{
+			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.APPROVED, false, PaymentId.ofRepoId(7), 3);
+			when(booking.findSumUpTransaction(settlement.getId())).thenReturn(Optional.of(successfulSumUpTransaction()));
+			doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any());
+
+			assertThatThrownBy(() -> service.retryBooking(settlement.getId()))
+					.isInstanceOfSatisfying(AdempiereException.class,
+							ex -> assertThat(ex.getErrorCode()).isEqualTo(errorCodeOf("de.metas.pos.InvoiceCardSettlement.RetryRefusedSumUpNotReachable")));
+			assertThat(repository.getById(settlement.getId()).getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.APPROVED);
+			assertThat(repository.getById(settlement.getId()).getBookingAttempts()).isEqualTo(3);
+			verify(booking, never()).book(any(), anyBoolean());
+		}
+
 		private void assertRetryRefusedBecauseSumUpCannotBeAsked(@NonNull final POSInvoiceCardSettlement settlement)
 		{
 			assertThatThrownBy(() -> service.retryBooking(settlement.getId()))
@@ -398,7 +447,7 @@ class POSInvoiceCardSettlementServiceTest
 		{
 			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.APPROVED, false, PaymentId.ofRepoId(7), 3);
 			final List<POSInvoiceCardSettlement> settlementsWhenBooked = new ArrayList<>();
-			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId(), false);
+			doAnswer(invocation -> settlementsWhenBooked.add(repository.getById(settlement.getId()))).when(booking).book(settlement.getId(), true); // refreshed by the retry before booking
 
 			service.retryBooking(settlement.getId());
 

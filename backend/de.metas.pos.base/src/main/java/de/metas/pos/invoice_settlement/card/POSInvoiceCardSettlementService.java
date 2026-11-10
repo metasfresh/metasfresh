@@ -286,11 +286,14 @@ public class POSInvoiceCardSettlementService
 	 * Never throws: any failure is logged and recorded as an AD_Issue of the settlement, whose status stays as it was, so
 	 * the caller (the SumUp event dispatcher) still notifies its other listeners.
 	 * <p>
-	 * The booking does not ask SumUp again: every status event follows a SumUp lookup that has just stored the
-	 * transaction ({@code SumUpService.updateTransactionFromRemote}: the poller, the SumUp callback, the till's check,
-	 * back office's retry; {@code SumUpService.refundTransaction}; the back-office "update from SumUp" processes, which
-	 * force the event). The one event without a lookup is a new transaction's, at checkout, which is PENDING and books
-	 * nothing.
+	 * Every status event follows a SumUp lookup attempt that has just stored the transaction
+	 * ({@code SumUpService.updateTransactionFromRemote}: the poller, the SumUp callback, the till's check, back office's
+	 * retry; {@code SumUpService.refundTransaction}; the back-office "update from SumUp" processes); the one event
+	 * without a lookup is a new transaction's, at checkout, which is PENDING and books nothing. A failed lookup changes
+	 * neither status nor refund, so it fires no event, except for the back-office processes, which force the event: then
+	 * the transaction carries the failed lookup ({@code LastSync} = error). So the booking is told "refreshed", and it
+	 * relies on that only if the stored lookup succeeded; otherwise it asks SumUp itself and allocates nothing while
+	 * SumUp cannot be asked ({@link POSInvoiceCardSettlementBooking#completeBooking}).
 	 */
 	public void onSumUpTransactionChanged(@NonNull final POSInvoiceCardSettlementId id)
 	{
@@ -320,7 +323,8 @@ public class POSInvoiceCardSettlementService
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		final boolean checkFailed = !refreshSumUpTransactionFromRemote(id);
-		reconcileLocally(id, true);
+		// a failed lookup must not count as a refresh: the booking then asks SumUp itself (and allocates nothing while it cannot)
+		reconcileLocally(id, !checkFailed);
 
 		return POSInvoiceCardSettlementCheckResult.builder()
 				.settlement(repository.getById(id))
@@ -356,8 +360,7 @@ public class POSInvoiceCardSettlementService
 		final SumUpTransaction sumUpTrxRefreshed = booking.findSumUpTransaction(id).orElseThrow(() -> new AdempiereException("SumUp transaction disappeared")
 				.setParameter("SumUpClientTransactionId", sumUpTrx.getClientTransactionId())
 				.setRecord(id.toRecordRef()));
-		final SumUpTransaction.LastSync lastSync = sumUpTrxRefreshed.getLastSync();
-		return lastSync == null || lastSync.getStatus() != SumUpTransaction.LastSyncStatus.Error;
+		return POSInvoiceCardSettlementBooking.isLastSyncOk(sumUpTrxRefreshed);
 	}
 
 	/**
@@ -762,20 +765,23 @@ public class POSInvoiceCardSettlementService
 	 * under the settlement lock, prepares the settlement so that {@link POSInvoiceCardSettlementBooking#book} books it
 	 * again with a fresh attempt budget ({@code BookingAttempts} = 0), then books it right away:
 	 * <ul>
-	 * <li>BOOKING_ERROR with a payment (step B failed) → APPROVED, so that step B runs again;</li>
+	 * <li>BOOKING_ERROR with a payment (step B failed) → APPROVED, so that step B runs again on the refreshed transaction
+	 * (a charge refunded meanwhile → BOOKING_ERROR "refunded at SumUp", nothing allocated);</li>
 	 * <li>BOOKING_ERROR without a payment (step A failed) → UNKNOWN (ABANDONED if it was released as abandoned), so
 	 * that step A creates the payment first. Its SumUp transaction is refreshed from SumUp before, so that step A sees
 	 * a charge refunded meanwhile and books nothing (UNKNOWN → FAILED "refunded at SumUp"; an abandoned one stays
 	 * ABANDONED);</li>
 	 * <li>APPROVED stays APPROVED (its {@code ErrorMsg} is kept, so a still missing journal is not reported again).</li>
 	 * </ul>
+	 * In all these cases the SumUp transaction is refreshed from SumUp first: neither a payment is created nor one
+	 * allocated for a charge that may have been refunded.
 	 * The SumUp lookup and the booking run in the settlement's client / org, so their AD_Issues land there, not in back
 	 * office's login context. The booking handles its own errors ({@link POSInvoiceCardSettlementBooking#book}): the
 	 * caller reads the outcome from the returned settlement.
 	 *
 	 * @return the settlement after the retry
-	 * @throws AdempiereException {@code RetryRefusedSumUpNotReachable} — the settlement has no payment yet and SumUp
-	 * could not be asked whether the charge was refunded; {@code NotPossibleForStatus} — the settlement is in another
+	 * @throws AdempiereException {@code RetryRefusedSumUpNotReachable} — SumUp could not be asked whether the charge was
+	 * refunded; {@code NotPossibleForStatus} — the settlement is in another
 	 * status. In both cases nothing is changed.
 	 */
 	@NonNull
@@ -789,14 +795,15 @@ public class POSInvoiceCardSettlementService
 		{
 			// back office may have refunded the charge in the SumUp dashboard; the poller does not refresh a successful transaction
 			final POSInvoiceCardSettlement settlementBefore = repository.getById(id);
+			// only for the statuses that are retried at all (others are refused below, without asking SumUp)
 			final boolean isRefreshBeforeBooking = settlementBefore.getStatus() == POSInvoiceCardSettlementStatus.BOOKING_ERROR
-					&& settlementBefore.getPaymentId() == null;
+					|| settlementBefore.getStatus() == POSInvoiceCardSettlementStatus.APPROVED;
 			boolean isSumUpTransactionRefreshed = false;
 			if (isRefreshBeforeBooking)
 			{
 				if (!refreshSumUpTransactionFromRemote(id))
 				{
-					// a payment must not be created for a charge that may have been refunded
+					// a payment must not be created, nor allocated, for a charge that may have been refunded
 					throw new AdempiereException(MSG_RetryRefusedSumUpNotReachable)
 							.markAsUserValidationError()
 							.setRecord(id.toRecordRef());
@@ -811,7 +818,7 @@ public class POSInvoiceCardSettlementService
 				repository.save(toRetry(settlement));
 			});
 
-			// with a payment, step B asks SumUp itself (refund check before allocating)
+			// the transaction was refreshed just before: step B does not ask SumUp again
 			booking.book(id, isSumUpTransactionRefreshed);
 		}
 
