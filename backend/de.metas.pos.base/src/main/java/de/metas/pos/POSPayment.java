@@ -293,6 +293,43 @@ public class POSPayment
 				.build();
 	}
 
+	/**
+	 * The orphan rule: a card checkout that stopped before SumUp's answer was stored (PENDING, naming no SumUp transaction)
+	 * becomes UNKNOWN; any other payment is returned unchanged. The caller decides whether the checkout is old enough and
+	 * has no SumUp transaction of its own.
+	 */
+	public POSPayment changingStatusToUnknownIfOrphan()
+	{
+		if (!paymentMethod.isCard() || !isPending() || sumUpClientTransactionId != null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.paymentProcessingStatus(POSPaymentProcessingStatus.UNKNOWN)
+				.build();
+	}
+
+	/**
+	 * A SumUp lookup made for this card payment failed: from now on (unless already) it is failing a SumUp lookup.
+	 */
+	public POSPayment withCardLookupFailed(@NonNull final Instant now)
+	{
+		return cardLookupFailingSince != null
+				? this
+				: toBuilder().cardLookupFailingSince(now).build();
+	}
+
+	/**
+	 * A SumUp lookup made for this card payment succeeded (whether SumUp knew the transaction or not): an ongoing outage ended.
+	 */
+	public POSPayment withCardLookupSucceeded()
+	{
+		return cardLookupFailingSince == null
+				? this
+				: toBuilder().cardLookupFailingSince(null).build();
+	}
+
 	public POSPayment withPaymentReceipt(@Nullable final PaymentId paymentReceiptId)
 	{
 		if (PaymentId.equals(this.paymentReceiptId, paymentReceiptId))

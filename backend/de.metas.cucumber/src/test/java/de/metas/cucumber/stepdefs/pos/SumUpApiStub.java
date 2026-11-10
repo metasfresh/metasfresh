@@ -21,9 +21,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -36,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * Endpoints (all below {@code /v0.1}):
  * <ul>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}. A checkout can be held ({@link #holdNextCheckout()}) and answered later ({@link #answerHeldCheckout})</li>
- *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
+ *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure, or an unreadable answer ({@link #answerLookupUnreadable}) (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
  * State is static: one stub per JVM, reset between scenarios via {@link #reset()}.
@@ -90,6 +92,8 @@ public final class SumUpApiStub
 	private static final Map<String, TransactionState> transactionsByClientTransactionId = new LinkedHashMap<>();
 	// the status lookups (GET /me/transactions) received, per client_transaction_id, whatever they were answered
 	private static final Map<String, Integer> statusLookupCountsByClientTransactionId = new HashMap<>();
+	// the client_transaction_ids whose status lookup is answered with a transaction metasfresh cannot read (see answerLookupUnreadable)
+	private static final Set<String> unreadableLookupClientTransactionIds = new HashSet<>();
 
 	private SumUpApiStub() {}
 
@@ -138,6 +142,19 @@ public final class SumUpApiStub
 			receivedTerminateReaderIds.clear();
 			transactionsByClientTransactionId.clear();
 			statusLookupCountsByClientTransactionId.clear();
+			unreadableLookupClientTransactionIds.clear();
+		}
+	}
+
+	/**
+	 * From now on, the status lookup of the given transaction is answered with HTTP 200 and a transaction whose timestamp
+	 * is not a timestamp: the call succeeds, but metasfresh cannot read the answer (it fails while converting it).
+	 */
+	public static void answerLookupUnreadable(@NonNull final String clientTransactionId)
+	{
+		synchronized (lock)
+		{
+			unreadableLookupClientTransactionIds.add(clientTransactionId);
 		}
 	}
 
@@ -452,6 +469,7 @@ public final class SumUpApiStub
 		final String clientTransactionId = extractQueryParam(rawQuery, "client_transaction_id");
 
 		TransactionState trx;
+		final boolean unreadable;
 		synchronized (lock)
 		{
 			statusLookupCountsByClientTransactionId.merge(String.valueOf(clientTransactionId), 1, Integer::sum);
@@ -461,6 +479,7 @@ public final class SumUpApiStub
 				return;
 			}
 			trx = clientTransactionId != null ? transactionsByClientTransactionId.get(clientTransactionId) : null;
+			unreadable = unreadableLookupClientTransactionIds.contains(String.valueOf(clientTransactionId));
 		}
 
 		if (trx == null)
@@ -480,7 +499,7 @@ public final class SumUpApiStub
 		json.put("id", trx.getExternalId());
 		json.put("client_transaction_id", trx.getClientTransactionId());
 		json.put("merchant_code", trx.getMerchantCode());
-		json.put("timestamp", trx.getTimestamp());
+		json.put("timestamp", unreadable ? "not-a-timestamp" : trx.getTimestamp());
 		json.put("status", trx.getStatus());
 		json.put("amount", trx.getAmount());
 		json.put("currency", trx.getCurrency());

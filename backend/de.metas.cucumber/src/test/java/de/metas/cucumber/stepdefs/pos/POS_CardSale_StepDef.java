@@ -42,6 +42,7 @@ import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
+import de.metas.pos.POSCardPaymentCheckResult;
 import de.metas.pos.POSCardPaymentReleaseRequest;
 import de.metas.pos.POSCardPaymentReleaseResult;
 import de.metas.pos.POSOrder;
@@ -158,6 +159,7 @@ public class POS_CardSale_StepDef
 		// the client_transaction_id of every checkout the SumUp stub accepted for this sale, in order
 		@NonNull final List<String> acceptedClientTransactionIds = new ArrayList<>();
 		@Nullable POSCardPaymentReleaseResult lastReleaseResult;
+		@Nullable POSCardPaymentCheckResult lastCheckResult;
 		// the order the till got back from its last card checkout
 		@Nullable POSOrder lastCheckoutAnswer;
 
@@ -842,6 +844,44 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
+	 * From now on, SumUp answers the status lookup of the sale's first transaction with something metasfresh cannot read (the
+	 * stub answers HTTP 200 with a transaction whose timestamp is not a timestamp; see {@link SumUpApiStub#answerLookupUnreadable}).
+	 * So the lookup call itself succeeds, but the import of that transaction then fails with an error (thrown), unlike a
+	 * failed lookup ({@code SumUp API stub fails the status lookup}), which the import reports as its result.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the stub accepted a checkout for the sale
+	 * @cucumber.example
+	 * <pre>
+	 * And the SumUp lookup of the first transaction of POS sale sale1 throws
+	 * </pre>
+	 */
+	@And("^the SumUp lookup of the first transaction of POS sale (\\S+) throws$")
+	public void sumUpLookupOfFirstTransactionThrows(@NonNull final String saleIdentifier)
+	{
+		SumUpApiStub.answerLookupUnreadable(getAcceptedClientTransactionId(getSale(saleIdentifier), true));
+	}
+
+	/**
+	 * Asserts how many status lookups ({@code GET /me/transactions}) of the sale's first transaction the stub received in this
+	 * scenario, whatever they were answered.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the SumUp stub received 1 status lookup of the first transaction of POS sale sale1
+	 * </pre>
+	 */
+	@And("^the SumUp stub received (\\d+) status lookups? of the first transaction of POS sale (\\S+)$")
+	public void assertStatusLookupsOfFirstTransaction(final int expectedCount, @NonNull final String saleIdentifier)
+	{
+		final String clientTransactionId = getAcceptedClientTransactionId(getSale(saleIdentifier), true);
+		assertThat(SumUpApiStub.getStatusLookupCount(clientTransactionId))
+				.as("status lookups of the first transaction of POS sale %s received by the SumUp stub", saleIdentifier)
+				.isEqualTo(expectedCount);
+	}
+
+	/**
 	 * Removes the test-only trigger of {@code saving a SumUp transaction fails with a database error}: the database has recovered, so
 	 * later SumUp transactions can be saved again. Does nothing if the trigger is not installed.
 	 *
@@ -1198,6 +1238,41 @@ public class POS_CardSale_StepDef
 				.confirmNotCharged(expectedStatus != null)
 				.expectedStatus(expectedStatus != null ? POSPaymentProcessingStatus.valueOf(expectedStatus) : null)
 				.build());
+	}
+
+	/**
+	 * The till checks the sale's card payment whose result is unknown ({@link POSOrdersService#checkCardPayment}): metasfresh
+	 * asks SumUp for the payment's own transaction, if it names one. The result is kept for
+	 * {@code the check of the card payment of POS sale ... returned ...}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the card payment of POS sale sale1 is checked
+	 * </pre>
+	 */
+	@And("^the card payment of POS sale (\\S+) is checked$")
+	public void cardPaymentChecked(@NonNull final String saleIdentifier)
+	{
+		final Sale sale = getSale(saleIdentifier);
+		sale.lastCheckResult = posOrdersService.checkCardPayment(sale.terminalId, sale.orderExternalId, sale.cardPaymentExternalId, sale.cashierId);
+	}
+
+	/**
+	 * Asserts whether the last check of the sale's card payment could not ask SumUp ({@code checkFailed}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the check of the card payment of POS sale sale1 returned checkFailed true
+	 * </pre>
+	 */
+	@And("^the check of the card payment of POS sale (\\S+) returned checkFailed (true|false)$")
+	public void assertCheckResult(@NonNull final String saleIdentifier, @NonNull final String expectedCheckFailed)
+	{
+		final POSCardPaymentCheckResult result = getSale(saleIdentifier).lastCheckResult;
+		assertThat(result).as("result of the last check of the card payment of POS sale %s", saleIdentifier).isNotNull();
+		assertThat(result.isCheckFailed()).as("checkFailed returned by the check").isEqualTo(Boolean.parseBoolean(expectedCheckFailed));
 	}
 
 	/**

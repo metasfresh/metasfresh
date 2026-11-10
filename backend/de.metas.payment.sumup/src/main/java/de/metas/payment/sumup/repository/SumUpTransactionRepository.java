@@ -27,6 +27,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -86,6 +88,29 @@ public class SumUpTransactionRepository
 		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).build())
 				.create()
 				.firstIdOnly(SumUpTransactionId::ofRepoIdOrNull);
+	}
+
+	/**
+	 * @return the transaction with the given client transaction id (at most one exists, by a unique index), if metasfresh has it
+	 */
+	public Optional<SumUpTransaction> findByClientTransactionId(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		return retrieveSingleRecordIfExists(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId))
+				.map(SumUpTransactionRepository::fromRecord);
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0): an empty reference would match any transaction
+	 * @return whether a transaction carrying the given POS reference was created at or after the given time
+	 */
+	public boolean existsByPOSRefCreatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant createdSince)
+	{
+		Check.assume(posRef.getPosOrderId() > 0 || posRef.getPosPaymentId() > 0 || posRef.getPosInvoiceCardSettlementId() > 0,
+				"posRef references something: {}", posRef);
+		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).build())
+				.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Timestamp.from(createdSince))
+				.create()
+				.anyMatch();
 	}
 
 	public Stream<SumUpTransaction> stream(@NonNull final SumUpTransactionQuery query)

@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.payment.sumup.SumUpService;
+import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -55,7 +57,7 @@ class POSOrdersServiceLockOrderTest
 		ordersRepository = spy(new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty())));
 		final POSOrderProcessingServices processingServices = mock(POSOrderProcessingServices.class);
 		when(processingServices.processPOSPayment(any())).thenAnswer(invocation -> invocation.getArgument(0));
-		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), processingServices);
+		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), processingServices, mock(SumUpService.class), mock(SumUpTransactionRepository.class));
 	}
 
 	private POSOrder newOrderWithNewPayment(final POSPaymentMethod paymentMethod)

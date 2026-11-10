@@ -9,12 +9,20 @@ import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
+import de.metas.payment.sumup.SumUpClientTransactionId;
+import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpContext;
+import de.metas.payment.sumup.SumUpImportResult;
+import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpService;
+import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -31,6 +39,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +51,12 @@ public class POSOrdersService
 	@NonNull private static final Logger logger = LogManager.getLogger(POSOrdersService.class);
 	private static final AdMessageKey MSG_LateApprovalNotBooked = AdMessageKey.of("de.metas.pos.POSPayment.LateApprovalNotBooked");
 	private static final AdMessageKey MSG_CardResultNotStored = AdMessageKey.of("de.metas.pos.POSPayment.CardResultNotStored");
+	private static final AdMessageKey MSG_SumUpLookupFailed = AdMessageKey.of("de.metas.pos.POSPayment.SumUpLookupFailed");
+	/**
+	 * A PENDING card payment whose checkout started longer ago than this without SumUp's answer stored is an orphan: the
+	 * send is bounded by the SumUp client's timeouts (2 x 60 s), so its checkout stopped (see {@link #markCardPaymentUnknownIfOrphan}).
+	 */
+	public static final Duration CARD_CHECKOUT_ORPHAN_AGE = Duration.ofSeconds(150);
 	/** waits between the attempts of storing a card checkout's answer; one attempt more than waits */
 	private static final ImmutableList<Duration> CARD_SEND_RESULT_RETRY_BACKOFFS = ImmutableList.of(Duration.ofMillis(200), Duration.ofSeconds(1));
 	private static final int CARD_SEND_RESULT_MAX_ATTEMPTS = CARD_SEND_RESULT_RETRY_BACKOFFS.size() + 1;
@@ -53,6 +68,8 @@ public class POSOrdersService
 	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSOrderProcessingServices posOrderProcessingServices;
+	@NonNull private final SumUpService sumUpService;
+	@NonNull private final SumUpTransactionRepository sumUpTransactionRepository;
 	@NonNull private final Sleeper sleeper;
 
 	/**
@@ -69,9 +86,11 @@ public class POSOrdersService
 			@NonNull final POSTerminalService posTerminalService,
 			@NonNull final POSOrdersRepository ordersRepository,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final POSOrderProcessingServices posOrderProcessingServices)
+			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
+			@NonNull final SumUpService sumUpService,
+			@NonNull final SumUpTransactionRepository sumUpTransactionRepository)
 	{
-		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, POSOrdersService::sleepUninterruptibly);
+		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, sumUpService, sumUpTransactionRepository, POSOrdersService::sleepUninterruptibly);
 	}
 
 	@VisibleForTesting
@@ -80,12 +99,16 @@ public class POSOrdersService
 			@NonNull final POSOrdersRepository ordersRepository,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
+			@NonNull final SumUpService sumUpService,
+			@NonNull final SumUpTransactionRepository sumUpTransactionRepository,
 			@NonNull final Sleeper sleeper)
 	{
 		this.posTerminalService = posTerminalService;
 		this.ordersRepository = ordersRepository;
 		this.currencyRepository = currencyRepository;
 		this.posOrderProcessingServices = posOrderProcessingServices;
+		this.sumUpService = sumUpService;
+		this.sumUpTransactionRepository = sumUpTransactionRepository;
 		this.sleeper = sleeper;
 	}
 
@@ -468,14 +491,222 @@ public class POSOrdersService
 		}
 	}
 
-	// TODO TC23 RED: stub, replaced by the check of an unknown card payment
+	/**
+	 * The till's check of a card payment whose result is unknown: asks SumUp for the payment's own SumUp transaction (the
+	 * current attempt's, named by the payment's SumUp client transaction id; never looked up by the payment's POS reference),
+	 * outside any transaction and without a lock held:
+	 * <ul>
+	 * <li>metasfresh has that transaction → it is refreshed from SumUp ({@link SumUpService#updateTransactionFromRemote}); its
+	 * status event, if the status changed, updates the payment asynchronously;</li>
+	 * <li>metasfresh does not have it yet (saving it failed after SumUp accepted the checkout) → it is imported from SumUp
+	 * ({@link SumUpService#importAcceptedCheckout}), which fires its status event;</li>
+	 * <li>the payment names no SumUp transaction (timeout, network error, SumUp 5xx, or a stopped checkout) → nothing to ask.</li>
+	 * </ul>
+	 * Any other payment (not a card payment, or its result is known) is not looked up. A failed lookup leaves the payment as
+	 * it was, sets {@code checkFailed}, and is reported once per outage (see {@link #recordCardLookupOutcome}).
+	 *
+	 * @return the order as it is after the check (a status event of the lookup may still be under way)
+	 */
 	public POSCardPaymentCheckResult checkCardPayment(
 			@NonNull final POSTerminalId posTerminalId,
 			@NonNull final POSOrderExternalId posOrderExternalId,
 			@NonNull final POSPaymentExternalId posPaymentExternalId,
 			@NonNull final UserId userId)
 	{
-		throw new UnsupportedOperationException("TC23 RED");
+		// the SumUp lookup must run outside any transaction, see the method doc
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		final POSOrderId orderId = ordersRepository.getIdByExternalId(posOrderExternalId);
+		final POSOrder order = ordersRepository.getById(orderId);
+		assertCanEdit(posTerminalId, order, userId);
+		final POSPayment payment = findPaymentByExternalId(order, posPaymentExternalId)
+				.orElseThrow(() -> new AdempiereException("No payment found for " + posPaymentExternalId));
+
+		if (!isUnknownCardPaymentNamingSumUpTransaction(payment))
+		{
+			return POSCardPaymentCheckResult.builder().order(order).checkFailed(false).build();
+		}
+
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(orderId, payment.getLocalIdNotNull());
+		Exception lookupFailure;
+		try
+		{
+			lookupFailure = lookUpOwnSumUpTransaction(order, orderAndPaymentId, payment).orElse(null);
+		}
+		catch (final Exception ex)
+		{
+			// e.g. SumUp's answer could not be read, or no usable SumUp config: for the cashier, SumUp could not be asked
+			logger.warn("Checking the card payment {} at SumUp failed", orderAndPaymentId, ex);
+			lookupFailure = ex;
+		}
+		recordCardLookupOutcome(order, orderAndPaymentId, lookupFailure);
+
+		return POSCardPaymentCheckResult.builder()
+				.order(ordersRepository.getById(orderId))
+				.checkFailed(lookupFailure != null)
+				.build();
+	}
+
+	/**
+	 * Background sweep, case (a): imports the SumUp transaction of a card payment whose result is unknown and that names a
+	 * SumUp transaction metasfresh does not have (SumUp accepted the checkout, but saving its transaction failed). The SumUp
+	 * lookup runs outside any transaction and without a lock held; the import fires the transaction's status event, which
+	 * updates the payment. A failed lookup is reported once per outage (see {@link #recordCardLookupOutcome}). Does nothing
+	 * if the payment no longer qualifies.
+	 *
+	 * @throws RuntimeException if the import fails other than by a failed SumUp lookup (e.g. SumUp's answer cannot be read)
+	 */
+	public void importCardPaymentSumUpTransaction(@NonNull final POSOrderAndPaymentId orderAndPaymentId)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		final POSOrder order = ordersRepository.getById(orderAndPaymentId.getOrderId());
+		final POSPayment payment = getPaymentById(order, orderAndPaymentId.getPaymentId());
+		if (!isUnknownCardPaymentNamingSumUpTransaction(payment))
+		{
+			return;
+		}
+
+		final Exception lookupFailure = lookUpOwnSumUpTransaction(order, orderAndPaymentId, payment).orElse(null);
+		recordCardLookupOutcome(order, orderAndPaymentId, lookupFailure);
+	}
+
+	/**
+	 * Background sweep, case (b), the orphan rule, keyed on the payment's current attempt: in its own transaction under the
+	 * order lock, a PENDING card payment that names no SumUp transaction, whose checkout started more than
+	 * {@link #CARD_CHECKOUT_ORPHAN_AGE} ago (by {@link SystemTime}), and for which no SumUp transaction with its POS reference
+	 * was created since that checkout started, becomes UNKNOWN: its checkout stopped (or its answer could not be stored)
+	 * before SumUp's result reached it. A SumUp transaction of an earlier attempt of the same payment does not count. Nothing
+	 * is sent to SumUp.
+	 */
+	public void markCardPaymentUnknownIfOrphan(@NonNull final POSOrderAndPaymentId orderAndPaymentId)
+	{
+		final Instant now = SystemTime.asInstant();
+		trxManager.runInNewTrx(() -> ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (order, payment) -> {
+			final Instant startedAt = payment.getCardCheckoutStartedAt();
+			if (startedAt == null || !startedAt.plus(CARD_CHECKOUT_ORPHAN_AGE).isBefore(now))
+			{
+				return payment;
+			}
+			if (sumUpTransactionRepository.existsByPOSRefCreatedSince(toSumUpPOSRef(orderAndPaymentId), startedAt))
+			{
+				return payment;
+			}
+			return payment.changingStatusToUnknownIfOrphan();
+		}));
+	}
+
+	private static POSPayment getPaymentById(@NonNull final POSOrder order, @NonNull final POSPaymentId paymentId)
+	{
+		return order.getAllPayments()
+				.stream()
+				.filter(payment -> POSPaymentId.equals(payment.getLocalId(), paymentId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No payment " + paymentId + " found in " + order.getExternalId()));
+	}
+
+	private static boolean isUnknownCardPaymentNamingSumUpTransaction(@NonNull final POSPayment payment)
+	{
+		return payment.getPaymentMethod().isCard()
+				&& payment.isUnknown()
+				&& payment.getSumUpClientTransactionId() != null;
+	}
+
+	/**
+	 * Asks SumUp for the payment's own SumUp transaction: refreshes it if metasfresh has it, else imports it. Must run outside
+	 * any transaction and without a lock held.
+	 *
+	 * @return the failure of the SumUp lookup, if it failed; empty if SumUp answered (also if SumUp does not know the transaction)
+	 */
+	private Optional<Exception> lookUpOwnSumUpTransaction(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@NonNull final POSPayment payment)
+	{
+		final SumUpClientTransactionId clientTransactionId = SumUpClientTransactionId.ofString(Check.assumeNotNull(payment.getSumUpClientTransactionId(), "sumUpClientTransactionId is set: {}", payment));
+
+		if (sumUpTransactionRepository.findByClientTransactionId(clientTransactionId).isPresent())
+		{
+			// a failed lookup is recorded on the transaction (LastSync), not as AD_Issue: this caller reports an outage once
+			sumUpService.updateTransactionFromRemote(clientTransactionId, false);
+			final SumUpTransaction refreshed = sumUpTransactionRepository.findByClientTransactionId(clientTransactionId)
+					.orElseThrow(() -> new AdempiereException("SumUp transaction disappeared: " + clientTransactionId));
+			final SumUpTransaction.LastSync lastSync = refreshed.getLastSync();
+			return lastSync != null && lastSync.getStatus() == SumUpTransaction.LastSyncStatus.Error
+					? Optional.of(new AdempiereException("SumUp lookup of transaction " + clientTransactionId + " failed"))
+					: Optional.empty();
+		}
+
+		final SumUpConfigId sumUpConfigId = Check.assumeNotNull(
+				posTerminalService.getPOSTerminalById(order.getPosTerminalId()).getPaymentProcessorConfigNotNull().getSumUpConfigId(),
+				"the terminal of {} is configured with SumUp", order.getExternalId());
+		final SumUpImportResult result = sumUpService.importAcceptedCheckout(
+				sumUpConfigId,
+				clientTransactionId,
+				toSumUpPOSRef(orderAndPaymentId),
+				sumUpService.getConfig(sumUpConfigId).getDefaultCardReaderExternalIdNotNull(),
+				order.getClientAndOrgId());
+		return Optional.ofNullable(result.getLookupError());
+	}
+
+	private static SumUpPOSRef toSumUpPOSRef(@NonNull final POSOrderAndPaymentId orderAndPaymentId)
+	{
+		return SumUpPOSRef.builder()
+				.posOrderId(orderAndPaymentId.getOrderId().getRepoId())
+				.posPaymentId(orderAndPaymentId.getPaymentId().getRepoId())
+				.build();
+	}
+
+	/**
+	 * One AD_Issue per SumUp outage, stored on the card payment ({@code CardLookupFailingSince}), shared by the sweep and the
+	 * till's check. In its own transaction under the order lock:
+	 * <ul>
+	 * <li>the lookup failed and the payment (still with an unknown result) was not failing a lookup → it is failing one since
+	 * now, and, after commit, one AD_Issue {@code SumUpLookupFailed} is recorded on the payment (a failure to record it is only
+	 * logged);</li>
+	 * <li>the lookup failed and the payment was failing one already → no AD_Issue;</li>
+	 * <li>the lookup succeeded (whether SumUp knew the transaction or not) → the outage ended.</li>
+	 * </ul>
+	 */
+	private void recordCardLookupOutcome(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@Nullable final Exception lookupFailure)
+	{
+		final Instant now = SystemTime.asInstant();
+		final AtomicBoolean outageStarted = new AtomicBoolean(false);
+		trxManager.runInNewTrx(() -> ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (lockedOrder, payment) -> {
+			if (lookupFailure == null || !payment.isUnknown())
+			{
+				return payment.withCardLookupSucceeded();
+			}
+			outageStarted.set(payment.getCardLookupFailingSince() == null);
+			return payment.withCardLookupFailed(now);
+		}));
+
+		if (outageStarted.get())
+		{
+			recordSumUpLookupFailed(order, orderAndPaymentId, Check.assumeNotNull(lookupFailure, "lookupFailure is set"));
+		}
+	}
+
+	private void recordSumUpLookupFailed(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@NonNull final Exception lookupFailure)
+	{
+		final String clientTransactionId = getPaymentById(order, orderAndPaymentId.getPaymentId()).getSumUpClientTransactionId();
+		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
+		{
+			errorManager.createIssue(new AdempiereException(lookupFailure, MSG_SumUpLookupFailed)
+					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
+					.setParameter("sumUpClientTransactionId", clientTransactionId)
+					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId())));
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed recording the failed SumUp lookup of {} as AD_Issue. Ignored.", orderAndPaymentId, ex);
+		}
 	}
 
 	// TODO TC23 RED: stub, replaced by the release of an unknown card payment

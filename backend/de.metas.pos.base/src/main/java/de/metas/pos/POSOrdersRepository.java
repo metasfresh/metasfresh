@@ -8,18 +8,23 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
@@ -94,6 +99,56 @@ public class POSOrdersRepository
 				.stream()
 				.map(record -> new POSCardPaymentStatus(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()), record.getPOSPaymentProcessingStatus()))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * The card payments whose result is unknown and that name SumUp's client transaction id, but for which metasfresh has
+	 * no SumUp transaction with that id yet (SumUp accepted the checkout, but saving its transaction failed): their
+	 * transaction is to be imported from SumUp. Oldest first. The caller must close the stream.
+	 */
+	public Stream<POSOrderAndPaymentId> streamCardPaymentsToImport()
+	{
+		return queryBL.createQueryBuilder(I_C_POS_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus.UNKNOWN.getCode())
+				.addNotNull(I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID)
+				.filter(TypedSqlQueryFilter.of("NOT EXISTS (SELECT 1 FROM SUMUP_Transaction t"
+						+ " WHERE t.SUMUP_ClientTransactionId = " + I_C_POS_Payment.Table_Name + "." + I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID + ")"))
+				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
+				.create()
+				.stream()
+				.map(POSOrdersRepository::toPOSOrderAndPaymentId);
+	}
+
+	/**
+	 * The orphan card payments of the current attempt: PENDING card payments that name no SumUp client transaction id, whose
+	 * checkout started before the given time, and for which no SumUp transaction carrying their POS reference was created at
+	 * or after the start of that checkout (a transaction of an earlier attempt of the same payment does not count). So their
+	 * checkout stopped before SumUp's answer was stored. Oldest first. The caller must close the stream.
+	 */
+	public Stream<POSOrderAndPaymentId> streamOrphanCardPaymentIds(@NonNull final Instant startedBefore)
+	{
+		final String paymentTable = I_C_POS_Payment.Table_Name;
+		return queryBL.createQueryBuilder(I_C_POS_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus.PENDING.getCode())
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID, null)
+				.addCompareFilter(I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt, CompareQueryFilter.Operator.LESS, Timestamp.from(startedBefore))
+				.filter(TypedSqlQueryFilter.of("NOT EXISTS (SELECT 1 FROM SUMUP_Transaction t"
+						+ " WHERE t.C_POS_Order_ID = " + paymentTable + "." + I_C_POS_Payment.COLUMNNAME_C_POS_Order_ID
+						+ " AND t.C_POS_Payment_ID = " + paymentTable + "." + I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID
+						+ " AND t.Created >= " + paymentTable + "." + I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt + ")"))
+				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
+				.create()
+				.stream()
+				.map(POSOrdersRepository::toPOSOrderAndPaymentId);
+	}
+
+	private static POSOrderAndPaymentId toPOSOrderAndPaymentId(@NonNull final I_C_POS_Payment record)
+	{
+		return POSOrderAndPaymentId.of(POSOrderId.ofRepoId(record.getC_POS_Order_ID()), POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()));
 	}
 
 	/**
