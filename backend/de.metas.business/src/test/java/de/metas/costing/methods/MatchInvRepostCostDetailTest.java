@@ -188,7 +188,7 @@ public class MatchInvRepostCostDetailTest
 	private void seedThreeLegsAsFreshPosting()
 	{
 		final CostDetailCreateRequest request = matchInvRequest();
-		final CurrentCost currentCost = handlerUtils.getCurrentCost(request);
+		final CurrentCost currentCost = handlerUtils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts prev = CostDetailPreviousAmounts.of(currentCost);
 
 		costDetailService.createCostDetailRecordNoCostsChanged(
@@ -279,7 +279,7 @@ public class MatchInvRepostCostDetailTest
 				.date(instant("2020-08-13"))
 				.build();
 
-		final CurrentCost currentCost = handlerUtils.getCurrentCost(request);
+		final CurrentCost currentCost = handlerUtils.getCurrentCostForUpdate(request);
 		costDetailService.createCostDetailRecordNoCostsChanged(
 				request.withAmountAndType(eur(INVOICED_AMT), CostAmountType.MAIN),
 				CostDetailPreviousAmounts.of(currentCost));
