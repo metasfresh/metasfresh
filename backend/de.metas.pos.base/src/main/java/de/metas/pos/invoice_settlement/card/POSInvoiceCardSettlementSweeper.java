@@ -34,7 +34,9 @@ import java.util.stream.Stream;
  * was refunded, right before step B allocates ({@link POSInvoiceCardSettlementBooking#completeBooking}): outside any
  * transaction and without a lock held, only while the terminal's cash journal is open (none while a settlement waits
  * for a journal). So a cycle makes at most one SumUp lookup per settlement whose step B runs in it: a newly approved one,
- * or an APPROVED one retried after a retryable step-B error (at most {@code MAX_BOOKING_ATTEMPTS} times). Each lookup is
+ * or an APPROVED one retried after a retryable step-B error. Such retries end after {@code MAX_BOOKING_ATTEMPTS} counted
+ * attempts; an attempt whose error cannot be recorded because the settlement row is locked elsewhere is not counted, so
+ * while such a lock is held the lookup repeats in every cycle (once per cycle per settlement). Each lookup is
  * bounded by the SumUp client's timeouts, which therefore also delay the poller's next cycle while SumUp hangs.
  * <p>
  * Each settlement is reconciled on its own, in its own transactions, in the settlement's client/org context (the
