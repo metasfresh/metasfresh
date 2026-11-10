@@ -2,6 +2,7 @@ package de.metas.cucumber.stepdefs.costing;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -23,6 +24,11 @@ class CostDetailMatcher
 	@NonNull @Getter private final CostAmountType amtType;
 	@Nullable private final Money amt;
 	@Nullable private final Quantity qty;
+	// expected M_CostDetail.Prev_* (cost state BEFORE the movement); null = not asserted
+	@Nullable private final Money prevCurrentCostPrice;
+	@Nullable private final Quantity prevCurrentQty;
+	@Nullable private final Money prevCumulatedAmt;
+	@Nullable private final Quantity prevCumulatedQty;
 
 	public BooleanWithReason checkValid(@NonNull final CostDetail costDetail)
 	{
@@ -47,6 +53,31 @@ class CostDetailMatcher
 			if (actualQty.compareTo(qty) != 0)
 			{
 				return BooleanWithReason.falseBecause("Invalid qty " + actualQty + ", expected " + qty);
+			}
+		}
+
+		if (prevCurrentCostPrice != null || prevCurrentQty != null || prevCumulatedAmt != null || prevCumulatedQty != null)
+		{
+			final CostDetailPreviousAmounts prev = costDetail.getPreviousAmounts();
+			if (prev == null)
+			{
+				return BooleanWithReason.falseBecause("No Prev_* amounts, expected some");
+			}
+			if (prevCurrentCostPrice != null && !Money.equals(prev.getCostPrice().toCostAmount().toMoney(), prevCurrentCostPrice))
+			{
+				return BooleanWithReason.falseBecause("Invalid Prev_CurrentCostPrice " + prev.getCostPrice().toCostAmount() + ", expected " + prevCurrentCostPrice);
+			}
+			if (prevCurrentQty != null && prev.getQty().compareTo(prevCurrentQty) != 0)
+			{
+				return BooleanWithReason.falseBecause("Invalid Prev_CurrentQty " + prev.getQty() + ", expected " + prevCurrentQty);
+			}
+			if (prevCumulatedAmt != null && !Money.equals(prev.getCumulatedAmt().toMoney(), prevCumulatedAmt))
+			{
+				return BooleanWithReason.falseBecause("Invalid Prev_CumulatedAmt " + prev.getCumulatedAmt() + ", expected " + prevCumulatedAmt);
+			}
+			if (prevCumulatedQty != null && prev.getCumulatedQty().compareTo(prevCumulatedQty) != 0)
+			{
+				return BooleanWithReason.falseBecause("Invalid Prev_CumulatedQty " + prev.getCumulatedQty() + ", expected " + prevCumulatedQty);
 			}
 		}
 

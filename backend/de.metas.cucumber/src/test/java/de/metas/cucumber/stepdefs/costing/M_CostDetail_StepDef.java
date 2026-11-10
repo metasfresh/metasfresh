@@ -70,6 +70,10 @@ public class M_CostDetail_StepDef
 				.amtType(row.getAsOptionalString("AmtType").map(CostAmountType::ofCodeOrName).orElse(CostAmountType.MAIN))
 				.amt(row.getAsOptionalMoney("Amt", moneyService::getCurrencyIdByCurrencyCode).orElse(null))
 				.qty(row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null))
+				.prevCurrentCostPrice(row.getAsOptionalMoney("Prev_CurrentCostPrice", moneyService::getCurrencyIdByCurrencyCode).orElse(null))
+				.prevCurrentQty(row.getAsOptionalQuantity("Prev_CurrentQty", uomDAO::getByX12DE355).orElse(null))
+				.prevCumulatedAmt(row.getAsOptionalMoney("Prev_CumulatedAmt", moneyService::getCurrencyIdByCurrencyCode).orElse(null))
+				.prevCumulatedQty(row.getAsOptionalQuantity("Prev_CumulatedQty", uomDAO::getByX12DE355).orElse(null))
 				.build();
 	}
 }
