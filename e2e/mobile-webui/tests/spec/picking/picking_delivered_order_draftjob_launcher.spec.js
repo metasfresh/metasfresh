@@ -164,10 +164,18 @@ const expectOrderNotInLauncher = async ({ documentNo }) => await test.step(`The 
     throw lastError;
 });
 
+/**
+ * The order must be listed on EVERY one of several re-opens: the schedules' Processed/QtyToDeliver flip after
+ * delivery is asynchronous and not observable from the test API, so a single early look could pass before a
+ * wrongly-excluding guard had any data to act on. TC1 shows that, in this same flow, the flip lands within the
+ * same window.
+ */
 const expectOrderInLauncher = async ({ documentNo, salesOrderId }) => await test.step(`The order ${documentNo} must STILL be in the picking launcher`, async () => {
-    await PickingJobsListScreen.goBack();
-    await openPickingLauncherFor(documentNo);
-    await PickingJobsListScreen.expectJobButtons([{ salesOrderId }]);
+    for (let attempt = 1; attempt <= LAUNCHER_SETTLE_ATTEMPTS; attempt++) {
+        await PickingJobsListScreen.goBack();
+        await openPickingLauncherFor(documentNo);
+        await PickingJobsListScreen.expectJobButtons([{ salesOrderId }]);
+    }
 });
 
 // noinspection JSUnusedLocalSymbols

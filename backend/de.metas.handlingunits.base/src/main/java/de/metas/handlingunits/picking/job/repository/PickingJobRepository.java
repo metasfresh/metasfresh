@@ -181,11 +181,12 @@ public class PickingJobRepository
 
 	/**
 	 * Picking job lines whose shipment schedule still has something to pick.
-	 * Same condition as the "new orders" view {@code M_Packageable_V}: not processed, not closed, and QtyToDeliver or QtyPickList greater than zero.
+	 * Same condition as the "new orders" view {@code M_Packageable_V}: active, not processed, not closed, and QtyToDeliver or QtyPickList greater than zero.
 	 */
 	private IQuery<I_M_Picking_Job_Line> queryLinesWithSomethingToPick()
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> schedulesQueryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
 		schedulesQueryBuilder.addCompositeQueryFilter()
