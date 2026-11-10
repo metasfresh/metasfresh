@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * <ul>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}. A checkout can be held ({@link #holdNextCheckout()}) and answered later ({@link #answerHeldCheckout})</li>
  *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure; an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
- *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 204 or the programmed 4xx; the reader of each request is recorded</li>
+ *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
  * State is static: one stub per JVM, reset between scenarios via {@link #reset()}.
  */
@@ -407,7 +407,8 @@ public final class SumUpApiStub
 		}
 		else
 		{
-			exchange.sendResponseHeaders(204, -1);
+			// SumUp API reference: 202 Accepted, no body
+			exchange.sendResponseHeaders(202, -1);
 			exchange.close();
 		}
 	}

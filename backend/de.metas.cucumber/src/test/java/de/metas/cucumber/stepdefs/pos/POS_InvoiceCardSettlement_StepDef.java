@@ -422,11 +422,11 @@ public class POS_InvoiceCardSettlement_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * And SumUp API stub answers terminate with HTTP 204
+	 * And SumUp API stub answers terminate with HTTP 202
 	 * And SumUp API stub answers terminate with HTTP 4xx
 	 * </pre>
 	 */
-	@And("^SumUp API stub answers terminate with (HTTP 204|HTTP 4xx)$")
+	@And("^SumUp API stub answers terminate with (HTTP 202|HTTP 4xx)$")
 	public void stubAnswersTerminate(@NonNull final String answer)
 	{
 		SumUpApiStub.setTerminateFails("HTTP 4xx".equals(answer));

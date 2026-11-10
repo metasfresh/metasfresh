@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withException;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
@@ -117,6 +119,19 @@ class SumUpClientTest
 		server.expect(requestTo("http://stub/v0.1/merchants/M1/readers/R1/terminate"))
 				.andExpect(method(POST))
 				.andRespond(withSuccess());
+
+		client.terminateCardReaderCheckout(READER_ID);
+
+		server.verify();
+	}
+
+	@Test
+	void terminate_202AcceptedWithoutBody_isSuccess()
+	{
+		// SumUp API reference (readers/terminate-checkout): 202 Accepted, no body
+		server.expect(requestTo("http://stub/v0.1/merchants/M1/readers/R1/terminate"))
+				.andExpect(method(POST))
+				.andRespond(withStatus(HttpStatus.ACCEPTED));
 
 		client.terminateCardReaderCheckout(READER_ID);
 
