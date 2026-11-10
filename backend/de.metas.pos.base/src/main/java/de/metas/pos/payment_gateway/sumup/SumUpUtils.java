@@ -64,6 +64,11 @@ class SumUpUtils
 					? POSPaymentProcessingStatus.DELETED
 					: POSPaymentProcessingStatus.SUCCESSFUL;
 		}
+		else if (SumUpTransactionStatus.REFUNDED.equals(status))
+		{
+			// refunded in full or in part: like a SUCCESSFUL charge with a refund
+			return POSPaymentProcessingStatus.DELETED;
+		}
 		else if (SumUpTransactionStatus.CANCELLED.equals(status))
 		{
 			return POSPaymentProcessingStatus.CANCELLED;
