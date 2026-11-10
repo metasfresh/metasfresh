@@ -111,8 +111,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has 1 AD_Issue
     And the SumUp stub received 1 checkout
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
@@ -126,8 +125,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has 1 AD_Issue
     And the SumUp stub received 0 checkouts
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
   # ##########################################################################
   # No charge is sent, and no settlement is created, when the invoice is no longer open or there is no journal.
@@ -336,8 +334,7 @@ Feature: POS invoice card settlement
 
     Then card settlement settlement1 has status FAILED
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When card settlement settlement2 is started for invoice invoice1 at POS terminal till by cashier metasfresh
     And SumUp API stub reports transaction of card settlement settlement2 as SUCCESSFUL
@@ -398,8 +395,7 @@ Feature: POS invoice card settlement
 
     Then card settlement settlement1 has status CANCELLED
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
     And card settlement settlement1 has 0 AD_Issues
 
   # ##########################################################################
@@ -467,8 +463,7 @@ Feature: POS invoice card settlement
     Then card settlement settlement1 has status FAILED
     And card settlement settlement1 has error message 'refunded at SumUp'
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
       | C_Invoice_ID |
@@ -530,8 +525,7 @@ Feature: POS invoice card settlement
     Then card settlement settlement1 has status FAILED
     And card settlement settlement1 has error message 'refunded at SumUp'
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
       | C_Invoice_ID |
@@ -723,8 +717,7 @@ Feature: POS invoice card settlement
     And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
     And after not more than 1s, card settlement settlement1 has 0 notifications with message 'de.metas.pos.InvoiceCardSettlement.CreditRefundPending'
 
   # ##########################################################################
@@ -788,8 +781,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has 1 AD_Issue
     And the partner of invoice invoice1 has 1 payment
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
     And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
@@ -817,8 +809,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has no payment
     And card settlement settlement1 has 1 AD_Issue
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
     And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
@@ -857,8 +848,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has payment cardPayment
     And the other transaction releases its row lock
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
   # The reader took the money for a settlement metasfresh had already given up on: back office gets exactly one AD_Issue,
   # however often the approval is reported, and nothing is booked.
@@ -1008,8 +998,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has 2 AD_Issues
     And the partner of invoice invoice1 has 1 payment
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
     And the closing summary of the cash journal of POS terminal till shows card total 0 and cash total 50
     And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
       | C_Invoice_ID | CashTenderedAmount |
@@ -1080,8 +1069,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has error message 'SumUp not reachable'
     And card settlement settlement1 has payment cardPayment
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When SumUp API stub answers the status lookup again
     And metasfresh polls SumUp
@@ -1089,8 +1077,7 @@ Feature: POS invoice card settlement
     Then card settlement settlement1 has status BOOKING_ERROR
     And card settlement settlement1 has error message 'refunded at SumUp'
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
@@ -1114,8 +1101,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has error message 'SumUp not reachable'
     And card settlement settlement1 has 2 AD_Issues
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When SumUp API stub answers the status lookup again
     And back office updates the SumUp transaction of card settlement settlement1 from SumUp
@@ -1124,8 +1110,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has error message 'refunded at SumUp'
     And card settlement settlement1 has 3 AD_Issues
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
@@ -1149,8 +1134,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has error message 'SumUp not reachable'
     And card settlement settlement1 has 2 AD_Issues
     And invoice invoice1 has 0 allocation lines
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When card settlement settlement1 is checked
 
@@ -1994,8 +1978,7 @@ Feature: POS invoice card settlement
     And card settlement settlement1 has error message 'refunded at SumUp'
     And card settlement settlement1 has no payment
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
       | C_Invoice_ID |
@@ -2030,8 +2013,7 @@ Feature: POS invoice card settlement
     Then card settlement settlement1 has status ABANDONED and isAbandoned true
     And card settlement settlement1 has no payment
     And nothing is booked for invoice invoice1 and its open amount is 16.07
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
 
     When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
       | C_Invoice_ID |
@@ -2070,8 +2052,7 @@ Feature: POS invoice card settlement
     And validate created invoices
       | C_Invoice_ID | IsPaid |
       | invoice1     | true   |
-    And the cash journal of POS terminal till contains lines:
-      | Type | Amount |
+    And the cash journal of POS terminal till contains no lines
     And card settlement settlement1 has 1 AD_Issue
     And process C_POS_InvoiceCardSettlement_MarkResolvedManually is not available for card settlement settlement1
 

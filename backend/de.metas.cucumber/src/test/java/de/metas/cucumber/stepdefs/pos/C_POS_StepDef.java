@@ -542,6 +542,24 @@ public class C_POS_StepDef
 		}
 	}
 
+	/**
+	 * Asserts that the POS terminal's currently open cash journal has no lines, via {@link POSService#getCurrentCashJournal}
+	 * (e.g. nothing was journaled for a card settlement that was not booked). Fails if the terminal has no open cash journal.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the cash journal of POS terminal till contains no lines
+	 * </pre>
+	 */
+	@And("^the cash journal of POS terminal (\\S+) contains no lines$")
+	public void assertCashJournalHasNoLines(@NonNull final String terminalIdentifier)
+	{
+		final POSCashJournal journal = getCurrentCashJournalOrThrow(terminalIdentifier);
+
+		assertThat(journal.getLines()).as("POS terminal %s cash journal lines", terminalIdentifier).isEmpty();
+	}
+
 	private POSCashJournal getCurrentCashJournalOrThrow(@NonNull final String terminalIdentifier)
 	{
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
