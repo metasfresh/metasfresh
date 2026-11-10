@@ -4,6 +4,11 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
+import de.metas.i18n.BooleanWithReason;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -43,6 +48,13 @@ class POSPaymentTest
 				.build();
 	}
 
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		POSTestMessages.createCardPaymentResultUnknown();
+	}
+
 	@Test
 	void unknown_notCheckoutableNotDeletableNotVoidable()
 	{
@@ -51,10 +63,26 @@ class POSPaymentTest
 		assertThat(payment.getPaymentProcessingStatus().isUnknown()).isTrue();
 		assertThat(payment.getPaymentProcessingStatus().isAllowCheckout()).isFalse();
 		assertThat(payment.isAllowDelete()).isFalse();
-		assertThat(payment.checkAllowVoid().isFalse()).isTrue();
-		assertThatThrownBy(payment::assertAllowDelete).isInstanceOf(RuntimeException.class);
-		assertThatThrownBy(payment::assertAllowCheckout).isInstanceOf(RuntimeException.class);
-		assertThatThrownBy(() -> payment.changingStatusToDeleted()).isInstanceOf(RuntimeException.class);
+
+		// each refusal tells the cashier why: the result of the card payment is unknown
+		final BooleanWithReason canVoid = payment.checkAllowVoid();
+		assertThat(canVoid.isFalse()).isTrue();
+		assertThat(canVoid.getReasonAsString()).contains(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
+		assertThat(POSPaymentProcessingStatus.UNKNOWN.checkAllowDelete(POSPaymentMethod.CARD).getReasonAsString())
+				.contains(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
+		assertRefusedAsResultUnknown(payment::assertAllowDelete);
+		assertRefusedAsResultUnknown(payment::assertAllowCheckout);
+		assertThatThrownBy(payment::assertAllowCheckout)
+				.extracting(ex -> ((AdempiereException)ex).getErrorCode())
+				.isEqualTo(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
+		assertRefusedAsResultUnknown(payment::changingStatusToDeleted);
+	}
+
+	private static void assertRefusedAsResultUnknown(final ThrowingCallable callable)
+	{
+		assertThatThrownBy(callable)
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
 	}
 
 	@Test

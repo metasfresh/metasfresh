@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.DocTypeId;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -13,11 +14,12 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.user.UserId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import de.metas.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +38,7 @@ class POSOrderTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POSTestMessages.createCardPaymentResultUnknown();
 	}
 
 	@Test
@@ -89,7 +92,9 @@ class POSOrderTest
 		assertThat(order.getOpenAmt().toBigDecimal()).isEqualByComparingTo("0");
 
 		// not removable from the till's order
-		assertThatThrownBy(() -> order.removePaymentsIf(payment -> true)).isInstanceOf(RuntimeException.class);
+		assertThatThrownBy(() -> order.removePaymentsIf(payment -> true))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
 		assertThat(order.getAllPayments()).containsExactly(unknown);
 		assertThat(order.getOpenAmt().toBigDecimal()).isEqualByComparingTo("0");
 
@@ -97,6 +102,8 @@ class POSOrderTest
 		assertThat(order.isPaymentsProcessedSuccessfully()).isFalse();
 
 		// voiding the order (which drops the payment) is refused
-		assertThat(order.checkCanTransitionToVoided().isFalse()).isTrue();
+		final BooleanWithReason canVoid = order.checkCanTransitionToVoided();
+		assertThat(canVoid.isFalse()).isTrue();
+		assertThat(canVoid.getReasonAsString()).contains(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown.toAD_Message());
 	}
 }

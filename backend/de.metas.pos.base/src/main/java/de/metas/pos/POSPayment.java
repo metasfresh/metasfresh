@@ -203,7 +203,7 @@ public class POSPayment
 	 * A late SumUp approval never revives a payment the till already gave up on:
 	 * <ul>
 	 * <li>an event of the released checkout leaves the payment unchanged (a SUCCESSFUL one is flagged: not booked, to be reviewed);</li>
-	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged and flagged;</li>
+	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged and flagged (a stale SUCCESSFUL event processed after a refund is flagged too: a harmless extra record for the back office);</li>
 	 * <li>PENDING on an UNKNOWN payment keeps it UNKNOWN;</li>
 	 * <li>everything else, including SUCCESSFUL on a plain FAILED / CANCELLED payment, is applied as is.</li>
 	 * </ul>
