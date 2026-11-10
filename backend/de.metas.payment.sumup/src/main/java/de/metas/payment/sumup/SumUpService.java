@@ -24,9 +24,10 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -169,58 +170,106 @@ public class SumUpService
 	 * (e.g. because saving it failed right after the checkout, see {@link SumUpCallException#getClientTransactionId()}).
 	 * <p>
 	 * No-op if a transaction with that client transaction id exists (it is returned). Otherwise the transaction is looked
-	 * up at SumUp and saved with the given POS reference, which fires the status change event. A failed lookup, or an
-	 * unknown id, saves nothing; the failure is returned, and not recorded as AD_Issue (the caller reports an outage once).
+	 * up at SumUp and saved with the given POS reference, which fires the status change event. The outcome of the lookup is
+	 * told by the result: the transaction, {@link SumUpImportResult#isNotFound() not found} (SumUp does not know the id,
+	 * nothing saved) or a {@link SumUpImportResult#getLookupError() lookup error}, e.g. an outage (nothing saved). A lookup
+	 * failure is not recorded as AD_Issue: the caller reports an outage once. Any other failure (config, saving) is thrown.
 	 * <p>
-	 * The client and org of the new transaction are taken from the current context, see {@link SumUpContext}.
+	 * Safe against a concurrent import of the same id: the database allows one transaction per client transaction id, and
+	 * the loser of the race returns the winner's transaction.
 	 */
 	public SumUpImportResult importAcceptedCheckout(
 			@NonNull final SumUpConfigId configId,
 			@NonNull final SumUpClientTransactionId clientTransactionId,
 			@NonNull final SumUpPOSRef posRef,
-			@NonNull final SumUpCardReaderExternalId cardReaderId)
+			@NonNull final SumUpCardReaderExternalId cardReaderId,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final List<SumUpTransaction> existingTrxs = trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId));
-		if (!existingTrxs.isEmpty())
+		final SumUpTransaction existingTrx = retrieveByClientTransactionIdOrNull(clientTransactionId);
+		if (existingTrx != null)
 		{
-			return SumUpImportResult.ofTransaction(existingTrxs.get(0));
+			return SumUpImportResult.ofTransaction(existingTrx);
 		}
 
+		final SumUpConfig config = configRepository.getById(configId);
+		final SumUpCardReader cardReader = config.getCardReaderById(cardReaderId);
+		final SumUpClient client = clientFactory.newClient(config);
+		client.setPosRef(posRef);
+		client.setCreateIssueOnError(false);
+
+		final JsonGetTransactionResponse remoteTrx;
 		try
 		{
-			final SumUpConfig config = configRepository.getById(configId);
-			final SumUpClient client = clientFactory.newClient(config);
-			client.setPosRef(posRef);
-			client.setCreateIssueOnError(false);
-
-			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(clientTransactionId);
-			final SumUpCardReader cardReader = config.getCardReaderById(cardReaderId);
-
-			final SumUpTransaction trx = updateTransactionFromRemote(
-					SumUpTransaction.builder()
-							.configId(configId)
-							.externalId(remoteTrx.getId())
-							.clientTransactionId(clientTransactionId)
-							.merchantCode(config.getMerchantCode())
-							.cardReader(SumUpTransaction.CardReader.builder()
-									.externalId(cardReader.getExternalId())
-									.name(cardReader.getName())
-									.build())
-							.timestamp(Instant.parse(remoteTrx.getTimestamp()))
-							.status(SumUpTransactionStatus.ofString(remoteTrx.getStatus()))
-							.amount(Amount.of(remoteTrx.getAmount(), remoteTrx.getCurrency()))
-							.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
-							.posRef(posRef)
-							.build(),
-					remoteTrx);
-			trxRepository.saveNew(trx);
-			return SumUpImportResult.ofTransaction(trx);
+			remoteTrx = client.getTransactionById(clientTransactionId);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Could not import SumUp transaction {}; nothing saved", clientTransactionId, ex);
-			return SumUpImportResult.ofLookupError(ex);
+			logger.warn("Could not get SumUp transaction {} from SumUp; nothing imported", clientTransactionId, ex);
+			return isNotFound(ex) ? SumUpImportResult.notFound() : SumUpImportResult.ofLookupError(ex);
 		}
+
+		final SumUpTransaction trx = toSumUpTransaction(remoteTrx, config, cardReader, posRef, clientAndOrgId);
+		try
+		{
+			trxRepository.saveNew(trx);
+		}
+		catch (final Exception ex)
+		{
+			// a concurrent import may have saved it meanwhile (unique index): then that one is the result
+			final SumUpTransaction concurrentTrx = retrieveByClientTransactionIdOrNull(clientTransactionId);
+			if (concurrentTrx == null)
+			{
+				throw ex;
+			}
+			logger.info("SumUpTransaction {} was imported concurrently; using it", clientTransactionId, ex);
+			return SumUpImportResult.ofTransaction(concurrentTrx);
+		}
+		return SumUpImportResult.ofTransaction(trx);
+	}
+
+	@Nullable
+	private SumUpTransaction retrieveByClientTransactionIdOrNull(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		final List<SumUpTransaction> trxs = trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId));
+		return trxs.isEmpty() ? null : trxs.get(0);
+	}
+
+	/**
+	 * @return true if SumUp answered that it does not know the transaction (HTTP 404), as opposed to a failure of the call
+	 */
+	private static boolean isNotFound(@NonNull final Exception ex)
+	{
+		return ex instanceof SumUpCallException
+				&& ex.getCause() instanceof HttpClientErrorException
+				&& ((HttpClientErrorException)ex.getCause()).getStatusCode() == HttpStatus.NOT_FOUND;
+	}
+
+	private static SumUpTransaction toSumUpTransaction(
+			@NonNull final JsonGetTransactionResponse remote,
+			@NonNull final SumUpConfig config,
+			@NonNull final SumUpCardReader cardReader,
+			@NonNull final SumUpPOSRef posRef,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return SumUpTransaction.builder()
+				.configId(config.getId())
+				.externalId(remote.getId())
+				.clientTransactionId(remote.getClient_transaction_id())
+				.merchantCode(remote.getMerchant_code())
+				.cardReader(SumUpTransaction.CardReader.builder()
+						.externalId(cardReader.getExternalId())
+						.name(cardReader.getName())
+						.build())
+				.timestamp(Instant.parse(remote.getTimestamp()))
+				.status(SumUpTransactionStatus.ofString(remote.getStatus()))
+				.amount(Amount.of(remote.getAmount(), remote.getCurrency()))
+				.amountRefunded(Amount.of(remote.getAmountRefunded(), remote.getCurrency()))
+				.card(extractSumUpTransactionCard(remote.getCard()))
+				.json(remote.getJson())
+				.lastSync(LastSync.ok())
+				.clientAndOrgId(clientAndOrgId)
+				.posRef(posRef)
+				.build();
 	}
 
 	public void terminateCardReaderCheckout(@NonNull final SumUpConfigId configId, @NonNull final SumUpCardReaderExternalId cardReaderId)

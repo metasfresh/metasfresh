@@ -74,10 +74,17 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 
 			// only a failed SumUp call can leave the outcome unknown; anything else (e.g. config error before the call) is definite
 			final boolean isIndeterminate = ex instanceof SumUpCallException && !((SumUpCallException)ex).isDefiniteRejection();
-			final SumUpClientTransactionId clientTransactionId = ex instanceof SumUpCallException ? ((SumUpCallException)ex).getClientTransactionId() : null;
-			return isIndeterminate
-					? POSPaymentProcessResponse.errorIndeterminate(request.getPaymentProcessorConfig(), errorMessage, errorId, clientTransactionId != null ? clientTransactionId.getAsString() : null)
-					: POSPaymentProcessResponse.error(request.getPaymentProcessorConfig(), errorMessage, errorId);
+			if (!isIndeterminate)
+			{
+				return POSPaymentProcessResponse.error(request.getPaymentProcessorConfig(), errorMessage, errorId);
+			}
+
+			final SumUpClientTransactionId clientTransactionId = ((SumUpCallException)ex).getClientTransactionId();
+			return POSPaymentProcessResponse.errorIndeterminate(
+					request.getPaymentProcessorConfig(),
+					errorMessage,
+					errorId,
+					clientTransactionId != null ? clientTransactionId.getAsString() : null);
 		}
 	}
 

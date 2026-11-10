@@ -1,32 +1,36 @@
 package de.metas.payment.sumup;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.organization.ClientAndOrgId;
-import org.compiere.util.Env;
 import de.metas.error.IErrorManager;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.client.SumUpClient;
 import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.payment.sumup.repository.SumUpLogRepository;
 import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
-import com.google.common.collect.ImmutableList;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import java.time.Instant;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
@@ -34,6 +38,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
  */
 class SumUpServiceImportTest
 {
+	private static final ClientAndOrgId CLIENT_AND_ORG_ID = ClientAndOrgId.ofClientAndOrg(7, 8);
 	private static final String BASE_URL = "http://stub/v0.1";
 	private static final SumUpConfigId CONFIG_ID = SumUpConfigId.ofRepoId(1);
 	private static final SumUpCardReaderExternalId READER_ID = SumUpCardReaderExternalId.ofString("R1");
@@ -87,19 +92,35 @@ class SumUpServiceImportTest
 				+ "\"card\":{\"type\":\"VISA\",\"last_4_digits\":\"1234\"}}";
 	}
 
+	private static SumUpTransaction newExistingTrx()
+	{
+		return SumUpTransaction.builder()
+				.configId(CONFIG_ID)
+				.externalId(SumUpTransactionExternalId.ofString("ext-existing"))
+				.clientTransactionId(CLIENT_TRX_ID)
+				.merchantCode(SumUpMerchantCode.ofString("M1"))
+				.timestamp(Instant.parse("2026-11-10T09:00:00Z"))
+				.status(SumUpTransactionStatus.PENDING)
+				.amount(Amount.of("12.50", CurrencyCode.EUR))
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.posRef(POS_REF)
+				.build();
+	}
+
 	@Test
 	void import_savesRowWithPOSRefAndRemoteStatus()
 	{
 		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
 		server.expect(requestTo(GET_TRX_URL)).andRespond(withSuccess(remoteTrxJson("SUCCESSFUL"), MediaType.APPLICATION_JSON));
 
-		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID);
+		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
 
 		final ArgumentCaptor<SumUpTransaction> saved = ArgumentCaptor.forClass(SumUpTransaction.class);
 		Mockito.verify(trxRepository).saveNew(saved.capture());
 		assertThat(result.getLookupError()).isNull();
 		assertThat(result.getTransaction()).isSameAs(saved.getValue());
 		assertThat(saved.getValue().getPosRef()).isEqualTo(POS_REF);
+		assertThat(saved.getValue().getClientAndOrgId()).isEqualTo(CLIENT_AND_ORG_ID);
 		assertThat(saved.getValue().getClientTransactionId()).isEqualTo(CLIENT_TRX_ID);
 		assertThat(saved.getValue().getExternalId()).isEqualTo(SumUpTransactionExternalId.ofString("ext-1"));
 		assertThat(saved.getValue().getStatus()).isEqualTo(SumUpTransactionStatus.SUCCESSFUL);
@@ -110,20 +131,10 @@ class SumUpServiceImportTest
 	@Test
 	void import_noOpWhenRowExists()
 	{
-		final SumUpTransaction existing = SumUpTransaction.builder()
-				.configId(CONFIG_ID)
-				.externalId(SumUpTransactionExternalId.ofString("ext-existing"))
-				.clientTransactionId(CLIENT_TRX_ID)
-				.merchantCode(SumUpMerchantCode.ofString("M1"))
-				.timestamp(Instant.parse("2026-11-10T09:00:00Z"))
-				.status(SumUpTransactionStatus.PENDING)
-				.amount(Amount.of("12.50", CurrencyCode.EUR))
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
-				.posRef(POS_REF)
-				.build();
+		final SumUpTransaction existing = newExistingTrx();
 		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of(existing));
 
-		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID);
+		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
 
 		assertThat(result.getTransaction()).isSameAs(existing);
 		assertThat(result.getLookupError()).isNull();
@@ -137,10 +148,64 @@ class SumUpServiceImportTest
 		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
 		server.expect(requestTo(GET_TRX_URL)).andRespond(withServerError());
 
-		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID);
+		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
 
 		assertThat(result.getTransaction()).isNull();
 		assertThat(result.getLookupError()).isInstanceOf(SumUpCallException.class);
 		Mockito.verify(trxRepository, Mockito.never()).saveNew(Mockito.any());
+		server.verify();
+	}
+
+	@Test
+	void import_unknownId404_savesNothing_returnsNotFound()
+	{
+		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
+
+		assertThat(result.isNotFound()).isTrue();
+		assertThat(result.getTransaction()).isNull();
+		assertThat(result.getLookupError()).isNull();
+		Mockito.verify(trxRepository, Mockito.never()).saveNew(Mockito.any());
+		server.verify();
+	}
+
+	@Test
+	void import_saveFails_isThrown_notReportedAsLookupError()
+	{
+		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
+		Mockito.doThrow(new DBException("insert failed")).when(trxRepository).saveNew(Mockito.any());
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withSuccess(remoteTrxJson("SUCCESSFUL"), MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID))
+				.isInstanceOf(DBException.class)
+				.hasMessageContaining("insert failed");
+	}
+
+	@Test
+	void import_unknownCardReader_isThrown_notReportedAsLookupError()
+	{
+		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
+
+		assertThatThrownBy(() -> service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, SumUpCardReaderExternalId.ofString("R-gone"), CLIENT_AND_ORG_ID))
+				.isInstanceOf(AdempiereException.class);
+		Mockito.verify(trxRepository, Mockito.never()).saveNew(Mockito.any());
+	}
+
+	@Test
+	void import_concurrentImportWonTheRace_returnsTheWinnersTransaction()
+	{
+		final SumUpTransaction winner = newExistingTrx();
+		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID)))
+				.thenReturn(ImmutableList.of())
+				.thenReturn(ImmutableList.of(winner));
+		Mockito.doThrow(new DBException("duplicate key value violates unique constraint")).when(trxRepository).saveNew(Mockito.any());
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withSuccess(remoteTrxJson("SUCCESSFUL"), MediaType.APPLICATION_JSON));
+
+		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
+
+		assertThat(result.getTransaction()).isSameAs(winner);
+		assertThat(result.getLookupError()).isNull();
 	}
 }
