@@ -612,6 +612,7 @@ public class C_OrderLine_StepDef
 	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
 	 *     <li>{@code C_Flatrate_Term_ID}, {@code QtyEntered}, {@code M_HU_PI_Item_Product_ID},
 	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID}, {@code Description} — optional,
+	 *         {@code IsAllowSeparateInvoicing} — optional,
 	 *         each is applied only when the column is present</li>
 	 *     <li>{@code AsUIAction} — optional, defaults to {@code N}</li>
 	 *   </ul>
@@ -791,6 +792,12 @@ public class C_OrderLine_StepDef
 					.orElseGet(() -> Integer.parseInt(asiIdentifier));
 
 			orderLine.setM_AttributeSetInstance_ID(asiId);
+		}
+
+		final String isAllowSeparateInvoicing = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_IsAllowSeparateInvoicing);
+		if (Check.isNotBlank(isAllowSeparateInvoicing))
+		{
+			orderLine.setIsAllowSeparateInvoicing(StringUtils.toBoolean(isAllowSeparateInvoicing));
 		}
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);

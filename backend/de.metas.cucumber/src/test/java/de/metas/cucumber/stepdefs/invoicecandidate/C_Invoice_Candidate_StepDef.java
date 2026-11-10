@@ -46,6 +46,13 @@ import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.document.DocTypeId;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocuments;
+import de.metas.document.references.related_documents.RelatedDocumentsEvaluationContext;
+import de.metas.document.references.related_documents.RelatedDocumentsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.invoice.InvoiceId;
@@ -83,6 +90,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -116,12 +124,14 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -181,6 +191,7 @@ public class C_Invoice_Candidate_StepDef
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -882,6 +893,145 @@ public class C_Invoice_Candidate_StepDef
 				.toCommaSeparatedList()
 				.forEach(identifier -> invoiceCandidateIds.add(invoiceCandTable.getId(identifier).getRepoId())));
 
+		return executeInvoicingProcess(invoiceCandidateIds);
+	}
+
+	/**
+	 * The "related documents" entries of the shipment that open {@code C_Invoice_Candidate}s, as the WebUI shows them:
+	 * the backend publishes every reference (no "seen window" tracking), the frontend merges references with the same
+	 * key (target window + category) and keeps the one with the higher priority
+	 * (see {@code DocumentReferencesRestController#evaluateAndPublishNow} and {@code frontend/src/utils/documentReferencesHelper.js}).
+	 */
+	private Map<RelatedDocumentsTargetWindow, RelatedDocuments> retrieveInvoiceCandidateEntriesOpenedFromShipment(@NonNull final String shipmentIdentifier)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.allowAll();
+		final RelatedDocumentsEvaluationContext context = RelatedDocumentsEvaluationContext.builder()
+				.permissions(permissions)
+				.doNotTrackSeenWindows(true)
+				.build();
+
+		final Map<RelatedDocumentsTargetWindow, RelatedDocuments> entriesByKey = new LinkedHashMap<>();
+		relatedDocumentsFactory
+				.getRelatedDocumentsCandidates(POZoomSource.of(InterfaceWrapperHelper.getPO(shipment)), permissions)
+				.stream()
+				.flatMap(candidateGroup -> candidateGroup.evaluateAndStream(context))
+				.filter(relatedDocuments -> I_C_Invoice_Candidate.Table_Name.equals(relatedDocuments.getQuery().getTableName()))
+				.forEach(relatedDocuments -> entriesByKey.merge(
+						relatedDocuments.getTargetWindow(),
+						relatedDocuments,
+						(existing, toAdd) -> toAdd.getPriority().isHigherThan(existing.getPriority()) ? toAdd : existing));
+		return entriesByKey;
+	}
+
+	/** The C_Invoice_Candidate_IDs the user sees in the "related documents" entries of the shipment. */
+	private List<Integer> retrieveInvoiceCandidateIdsOpenedFromShipment(@NonNull final String shipmentIdentifier)
+	{
+		return retrieveInvoiceCandidateEntriesOpenedFromShipment(shipmentIdentifier)
+				.values()
+				.stream()
+				.flatMap(relatedDocuments -> queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+						.filter(TypedSqlQueryFilter.<I_C_Invoice_Candidate>of(relatedDocuments.getQuery().getWhereClause()))
+						.create()
+						.listIds()
+						.stream())
+				.distinct()
+				.sorted()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that the invoice candidates the WebUI lists in the shipment's "related documents"
+	 * (after the frontend merge of entries with the same target window and category) are exactly the given ones.
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref, comma-separated list allowed) the expected invoice candidates<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_Invoice_Candidate_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the related invoice candidates of shipment "shipment1" are:
+	 *   | C_Invoice_Candidate_ID |
+	 *   | ic_G1, ic_G2           |
+	 * </pre>
+	 */
+	@Then("the related invoice candidates of shipment {string} are:")
+	public void related_invoice_candidates_of_shipment_are(@NonNull final String shipmentIdentifier, @NonNull final DataTable dataTable)
+	{
+		final Set<Integer> expected = new TreeSet<>();
+		DataTableRows.of(dataTable).forEach(row -> row
+				.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
+				.toCommaSeparatedList()
+				.forEach(identifier -> expected.add(invoiceCandTable.getId(identifier).getRepoId())));
+
+		assertThat(new TreeSet<>(retrieveInvoiceCandidateIdsOpenedFromShipment(shipmentIdentifier)))
+				.as("C_Invoice_Candidates listed in the related documents of shipment " + shipmentIdentifier)
+				.isEqualTo(expected);
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts how many related-documents entries (distinct target window + category, after the
+	 * frontend merge) open invoice candidates for the shipment.
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then shipment "shipment1" has 1 related documents entry to the invoice candidates
+	 * </pre>
+	 */
+	@Then("shipment {string} has {int} related documents entry/entries to the invoice candidates")
+	public void shipment_has_n_related_documents_entries_to_invoice_candidates(@NonNull final String shipmentIdentifier, final int expectedCount)
+	{
+		assertThat(retrieveInvoiceCandidateEntriesOpenedFromShipment(shipmentIdentifier))
+				.as("related documents entries to C_Invoice_Candidate of shipment " + shipmentIdentifier)
+				.hasSize(expectedCount);
+	}
+
+	private boolean lastInvoicingRunWasError;
+
+	/** Invoices what the user selects after opening the invoice candidates from the shipment's related documents. Records the outcome, asserts nothing. */
+	@When("run the invoicing process for the invoice candidates opened from the shipment {string}")
+	public void run_invoicing_process_for_shipment_candidates(@NonNull final String shipmentIdentifier)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(retrieveInvoiceCandidateIdsOpenedFromShipment(shipmentIdentifier));
+		lastInvoicingRunWasError = result.isError();
+		lastInvoicingRunSummary = result.getSummary();
+		logger.info("INVOICING RUN FROM SHIPMENT {}: isError={}, summary={}", shipmentIdentifier, lastInvoicingRunWasError, lastInvoicingRunSummary);
+	}
+
+	/**
+	 * @cucumber.stepdef Invoices only the invoice candidates the user ticks (partial selection) and records the outcome, asserts nothing.
+	 * Follow with {@code the invoicing run failed} / {@code the invoicing run succeeded}.
+	 * @cucumber.depends StepDefData: C_Invoice_Candidate_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When run the invoicing process for the invoice candidates "ic_G1, ic_bonus"
+	 * </pre>
+	 */
+	@When("run the invoicing process for the invoice candidates {string}")
+	public void run_invoicing_process_for_invoice_candidates(@NonNull final String invoiceCandidateIdentifiers)
+	{
+		final List<Integer> ids = StepDefDataIdentifier.ofCommaSeparatedString(invoiceCandidateIdentifiers)
+				.stream()
+				.map(identifier -> invoiceCandTable.getId(identifier).getRepoId())
+				.collect(ImmutableList.toImmutableList());
+		final ProcessExecutionResult result = executeInvoicingProcess(ids);
+		lastInvoicingRunWasError = result.isError();
+		lastInvoicingRunSummary = result.getSummary();
+		logger.info("INVOICING RUN FOR {}: isError={}, summary={}", invoiceCandidateIdentifiers, lastInvoicingRunWasError, lastInvoicingRunSummary);
+	}
+
+	@Then("the invoicing run failed")
+	public void invoicing_run_failed()
+	{
+		assertThat(lastInvoicingRunWasError).as("invoicing run isError; summary=" + lastInvoicingRunSummary).isTrue();
+	}
+
+	@Then("the invoicing run succeeded")
+	public void invoicing_run_succeeded()
+	{
+		assertThat(lastInvoicingRunWasError).as("invoicing run isError; summary=" + lastInvoicingRunSummary).isFalse();
+	}
+
+	private ProcessExecutionResult executeInvoicingProcess(@NonNull final List<Integer> invoiceCandidateIds)
+	{
 		Check.assumeNotEmpty(invoiceCandidateIds, "at least one C_Invoice_Candidate_ID.Identifier is required");
 
 		final AdProcessId processId = Services.get(IADProcessDAO.class)
