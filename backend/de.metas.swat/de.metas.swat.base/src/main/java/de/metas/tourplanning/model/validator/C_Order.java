@@ -65,9 +65,7 @@ public class C_Order
 			I_C_Order.COLUMNNAME_DatePromised,
 			I_C_Order.COLUMNNAME_PreparationDate,
 			I_C_Order.COLUMNNAME_DateOrdered,
-			I_C_Order.COLUMNNAME_M_Shipper_ID,
-			I_C_Order.COLUMNNAME_IsFixedDatePromised,
-			I_C_Order.COLUMNNAME_IsFixedPreparationDate })
+			I_C_Order.COLUMNNAME_M_Shipper_ID })
 	public void setPreparationDate(final I_C_Order order, final int timing)
 	{
 		// Forward trigger for DatePromised = workday(DateOrdered, +leadTime).
@@ -101,15 +99,18 @@ public class C_Order
 			return;
 		}
 
-		// (Re)derive PreparationDate + tour only when a column that DRIVES it changed: the delivery location, the
-		// DatePromised (including one the forward calc above just set), or an explicitly cleared PreparationDate.
-		// A bare DateOrdered / M_Shipper_ID change on a no-lead-time order must NOT re-run the tour/fallback recompute
-		// (AC5a: no-lead-time behaviour unchanged); those columns are watched only to drive the forward lead-time calc
-		// above, which in turn marks DatePromised changed when it applies.
+		// (Re)derive PreparationDate + tour only when something that DRIVES it changed:
+		//  - a classic driving column: delivery location, DatePromised (incl. one the forward calc above just set),
+		//    or an explicitly cleared PreparationDate — this is the only path for a no-lead-time order, so a bare
+		//    DateOrdered / M_Shipper_ID change on such an order does NOT re-run the tour/fallback recompute
+		//    (AC5a: no-lead-time behaviour unchanged);
+		//  - OR a forward trigger (DateOrdered / M_Shipper_ID changed, or a new order) on a LEAD-TIME order: then the
+		//    backward lead-time derivation must run even if DatePromised did not move (e.g. IsFixedDatePromised='Y',
+		//    where the pinned DatePromised stays but the new route's lead time shifts PreparationDate).
 		final boolean preparationDrivingColumnChanged = isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
 				|| isValueChanged(order, I_C_Order.COLUMNNAME_DatePromised)
 				|| isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate);
-		if (!preparationDrivingColumnChanged)
+		if (!preparationDrivingColumnChanged && !(isForwardTrigger && orderDeliveryDayBL.hasLeadTime(order)))
 		{
 			return;
 		}

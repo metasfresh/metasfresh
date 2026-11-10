@@ -151,6 +151,12 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		return datePromised != null && !datePromised.equals(SystemTime.asDayTimestamp());
 	}
 
+	@Override
+	public boolean hasLeadTime(@NonNull final I_C_Order order)
+	{
+		return order.isSOTrx() && getLeadTimeDaysOrNull(order) != null;
+	}
+
 	/**
 	 * Sets {@code PreparationDate = workday(DatePromised, min(-leadTimeDays + 1, 0))} (Mon-Fri business days).
 	 * The backward step is clamped to {@code <= 0} so a 0 or negative lead time never pushes PreparationDate

@@ -199,3 +199,35 @@ Feature: Tour planning — shipper lead-time edge cases (weekend straddle, fix-f
     Then validate the created orders
       | Identifier | DateOrdered | DatePromised | PreparationDate |
       | so         | 2026-08-10  | 2026-08-10   | 2026-08-10      |
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @Id:S28993_TC12
+  Scenario: IsFixedDatePromised=Y — changing the route recomputes PreparationDate from the pinned DatePromised
+    ## DatePromised is pinned (IsFixedDatePromised=Y), so changing the shipper does not move it; but the provisioning
+    ## date must still shift to the new route's lead time: PreparationDate = workday(DatePromised, -newLeadTime + 1).
+    Given temporarily set sys config boolean value true for sys config 'de.metas.tourplanning.LeadTimeForwardCalc.Enabled'
+    And contains M_Shippers
+      | Identifier  | LeadTimeDays |
+      | shipperFast | 2            |
+      | shipperSlow | 7            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | M_PricingSystem_ID | C_BPartner_Location_ID | M_Shipper_ID | IsFixedDatePromised |
+      | so         | Y       | customer      | 2026-08-10  | 2026-08-21Z  | ps                 | customerLocation       | shipperFast  | Y                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol        | so         | product      | 10         |
+    And validate the created orders
+      | Identifier | DateOrdered | DatePromised | PreparationDate |
+      | so         | 2026-08-10  | 2026-08-21   | 2026-08-20      |
+
+    When update order
+      | C_Order_ID | M_Shipper_ID |
+      | so         | shipperSlow  |
+
+    Then validate the created orders
+      | Identifier | DateOrdered | DatePromised | PreparationDate |
+      | so         | 2026-08-10  | 2026-08-21   | 2026-08-13      |

@@ -54,6 +54,14 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	boolean isDatePromisedSuppliedAtCreation(@NonNull I_C_Order order);
 
 	/**
+	 * Whether the shipper lead-time path applies to this order, i.e. it is a sales order whose shipper carries a
+	 * {@code LeadTimeDays} (0 counts; only a NULL lead time is "no lead time"). Used by the interceptor to decide
+	 * whether a DateOrdered / M_Shipper_ID change must re-derive PreparationDate from the lead time even when
+	 * DatePromised itself did not move (e.g. IsFixedDatePromised='Y').
+	 */
+	boolean hasLeadTime(@NonNull I_C_Order order);
+
+	/**
 	 * Resolves the per-line preparation date for the shipment-schedule provider: if
 	 * {@code C_OrderLine.PreparationDate} is set (normally the derived value written back by
 	 * {@link #setLinePreparationDate}) it is returned as-is; otherwise it is derived fresh from the given
