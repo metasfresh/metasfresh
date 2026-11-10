@@ -79,10 +79,10 @@ Feature: Recompute Costs - Moving Average Invoice receipts are not counted twice
       | C_OrderLine_ID | M_InOutLine_ID  |
       | so1_l1         | shipment1_line1 |
     Then after not more than 30s, M_CostDetails are found for product product and cost element MovingAverageInvoice
-      | TableName   | Record_ID       | IsSOTrx | Amt     | Qty    | IsChangingCosts |
-      | M_InOutLine | receipt1_line1  | N       | 50 CHF  | 10 PCE | Y               |
-      | M_InOutLine | receipt2_line1  | N       | 70 CHF  | 10 PCE | Y               |
-      | M_InOutLine | shipment1_line1 | Y       | -30 CHF | -5 PCE | Y               |
+      | TableName   | Record_ID       | IsSOTrx | Amt     | Qty    | IsChangingCosts | Prev_CurrentCostPrice | Prev_CurrentQty | Prev_CumulatedAmt | Prev_CumulatedQty |
+      | M_InOutLine | receipt1_line1  | N       | 50 CHF  | 10 PCE | Y               | 0 CHF                 | 0 PCE           | 0 CHF             | 0 PCE             |
+      | M_InOutLine | receipt2_line1  | N       | 70 CHF  | 10 PCE | Y               | 5 CHF                 | 10 PCE          | 50 CHF            | 10 PCE            |
+      | M_InOutLine | shipment1_line1 | Y       | -30 CHF | -5 PCE | Y               | 6 CHF                 | 20 PCE          | 120 CHF           | 20 PCE            |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 6 CHF            | 15 PCE     | 90 CHF       |
@@ -95,11 +95,11 @@ Feature: Recompute Costs - Moving Average Invoice receipts are not counted twice
       | invStart       | acctSchema      | M             |
     And after not more than 120s, the repost queue is drained
     Then after not more than 60s, M_CostDetails are found for product product and cost element MovingAverageInvoice
-      | TableName       | Record_ID       | IsSOTrx | Amt     | Qty    | IsChangingCosts |
-      | M_InOutLine     | receipt1_line1  | N       | 50 CHF  | 10 PCE | Y               |
-      | M_InOutLine     | receipt2_line1  | N       | 70 CHF  | 10 PCE | Y               |
-      | M_InOutLine     | shipment1_line1 | Y       | -30 CHF | -5 PCE | Y               |
-      | M_InventoryLine | invStart_l1     | N       | 0 CHF   | 0 PCE  | Y               |
+      | TableName       | Record_ID       | IsSOTrx | Amt     | Qty    | IsChangingCosts | Prev_CurrentCostPrice | Prev_CurrentQty | Prev_CumulatedAmt | Prev_CumulatedQty |
+      | M_InOutLine     | receipt1_line1  | N       | 50 CHF  | 10 PCE | Y               | 0 CHF                 | 0 PCE           | 0 CHF             | 0 PCE             |
+      | M_InOutLine     | receipt2_line1  | N       | 70 CHF  | 10 PCE | Y               | 5 CHF                 | 10 PCE          | 50 CHF            | 10 PCE            |
+      | M_InOutLine     | shipment1_line1 | Y       | -30 CHF | -5 PCE | Y               | 6 CHF                 | 20 PCE          | 120 CHF           | 20 PCE            |
+      | M_InventoryLine | invStart_l1     | N       | 0 CHF   | 0 PCE  | Y               |  |  |  |  |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 6 CHF            | 15 PCE     | 90 CHF       |
