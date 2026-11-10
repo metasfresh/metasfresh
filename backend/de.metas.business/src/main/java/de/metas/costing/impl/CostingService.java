@@ -1,7 +1,6 @@
 package de.metas.costing.impl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Range;
@@ -39,6 +38,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.costrevaluation.CostRevaluationLineId;
@@ -138,6 +138,22 @@ public class CostingService implements ICostingService
 	public Optional<CurrentCost> getCurrentCost(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		return Optional.ofNullable(currentCostsRepo.getOrNull(costSegmentAndElement));
+	}
+
+	@Override
+	public Optional<CostDetailPreviousAmounts> getCostAsOf(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		final Optional<CostDetail> firstDetailAfter = costDetailsService.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
+		if (firstDetailAfter.isPresent())
+		{
+			// That detail's Prev_* IS the state as of asOfDate: the state right before the first movement booked after it.
+			return firstDetailAfter.map(CostDetail::getPreviousAmounts);
+		}
+
+		// Nothing moved after asOfDate, so the live M_Cost row still carries the state as of asOfDate.
+		return getCurrentCost(costSegmentAndElement).map(CostDetailPreviousAmounts::of);
 	}
 
 	@Override
@@ -384,19 +400,22 @@ public class CostingService implements ICostingService
 			throw new AdempiereException("Initial document has no cost details: " + reversalRequest);
 		}
 
-		final ImmutableMap<CostElementId, CostDetail> existingCostDetails = costDetailsService
-				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId())
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						CostDetail::getCostElementId,
-						costDetail -> costDetail));
+		// matched by (costElementId, amtType), NOT costElementId alone: a distribution collector's 3 legs
+		// share one cost element, so a costElementId-keyed map would either return the wrong leg or (once
+		// a repost finds all 3 already persisted) throw on the duplicate key while building the map.
+		final List<CostDetail> existingCostDetailsList = costDetailsService
+				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId());
 
 		final ArrayList<CostDetailCreateResult> costDetailCreateResults = new ArrayList<>();
 
 		for (final CostDetail initialDocCostDetail : initialDocCostDetails)
 		{
 			final CostElementId costElementId = initialDocCostDetail.getCostElementId();
-			final CostDetail existingCostDetail = existingCostDetails.get(costElementId);
+			final CostAmountType amtType = initialDocCostDetail.getAmtType();
+			final CostDetail existingCostDetail = existingCostDetailsList.stream()
+					.filter(existing -> CostElementId.equals(existing.getCostElementId(), costElementId) && existing.getAmtType() == amtType)
+					.findFirst()
+					.orElse(null);
 			if (existingCostDetail != null)
 			{
 				final CostDetailCreateResult result = utils.toCostDetailCreateResult(existingCostDetail);
@@ -566,6 +585,9 @@ public class CostingService implements ICostingService
 	/**
 	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@code M_Cost} to {@code opening} and
 	 * writes one zero-delta anchor {@code M_CostDetail} carrying the same {@code opening} as its {@code Prev_*}.
+	 * <p>
+	 * Canonical definition of the "anchor" term:
+	 * {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
 	 */
 	@Override
 	public void seedCurrentCostFromOpening(

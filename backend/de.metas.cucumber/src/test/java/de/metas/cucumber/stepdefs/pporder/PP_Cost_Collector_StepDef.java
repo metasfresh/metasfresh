@@ -29,15 +29,21 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -50,31 +56,24 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_CostCollectorType;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_DocStatus;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_MovementQty;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_PP_Cost_Collector_ID;
 
+@RequiredArgsConstructor
 public class PP_Cost_Collector_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
-	private final PP_Order_StepDefData ppOrderTable;
-	private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
-	private final M_Product_StepDefData productTable;
-	private final PP_Order_BOMLine_StepDefData bomLineTable;
+	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Order_BOMLine_StepDefData bomLineTable;
 
-	public PP_Cost_Collector_StepDef(
-			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final PP_Cost_Collector_StepDefData ppCostCollectorTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Order_BOMLine_StepDefData bomLineTable)
-	{
-		this.ppOrderTable = ppOrderTable;
-		this.ppCostCollectorTable = ppCostCollectorTable;
-		this.productTable = productTable;
-		this.bomLineTable = bomLineTable;
-	}
 
 	/**
 	 * Loads PP_Cost_Collector records from the database by matching the given DataTable rows,
@@ -97,6 +96,12 @@ public class PP_Cost_Collector_StepDef
 	 *   <li>{@code M_Product_ID.Identifier} — identifier of the product; used to disambiguate when a single PP_Order
 	 *   has multiple cost collectors with the same DocStatus (e.g., one for component issue and one for finished-good
 	 *   receipt). If omitted, only PP_Order_ID and DocStatus are used to match the record.</li>
+	 *   <li>{@code CostCollectorType} — (optional) {@link CostCollectorType} enum name; narrows the match when one
+	 *   PP_Order has several completed cost collectors for the same product.</li>
+	 *   <li>{@code Reversal_ID.Identifier} — (optional) identifier of an already-known PP_Cost_Collector;
+	 *   matches the record whose {@code Reversal_ID} points to it. Needed to tell a reversed cost collector
+	 *   apart from its reversal: both carry the same PP_Order_ID/M_Product_ID/CostCollectorType/DocStatus
+	 *   ('RE'), so those columns alone match two rows.</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -135,6 +140,12 @@ public class PP_Cost_Collector_StepDef
 
 			assertThat(ppCostCollector.getMovementQty()).isEqualTo(movementQty);
 			assertThat(ppCostCollector.getDocStatus()).isEqualTo(status);
+
+			final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+			if (costCollectorTypeName != null)
+			{
+				assertThat(ppCostCollector.getCostCollectorType()).isEqualTo(CostCollectorType.valueOf(costCollectorTypeName).getCode());
+			}
 		}
 	}
 
@@ -169,6 +180,21 @@ public class PP_Cost_Collector_StepDef
 			queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productTable.get(productIdentifier).getM_Product_ID());
 		}
 
+		final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+		if (costCollectorTypeName != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_CostCollectorType, CostCollectorType.valueOf(costCollectorTypeName).getCode());
+		}
+
+		// Disambiguate a reversed cost collector from its reversal: both share PP_Order_ID/M_Product_ID/
+		// CostCollectorType/DocStatus ('RE'), so match the one whose Reversal_ID points to the given record.
+		final String reversalRefIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_PP_Cost_Collector.COLUMNNAME_Reversal_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (reversalRefIdentifier != null)
+		{
+			final I_PP_Cost_Collector reversalRef = ppCostCollectorTable.get(reversalRefIdentifier);
+			queryBuilder.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_Reversal_ID, reversalRef.getPP_Cost_Collector_ID());
+		}
+
 		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBuilder
 				.create()
 				.firstOnlyOptional(I_PP_Cost_Collector.class);
@@ -182,6 +208,25 @@ public class PP_Cost_Collector_StepDef
 		ppCostCollectorTable.put(ppCostCollectorIdentifier, ppCostCollector.get());
 
 		return true;
+	}
+
+	/**
+	 * Reverses (Reverse-Correct) the given PP_Cost_Collector and stores the resulting reversal
+	 * cost collector under a new identifier.
+	 *
+	 * @param identifier identifier of the already-completed PP_Cost_Collector to reverse
+	 * @param reversalIdentifier identifier under which the reversal PP_Cost_Collector is stored
+	 */
+	@And("^the PP_Cost_Collector identified by (.*) is reversed as (.*)$")
+	public void reverseCostCollector(@NonNull final String identifier, @NonNull final String reversalIdentifier)
+	{
+		final I_PP_Cost_Collector costCollector = ppCostCollectorTable.get(identifier);
+		InterfaceWrapperHelper.refresh(costCollector);
+		documentBL.processEx(costCollector, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		final PPCostCollectorId reversalId = PPCostCollectorId.ofRepoId(costCollector.getReversal_ID());
+		final I_PP_Cost_Collector reversal = ppCostCollectorBL.getById(reversalId);
+		ppCostCollectorTable.put(reversalIdentifier, reversal);
 	}
 
 	@And("validate I_PP_Cost_Collector")
