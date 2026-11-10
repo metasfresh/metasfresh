@@ -327,7 +327,7 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
     And shipment "shipment1" has 1 related documents entry to the invoice candidates
 
   @from:cucumber
-  @Id:S33240_TC15f_customerReturn
+  @Id:S33240_TC15f
   Scenario: Customer return keeps its invoice-candidate entry with the candidates of the return
     Given metasfresh contains M_Warehouse:
       | M_Warehouse_ID | IsQualityReturnWarehouse |
@@ -370,7 +370,7 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
     And shipment "customerReturn_CR" has 1 related documents entry to the invoice candidates
 
   @from:cucumber
-  @Id:S33240_TC15f_vendorReturn
+  @Id:S33240_TC15g
   Scenario: Vendor return keeps its invoice-candidate entry with the candidates of the return
     Given load M_Warehouse:
       | Identifier   | Value        |
@@ -525,7 +525,7 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
       | ic_goods2              |
       | ic_goods3              |
       | ic_bonus               |
-    # pins today's behaviour: see the handback for the observed list
+    # today's behaviour: goods1's invoice candidate keeps M_InOut_ID of shipment1, so shipment2 has no direct candidate and nothing is added
     Then shipment "shipment2" has 0 related documents entries to the invoice candidates
 
   @from:cucumber

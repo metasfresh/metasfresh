@@ -883,8 +883,14 @@ public class C_Invoice_Candidate_StepDef
 				.as("the invoicing run must not fail; summary=" + result.getSummary())
 				.isFalse();
 
+		recordInvoicingRun(result, "invoice candidates");
+	}
+
+	private void recordInvoicingRun(@NonNull final ProcessExecutionResult result, @NonNull final String label)
+	{
+		lastInvoicingRunWasError = result.isError();
 		lastInvoicingRunSummary = result.getSummary();
-		logger.info("Invoicing run summary: {}", lastInvoicingRunSummary);
+		logger.info("INVOICING RUN FOR {}: isError={}, summary={}", label, lastInvoicingRunWasError, lastInvoicingRunSummary);
 	}
 
 	private ProcessExecutionResult executeInvoicingProcess(@NonNull final DataTable dataTable)
@@ -986,14 +992,21 @@ public class C_Invoice_Candidate_StepDef
 				.hasSize(expectedCount);
 	}
 
-	/** Invoices what the user selects after opening the invoice candidates from the shipment's related documents. Records the outcome, asserts nothing. */
+	/**
+	 * @cucumber.stepdef Invoices all invoice candidates the user gets when opening the shipment's "related documents"
+	 * entry to the invoice candidates, and records the outcome (asserts nothing).
+	 * Follow with {@code the invoicing run failed} / {@code the invoicing run succeeded}.
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When run the invoicing process for the invoice candidates opened from the shipment "shipment1"
+	 * </pre>
+	 */
 	@When("run the invoicing process for the invoice candidates opened from the shipment {string}")
 	public void run_invoicing_process_for_shipment_candidates(@NonNull final String shipmentIdentifier)
 	{
 		final ProcessExecutionResult result = executeInvoicingProcess(retrieveInvoiceCandidateIdsOpenedFromShipment(shipmentIdentifier));
-		lastInvoicingRunWasError = result.isError();
-		lastInvoicingRunSummary = result.getSummary();
-		logger.info("INVOICING RUN FROM SHIPMENT {}: isError={}, summary={}", shipmentIdentifier, lastInvoicingRunWasError, lastInvoicingRunSummary);
+		recordInvoicingRun(result, "shipment " + shipmentIdentifier);
 	}
 
 	/**
@@ -1013,17 +1026,31 @@ public class C_Invoice_Candidate_StepDef
 				.map(identifier -> invoiceCandTable.getId(identifier).getRepoId())
 				.collect(ImmutableList.toImmutableList());
 		final ProcessExecutionResult result = executeInvoicingProcess(ids);
-		lastInvoicingRunWasError = result.isError();
-		lastInvoicingRunSummary = result.getSummary();
-		logger.info("INVOICING RUN FOR {}: isError={}, summary={}", invoiceCandidateIdentifiers, lastInvoicingRunWasError, lastInvoicingRunSummary);
+		recordInvoicingRun(result, invoiceCandidateIdentifiers);
 	}
 
+	/**
+	 * @cucumber.stepdef Asserts that the last invoicing-process run (started by one of the {@code run the invoicing process ...} steps) ended in error.
+	 * @cucumber.depends Step: a preceding {@code run the invoicing process for ...} step
+	 * @cucumber.example
+	 * <pre>
+	 * Then the invoicing run failed
+	 * </pre>
+	 */
 	@Then("the invoicing run failed")
 	public void invoicing_run_failed()
 	{
 		assertThat(lastInvoicingRunWasError).as("invoicing run isError; summary=" + lastInvoicingRunSummary).isTrue();
 	}
 
+	/**
+	 * @cucumber.stepdef Asserts that the last invoicing-process run (started by one of the {@code run the invoicing process ...} steps) ended without error.
+	 * @cucumber.depends Step: a preceding {@code run the invoicing process for ...} step
+	 * @cucumber.example
+	 * <pre>
+	 * Then the invoicing run succeeded
+	 * </pre>
+	 */
 	@Then("the invoicing run succeeded")
 	public void invoicing_run_succeeded()
 	{
