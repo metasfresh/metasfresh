@@ -1595,6 +1595,25 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
+	 * Asserts how many status lookups ({@code GET /me/transactions}) of the settlement's SumUp transaction the stub
+	 * received in this scenario, whatever they were answered.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the SumUp stub received 1 status lookup for card settlement settlement1
+	 * </pre>
+	 */
+	@And("^the SumUp stub received (\\d+) status lookups? for card settlement (\\S+)$")
+	public void assertStubReceivedStatusLookups(final int expectedCount, @NonNull final String settlementIdentifier)
+	{
+		final SumUpTransaction trx = getSumUpTransaction(loadSettlement(settlementIdentifier).getId());
+		assertThat(SumUpApiStub.getStatusLookupCount(trx.getClientTransactionId().getAsString()))
+				.as("status lookups of the SumUp transaction of card settlement %s received by the SumUp stub", settlementIdentifier)
+				.isEqualTo(expectedCount);
+	}
+
+	/**
 	 * Asserts how many terminate requests the stub received, optionally that each was for the given reader.
 	 *
 	 * @cucumber.stepdef

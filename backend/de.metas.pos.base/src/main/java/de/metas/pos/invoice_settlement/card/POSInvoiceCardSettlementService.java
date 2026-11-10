@@ -285,6 +285,12 @@ public class POSInvoiceCardSettlementService
 	 * <p>
 	 * Never throws: any failure is logged and recorded as an AD_Issue of the settlement, whose status stays as it was, so
 	 * the caller (the SumUp event dispatcher) still notifies its other listeners.
+	 * <p>
+	 * The booking does not ask SumUp again: every status event follows a SumUp lookup that has just stored the
+	 * transaction ({@code SumUpService.updateTransactionFromRemote}: the poller, the SumUp callback, the till's check,
+	 * back office's retry; {@code SumUpService.refundTransaction}; the back-office "update from SumUp" processes, which
+	 * force the event). The one event without a lookup is a new transaction's, at checkout, which is PENDING and books
+	 * nothing.
 	 */
 	public void onSumUpTransactionChanged(@NonNull final POSInvoiceCardSettlementId id)
 	{
@@ -292,7 +298,7 @@ public class POSInvoiceCardSettlementService
 
 		try
 		{
-			reconcileLocally(id);
+			reconcileLocally(id, true);
 		}
 		catch (final Exception ex)
 		{
@@ -358,7 +364,8 @@ public class POSInvoiceCardSettlementService
 	 * Reconciles the settlement with its SumUp transaction as stored locally; used by the SumUp status events, the till's
 	 * check and the background sweep. It decides on the local state; only the booking's step B asks SumUp once more,
 	 * whether the charge was refunded meanwhile, right before it allocates (one lookup, outside any transaction and
-	 * without a lock held, only when a cash journal is open; see {@link POSInvoiceCardSettlementBooking#completeBooking}):
+	 * without a lock held, only when a cash journal is open; see {@link POSInvoiceCardSettlementBooking#completeBooking}),
+	 * unless the caller has just asked SumUp (the status events, see {@link #onSumUpTransactionChanged}; the till's check):
 	 * <ul>
 	 * <li>charged at SumUp (SUCCESSFUL, or REFUNDED since), or the booking was not finished (APPROVED) → booking
 	 * ({@link POSInvoiceCardSettlementBooking#book}, which handles its own booking errors and never books a refunded
@@ -374,8 +381,8 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * @param isSumUpTransactionRefreshed the caller has just refreshed the SumUp transaction from SumUp, so the booking
-	 *                                    does not ask SumUp again
+	 * @param isSumUpTransactionRefreshed the SumUp transaction was just refreshed from SumUp (by the caller, or by the
+	 *                                    lookup that fired the status event), so the booking does not ask SumUp again
 	 */
 	private void reconcileLocally(@NonNull final POSInvoiceCardSettlementId id, final boolean isSumUpTransactionRefreshed)
 	{

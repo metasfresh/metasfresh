@@ -331,8 +331,8 @@ public class POSInvoiceCardSettlementBooking
 	 * the invoice is still open but the payment could not be allocated.
 	 * <p>
 	 * The charge may have been refunded at SumUp since step A created the payment (e.g. while the settlement waited for a
-	 * journal), and the poller does not refresh a successful transaction. So, unless the caller has just done so
-	 * ({@code isSumUpTransactionRefreshed}), the SumUp transaction is refreshed from SumUp before allocating
+	 * journal), and the poller does not refresh a successful transaction. So, unless it was just refreshed
+	 * ({@code isSumUpTransactionRefreshed}: a status event, the till's check, back office's retry), the SumUp transaction is refreshed from SumUp before allocating
 	 * ({@link #refreshSumUpTransactionBeforeAllocating}): one lookup, outside any transaction and without holding a lock, and
 	 * only when a cash journal is open, i.e. when the booking can complete now (never on each retry while the settlement
 	 * waits for a journal). The SumUp client's timeouts apply to it. A failed lookup does not stop the booking: a payment

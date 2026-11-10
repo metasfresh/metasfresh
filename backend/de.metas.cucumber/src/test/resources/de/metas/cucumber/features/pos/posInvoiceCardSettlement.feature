@@ -304,6 +304,23 @@ Feature: POS invoice card settlement
     And the closing summary of the cash journal of POS terminal till shows card total 16.07 and cash total 100
     And card settlement settlement1 has 0 AD_Issues
 
+  # Every SumUp status event follows a SumUp lookup (the poller's, the SumUp callback's, the till's check): the booking
+  # it triggers does not ask SumUp again before allocating.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC1_3
+  Scenario: SumUp's callback reports the approval, so the card payment is booked with that one SumUp lookup
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+
+    When the SumUp transaction of card settlement settlement1 is updated from remote
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And the SumUp stub received 1 status lookup for card settlement settlement1
+
   # ##########################################################################
   # The reader declines or the customer cancels: nothing is booked, and the invoice can be paid again by card or cash.
   @from:cucumber

@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * Endpoints (all below {@code /v0.1}):
  * <ul>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}. A checkout can be held ({@link #holdNextCheckout()}) and answered later ({@link #answerHeldCheckout})</li>
- *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure; an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
+ *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
  * State is static: one stub per JVM, reset between scenarios via {@link #reset()}.
@@ -88,6 +88,8 @@ public final class SumUpApiStub
 	// the reader ids of the terminate requests received, in order
 	private static final List<String> receivedTerminateReaderIds = new ArrayList<>();
 	private static final Map<String, TransactionState> transactionsByClientTransactionId = new LinkedHashMap<>();
+	// the status lookups (GET /me/transactions) received, per client_transaction_id, whatever they were answered
+	private static final Map<String, Integer> statusLookupCountsByClientTransactionId = new HashMap<>();
 
 	private SumUpApiStub() {}
 
@@ -135,6 +137,7 @@ public final class SumUpApiStub
 			receivedCheckouts.clear();
 			receivedTerminateReaderIds.clear();
 			transactionsByClientTransactionId.clear();
+			statusLookupCountsByClientTransactionId.clear();
 		}
 	}
 
@@ -255,6 +258,17 @@ public final class SumUpApiStub
 		synchronized (lock)
 		{
 			return new ArrayList<>(receivedTerminateReaderIds);
+		}
+	}
+
+	/**
+	 * @return how many status lookups of the given transaction the stub received since the last {@link #reset()}
+	 */
+	public static int getStatusLookupCount(@NonNull final String clientTransactionId)
+	{
+		synchronized (lock)
+		{
+			return statusLookupCountsByClientTransactionId.getOrDefault(clientTransactionId, 0);
 		}
 	}
 
@@ -420,6 +434,7 @@ public final class SumUpApiStub
 		TransactionState trx;
 		synchronized (lock)
 		{
+			statusLookupCountsByClientTransactionId.merge(String.valueOf(clientTransactionId), 1, Integer::sum);
 			if (failStatusLookup)
 			{
 				respond(exchange, 500, "{\"error\":\"stub: status lookup failed\"}");
