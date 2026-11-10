@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
@@ -77,6 +78,8 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.PInstanceId;
 import de.metas.project.ProjectId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -192,6 +195,7 @@ public class C_Invoice_Candidate_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -909,11 +913,13 @@ public class C_Invoice_Candidate_StepDef
 	 * the backend publishes every reference (no "seen window" tracking), the frontend merges references with the same
 	 * key (target window + category) and keeps the one with the higher priority
 	 * (see {@code DocumentReferencesRestController#evaluateAndPublishNow} and {@code frontend/src/utils/documentReferencesHelper.js}).
+	 * Evaluated with the permissions of the WebUI user's role, like the WebUI does: the role's access SQL is added to the
+	 * related-documents query, so a target where clause the access-SQL parser cannot handle fails here as it fails in the WebUI.
 	 */
 	private Map<RelatedDocumentsTargetWindow, RelatedDocuments> retrieveInvoiceCandidateEntriesOpenedFromShipment(@NonNull final String shipmentIdentifier)
 	{
 		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
-		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.allowAll();
+		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.ofRolePermissions(retrieveWebUIUserRolePermissions());
 		final RelatedDocumentsEvaluationContext context = RelatedDocumentsEvaluationContext.builder()
 				.permissions(permissions)
 				.doNotTrackSeenWindows(true)
@@ -930,6 +936,14 @@ public class C_Invoice_Candidate_StepDef
 						relatedDocuments,
 						(existing, toAdd) -> toAdd.getPriority().isHigherThan(existing.getPriority()) ? toAdd : existing));
 		return entriesByKey;
+	}
+
+	/** Permissions of the user {@code metasfresh} with the role {@code WebUI} (the role the WebUI user logs in with). */
+	private IUserRolePermissions retrieveWebUIUserRolePermissions()
+	{
+		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, INVOICING_PROCESS_ROLE_NAME);
+		return userRolePermissionsDAO.getUserRolePermissions(roleId, userId, StepDefConstants.CLIENT_ID, SystemTime.asLocalDate());
 	}
 
 	/** The C_Invoice_Candidate_IDs the user sees in the "related documents" entries of the shipment. */
