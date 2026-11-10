@@ -1272,6 +1272,7 @@ Feature: POS invoice card settlement
     When card settlement settlement1 is released by cashier metasfresh
 
     Then the release of card settlement settlement1 returned status SUCCESSFUL with confirmationRequired false
+    And the SumUp stub received 0 terminates
     And card settlement settlement1 has status SUCCESSFUL and isAbandoned false
     And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
     And the partner of invoice invoice1 has 1 payment
@@ -1290,6 +1291,7 @@ Feature: POS invoice card settlement
     When card settlement settlement1 is released by cashier metasfresh
 
     Then the release of card settlement settlement1 returned status FAILED with confirmationRequired false
+    And the SumUp stub received 0 terminates
     And card settlement settlement1 has status FAILED and isAbandoned false
     And nothing is booked for invoice invoice1 and its open amount is 16.07
 
@@ -1411,8 +1413,9 @@ Feature: POS invoice card settlement
     Then the release of card settlement settlement1 returned status PENDING with confirmationRequired true and checkFailed true
     And card settlement settlement1 has status PENDING and isAbandoned false
 
-  # An orphan (the system stopped between saving and sending, so no SumUp transaction exists) is releasable: the
-  # terminate still goes to the terminal's default reader, the re-check has nothing to ask SumUp about.
+  # An orphan (the system stopped between saving and sending, so no SumUp transaction exists) is releasable: no
+  # terminate is sent (the reader's current checkout is not this settlement's, as far as metasfresh knows), and the
+  # re-check has nothing to ask SumUp about.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
@@ -1428,7 +1431,7 @@ Feature: POS invoice card settlement
 
     When card settlement settlement1 is released by cashier metasfresh
 
-    Then the SumUp stub received 1 terminate on reader reader-till
+    Then the SumUp stub received 0 terminates
     And the release of card settlement settlement1 returned status UNKNOWN with confirmationRequired true and checkFailed false
 
     When the release of card settlement settlement1 is confirmed by cashier metasfresh
