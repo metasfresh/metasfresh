@@ -1,5 +1,8 @@
 package de.metas.pos;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.error.IErrorManager;
@@ -14,27 +17,33 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.sql.SQLException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-@RequiredArgsConstructor
 public class POSOrdersService
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(POSOrdersService.class);
 	private static final AdMessageKey MSG_LateApprovalNotBooked = AdMessageKey.of("de.metas.pos.POSPayment.LateApprovalNotBooked");
+	private static final AdMessageKey MSG_CardResultNotStored = AdMessageKey.of("de.metas.pos.POSPayment.CardResultNotStored");
+	private static final int CARD_SEND_RESULT_MAX_ATTEMPTS = 3;
+	private static final ImmutableList<Duration> CARD_SEND_RESULT_RETRY_BACKOFFS = ImmutableList.of(Duration.ofMillis(200), Duration.ofSeconds(1));
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
@@ -43,6 +52,53 @@ public class POSOrdersService
 	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSOrderProcessingServices posOrderProcessingServices;
+	@NonNull private final Sleeper sleeper;
+
+	/**
+	 * Waits between the attempts of a retried write; a test can record the waits instead.
+	 */
+	@FunctionalInterface
+	interface Sleeper
+	{
+		void sleep(@NonNull Duration duration);
+	}
+
+	@Autowired
+	public POSOrdersService(
+			@NonNull final POSTerminalService posTerminalService,
+			@NonNull final POSOrdersRepository ordersRepository,
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final POSOrderProcessingServices posOrderProcessingServices)
+	{
+		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, POSOrdersService::sleepUninterruptibly);
+	}
+
+	@VisibleForTesting
+	POSOrdersService(
+			@NonNull final POSTerminalService posTerminalService,
+			@NonNull final POSOrdersRepository ordersRepository,
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
+			@NonNull final Sleeper sleeper)
+	{
+		this.posTerminalService = posTerminalService;
+		this.ordersRepository = ordersRepository;
+		this.currencyRepository = currencyRepository;
+		this.posOrderProcessingServices = posOrderProcessingServices;
+		this.sleeper = sleeper;
+	}
+
+	private static void sleepUninterruptibly(@NonNull final Duration duration)
+	{
+		try
+		{
+			Thread.sleep(duration.toMillis());
+		}
+		catch (final InterruptedException ex)
+		{
+			Thread.currentThread().interrupt();
+		}
+	}
 
 	public List<POSOrder> list(@NonNull final POSOrderQuery query)
 	{
@@ -78,7 +134,7 @@ public class POSOrdersService
 
 		final AtomicReference<POSOrder> orderRef = new AtomicReference<>();
 		final AtomicBoolean lateApprovalNotBooked = new AtomicBoolean(false);
-		ordersRepository.updatePaymentById(posOrderAndPaymentId, (order, payment) -> {
+		ordersRepository.updatePaymentByIdForUpdate(posOrderAndPaymentId, (order, payment) -> {
 			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response);
 			orderRef.set(order);
 			lateApprovalNotBooked.set(result.isLateApprovalNotBooked());
@@ -119,7 +175,8 @@ public class POSOrdersService
 	{
 		try
 		{
-			ordersRepository.updateById(posOrderId, this::tryCompleteNoFail);
+			// under the order lock: the card checkout and a SumUp status event may both try to complete the order at the same time
+			ordersRepository.updateByIdForUpdate(posOrderId, this::tryCompleteNoFail);
 		}
 		catch (final Exception ex)
 		{
@@ -205,8 +262,25 @@ public class POSOrdersService
 				.build();
 	}
 
-	public POSOrder checkoutPayment(@NonNull POSPaymentCheckoutRequest request)
+	/**
+	 * Checks out the given payment of the order. A cash payment is checked out in one transaction. A card payment is
+	 * checked out in three steps, so that the card charge is sent outside any transaction and without holding any lock:
+	 * <ol>
+	 * <li>{@link #startCardCheckout}: the payment is saved as PENDING (own transaction);</li>
+	 * <li>the charge is sent to the card reader (no transaction);</li>
+	 * <li>SumUp's answer is applied to the payment under the order lock (own transaction, retried while the database
+	 * fails), see {@link #applyCardSendResult}; then the order is completed if it can be.</li>
+	 * </ol>
+	 *
+	 * @return the order as saved; for a card payment whose answer could not be stored, the order as saved by step 1
+	 */
+	public POSOrder checkoutPayment(@NonNull final POSPaymentCheckoutRequest request)
 	{
+		if (isCardPayment(request))
+		{
+			return checkoutCardPayment(request);
+		}
+
 		final POSTerminalId posTerminalId = request.getPosTerminalId();
 		final POSOrderExternalId posOrderExternalId = request.getPosOrderExternalId();
 		final POSPaymentExternalId posPaymentExternalId = request.getPosPaymentExternalId();
@@ -239,10 +313,165 @@ public class POSOrdersService
 
 	}
 
-	// TODO TC23 RED: stub, replaced by the three-step card checkout (step 1: the order is locked, the payment is saved as PENDING)
+	/**
+	 * @return true if the request is for an existing card payment of an order of the request's terminal and cashier; otherwise
+	 * the one-transaction checkout runs and reports what is wrong with the request, as before
+	 */
+	private boolean isCardPayment(@NonNull final POSPaymentCheckoutRequest request)
+	{
+		return ordersRepository.firstOnly(POSOrderQuery.builder()
+						.posTerminalId(request.getPosTerminalId())
+						.cashierId(request.getUserId())
+						.onlyOrderExternalIds(ImmutableSet.of(request.getPosOrderExternalId()))
+						.build())
+				.flatMap(order -> findPaymentByExternalId(order, request.getPosPaymentExternalId()))
+				.map(payment -> payment.getPaymentMethod().isCard())
+				.orElse(false);
+	}
+
+	private static Optional<POSPayment> findPaymentByExternalId(@NonNull final POSOrder order, @NonNull final POSPaymentExternalId externalId)
+	{
+		return order.getAllPayments()
+				.stream()
+				.filter(payment -> POSPaymentExternalId.equals(payment.getExternalId(), externalId))
+				.findFirst();
+	}
+
+	private POSOrder checkoutCardPayment(@NonNull final POSPaymentCheckoutRequest request)
+	{
+		// the charge is sent outside any transaction, see the method doc
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		// step 1
+		final POSOrder startedOrder = startCardCheckout(request);
+		final POSPayment startedPayment = findPaymentByExternalId(startedOrder, request.getPosPaymentExternalId())
+				.orElseThrow(() -> new AdempiereException("No payment found for " + request.getPosPaymentExternalId()));
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(startedOrder.getLocalIdNotNull(), startedPayment.getLocalIdNotNull());
+
+		// step 2
+		final POSPaymentProcessResponse response = posOrderProcessingServices.sendCardPayment(startedPayment, startedOrder);
+
+		// step 3
+		final boolean resultStored = applyCardSendResult(startedOrder, orderAndPaymentId, response);
+		if (resultStored)
+		{
+			tryCompleteNoFail(orderAndPaymentId.getOrderId());
+		}
+
+		// the order as it is now; if step 3 could not be stored, its card payment is still PENDING, as saved by step 1
+		return trxManager.callInNewTrx(() -> ordersRepository.getById(orderAndPaymentId.getOrderId()));
+	}
+
+	/**
+	 * Step 1 of a card checkout: in its own transaction, locks the order, checks that the cashier may edit it, that it waits
+	 * for payment and that the card payment can be checked out, then saves the payment as PENDING for a new attempt
+	 * (checkout started now, no SumUp transaction yet), and commits. Nothing is sent.
+	 */
 	public POSOrder startCardCheckout(@NonNull final POSPaymentCheckoutRequest request)
 	{
-		throw new UnsupportedOperationException("TC23 RED");
+		final POSTerminalId posTerminalId = request.getPosTerminalId();
+		final UserId userId = request.getUserId();
+
+		return trxManager.callInNewTrx(() -> ordersRepository.updateByExternalIdForUpdate(request.getPosOrderExternalId(), posOrder -> {
+			assertCanEdit(posTerminalId, posOrder, userId);
+			posOrder.assertWaitingForPayment();
+
+			posOrder.updatePaymentByExternalId(request.getPosPaymentExternalId(), posPayment -> {
+				POSPayment payment = posPayment;
+				if (request.getCardPayAmount() != null)
+				{
+					payment = payment.withCardPayAmount(request.getCardPayAmount());
+				}
+				return payment.changingStatusToCardCheckoutStarted(SystemTime.asInstant());
+			});
+		}));
+	}
+
+	/**
+	 * Step 3 of a card checkout: applies SumUp's answer to the card payment, in a new transaction under the order lock. While
+	 * the database fails, it is tried {@value #CARD_SEND_RESULT_MAX_ATTEMPTS} times in all, each time re-locking and re-reading the
+	 * order, waiting {@link #CARD_SEND_RESULT_RETRY_BACKOFFS} in between. If all attempts fail, the answer is logged at ERROR
+	 * and recorded as an AD_Issue on the payment (best effort): the payment stays PENDING, without SumUp's id, as saved by step 1.
+	 *
+	 * @return true if the answer was stored
+	 */
+	private boolean applyCardSendResult(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@NonNull final POSPaymentProcessResponse response)
+	{
+		Exception lastFailure = null;
+		for (int attempt = 1; attempt <= CARD_SEND_RESULT_MAX_ATTEMPTS; attempt++)
+		{
+			if (attempt > 1)
+			{
+				sleeper.sleep(CARD_SEND_RESULT_RETRY_BACKOFFS.get(attempt - 2));
+			}
+
+			try
+			{
+				trxManager.runInNewTrx(() -> ordersRepository.updatePaymentByIdForUpdate(
+						orderAndPaymentId,
+						(lockedOrder, payment) -> payment.changingStatusFromSendResult(response)));
+				return true;
+			}
+			catch (final Exception ex)
+			{
+				if (!isDatabaseFailure(ex))
+				{
+					throw AdempiereException.wrapIfNeeded(ex);
+				}
+				logger.warn("Storing the card checkout result of {} failed (attempt {} of {})", orderAndPaymentId, attempt, CARD_SEND_RESULT_MAX_ATTEMPTS, ex);
+				lastFailure = ex;
+			}
+		}
+
+		recordCardResultNotStored(order, orderAndPaymentId, response, lastFailure);
+		return false;
+	}
+
+	private static boolean isDatabaseFailure(@NonNull final Throwable ex)
+	{
+		for (Throwable cause = ex; cause != null; cause = cause.getCause())
+		{
+			if (cause instanceof DBException || cause instanceof SQLException)
+			{
+				return true;
+			}
+			if (cause.getCause() == cause)
+			{
+				break;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * The card checkout's answer could not be stored: logs it at ERROR, then records it as an AD_Issue on the payment, in its own
+	 * transaction (it fails too if the database is still down; that is only logged). SumUp's client transaction id, if known,
+	 * lets the back office find the charge in the SumUp dashboard.
+	 */
+	private void recordCardResultNotStored(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@NonNull final POSPaymentProcessResponse response,
+			@Nullable final Exception cause)
+	{
+		final String clientTransactionId = response.getClientTransactionId();
+		logger.error("The card checkout result could not be stored: posOrderExternalId={}, {}, sumUpClientTransactionId={}, status={}, indeterminate={}",
+				order.getExternalId().getAsString(), orderAndPaymentId, clientTransactionId, response.getStatus(), response.isIndeterminate(), cause);
+
+		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
+		{
+			trxManager.runInNewTrx(() -> errorManager.createIssue(new AdempiereException(cause, MSG_CardResultNotStored, clientTransactionId != null ? clientTransactionId : "")
+					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
+					.setParameter("sumUpClientTransactionId", clientTransactionId)
+					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId()))));
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed recording the unstored card checkout result of {} as AD_Issue. Ignored.", orderAndPaymentId, ex);
+		}
 	}
 
 	// TODO TC23 RED: stub, replaced by the check of an unknown card payment

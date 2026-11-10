@@ -20,6 +20,11 @@ final class POSTestMessages
 		create("de.metas.pos.POSPayment.LateApprovalNotBooked", "Late approval not booked");
 	}
 
+	static void createCardResultNotStored()
+	{
+		create("de.metas.pos.POSPayment.CardResultNotStored", "The card payment result could not be stored (SumUp transaction: {0})");
+	}
+
 	private static void create(final String value, final String msgText)
 	{
 		final I_AD_Message record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Message.class);

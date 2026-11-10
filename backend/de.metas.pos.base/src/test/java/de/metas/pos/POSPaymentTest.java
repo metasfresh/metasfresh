@@ -174,4 +174,38 @@ class POSPaymentTest
 			assertThat(result.isLateApprovalNotBooked()).isFalse();
 		}
 	}
+
+	private static final POSTerminalPaymentProcessorConfig SUMUP_CONFIG = POSTerminalPaymentProcessorConfig.builder().type(POSPaymentProcessorType.SumUp).build();
+
+	@Test
+	void sendIndeterminate_withClientId_toUnknownLinked()
+	{
+		// cause (i): SumUp accepted the checkout, metasfresh could not save its transaction; SumUp's id is known
+		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).build()
+				.changingStatusFromSendResult(POSPaymentProcessResponse.errorIndeterminate(SUMUP_CONFIG, "saving failed", null, "accepted-trx"));
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.UNKNOWN);
+		assertThat(payment.getSumUpClientTransactionId()).isEqualTo("accepted-trx");
+	}
+
+	@Test
+	void sendIndeterminate_withoutClientId_toUnknown()
+	{
+		// cause (ii): timeout, network error or SumUp 5xx; no SumUp id is known
+		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).build()
+				.changingStatusFromSendResult(POSPaymentProcessResponse.errorIndeterminate(SUMUP_CONFIG, "timeout", null, null));
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.UNKNOWN);
+		assertThat(payment.getSumUpClientTransactionId()).isNull();
+	}
+
+	@Test
+	void sendDefiniteRejection_toFailed()
+	{
+		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).build()
+				.changingStatusFromSendResult(POSPaymentProcessResponse.error(SUMUP_CONFIG, "HTTP 4xx", null));
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.FAILED);
+		assertThat(payment.getSumUpClientTransactionId()).isNull();
+	}
 }

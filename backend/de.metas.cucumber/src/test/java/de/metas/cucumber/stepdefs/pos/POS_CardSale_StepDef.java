@@ -55,6 +55,7 @@ import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSPaymentProcessingStatus;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.async.C_POSOrder_CreateInvoiceAndShipment;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.pos.remote.RemotePOSPayment;
 import de.metas.pos.repository.model.I_C_POS_Order;
@@ -64,18 +65,21 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -86,7 +90,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.METASFRESH_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -117,6 +126,10 @@ public class POS_CardSale_StepDef
 	@NonNull private final SumUpService sumUpService = SpringContextHolder.instance.getBean(SumUpService.class);
 	@NonNull private final SumUpTransactionRepository sumUpTransactionRepository = SpringContextHolder.instance.getBean(SumUpTransactionRepository.class);
 
+	// test-only trigger that makes step 3's write of a card payment fail (see failCardPaymentUpdate), and its attempt counter
+	static final String POS_PAYMENT_UPDATE_FAILURE = "cucumber_pos_payment_update_fails";
+	static final String POS_PAYMENT_UPDATE_FAILURE_SEQ = "cucumber_pos_payment_update_fails_seq";
+
 	/** Seconds to wait for the async {@code C_POSOrder_CreateInvoiceAndShipment} work package (sales order + invoice) to land. */
 	private static final int ASYNC_INVOICE_TIMEOUT_SEC = 60;
 
@@ -144,6 +157,8 @@ public class POS_CardSale_StepDef
 		// the client_transaction_id of every checkout the SumUp stub accepted for this sale, in order
 		@NonNull final List<String> acceptedClientTransactionIds = new ArrayList<>();
 		@Nullable POSCardPaymentReleaseResult lastReleaseResult;
+		// the order the till got back from its last card checkout
+		@Nullable POSOrder lastCheckoutAnswer;
 
 		private Sale(
 				@NonNull final POSTerminalId terminalId,
@@ -192,7 +207,7 @@ public class POS_CardSale_StepDef
 			@NonNull final DataTable dataTable)
 	{
 		final Sale sale = createSale(saleIdentifier, terminalIdentifier, dataTable);
-		posService.checkoutPayment(newCheckoutRequest(sale));
+		sale.lastCheckoutAnswer = posService.checkoutPayment(newCheckoutRequest(sale));
 		assignAcceptedStubCheckouts(sale);
 	}
 
@@ -331,7 +346,7 @@ public class POS_CardSale_StepDef
 	{
 		final Sale sale = getSale(saleIdentifier);
 		SumUpApiStub.setNextCheckoutBehavior(SumUpApiStub.CheckoutBehavior.SUCCESS);
-		posService.checkoutPayment(newCheckoutRequest(sale));
+		sale.lastCheckoutAnswer = posService.checkoutPayment(newCheckoutRequest(sale));
 		assignAcceptedStubCheckouts(sale);
 	}
 
@@ -841,6 +856,262 @@ public class POS_CardSale_StepDef
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"DROP TRIGGER IF EXISTS " + POS_InvoiceCardSettlement_StepDef.SUMUP_TRX_INSERT_FAILURE + " ON SUMUP_Transaction",
 				ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * The till checks out the card payment of the sale on a background thread, while this thread runs SumUp polls until that
+	 * checkout returned: the stub accepts the checkout and, as soon as it knows the new transaction, reports it SUCCESSFUL, so a
+	 * poll can import the approval (and its status event can update the payment) while the checkout still applies SumUp's
+	 * answer. One more poll runs after the checkout returned. Fails if the checkout fails or takes longer than 60 s.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the sale was created by {@code a POS card sale ... is prepared at ...}
+	 * @cucumber.example
+	 * <pre>
+	 * When the card payment of POS sale sale1 is checked out while metasfresh polls SumUp, the stub approving the charge
+	 * </pre>
+	 */
+	@And("^the card payment of POS sale (\\S+) is checked out while metasfresh polls SumUp, the stub approving the charge$")
+	public void cardPaymentCheckedOutWhilePolling(@NonNull final String saleIdentifier) throws Exception
+	{
+		final Sale sale = getSale(saleIdentifier);
+		SumUpApiStub.setNextCheckoutBehavior(SumUpApiStub.CheckoutBehavior.SUCCESS);
+		final int checkoutsBefore = SumUpApiStub.getReceivedCheckouts().size();
+
+		final Properties ctx = Env.getCtx();
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		try
+		{
+			final Future<POSOrder> checkout = executor.submit(() -> {
+				try (final IAutoCloseable ignored = Env.switchContext(ctx))
+				{
+					return posService.checkoutPayment(newCheckoutRequest(sale));
+				}
+			});
+
+			boolean approvalReported = false;
+			final long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60);
+			while (!checkout.isDone() && System.currentTimeMillis() < deadline)
+			{
+				if (!approvalReported)
+				{
+					approvalReported = tryReportNewTransactionSuccessful(checkoutsBefore);
+				}
+				settlementStepDef.pollSumUp(null);
+			}
+
+			sale.lastCheckoutAnswer = checkout.get(1, TimeUnit.SECONDS);
+			if (!approvalReported)
+			{
+				approvalReported = tryReportNewTransactionSuccessful(checkoutsBefore);
+			}
+			assertThat(approvalReported).as("the SumUp stub accepted the checkout of POS sale %s and reported it SUCCESSFUL", saleIdentifier).isTrue();
+			settlementStepDef.pollSumUp(null);
+		}
+		finally
+		{
+			executor.shutdownNow();
+		}
+		assignAcceptedStubCheckouts(sale);
+	}
+
+	/**
+	 * @return true if the stub received a checkout since {@code checkoutsBefore} and now reports its transaction SUCCESSFUL
+	 */
+	private static boolean tryReportNewTransactionSuccessful(final int checkoutsBefore)
+	{
+		final List<SumUpApiStub.ReceivedCheckout> checkouts = SumUpApiStub.getReceivedCheckouts();
+		if (checkouts.size() <= checkoutsBefore)
+		{
+			return false;
+		}
+		final String clientTransactionId = checkouts.get(checkouts.size() - 1).getClientTransactionId();
+		if (clientTransactionId == null)
+		{
+			return false;
+		}
+		try
+		{
+			SumUpApiStub.setTransactionStatus(clientTransactionId, "SUCCESSFUL", null);
+			return true;
+		}
+		catch (final IllegalStateException ex)
+		{
+			return false; // the stub records the checkout before it knows its transaction; try again
+		}
+	}
+
+	/**
+	 * Step 3 of the till's card checkout (storing SumUp's answer on the card payment) fails with a database error for its next
+	 * {@code n} attempts, as when the database is still failing (a test-only trigger on {@code C_POS_Payment}). It is scoped to
+	 * that write only: it fires on an update of a PENDING card payment that changes its status or its SumUp client transaction
+	 * id, so step 1 (NEW to PENDING) and rewrites of unchanged rows are not counted. The attempts are counted by a sequence,
+	 * which a failing transaction does not roll back. Needs one card payment per order. Removed by
+	 * {@code saving the card payment of a POS sale works again} and after every scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And saving the card payment of a POS sale fails with a database error for the next 2 attempts
+	 * </pre>
+	 */
+	@And("^saving the card payment of a POS sale fails with a database error for the next (\\d+) attempts?$")
+	public void failCardPaymentUpdate(final int attempts)
+	{
+		DB.executeUpdateAndThrowExceptionOnFail("DROP SEQUENCE IF EXISTS " + POS_PAYMENT_UPDATE_FAILURE_SEQ, ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("CREATE SEQUENCE " + POS_PAYMENT_UPDATE_FAILURE_SEQ, ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"CREATE OR REPLACE FUNCTION " + POS_PAYMENT_UPDATE_FAILURE + "() RETURNS trigger LANGUAGE plpgsql AS $$"
+						+ " BEGIN"
+						+ " IF nextval('" + POS_PAYMENT_UPDATE_FAILURE_SEQ + "') <= " + attempts + " THEN RAISE EXCEPTION 'cucumber: C_POS_Payment cannot be saved'; END IF;"
+						+ " RETURN NEW;"
+						+ " END; $$",
+				ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DROP TRIGGER IF EXISTS " + POS_PAYMENT_UPDATE_FAILURE + " ON C_POS_Payment", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"CREATE TRIGGER " + POS_PAYMENT_UPDATE_FAILURE + " BEFORE UPDATE ON C_POS_Payment FOR EACH ROW"
+						+ " WHEN (OLD.POSPaymentProcessingStatus = 'PENDING'"
+						+ " AND (NEW.POSPaymentProcessingStatus IS DISTINCT FROM 'PENDING' OR NEW.SUMUP_ClientTransactionID IS DISTINCT FROM OLD.SUMUP_ClientTransactionID))"
+						+ " EXECUTE PROCEDURE " + POS_PAYMENT_UPDATE_FAILURE + "()",
+				ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Removes the test-only trigger of {@code saving the card payment of a POS sale fails with a database error ...}: the database
+	 * has recovered. Does nothing if it is not installed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And saving the card payment of a POS sale works again
+	 * </pre>
+	 */
+	@And("^saving the card payment of a POS sale works again$")
+	public void cardPaymentSavingWorksAgain()
+	{
+		dropCardPaymentUpdateFailure();
+	}
+
+	/**
+	 * Removes the trigger, function and sequence of {@link #failCardPaymentUpdate} after every scenario, whatever set it up (the
+	 * table is shared by all scenarios). The trigger is dropped only if it exists (a catalog lookup), so that scenarios which
+	 * never install it take no table lock.
+	 */
+	@After
+	public void dropCardPaymentUpdateFailure()
+	{
+		final int triggerCount = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COUNT(1) FROM pg_trigger WHERE tgname=?", POS_PAYMENT_UPDATE_FAILURE);
+		if (triggerCount > 0)
+		{
+			DB.executeUpdateAndThrowExceptionOnFail("DROP TRIGGER IF EXISTS " + POS_PAYMENT_UPDATE_FAILURE + " ON C_POS_Payment", ITrx.TRXNAME_None);
+		}
+		DB.executeUpdateAndThrowExceptionOnFail("DROP FUNCTION IF EXISTS " + POS_PAYMENT_UPDATE_FAILURE + "()", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DROP SEQUENCE IF EXISTS " + POS_PAYMENT_UPDATE_FAILURE_SEQ, ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Asserts the order the till got back from its last card checkout of the sale: the card payment's status, and whether it
+	 * names a SumUp client transaction id.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the till's card checkout of POS sale sale1 answered the card payment with status PENDING and sumUpClientTransactionId empty
+	 * </pre>
+	 */
+	@And("^the till's card checkout of POS sale (\\S+) answered the card payment with status ([A-Z]+) and sumUpClientTransactionId (set|empty)$")
+	public void assertCheckoutAnswer(
+			@NonNull final String saleIdentifier,
+			@NonNull final String expectedStatus,
+			@NonNull final String expectedClientTransactionIdState)
+	{
+		final Sale sale = getSale(saleIdentifier);
+		final POSOrder answer = sale.lastCheckoutAnswer;
+		assertThat(answer).as("order the till got back from the card checkout of POS sale %s", saleIdentifier).isNotNull();
+		final POSPayment payment = answer.getAllPayments()
+				.stream()
+				.filter(p -> POSPaymentExternalId.equals(p.getExternalId(), sale.cardPaymentExternalId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("The order the till got back has no card payment of POS sale " + saleIdentifier));
+		assertThat(payment.getPaymentProcessingStatus().name()).as("status of the card payment the till got back").isEqualTo(expectedStatus);
+		assertThat(payment.getSumUpClientTransactionId() != null).as("the card payment the till got back names a SumUp client transaction id").isEqualTo("set".equals(expectedClientTransactionIdState));
+	}
+
+	/**
+	 * Asserts that the card payment's AD_Issue with the given AD_Message (exactly one) names, in its summary, the client
+	 * transaction id of the last checkout the SumUp stub accepted for the sale, so that back office can find the charge in the
+	 * SumUp dashboard.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the AD_Issue 'de.metas.pos.POSPayment.CardResultNotStored' of the card payment of POS sale sale1 names the client transaction id the SumUp stub accepted
+	 * </pre>
+	 */
+	@And("^the AD_Issue '(.*)' of the card payment of POS sale (\\S+) names the client transaction id the SumUp stub accepted$")
+	public void assertCardPaymentIssueNamesAcceptedClientTransactionId(@NonNull final String adMessage, @NonNull final String saleIdentifier)
+	{
+		final Sale sale = getSale(saleIdentifier);
+		final String clientTransactionId = getAcceptedClientTransactionId(sale, false);
+		final TableRecordReference paymentRef = TableRecordReference.of(I_C_POS_Payment.Table_Name, loadCardPaymentRecord(sale).getC_POS_Payment_ID());
+		final List<I_AD_Issue> issues = queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, paymentRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, paymentRef.getRecord_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_ErrorCode, expectedErrorCode(adMessage))
+				.create()
+				.list();
+		assertThat(issues).as("AD_Issues of the card payment of POS sale %s with AD_Message %s", saleIdentifier, adMessage).hasSize(1);
+		assertThat(issues.get(0).getIssueSummary()).as("summary of the AD_Issue of the card payment of POS sale %s", saleIdentifier).contains(clientTransactionId);
+	}
+
+	/**
+	 * Asserts how many payment receipts ({@code C_Payment}) were booked for the sale: receipts of the sale's customer (the
+	 * scenario's walk-in customer) for the sale's card amount. Use after the sale's invoice is paid.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then POS sale sale1 has 1 payment receipt
+	 * </pre>
+	 */
+	@And("^POS sale (\\S+) has (\\d+) payment receipts?$")
+	public void assertPaymentReceiptCount(@NonNull final String saleIdentifier, final int expectedCount)
+	{
+		final Sale sale = getSale(saleIdentifier);
+		final int customerId = loadOrderRecord(sale).getC_BPartner_ID();
+		final BigDecimal amount = sale.remoteOrder.getPayments().get(0).getAmount();
+		final int receiptCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, customerId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, true)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, amount)
+				.create()
+				.count();
+		assertThat(receiptCount).as("payment receipts (C_Payment) of POS sale %s's customer for %s", saleIdentifier, amount).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts how many times the sale was completed: each completion enqueues the sale for creating its sales order, invoice and
+	 * shipment ({@link C_POSOrder_CreateInvoiceAndShipment}), so this counts the sale's queue elements of that processor.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then POS sale sale1 was completed 1 time
+	 * </pre>
+	 */
+	@And("^POS sale (\\S+) was completed (\\d+) times?$")
+	public void assertCompletedTimes(@NonNull final String saleIdentifier, final int expectedCount)
+	{
+		final int orderId = loadOrderRecord(getSale(saleIdentifier)).getC_POS_Order_ID();
+		final int count = DB.getSQLValueEx(
+				ITrx.TRXNAME_None,
+				"SELECT COUNT(1) FROM C_Queue_Element e"
+						+ " JOIN C_Queue_WorkPackage wp ON wp.C_Queue_WorkPackage_ID=e.C_Queue_WorkPackage_ID"
+						+ " JOIN C_Queue_PackageProcessor p ON p.C_Queue_PackageProcessor_ID=wp.C_Queue_PackageProcessor_ID"
+						+ " WHERE e.AD_Table_ID=get_table_id('C_POS_Order') AND e.Record_ID=? AND p.Classname=?",
+				orderId,
+				C_POSOrder_CreateInvoiceAndShipment.class.getName());
+		assertThat(count).as("completions (async queue elements) of POS sale %s", saleIdentifier).isEqualTo(expectedCount);
 	}
 
 	//

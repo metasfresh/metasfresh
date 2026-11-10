@@ -242,6 +242,57 @@ public class POSPayment
 		return POSPaymentRemoteUpdateResult.of(paymentChanged, false);
 	}
 
+	/**
+	 * Step 1 of a card checkout: the payment is PENDING from now on, for a new attempt that names no SumUp transaction yet.
+	 *
+	 * @throws AdempiereException if the payment cannot be checked out (e.g. its card result is unknown)
+	 */
+	public POSPayment changingStatusToCardCheckoutStarted(@NonNull final Instant startedAt)
+	{
+		paymentMethod.assertCard();
+		assertAllowCheckout();
+
+		return toBuilder()
+				.paymentProcessingStatus(POSPaymentProcessingStatus.PENDING)
+				.cardCheckoutStartedAt(startedAt)
+				.sumUpClientTransactionId(null)
+				.build();
+	}
+
+	/**
+	 * Step 3 of a card checkout: applies SumUp's answer to the checkout sent in step 2, only while the payment is still
+	 * PENDING (otherwise a status event already applied a later result, which is kept):
+	 * <ul>
+	 * <li>accepted → its status (PENDING as a rule), naming SumUp's client transaction id of this attempt;</li>
+	 * <li>definite rejection → FAILED;</li>
+	 * <li>indeterminate (the charge may or may not have happened) → UNKNOWN, naming SumUp's client transaction id if
+	 * SumUp accepted the checkout before the failure, otherwise none.</li>
+	 * </ul>
+	 */
+	public POSPayment changingStatusFromSendResult(@NonNull final POSPaymentProcessResponse response)
+	{
+		paymentMethod.assertCard();
+		if (!isPending())
+		{
+			return this;
+		}
+
+		final POSPaymentProcessingStatus newStatus = response.isIndeterminate()
+				? POSPaymentProcessingStatus.UNKNOWN
+				: response.getStatus();
+
+		return toBuilder()
+				.paymentProcessingStatus(newStatus)
+				.sumUpClientTransactionId(response.getClientTransactionId())
+				.cardProcessingDetails(POSPaymentCardProcessingDetails.builder()
+						.config(response.getConfig())
+						.transactionId(response.getTransactionId())
+						.summary(response.getSummary())
+						.cardReader(response.getCardReader())
+						.build())
+				.build();
+	}
+
 	public POSPayment withPaymentReceipt(@Nullable final PaymentId paymentReceiptId)
 	{
 		if (PaymentId.equals(this.paymentReceiptId, paymentReceiptId))

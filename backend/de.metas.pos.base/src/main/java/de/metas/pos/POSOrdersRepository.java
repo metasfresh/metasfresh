@@ -141,9 +141,30 @@ public class POSOrdersRepository
 		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
 	}
 
-	public void updatePaymentById(@NonNull final POSOrderAndPaymentId orderAndPaymentId, @NonNull final BiFunction<POSOrder, POSPayment, POSPayment> updater)
+	/**
+	 * Updates the existing order under a row lock of its {@code C_POS_Order}, taken before the order is loaded and held
+	 * until the transaction ends (the thread's transaction, or a new one if there is none). Use it where concurrent
+	 * updaters of the same order (the till's card checkout, SumUp status events, completion) must not overwrite each other.
+	 */
+	public POSOrder updateByExternalIdForUpdate(final @NonNull POSOrderExternalId externalId, final @NonNull Consumer<POSOrder> updater)
 	{
-		updateById(orderAndPaymentId.getOrderId(), order -> order.updatePaymentById(orderAndPaymentId.getPaymentId(), payment -> updater.apply(order, payment)));
+		return trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateByExternalIdForUpdate(externalId, updater));
+	}
+
+	/**
+	 * Like {@link #updateById}, under the order's row lock, see {@link #updateByExternalIdForUpdate}.
+	 */
+	public void updateByIdForUpdate(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	{
+		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateByIdForUpdate(id, updater));
+	}
+
+	/**
+	 * Updates the given payment of the order under the order's row lock, see {@link #updateByExternalIdForUpdate}.
+	 */
+	public void updatePaymentByIdForUpdate(@NonNull final POSOrderAndPaymentId orderAndPaymentId, @NonNull final BiFunction<POSOrder, POSPayment, POSPayment> updater)
+	{
+		updateByIdForUpdate(orderAndPaymentId.getOrderId(), order -> order.updatePaymentById(orderAndPaymentId.getPaymentId(), payment -> updater.apply(order, payment)));
 	}
 
 	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)

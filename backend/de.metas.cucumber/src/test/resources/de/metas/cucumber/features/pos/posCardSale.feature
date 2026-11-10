@@ -443,3 +443,76 @@ Feature: POS till card sale with an unknown card result
     Then the card payment of POS sale sale1 has status SUCCESSFUL
     And POS sale sale1 is completed
     And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+
+  # ##########################################################################
+  # Cause (i), and the database also fails twice while the checkout stores SumUp's answer on the card payment: the bounded
+  # retry of that write stores it on its 3rd attempt.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_18
+  Scenario: The card result is stored by the retry of its write while the database fails twice
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
+    And saving the card payment of a POS sale fails with a database error for the next 2 attempts
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId of the latest transaction
+    And the till's card checkout of POS sale sale1 answered the card payment with status UNKNOWN and sumUpClientTransactionId set
+    And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.CardResultNotStored'
+
+  # ##########################################################################
+  # Cause (i), and the database keeps failing for all 3 attempts to store SumUp's answer (database-failure sub-case of the
+  # known limit): the till gets the payment back as saved before the send (PENDING, no SumUp id), and back office gets a
+  # record naming SumUp's id. Its continuation to UNKNOWN is the orphan rule.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_19
+  Scenario: A card result that cannot be stored after 3 attempts is recorded for back office; the till still gets its order
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
+    And saving the card payment of a POS sale fails with a database error for the next 3 attempts
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the till's card checkout of POS sale sale1 answered the card payment with status PENDING and sumUpClientTransactionId empty
+    And the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId empty
+    And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.CardResultNotStored'
+    And the AD_Issue 'de.metas.pos.POSPayment.CardResultNotStored' of the card payment of POS sale sale1 names the client transaction id the SumUp stub accepted
+    And saving the card payment of a POS sale works again
+    And saving a SumUp transaction works again
+
+  # ##########################################################################
+  # SumUp accepted the checkout and its transaction was saved: the payment is PENDING, as before, and names the SumUp
+  # transaction of this attempt.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_20
+  Scenario: An accepted card checkout leaves the payment PENDING, naming the SumUp transaction of this attempt
+    Given SumUp API stub answers the next checkout with SUCCESS
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
+    And the SumUp transaction of POS sale sale1 is saved with status PENDING
+
+  # ##########################################################################
+  # Review focus 3: a SumUp poll imports the approval (and its status event updates the payment) while the checkout still
+  # stores SumUp's answer. Either order ends with one SUCCESSFUL payment, one receipt and one completion.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_21
+  Scenario: A SumUp poll racing the card checkout completes the sale exactly once
+    Given a POS card sale sale1 is prepared at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    When the card payment of POS sale sale1 is checked out while metasfresh polls SumUp, the stub approving the charge
+    Then after not more than 30s, the card payment of POS sale sale1 has status SUCCESSFUL
+    And after not more than 30s, POS sale sale1 is completed
+    And the invoice of POS sale sale1 is paid
+    And POS sale sale1 has 1 payment receipt
+    And POS sale sale1 was completed 1 time

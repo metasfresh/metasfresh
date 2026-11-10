@@ -34,6 +34,7 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -115,6 +116,45 @@ class POSOrdersLoaderAndSaver
 	{
 		final I_C_POS_Order orderRecord = getOrderRecordById(id);
 		final POSOrder order = fromRecord(orderRecord);
+		updater.accept(order);
+		save(order);
+		return order;
+	}
+
+	/**
+	 * Like {@link #createOrUpdateByExternalId}, for an existing order only, but locks its {@code C_POS_Order} row
+	 * ({@code FOR NO KEY UPDATE}) before loading the order, its lines and payments; the lock is held until the caller's
+	 * transaction ends, so concurrent updaters of the same order run one after the other, each on the other's committed state.
+	 */
+	POSOrder updateByExternalIdForUpdate(@NonNull final POSOrderExternalId externalId, @NonNull final Consumer<POSOrder> updater)
+	{
+		final I_C_POS_Order orderRecord = queryBL.createQueryBuilder(I_C_POS_Order.class)
+				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_ExternalId, externalId.getAsString())
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnlyOptional(I_C_POS_Order.class)
+				.orElseThrow(() -> new AdempiereException("No order found for external id " + externalId));
+		return updateLockedRecord(orderRecord, updater);
+	}
+
+	/**
+	 * Like {@link #updateById}, but locks the {@code C_POS_Order} row first, see {@link #updateByExternalIdForUpdate}.
+	 */
+	POSOrder updateByIdForUpdate(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	{
+		final I_C_POS_Order orderRecord = queryBL.createQueryBuilder(I_C_POS_Order.class)
+				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_C_POS_Order_ID, id)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnlyOptional(I_C_POS_Order.class)
+				.orElseThrow(() -> new AdempiereException("No POSOrder found for " + id));
+		return updateLockedRecord(orderRecord, updater);
+	}
+
+	private POSOrder updateLockedRecord(@NonNull final I_C_POS_Order lockedOrderRecord, @NonNull final Consumer<POSOrder> updater)
+	{
+		addToCache(lockedOrderRecord);
+		final POSOrder order = fromRecord(lockedOrderRecord); // lines and payments are loaded only now, under the lock
 		updater.accept(order);
 		save(order);
 		return order;

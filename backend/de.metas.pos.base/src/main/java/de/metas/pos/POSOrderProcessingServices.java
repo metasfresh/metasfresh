@@ -115,19 +115,27 @@ public class POSOrderProcessingServices
 			@NonNull final POSPayment posPayment,
 			@NonNull final POSOrder posOrder)
 	{
+		final POSPaymentProcessResponse processResponse = sendCardPayment(posPayment, posOrder);
+		return posPayment.changingStatusFromRemote(processResponse).getPayment();
+	}
+
+	/**
+	 * Sends the card payment's charge to the terminal's payment processor and returns its answer; changes nothing.
+	 * The call can take long (the cashier presents the card), so a card checkout runs it outside any transaction.
+	 */
+	public POSPaymentProcessResponse sendCardPayment(@NonNull final POSPayment posPayment, @NonNull final POSOrder posOrder)
+	{
 		posPayment.getPaymentMethod().assertCard();
 
 		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId());
 		final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminal.getPaymentProcessorConfigNotNull();
 
-		final POSPaymentProcessResponse processResponse = posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
+		return posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
 				.paymentProcessorConfig(paymentProcessorConfig)
 				.clientAndOrgId(posOrder.getClientAndOrgId())
 				.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrder.getLocalIdNotNull(), posPayment.getLocalIdNotNull()))
 				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.build());
-
-		return posPayment.changingStatusFromRemote(processResponse).getPayment();
 	}
 
 	public POSPayment refundPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrderId posOrderId, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
