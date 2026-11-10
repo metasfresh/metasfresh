@@ -449,7 +449,7 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
 
   @from:cucumber
   @Id:S33240_TC16
-  Scenario: Goods1 delivered in two picked parts, first part invoiced: the list of the second shipment (pins today's list)
+  Scenario: Goods1 delivered in two picked parts, first part invoiced: the list of the second shipment (the invoice candidate stays linked to the first shipment)
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
       | order      | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
@@ -525,7 +525,7 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
       | ic_goods2              |
       | ic_goods3              |
       | ic_bonus               |
-    # today's behaviour: goods1's invoice candidate keeps M_InOut_ID of shipment1, so shipment2 has no direct candidate and nothing is added
+    # goods1's invoice candidate keeps M_InOut_ID of shipment1, so shipment2 has no direct candidate and nothing is added
     Then shipment "shipment2" has 0 related documents entries to the invoice candidates
 
   @from:cucumber
