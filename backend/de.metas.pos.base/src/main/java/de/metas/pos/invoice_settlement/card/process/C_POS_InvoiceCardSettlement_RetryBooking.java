@@ -50,12 +50,17 @@ public class C_POS_InvoiceCardSettlement_RetryBooking extends JavaProcess implem
 	 * @return the process summary: {@link #MSG_OK} if booked or ended otherwise, {@code RetryBookingWillRetry} if the
 	 * background sweep retries the booking
 	 * @throws AdempiereException {@code RetryBookingNotCompleted} if the booking failed again (a booking error, or an
-	 * approved settlement still waiting with an error)
+	 * approved settlement still waiting with an error the sweep does not retry)
 	 */
 	@VisibleForTesting
 	String retryBooking(@NonNull final POSInvoiceCardSettlementId id)
 	{
 		final POSInvoiceCardSettlement settlement = settlementService.retryBooking(id);
+		if (settlementService.isAwaitingAutomaticBooking(settlement))
+		{
+			// a transient error: the background sweep retries the booking, so back office need not do anything
+			return "@" + MSG_RetryBookingWillRetry.toAD_Message() + "@";
+		}
 		if (isBookingNotCompleted(settlement))
 		{
 			// the booking handled its error itself (AD_Issue, status); back office must not see "OK"
@@ -63,16 +68,12 @@ public class C_POS_InvoiceCardSettlement_RetryBooking extends JavaProcess implem
 					.markAsUserValidationError()
 					.setRecord(settlement.getId().toRecordRef());
 		}
-		if (settlementService.isAwaitingAutomaticBooking(settlement))
-		{
-			// a transient error: the background sweep retries the booking, so back office need not do anything
-			return "@" + MSG_RetryBookingWillRetry.toAD_Message() + "@";
-		}
 		return MSG_OK;
 	}
 
 	/**
-	 * @return whether the retry ended as a booking error again, or still waits with an error (e.g. no open cash journal)
+	 * @return whether the retry ended as a booking error again, or still waits with an error the sweep does not retry
+	 * (e.g. no open cash journal); only asked if the settlement does not await automatic booking
 	 */
 	private static boolean isBookingNotCompleted(@NonNull final POSInvoiceCardSettlement settlement)
 	{

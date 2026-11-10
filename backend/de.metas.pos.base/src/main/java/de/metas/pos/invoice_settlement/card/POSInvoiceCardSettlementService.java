@@ -828,9 +828,10 @@ public class POSInvoiceCardSettlementService
 	/**
 	 * @return whether the settlement waits for the background sweep ({@link POSInvoiceCardSettlementRepository#streamSweepCandidateIds})
 	 * to book it, i.e. a booking attempt failed with a transient error and is retried without back office: UNKNOWN (the
-	 * payment is not created yet), APPROVED without an error (a missing journal is an error back office must see), or
-	 * ABANDONED while SumUp reports its charge as approved and not refunded (an abandoned one whose charge was refunded
-	 * is final)
+	 * payment is not created yet), APPROVED without an error or with
+	 * {@link POSInvoiceCardSettlementBooking#ERRORMSG_SumUpNotReachable} (the sweep asks SumUp again in every cycle; any
+	 * other error, e.g. a missing journal, is one back office must see), or ABANDONED while SumUp reports its charge as
+	 * approved and not refunded (an abandoned one whose charge was refunded is final)
 	 */
 	public boolean isAwaitingAutomaticBooking(@NonNull final POSInvoiceCardSettlement settlement)
 	{
@@ -839,7 +840,8 @@ public class POSInvoiceCardSettlementService
 			case UNKNOWN:
 				return true;
 			case APPROVED:
-				return settlement.getErrorMsg() == null;
+				return settlement.getErrorMsg() == null
+						|| POSInvoiceCardSettlementBooking.ERRORMSG_SumUpNotReachable.equals(settlement.getErrorMsg());
 			case ABANDONED:
 				return isApprovedAtSumUp(settlement.getId());
 			default:

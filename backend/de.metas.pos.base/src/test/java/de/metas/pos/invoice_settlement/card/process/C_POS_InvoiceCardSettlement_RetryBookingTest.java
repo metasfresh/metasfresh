@@ -155,6 +155,16 @@ class C_POS_InvoiceCardSettlement_RetryBookingTest
 	}
 
 	@Test
+	void leftApprovedWithSumUpNotReachable_isRetriedAutomatically()
+	{
+		final POSInvoiceCardSettlementId id = settlement(POSInvoiceCardSettlementStatus.APPROVED, false, PaymentId.ofRepoId(7), POSInvoiceCardSettlementBooking.ERRORMSG_SumUpNotReachable);
+
+		assertThat(SpringContextHolder.instance.getBean(POSInvoiceCardSettlementService.class).isAwaitingAutomaticBooking(repository.getById(id))).isTrue();
+		assertThat(retry(id)).isEqualTo(MSG_WillRetry);
+		assertThat(repository.getById(id).getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.APPROVED);
+	}
+
+	@Test
 	void leftApprovedWithError_isNotCompleted()
 	{
 		final POSInvoiceCardSettlementId id = settlement(POSInvoiceCardSettlementStatus.APPROVED, false, PaymentId.ofRepoId(7), "no open cash journal");
