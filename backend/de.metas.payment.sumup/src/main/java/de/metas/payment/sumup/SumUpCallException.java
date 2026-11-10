@@ -15,17 +15,23 @@ import javax.annotation.Nullable;
 public class SumUpCallException extends AdempiereException
 {
 	private final boolean definiteRejection;
+	@Nullable private final SumUpClientTransactionId clientTransactionId;
 
 	public SumUpCallException(final Throwable cause, final boolean definiteRejection)
 	{
 		super(cause.getClass().getSimpleName() + ": " + extractMessage(cause), cause);
 		this.definiteRejection = definiteRejection;
+		this.clientTransactionId = null;
 	}
 
-	private SumUpCallException(@NonNull final String message, @NonNull final Throwable cause)
+	private SumUpCallException(
+			@NonNull final String message,
+			@NonNull final Throwable cause,
+			@Nullable final SumUpClientTransactionId clientTransactionId)
 	{
 		super(message, cause);
 		this.definiteRejection = false;
+		this.clientTransactionId = clientTransactionId;
 	}
 
 	/**
@@ -42,9 +48,20 @@ public class SumUpCallException extends AdempiereException
 		final SumUpCallException ex = new SumUpCallException(
 				"SumUp accepted the request (client_transaction_id=" + clientTransactionIdStr + "), but metasfresh failed afterwards: "
 						+ cause.getClass().getSimpleName() + ": " + extractMessage(cause),
-				cause);
+				cause,
+				clientTransactionId);
 		ex.setParameter("SumUpClientTransactionId", clientTransactionIdStr);
 		return ex;
+	}
+
+	/**
+	 * @return SumUp's {@code client_transaction_id} of the accepted request, if this is a failure after SumUp accepted it
+	 * ({@link #ofFailureAfterAccepted}) and the id is known; null otherwise
+	 */
+	@Nullable
+	public SumUpClientTransactionId getClientTransactionId()
+	{
+		return clientTransactionId;
 	}
 
 	public boolean isDefiniteRejection()

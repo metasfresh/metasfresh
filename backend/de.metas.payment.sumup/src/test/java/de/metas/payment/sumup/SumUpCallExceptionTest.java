@@ -27,4 +27,14 @@ class SumUpCallExceptionTest
 		assertThat(ex.isDefiniteRejection()).isFalse();
 		assertThat(ex.getMessage()).contains("boom");
 	}
+
+	@Test
+	void ofFailureAfterAccepted_keepsClientTransactionId()
+	{
+		final SumUpClientTransactionId id = SumUpClientTransactionId.ofString("ctid-456");
+
+		assertThat(SumUpCallException.ofFailureAfterAccepted(new RuntimeException("boom"), id).getClientTransactionId()).isEqualTo(id);
+		assertThat(SumUpCallException.ofFailureAfterAccepted(new RuntimeException("boom"), null).getClientTransactionId()).isNull();
+		assertThat(new SumUpCallException(new RuntimeException("x"), false).getClientTransactionId()).isNull();
+	}
 }

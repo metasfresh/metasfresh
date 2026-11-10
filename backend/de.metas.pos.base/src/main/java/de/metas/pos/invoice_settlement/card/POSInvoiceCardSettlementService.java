@@ -229,7 +229,8 @@ public class POSInvoiceCardSettlementService
 			return POSPaymentProcessResponse.errorIndeterminate(
 					started.getPaymentProcessorConfig(),
 					AdempiereException.extractMessage(metasfreshException),
-					errorManager.createIssue(metasfreshException));
+					errorManager.createIssue(metasfreshException),
+					null);
 		}
 	}
 

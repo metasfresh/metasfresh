@@ -7,6 +7,7 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.client.SumUpClient;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
@@ -23,6 +24,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -159,6 +161,65 @@ public class SumUpService
 		catch (final Exception ex)
 		{
 			throw SumUpCallException.ofFailureAfterAccepted(ex, checkoutResponse.getData().getClient_transaction_id());
+		}
+	}
+
+	/**
+	 * Imports a SumUp transaction whose checkout SumUp accepted, but for which metasfresh has no {@link SumUpTransaction}
+	 * (e.g. because saving it failed right after the checkout, see {@link SumUpCallException#getClientTransactionId()}).
+	 * <p>
+	 * No-op if a transaction with that client transaction id exists (it is returned). Otherwise the transaction is looked
+	 * up at SumUp and saved with the given POS reference, which fires the status change event. A failed lookup, or an
+	 * unknown id, saves nothing; the failure is returned, and not recorded as AD_Issue (the caller reports an outage once).
+	 * <p>
+	 * The client and org of the new transaction are taken from the current context, see {@link SumUpContext}.
+	 */
+	public SumUpImportResult importAcceptedCheckout(
+			@NonNull final SumUpConfigId configId,
+			@NonNull final SumUpClientTransactionId clientTransactionId,
+			@NonNull final SumUpPOSRef posRef,
+			@NonNull final SumUpCardReaderExternalId cardReaderId)
+	{
+		final List<SumUpTransaction> existingTrxs = trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId));
+		if (!existingTrxs.isEmpty())
+		{
+			return SumUpImportResult.ofTransaction(existingTrxs.get(0));
+		}
+
+		try
+		{
+			final SumUpConfig config = configRepository.getById(configId);
+			final SumUpClient client = clientFactory.newClient(config);
+			client.setPosRef(posRef);
+			client.setCreateIssueOnError(false);
+
+			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(clientTransactionId);
+			final SumUpCardReader cardReader = config.getCardReaderById(cardReaderId);
+
+			final SumUpTransaction trx = updateTransactionFromRemote(
+					SumUpTransaction.builder()
+							.configId(configId)
+							.externalId(remoteTrx.getId())
+							.clientTransactionId(clientTransactionId)
+							.merchantCode(config.getMerchantCode())
+							.cardReader(SumUpTransaction.CardReader.builder()
+									.externalId(cardReader.getExternalId())
+									.name(cardReader.getName())
+									.build())
+							.timestamp(Instant.parse(remoteTrx.getTimestamp()))
+							.status(SumUpTransactionStatus.ofString(remoteTrx.getStatus()))
+							.amount(Amount.of(remoteTrx.getAmount(), remoteTrx.getCurrency()))
+							.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
+							.posRef(posRef)
+							.build(),
+					remoteTrx);
+			trxRepository.saveNew(trx);
+			return SumUpImportResult.ofTransaction(trx);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Could not import SumUp transaction {}; nothing saved", clientTransactionId, ex);
+			return SumUpImportResult.ofLookupError(ex);
 		}
 	}
 

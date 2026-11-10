@@ -44,13 +44,15 @@ public class POSPaymentProcessResponse
 	public static POSPaymentProcessResponse errorIndeterminate(
 			final POSTerminalPaymentProcessorConfig config,
 			final String errorMessage,
-			final AdIssueId errorId)
+			final AdIssueId errorId,
+			@Nullable final String clientTransactionId)
 	{
 		return builder()
 				.status(POSPaymentProcessingStatus.FAILED)
 				.config(config)
 				.errorMessage(errorMessage)
 				.errorId(errorId)
+				.clientTransactionId(clientTransactionId)
 				.isIndeterminate(true)
 				.build();
 	}

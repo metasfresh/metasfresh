@@ -5,6 +5,7 @@ import de.metas.error.IErrorManager;
 import de.metas.payment.sumup.SumUp;
 import de.metas.payment.sumup.SumUpCallException;
 import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
+import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpPOSRef;
@@ -73,8 +74,9 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 
 			// only a failed SumUp call can leave the outcome unknown; anything else (e.g. config error before the call) is definite
 			final boolean isIndeterminate = ex instanceof SumUpCallException && !((SumUpCallException)ex).isDefiniteRejection();
+			final SumUpClientTransactionId clientTransactionId = ex instanceof SumUpCallException ? ((SumUpCallException)ex).getClientTransactionId() : null;
 			return isIndeterminate
-					? POSPaymentProcessResponse.errorIndeterminate(request.getPaymentProcessorConfig(), errorMessage, errorId)
+					? POSPaymentProcessResponse.errorIndeterminate(request.getPaymentProcessorConfig(), errorMessage, errorId, clientTransactionId != null ? clientTransactionId.getAsString() : null)
 					: POSPaymentProcessResponse.error(request.getPaymentProcessorConfig(), errorMessage, errorId);
 		}
 	}
