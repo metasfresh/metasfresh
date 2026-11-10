@@ -55,7 +55,7 @@ class POSOrdersServiceTest
 
 		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()));
 		posOrderProcessingServices = mock(POSOrderProcessingServices.class);
-		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class));
+		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class), new POSCardReleaseWait());
 	}
 
 	private POSOrderAndPaymentId newOrderWithPayment(final POSPayment.POSPaymentBuilder payment)

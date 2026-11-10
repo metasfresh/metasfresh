@@ -230,4 +230,39 @@ class POSPaymentTest
 		assertThat(successful.changingStatusFromSendResult(response(POSPaymentProcessingStatus.PENDING, "accepted-trx")))
 				.isSameAs(successful);
 	}
+
+	@Test
+	void releasedAsNotCharged_failedAndRemembersTheReleasedCheckout()
+	{
+		final POSPayment released = cardPaymentBuilder(POSPaymentProcessingStatus.UNKNOWN)
+				.sumUpClientTransactionId(RELEASED_TRX)
+				.build()
+				.changingStatusToReleasedAsNotCharged();
+
+		assertThat(released.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.FAILED);
+		assertThat(released.getReleasedSumUpClientTransactionId()).isEqualTo(RELEASED_TRX);
+	}
+
+	@Test
+	void releasedAsNotCharged_checkoutNamingNoSumUpTransaction_keepsTheEarlierReleasedCheckoutGuarded()
+	{
+		// released once (RELEASED_TRX), retried, and the retry's checkout stopped before SumUp's answer was stored
+		final POSPayment released = cardPaymentBuilder(POSPaymentProcessingStatus.UNKNOWN)
+				.releasedSumUpClientTransactionId(RELEASED_TRX)
+				.build()
+				.changingStatusToReleasedAsNotCharged();
+
+		assertThat(released.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.FAILED);
+		assertThat(released.getReleasedSumUpClientTransactionId()).isEqualTo(RELEASED_TRX);
+		// a late approval of the first checkout is still not booked
+		assertThat(released.changingStatusFromRemote(response(POSPaymentProcessingStatus.SUCCESSFUL, RELEASED_TRX)).getPayment().getPaymentProcessingStatus())
+				.isEqualTo(POSPaymentProcessingStatus.FAILED);
+	}
+
+	@Test
+	void releasedAsNotCharged_onlyForAnUnknownResult()
+	{
+		assertThatThrownBy(() -> cardPayment(POSPaymentProcessingStatus.PENDING).changingStatusToReleasedAsNotCharged())
+				.isInstanceOf(AdempiereException.class);
+	}
 }

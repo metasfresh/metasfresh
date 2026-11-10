@@ -697,3 +697,57 @@ Feature: POS till card sale with an unknown card result
     Then the check of the card payment of POS sale sale1 returned checkFailed false
     And the card payment of POS sale sale1 has status UNKNOWN
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.SumUpLookupFailed'
+
+  # ##########################################################################
+  # A retried card checkout stopped after saving the payment (orphan): no SumUp transaction to refresh, so the reader is terminated.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_29
+  Scenario: A retried card checkout that stopped and became UNKNOWN is released after the wait
+    Given a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    And SumUp API stub reports the transaction of POS sale sale1 as FAILED
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status FAILED
+    When metasfresh's clock advances by 1 seconds
+    And the till's card checkout of POS sale sale1 stops after saving the payment
+    And metasfresh's clock is 151 seconds after the card checkout of POS sale sale1
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId empty
+    When metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
+    And the card payment of POS sale sale1 is released by cashier metasfresh
+    Then the SumUp stub received 1 terminate on reader reader-shopTill
+    And the release of the card payment of POS sale sale1 returned status UNKNOWN with confirmationRequired true and checkFailed false
+    When the card payment of POS sale sale1 is released by cashier metasfresh with confirmation expecting UNKNOWN
+    Then the card payment of POS sale sale1 has status FAILED
+    And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.ReleasedAsNotCharged'
+
+  # ##########################################################################
+  # Cause (i). SumUp reports the charge FAILED (no poll): the release's refresh sees it final, so it does not terminate the
+  # reader (it may run another till's checkout) and asks no confirmation. The status event is async.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_30
+  Scenario: A release whose card payment already finished at SumUp neither terminates the reader nor releases anything
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId set
+    And saving a SumUp transaction works again
+    And SumUp API stub reports the transaction of POS sale sale1 as PENDING
+    And metasfresh polls SumUp
+    Then the SumUp transaction of POS sale sale1 is saved with status PENDING
+    And the card payment of POS sale sale1 has status UNKNOWN
+    When metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
+    And SumUp API stub reports the transaction of POS sale sale1 as FAILED
+    And the card payment of POS sale sale1 is released by cashier metasfresh
+    Then the SumUp stub received 0 terminates
+    And the release of the card payment of POS sale sale1 returned confirmationRequired false and checkFailed false
+    And metasfresh handled the SumUp events
+    And the card payment of POS sale sale1 has status FAILED
+    And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.ReleasedAsNotCharged'

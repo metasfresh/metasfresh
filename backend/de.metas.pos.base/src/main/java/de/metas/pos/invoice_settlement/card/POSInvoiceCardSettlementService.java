@@ -20,6 +20,7 @@ import de.metas.payment.sumup.SumUpContext;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.pos.POSCardReleaseWait;
 import de.metas.pos.POSPaymentProcessingStatus;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
@@ -42,7 +43,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
@@ -76,10 +76,6 @@ public class POSInvoiceCardSettlementService
 	private static final AdMessageKey MSG_RetryRefusedSumUpNotReachable = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.RetryRefusedSumUpNotReachable");
 	public static final AdMessageKey MSG_NotPossibleForStatus = AdMessageKey.of("de.metas.pos.InvoiceCardSettlement.NotPossibleForStatus");
 
-	private static final String SYSCONFIG_ReleaseAfterSeconds = "de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds";
-	private static final int DEFAULT_ReleaseAfterSeconds = 180;
-	private static final int MIN_ReleaseAfterSeconds = 150;
-
 	/**
 	 * A PENDING settlement without a SumUp transaction that is older than this is an orphan: its checkout got no answer
 	 * (the system stopped between saving and sending), since a send takes at most 2 × 60 s.
@@ -88,7 +84,6 @@ public class POSInvoiceCardSettlementService
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
@@ -99,6 +94,7 @@ public class POSInvoiceCardSettlementService
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final POSInvoiceCardSettlementBooking booking;
 	@NonNull private final SumUpService sumUpService;
+	@NonNull private final POSCardReleaseWait releaseWait;
 
 	@NonNull
 	public POSInvoiceCardSettlement getById(@NonNull final POSInvoiceCardSettlementId id)
@@ -696,15 +692,12 @@ public class POSInvoiceCardSettlementService
 	}
 
 	/**
-	 * @return the wait after which the cashier may release a settlement: AD_SysConfig {@link #SYSCONFIG_ReleaseAfterSeconds},
-	 * default {@link #DEFAULT_ReleaseAfterSeconds}; a value below {@link #MIN_ReleaseAfterSeconds} (above the worst-case
-	 * send of 2 × 60 s) is raised to it
+	 * @return the wait after which the cashier may release a settlement, see {@link POSCardReleaseWait#getReleaseAfter}
 	 */
 	@NonNull
 	private Duration getReleaseAfter(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final int seconds = sysConfigBL.getIntValue(SYSCONFIG_ReleaseAfterSeconds, DEFAULT_ReleaseAfterSeconds, clientAndOrgId);
-		return Duration.ofSeconds(Math.max(seconds, MIN_ReleaseAfterSeconds));
+		return releaseWait.getReleaseAfter(clientAndOrgId);
 	}
 
 	/**

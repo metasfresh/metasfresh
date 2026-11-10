@@ -8,6 +8,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpClientTransactionId;
@@ -53,6 +54,10 @@ public class POSOrdersService
 	private static final AdMessageKey MSG_LateApprovalNotBooked = AdMessageKey.of("de.metas.pos.POSPayment.LateApprovalNotBooked");
 	private static final AdMessageKey MSG_CardResultNotStored = AdMessageKey.of("de.metas.pos.POSPayment.CardResultNotStored");
 	private static final AdMessageKey MSG_SumUpLookupFailed = AdMessageKey.of("de.metas.pos.POSPayment.SumUpLookupFailed");
+	private static final AdMessageKey MSG_ReleaseOnlyIfResultUnknown = AdMessageKey.of("de.metas.pos.POSPayment.ReleaseOnlyIfResultUnknown");
+	private static final AdMessageKey MSG_ReleaseNotYetAllowed = AdMessageKey.of("de.metas.pos.POSPayment.ReleaseNotYetAllowed");
+	private static final AdMessageKey MSG_ReleaseRefusedApproved = AdMessageKey.of("de.metas.pos.POSPayment.ReleaseRefusedApproved");
+	private static final AdMessageKey MSG_ReleasedAsNotCharged = AdMessageKey.of("de.metas.pos.POSPayment.ReleasedAsNotCharged");
 	/**
 	 * A PENDING card payment whose checkout started longer ago than this without SumUp's answer stored is an orphan: the
 	 * send is bounded by the SumUp client's timeouts (2 x 60 s), so its checkout stopped (see {@link #markCardPaymentUnknownIfOrphan}).
@@ -70,6 +75,7 @@ public class POSOrdersService
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSOrderProcessingServices posOrderProcessingServices;
 	@NonNull private final SumUpService sumUpService;
+	@NonNull private final POSCardReleaseWait cardReleaseWait;
 	@NonNull private final Sleeper sleeper;
 
 	/**
@@ -87,9 +93,10 @@ public class POSOrdersService
 			@NonNull final POSOrdersRepository ordersRepository,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
-			@NonNull final SumUpService sumUpService)
+			@NonNull final SumUpService sumUpService,
+			@NonNull final POSCardReleaseWait cardReleaseWait)
 	{
-		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, sumUpService, POSOrdersService::sleepUninterruptibly);
+		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, sumUpService, cardReleaseWait, POSOrdersService::sleepUninterruptibly);
 	}
 
 	@VisibleForTesting
@@ -99,6 +106,7 @@ public class POSOrdersService
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
 			@NonNull final SumUpService sumUpService,
+			@NonNull final POSCardReleaseWait cardReleaseWait,
 			@NonNull final Sleeper sleeper)
 	{
 		this.posTerminalService = posTerminalService;
@@ -106,6 +114,7 @@ public class POSOrdersService
 		this.currencyRepository = currencyRepository;
 		this.posOrderProcessingServices = posOrderProcessingServices;
 		this.sumUpService = sumUpService;
+		this.cardReleaseWait = cardReleaseWait;
 		this.sleeper = sleeper;
 	}
 
@@ -634,9 +643,7 @@ public class POSOrdersService
 
 	private static boolean isUnknownCardPaymentNamingSumUpTransaction(@NonNull final POSPayment payment)
 	{
-		return payment.getPaymentMethod().isCard()
-				&& payment.isUnknown()
-				&& payment.getSumUpClientTransactionId() != null;
+		return isUnknownCardPayment(payment) && payment.getSumUpClientTransactionId() != null;
 	}
 
 	/**
@@ -664,9 +671,7 @@ public class POSOrdersService
 					: Optional.empty();
 		}
 
-		final SumUpConfigId sumUpConfigId = Check.assumeNotNull(
-				posTerminalService.getPOSTerminalById(order.getPosTerminalId()).getPaymentProcessorConfigNotNull().getSumUpConfigId(),
-				"the terminal of {} is configured with SumUp", order.getExternalId());
+		final SumUpConfigId sumUpConfigId = getSumUpConfigId(order);
 		final SumUpImportResult result = sumUpService.importAcceptedCheckout(
 				sumUpConfigId,
 				clientTransactionId,
@@ -674,6 +679,13 @@ public class POSOrdersService
 				sumUpService.getConfig(sumUpConfigId).getDefaultCardReaderExternalIdNotNull(),
 				order.getClientAndOrgId());
 		return Optional.ofNullable(result.getLookupError());
+	}
+
+	private SumUpConfigId getSumUpConfigId(@NonNull final POSOrder order)
+	{
+		return Check.assumeNotNull(
+				posTerminalService.getPOSTerminalById(order.getPosTerminalId()).getPaymentProcessorConfigNotNull().getSumUpConfigId(),
+				"the terminal of {} is configured with SumUp", order.getExternalId());
 	}
 
 	private static SumUpPOSRef toSumUpPOSRef(@NonNull final POSOrderAndPaymentId orderAndPaymentId)
@@ -744,10 +756,255 @@ public class POSOrdersService
 		}
 	}
 
-	// TODO TC23 RED: stub, replaced by the release of an unknown card payment
+	/**
+	 * The cashier's release of a card payment whose result is unknown, after the configured wait ({@link POSCardReleaseWait},
+	 * counted from the start of its current checkout), in two requests:
+	 * <ol>
+	 * <li>without confirmation: cancels the checkout on the terminal's default card reader unless the payment's own SumUp
+	 * transaction, refreshed from SumUp first, is no longer PENDING (see {@link #terminateCardReaderCheckoutUnlessFinished}),
+	 * then checks the payment ({@link #checkCardPayment}). The cashier must confirm that the card was not charged
+	 * ({@code confirmationRequired}) only while that check leaves the result unknown;</li>
+	 * <li>with confirmation: under the order lock, only if the payment's status is still {@code expectedStatus} (UNKNOWN) and
+	 * its own SumUp transaction, as stored, is not approved, the payment becomes FAILED, its checkout is remembered as released
+	 * (a late result of it is never booked), and the release is recorded as an AD_Issue of the payment for the back office.
+	 * Otherwise nothing is released and the current state is returned.</li>
+	 * </ol>
+	 * The outcome is decided on the payment's own SumUp transaction as metasfresh stores it after the check, not on the
+	 * payment: the status event that updates the payment is asynchronous, so the returned order may still show the old
+	 * status. Without such a transaction, the payment's status decides.
+	 * <p>
+	 * Refused (nothing changed): not a card payment whose result is unknown ({@code ReleaseOnlyIfResultUnknown}); before the
+	 * configured wait ({@code ReleaseNotYetAllowed}); SumUp approved the charge ({@code ReleaseRefusedApproved}).
+	 * <p>
+	 * SumUp is called outside any transaction and without a lock held.
+	 */
 	public POSCardPaymentReleaseResult releaseCardPayment(@NonNull final POSCardPaymentReleaseRequest request)
 	{
-		throw new UnsupportedOperationException("TC23 RED");
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		final POSOrder order = ordersRepository.getById(ordersRepository.getIdByExternalId(request.getPosOrderExternalId()));
+		assertCanEdit(request.getPosTerminalId(), order, request.getCashierId());
+		final POSPayment payment = findPaymentByExternalId(order, request.getPosPaymentExternalId())
+				.orElseThrow(() -> new AdempiereException("No payment found for " + request.getPosPaymentExternalId()));
+
+		return request.isConfirmNotCharged()
+				? confirmCardPaymentRelease(request, order, payment)
+				: checkBeforeCardPaymentRelease(request, order, payment);
+	}
+
+	private POSCardPaymentReleaseResult checkBeforeCardPaymentRelease(
+			@NonNull final POSCardPaymentReleaseRequest request,
+			@NonNull final POSOrder order,
+			@NonNull final POSPayment payment)
+	{
+		if (!isUnknownCardPayment(payment))
+		{
+			return refusedRelease(order, MSG_ReleaseOnlyIfResultUnknown);
+		}
+		if (isCardPaymentReleaseTooEarly(order, payment))
+		{
+			return refusedRelease(order, MSG_ReleaseNotYetAllowed);
+		}
+
+		terminateCardReaderCheckoutUnlessFinished(request, order, payment);
+
+		final POSCardPaymentCheckResult checkResult = checkCardPayment(request.getPosTerminalId(), request.getPosOrderExternalId(), request.getPosPaymentExternalId(), request.getCashierId());
+		return toReleaseResult(checkResult.getOrder(), request.getPosPaymentExternalId(), checkResult.isCheckFailed());
+	}
+
+	private POSCardPaymentReleaseResult confirmCardPaymentRelease(
+			@NonNull final POSCardPaymentReleaseRequest request,
+			@NonNull final POSOrder order,
+			@NonNull final POSPayment payment)
+	{
+		final POSPaymentProcessingStatus expectedStatus = request.getExpectedStatus();
+		if (expectedStatus != POSPaymentProcessingStatus.UNKNOWN)
+		{
+			throw new AdempiereException("The confirmation of a card payment release needs the expected status UNKNOWN")
+					.setParameter("expectedStatus", expectedStatus);
+		}
+		if (!payment.getPaymentMethod().isCard())
+		{
+			return refusedRelease(order, MSG_ReleaseOnlyIfResultUnknown);
+		}
+		if (payment.getPaymentProcessingStatus() != expectedStatus)
+		{
+			// changed since the cashier was asked (e.g. SumUp's result arrived): nothing to release
+			return toReleaseResult(order, request.getPosPaymentExternalId(), false);
+		}
+		// the first request checked the wait already; repeated so that no request can release earlier
+		if (isCardPaymentReleaseTooEarly(order, payment))
+		{
+			return refusedRelease(order, MSG_ReleaseNotYetAllowed);
+		}
+
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), payment.getLocalIdNotNull());
+		trxManager.runInNewTrx(() -> ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (lockedOrder, lockedPayment) -> {
+			// a charge SumUp approved meanwhile (its status event may still be under way) is never released
+			if (lockedPayment.getPaymentProcessingStatus() != expectedStatus || isApprovedAtSumUp(lockedPayment))
+			{
+				return lockedPayment;
+			}
+			final POSPayment released = lockedPayment.changingStatusToReleasedAsNotCharged();
+			recordReleasedAsNotCharged(lockedOrder, orderAndPaymentId, released, request.getCashierId());
+			return released;
+		}));
+
+		return toReleaseResult(ordersRepository.getById(orderAndPaymentId.getOrderId()), request.getPosPaymentExternalId(), false);
+	}
+
+	/**
+	 * @return the release result for the order as it is now: refused if SumUp approved the payment's charge, a confirmation
+	 * prompt if its result is still unknown, else no confirmation (nothing to release). Decided on the payment's own SumUp
+	 * transaction as stored, if any (the payment's status follows it asynchronously), else on the payment's status.
+	 */
+	private POSCardPaymentReleaseResult toReleaseResult(
+			@NonNull final POSOrder order,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			final boolean checkFailed)
+	{
+		final POSPayment payment = findPaymentByExternalId(order, posPaymentExternalId)
+				.orElseThrow(() -> new AdempiereException("No payment found for " + posPaymentExternalId));
+		final Optional<SumUpTransaction> ownTransaction = findOwnSumUpTransaction(payment);
+
+		final boolean approved = ownTransaction
+				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
+				.orElseGet(payment::isSuccessful);
+		if (approved)
+		{
+			return POSCardPaymentReleaseResult.builder()
+					.order(order)
+					.checkFailed(checkFailed)
+					.refusedMessageKey(MSG_ReleaseRefusedApproved)
+					.refusedMessage(TranslatableStrings.adMessage(MSG_ReleaseRefusedApproved))
+					.build();
+		}
+
+		final boolean resultStillUnknown = payment.isUnknown()
+				&& ownTransaction.map(sumUpTrx -> sumUpTrx.getStatus().isPending()).orElse(true);
+		return POSCardPaymentReleaseResult.builder()
+				.order(order)
+				.confirmationRequired(resultStillUnknown)
+				.checkFailed(checkFailed)
+				.build();
+	}
+
+	private static POSCardPaymentReleaseResult refusedRelease(@NonNull final POSOrder order, @NonNull final AdMessageKey refusedMessageKey)
+	{
+		return POSCardPaymentReleaseResult.builder()
+				.order(order)
+				.refusedMessageKey(refusedMessageKey)
+				.refusedMessage(TranslatableStrings.adMessage(refusedMessageKey))
+				.build();
+	}
+
+	private static boolean isUnknownCardPayment(@NonNull final POSPayment payment)
+	{
+		return payment.getPaymentMethod().isCard() && payment.isUnknown();
+	}
+
+	/**
+	 * @return whether the configured wait ({@link POSCardReleaseWait}) since the start of the payment's current checkout has not
+	 * elapsed yet (by {@link SystemTime})
+	 */
+	private boolean isCardPaymentReleaseTooEarly(@NonNull final POSOrder order, @NonNull final POSPayment payment)
+	{
+		final Instant startedAt = Check.assumeNotNull(payment.getCardCheckoutStartedAt(), "the card checkout of {} was started", payment);
+		final Instant releasableAt = startedAt.plus(cardReleaseWait.getReleaseAfter(order.getClientAndOrgId()));
+		return !releasableAt.isBefore(SystemTime.asInstant());
+	}
+
+	/**
+	 * Asks the terminal's default card reader to abort its checkout, unless the payment's own SumUp transaction is known and
+	 * no longer PENDING after it was refreshed from SumUp: SumUp's terminate aborts whatever checkout the reader runs (it takes
+	 * no checkout id), which then can only be another one (e.g. another till's, on a shared reader). So:
+	 * <ul>
+	 * <li>the payment names no SumUp transaction (timeout, network error, SumUp 5xx, or a stopped checkout) → terminate: the
+	 * reader may still run this payment's checkout;</li>
+	 * <li>otherwise the payment is checked first ({@link #checkCardPayment}: its transaction is refreshed, or imported) →
+	 * terminate unless that transaction is stored and no longer PENDING (a failed lookup leaves the last known status).</li>
+	 * </ul>
+	 * The check after the terminate (see {@link #releaseCardPayment}) sees what the reader did meanwhile.
+	 */
+	private void terminateCardReaderCheckoutUnlessFinished(
+			@NonNull final POSCardPaymentReleaseRequest request,
+			@NonNull final POSOrder order,
+			@NonNull final POSPayment payment)
+	{
+		if (payment.getSumUpClientTransactionId() != null)
+		{
+			checkCardPayment(request.getPosTerminalId(), request.getPosOrderExternalId(), request.getPosPaymentExternalId(), request.getCashierId());
+			final boolean isFinishedAtSumUp = findOwnSumUpTransaction(payment)
+					.map(sumUpTrx -> !sumUpTrx.getStatus().isPending())
+					.orElse(false);
+			if (isFinishedAtSumUp)
+			{
+				return;
+			}
+		}
+
+		terminateCardReaderCheckout(order);
+	}
+
+	/**
+	 * Asks the terminal's default card reader to abort its checkout. Best effort: SumUp does not confirm it, and a failure
+	 * (e.g. a 4xx because the reader runs no checkout) is only logged; the check that follows decides.
+	 */
+	private void terminateCardReaderCheckout(@NonNull final POSOrder order)
+	{
+		try
+		{
+			final SumUpConfigId sumUpConfigId = getSumUpConfigId(order);
+			sumUpService.terminateCardReaderCheckout(sumUpConfigId, sumUpService.getConfig(sumUpConfigId).getDefaultCardReaderExternalIdNotNull());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Could not terminate the card reader checkout of POS order {}; releasing anyway", order.getExternalId(), ex);
+		}
+	}
+
+	/**
+	 * @return whether the payment's own SumUp transaction, as stored, is approved and not refunded
+	 */
+	private boolean isApprovedAtSumUp(@NonNull final POSPayment payment)
+	{
+		return findOwnSumUpTransaction(payment)
+				.map(SumUpTransaction::isSuccessfulAndNotRefunded)
+				.orElse(false);
+	}
+
+	/**
+	 * @return the SumUp transaction of the payment's current checkout, as stored (never looked up by the payment's POS reference)
+	 */
+	private Optional<SumUpTransaction> findOwnSumUpTransaction(@NonNull final POSPayment payment)
+	{
+		final String clientTransactionId = payment.getSumUpClientTransactionId();
+		return clientTransactionId != null
+				? sumUpService.findTransactionByClientTransactionId(SumUpClientTransactionId.ofString(clientTransactionId))
+				: Optional.empty();
+	}
+
+	/**
+	 * Records the release as an AD_Issue of the payment, in the order's client / org, so that the back office finds the
+	 * charge in the SumUp dashboard if the card was charged after all. Called under the order lock, in the release's
+	 * transaction: the AD_Issue is committed in its own transaction; if writing it fails, the release is rolled back and the
+	 * cashier can try again (as for the card settlement's release: a duplicate record is better than a release the back
+	 * office never hears of).
+	 */
+	private void recordReleasedAsNotCharged(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@NonNull final POSPayment released,
+			@NonNull final UserId cashierId)
+	{
+		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
+		{
+			errorManager.createIssue(new AdempiereException(MSG_ReleasedAsNotCharged)
+					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
+					.setParameter("sumUpClientTransactionId", released.getSumUpClientTransactionId())
+					.setParameter("ReleasedBy_User_ID", cashierId.getRepoId())
+					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId())));
+		}
 	}
 
 	public POSOrder refundPayment(

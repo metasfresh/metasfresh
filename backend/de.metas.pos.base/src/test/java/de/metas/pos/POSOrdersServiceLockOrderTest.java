@@ -56,7 +56,7 @@ class POSOrdersServiceLockOrderTest
 		ordersRepository = spy(new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty())));
 		final POSOrderProcessingServices processingServices = mock(POSOrderProcessingServices.class);
 		when(processingServices.processPOSPayment(any())).thenAnswer(invocation -> invocation.getArgument(0));
-		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), processingServices, mock(SumUpService.class));
+		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), processingServices, mock(SumUpService.class), new POSCardReleaseWait());
 	}
 
 	private POSOrder newOrderWithNewPayment(final POSPaymentMethod paymentMethod)

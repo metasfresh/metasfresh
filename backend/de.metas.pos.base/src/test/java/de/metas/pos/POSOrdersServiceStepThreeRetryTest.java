@@ -67,7 +67,7 @@ class POSOrdersServiceStepThreeRetryTest
 
 		ordersRepository = spy(new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty())));
 		posOrderProcessingServices = mock(POSOrderProcessingServices.class);
-		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class), sleeps::add);
+		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class), new POSCardReleaseWait(), sleeps::add);
 	}
 
 	private POSOrder newOrderWithNewCardPayment()

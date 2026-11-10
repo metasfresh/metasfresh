@@ -311,6 +311,29 @@ public class POSPayment
 	}
 
 	/**
+	 * The cashier released this card payment whose result is unknown, confirming that the card was not charged: it is FAILED
+	 * (so it can be deleted or retried), and its current checkout's SumUp transaction, if it names one, is remembered as
+	 * released, so that a late result of that checkout is never booked.
+	 *
+	 * @throws AdempiereException if it is not a card payment whose result is unknown
+	 */
+	public POSPayment changingStatusToReleasedAsNotCharged()
+	{
+		paymentMethod.assertCard();
+		if (!isUnknown())
+		{
+			throw new AdempiereException("Only a card payment whose result is unknown can be released")
+					.setParameter("posPayment", this);
+		}
+
+		return toBuilder()
+				.paymentProcessingStatus(POSPaymentProcessingStatus.FAILED)
+				// a checkout that named no SumUp transaction (timeout, network error, stopped) keeps an earlier released one guarded
+				.releasedSumUpClientTransactionId(sumUpClientTransactionId != null ? sumUpClientTransactionId : releasedSumUpClientTransactionId)
+				.build();
+	}
+
+	/**
 	 * A SumUp lookup made for this card payment failed: from now on (unless already) it is failing a SumUp lookup.
 	 */
 	public POSPayment withCardLookupFailed(@NonNull final Instant now)
