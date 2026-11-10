@@ -345,7 +345,9 @@ public class POSInvoiceCardSettlementBooking
 	 * check, back office's retry) and that lookup succeeded, step B does not ask SumUp again;</li>
 	 * <li>otherwise (also after a forced status event whose lookup failed) it asks SumUp itself: one lookup, outside any
 	 * transaction and without holding a lock, and only when a cash journal is open, i.e. when the booking can complete
-	 * now (never on each retry while the settlement waits for a journal). The SumUp client's timeouts apply to it.</li>
+	 * now (never on each retry while the settlement waits for a journal). The SumUp client's timeouts apply to it. If
+	 * the lookup cannot be made at all (a failure around it, e.g. no active SumUp config), that is a booking error:
+	 * BOOKING_ERROR with one AD_Issue ({@link #book}).</li>
 	 * </ul>
 	 * Under the locks: a refund known locally → BOOKING_ERROR, nothing allocated or journaled
 	 * ({@link #recordRefundedAfterPaymentCreated}), checked before the journal, so a refund known already is reported also
@@ -415,32 +417,39 @@ public class POSInvoiceCardSettlementBooking
 	/**
 	 * Step B's refund check: refreshes the settlement's SumUp transaction from SumUp, in the settlement's client / org
 	 * (so that the AD_Issue and API log of the lookup land there). A failed lookup is recorded on the transaction by
-	 * {@link SumUpService#updateTransactionFromRemote}; a failure around it is only logged. (The till's check and the
-	 * release use {@code POSInvoiceCardSettlementService.refreshSumUpTransactionFromRemote}.)
+	 * {@link SumUpService#updateTransactionFromRemote} and returns false. A failure around it (e.g. the SumUp config was
+	 * deactivated, so SumUp cannot be asked at all) is thrown: {@link #book} records it as BOOKING_ERROR with one AD_Issue,
+	 * because back office must fix it; waiting for SumUp would not help. (The till's check and the release use
+	 * {@code POSInvoiceCardSettlementService.refreshSumUpTransactionFromRemote}.)
 	 * <p>
-	 * While SumUp is unreachable the sweep repeats this lookup in every cycle. So back office gets one AD_Issue per
-	 * outage: a failed lookup is recorded as AD_Issue only when the settlement does not wait with
-	 * {@link #ERRORMSG_SumUpNotReachable} yet (the failure that starts the outage); later consecutive failures are only
-	 * logged.
+	 * While SumUp is unreachable the sweep repeats this lookup in every cycle, and the till's check and back office's
+	 * forced update make their own lookup right before this one. So a failed lookup is recorded as AD_Issue only if it
+	 * starts the outage ({@link #isCreateIssueOnFailedLookup}): back office gets one AD_Issue per outage.
 	 *
 	 * @return whether SumUp was asked successfully
 	 */
 	private boolean refreshSumUpTransactionBeforeAllocating(@NonNull final POSInvoiceCardSettlement settlement, @NonNull final SumUpTransaction sumUpTrx)
 	{
-		final boolean isCreateIssueOnError = !Objects.equals(settlement.getErrorMsg(), ERRORMSG_SumUpNotReachable);
 		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(settlement.getClientAndOrgId()))
 		{
-			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId(), isCreateIssueOnError);
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Could not refresh the SumUp transaction of card settlement {} before completing its booking; nothing is allocated", settlement.getId(), ex);
-			return false;
+			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId(), isCreateIssueOnFailedLookup(settlement, sumUpTrx));
 		}
 
 		return findSumUpTransaction(settlement.getId())
 				.map(POSInvoiceCardSettlementBooking::isLastSyncOk)
 				.orElse(false);
+	}
+
+	/**
+	 * One AD_Issue per SumUp outage: whether a failed lookup of the settlement's SumUp transaction (as stored before the
+	 * lookup) starts an outage, so that it is recorded as AD_Issue. Not if the transaction's last lookup failed already
+	 * (e.g. the till's check or back office's forced update just recorded it, or an earlier check during the same outage
+	 * did), nor while the settlement waits with {@link #ERRORMSG_SumUpNotReachable}.
+	 */
+	static boolean isCreateIssueOnFailedLookup(@NonNull final POSInvoiceCardSettlement settlement, @NonNull final SumUpTransaction sumUpTrx)
+	{
+		return isLastSyncOk(sumUpTrx)
+				&& !Objects.equals(settlement.getErrorMsg(), ERRORMSG_SumUpNotReachable);
 	}
 
 	/**
@@ -554,8 +563,7 @@ public class POSInvoiceCardSettlementBooking
 	 * journaled, the settlement stays APPROVED (still blocking the invoice) with {@link #ERRORMSG_SumUpNotReachable};
 	 * not counted as a booking attempt (an outage must not end as a booking error), and no AD_Issue here: the failed
 	 * lookup is recorded on the SumUp transaction, and the lookup that started the outage also as AD_Issue (see
-	 * {@link #refreshSumUpTransactionBeforeAllocating}). The next sweep cycle, the till's check or back office's retry
-	 * asks again.
+	 * {@link #isCreateIssueOnFailedLookup}). The next sweep cycle, the till's check or back office's retry asks again.
 	 */
 	private void recordSumUpNotReachable(@NonNull final POSInvoiceCardSettlement settlement)
 	{

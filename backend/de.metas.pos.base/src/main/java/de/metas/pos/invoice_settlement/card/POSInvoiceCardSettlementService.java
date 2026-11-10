@@ -53,6 +53,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Settles an existing, still-open sales invoice by card on the till's SumUp reader. Every attempt is a persisted
@@ -312,17 +313,22 @@ public class POSInvoiceCardSettlementService
 
 	/**
 	 * The till's check, also run by the release: refreshes the settlement's SumUp transaction from SumUp, if it has one
-	 * ({@link #refreshSumUpTransactionFromRemote}), and then reconciles the settlement with it ({@link #reconcileLocally};
-	 * its booking does not ask SumUp again). A failed SumUp lookup leaves the transaction as
-	 * it was ({@link SumUpService#updateTransactionFromRemote} records the error on it); the settlement is then reconciled
-	 * with the last known state and {@code checkFailed} is set.
+	 * ({@link #refreshSumUpTransactionFromRemote}), and then reconciles the settlement with it ({@link #reconcileLocally}).
+	 * If that lookup succeeded, the booking does not ask SumUp again. A failed SumUp lookup leaves the transaction as it
+	 * was ({@link SumUpService#updateTransactionFromRemote} records the error on it); the settlement is then reconciled
+	 * with the last known state, whose booking asks SumUp itself before it allocates, and {@code checkFailed} is set.
+	 * <p>
+	 * The till checks whenever the cashier selects an invoice that the settlement blocks, so while SumUp is unreachable it
+	 * checks again and again: back office gets one AD_Issue per outage, not one per check (see
+	 * {@link POSInvoiceCardSettlementBooking#isCreateIssueOnFailedLookup}).
 	 */
 	@NonNull
 	public POSInvoiceCardSettlementCheckResult check(@NonNull final POSInvoiceCardSettlementId id)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		final boolean checkFailed = !refreshSumUpTransactionFromRemote(id);
+		final POSInvoiceCardSettlement settlement = repository.getById(id);
+		final boolean checkFailed = !refreshSumUpTransactionFromRemote(id, sumUpTrx -> POSInvoiceCardSettlementBooking.isCreateIssueOnFailedLookup(settlement, sumUpTrx));
 		// a failed lookup must not count as a refresh: the booking then asks SumUp itself (and allocates nothing while it cannot)
 		reconcileLocally(id, !checkFailed);
 
@@ -338,6 +344,17 @@ public class POSInvoiceCardSettlementService
 	 */
 	private boolean refreshSumUpTransactionFromRemote(@NonNull final POSInvoiceCardSettlementId id)
 	{
+		return refreshSumUpTransactionFromRemote(id, sumUpTrx -> true);
+	}
+
+	/**
+	 * @param isCreateIssueOnError whether a failed lookup of the given (stored) transaction is recorded as AD_Issue
+	 * @see #refreshSumUpTransactionFromRemote(POSInvoiceCardSettlementId)
+	 */
+	private boolean refreshSumUpTransactionFromRemote(
+			@NonNull final POSInvoiceCardSettlementId id,
+			@NonNull final Predicate<SumUpTransaction> isCreateIssueOnError)
+	{
 		final SumUpTransaction sumUpTrx = booking.findSumUpTransaction(id).orElse(null);
 		if (sumUpTrx == null)
 		{
@@ -346,7 +363,7 @@ public class POSInvoiceCardSettlementService
 
 		try
 		{
-			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId());
+			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId(), isCreateIssueOnError.test(sumUpTrx));
 		}
 		catch (final Exception ex)
 		{
@@ -368,7 +385,8 @@ public class POSInvoiceCardSettlementService
 	 * check and the background sweep. It decides on the local state; only the booking's step B asks SumUp once more,
 	 * whether the charge was refunded meanwhile, right before it allocates (one lookup, outside any transaction and
 	 * without a lock held, only when a cash journal is open; see {@link POSInvoiceCardSettlementBooking#completeBooking}),
-	 * unless the caller has just asked SumUp (the status events, see {@link #onSumUpTransactionChanged}; the till's check):
+	 * unless the caller has just asked SumUp successfully (the status events, see {@link #onSumUpTransactionChanged}; the
+	 * till's check, if its lookup succeeded):
 	 * <ul>
 	 * <li>charged at SumUp (SUCCESSFUL, or REFUNDED since), or the booking was not finished (APPROVED) → booking
 	 * ({@link POSInvoiceCardSettlementBooking#book}, which handles its own booking errors and never books a refunded
@@ -385,7 +403,8 @@ public class POSInvoiceCardSettlementService
 
 	/**
 	 * @param isSumUpTransactionRefreshed the SumUp transaction was just refreshed from SumUp (by the caller, or by the
-	 *                                    lookup that fired the status event), so the booking does not ask SumUp again
+	 *                                    lookup that fired the status event), so the booking does not ask SumUp again if
+	 *                                    that lookup succeeded
 	 */
 	private void reconcileLocally(@NonNull final POSInvoiceCardSettlementId id, final boolean isSumUpTransactionRefreshed)
 	{

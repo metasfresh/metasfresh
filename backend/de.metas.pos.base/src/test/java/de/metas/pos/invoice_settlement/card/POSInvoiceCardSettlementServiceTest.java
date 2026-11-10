@@ -109,7 +109,7 @@ class POSInvoiceCardSettlementServiceTest
 				.getId();
 		when(booking.findSumUpTransaction(id)).thenReturn(Optional.of(pendingSumUpTransaction()));
 		// e.g. the terminal's SumUp config was deactivated: the refresh fails before SumUp is called
-		doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any());
+		doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any(), anyBoolean());
 
 		final POSInvoiceCardSettlementCheckResult result = service.check(id);
 
@@ -130,13 +130,69 @@ class POSInvoiceCardSettlementServiceTest
 				.getId();
 		// approved as last known; whether it was refunded since is unknown, because SumUp cannot be asked
 		when(booking.findSumUpTransaction(id)).thenReturn(Optional.of(successfulSumUpTransaction()));
-		doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any());
+		doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any(), anyBoolean());
 
 		final POSInvoiceCardSettlementCheckResult result = service.check(id);
 
 		assertThat(result.isCheckFailed()).isTrue();
 		verify(booking).book(id, false);
 		verify(booking, never()).book(id, true);
+	}
+
+	@Nested
+	class check_oneADIssuePerSumUpOutage
+	{
+		private POSInvoiceCardSettlementId createSettlement()
+		{
+			return repository.create(
+							OrgId.ofRepoId(1),
+							POSTerminalId.ofRepoId(1),
+							InvoiceId.ofRepoId(100),
+							BPartnerId.ofRepoId(2),
+							UserId.ofRepoId(3),
+							Money.of(new BigDecimal("16.07"), CurrencyId.ofRepoId(102)))
+					.getId();
+		}
+
+		@Test
+		void lastLookupSucceeded_aFailedLookupIsRecordedAsIssue()
+		{
+			final POSInvoiceCardSettlementId id = createSettlement();
+			when(booking.findSumUpTransaction(id)).thenReturn(Optional.of(successfulSumUpTransaction()));
+
+			service.check(id);
+
+			verify(sumUpService).updateTransactionFromRemote(successfulSumUpTransaction().getClientTransactionId(), true);
+		}
+
+		@Test
+		void lastLookupFailedAlready_aFailedLookupIsNotRecordedAgain()
+		{
+			// SumUp is still unreachable: the failed lookup that started the outage was recorded already
+			final POSInvoiceCardSettlementId id = createSettlement();
+			when(booking.findSumUpTransaction(id)).thenReturn(Optional.of(successfulSumUpTransaction().toBuilder()
+					.lastSync(SumUpTransaction.LastSync.error(AdIssueId.ofRepoId(1)))
+					.build()));
+
+			service.check(id);
+
+			verify(sumUpService).updateTransactionFromRemote(successfulSumUpTransaction().getClientTransactionId(), false);
+		}
+
+		@Test
+		void settlementWaitsWithSumUpNotReachable_aFailedLookupIsNotRecordedAgain()
+		{
+			final POSInvoiceCardSettlementId id = createSettlement();
+			repository.save(repository.getById(id).toBuilder()
+					.status(POSInvoiceCardSettlementStatus.APPROVED)
+					.errorMsg(POSInvoiceCardSettlementBooking.ERRORMSG_SumUpNotReachable)
+					.build());
+			when(booking.findSumUpTransaction(id)).thenReturn(Optional.of(successfulSumUpTransaction()));
+
+			service.check(id);
+
+			verify(sumUpService).updateTransactionFromRemote(successfulSumUpTransaction().getClientTransactionId(), false);
+		}
 	}
 
 	@Nested
@@ -347,7 +403,7 @@ class POSInvoiceCardSettlementServiceTest
 
 			// the booking's step A sees a charge refunded meanwhile and books nothing
 			final InOrder inOrder = inOrder(sumUpService, booking);
-			inOrder.verify(sumUpService).updateTransactionFromRemote(successfulSumUpTransaction().getClientTransactionId());
+			inOrder.verify(sumUpService).updateTransactionFromRemote(successfulSumUpTransaction().getClientTransactionId(), true);
 			inOrder.verify(booking).book(settlement.getId(), true); // refreshed just before: step B does not ask SumUp again
 		}
 
@@ -358,7 +414,7 @@ class POSInvoiceCardSettlementServiceTest
 			when(booking.findSumUpTransaction(settlement.getId())).thenReturn(Optional.of(successfulSumUpTransaction()));
 			// as SumUpService does when the lookup fails: it records an AD_Issue in the current context
 			doAnswer(invocation -> errorManager.createIssue(new AdempiereException("SumUp lookup failed").setRecord(settlement.getId().toRecordRef())))
-					.when(sumUpService).updateTransactionFromRemote(any());
+					.when(sumUpService).updateTransactionFromRemote(any(), anyBoolean());
 
 			service.retryBooking(settlement.getId());
 
@@ -375,7 +431,7 @@ class POSInvoiceCardSettlementServiceTest
 			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.BOOKING_ERROR, false, null, 1);
 			when(booking.findSumUpTransaction(settlement.getId())).thenReturn(Optional.of(successfulSumUpTransaction()));
 			// e.g. the terminal's SumUp config was deactivated: the refresh fails before SumUp is called
-			doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any());
+			doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any(), anyBoolean());
 
 			assertRetryRefusedBecauseSumUpCannotBeAsked(settlement);
 		}
@@ -409,7 +465,7 @@ class POSInvoiceCardSettlementServiceTest
 		{
 			final POSInvoiceCardSettlement settlement = settlement(POSInvoiceCardSettlementStatus.APPROVED, false, PaymentId.ofRepoId(7), 3);
 			when(booking.findSumUpTransaction(settlement.getId())).thenReturn(Optional.of(successfulSumUpTransaction()));
-			doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any());
+			doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any(), anyBoolean());
 
 			assertThatThrownBy(() -> service.retryBooking(settlement.getId()))
 					.isInstanceOfSatisfying(AdempiereException.class,

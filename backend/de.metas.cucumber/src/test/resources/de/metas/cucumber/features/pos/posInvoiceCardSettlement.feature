@@ -1112,6 +1112,7 @@ Feature: POS invoice card settlement
 
     Then card settlement settlement1 has status APPROVED
     And card settlement settlement1 has error message 'SumUp not reachable'
+    And card settlement settlement1 has 2 AD_Issues
     And invoice invoice1 has 0 allocation lines
     And the cash journal of POS terminal till contains lines:
       | Type | Amount |
@@ -1121,6 +1122,7 @@ Feature: POS invoice card settlement
 
     Then card settlement settlement1 has status BOOKING_ERROR
     And card settlement settlement1 has error message 'refunded at SumUp'
+    And card settlement settlement1 has 3 AD_Issues
     And invoice invoice1 has 0 allocation lines
     And the cash journal of POS terminal till contains lines:
       | Type | Amount |
@@ -1145,9 +1147,17 @@ Feature: POS invoice card settlement
 
     Then the check of card settlement settlement1 returned status APPROVED with checkFailed true
     And card settlement settlement1 has error message 'SumUp not reachable'
+    And card settlement settlement1 has 2 AD_Issues
     And invoice invoice1 has 0 allocation lines
     And the cash journal of POS terminal till contains lines:
       | Type | Amount |
+
+    When card settlement settlement1 is checked
+
+    Then the check of card settlement settlement1 returned status APPROVED with checkFailed true
+    And card settlement settlement1 has error message 'SumUp not reachable'
+    And card settlement settlement1 has 2 AD_Issues
+    And invoice invoice1 has 0 allocation lines
 
   # While SumUp cannot be asked, each SumUp poll asks again before allocating; back office gets one AD_Issue for the
   # outage (when the settlement starts waiting with "SumUp not reachable"), not one per poll.

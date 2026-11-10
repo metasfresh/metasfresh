@@ -2,13 +2,26 @@ package de.metas.pos.invoice_settlement.card;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.error.AdIssueId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.sumup.SumUpClientTransactionId;
+import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpService;
+import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransactionExternalId;
+import de.metas.payment.sumup.SumUpTransactionId;
+import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.pos.POSCashJournalService;
+import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
 import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
@@ -26,11 +39,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class POSInvoiceCardSettlementBookingTest
 {
@@ -43,6 +65,9 @@ class POSInvoiceCardSettlementBookingTest
 			POSInvoiceCardSettlementStatus.ABANDONED);
 
 	private POSInvoiceCardSettlementRepository repository;
+	private POSTerminalService posTerminalService;
+	private SumUpTransactionRepository sumUpTransactionRepository;
+	private SumUpService sumUpService;
 	private POSInvoiceCardSettlementBooking booking;
 
 	private IQueryBL queryBL;
@@ -56,13 +81,16 @@ class POSInvoiceCardSettlementBookingTest
 		Services.get(ISysConfigBL.class).setValue("de.metas.pos.InvoiceCardSettlement.BookingLockTimeoutMillis", 0, ClientId.SYSTEM, OrgId.ANY);
 
 		repository = new POSInvoiceCardSettlementRepository();
+		posTerminalService = mock(POSTerminalService.class);
+		sumUpTransactionRepository = mock(SumUpTransactionRepository.class);
+		sumUpService = mock(SumUpService.class);
 		booking = new POSInvoiceCardSettlementBooking(
 				repository,
 				mock(POSInvoiceSettlementService.class),
-				mock(POSTerminalService.class),
+				posTerminalService,
 				mock(POSCashJournalService.class),
-				mock(SumUpTransactionRepository.class),
-				mock(SumUpService.class));
+				sumUpTransactionRepository,
+				sumUpService);
 	}
 
 	private POSInvoiceCardSettlement createSettlement(final POSInvoiceCardSettlementStatus status)
@@ -174,5 +202,77 @@ class POSInvoiceCardSettlementBookingTest
 	void isRetryable_noSQLException()
 	{
 		assertThat(POSInvoiceCardSettlementBooking.isRetryable(new AdempiereException("payment could not be created"))).isFalse();
+	}
+
+	/**
+	 * An APPROVED settlement (payment created) waiting for a cash journal, whose journal is open now, and whose SumUp
+	 * transaction is SUCCESSFUL as last stored with the given last lookup.
+	 */
+	private POSInvoiceCardSettlement approvedSettlementReadyForStepB(@Nullable final SumUpTransaction.LastSync lastSync)
+	{
+		final POSInvoiceCardSettlement settlement = repository.save(createSettlement(POSInvoiceCardSettlementStatus.APPROVED).toBuilder()
+				.paymentId(PaymentId.ofRepoId(7))
+				.errorMsg(POSInvoiceCardSettlementBooking.ERRORMSG_NoOpenCashJournal)
+				.build());
+
+		final SumUpTransaction sumUpTrx = SumUpTransaction.builder()
+				.configId(SumUpConfigId.ofRepoId(1))
+				.externalId(SumUpTransactionExternalId.ofString("EXT-1"))
+				.clientTransactionId(SumUpClientTransactionId.ofString("1"))
+				.merchantCode(SumUpMerchantCode.ofString("M"))
+				.timestamp(Instant.parse("2026-09-24T06:00:00Z"))
+				.status(SumUpTransactionStatus.SUCCESSFUL)
+				.amount(Amount.of(new BigDecimal("16.07"), CurrencyCode.EUR))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ofRepoId(1)))
+				.lastSync(lastSync)
+				.build();
+		when(sumUpTransactionRepository.findIdByPOSRef(any())).thenReturn(SumUpTransactionId.ofRepoId(1));
+		when(sumUpTransactionRepository.stream(any())).thenAnswer(invocation -> Stream.of(sumUpTrx));
+
+		final POSTerminal terminal = mock(POSTerminal.class);
+		when(terminal.isCashJournalOpen()).thenReturn(true);
+		when(posTerminalService.getPOSTerminalById(any())).thenReturn(terminal);
+
+		return settlement;
+	}
+
+	@Test
+	void stepB_lastLookupFailedAlready_asksSumUpWithoutRecordingAnotherIssue()
+	{
+		// e.g. back office's forced update or the till's check: its failed lookup was just recorded as AD_Issue
+		final POSInvoiceCardSettlement settlement = approvedSettlementReadyForStepB(SumUpTransaction.LastSync.error(AdIssueId.ofRepoId(1)));
+
+		booking.book(settlement.getId(), true);
+
+		verify(sumUpService).updateTransactionFromRemote(SumUpClientTransactionId.ofString("1"), false);
+		final POSInvoiceCardSettlement after = repository.getById(settlement.getId());
+		assertThat(after.getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.APPROVED);
+		assertThat(after.getErrorMsg()).isEqualTo(POSInvoiceCardSettlementBooking.ERRORMSG_SumUpNotReachable);
+	}
+
+	@Test
+	void stepB_lastLookupSucceeded_aFailedLookupIsRecordedAsIssue()
+	{
+		// the sweep: the first failed lookup of an outage
+		final POSInvoiceCardSettlement settlement = approvedSettlementReadyForStepB(SumUpTransaction.LastSync.ok());
+
+		booking.book(settlement.getId(), false);
+
+		verify(sumUpService).updateTransactionFromRemote(SumUpClientTransactionId.ofString("1"), true);
+	}
+
+	@Test
+	void stepB_lookupCannotBeMade_isABookingErrorWithOneIssue()
+	{
+		// a failure around the SumUp call, not a failed call: e.g. the terminal's SumUp config was deactivated
+		final POSInvoiceCardSettlement settlement = approvedSettlementReadyForStepB(SumUpTransaction.LastSync.ok());
+		doThrow(new AdempiereException("No SumUp config found")).when(sumUpService).updateTransactionFromRemote(any(), anyBoolean());
+
+		booking.book(settlement.getId(), false);
+
+		final POSInvoiceCardSettlement after = repository.getById(settlement.getId());
+		assertThat(after.getStatus()).isEqualTo(POSInvoiceCardSettlementStatus.BOOKING_ERROR);
+		assertThat(after.getErrorMsg()).contains("No SumUp config found");
+		assertThat(countIssues(settlement.getId())).isEqualTo(1);
 	}
 }
