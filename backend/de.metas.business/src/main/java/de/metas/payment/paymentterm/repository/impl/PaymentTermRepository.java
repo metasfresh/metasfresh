@@ -46,6 +46,7 @@ import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -201,6 +202,13 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		record.setValue(value);
 		record.setName(name);
 		record.setIsActive(true);
+		// NOT NULL columns without a database default: due on the document date, no discount, no grace period
+		record.setNetDays(0);
+		record.setGraceDays(0);
+		record.setDiscount(BigDecimal.ZERO);
+		record.setDiscountDays(0);
+		record.setDiscount2(BigDecimal.ZERO);
+		record.setDiscountDays2(0);
 		saveRecord(record);
 		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 	}

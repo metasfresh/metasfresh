@@ -72,6 +72,19 @@ public class PaymentTermRepositoryTest
 		assertThat(record.isActive()).isTrue();
 		assertThat(record.isComplex()).isFalse();
 
+		// C_PaymentTerm.NetDays, GraceDays, Discount(2) and DiscountDays(2) are NOT NULL without a database default,
+		// so the INSERT must carry them explicitly (the mocked test database does not enforce that).
+		for (final String columnName : new String[] { "NetDays", "GraceDays", "Discount", "Discount2", "DiscountDays", "DiscountDays2" })
+		{
+			assertThat(InterfaceWrapperHelper.isNull(record, columnName)).as(columnName + " is set").isFalse();
+		}
+		assertThat(record.getNetDays()).isZero();
+		assertThat(record.getGraceDays()).isZero();
+		assertThat(record.getDiscountDays()).isZero();
+		assertThat(record.getDiscountDays2()).isZero();
+		assertThat(record.getDiscount()).isEqualByComparingTo("0");
+		assertThat(record.getDiscount2()).isEqualByComparingTo("0");
+
 		assertThat(paymentTermRepository.getById(id).getName()).isEqualTo("Term 1000_run1");
 		assertThat(paymentTermRepository.firstIdOnly(PaymentTermQuery.builder().orgId(ORG_ID).value("1000").build())).contains(id);
 	}
