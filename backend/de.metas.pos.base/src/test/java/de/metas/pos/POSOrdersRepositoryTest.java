@@ -39,7 +39,17 @@ class POSOrdersRepositoryTest
 
 	private POSPaymentId newPayment(final int orderId, final POSPaymentMethod method, final String status)
 	{
+		return newPayment(0, orderId, method, status);
+	}
+
+	/** @param forcedId explicit C_POS_Payment_ID (to decouple insertion order from id order), or 0 for the next one */
+	private POSPaymentId newPayment(final int forcedId, final int orderId, final POSPaymentMethod method, final String status)
+	{
 		final I_C_POS_Payment payment = InterfaceWrapperHelper.newInstance(I_C_POS_Payment.class);
+		if (forcedId > 0)
+		{
+			payment.setC_POS_Payment_ID(forcedId);
+		}
 		payment.setC_POS_Order_ID(orderId);
 		payment.setPOSPaymentMethod(method.getCode());
 		payment.setPOSPaymentProcessingStatus(status);
@@ -74,6 +84,19 @@ class POSOrdersRepositoryTest
 				new POSCardPaymentStatus(first, "UNKNOWN"),
 				new POSCardPaymentStatus(second, "SUCCESSFUL"));
 		assertThat(repository.listCardPaymentStatusesByTerminalId(POSTerminalId.ofRepoId(99))).isEmpty();
+	}
+
+	@Test
+	void listCardPaymentStatuses_orderIsByPaymentId_notByInsertionOrder()
+	{
+		final int order = newOrder(TERMINAL_1);
+		// inserted first, but with the HIGHER id
+		final POSPaymentId newer = newPayment(900, order, POSPaymentMethod.CARD, "SUCCESSFUL");
+		final POSPaymentId older = newPayment(800, order, POSPaymentMethod.CARD, "UNKNOWN");
+
+		assertThat(repository.listCardPaymentStatusesByTerminalId(TERMINAL_1)).containsExactly(
+				new POSCardPaymentStatus(older, "UNKNOWN"),
+				new POSCardPaymentStatus(newer, "SUCCESSFUL"));
 	}
 
 	@Test
