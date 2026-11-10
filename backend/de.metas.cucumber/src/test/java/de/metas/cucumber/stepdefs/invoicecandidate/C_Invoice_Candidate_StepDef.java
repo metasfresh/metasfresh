@@ -865,7 +865,7 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
-	private static final String INVOICING_PROCESS_ROLE_NAME = "WebUI";
+	private static final String WEBUI_ROLE_NAME = "WebUI";
 
 	/** Summary returned by the last invoicing-process run. */
 	private String lastInvoicingRunSummary;
@@ -938,11 +938,23 @@ public class C_Invoice_Candidate_StepDef
 		return entriesByKey;
 	}
 
+	/** The user {@code metasfresh}, the user the WebUI logs in with. */
+	private static UserId retrieveWebUIUserId()
+	{
+		return StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
+	}
+
+	/** The role {@code WebUI} of the given user, the role the WebUI user logs in with. */
+	private static RoleId retrieveWebUIRoleId(@NonNull final UserId userId)
+	{
+		return StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, WEBUI_ROLE_NAME);
+	}
+
 	/** Permissions of the user {@code metasfresh} with the role {@code WebUI} (the role the WebUI user logs in with). */
 	private IUserRolePermissions retrieveWebUIUserRolePermissions()
 	{
-		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
-		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, INVOICING_PROCESS_ROLE_NAME);
+		final UserId userId = retrieveWebUIUserId();
+		final RoleId roleId = retrieveWebUIRoleId(userId);
 		return userRolePermissionsDAO.getUserRolePermissions(roleId, userId, StepDefConstants.CLIENT_ID, SystemTime.asLocalDate());
 	}
 
@@ -1126,8 +1138,8 @@ public class C_Invoice_Candidate_StepDef
 	 */
 	private Properties createInvoicingProcessCtx()
 	{
-		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
-		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, INVOICING_PROCESS_ROLE_NAME);
+		final UserId userId = retrieveWebUIUserId();
+		final RoleId roleId = retrieveWebUIRoleId(userId);
 
 		final Properties processCtx = Env.copyCtx(Env.getCtx());
 		Env.setClientId(processCtx, StepDefConstants.CLIENT_ID);
