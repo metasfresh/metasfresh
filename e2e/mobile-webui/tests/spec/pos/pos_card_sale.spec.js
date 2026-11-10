@@ -19,6 +19,16 @@ const SYSCONFIG_ReleaseAfterSeconds = 'de.metas.pos.InvoiceCardSettlement.Releas
 const MESSAGE_ReleasedAsNotCharged = 'de.metas.pos.POSPayment.ReleasedAsNotCharged';
 const OPENING_BALANCE = 100;
 
+// Timing of TC24 (all in seconds). The release wait is the sysconfig value the test sets (150 is its floor);
+// the payment is that old only RELEASE_AFTER_SECONDS after its card checkout was started, and the checkout call
+// itself takes the stub's delay (65 s > the SumUp client's 60 s read timeout) before the till sees "unknown".
+const RELEASE_AFTER_SECONDS = 150;
+const CHECKOUT_STUB_DELAY_SECONDS = 65;
+// login + masterdata + till opening + the stub delay + the release wait + margin = 315 s
+const TC24_TEST_TIMEOUT_SECONDS = 100 + CHECKOUT_STUB_DELAY_SECONDS + RELEASE_AFTER_SECONDS;
+// the button must be enabled by then: the release wait plus 20 s margin, measured from the "unknown" screen
+const RELEASE_ENABLED_TIMEOUT_MS = (RELEASE_AFTER_SECONDS + 20) * 1000;
+
 /**
  * The sale data of the cash sale spec (pos_cash_sale.spec.js): de_DE, EUR gross price list (isTaxIncluded), P1 at 2,50;
  * plus the payment methods CASH and CARD, as in pos_invoice_card_settlement.spec.js.
@@ -101,16 +111,16 @@ test('An approved card sale completes', async ({ page }) => {
 // TC24: the card sale's send to the reader times out, so whether the reader got the checkout is unknown.
 // noinspection JSUnusedLocalSymbols
 test('A card sale whose send times out shows result unknown and can be released after the wait', async ({ page }) => {
-    test.setTimeout(300_000);
+    test.setTimeout(TC24_TEST_TIMEOUT_SECONDS * 1000);
     setAllureMetadata('POS - A card sale');
 
     // the floor of the wait; restored after the test
-    await Backend.setSysconfigs({ [SYSCONFIG_ReleaseAfterSeconds]: '150' });
+    await Backend.setSysconfigs({ [SYSCONFIG_ReleaseAfterSeconds]: String(RELEASE_AFTER_SECONDS) });
 
     const masterdata = await createMasterdata();
     const cardTerminal = cardTerminalOf(masterdata);
     // beyond the SumUp client's 60 s read timeout: whether the reader got the checkout is unknown
-    await SumUpStub.stubSaleCheckout({ ...cardTerminal, fixedDelayMilliseconds: 65_000 });
+    await SumUpStub.stubSaleCheckout({ ...cardTerminal, fixedDelayMilliseconds: CHECKOUT_STUB_DELAY_SECONDS * 1000 });
     await SumUpStub.stubTerminate(cardTerminal);
 
     await openTillAndCheckoutP1({ masterdata });
@@ -121,10 +131,17 @@ test('A card sale whose send times out shows result unknown and can be released 
     await POSPaymentPanel.expectNoCancelOrRetry();
     await POSPaymentPanel.expectOpenAmount('0,00');
     await POSPaymentPanel.expectOrderNotCompleted();
+    // positive signal from the backend: the payment is unresolved, so the sale cannot have been completed
+    await Backend.expect({
+        pos: {
+            posTerminal: 'T1',
+            cardPayments: [{ status: 'UNKNOWN' }],
+        },
+    });
     await POSPaymentPanel.expectCardReleaseEnabled({ isEnabled: false });
 
     // once the payment is 150 s old, the cashier checks the reader and releases the payment as not charged
-    await POSPaymentPanel.expectCardReleaseEnabled({ isEnabled: true, timeout: 170_000 });
+    await POSPaymentPanel.expectCardReleaseEnabled({ isEnabled: true, timeout: RELEASE_ENABLED_TIMEOUT_MS });
     await POSPaymentPanel.releaseCardPayment({ confirm: true });
 
     await POSPaymentPanel.expectCardPaymentFailedWithCancelAndRetry();

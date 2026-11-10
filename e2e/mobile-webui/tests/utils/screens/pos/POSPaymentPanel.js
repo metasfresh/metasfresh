@@ -103,8 +103,12 @@ export const POSPaymentPanel = {
             .toContainText(exactTextMatch(amount), { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    /** Asserts the sale was not completed: the order-completed summary is not shown. */
+    /**
+     * Asserts the sale was not completed: the payment panel is still shown (a positive signal) and the order-completed
+     * summary is not. The caller adds the backend side (the payment is unresolved) so this is not a vacuous absence check.
+     */
     expectOrderNotCompleted: async () => await test.step(`${NAME} - Expect order not completed`, async () => {
+        await expect(containerElement()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(page.getByTestId('pos-order-summary-modal')).toHaveCount(0);
     }),
 
