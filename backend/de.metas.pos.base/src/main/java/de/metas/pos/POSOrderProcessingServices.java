@@ -64,7 +64,7 @@ public class POSOrderProcessingServices
 			return posPayment;
 		});
 
-		posCashJournalService.changeJournalById(cashJournalId, journal -> journal.addPayments(posOrder));
+		posCashJournalService.addOrderPayments(cashJournalId, posOrder);
 	}
 
 	/**

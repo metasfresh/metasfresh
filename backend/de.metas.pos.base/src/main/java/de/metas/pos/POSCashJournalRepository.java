@@ -1,6 +1,7 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Repository
@@ -69,6 +71,25 @@ public class POSCashJournalRepository
 				.orderBy(I_C_POS_JournalLine.COLUMN_C_POS_JournalLine_ID)
 				.create()
 				.list();
+	}
+
+	/**
+	 * @return those of the given payments that have an (active) line on any journal
+	 */
+	public ImmutableSet<POSPaymentId> retrieveJournaledPaymentIds(@NonNull final Set<POSPaymentId> paymentIds)
+	{
+		if (paymentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_POS_JournalLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_POS_JournalLine.COLUMNNAME_C_POS_Payment_ID, paymentIds)
+				.create()
+				.stream()
+				.map(lineRecord -> POSPaymentId.ofRepoId(lineRecord.getC_POS_Payment_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public POSCashJournal newJournal(final POSCashJournalCreateRequest request)

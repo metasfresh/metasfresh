@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @EqualsAndHashCode
 @ToString
@@ -157,16 +158,20 @@ public class POSCashJournal
 	}
 
 	/**
-	 * Adds a line for each successful payment of the order that has none yet. It is called on every attempt to complete the
-	 * order, also on attempts that leave the order waiting for another payment, so a payment already journaled by an earlier
-	 * attempt must not be journaled again.
+	 * Adds a line for each successful payment of the order that is not journaled yet. It is called on every attempt to complete
+	 * the order, also on attempts that leave the order waiting for another payment, so a payment already journaled by an earlier
+	 * attempt, on this journal or on an earlier one of the terminal (since closed), must not be journaled again.
+	 *
+	 * @param alreadyJournaledPaymentIds the order's payments that have a line on any journal, see
+	 *                                   {@link POSCashJournalService#addOrderPayments}
 	 */
-	public void addPayments(final POSOrder posOrder)
+	public void addPayments(@NonNull final POSOrder posOrder, @NonNull final Set<POSPaymentId> alreadyJournaledPaymentIds)
 	{
 		final POSOrderId posOrderId = posOrder.getLocalIdNotNull();
 		final UserId cashierId = posOrder.getCashierId();
 		posOrder.streamPaymentsNotDeleted()
 				.filter(POSPayment::isSuccessful)
+				.filter(posPayment -> !alreadyJournaledPaymentIds.contains(posPayment.getLocalIdNotNull()))
 				.filter(posPayment -> !hasLineForPayment(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull())))
 				.forEach(posPayment -> addPayment(posPayment, posOrderId, cashierId));
 	}

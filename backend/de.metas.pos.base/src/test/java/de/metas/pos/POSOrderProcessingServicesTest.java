@@ -25,7 +25,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -47,6 +49,7 @@ class POSOrderProcessingServicesTest
 	private POSPaymentProcessorService paymentProcessorService;
 	private POSCashJournalService journalService;
 	private POSCashJournalId journalId;
+	private POSTerminal terminal;
 	private POSOrderProcessingServices services;
 
 	@BeforeEach
@@ -63,7 +66,7 @@ class POSOrderProcessingServicesTest
 						.build())
 				.getId();
 
-		final POSTerminal terminal = mock(POSTerminal.class);
+		terminal = mock(POSTerminal.class);
 		when(terminal.getCashJournalIdNotNull()).thenReturn(journalId);
 		when(terminal.getPaymentProcessorConfigNotNull()).thenReturn(SUMUP_CONFIG);
 		final POSTerminalService terminalService = mock(POSTerminalService.class);
@@ -190,5 +193,43 @@ class POSOrderProcessingServicesTest
 				.extracting(line -> line.getPosOrderAndPaymentId() != null ? line.getPosOrderAndPaymentId().getPaymentId().getRepoId() : -1)
 				.containsExactly(21, 22);
 		assertThat(journal.getCashEndingBalance().toBigDecimal()).isEqualByComparingTo("104.00");
+	}
+
+	@Test
+	void completionAttempts_journalEachPaymentOnce_acrossJournals()
+	{
+		final POSPayment cash = payment(21, POSPaymentMethod.CASH, "4.00", POSPaymentProcessingStatus.SUCCESSFUL);
+		final POSPayment cardPending = payment(22, POSPaymentMethod.CARD, "6.00", POSPaymentProcessingStatus.PENDING);
+
+		// a completion attempt journals the paid cash on journal A and ends waiting for the card
+		services.processPOSPayments(order(ImmutableList.of(cash, cardPending)));
+
+		// the cashier closes journal A and opens journal B
+		journalService.changeJournalById(journalId, journal -> journal.close(Money.of(new BigDecimal("104.00"), EUR), null, UserId.ofRepoId(100)));
+		final POSCashJournalId journalBId = journalService.newJournal(POSCashJournalCreateRequest.builder()
+						.orgId(OrgId.ofRepoId(1))
+						.terminalId(POSTerminalId.ofRepoId(1))
+						.dateTrx(Instant.parse("2026-11-11T08:00:00Z"))
+						.cashBeginningBalance(Money.of(104, EUR))
+						.build())
+				.getId();
+		when(terminal.getCashJournalIdNotNull()).thenReturn(journalBId);
+
+		// SumUp approves the card; the sale completes
+		services.processPOSPayments(order(ImmutableList.of(cash, payment(22, POSPaymentMethod.CARD, "6.00", POSPaymentProcessingStatus.SUCCESSFUL))));
+
+		// the cash stays on journal A only; journal B gets only the card
+		assertThat(journalPaymentIds(journalService.getById(journalId))).containsExactly(21);
+		final POSCashJournal journalB = journalService.getById(journalBId);
+		assertThat(journalPaymentIds(journalB)).containsExactly(22);
+		assertThat(journalB.getCashEndingBalance().toBigDecimal()).isEqualByComparingTo("104.00");
+	}
+
+	private static List<Integer> journalPaymentIds(final POSCashJournal journal)
+	{
+		return journal.getLines()
+				.stream()
+				.map(line -> line.getPosOrderAndPaymentId() != null ? line.getPosOrderAndPaymentId().getPaymentId().getRepoId() : -1)
+				.collect(Collectors.toList());
 	}
 }
