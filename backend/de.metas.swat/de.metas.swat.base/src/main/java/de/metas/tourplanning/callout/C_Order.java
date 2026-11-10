@@ -71,8 +71,8 @@ public class C_Order
 
 		// When the forward lead-time feature governs this order (sysconfig on + shipper has a lead time), the per-shipper
 		// lead time OWNS DatePromised even if the forward calc did not re-set it just now (e.g. IsFixedDatePromised=Y):
-		// the legacy flat DatePromisedOffsetDays must not overwrite it (REQUIREMENTS §7). When the feature is off, the
-		// legacy offset keeps its original behaviour (AC5c).
+		// the legacy flat DatePromisedOffsetDays must not overwrite it. When the feature is off, the
+		// legacy offset keeps its original behaviour.
 		if (orderDeliveryDayBL.isLeadTimeForwardCalcActive(order))
 		{
 			return;

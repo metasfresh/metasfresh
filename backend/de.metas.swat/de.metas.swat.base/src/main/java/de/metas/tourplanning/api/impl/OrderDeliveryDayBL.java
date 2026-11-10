@@ -163,7 +163,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		// The per-shipper forward lead time GOVERNS this sales order's DatePromised when the forward opt-in sysconfig
 		// is on for its client+org and its shipper carries a lead time. True even when the forward calc does not
 		// currently re-set DatePromised (e.g. IsFixedDatePromised='Y'): callers use this to know the lead time owns
-		// the promised date, so the legacy flat DatePromisedOffsetDays must not overwrite it (REQUIREMENTS §7).
+		// the promised date, so the legacy flat DatePromisedOffsetDays must not overwrite it.
 		return hasLeadTime(order)
 				&& sysConfigBL.getBooleanValue(SYSCONFIG_LeadTimeForwardCalc_Enabled, false, order.getAD_Client_ID(), order.getAD_Org_ID());
 	}

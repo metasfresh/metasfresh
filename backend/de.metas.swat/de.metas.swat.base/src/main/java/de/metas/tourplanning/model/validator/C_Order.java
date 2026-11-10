@@ -102,8 +102,7 @@ public class C_Order
 		// (Re)derive PreparationDate + tour only when something that DRIVES it changed:
 		//  - a classic driving column: delivery location, DatePromised (incl. one the forward calc above just set),
 		//    or an explicitly cleared PreparationDate — this is the only path for a no-lead-time order, so a bare
-		//    DateOrdered / M_Shipper_ID change on such an order does NOT re-run the tour/fallback recompute
-		//    (AC5a: no-lead-time behaviour unchanged);
+		//    DateOrdered / M_Shipper_ID change on such an order does NOT re-run the tour/fallback recompute;
 		//  - OR a forward trigger (DateOrdered / M_Shipper_ID changed, or a new order) on a LEAD-TIME order: then the
 		//    backward lead-time derivation must run even if DatePromised did not move (e.g. IsFixedDatePromised='Y',
 		//    where the pinned DatePromised stays but the new route's lead time shifts PreparationDate).
