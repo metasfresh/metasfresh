@@ -9,10 +9,6 @@ import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_PaymentTerm;
-
-import java.math.BigDecimal;
 
 /**
  * Resolves the {@code C_PaymentTerm} with the given {@code Value} (of the masterdata org or of org {@code *}); creates it
@@ -39,19 +35,6 @@ public class PaymentTermGetOrCreateCommand
 
 	private PaymentTermId create()
 	{
-		final I_C_PaymentTerm record = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
-		record.setAD_Org_ID(orgId.getRepoId());
-		record.setValue(value);
-		record.setName(Identifier.ofString("Term " + value).toUniqueString());
-		record.setIsActive(true);
-		// NOT NULL columns without a database default: due on the document date, no discount, no grace period
-		record.setNetDays(0);
-		record.setGraceDays(0);
-		record.setDiscount(BigDecimal.ZERO);
-		record.setDiscountDays(0);
-		record.setDiscount2(BigDecimal.ZERO);
-		record.setDiscountDays2(0);
-		InterfaceWrapperHelper.saveRecord(record);
-		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+		return paymentTermRepository.createPaymentTerm(orgId, value, Identifier.ofString("Term " + value).toUniqueString());
 	}
 }
