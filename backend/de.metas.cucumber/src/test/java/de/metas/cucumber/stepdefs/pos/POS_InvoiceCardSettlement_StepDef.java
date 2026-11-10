@@ -181,7 +181,6 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	// test-only trigger that makes every SUMUP_Transaction insert fail; see failSumUpTransactionInsert
 	private static final String SUMUP_TRX_INSERT_FAILURE = "cucumber_sumup_transaction_insert_fails";
-	private boolean isSumUpTransactionInsertFailing;
 
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
 	@NonNull private final SpringContextHolder.Lazy<SumUpService> sumUpService = SpringContextHolder.lazyBean(SumUpService.class);
@@ -238,6 +237,8 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	private void configurePOSTerminalWithSumUp(@NonNull final String terminalIdentifier, final boolean withDefaultReader)
 	{
+		dropSumUpTransactionInsertFailure();
+
 		final I_C_POS posRecord = posTable.get(StepDefDataIdentifier.ofString(terminalIdentifier));
 
 		// SumUpConfigRepository can only update an existing config, so the config record itself is created directly
@@ -1643,7 +1644,7 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	/**
 	 * Every INSERT into {@code SUMUP_Transaction} fails with a database error (a test-only trigger), as when the database
-	 * fails right after SumUp accepted a checkout. Removed after the scenario ({@link #dropSumUpTransactionInsertFailure()}).
+	 * fails right after SumUp accepted a checkout. Removed again by {@link #dropSumUpTransactionInsertFailure()}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -1654,7 +1655,6 @@ public class POS_InvoiceCardSettlement_StepDef
 	@And("^saving a SumUp transaction fails with a database error$")
 	public void failSumUpTransactionInsert()
 	{
-		isSumUpTransactionInsertFailing = true;
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"CREATE OR REPLACE FUNCTION " + SUMUP_TRX_INSERT_FAILURE + "() RETURNS trigger LANGUAGE plpgsql AS $$"
 						+ " BEGIN RAISE EXCEPTION 'cucumber: SUMUP_Transaction cannot be saved'; END; $$",
@@ -1666,18 +1666,20 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
-	 * Removes the failure of {@link #failSumUpTransactionInsert()}, if the scenario set it up: the table is shared by all
-	 * scenarios.
+	 * Removes the failure of {@link #failSumUpTransactionInsert()} after every scenario, whatever set it up (the table is
+	 * shared by all scenarios), and also when a scenario configures SumUp ({@link #configurePOSTerminalWithSumUp}), so
+	 * that a trigger left by a run killed mid-scenario (whose after-hooks never ran) cannot fail the next run's
+	 * checkouts. Not a before-hook: metasfresh and its database are only set up by the scenario's first step. The trigger
+	 * is dropped only if it exists (a cheap catalog lookup), so that scenarios which never install it take no table lock.
 	 */
 	@After
 	public void dropSumUpTransactionInsertFailure()
 	{
-		if (!isSumUpTransactionInsertFailing)
+		final int triggerCount = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COUNT(1) FROM pg_trigger WHERE tgname=?", SUMUP_TRX_INSERT_FAILURE);
+		if (triggerCount > 0)
 		{
-			return;
+			DB.executeUpdateAndThrowExceptionOnFail("DROP TRIGGER IF EXISTS " + SUMUP_TRX_INSERT_FAILURE + " ON SUMUP_Transaction", ITrx.TRXNAME_None);
 		}
-		isSumUpTransactionInsertFailing = false;
-		DB.executeUpdateAndThrowExceptionOnFail("DROP TRIGGER IF EXISTS " + SUMUP_TRX_INSERT_FAILURE + " ON SUMUP_Transaction", ITrx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail("DROP FUNCTION IF EXISTS " + SUMUP_TRX_INSERT_FAILURE + "()", ITrx.TRXNAME_None);
 	}
 
