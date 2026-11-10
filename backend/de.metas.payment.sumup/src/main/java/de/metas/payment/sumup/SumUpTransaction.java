@@ -203,5 +203,16 @@ public class SumUpTransaction
 					.errorId(errorId)
 					.build();
 		}
+
+		/**
+		 * @return a failed lookup that was not recorded as AD_Issue (the caller reported it otherwise)
+		 */
+		public static LastSync errorWithoutIssue()
+		{
+			return builder()
+					.status(LastSyncStatus.Error)
+					.timestamp(SystemTime.asInstant())
+					.build();
+		}
 	}
 }

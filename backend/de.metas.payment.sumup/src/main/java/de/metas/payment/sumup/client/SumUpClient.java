@@ -53,6 +53,11 @@ public class SumUpClient
 	@NonNull private final RestTemplate restTemplate;
 
 	@Nullable @Setter private SumUpPOSRef posRef;
+	/**
+	 * Whether a failed call is recorded as AD_Issue (default); if not, the caller reports the failure itself. The API
+	 * log is written either way.
+	 */
+	@Setter private boolean createIssueOnError = true;
 
 	@Builder
 	private SumUpClient(
@@ -147,8 +152,11 @@ public class SumUpClient
 			{
 				metasfreshException.setRecord(settlementRef);
 			}
-			final AdIssueId adIssueId = errorManager.createIssue(metasfreshException);
-			log.adIssueId(adIssueId);
+			if (createIssueOnError)
+			{
+				final AdIssueId adIssueId = errorManager.createIssue(metasfreshException);
+				log.adIssueId(adIssueId);
+			}
 
 			throw metasfreshException;
 		}

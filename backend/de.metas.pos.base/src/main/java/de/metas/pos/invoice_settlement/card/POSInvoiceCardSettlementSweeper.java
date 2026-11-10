@@ -34,10 +34,15 @@ import java.util.stream.Stream;
  * was refunded, right before step B allocates ({@link POSInvoiceCardSettlementBooking#completeBooking}): outside any
  * transaction and without a lock held, only while the terminal's cash journal is open (none while a settlement waits
  * for a journal). So a cycle makes at most one SumUp lookup per settlement whose step B runs in it: a newly approved one,
- * or an APPROVED one retried after a retryable step-B error. Such retries end after {@code MAX_BOOKING_ATTEMPTS} counted
- * attempts; an attempt whose error cannot be recorded because the settlement row is locked elsewhere is not counted, so
- * while such a lock is held the lookup repeats in every cycle (once per cycle per settlement). Each lookup is
- * bounded by the SumUp client's timeouts, which therefore also delay the poller's next cycle while SumUp hangs.
+ * or an APPROVED one retried after a retryable step-B error. Retries after such an error end after
+ * {@code MAX_BOOKING_ATTEMPTS} counted attempts; an attempt whose error cannot be recorded because the settlement row is
+ * locked elsewhere is not counted, so while such a lock is held the lookup repeats in every cycle. While SumUp is
+ * unreachable, an APPROVED settlement with an open journal waits with
+ * {@link POSInvoiceCardSettlementBooking#ERRORMSG_SumUpNotReachable}, and its lookup repeats in every cycle (once per
+ * cycle per settlement) for as long as the outage lasts: such attempts are not counted, so they are not bounded by
+ * {@code MAX_BOOKING_ATTEMPTS} and an outage never ends as a booking error. Back office gets one AD_Issue per settlement
+ * per outage (for the failed lookup that starts it); the repeated failures are only logged. Each lookup is bounded by
+ * the SumUp client's timeouts, which therefore also delay the poller's next cycle while SumUp hangs.
  * <p>
  * Each settlement is reconciled on its own, in its own transactions, in the settlement's client/org context (the
  * poller thread has no login context), and with its own error capture: a failure is logged, recorded once as an

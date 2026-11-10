@@ -212,17 +212,39 @@ public class SumUpService
 				.build();
 	}
 
+	/**
+	 * Refreshes the transaction from SumUp; a failed lookup is recorded as AD_Issue and stored as the transaction's
+	 * {@link LastSync}.
+	 */
 	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id)
 	{
-		trxRepository.updateById(id, this::updateTransactionFromRemote);
+		updateTransactionFromRemote(id, true);
+	}
+
+	/**
+	 * Refreshes the transaction from SumUp; a failed lookup is stored as the transaction's {@link LastSync}.
+	 *
+	 * @param isCreateIssueOnError whether a failed lookup is recorded as AD_Issue; if not, it is only logged (for a
+	 *                             caller that repeats a lookup while SumUp is unreachable and reports the outage once
+	 *                             itself)
+	 */
+	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id, final boolean isCreateIssueOnError)
+	{
+		trxRepository.updateById(id, trx -> updateTransactionFromRemote(trx, isCreateIssueOnError));
 	}
 
 	private SumUpTransaction updateTransactionFromRemote(final SumUpTransaction trx)
+	{
+		return updateTransactionFromRemote(trx, true);
+	}
+
+	private SumUpTransaction updateTransactionFromRemote(final SumUpTransaction trx, final boolean isCreateIssueOnError)
 	{
 		final SumUpConfigId configId = trx.getConfigId();
 		final SumUpConfig config = configRepository.getById(configId);
 		final SumUpClient client = clientFactory.newClient(config);
 		client.setPosRef(trx.getPosRef());
+		client.setCreateIssueOnError(isCreateIssueOnError);
 
 		try
 		{
@@ -231,6 +253,14 @@ public class SumUpService
 		}
 		catch (Exception ex)
 		{
+			if (!isCreateIssueOnError)
+			{
+				logger.warn("Could not get SumUp transaction {} from SumUp; not recorded as AD_Issue, as requested by the caller", trx.getClientTransactionId(), ex);
+				return trx.toBuilder()
+						.lastSync(LastSync.errorWithoutIssue())
+						.build();
+			}
+
 			final AdIssueId errorId = errorManager.createIssue(ex);
 			return trx.toBuilder()
 					.lastSync(LastSync.error(errorId))

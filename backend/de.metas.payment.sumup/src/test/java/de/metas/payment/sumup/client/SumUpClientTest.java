@@ -41,6 +41,7 @@ class SumUpClientTest
 	private static final SumUpCardReaderExternalId READER_ID = SumUpCardReaderExternalId.ofString("R1");
 
 	private MockRestServiceServer server;
+	private IErrorManager errorManager;
 	private SumUpClient client;
 
 	@BeforeEach
@@ -48,8 +49,9 @@ class SumUpClientTest
 	{
 		final RestTemplate restTemplate = new RestTemplate();
 		server = MockRestServiceServer.bindTo(restTemplate).build();
+		errorManager = Mockito.mock(IErrorManager.class);
 		client = SumUpClient.builder()
-				.errorManager(Mockito.mock(IErrorManager.class))
+				.errorManager(errorManager)
 				.logRepository(Mockito.mock(SumUpLogRepository.class))
 				.jsonObjectMapper(JsonObjectMapperHolder.sharedJsonObjectMapper())
 				.configId(SumUpConfigId.ofRepoId(1))
@@ -155,5 +157,24 @@ class SumUpClientTest
 
 		assertThatThrownBy(this::checkout)
 				.isInstanceOfSatisfying(SumUpCallException.class, ex -> assertThat(ex.getMessage()).contains(raw));
+	}
+
+	@Test
+	void failedCall_isRecordedAsIssue()
+	{
+		server.expect(requestTo(BASE_URL + "/merchants/M1/readers/R1/checkout")).andRespond(withServerError());
+
+		assertThatThrownBy(this::checkout).isInstanceOf(SumUpCallException.class);
+		Mockito.verify(errorManager).createIssue(Mockito.any(SumUpCallException.class));
+	}
+
+	@Test
+	void failedCall_withoutIssueOnError_isNotRecordedAsIssue_butStillThrown()
+	{
+		client.setCreateIssueOnError(false);
+		server.expect(requestTo(BASE_URL + "/merchants/M1/readers/R1/checkout")).andRespond(withServerError());
+
+		assertThatThrownBy(this::checkout).isInstanceOf(SumUpCallException.class);
+		Mockito.verifyNoInteractions(errorManager);
 	}
 }

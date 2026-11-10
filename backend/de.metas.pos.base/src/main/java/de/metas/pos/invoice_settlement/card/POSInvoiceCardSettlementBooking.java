@@ -417,14 +417,20 @@ public class POSInvoiceCardSettlementBooking
 	 * (so that the AD_Issue and API log of the lookup land there). A failed lookup is recorded on the transaction by
 	 * {@link SumUpService#updateTransactionFromRemote}; a failure around it is only logged. (The till's check and the
 	 * release use {@code POSInvoiceCardSettlementService.refreshSumUpTransactionFromRemote}.)
+	 * <p>
+	 * While SumUp is unreachable the sweep repeats this lookup in every cycle. So back office gets one AD_Issue per
+	 * outage: a failed lookup is recorded as AD_Issue only when the settlement does not wait with
+	 * {@link #ERRORMSG_SumUpNotReachable} yet (the failure that starts the outage); later consecutive failures are only
+	 * logged.
 	 *
 	 * @return whether SumUp was asked successfully
 	 */
 	private boolean refreshSumUpTransactionBeforeAllocating(@NonNull final POSInvoiceCardSettlement settlement, @NonNull final SumUpTransaction sumUpTrx)
 	{
+		final boolean isCreateIssueOnError = !Objects.equals(settlement.getErrorMsg(), ERRORMSG_SumUpNotReachable);
 		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(settlement.getClientAndOrgId()))
 		{
-			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId());
+			sumUpService.updateTransactionFromRemote(sumUpTrx.getClientTransactionId(), isCreateIssueOnError);
 		}
 		catch (final Exception ex)
 		{
@@ -547,8 +553,9 @@ public class POSInvoiceCardSettlementBooking
 	 * SumUp could not be asked whether the charge was refunded since the payment was created: nothing is allocated or
 	 * journaled, the settlement stays APPROVED (still blocking the invoice) with {@link #ERRORMSG_SumUpNotReachable};
 	 * not counted as a booking attempt (an outage must not end as a booking error), and no AD_Issue here: the failed
-	 * lookup is recorded on the SumUp transaction. The next sweep cycle, the till's check or back office's retry asks
-	 * again.
+	 * lookup is recorded on the SumUp transaction, and the lookup that started the outage also as AD_Issue (see
+	 * {@link #refreshSumUpTransactionBeforeAllocating}). The next sweep cycle, the till's check or back office's retry
+	 * asks again.
 	 */
 	private void recordSumUpNotReachable(@NonNull final POSInvoiceCardSettlement settlement)
 	{

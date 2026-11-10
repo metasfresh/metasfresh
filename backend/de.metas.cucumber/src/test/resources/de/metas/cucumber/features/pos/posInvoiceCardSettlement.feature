@@ -1149,6 +1149,43 @@ Feature: POS invoice card settlement
     And the cash journal of POS terminal till contains lines:
       | Type | Amount |
 
+  # While SumUp cannot be asked, each SumUp poll asks again before allocating; back office gets one AD_Issue for the
+  # outage (when the settlement starts waiting with "SumUp not reachable"), not one per poll.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC20_8
+  Scenario: SumUp cannot be asked in two consecutive SumUp polls before an approved card payment is booked, so back office gets one AD_Issue for the outage and the payment is booked once SumUp answers again
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'no open cash journal'
+    And card settlement settlement1 has 1 AD_Issue
+    And SumUp API stub fails the status lookup
+    And the cash journal of POS terminal till is opened with 50 by metasfresh
+
+    When metasfresh polls SumUp
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'SumUp not reachable'
+    And card settlement settlement1 has 2 AD_Issues
+
+    When metasfresh polls SumUp
+
+    Then card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has error message 'SumUp not reachable'
+    And card settlement settlement1 has 2 AD_Issues
+    And invoice invoice1 has 0 allocation lines
+
+    When SumUp API stub answers the status lookup again
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status SUCCESSFUL
+    And card settlement settlement1 has 2 AD_Issues
+
   # ##########################################################################
   # The system stopped between creating the card payment and completing the booking: the settlement waits as
   # APPROVED with its unallocated payment, still blocking, and the background check of the next SumUp poll completes it
