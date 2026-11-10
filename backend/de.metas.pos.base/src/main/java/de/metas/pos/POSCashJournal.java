@@ -156,13 +156,24 @@ public class POSCashJournal
 		this.cashEndingBalance = cashEndingBalance;
 	}
 
+	/**
+	 * Adds a line for each successful payment of the order that has none yet. It is called on every attempt to complete the
+	 * order, also on attempts that leave the order waiting for another payment, so a payment already journaled by an earlier
+	 * attempt must not be journaled again.
+	 */
 	public void addPayments(final POSOrder posOrder)
 	{
 		final POSOrderId posOrderId = posOrder.getLocalIdNotNull();
 		final UserId cashierId = posOrder.getCashierId();
 		posOrder.streamPaymentsNotDeleted()
 				.filter(POSPayment::isSuccessful)
+				.filter(posPayment -> !hasLineForPayment(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull())))
 				.forEach(posPayment -> addPayment(posPayment, posOrderId, cashierId));
+	}
+
+	private boolean hasLineForPayment(@NonNull final POSOrderAndPaymentId posOrderAndPaymentId)
+	{
+		return lines.stream().anyMatch(line -> posOrderAndPaymentId.equals(line.getPosOrderAndPaymentId()));
 	}
 
 	private void addPayment(final POSPayment posPayment, POSOrderId posOrderId, UserId cashierId)

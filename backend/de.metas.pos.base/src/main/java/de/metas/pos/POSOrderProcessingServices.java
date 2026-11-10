@@ -113,9 +113,10 @@ public class POSOrderProcessingServices
 	 * Sends the card payment's charge to the terminal's payment processor and returns its answer; changes nothing.
 	 * The call can take long (the cashier presents the card), so a card checkout runs it outside any transaction.
 	 * <p>
-	 * The processors report their own failures, incl. the failed calls, in the answer. An exception thrown here was raised
-	 * before any processor sent anything (e.g. no processor registered for the configured type), so it is answered as a
-	 * definite failure, recorded as an AD_Issue on the payment.
+	 * A failure of the checks before the call (no payment processor registered for the configured type) is answered as a
+	 * definite failure, recorded as an AD_Issue on the payment: nothing was sent. Once the processor is called, it reports its own
+	 * failures in the answer; an exception it throws nevertheless (e.g. its own error handling failed after SumUp timed out) leaves
+	 * the outcome unknown, so it is propagated, never answered as a definite failure: the payment stays as saved before the send.
 	 */
 	public POSPaymentProcessResponse sendCardPayment(@NonNull final POSPayment posPayment, @NonNull final POSOrder posOrder)
 	{
@@ -125,14 +126,10 @@ public class POSOrderProcessingServices
 		final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminal.getPaymentProcessorConfigNotNull();
 		final POSOrderAndPaymentId posOrderAndPaymentId = POSOrderAndPaymentId.of(posOrder.getLocalIdNotNull(), posPayment.getLocalIdNotNull());
 
+		// before the call: nothing sent yet, so a failure is definite
 		try
 		{
-			return posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
-					.paymentProcessorConfig(paymentProcessorConfig)
-					.clientAndOrgId(posOrder.getClientAndOrgId())
-					.posOrderAndPaymentId(posOrderAndPaymentId)
-					.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
-					.build());
+			posPaymentProcessorService.assertProcessorRegistered(paymentProcessorConfig.getType());
 		}
 		catch (final Exception ex)
 		{
@@ -143,6 +140,14 @@ public class POSOrderProcessingServices
 					AdempiereException.extractMessage(metasfreshException),
 					errorManager.createIssue(metasfreshException));
 		}
+
+		// the call: whatever escapes it may have happened after the card reader got the charge
+		return posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
+				.paymentProcessorConfig(paymentProcessorConfig)
+				.clientAndOrgId(posOrder.getClientAndOrgId())
+				.posOrderAndPaymentId(posOrderAndPaymentId)
+				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
+				.build());
 	}
 
 	public POSPayment refundPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrderId posOrderId, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)

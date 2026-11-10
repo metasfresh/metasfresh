@@ -387,7 +387,7 @@ public class POSOrdersService
 
 	/**
 	 * Step 3 of a card checkout: applies SumUp's answer to the card payment, in a new transaction under the order lock. While
-	 * the database fails, it is tried up to 3 times in all ({@link #CARD_SEND_RESULT_MAX_ATTEMPTS}), each time re-locking and re-reading the
+	 * the database fails, it is tried {@link #CARD_SEND_RESULT_MAX_ATTEMPTS} times in all, each time re-locking and re-reading the
 	 * order, waiting {@link #CARD_SEND_RESULT_RETRY_BACKOFFS} in between. If all attempts fail, the answer is logged at ERROR
 	 * and recorded as an AD_Issue on the payment (best effort): the payment stays PENDING, without SumUp's id, as saved by step 1.
 	 *
