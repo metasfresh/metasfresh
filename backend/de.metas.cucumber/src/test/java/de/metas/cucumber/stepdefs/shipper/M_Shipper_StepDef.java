@@ -163,6 +163,9 @@ public class M_Shipper_StepDef
 	 *   <b>Identifier</b> — (required, identifier-ref) alias from a prior {@code contains M_Shippers}<br>
 	 *   <b>PriorityRule</b> — (optional) the shipper's new priority rule code (1=Urgent, 3=High, 5=Medium,
 	 *     7=Low, 9=Minor)<br>
+	 *   <b>LeadTimeDays</b> — (optional) the shipper's lead time in working days (Mon-Fri); setting it on an
+	 *     already-known shipper models the *Lieferweg* window gaining a lead time later, without re-saving
+	 *     any order that already references the shipper<br>
 	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -184,6 +187,9 @@ public class M_Shipper_StepDef
 		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_PriorityRule)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setPriorityRule);
+
+		row.getAsOptionalInt(I_M_Shipper.COLUMNNAME_LeadTimeDays)
+				.ifPresent(record::setLeadTimeDays);
 
 		InterfaceWrapperHelper.save(record);
 
