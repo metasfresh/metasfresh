@@ -106,7 +106,7 @@ $P{ExcludeYearEndBooking}
 				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="206" y="35" width="163" height="12" uuid="90ce5c9f-50e3-4b3c-8e48-6b62c9cac9a0">
+				<reportElement isRemoveLineWhenBlank="true" x="206" y="35" width="163" height="12" uuid="90ce5c9f-50e3-4b3c-8e48-6b62c9cac9a0">
 					<printWhenExpression><![CDATA[$P{IncludePostingTypeStatistical} != null]]></printWhenExpression>
 				</reportElement>
 				<textElement>

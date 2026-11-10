@@ -632,7 +632,7 @@ $P{ExcludeYearEndBooking}
 				<textFieldExpression><![CDATA[$R{Currency} +" "+ $F{currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="56" width="593" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a">
+				<reportElement isRemoveLineWhenBlank="true" x="0" y="56" width="593" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a">
 					<printWhenExpression><![CDATA[$P{IncludePostingTypeStatistical} != null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
