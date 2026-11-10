@@ -29,6 +29,7 @@ class SumUpUtils
 				.config(extractPaymentProcessorConfig(sumUpTrx))
 				.cardReader(extractCardReader(sumUpTrx.getCardReader()))
 				.transactionId(sumUpTrx.getExternalId().getAsString())
+				.clientTransactionId(sumUpTrx.getClientTransactionId().getAsString())
 				.summary(sumUpTrx.getCard() != null ? sumUpTrx.getCard().getAsString() : null)
 				.build();
 	}

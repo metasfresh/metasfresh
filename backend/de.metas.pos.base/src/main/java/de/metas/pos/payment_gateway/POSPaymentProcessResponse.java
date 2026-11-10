@@ -18,6 +18,8 @@ public class POSPaymentProcessResponse
 	@Nullable POSCardReader cardReader;
 
 	@Nullable String transactionId;
+	/** SumUp's client transaction id of the checkout this response belongs to, if known */
+	@Nullable String clientTransactionId;
 	@Nullable String summary;
 
 	@Nullable String errorMessage;

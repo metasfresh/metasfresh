@@ -371,6 +371,30 @@ class JsonSerializeDeserializeTest
 				.build();
 	}
 
+	/**
+	 * A card payment whose result is unknown travels as {@code UNKNOWN}, in both directions; it can be neither checked out nor deleted.
+	 */
+	@Test
+	void test_JsonPOSPayment_unknownStatus() throws JsonProcessingException
+	{
+		final JsonPOSPayment payment = JsonPOSPayment.builder()
+				.uuid(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
+				.paymentMethod(POSPaymentMethod.CARD)
+				.amount(new BigDecimal("29.11"))
+				.status(JsonPOSPaymentStatus.of(POSPaymentProcessingStatus.UNKNOWN))
+				.allowCheckout(false)
+				.allowDelete(false)
+				.allowRefund(false)
+				.hashCode(543)
+				.build();
+		testSerializeDeserialize(payment);
+
+		assertThat(payment.getStatus()).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		assertThat(jsonObjectMapper.writeValueAsString(payment)).contains("\"status\":\"UNKNOWN\"");
+		assertThat(jsonObjectMapper.readValue("\"UNKNOWN\"", JsonPOSPaymentStatus.class)).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
+	}
+
 	@Test
 	void test_JsonPOSOrderChangedWebSocketEvent() throws JsonProcessingException
 	{

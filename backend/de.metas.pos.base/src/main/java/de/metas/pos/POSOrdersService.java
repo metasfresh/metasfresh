@@ -2,10 +2,14 @@ package de.metas.pos;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
+import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
+import de.metas.payment.sumup.SumUpContext;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.remote.RemotePOSOrder;
+import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -14,18 +18,24 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
 public class POSOrdersService
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(POSOrdersService.class);
+	private static final AdMessageKey MSG_LateApprovalNotBooked = AdMessageKey.of("de.metas.pos.POSPayment.LateApprovalNotBooked");
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
@@ -66,8 +76,43 @@ public class POSOrdersService
 		// so it might be that updating can succeed (and it's saved) but order processing not.
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		ordersRepository.updatePaymentById(posOrderAndPaymentId, (order, payment) -> payment.changingStatusFromRemote(response));
+		final AtomicReference<POSOrder> orderRef = new AtomicReference<>();
+		final AtomicBoolean lateApprovalNotBooked = new AtomicBoolean(false);
+		ordersRepository.updatePaymentById(posOrderAndPaymentId, (order, payment) -> {
+			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response);
+			orderRef.set(order);
+			lateApprovalNotBooked.set(result.isLateApprovalNotBooked());
+			return result.getPayment();
+		});
+
+		if (lateApprovalNotBooked.get())
+		{
+			recordLateApprovalNotBooked(orderRef.get(), posOrderAndPaymentId, response);
+		}
+
 		tryCompleteNoFail(posOrderAndPaymentId.getOrderId());
+	}
+
+	/**
+	 * Written after the payment update committed, in its own transaction: a late SumUp approval of a deleted or released card payment
+	 * is not booked; the issue (on the payment) tells the back office to review it. A failure here is only logged.
+	 */
+	private void recordLateApprovalNotBooked(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
+			@NonNull final POSPaymentProcessResponse response)
+	{
+		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
+		{
+			errorManager.createIssue(new AdempiereException(MSG_LateApprovalNotBooked)
+					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
+					.setParameter("sumUpClientTransactionId", response.getClientTransactionId())
+					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, posOrderAndPaymentId.getPaymentId())));
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed recording the late approval of {} as AD_Issue. Ignored.", posOrderAndPaymentId, ex);
+		}
 	}
 
 	private void tryCompleteNoFail(@NonNull final POSOrderId posOrderId)

@@ -31,6 +31,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
+import org.compiere.util.TimeUtil;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -405,6 +406,10 @@ class POSOrdersLoaderAndSaver
 				.paymentProcessingStatus(POSPaymentProcessingStatus.ofCode(record.getPOSPaymentProcessingStatus()))
 				.cardProcessingDetails(extractCardProcessingDetails(record))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
+				.sumUpClientTransactionId(StringUtils.trimBlankToNull(record.getSUMUP_ClientTransactionID()))
+				.releasedSumUpClientTransactionId(StringUtils.trimBlankToNull(record.getReleasedSUMUPClientTransactionID()))
+				.cardCheckoutStartedAt(TimeUtil.asInstant(record.getCardCheckoutStartedAt()))
+				.cardLookupFailingSince(TimeUtil.asInstant(record.getCardLookupFailingSince()))
 				.build();
 	}
 
@@ -419,6 +424,10 @@ class POSOrdersLoaderAndSaver
 		record.setPOSPaymentProcessingStatus(from.getPaymentProcessingStatus().getCode());
 		updateRecord(record, from.getCardProcessingDetails());
 		record.setC_Payment_ID(PaymentId.toRepoId(from.getPaymentReceiptId()));
+		record.setSUMUP_ClientTransactionID(from.getSumUpClientTransactionId());
+		record.setReleasedSUMUPClientTransactionID(from.getReleasedSumUpClientTransactionId());
+		record.setCardCheckoutStartedAt(TimeUtil.asTimestamp(from.getCardCheckoutStartedAt()));
+		record.setCardLookupFailingSince(TimeUtil.asTimestamp(from.getCardLookupFailingSince()));
 	}
 
 	private static void updateRecord(final I_C_POS_Payment record, @Nullable final POSPaymentCardProcessingDetails from)

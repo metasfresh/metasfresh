@@ -127,7 +127,7 @@ public class POSOrderProcessingServices
 				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.build());
 
-		return posPayment.changingStatusFromRemote(processResponse);
+		return posPayment.changingStatusFromRemote(processResponse).getPayment();
 	}
 
 	public POSPayment refundPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrderId posOrderId, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
@@ -154,7 +154,7 @@ public class POSOrderProcessingServices
 						.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull()))
 						.build()
 		);
-		posPayment = posPayment.changingStatusFromRemote(refundResponse);
+		posPayment = posPayment.changingStatusFromRemote(refundResponse).getPayment();
 
 		return posPayment;
 	}

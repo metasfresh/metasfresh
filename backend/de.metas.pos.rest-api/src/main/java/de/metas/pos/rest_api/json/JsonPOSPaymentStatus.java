@@ -10,6 +10,7 @@ public enum JsonPOSPaymentStatus
 	FAILED,
 	PENDING,
 	NEW,
+	UNKNOWN,
 	;
 
 	public static JsonPOSPaymentStatus of(@NonNull POSPaymentProcessingStatus paymentProcessingStatus)
@@ -25,6 +26,8 @@ public enum JsonPOSPaymentStatus
 				return PENDING;
 			case NEW:
 				return NEW;
+			case UNKNOWN:
+				return UNKNOWN;
 			default:
 				throw new AdempiereException("Unknown paymentProcessingStatus: " + paymentProcessingStatus);
 		}

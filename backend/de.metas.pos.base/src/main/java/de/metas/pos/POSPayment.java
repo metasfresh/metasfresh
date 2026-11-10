@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Data
 public class POSPayment
@@ -30,6 +31,13 @@ public class POSPayment
 	@Nullable private final POSPaymentCardProcessingDetails cardProcessingDetails;
 	@Nullable private final PaymentId paymentReceiptId;
 
+	/** SumUp's client transaction id of the current card checkout; null until known. */
+	@Nullable private final String sumUpClientTransactionId;
+	/** SumUp's client transaction id of a checkout the cashier released as not charged; its late results are never booked. */
+	@Nullable private final String releasedSumUpClientTransactionId;
+	@Nullable private final Instant cardCheckoutStartedAt;
+	@Nullable private final Instant cardLookupFailingSince;
+
 	@Builder(toBuilder = true)
 	private POSPayment(
 			@NonNull final POSPaymentExternalId externalId,
@@ -39,7 +47,11 @@ public class POSPayment
 			@Nullable final Money cashTenderedAmount,
 			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus,
 			@Nullable final POSPaymentCardProcessingDetails cardProcessingDetails,
-			@Nullable final PaymentId paymentReceiptId)
+			@Nullable final PaymentId paymentReceiptId,
+			@Nullable final String sumUpClientTransactionId,
+			@Nullable final String releasedSumUpClientTransactionId,
+			@Nullable final Instant cardCheckoutStartedAt,
+			@Nullable final Instant cardLookupFailingSince)
 	{
 		this.externalId = externalId;
 		this.localId = localId;
@@ -48,6 +60,10 @@ public class POSPayment
 		this.paymentProcessingStatus = paymentProcessingStatus;
 		this.cardProcessingDetails = cardProcessingDetails;
 		this.paymentReceiptId = paymentReceiptId;
+		this.sumUpClientTransactionId = sumUpClientTransactionId;
+		this.releasedSumUpClientTransactionId = releasedSumUpClientTransactionId;
+		this.cardCheckoutStartedAt = cardCheckoutStartedAt;
+		this.cardLookupFailingSince = cardLookupFailingSince;
 
 		final Money zero = amount.toZero();
 		if (paymentMethod.isCash())
@@ -72,6 +88,8 @@ public class POSPayment
 	public boolean isSuccessful() {return paymentProcessingStatus.isSuccessful();}
 
 	public boolean isDeleted() {return paymentProcessingStatus.isDeleted();}
+
+	public boolean isUnknown() {return paymentProcessingStatus.isUnknown();}
 
 	public boolean isAllowDeleteFromDB() {return paymentProcessingStatus.checkAllowDeleteFromDB().isTrue();}
 
@@ -125,6 +143,11 @@ public class POSPayment
 
 	public BooleanWithReason checkAllowVoid()
 	{
+		if (paymentProcessingStatus.isUnknown())
+		{
+			return BooleanWithReason.falseBecause(POSPaymentProcessingStatus.MSG_CardPaymentResultUnknown);
+		}
+
 		return paymentProcessingStatus.isPendingOrSuccessful()
 				? BooleanWithReason.falseBecause("Pending or Successful payments cannot be voided")
 				: BooleanWithReason.TRUE;
@@ -174,15 +197,41 @@ public class POSPayment
 		return toBuilder().paymentProcessingStatus(POSPaymentProcessingStatus.DELETED).build();
 	}
 
-	public POSPayment changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
+	/**
+	 * Applies a status reported by the payment processor.
+	 * <p>
+	 * A late SumUp approval never revives a payment the till already gave up on:
+	 * <ul>
+	 * <li>an event of the released checkout leaves the payment unchanged (a SUCCESSFUL one is flagged: not booked, to be reviewed);</li>
+	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged and flagged;</li>
+	 * <li>PENDING on an UNKNOWN payment keeps it UNKNOWN;</li>
+	 * <li>everything else, including SUCCESSFUL on a plain FAILED / CANCELLED payment, is applied as is.</li>
+	 * </ul>
+	 */
+	public POSPaymentRemoteUpdateResult changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
 	{
 		paymentMethod.assertCard();
+
+		final POSPaymentProcessingStatus remoteStatus = response.getStatus();
+
+		if (releasedSumUpClientTransactionId != null && releasedSumUpClientTransactionId.equals(response.getClientTransactionId()))
+		{
+			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful());
+		}
+		if (isDeleted() && remoteStatus.isSuccessful())
+		{
+			return POSPaymentRemoteUpdateResult.of(this, true);
+		}
+		if (isUnknown() && remoteStatus.isPending())
+		{
+			return POSPaymentRemoteUpdateResult.of(this, false);
+		}
 
 		// NOTE: when changing status from remote we cannot validate if the status transition is OK
 		// we have to accept what we have on remote.
 
-		return toBuilder()
-				.paymentProcessingStatus(response.getStatus())
+		final POSPayment paymentChanged = toBuilder()
+				.paymentProcessingStatus(remoteStatus)
 				.cardProcessingDetails(POSPaymentCardProcessingDetails.builder()
 						.config(response.getConfig())
 						.transactionId(response.getTransactionId())
@@ -190,6 +239,7 @@ public class POSPayment
 						.cardReader(response.getCardReader())
 						.build())
 				.build();
+		return POSPaymentRemoteUpdateResult.of(paymentChanged, false);
 	}
 
 	public POSPayment withPaymentReceipt(@Nullable final PaymentId paymentReceiptId)
