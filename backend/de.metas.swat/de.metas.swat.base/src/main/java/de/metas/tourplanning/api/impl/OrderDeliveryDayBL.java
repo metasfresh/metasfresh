@@ -138,8 +138,10 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	}
 
 	/**
-	 * Sets {@code PreparationDate = workday(DatePromised, -leadTimeDays + 1)} (Mon-Fri business days).
-	 * An order with {@code IsFixedPreparationDate='Y'} keeps its manually set PreparationDate.
+	 * Sets {@code PreparationDate = workday(DatePromised, min(-leadTimeDays + 1, 0))} (Mon-Fri business days).
+	 * The backward step is clamped to {@code <= 0} so a 0 or negative lead time never pushes PreparationDate
+	 * <i>after</i> DatePromised (invariant: PreparationDate &lt;= DatePromised, always); D=0 and D=1 both yield
+	 * PreparationDate = DatePromised. An order with {@code IsFixedPreparationDate='Y'} keeps its manually set value.
 	 */
 	private boolean setPreparationDateFromLeadTime(@NonNull final I_C_Order order, final int leadTimeDays, @NonNull final ZoneId timeZone)
 	{
@@ -154,7 +156,8 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
-		final LocalDate preparationDate = WorkdayCalculator.workday(datePromised.toLocalDate(), -leadTimeDays + 1);
+		final int backwardStep = Math.min(-leadTimeDays + 1, 0);
+		final LocalDate preparationDate = WorkdayCalculator.workday(datePromised.toLocalDate(), backwardStep);
 		order.setPreparationDate(TimeUtil.asTimestamp(preparationDate.atStartOfDay(timeZone)));
 		return true;
 	}

@@ -91,13 +91,15 @@ Feature: Tour planning — shipper lead-time edge cases (weekend straddle, fix-f
   @from:cucumber
   @Id:S28993_TC4g
   Scenario: IsFixedPreparationDate=Y — changing DateOrdered recomputes DatePromised but keeps the manual PreparationDate
+    ## DatePromised is supplied explicitly at creation (= the forward value for DateOrdered 2026-08-10, lead 7); the
+    ## create-time guard preserves a provided DatePromised, so the DateOrdered update below is what exercises the recompute.
     Given temporarily set sys config boolean value true for sys config 'de.metas.tourplanning.LeadTimeForwardCalc.Enabled'
     And contains M_Shippers
       | Identifier | LeadTimeDays |
       | shipper    | 7            |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate | M_PricingSystem_ID | C_BPartner_Location_ID | M_Shipper_ID | IsFixedPreparationDate |
-      | so         | Y       | customer      | 2026-08-10  | 2026-08-14Z     | ps                 | customerLocation       | shipper      | Y                      |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | PreparationDate | M_PricingSystem_ID | C_BPartner_Location_ID | M_Shipper_ID | IsFixedPreparationDate |
+      | so         | Y       | customer      | 2026-08-10  | 2026-08-19Z  | 2026-08-14Z     | ps                 | customerLocation       | shipper      | Y                      |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol        | so         | product      | 10         |
@@ -149,4 +151,27 @@ Feature: Tour planning — shipper lead-time edge cases (weekend straddle, fix-f
     Then validate the created orders
       | Identifier | DateOrdered | DatePromised | PreparationDate |
       | so         | 2026-08-17  | 2026-09-04   | 2026-08-27      |
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @Id:S28993_TC8
+  Scenario: Zero lead time — DatePromised = DateOrdered and PreparationDate never lands after DatePromised
+    ## A route with LeadTimeDays 0: forward gives DatePromised = DateOrdered (workday +0); the backward step is
+    ## clamped to <= 0 so PreparationDate = DatePromised, never DatePromised + 1 (invariant: PreparationDate <= DatePromised).
+    Given temporarily set sys config boolean value true for sys config 'de.metas.tourplanning.LeadTimeForwardCalc.Enabled'
+    And contains M_Shippers
+      | Identifier | LeadTimeDays |
+      | shipper    | 0            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | C_BPartner_Location_ID | M_Shipper_ID |
+      | so         | Y       | customer      | 2026-08-10  | ps                 | customerLocation       | shipper      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol        | so         | product      | 10         |
+    Then validate the created orders
+      | Identifier | DateOrdered | DatePromised | PreparationDate |
+      | so         | 2026-08-10  | 2026-08-10   | 2026-08-10      |
 

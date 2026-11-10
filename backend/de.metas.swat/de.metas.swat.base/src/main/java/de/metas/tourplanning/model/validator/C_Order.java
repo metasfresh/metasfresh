@@ -36,6 +36,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.util.Services;
@@ -70,11 +71,29 @@ public class C_Order
 			I_C_Order.COLUMNNAME_IsFixedPreparationDate })
 	public void setPreparationDate(final I_C_Order order, final int timing)
 	{
-		// Forward: DateOrdered / shipper changed (or a new order). A manual DatePromised edit with DateOrdered and
-		// M_Shipper_ID unchanged is NOT a forward trigger: the manual value sticks and PreparationDate derives from it.
-		final boolean isForwardTrigger = timing == ModelValidator.TYPE_BEFORE_NEW
-				|| isValueChanged(order, I_C_Order.COLUMNNAME_DateOrdered)
-				|| isValueChanged(order, I_C_Order.COLUMNNAME_M_Shipper_ID);
+		// Forward trigger for DatePromised = workday(DateOrdered, +leadTime).
+		final boolean isForwardTrigger;
+		if (timing == ModelValidator.TYPE_BEFORE_NEW)
+		{
+			// At creation, derive DatePromised ONLY when the creator did not supply one, so an explicit value is
+			// preserved (webui callout / REST / OLCand-EDI import / copied order). This cannot use is_ValueChanged:
+			// the MOrder constructor seeds DatePromised with SystemTime.asDayTimestamp() ("today" at 00:00, MOrder.java
+			// task 06269), so every new order reports DatePromised as changed. Treat null, or that untouched today-seed,
+			// as "not supplied"; the seed equals asDayTimestamp() exactly (both are today truncated to the day).
+			// Edge (accepted): an order whose delivery date equals its creation day is treated as the seed and recomputed.
+			final Timestamp datePromised = order.getDatePromised();
+			final boolean datePromisedNotSupplied = datePromised == null
+					|| datePromised.equals(SystemTime.asDayTimestamp());
+			isForwardTrigger = datePromisedNotSupplied;
+		}
+		else
+		{
+			// On change: recompute when DateOrdered or the shipper changed. A manual DatePromised edit with
+			// DateOrdered and M_Shipper_ID unchanged is NOT a forward trigger: the manual value sticks and
+			// PreparationDate derives from it.
+			isForwardTrigger = isValueChanged(order, I_C_Order.COLUMNNAME_DateOrdered)
+					|| isValueChanged(order, I_C_Order.COLUMNNAME_M_Shipper_ID);
+		}
 		if (isForwardTrigger)
 		{
 			orderDeliveryDayBL.setDatePromisedFromLeadTime(order);

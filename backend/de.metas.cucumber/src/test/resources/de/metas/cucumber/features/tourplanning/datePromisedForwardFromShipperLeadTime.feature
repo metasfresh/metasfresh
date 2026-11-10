@@ -141,3 +141,26 @@ Feature: Tour planning — DatePromised derived forward from the shipper's lead 
     Then validate the created orders
       | Identifier | DateOrdered | DatePromised | PreparationDate |
       | so         | 2026-08-10  | 2026-08-21   | 2026-08-13      |
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @Id:S28993_TC9
+  Scenario: Explicit DatePromised supplied at creation is preserved, not overwritten by the forward calc
+    ## At creation the forward calc derives DatePromised only when the creator did not supply one. An order
+    ## created (REST / OLCand-EDI / copy) with an explicit DatePromised keeps it; PreparationDate still derives
+    ## backward from that supplied DatePromised. Without the create-time guard, forward would overwrite it to 2026-08-19.
+    Given contains M_Shippers
+      | Identifier | LeadTimeDays |
+      | shipper    | 7            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | M_PricingSystem_ID | C_BPartner_Location_ID | M_Shipper_ID |
+      | so         | Y       | customer      | 2026-08-10  | 2026-09-04Z  | ps                 | customerLocation       | shipper      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol        | so         | product      | 10         |
+    Then validate the created orders
+      | Identifier | DateOrdered | DatePromised | PreparationDate |
+      | so         | 2026-08-10  | 2026-09-04   | 2026-08-27      |
