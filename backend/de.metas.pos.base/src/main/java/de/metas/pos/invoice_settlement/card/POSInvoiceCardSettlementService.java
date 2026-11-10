@@ -789,14 +789,19 @@ public class POSInvoiceCardSettlementService
 		{
 			// back office may have refunded the charge in the SumUp dashboard; the poller does not refresh a successful transaction
 			final POSInvoiceCardSettlement settlementBefore = repository.getById(id);
-			final boolean isSumUpTransactionRefreshed = settlementBefore.getStatus() == POSInvoiceCardSettlementStatus.BOOKING_ERROR
+			final boolean isRefreshBeforeBooking = settlementBefore.getStatus() == POSInvoiceCardSettlementStatus.BOOKING_ERROR
 					&& settlementBefore.getPaymentId() == null;
-			if (isSumUpTransactionRefreshed && !refreshSumUpTransactionFromRemote(id))
+			boolean isSumUpTransactionRefreshed = false;
+			if (isRefreshBeforeBooking)
 			{
-				// a payment must not be created for a charge that may have been refunded
-				throw new AdempiereException(MSG_RetryRefusedSumUpNotReachable)
-						.markAsUserValidationError()
-						.setRecord(id.toRecordRef());
+				if (!refreshSumUpTransactionFromRemote(id))
+				{
+					// a payment must not be created for a charge that may have been refunded
+					throw new AdempiereException(MSG_RetryRefusedSumUpNotReachable)
+							.markAsUserValidationError()
+							.setRecord(id.toRecordRef());
+				}
+				isSumUpTransactionRefreshed = true;
 			}
 
 			trxManager.runInNewTrx(() -> {
