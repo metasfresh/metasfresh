@@ -34,7 +34,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,8 +49,6 @@ import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category_Acct;
@@ -505,6 +505,25 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 
 		assertThat(getCurrentCost(orgId1).getCurrentQty().toBigDecimal()).isEqualByComparingTo("20");
 		assertPrev(retrieveCostDetailByInOutLine(lineId), "5", "10", "50", "10");
+	}
+
+	@Test
+	public void materialReceiptReversal_prevAmountsAreStateBeforeReversal()
+	{
+		seedStock10At5();
+		final int originalLineId = createInOutLineId();
+		final int reversalLineId = createInOutLineId();
+
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.documentRef(CostingDocumentRef.ofReceiptLineId(reversalLineId))
+						.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(originalLineId))
+						.amt(CostAmount.of(0, euroCurrencyId))
+						.qty(Quantity.of(-4, eachUOM))
+						.build());
+
+		assertThat(getCurrentCost(orgId1).getCurrentQty().toBigDecimal()).isEqualByComparingTo("6");
+		assertPrev(retrieveCostDetailByInOutLine(reversalLineId), "5", "10", "50", "10");
 	}
 
 	@Test
