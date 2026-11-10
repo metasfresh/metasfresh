@@ -575,6 +575,10 @@ public class POSOrdersService
 		}
 	}
 
+	/**
+	 * @return the client and org of the given POS order, as stored (read without a lock); the background sweep uses it to switch
+	 * the SumUp context before it acts on one of the order's card payments
+	 */
 	public ClientAndOrgId getClientAndOrgId(@NonNull final POSOrderId posOrderId)
 	{
 		return ordersRepository.getById(posOrderId).getClientAndOrgId();
