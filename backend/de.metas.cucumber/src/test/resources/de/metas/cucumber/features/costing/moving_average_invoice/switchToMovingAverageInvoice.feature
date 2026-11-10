@@ -715,6 +715,18 @@ Feature: Switch to Moving Average Invoice
     # database's fiscal calendar.
     #
     Given after not more than 60s, the repost queue is drained
+    #
+    # On a database this feature already ran on, the recomputes above (open-ended, every product) also reach an
+    # EARLIER run's stock counts in this scenario's slice: a crashed or refused recompute purges their cost details
+    # and leaves them parked, never reposted. The repost below would then rebuild those foreign cost details, and
+    # the whole-table count would move for a reason that has nothing to do with this scenario. So repost the slice
+    # once up front and let it drain: that rebuilds any such leftover (on a fresh database it finds nothing to
+    # rebuild). The count assertions below are unchanged - still the whole table, still exactly equal.
+    #
+    And the accounting repost driver runs:
+      | C_AcctSchema_ID | StartDateAcct |
+      | acctSchema      | 2027-12-10    |
+    And after not more than 120s, the repost queue is drained
     And metasfresh contains M_Products:
       | Identifier   |
       | repostFirst  |
