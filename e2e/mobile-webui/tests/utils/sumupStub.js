@@ -97,6 +97,31 @@ export const SumUpStub = {
     },
 
     /**
+     * Stubs the reader checkout of a till SALE (as opposed to an invoice settlement): the sale's checkout carries no
+     * `description`, so the answer cannot echo one and uses a fixed UUID `client_transaction_id`, known to the spec
+     * as soon as the stub is registered. One sale checkout stub per test: a second one would answer the same id.
+     * @param fixedDelayMilliseconds delays the answer, e.g. beyond the client's 60 s read timeout to make the send indeterminate
+     * @returns {Promise<{ clientTransactionId: string }>}
+     */
+    stubSaleCheckout: async ({ merchantCode, readerId, fixedDelayMilliseconds }) => {
+        const clientTransactionId = randomUUID();
+        await registerStub({
+            request: {
+                method: 'POST',
+                urlPath: `${readerPath({ merchantCode, readerId })}/checkout`,
+            },
+            response: {
+                status: 201,
+                headers: { 'Content-Type': 'application/json' },
+                jsonBody: { data: { client_transaction_id: clientTransactionId } },
+                ...(fixedDelayMilliseconds ? { fixedDelayMilliseconds } : {}),
+            },
+        });
+
+        return { clientTransactionId };
+    },
+
+    /**
      * Sets what SumUp answers for the transaction: `PENDING`, `SUCCESSFUL`, `FAILED` or `CANCELLED`.
      * Replaces the answer set before for the same transaction.
      * @returns {Promise<{ waitForLookup: function(): Promise<void> }>} `waitForLookup` waits until the app server
