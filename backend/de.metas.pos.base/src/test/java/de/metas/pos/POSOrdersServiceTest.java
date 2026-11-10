@@ -4,13 +4,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyRepository;
-import de.metas.payment.sumup.SumUpService;
-import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.sumup.SumUpService;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.repository.model.I_C_POS_Payment;
@@ -56,7 +55,7 @@ class POSOrdersServiceTest
 
 		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()));
 		posOrderProcessingServices = mock(POSOrderProcessingServices.class);
-		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class), mock(SumUpTransactionRepository.class));
+		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class));
 	}
 
 	private POSOrderAndPaymentId newOrderWithPayment(final POSPayment.POSPaymentBuilder payment)

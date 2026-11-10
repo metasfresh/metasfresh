@@ -429,6 +429,14 @@ public class POSOrder
 		updatePaymentByIndex(paymentIdx, updater);
 	}
 
+	/**
+	 * @throws AdempiereException if the order has no payment with the given id
+	 */
+	public POSPayment getPaymentById(@NonNull final POSPaymentId posPaymentId)
+	{
+		return payments.get(getPaymentIndexById(posPaymentId));
+	}
+
 	private void updatePaymentByIndex(final int paymentIndex, @NonNull final UnaryOperator<POSPayment> updater)
 	{
 		final POSPayment payment = paymentIndex >= 0 ? payments.get(paymentIndex) : null;

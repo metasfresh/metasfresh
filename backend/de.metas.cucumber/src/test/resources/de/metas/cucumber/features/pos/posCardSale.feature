@@ -57,7 +57,7 @@ Feature: POS till card sale with an unknown card result
     And POS terminal shopTill is configured with SumUp and a default card reader
 
   # ##########################################################################
-  # Cause (ii) for HTTP 5xx and CONNECTION_RESET, cause (i) for DB_SAVE_FAILS. AC18: UNKNOWN, still counted as paid.
+  # Cause (ii) for HTTP 5xx and CONNECTION_RESET, cause (i) for DB_SAVE_FAILS. The card payment is UNKNOWN and still counted as paid.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
@@ -82,7 +82,7 @@ Feature: POS till card sale with an unknown card result
       | DB_SAVE_FAILS    | set      |
 
   # ##########################################################################
-  # Cause (ii). Review focus 2: the cashier removes the UNKNOWN payment from the till.
+  # Cause (ii). The cashier removes the UNKNOWN payment from the till.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
@@ -286,7 +286,7 @@ Feature: POS till card sale with an unknown card result
     And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.ReleasedAsNotCharged'
 
   # ##########################################################################
-  # Cause (i). Review focus 5: SumUp is unreachable during the release check.
+  # Cause (i). SumUp is unreachable during the release check.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
@@ -366,7 +366,7 @@ Feature: POS till card sale with an unknown card result
     And the card payment of POS sale sale1 has no payment receipt
 
   # ##########################################################################
-  # Cause (i). Review focus 1: the retry's new transaction stays PENDING; the first checkout's results are ignored.
+  # Cause (i). The retry's new transaction stays PENDING; the first checkout's results are ignored.
   # The CANCELLED leg uses a callback, not a poll: the first row is already SUCCESSFUL locally and the poller re-reads only PENDING rows.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
@@ -501,7 +501,7 @@ Feature: POS till card sale with an unknown card result
     And the SumUp transaction of POS sale sale1 is saved with status PENDING
 
   # ##########################################################################
-  # Review focus 3: a SumUp poll imports the approval (and its status event updates the payment) while the checkout still
+  # A SumUp poll imports the approval (and its status event updates the payment) while the checkout still
   # stores SumUp's answer. Either order ends with one SUCCESSFUL payment, one receipt and one completion.
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
@@ -609,7 +609,7 @@ Feature: POS till card sale with an unknown card result
     And the card payment of POS sale sale1 has status UNKNOWN
 
   # ##########################################################################
-  # Cause (i). Review focus 5: SumUp is unreachable while the transaction is to be imported. One AD_Issue per outage: the
+  # Cause (i). SumUp is unreachable while the transaction is to be imported. One AD_Issue per outage: the
   # first failed lookup records it, the repeated ones do not; a successful lookup ends the outage, so the next outage (here
   # seen by the till's check, since the import already happened) records a new one.
   @from:cucumber
@@ -642,3 +642,58 @@ Feature: POS till card sale with an unknown card result
     And the card payment of POS sale sale1 has status UNKNOWN
     And the card payment of POS sale sale1 has 2 AD_Issues with AD_Message 'de.metas.pos.POSPayment.SumUpLookupFailed'
     And the card payment of POS sale sale1 is failing a SumUp lookup true
+
+  # ##########################################################################
+  # SumUp accepted the checkout and its transaction was saved, but storing SumUp's answer on the card payment failed for all
+  # 3 attempts: the payment stays PENDING without SumUp's id. It is not an orphan, because a SumUp transaction of this very
+  # checkout exists (created since the checkout started): after 150 s it stays PENDING, and SumUp's later approval reaches
+  # it through that transaction.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_27
+  Scenario: A card payment whose SumUp transaction was saved is no orphan, even if SumUp's answer could not be stored on it
+    Given SumUp API stub answers the next checkout with SUCCESS
+    And saving the card payment of a POS sale fails with a database error for the next 3 attempts
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId empty
+    And the SumUp transaction of POS sale sale1 is saved with status PENDING
+    When saving the card payment of a POS sale works again
+    And metasfresh's clock is 151 seconds after the card checkout of POS sale sale1
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status PENDING
+    When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status SUCCESSFUL
+    And POS sale sale1 is completed
+
+  # ##########################################################################
+  # Cause (i). SumUp answers that it does not know the transaction: that is an answer, not an outage. It ends an ongoing
+  # outage, nothing is imported, the card payment stays UNKNOWN, and the check reports that SumUp could be asked.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_28
+  Scenario: SumUp not knowing the transaction of an UNKNOWN card payment ends an outage and leaves the payment UNKNOWN
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId set
+    And saving a SumUp transaction works again
+    When SumUp API stub fails the status lookup
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 is failing a SumUp lookup true
+    When SumUp API stub answers the status lookup again
+    And SumUp API stub does not know the first transaction of POS sale sale1
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status UNKNOWN
+    And the card payment of POS sale sale1 is failing a SumUp lookup false
+    And metasfresh has no SumUp transaction of POS sale sale1
+    When the card payment of POS sale sale1 is checked
+    Then the check of the card payment of POS sale sale1 returned checkFailed false
+    And the card payment of POS sale sale1 has status UNKNOWN
+    And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.SumUpLookupFailed'

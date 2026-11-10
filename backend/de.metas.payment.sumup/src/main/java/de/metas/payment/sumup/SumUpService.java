@@ -35,6 +35,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -233,6 +234,23 @@ public class SumUpService
 	{
 		final List<SumUpTransaction> trxs = trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId));
 		return trxs.isEmpty() ? null : trxs.get(0);
+	}
+
+	/**
+	 * @return the transaction with the given client transaction id, if metasfresh has it (at most one exists, by a unique index)
+	 */
+	public Optional<SumUpTransaction> findTransactionByClientTransactionId(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		return Optional.ofNullable(retrieveByClientTransactionIdOrNull(clientTransactionId));
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0)
+	 * @return whether a transaction carrying the given POS reference was created at or after the given time
+	 */
+	public boolean existsTransactionByPOSRefCreatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant createdSince)
+	{
+		return trxRepository.existsByPOSRefCreatedSince(posRef, createdSince);
 	}
 
 	/**

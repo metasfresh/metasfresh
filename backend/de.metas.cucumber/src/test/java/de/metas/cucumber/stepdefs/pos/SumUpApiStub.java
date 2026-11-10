@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * Endpoints (all below {@code /v0.1}):
  * <ul>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}. A checkout can be held ({@link #holdNextCheckout()}) and answered later ({@link #answerHeldCheckout})</li>
- *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure, or an unreadable answer ({@link #answerLookupUnreadable}) (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
+ *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure, an unreadable answer ({@link #answerLookupUnreadable}), or HTTP 404 ({@link #answerLookupNotFound}) (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
  * State is static: one stub per JVM, reset between scenarios via {@link #reset()}.
@@ -94,6 +94,8 @@ public final class SumUpApiStub
 	private static final Map<String, Integer> statusLookupCountsByClientTransactionId = new HashMap<>();
 	// the client_transaction_ids whose status lookup is answered with a transaction metasfresh cannot read (see answerLookupUnreadable)
 	private static final Set<String> unreadableLookupClientTransactionIds = new HashSet<>();
+	// the client_transaction_ids whose status lookup is answered with HTTP 404, as SumUp does for a transaction it does not know
+	private static final Set<String> unknownLookupClientTransactionIds = new HashSet<>();
 
 	private SumUpApiStub() {}
 
@@ -143,6 +145,18 @@ public final class SumUpApiStub
 			transactionsByClientTransactionId.clear();
 			statusLookupCountsByClientTransactionId.clear();
 			unreadableLookupClientTransactionIds.clear();
+			unknownLookupClientTransactionIds.clear();
+		}
+	}
+
+	/**
+	 * From now on, the status lookup of the given transaction is answered with HTTP 404 (SumUp does not know it).
+	 */
+	public static void answerLookupNotFound(@NonNull final String clientTransactionId)
+	{
+		synchronized (lock)
+		{
+			unknownLookupClientTransactionIds.add(clientTransactionId);
 		}
 	}
 
@@ -476,6 +490,11 @@ public final class SumUpApiStub
 			if (failStatusLookup)
 			{
 				respond(exchange, 500, "{\"error\":\"stub: status lookup failed\"}");
+				return;
+			}
+			if (unknownLookupClientTransactionIds.contains(String.valueOf(clientTransactionId)))
+			{
+				respond(exchange, 404, "{\"error_code\":\"NOT_FOUND\",\"message\":\"stub: transaction not found\"}");
 				return;
 			}
 			trx = clientTransactionId != null ? transactionsByClientTransactionId.get(clientTransactionId) : null;

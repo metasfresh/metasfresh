@@ -83,20 +83,10 @@ public class SumUpTransactionRepository
 	@Nullable
 	public SumUpTransactionId findIdByPOSRef(@NonNull final SumUpPOSRef posRef)
 	{
-		Check.assume(posRef.getPosOrderId() > 0 || posRef.getPosPaymentId() > 0 || posRef.getPosInvoiceCardSettlementId() > 0,
-				"posRef references something: {}", posRef);
+		assumeReferencesSomething(posRef);
 		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).build())
 				.create()
 				.firstIdOnly(SumUpTransactionId::ofRepoIdOrNull);
-	}
-
-	/**
-	 * @return the transaction with the given client transaction id (at most one exists, by a unique index), if metasfresh has it
-	 */
-	public Optional<SumUpTransaction> findByClientTransactionId(@NonNull final SumUpClientTransactionId clientTransactionId)
-	{
-		return retrieveSingleRecordIfExists(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId))
-				.map(SumUpTransactionRepository::fromRecord);
 	}
 
 	/**
@@ -105,12 +95,17 @@ public class SumUpTransactionRepository
 	 */
 	public boolean existsByPOSRefCreatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant createdSince)
 	{
-		Check.assume(posRef.getPosOrderId() > 0 || posRef.getPosPaymentId() > 0 || posRef.getPosInvoiceCardSettlementId() > 0,
-				"posRef references something: {}", posRef);
+		assumeReferencesSomething(posRef);
 		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).build())
 				.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Timestamp.from(createdSince))
 				.create()
 				.anyMatch();
+	}
+
+	private static void assumeReferencesSomething(@NonNull final SumUpPOSRef posRef)
+	{
+		Check.assume(posRef.getPosOrderId() > 0 || posRef.getPosPaymentId() > 0 || posRef.getPosInvoiceCardSettlementId() > 0,
+				"posRef references something: {}", posRef);
 	}
 
 	public Stream<SumUpTransaction> stream(@NonNull final SumUpTransactionQuery query)

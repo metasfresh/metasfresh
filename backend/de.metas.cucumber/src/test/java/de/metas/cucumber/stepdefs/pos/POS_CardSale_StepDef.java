@@ -863,6 +863,43 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
+	 * From now on, SumUp answers the status lookup of the sale's first transaction with HTTP 404: SumUp does not know that
+	 * transaction (see {@link SumUpApiStub#answerLookupNotFound}). Unlike {@code SumUp API stub fails the status lookup}, this is
+	 * an answer from SumUp, not an outage.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the stub accepted a checkout for the sale
+	 * @cucumber.example
+	 * <pre>
+	 * And SumUp API stub does not know the first transaction of POS sale sale1
+	 * </pre>
+	 */
+	@And("^SumUp API stub does not know the first transaction of POS sale (\\S+)$")
+	public void stubDoesNotKnowFirstTransaction(@NonNull final String saleIdentifier)
+	{
+		SumUpApiStub.answerLookupNotFound(getAcceptedClientTransactionId(getSale(saleIdentifier), true));
+	}
+
+	/**
+	 * Asserts that metasfresh has no SumUp transaction with the client transaction id of the sale's (latest) checkout the stub
+	 * accepted, e.g. because saving it failed and it was not imported since.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then metasfresh has no SumUp transaction of POS sale sale1
+	 * </pre>
+	 */
+	@And("^metasfresh has no SumUp transaction of POS sale (\\S+)$")
+	public void assertNoSumUpTransactionSaved(@NonNull final String saleIdentifier)
+	{
+		final String clientTransactionId = getAcceptedClientTransactionId(getSale(saleIdentifier), false);
+		assertThat(sumUpTransactionRepository.list(SumUpTransactionQuery.ofClientTransactionId(SumUpClientTransactionId.ofString(clientTransactionId))))
+				.as("SumUp transactions of POS sale %s saved by metasfresh", saleIdentifier)
+				.isEmpty();
+	}
+
+	/**
 	 * Asserts how many status lookups ({@code GET /me/transactions}) of the sale's first transaction the stub received in this
 	 * scenario, whatever they were answered.
 	 *
