@@ -14,7 +14,11 @@ import { captionHasField } from '../../launcherCaption';
 // 20s screen wait.
 import { JOB_START_ARRIVAL_TIMEOUT, JOB_START_TAP_ATTEMPTS, recoverToLauncherList } from '../jobStartRecovery';
 
+import { waitForNoInFlightXhr } from '../../inFlightXhr';
+
 const NAME = 'PickingJobsListScreen';
+// The query the launcher list uses to (re)load its job buttons.
+const LAUNCHERS_QUERY_URL_PATTERN = /\/userWorkflows\/launchers\/query/;
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFLaunchersScreen');
 // The job (workflow-process) screen reached after starting a launcher. This id mirrors the private
@@ -146,6 +150,17 @@ export const PickingJobsListScreen = {
         // Make sure we have the expected number of buttons
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
+    }),
+
+    /**
+     * Expect that the (filtered) list shows NO job at all - only once the list has really been loaded.
+     * `expectJobButtons([])` cannot say that: right after a filter / re-open the list is still empty while
+     * its spinner is about to be shown, so a count of 0 would pass before the launchers were even fetched.
+     */
+    expectNoJobButtons: async () => await test.step(`${NAME} - Expect no job buttons (after the list was loaded)`, async () => {
+        await waitForNoInFlightXhr(page, { urlPattern: LAUNCHERS_QUERY_URL_PATTERN, timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(locateJobButtons()).toHaveCount(0);
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
