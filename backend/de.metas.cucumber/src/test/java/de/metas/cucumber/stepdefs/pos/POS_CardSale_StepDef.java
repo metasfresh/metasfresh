@@ -74,6 +74,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
+import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
@@ -461,9 +462,9 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * The cashier tries to complete the sale (the order's transition to "completed"); it must not end completed. Completing needs
-	 * every payment of the sale to be successful (the order's "all payments successful" rule): the call is either refused with an
-	 * {@link AdempiereException} or leaves the order waiting for payment. Anything else (e.g. another exception type) fails the step.
+	 * The cashier tries to complete the sale (the order's transition to "completed"). Completing needs every payment of the
+	 * sale to be successful, so the call is accepted but leaves the order waiting for payment ({@code WP}): the step asserts exactly
+	 * that. Any exception, including a refusal, fails the step.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -475,15 +476,10 @@ public class POS_CardSale_StepDef
 	public void completingSaleFails(@NonNull final String saleIdentifier)
 	{
 		final Sale sale = getSale(saleIdentifier);
-		try
-		{
-			posService.changeStatusTo(sale.terminalId, sale.orderExternalId, POSOrderStatus.Completed, sale.cashierId);
-		}
-		catch (final AdempiereException ex)
-		{
-			// refused, as expected
-		}
-		assertThat(isCompleted(sale)).as("POS sale %s must not be completed while a card payment is not successful", saleIdentifier).isFalse();
+		posService.changeStatusTo(sale.terminalId, sale.orderExternalId, POSOrderStatus.Completed, sale.cashierId);
+		assertThat(loadOrderRecord(sale).getStatus())
+				.as("status of POS sale %s after trying to complete it while a card payment is not successful", saleIdentifier)
+				.isEqualTo(POSOrderStatus.WaitingPayment.getCode());
 	}
 
 	//
@@ -647,7 +643,7 @@ public class POS_CardSale_StepDef
 
 	/**
 	 * Asserts that no payment receipt ({@code C_Payment}) was booked for the sale's card payment, i.e. a SumUp approval was
-	 * not booked.
+	 * not booked: the payment has no {@code C_Payment} link, and no receipt of the sale's customer for the sale's amount exists.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -658,9 +654,21 @@ public class POS_CardSale_StepDef
 	@And("^the card payment of POS sale (\\S+) has no payment receipt$")
 	public void assertCardPaymentHasNoReceipt(@NonNull final String saleIdentifier)
 	{
-		assertThat(loadCardPaymentRecord(getSale(saleIdentifier)).getC_Payment_ID())
-				.as("C_Payment of the card payment of POS sale %s", saleIdentifier)
+		final Sale sale = getSale(saleIdentifier);
+		assertThat(loadCardPaymentRecord(sale).getC_Payment_ID())
+				.as("C_Payment linked to the card payment of POS sale %s", saleIdentifier)
 				.isLessThanOrEqualTo(0);
+
+		// also no card receipt that was booked but not linked: none for the sale's customer (the walk-in customer of the scenario's terminal) and amount
+		final int customerId = loadOrderRecord(sale).getC_BPartner_ID();
+		final BigDecimal amount = sale.remoteOrder.getPayments().get(0).getAmount();
+		final int receiptCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, customerId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, true)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, amount)
+				.create()
+				.count();
+		assertThat(receiptCount).as("card receipts (C_Payment) of POS sale %s's customer for %s", saleIdentifier, amount).isZero();
 	}
 
 	/**
@@ -996,13 +1004,17 @@ public class POS_CardSale_StepDef
 				.firstOnlyNotNull(I_C_POS_Payment.class);
 	}
 
-	private boolean isCompleted(@NonNull final Sale sale)
+	private I_C_POS_Order loadOrderRecord(@NonNull final Sale sale)
 	{
-		final String status = queryBL.createQueryBuilder(I_C_POS_Order.class)
+		return queryBL.createQueryBuilder(I_C_POS_Order.class)
 				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_ExternalId, sale.orderExternalId.getAsString())
 				.create()
-				.firstOnlyNotNull(I_C_POS_Order.class)
-				.getStatus();
+				.firstOnlyNotNull(I_C_POS_Order.class);
+	}
+
+	private boolean isCompleted(@NonNull final Sale sale)
+	{
+		final String status = loadOrderRecord(sale).getStatus();
 		return POSOrderStatus.Completed.getCode().equals(status) || POSOrderStatus.Closed.getCode().equals(status);
 	}
 
