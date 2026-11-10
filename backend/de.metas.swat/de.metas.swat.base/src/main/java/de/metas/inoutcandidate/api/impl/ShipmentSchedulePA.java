@@ -33,6 +33,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -323,7 +324,19 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		invalidSchedulesRepo().markAllToRecomputeOutOfTrx(pinstanceId, maxToProcess);
 
 		// 2.
-		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
+		// Lock the scheds that are pointed to by our marked M_ShipmentSchedule_Recompute records, in M_ShipmentSchedule_ID order.
+		// Below they are loaded and later updated in the order in which they get the QtyOnHand allocated; if the updates took the row locks in that order,
+		// this pass could deadlock with another writer of the same scheds, e.g. an order's reactivation that closes them (see IShipmentSchedulePA#getByIdsLockedInIdOrder).
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(invalidSchedulesRepo().createInvalidShipmentSchedulesQueryFilter(pinstanceId))
+				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE) // the PK is never changed by the updates; see ForUpdate#FOR_NO_KEY_UPDATE
+				.listIds();
+
+		// 3.
+		// Load the scheds that are pointed to by our marked M_ShipmentSchedule_Recompute records
 		final List<I_M_ShipmentSchedule> shipmentSchedules = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
@@ -727,6 +740,22 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		return queryBuilder
 				.create()
+				.listImmutable(I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public ImmutableList<I_M_ShipmentSchedule> getByIdsLockedInIdOrder(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
+				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE) // the PK is never changed by the writers; see ForUpdate#FOR_NO_KEY_UPDATE
 				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 

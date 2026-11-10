@@ -130,5 +130,14 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	ImmutableList<I_M_ShipmentSchedule> getByReferences(ImmutableList<TableRecordReference> recordRefs);
 
+	/**
+	 * Locks the given shipment schedules ({@code FOR NO KEY UPDATE}, until the current transaction ends) in ascending
+	 * {@code M_ShipmentSchedule_ID} order, and returns them in that order, as they are after the lock was acquired.
+	 * <p>
+	 * Every writer that updates several shipment schedules in one transaction shall lock them in this order before it updates the first one,
+	 * like the recompute pass does in {@link #retrieveInvalid(PInstanceId, QueryLimit)}; writers that lock them in different orders deadlock each other.
+	 */
+	ImmutableList<I_M_ShipmentSchedule> getByIdsLockedInIdOrder(Set<ShipmentScheduleId> ids);
+
 	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
 }
