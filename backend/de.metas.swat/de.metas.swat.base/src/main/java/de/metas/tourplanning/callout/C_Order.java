@@ -63,7 +63,17 @@ public class C_Order
 
 		// Lead-time forward calculation supersedes the flat offset when it applies.
 		// Setting DatePromised here re-triggers setPreparationDate via the webui Document.setValue -> fieldCalloutExecutor.execute chain.
-		if (Services.get(IOrderDeliveryDayBL.class).setDatePromisedFromLeadTime(order))
+		final IOrderDeliveryDayBL orderDeliveryDayBL = Services.get(IOrderDeliveryDayBL.class);
+		if (orderDeliveryDayBL.setDatePromisedFromLeadTime(order))
+		{
+			return;
+		}
+
+		// When the forward lead-time feature governs this order (sysconfig on + shipper has a lead time), the per-shipper
+		// lead time OWNS DatePromised even if the forward calc did not re-set it just now (e.g. IsFixedDatePromised=Y):
+		// the legacy flat DatePromisedOffsetDays must not overwrite it (REQUIREMENTS §7). When the feature is off, the
+		// legacy offset keeps its original behaviour (AC5c).
+		if (orderDeliveryDayBL.isLeadTimeForwardCalcActive(order))
 		{
 			return;
 		}

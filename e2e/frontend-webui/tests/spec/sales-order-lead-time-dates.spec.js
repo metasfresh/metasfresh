@@ -40,6 +40,8 @@ import { SALES_ORDER_WINDOW_ID, SHIPPER_WINDOW_ID } from '../utils/WindowIds';
  */
 
 const SYSCONFIG_FORWARD_ENABLED = 'de.metas.tourplanning.LeadTimeForwardCalc.Enabled';
+const SYSCONFIG_LEGACY_OFFSET_DAYS = 'de.metas.order.DatePromisedOffsetDays';
+const LEGACY_OFFSET_DAYS = 3;
 const LEAD_TIME_DAYS = 7;
 
 const ORDER_DATE = { year: 2026, month: 8, day: 10 };
@@ -61,7 +63,8 @@ const expectNumbersMatch = (text, { year, month, day }, what) => {
 test.describe('Sales order - lead-time DatePromised / PreparationDate', () => {
   test.afterEach(async () => {
     // Leave the system-level switch at its shipped default so other specs are unaffected.
-    await Backend.setSysconfigs({ [SYSCONFIG_FORWARD_ENABLED]: 'N' });
+    // The legacy flat offset ships as 0 (= off); reset it too (only the LOW-1 test below sets it).
+    await Backend.setSysconfigs({ [SYSCONFIG_FORWARD_ENABLED]: 'N', [SYSCONFIG_LEGACY_OFFSET_DAYS]: '0' });
   });
 
   test('lead-time route + order date compute promised/prep live; a manual promised edit sticks', async ({ page }) => {
@@ -199,6 +202,130 @@ test.describe('Sales order - lead-time DatePromised / PreparationDate', () => {
 
       expect(await persistedDate('DatePromised')).toContain('2026-08-28');
       expect(await persistedDate('PreparationDate')).toContain('2026-08-20');
+    });
+  });
+
+  test('forward lead-time active + legacy DatePromisedOffsetDays: a pinned (IsFixedDatePromised) DatePromised is not overwritten by the legacy offset', async ({
+    page,
+  }) => {
+    allure.epic('E0159: Manufacturing Planning');
+    allure.tag('F8005: Order Checkup');
+    allure.tag('F8005'); // Standalone tag for code-only filtering
+    allure.story('Dispoliste dates - legacy flat DatePromisedOffsetDays must not overwrite a pinned lead-time DatePromised');
+    allure.severity('critical');
+    allure.description(`
+## Legacy offset vs. forward lead time (UI callout regression)
+
+1. Forward-calc sysconfig ON, legacy sysconfig de.metas.order.DatePromisedOffsetDays = ${LEGACY_OFFSET_DAYS}.
+2. New sales order on a lead-time shipper (D = ${LEAD_TIME_DAYS}); Order Date 2026-08-10 => DatePromised 2026-08-19.
+3. Pin DatePromised (type 2026-08-28) and tick IsFixedDatePromised.
+4. Change Order Date to 2026-08-12: DatePromised must stay 2026-08-28 (the legacy +${LEGACY_OFFSET_DAYS} day offset would give 2026-08-15).
+    `);
+
+    test.setTimeout(240000);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: 'en_US' } },
+        bpartners: {
+          CUSTOMER: { isVendor: false, isCustomer: true, isSoPriceList: true, name: 'Lead-time customer' },
+          CARRIER: { isVendor: true, isCustomer: false, isSoPriceList: false, name: 'Lead-time carrier' },
+        },
+        sysconfigs: {
+          [SYSCONFIG_FORWARD_ENABLED]: 'Y',
+          [SYSCONFIG_LEGACY_OFFSET_DAYS]: String(LEGACY_OFFSET_DAYS),
+        },
+      },
+    });
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+
+    const patchDocument = async (documentId, changes) => {
+      const response = await page.request.patch(`${WEBAPI_BASE_URL}/window/${SHIPPER_WINDOW_ID}/${documentId}`, {
+        data: changes,
+      });
+      if (!response.ok()) {
+        throw new Error(`PATCH shipper ${documentId} failed: HTTP ${response.status()} ${await response.text()}`);
+      }
+      const body = await response.json();
+      return (Array.isArray(body) ? body : body.documents || [body])[0];
+    };
+    const shipperName = `Lead-time route ${Date.now()}`;
+    await test.step('Create a shipper (route) with LeadTimeDays', async () => {
+      const created = await patchDocument('NEW', []);
+      const shipper = await patchDocument(created.id, [
+        { op: 'replace', path: 'Name', value: shipperName },
+        { op: 'replace', path: 'C_BPartner_ID', value: Number(masterdata.bpartners.CARRIER.id) },
+        { op: 'replace', path: 'LeadTimeDays', value: LEAD_TIME_DAYS },
+      ]);
+      expect(shipper.validStatus && shipper.validStatus.valid, 'shipper is valid').toBe(true);
+    });
+
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER.bpartnerCode);
+    const p = getPage();
+
+    const dateInput = (column) => p.locator(`.form-field-${column} input`).first();
+    const waitIdle = async () => {
+      await p
+        .locator('.rotating, .indicator-pending')
+        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+        .catch(() => {});
+    };
+    const typeDate = async (column, date) => {
+      const input = dateInput(column);
+      await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await input.click();
+      await input.fill(formatEnUS(date));
+      await p.keyboard.press('Tab'); // blur => PATCH
+      await waitIdle();
+    };
+    const dateNumbers = async (column) => (await dateInput(column).inputValue()).match(/\d+/g)?.map(Number) ?? [];
+    const persistedDate = async (column) => {
+      const field = await getFieldData(SALES_ORDER_WINDOW_ID, recordId, column);
+      return String(field.value ?? '');
+    };
+
+    await test.step('Select the lead-time shipper (route)', async () => {
+      const shipperField = p.locator('.form-field-M_Shipper_ID');
+      await shipperField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await shipperField.locator('.input-dropdown').click();
+      const dropdownList = p.locator('.input-dropdown-list');
+      await dropdownList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await p.locator('.input-dropdown-list-option').filter({ hasText: shipperName }).first().click();
+      await dropdownList.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await waitIdle();
+    });
+
+    await test.step('Order Date 2026-08-10 => forward calc gives DatePromised 2026-08-19', async () => {
+      await typeDate('DateOrdered', ORDER_DATE);
+      await expect
+        .poll(async () => dateNumbers('DatePromised'), { timeout: SLOW_ACTION_TIMEOUT, message: 'DatePromised shown live' })
+        .toEqual(expect.arrayContaining([EXPECTED_PROMISED.year, EXPECTED_PROMISED.month, EXPECTED_PROMISED.day]));
+    });
+
+    await test.step('Pin DatePromised (type 2026-08-28 + tick IsFixedDatePromised)', async () => {
+      await typeDate('DatePromised', MANUAL_PROMISED);
+      await p.locator('.form-field-IsFixedDatePromised label.input-checkbox').first().click();
+      await waitIdle();
+      await expect
+        .poll(async () => String((await getFieldData(SALES_ORDER_WINDOW_ID, recordId, 'IsFixedDatePromised')).value), {
+          timeout: SLOW_ACTION_TIMEOUT,
+          message: 'IsFixedDatePromised persisted as true',
+        })
+        .toBe('true');
+      expect(await persistedDate('DatePromised')).toContain('2026-08-28');
+    });
+
+    await test.step('Change Order Date => pinned DatePromised is NOT overwritten by the legacy offset', async () => {
+      await typeDate('DateOrdered', { year: 2026, month: 8, day: 12 });
+      // Give a (wrongly) firing legacy offset callout the chance to overwrite, then assert it did not.
+      await p.waitForTimeout(1500);
+      expectNumbersMatch(await dateInput('DatePromised').inputValue(), MANUAL_PROMISED, 'DatePromised (pinned, UI)');
+      expect(await persistedDate('DatePromised')).toContain('2026-08-28');
+      expect(await persistedDate('DateOrdered')).toContain('2026-08-12');
     });
   });
 });

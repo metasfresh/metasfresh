@@ -157,6 +157,17 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		return order.isSOTrx() && getLeadTimeDaysOrNull(order) != null;
 	}
 
+	@Override
+	public boolean isLeadTimeForwardCalcActive(@NonNull final I_C_Order order)
+	{
+		// The per-shipper forward lead time GOVERNS this sales order's DatePromised when the forward opt-in sysconfig
+		// is on for its client+org and its shipper carries a lead time. True even when the forward calc does not
+		// currently re-set DatePromised (e.g. IsFixedDatePromised='Y'): callers use this to know the lead time owns
+		// the promised date, so the legacy flat DatePromisedOffsetDays must not overwrite it (REQUIREMENTS §7).
+		return hasLeadTime(order)
+				&& sysConfigBL.getBooleanValue(SYSCONFIG_LeadTimeForwardCalc_Enabled, false, order.getAD_Client_ID(), order.getAD_Org_ID());
+	}
+
 	/**
 	 * Sets {@code PreparationDate = workday(DatePromised, min(-leadTimeDays + 1, 0))} (Mon-Fri business days).
 	 * The backward step is clamped to {@code <= 0} so a 0 or negative lead time never pushes PreparationDate

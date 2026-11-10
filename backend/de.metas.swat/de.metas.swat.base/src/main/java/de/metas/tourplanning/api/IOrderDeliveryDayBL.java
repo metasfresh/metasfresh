@@ -62,6 +62,15 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	boolean hasLeadTime(@NonNull I_C_Order order);
 
 	/**
+	 * Whether the per-shipper forward lead-time calc GOVERNS this order's DatePromised: a sales order whose shipper has
+	 * a {@code LeadTimeDays} and whose client+org has the forward opt-in sysconfig
+	 * {@code de.metas.tourplanning.LeadTimeForwardCalc.Enabled} on. True even when {@code IsFixedDatePromised='Y'} (the
+	 * promised date is pinned but still owned by the lead-time feature). Callers use it to keep the legacy flat
+	 * {@code de.metas.order.DatePromisedOffsetDays} from overwriting a lead-time order's DatePromised.
+	 */
+	boolean isLeadTimeForwardCalcActive(@NonNull I_C_Order order);
+
+	/**
 	 * Resolves the per-line preparation date for the shipment-schedule provider: if
 	 * {@code C_OrderLine.PreparationDate} is set (normally the derived value written back by
 	 * {@link #setLinePreparationDate}) it is returned as-is; otherwise it is derived fresh from the given
