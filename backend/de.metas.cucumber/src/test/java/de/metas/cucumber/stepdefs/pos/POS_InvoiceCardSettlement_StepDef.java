@@ -2131,8 +2131,6 @@ public class POS_InvoiceCardSettlement_StepDef
 		}
 	}
 
-
-
 	private POSInvoiceCardSettlementStartRequest toStartRequest(
 			@NonNull final String invoiceIdentifier,
 			@NonNull final String terminalIdentifier,
