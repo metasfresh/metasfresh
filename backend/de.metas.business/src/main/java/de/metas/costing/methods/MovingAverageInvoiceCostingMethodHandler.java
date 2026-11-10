@@ -173,6 +173,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CostDetailCreateRequest requestEffective = request.withAmount(amtConv);
 
+		// M_CostDetail.Prev_* = the cost state BEFORE this movement; snapshot it before the update
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCost);
+
 		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 		if (requestEffective.isReversal() && currentCost.getCurrentQty().isZero())
 		{
@@ -181,7 +184,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		utils.saveCurrentCost(currentCost);
 
-		return utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCost));
+		return utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 	}
 
 	@Override
@@ -189,11 +192,14 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
+		// M_CostDetail.Prev_* = the cost state BEFORE this movement; snapshot it before the update
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCost);
+
 		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
 				request,
-				CostDetailPreviousAmounts.of(currentCost));
+				previousCosts);
 
 		utils.saveCurrentCost(currentCost);
 
@@ -237,8 +243,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				requestEffective = request.withQty(qty);
 			}
 
+			// M_CostDetail.Prev_* = the cost state BEFORE this movement; snapshot it before the update
+			final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
-			final CostDetailCreateResult singleResult = utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCosts));
+			final CostDetailCreateResult singleResult = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 			result = CostDetailCreateResultsList.of(singleResult);
 		}
 		//
