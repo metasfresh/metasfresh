@@ -24,6 +24,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -213,9 +214,9 @@ public class SumUpService
 		{
 			trxRepository.saveNew(trx);
 		}
-		catch (final Exception ex)
+		catch (final DBUniqueConstraintException ex)
 		{
-			// a concurrent import may have saved it meanwhile (unique index): then that one is the result
+			// a concurrent import saved it meanwhile (unique index): then that one is the result
 			final SumUpTransaction concurrentTrx = retrieveByClientTransactionIdOrNull(clientTransactionId);
 			if (concurrentTrx == null)
 			{

@@ -14,6 +14,7 @@ import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -200,12 +201,51 @@ class SumUpServiceImportTest
 		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID)))
 				.thenReturn(ImmutableList.of())
 				.thenReturn(ImmutableList.of(winner));
-		Mockito.doThrow(new DBException("duplicate key value violates unique constraint")).when(trxRepository).saveNew(Mockito.any());
+		Mockito.doThrow(new DBUniqueConstraintException(new RuntimeException("duplicate key value violates unique constraint"))).when(trxRepository).saveNew(Mockito.any());
 		server.expect(requestTo(GET_TRX_URL)).andRespond(withSuccess(remoteTrxJson("SUCCESSFUL"), MediaType.APPLICATION_JSON));
 
 		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
 
 		assertThat(result.getTransaction()).isSameAs(winner);
 		assertThat(result.getLookupError()).isNull();
+	}
+
+	@Test
+	void import_saveFailsForAnotherReasonThoughTheRowExists_isThrown_notTakenAsConcurrentImport()
+	{
+		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID)))
+				.thenReturn(ImmutableList.of())
+				.thenReturn(ImmutableList.of(newExistingTrx()));
+		Mockito.doThrow(new DBException("event enqueue failed after commit")).when(trxRepository).saveNew(Mockito.any());
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withSuccess(remoteTrxJson("SUCCESSFUL"), MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID))
+				.isInstanceOf(DBException.class)
+				.hasMessageContaining("event enqueue failed after commit");
+	}
+
+	@Test
+	void import_unauthorized401_returnsLookupError_notNotFound()
+	{
+		assertLookupErrorForStatus(HttpStatus.UNAUTHORIZED);
+	}
+
+	@Test
+	void import_forbidden403_returnsLookupError_notNotFound()
+	{
+		assertLookupErrorForStatus(HttpStatus.FORBIDDEN);
+	}
+
+	private void assertLookupErrorForStatus(final HttpStatus status)
+	{
+		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(status));
+
+		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
+
+		assertThat(result.getLookupError()).isInstanceOf(SumUpCallException.class);
+		assertThat(result.isNotFound()).isFalse();
+		assertThat(result.getTransaction()).isNull();
+		Mockito.verify(trxRepository, Mockito.never()).saveNew(Mockito.any());
 	}
 }
