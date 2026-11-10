@@ -160,7 +160,7 @@ public class POSCashJournal
 	/**
 	 * Adds a line for each successful payment of the order that is not journaled yet. It is called on every attempt to complete
 	 * the order, also on attempts that leave the order waiting for another payment, so a payment already journaled by an earlier
-	 * attempt, on this journal or on an earlier one of the terminal (since closed), must not be journaled again.
+	 * attempt, on any journal (this one or an earlier, since closed, one), must not be journaled again.
 	 *
 	 * @param alreadyJournaledPaymentIds the order's payments that have a line on any journal, see
 	 *                                   {@link POSCashJournalService#addOrderPayments}
@@ -172,13 +172,7 @@ public class POSCashJournal
 		posOrder.streamPaymentsNotDeleted()
 				.filter(POSPayment::isSuccessful)
 				.filter(posPayment -> !alreadyJournaledPaymentIds.contains(posPayment.getLocalIdNotNull()))
-				.filter(posPayment -> !hasLineForPayment(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull())))
 				.forEach(posPayment -> addPayment(posPayment, posOrderId, cashierId));
-	}
-
-	private boolean hasLineForPayment(@NonNull final POSOrderAndPaymentId posOrderAndPaymentId)
-	{
-		return lines.stream().anyMatch(line -> posOrderAndPaymentId.equals(line.getPosOrderAndPaymentId()));
 	}
 
 	private void addPayment(final POSPayment posPayment, POSOrderId posOrderId, UserId cashierId)
