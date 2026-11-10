@@ -9,6 +9,7 @@ import de.metas.payment.sumup.SumUpEventsDispatcher;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import org.adempiere.exceptions.AdempiereException;
@@ -21,6 +22,7 @@ import org.mockito.Mockito;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -108,5 +110,61 @@ class SumUpTransactionRepositoryTest
 
 		final SumUpTransaction reloaded = repository.getById(trx.getExternalId());
 		assertThat(reloaded.getPosRef()).isEqualTo(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
+	}
+
+	/**
+	 * @return the transaction as a SumUp lookup reports it: successful, with or without a refund
+	 */
+	private static SumUpTransaction asLookedUp(final SumUpTransaction trx, final boolean isRefunded)
+	{
+		return trx.toBuilder()
+				.status(SumUpTransactionStatus.SUCCESSFUL)
+				.amountRefunded(Amount.of(isRefunded ? "10" : "0", CurrencyCode.EUR))
+				.lastSync(LastSync.ok())
+				.build();
+	}
+
+	@Test
+	void updateById_refundStoredByAnotherLookupMeanwhile_isNotOverwrittenByTheStaleResult()
+	{
+		final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posInvoiceCardSettlementId(123).build()).toBuilder()
+				.status(SumUpTransactionStatus.SUCCESSFUL)
+				.build();
+		repository.saveNew(trx);
+
+		final AtomicInteger lookups = new AtomicInteger();
+		repository.updateById(trx.getClientTransactionId(), trxAsRead -> {
+			if (lookups.incrementAndGet() == 1)
+			{
+				// SumUp answered "not refunded"; while this lookup was running, the charge was refunded and another
+				// lookup (e.g. the SumUp callback) stored the refund
+				repository.save(asLookedUp(trxAsRead, true));
+				return asLookedUp(trxAsRead, false);
+			}
+			// asked again: SumUp reports the refund
+			return asLookedUp(trxAsRead, true);
+		});
+
+		assertThat(repository.getById(trx.getExternalId()).isRefunded()).as("the refund stored meanwhile is kept").isTrue();
+		assertThat(lookups).as("the lookup is repeated on the transaction as changed meanwhile").hasValue(2);
+	}
+
+	@Test
+	void updateById_transactionChangedMeanwhileOnEveryAttempt_givesUpWithoutOverwritingIt()
+	{
+		final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posInvoiceCardSettlementId(123).build()).toBuilder()
+				.status(SumUpTransactionStatus.SUCCESSFUL)
+				.build();
+		repository.saveNew(trx);
+
+		final AtomicInteger lookups = new AtomicInteger();
+		assertThatThrownBy(() -> repository.updateById(trx.getClientTransactionId(), trxAsRead -> {
+			lookups.incrementAndGet();
+			repository.save(trxAsRead.toBuilder().json("changed meanwhile " + lookups.get()).build());
+			return asLookedUp(trxAsRead, false);
+		})).isInstanceOf(AdempiereException.class);
+
+		assertThat(lookups).hasValue(3);
+		assertThat(repository.getById(trx.getExternalId()).getJson()).isEqualTo("changed meanwhile 3");
 	}
 }

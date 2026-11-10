@@ -24,6 +24,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -48,6 +49,10 @@ import java.util.stream.Stream;
 public class SumUpTransactionRepository
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpTransactionRepository.class);
+	/**
+	 * Attempts of {@link #updateUnlessChangedMeanwhile} while the transaction is changed concurrently.
+	 */
+	private static final int MAX_UPDATE_ATTEMPTS = 3;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final SumUpEventsDispatcher eventsDispatcher;
@@ -327,16 +332,72 @@ public class SumUpTransactionRepository
 		return sqlQueryBuilder;
 	}
 
+	/**
+	 * Updates the transaction from a SumUp lookup ({@code updater}), safe against a concurrent update of the same
+	 * transaction, see {@link #updateUnlessChangedMeanwhile}.
+	 *
+	 * @param updater a SumUp lookup: it may take long, and it must be safe to repeat (it may run more than once)
+	 */
 	public void updateById(@NonNull final SumUpClientTransactionId id, @NonNull final UnaryOperator<SumUpTransaction> updater)
 	{
-		final I_SUMUP_Transaction record = retrieveSingleRecordNotNull(SumUpTransactionQuery.ofClientTransactionId(id));
-		updateRecord(record, updater);
+		updateUnlessChangedMeanwhile(SumUpTransactionQuery.ofClientTransactionId(id), updater);
 	}
 
+	/**
+	 * Updates the transaction by an updater that runs exactly once (e.g. a refund: it must not be repeated), so a concurrent
+	 * update is not checked for, unlike {@link #updateById(SumUpClientTransactionId, UnaryOperator)}: the updater's result
+	 * is stored as it is.
+	 */
 	public SumUpTransaction updateById(@NonNull final SumUpTransactionExternalId id, @NonNull final UnaryOperator<SumUpTransaction> updater)
 	{
 		final I_SUMUP_Transaction record = retrieveSingleRecordNotNull(SumUpTransactionQuery.ofExternalId(id));
 		return updateRecord(record, updater);
+	}
+
+	/**
+	 * Runs the updater (a SumUp lookup) on the transaction as stored, without a lock and outside any transaction, and
+	 * stores its result only if the stored transaction did not change meanwhile (checked under the row lock): otherwise a
+	 * concurrent update (e.g. the SumUp callback storing a refund while this lookup ran) would be overwritten by this
+	 * lookup's older result. If it changed, the updater runs again on the transaction as changed, so its result is at
+	 * least as recent as the concurrent one; after {@value #MAX_UPDATE_ATTEMPTS} attempts it gives up and throws,
+	 * leaving the stored transaction as it is.
+	 */
+	private void updateUnlessChangedMeanwhile(@NonNull final SumUpTransactionQuery query, @NonNull final UnaryOperator<SumUpTransaction> updater)
+	{
+		for (int attempt = 1; ; attempt++)
+		{
+			final SumUpTransaction trxBeforeChange = fromRecord(retrieveSingleRecordNotNull(query));
+			final SumUpTransaction trx = updater.apply(trxBeforeChange);
+			if (Objects.equals(trxBeforeChange, trx))
+			{
+				return;
+			}
+
+			final boolean isStored = trxManager.callInThreadInheritedTrx(() -> {
+				final I_SUMUP_Transaction record = toSqlQuery(query)
+						.create()
+						.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+						.firstOnlyNotNull(I_SUMUP_Transaction.class);
+				if (!Objects.equals(fromRecord(record), trxBeforeChange))
+				{
+					return false;
+				}
+				updateRecordAndSave(record, trx);
+				return true;
+			});
+			if (isStored)
+			{
+				return;
+			}
+
+			if (attempt >= MAX_UPDATE_ATTEMPTS)
+			{
+				throw new AdempiereException("SumUp transaction was changed concurrently on every update attempt; not updated")
+						.setParameter("query", query)
+						.setParameter("attempts", attempt);
+			}
+			logger.info("SumUp transaction {} was changed concurrently while it was being updated (attempt {} of {}); updating it again", query, attempt, MAX_UPDATE_ATTEMPTS);
+		}
 	}
 
 	private SumUpTransaction updateRecord(@NonNull final I_SUMUP_Transaction record, @NonNull final UnaryOperator<SumUpTransaction> updater)
@@ -373,7 +434,7 @@ public class SumUpTransactionRepository
 					.forEach(record -> {
 						try
 						{
-							trxManager.runInThreadInheritedTrx(() -> updateRecord(record, updater));
+							updateUnlessChangedMeanwhile(SumUpTransactionQuery.ofLocalId(SumUpTransactionId.ofRepoId(record.getSUMUP_Transaction_ID())), updater);
 							countOK.incrementAndGet();
 						}
 						catch (final Exception ex)
