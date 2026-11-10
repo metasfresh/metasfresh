@@ -41,6 +41,7 @@ import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Config;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.pos.POSCashJournal;
+import de.metas.pos.POSCashJournalLine;
 import de.metas.pos.POSCashJournalLineType;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSService;
@@ -132,8 +133,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Step definitions for POS invoice card settlements: wiring a POS terminal to the in-process SumUp API stub
  * ({@link SumUpApiStub}), programming the stub, and asserting on settlements, their SumUp transactions and
- * the checkouts the stub received. The settlement start/check/release/back-office steps are added by the tasks
- * that implement those operations.
+ * the checkouts the stub received.
  */
 @RequiredArgsConstructor
 public class POS_InvoiceCardSettlement_StepDef
@@ -267,7 +267,6 @@ public class POS_InvoiceCardSettlement_StepDef
 
 	/**
 	 * Fixture: creates a settlement (status PENDING) for the invoice's grand total, as the settlement repository does.
-	 * The settlement start step added by later tasks creates settlements through the service instead.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: C_POS_StepDefData, C_Invoice_StepDefData
@@ -1223,6 +1222,39 @@ public class POS_InvoiceCardSettlement_StepDef
 				.filter(line -> settlementId.equals(line.getPosInvoiceCardSettlementId()))
 				.count();
 		assertThat(actualCount).as("card payment lines referencing card settlement %s", settlementIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts the description of the one card payment line of the terminal's open cash journal that references the
+	 * settlement. In the expected text, {@code {DocumentNo}} stands for the document number of the given invoice (the
+	 * invoices of a feature get their document numbers from the sequence, so the number is not known in advance).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, C_POS_InvoiceCardSettlement_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the card payment line of card settlement settlement1 in the cash journal of POS terminal till has description 'Rechnung {DocumentNo} (Karte)' of invoice invoice1
+	 * </pre>
+	 */
+	@And("^the card payment line of card settlement (\\S+) in the cash journal of POS terminal (\\S+) has description '(.*)' of invoice (\\S+)$")
+	public void assertCardPaymentLineDescription(
+			@NonNull final String settlementIdentifier,
+			@NonNull final String terminalIdentifier,
+			@NonNull final String expectedDescriptionPattern,
+			@NonNull final String invoiceIdentifier)
+	{
+		final POSInvoiceCardSettlementId settlementId = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier));
+		final I_C_Invoice invoice = invoiceTable.get(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		InterfaceWrapperHelper.refresh(invoice);
+		final String expectedDescription = expectedDescriptionPattern.replace("{DocumentNo}", invoice.getDocumentNo());
+
+		final List<POSCashJournalLine> lines = getCurrentCashJournal(terminalIdentifier).getLines()
+				.stream()
+				.filter(line -> line.getType() == POSCashJournalLineType.CARD_PAYMENT)
+				.filter(line -> settlementId.equals(line.getPosInvoiceCardSettlementId()))
+				.collect(ImmutableList.toImmutableList());
+		assertThat(lines).as("card payment lines referencing card settlement %s", settlementIdentifier).hasSize(1);
+		assertThat(lines.get(0).getDescription()).as("description of the card payment line of card settlement %s", settlementIdentifier).isEqualTo(expectedDescription);
 	}
 
 	/**

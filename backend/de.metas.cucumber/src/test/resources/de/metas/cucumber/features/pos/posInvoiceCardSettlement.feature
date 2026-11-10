@@ -274,6 +274,7 @@ Feature: POS invoice card settlement
       | Type     | Amount |
       | CARD_PAY | 16.07  |
     And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
+    And the card payment line of card settlement settlement1 in the cash journal of POS terminal till has description 'Rechnung {DocumentNo} (Karte)' of invoice invoice1
     And the closing summary of the cash journal of POS terminal till shows card total 16.07 and cash total 100
     And card settlement settlement1 has 0 AD_Issues
 
@@ -1106,7 +1107,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_tooEarly
+  @Id:POS_CARD_TC13_1
   Scenario: A configured wait below 150 s is raised to 150 s, so a card payment started 100 s ago cannot be released yet
     Given temporarily set sys config int value 60 for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
     And POS terminal till is configured with SumUp and a default card reader
@@ -1122,7 +1123,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_configuredLonger
+  @Id:POS_CARD_TC13_2
   Scenario: A configured wait of 300 s applies, so a card payment started 200 s ago cannot be released yet
     Given temporarily set sys config int value 300 for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
     And POS terminal till is configured with SumUp and a default card reader
@@ -1138,7 +1139,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_default
+  @Id:POS_CARD_TC13_3
   Scenario: Without a configured wait the default of 180 s applies: refused after 160 s, allowed after 181 s
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1158,7 +1159,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_floorAllowed
+  @Id:POS_CARD_TC13_4
   Scenario: A configured wait below 150 s is raised to 150 s, so a card payment started 151 s ago can be released
     Given temporarily set sys config int value 60 for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
     And POS terminal till is configured with SumUp and a default card reader
@@ -1175,7 +1176,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_approved
+  @Id:POS_CARD_TC13_5
   Scenario: SumUp approved the card payment meanwhile, so the release books it instead of releasing it
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1193,7 +1194,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_failed
+  @Id:POS_CARD_TC13_6
   Scenario: SumUp declined the card payment meanwhile, so the release ends it as failed and the invoice can be paid in cash
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1218,7 +1219,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_pending
+  @Id:POS_CARD_TC13_7
   Scenario: The card payment is still pending at SumUp, so it is released as abandoned only after the cashier confirms, and the invoice can be paid in cash
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1251,7 +1252,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_confirmLocked
+  @Id:POS_CARD_TC13_8
   Scenario: The card settlement is locked by another transaction when the cashier confirms the release, so nothing is released until the lock is gone
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1276,7 +1277,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC13_terminateCalled
+  @Id:POS_CARD_TC13_9
   Scenario: The release cancels the checkout on the terminal's card reader before it re-checks SumUp
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1312,7 +1313,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC19_release
+  @Id:POS_CARD_TC19_2
   Scenario: The SumUp status lookup fails during the release, so the status is unchanged and the release still needs the cashier's confirmation
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1329,7 +1330,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC18_release
+  @Id:POS_CARD_TC18_2
   Scenario: A card settlement without a SumUp transaction is unknown, and the cashier releases it as abandoned after confirming, so the invoice can be paid in cash
     Given POS terminal till is configured with SumUp and a default card reader
     And SumUp API stub holds the next checkout
@@ -1366,7 +1367,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC8_releaseRefused
+  @Id:POS_CARD_TC8_6
   Scenario: SumUp approved the card payment but its booking cannot complete yet, so the release is refused
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1384,7 +1385,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC8_releaseRefusedBookingError
+  @Id:POS_CARD_TC8_7
   Scenario: The booking of an approved card payment failed, so the release is refused and the settlement stays a booking error
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1410,7 +1411,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC15_stillOpen
+  @Id:POS_CARD_TC15_1
   Scenario: SumUp approves a card payment released as abandoned while the invoice is still open, so the card payment is allocated to the invoice
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1443,7 +1444,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC15_paidInCash
+  @Id:POS_CARD_TC15_2
   Scenario: SumUp approves a card payment released as abandoned after the invoice was paid in cash, so the card payment is booked as customer credit and the back office is notified
     Given POS terminal till is configured with SumUp and a default card reader
     And metasfresh contains AD_Roles including the WebUI role:
@@ -1496,7 +1497,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC15_newerAttemptWaiting
+  @Id:POS_CARD_TC15_3
   Scenario: SumUp approves a card payment released as abandoned and a newer card payment of the same invoice at once, so both are booked and the second to finish as customer credit
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1552,7 +1553,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC15_bookingFails
+  @Id:POS_CARD_TC15_4
   Scenario: The booking of a card payment released as abandoned and approved later fails, so it is a booking error for back office and the invoice stays free for another payment
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1592,7 +1593,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_retry
+  @Id:POS_CARD_TC21_1
   Scenario: The booking of an approved card payment failed after 5 attempts, and back office retries it with a fresh attempt budget, so it is booked
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1640,7 +1641,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_retryNoPayment
+  @Id:POS_CARD_TC21_2
   Scenario: Creating the payment of an approved card payment failed, and back office retries the booking, so the payment is created and booked
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1680,7 +1681,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_retryRefunded
+  @Id:POS_CARD_TC21_3
   Scenario: Creating the payment of an approved card payment failed and back office refunded the charge at SumUp, so the retry fails the settlement without booking and the invoice can be paid again
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1714,7 +1715,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_retryRefundedAbandoned
+  @Id:POS_CARD_TC21_4
   Scenario: Creating the payment of a card payment released as abandoned and approved later failed, and back office refunded the charge at SumUp, so the retry leaves it abandoned without booking
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1750,7 +1751,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_resolved
+  @Id:POS_CARD_TC21_5
   Scenario: Completing the booking of an approved card payment failed and back office allocated the payment by hand, so it marks the settlement resolved with a note and nothing more is booked
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1784,7 +1785,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_resolveRefused
+  @Id:POS_CARD_TC21_6
   Scenario: Completing the booking of an approved card payment failed and the payment is still unallocated, so marking the settlement resolved is refused while the invoice is open
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1809,7 +1810,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_resolveRefusedNoPayment
+  @Id:POS_CARD_TC21_7
   Scenario: Creating the payment of an approved card payment failed, so marking the settlement resolved is refused while the invoice is open, and retry booking stays available
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1833,7 +1834,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_waitingJournal
+  @Id:POS_CARD_TC21_8
   Scenario: An approved card payment waits for an open cash journal with its payment unallocated, so marking it resolved is refused while the invoice is open
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1853,7 +1854,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_retryWaitingJournal
+  @Id:POS_CARD_TC21_9
   Scenario: An approved card payment waits for an open cash journal, a journal is opened, and back office retries the booking, so it is booked at once on the new journal
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1889,7 +1890,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC21_emptyNote
+  @Id:POS_CARD_TC21_10
   Scenario: Back office marks a booking error resolved without a note, so it is refused
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1913,7 +1914,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC15_markRefunded
+  @Id:POS_CARD_TC15_5
   Scenario: A late card approval was booked as customer credit and back office refunded it, so it marks the settlement refunded with a note and the settlement leaves the refund worklist
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
@@ -1948,7 +1949,7 @@ Feature: POS invoice card settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_CARD_TC15_markRefunded_partlyAllocated
+  @Id:POS_CARD_TC15_6
   Scenario: A late card payment partly paid the invoice and the surplus is customer credit, and back office refunded the surplus, so it marks the settlement refunded with a note
     Given POS terminal till is configured with SumUp and a default card reader
     And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
