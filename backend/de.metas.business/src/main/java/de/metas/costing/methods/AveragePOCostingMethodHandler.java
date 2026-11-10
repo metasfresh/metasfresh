@@ -202,11 +202,14 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
+		// M_CostDetail.Prev_* = the cost state BEFORE this movement; snapshot it before the update
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCost);
+
 		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
 				request,
-				CostDetailPreviousAmounts.of(currentCost));
+				previousCosts);
 
 		utils.saveCurrentCost(currentCost);
 
