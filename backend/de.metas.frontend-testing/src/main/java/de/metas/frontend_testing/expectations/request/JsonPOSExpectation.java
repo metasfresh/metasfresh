@@ -174,7 +174,7 @@ public class JsonPOSExpectation
 		@Nullable String status;
 
 		/**
-		 * The {@code AD_Issue.ErrorCode} values (e.g. {@code POS_PAYMENT_CARD_RESULT_UNKNOWN}) of the AD_Issues whose
+		 * The {@code AD_Issue.ErrorCode} values (the AD_Message's ErrorCode if it has one, else its key, e.g. {@code de.metas.pos.POSPayment.LateApprovalNotBooked}) of the AD_Issues whose
 		 * {@code AD_Table_ID} / {@code Record_ID} point to this payment, matched as a multiset (order ignored). An
 		 * empty list asserts the payment has no AD_Issue; omit it to skip the check.
 		 */

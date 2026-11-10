@@ -25,6 +25,8 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class POSOrdersRepository
 {
+	static final String NO_ERROR_CODE = "<no ErrorCode>";
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final POSOrderEventDispatcher eventDispatcher;
@@ -94,7 +96,10 @@ public class POSOrdersRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/** The {@code ErrorCode}s of the AD_Issues recorded for the given payment, oldest first. */
+	/**
+	 * The {@code ErrorCode}s of the AD_Issues recorded for the given payment, oldest first. An issue without an
+	 * ErrorCode is reported as {@value #NO_ERROR_CODE} rather than dropped, so that it still counts as an issue.
+	 */
 	public List<String> listIssueErrorCodesByPaymentId(@NonNull final POSPaymentId posPaymentId)
 	{
 		final TableRecordReference paymentRef = TableRecordReference.of(I_C_POS_Payment.Table_Name, posPaymentId);
@@ -104,7 +109,7 @@ public class POSOrdersRepository
 				.orderBy(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
 				.create()
 				.stream()
-				.map(I_AD_Issue::getErrorCode)
+				.map(issue -> issue.getErrorCode() != null ? issue.getErrorCode() : NO_ERROR_CODE)
 				.collect(ImmutableList.toImmutableList());
 	}
 

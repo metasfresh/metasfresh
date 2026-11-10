@@ -246,8 +246,8 @@ class AssertPOSExpectationsCommandTest
 	{
 		assertThatCode(() -> AssertPOSExpectationsCommand.assertCardPayments(
 				TERMINAL_ID,
-				ImmutableList.of(expectedCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"), expectedCardPayment("SUCCESSFUL")),
-				ImmutableList.of(actualCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"), actualCardPayment("SUCCESSFUL"))))
+				ImmutableList.of(expectedCardPayment("UNKNOWN", "de.metas.pos.POSPayment.LateApprovalNotBooked"), expectedCardPayment("SUCCESSFUL")),
+				ImmutableList.of(actualCardPayment("UNKNOWN", "de.metas.pos.POSPayment.LateApprovalNotBooked"), actualCardPayment("SUCCESSFUL"))))
 				.doesNotThrowAnyException();
 	}
 
@@ -276,7 +276,7 @@ class AssertPOSExpectationsCommandTest
 	{
 		assertThatThrownBy(() -> AssertPOSExpectationsCommand.assertCardPayments(
 				TERMINAL_ID,
-				ImmutableList.of(expectedCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN")),
+				ImmutableList.of(expectedCardPayment("UNKNOWN", "de.metas.pos.POSPayment.LateApprovalNotBooked")),
 				ImmutableList.of(actualCardPayment("UNKNOWN"))))
 				.hasMessageContaining("issues");
 	}
@@ -287,7 +287,7 @@ class AssertPOSExpectationsCommandTest
 		assertThatThrownBy(() -> AssertPOSExpectationsCommand.assertCardPayments(
 				TERMINAL_ID,
 				ImmutableList.of(expectedCardPayment("UNKNOWN")),
-				ImmutableList.of(actualCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"))))
+				ImmutableList.of(actualCardPayment("UNKNOWN", "de.metas.pos.POSPayment.LateApprovalNotBooked"))))
 				.hasMessageContaining("issues");
 	}
 
@@ -297,7 +297,7 @@ class AssertPOSExpectationsCommandTest
 		assertThatCode(() -> AssertPOSExpectationsCommand.assertCardPayments(
 				TERMINAL_ID,
 				ImmutableList.of(JsonPOSCardPaymentExpectation.builder().status("UNKNOWN").build()),
-				ImmutableList.of(actualCardPayment("UNKNOWN", "POS_PAYMENT_CARD_RESULT_UNKNOWN"))))
+				ImmutableList.of(actualCardPayment("UNKNOWN", "de.metas.pos.POSPayment.LateApprovalNotBooked"))))
 				.doesNotThrowAnyException();
 	}
 }
