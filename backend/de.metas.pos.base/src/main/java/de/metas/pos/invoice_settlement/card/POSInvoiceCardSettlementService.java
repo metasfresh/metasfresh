@@ -357,8 +357,9 @@ public class POSInvoiceCardSettlementService
 	 * Reconciles the settlement with its SumUp transaction as stored locally (no SumUp call); used by the SumUp status
 	 * events, the till's check and the background sweep:
 	 * <ul>
-	 * <li>approved at SumUp, or the booking was not finished (APPROVED) → booking ({@link POSInvoiceCardSettlementBooking#book},
-	 * which handles its own booking errors);</li>
+	 * <li>charged at SumUp (SUCCESSFUL, or REFUNDED since), or the booking was not finished (APPROVED) → booking
+	 * ({@link POSInvoiceCardSettlementBooking#book}, which handles its own booking errors and never books a refunded
+	 * charge);</li>
 	 * <li>declined / cancelled at SumUp → FAILED / CANCELLED, only from PENDING / UNKNOWN;</li>
 	 * <li>no SumUp transaction → the orphan rule ({@link #markUnknownIfOrphan}).</li>
 	 * </ul>
@@ -370,7 +371,7 @@ public class POSInvoiceCardSettlementService
 
 		final SumUpTransaction sumUpTrx = booking.findSumUpTransaction(id).orElse(null);
 		final SumUpTransactionStatus sumUpStatus = sumUpTrx != null ? sumUpTrx.getStatus() : null;
-		if (SumUpTransactionStatus.SUCCESSFUL.equals(sumUpStatus)
+		if ((sumUpTrx != null && sumUpTrx.isCharged())
 				|| repository.getById(id).getStatus() == POSInvoiceCardSettlementStatus.APPROVED)
 		{
 			booking.book(id);

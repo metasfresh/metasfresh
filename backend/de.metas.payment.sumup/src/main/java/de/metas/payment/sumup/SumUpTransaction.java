@@ -78,10 +78,24 @@ public class SumUpTransaction
 		Amount.assertSameCurrency(this.amount, this.amountRefunded);
 	}
 
+	/**
+	 * @return whether the charge was refunded in full or in part: SumUp reports the status REFUNDED, or a SUCCESSFUL
+	 * transaction with REFUND events (a refund also fires a status event that still says SUCCESSFUL)
+	 */
 	@JsonIgnore
 	public boolean isRefunded()
 	{
-		return amount.signum() != 0 && amountRefunded.signum() != 0;
+		return SumUpTransactionStatus.REFUNDED.equals(status)
+				|| (amount.signum() != 0 && amountRefunded.signum() != 0);
+	}
+
+	/**
+	 * @return whether SumUp charged the card, whether or not the charge was refunded since: SUCCESSFUL or REFUNDED
+	 */
+	@JsonIgnore
+	public boolean isCharged()
+	{
+		return SumUpTransactionStatus.SUCCESSFUL.equals(status) || SumUpTransactionStatus.REFUNDED.equals(status);
 	}
 
 	/**

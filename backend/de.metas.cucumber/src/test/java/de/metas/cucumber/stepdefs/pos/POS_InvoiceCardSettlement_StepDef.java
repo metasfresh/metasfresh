@@ -389,9 +389,10 @@ public class POS_InvoiceCardSettlement_StepDef
 	 * <pre>
 	 * And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
 	 * And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL refunded 16.07
+	 * And SumUp API stub reports transaction of card settlement settlement1 as REFUNDED refunded 16.07
 	 * </pre>
 	 */
-	@And("^SumUp API stub reports transaction of card settlement (\\S+) as (PENDING|SUCCESSFUL|FAILED|CANCELLED)(?: refunded (\\S+))?$")
+	@And("^SumUp API stub reports transaction of card settlement (\\S+) as (PENDING|SUCCESSFUL|FAILED|CANCELLED|REFUNDED)(?: refunded (\\S+))?$")
 	public void stubReportsTransaction(
 			@NonNull final String settlementIdentifier,
 			@NonNull final String status,

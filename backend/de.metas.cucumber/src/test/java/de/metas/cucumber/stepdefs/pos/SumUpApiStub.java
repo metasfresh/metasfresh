@@ -163,6 +163,8 @@ public final class SumUpApiStub
 	}
 
 	/**
+	 * @param status         as SumUp reports it: PENDING, SUCCESSFUL, FAILED, CANCELLED, or REFUNDED (refunded in full or in
+	 *                       part; per the SumUp API reference it comes with a REFUND event, so pass {@code amountRefunded})
 	 * @param amountRefunded if not null, the transaction reports a REFUND event of that amount
 	 */
 	public static void setTransactionStatus(
@@ -446,7 +448,8 @@ public final class SumUpApiStub
 		json.put("status", trx.getStatus());
 		json.put("amount", trx.getAmount());
 		json.put("currency", trx.getCurrency());
-		if ("SUCCESSFUL".equals(trx.getStatus()))
+		// a refunded charge (status REFUNDED: "refunded in full or in part") was a card charge, too
+		if ("SUCCESSFUL".equals(trx.getStatus()) || "REFUNDED".equals(trx.getStatus()))
 		{
 			final Map<String, Object> card = new HashMap<>();
 			card.put("type", "VISA");

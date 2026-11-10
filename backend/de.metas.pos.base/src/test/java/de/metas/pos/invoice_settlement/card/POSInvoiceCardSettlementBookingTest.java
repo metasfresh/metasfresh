@@ -6,6 +6,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.pos.POSCashJournalService;
 import de.metas.pos.POSTerminalId;
@@ -60,7 +61,8 @@ class POSInvoiceCardSettlementBookingTest
 				mock(POSInvoiceSettlementService.class),
 				mock(POSTerminalService.class),
 				mock(POSCashJournalService.class),
-				mock(SumUpTransactionRepository.class));
+				mock(SumUpTransactionRepository.class),
+				mock(SumUpService.class));
 	}
 
 	private POSInvoiceCardSettlement createSettlement(final POSInvoiceCardSettlementStatus status)

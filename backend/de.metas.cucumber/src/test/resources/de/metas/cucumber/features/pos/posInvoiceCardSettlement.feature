@@ -489,6 +489,39 @@ Feature: POS invoice card settlement
       | C_Invoice_ID | IsPaid |
       | invoice1     | true   |
 
+  # SumUp reports a refunded charge also with the transaction status REFUNDED ("refunded in full or in part", with a
+  # REFUND event): it is not booked either, and the settlement does not stay pending.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC22_3
+  Scenario Outline: SumUp reports the charge of a <status> settlement as REFUNDED before booking, so the settlement ends as failed, and the invoice is paid in cash
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And card settlement settlement1 is set to status <status> with isAbandoned false
+
+    When SumUp API stub reports transaction of card settlement settlement1 as REFUNDED refunded 16.07
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status FAILED
+    And card settlement settlement1 has error message 'refunded at SumUp'
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID |
+      | invoice1     |
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice1     | true   |
+
+    Examples:
+      | status |
+      | PE     |
+      | UN     |
+
   # ##########################################################################
   # The invoice was paid or reversed elsewhere while the card payment waited: the approved card payment is booked as
   # customer credit (an unallocated credit-card receipt) and the back office is notified, so it can refund it.
@@ -923,6 +956,40 @@ Feature: POS invoice card settlement
       | CARD_PAY | 16.07  |
     And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
     And the closing summary of the cash journal of POS terminal till shows card total 16.07 and cash total 50
+
+  # The charge is refunded at SumUp while the approved card payment waits for a journal: when a journal is opened, the
+  # booking asks SumUp again and allocates and journals nothing. The card payment stays as it is (unallocated) and the
+  # settlement is a booking error, so back office reconciles the payment with the refund.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC20_3
+  Scenario: The card payment is approved while no cash journal is open and then refunded at SumUp, so after a journal is opened nothing is allocated or journaled and back office gets a booking error
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And the cash journal of POS terminal till is closed with 100 by metasfresh
+    And SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    And card settlement settlement1 has status APPROVED
+    And card settlement settlement1 has payment cardPayment
+    And card settlement settlement1 has error message 'no open cash journal'
+    And SumUp API stub reports transaction of card settlement settlement1 as REFUNDED refunded 16.07
+
+    When the cash journal of POS terminal till is opened with 50 by metasfresh
+    And metasfresh polls SumUp
+
+    Then card settlement settlement1 has status BOOKING_ERROR
+    And card settlement settlement1 has error message 'refunded at SumUp'
+    And card settlement settlement1 has payment cardPayment
+    And card settlement settlement1 has 2 AD_Issues
+    And the partner of invoice invoice1 has 1 payment
+    And invoice invoice1 has 0 allocation lines
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+    And the closing summary of the cash journal of POS terminal till shows card total 0 and cash total 50
+    And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
+      | C_Invoice_ID | CashTenderedAmount |
+      | invoice1     | 16.07              |
 
   # ##########################################################################
   # The system stopped between creating the card payment and completing the booking: the settlement waits as
