@@ -68,7 +68,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
