@@ -865,6 +865,8 @@ public class C_Invoice_Candidate_StepDef
 
 	/** Summary returned by the last invoicing-process run. */
 	private String lastInvoicingRunSummary;
+	/** Whether the last invoicing-process run ended in error. */
+	private boolean lastInvoicingRunWasError;
 
 	/**
 	 * Runs the {@code C_Invoice_Candidate_EnqueueSelectionForInvoicing} AD_Process and keeps its summary.
@@ -916,7 +918,7 @@ public class C_Invoice_Candidate_StepDef
 				.getRelatedDocumentsCandidates(POZoomSource.of(InterfaceWrapperHelper.getPO(shipment)), permissions)
 				.stream()
 				.flatMap(candidateGroup -> candidateGroup.evaluateAndStream(context))
-				.filter(relatedDocuments -> I_C_Invoice_Candidate.Table_Name.equals(relatedDocuments.getQuery().getTableName()))
+				.filter(relatedDocuments -> I_C_Invoice_Candidate.Table_Name.equals(relatedDocuments.getQuery().getZoomTableName()))
 				.forEach(relatedDocuments -> entriesByKey.merge(
 						relatedDocuments.getTargetWindow(),
 						relatedDocuments,
@@ -983,8 +985,6 @@ public class C_Invoice_Candidate_StepDef
 				.as("related documents entries to C_Invoice_Candidate of shipment " + shipmentIdentifier)
 				.hasSize(expectedCount);
 	}
-
-	private boolean lastInvoicingRunWasError;
 
 	/** Invoices what the user selects after opening the invoice candidates from the shipment's related documents. Records the outcome, asserts nothing. */
 	@When("run the invoicing process for the invoice candidates opened from the shipment {string}")

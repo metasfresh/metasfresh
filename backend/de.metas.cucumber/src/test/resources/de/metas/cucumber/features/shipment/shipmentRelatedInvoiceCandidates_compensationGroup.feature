@@ -449,7 +449,7 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
 
   @from:cucumber
   @Id:S33240_TC16
-  Scenario: Goods1 shipped in two parts, first part invoiced: today's list of the second shipment (note only)
+  Scenario: Goods1 delivered in two picked parts, first part invoiced: the list of the second shipment (pins today's list)
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
       | order      | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
@@ -462,22 +462,30 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine |
       | ol_bonus                  | order                 | bonusProduct            | 1          | true                        |
+    And the order identified by order has 4 order lines
+    # only the goods are shipped: the service bonus line has no shipment schedule
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | ss_goods1  | ol_goods1                 | N             |
+      | ss_goods2  | ol_goods2                 | N             |
+      | ss_goods3  | ol_goods3                 | N             |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_goods1      | ic_goods1              |
       | ol_goods2      | ic_goods2              |
       | ol_goods3      | ic_goods3              |
       | ol_bonus       | ic_bonus               |
-    And update shipment schedules
-      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
-      | ss_goods1                        | 5                         |
+    # first part: 5 picked and shipped
+    And the following virtual inventory is created
+      | M_HU_ID.Identifier | QtyToBeAdded | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier |
+      | hu_1               | 5            | ss_goods1                        | goods1                  |
+    And the following qty is picked
+      | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
+      | ss_goods1                        | goods1                  | 5         | hu_1               |
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | ss_goods1                        |
-    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+    And 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_goods1             |
     And after not more than 60s, M_InOut is found:
@@ -494,19 +502,30 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice1                | ic_goods1                         |
-    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+    # second part: the other 5; the first shipment closed the schedule, the user reopens it ("Open processed")
+    And the M_ShipmentSchedule identified by ss_goods1 is reactivated
+    And the following virtual inventory is created
+      | M_HU_ID.Identifier | QtyToBeAdded | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier |
+      | hu_2               | 5            | ss_goods1                        | goods1                  |
+    And the following qty is picked
+      | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
+      | ss_goods1                        | goods1                  | 5         | hu_2               |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_goods1                        |
+    And 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_goods1             |
     And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_goods1                        | shipment2             |
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.IgnoreCreated.M_InOut_ID.Identifier |
+      | ss_goods1                        | shipment2             | shipment1                               |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
       | ic_goods1              |
       | ic_goods2              |
       | ic_goods3              |
       | ic_bonus               |
-    # note only: documents today's behaviour, the candidate of goods1 belongs to the first shipment only
+    # pins today's behaviour: see the handback for the observed list
     Then shipment "shipment2" has 0 related documents entries to the invoice candidates
 
   @from:cucumber
