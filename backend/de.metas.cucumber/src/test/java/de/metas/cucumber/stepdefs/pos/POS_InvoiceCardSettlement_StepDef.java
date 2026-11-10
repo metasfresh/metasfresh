@@ -179,6 +179,10 @@ public class POS_InvoiceCardSettlement_StepDef
 	@Nullable private POSInvoiceCardSettlementReleaseResult lastReleaseResult;
 	@Nullable private String lastBackOfficeProcessSummary;
 
+	// test-only trigger that makes every SUMUP_Transaction insert fail; see failSumUpTransactionInsert
+	private static final String SUMUP_TRX_INSERT_FAILURE = "cucumber_sumup_transaction_insert_fails";
+	private boolean isSumUpTransactionInsertFailing;
+
 	// resolved lazily: this class is instantiated for the @Before hook, i.e. before metasfresh is started
 	@NonNull private final SpringContextHolder.Lazy<SumUpService> sumUpService = SpringContextHolder.lazyBean(SumUpService.class);
 	@NonNull private final SpringContextHolder.Lazy<SumUpTransactionRepository> sumUpTransactionRepository = SpringContextHolder.lazyBean(SumUpTransactionRepository.class);
@@ -1634,6 +1638,75 @@ public class POS_InvoiceCardSettlement_StepDef
 				.create()
 				.count();
 		assertThat(actualCount).as("AD_Issues of card settlement %s with AD_Message %s", settlementIdentifier, adMessage).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Every INSERT into {@code SUMUP_Transaction} fails with a database error (a test-only trigger), as when the database
+	 * fails right after SumUp accepted a checkout. Removed after the scenario ({@link #dropSumUpTransactionInsertFailure()}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And saving a SumUp transaction fails with a database error
+	 * </pre>
+	 */
+	@And("^saving a SumUp transaction fails with a database error$")
+	public void failSumUpTransactionInsert()
+	{
+		isSumUpTransactionInsertFailing = true;
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"CREATE OR REPLACE FUNCTION " + SUMUP_TRX_INSERT_FAILURE + "() RETURNS trigger LANGUAGE plpgsql AS $$"
+						+ " BEGIN RAISE EXCEPTION 'cucumber: SUMUP_Transaction cannot be saved'; END; $$",
+				ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DROP TRIGGER IF EXISTS " + SUMUP_TRX_INSERT_FAILURE + " ON SUMUP_Transaction", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"CREATE TRIGGER " + SUMUP_TRX_INSERT_FAILURE + " BEFORE INSERT ON SUMUP_Transaction FOR EACH ROW EXECUTE PROCEDURE " + SUMUP_TRX_INSERT_FAILURE + "()",
+				ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Removes the failure of {@link #failSumUpTransactionInsert()}, if the scenario set it up: the table is shared by all
+	 * scenarios.
+	 */
+	@After
+	public void dropSumUpTransactionInsertFailure()
+	{
+		if (!isSumUpTransactionInsertFailing)
+		{
+			return;
+		}
+		isSumUpTransactionInsertFailing = false;
+		DB.executeUpdateAndThrowExceptionOnFail("DROP TRIGGER IF EXISTS " + SUMUP_TRX_INSERT_FAILURE + " ON SUMUP_Transaction", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DROP FUNCTION IF EXISTS " + SUMUP_TRX_INSERT_FAILURE + "()", ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Asserts that the settlement's AD_Issue names the {@code client_transaction_id} that the SumUp stub returned for its
+	 * last accepted checkout, so that back office can find the charge in the SumUp dashboard although metasfresh has no
+	 * SumUp transaction for it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the AD_Issue of card settlement settlement1 names the client transaction id of the last checkout the SumUp stub accepted
+	 * </pre>
+	 */
+	@And("^the AD_Issue of card settlement (\\S+) names the client transaction id of the last checkout the SumUp stub accepted$")
+	public void assertIssueNamesClientTransactionId(@NonNull final String settlementIdentifier)
+	{
+		final List<SumUpApiStub.ReceivedCheckout> checkouts = SumUpApiStub.getReceivedCheckouts();
+		assertThat(checkouts).as("checkouts received by the SumUp stub").isNotEmpty();
+		final String clientTransactionId = checkouts.get(checkouts.size() - 1).getClientTransactionId();
+		assertThat(clientTransactionId).as("client_transaction_id of the last checkout (accepted by the stub)").isNotNull();
+
+		final TableRecordReference recordRef = settlementTable.getId(StepDefDataIdentifier.ofString(settlementIdentifier)).toRecordRef();
+		final List<I_AD_Issue> issues = queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.create()
+				.list();
+		assertThat(issues).as("AD_Issues of card settlement %s", settlementIdentifier).hasSize(1);
+		assertThat(issues.get(0).getIssueSummary()).as("summary of the AD_Issue of card settlement %s", settlementIdentifier).contains(clientTransactionId);
 	}
 
 	/**

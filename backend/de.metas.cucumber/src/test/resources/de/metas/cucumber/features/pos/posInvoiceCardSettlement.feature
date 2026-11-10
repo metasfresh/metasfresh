@@ -245,6 +245,25 @@ Feature: POS invoice card settlement
       | C_Invoice_ID | CashTenderedAmount |
       | invoice1     | 16.07              |
 
+  # SumUp accepted the checkout (the reader may charge the card), but metasfresh failed right after, before it saved
+  # the SumUp transaction: the result is unknown, not failed, and the AD_Issue names SumUp's client_transaction_id,
+  # since metasfresh has no SumUp transaction to find the charge by.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC12_3
+  Scenario: SumUp accepts the checkout but saving its transaction fails, so the result is unknown, cash is refused and the AD_Issue names the SumUp transaction
+    Given POS terminal till is configured with SumUp and a default card reader
+    And saving a SumUp transaction fails with a database error
+
+    When card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    Then card settlement settlement1 has status UNKNOWN
+    And the SumUp stub received 1 checkout with amount 16.07 on reader reader-till
+    And the AD_Issue of card settlement settlement1 names the client transaction id of the last checkout the SumUp stub accepted
+    And settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceCardSettlement.CardPaymentStillOpen':
+      | C_Invoice_ID | CashTenderedAmount |
+      | invoice1     | 16.07              |
+
   # ##########################################################################
   # The reader approves; the poller learns it and the approval is booked: a credit-card receipt allocated to
   # the invoice, and a card line on the open cash journal that raises the card total, not the cash total.

@@ -148,10 +148,18 @@ public class SumUpService
 						.build()
 		);
 
-		final SumUpTransaction trx = toSumUpTransaction(checkoutResponse, request, config);
-		trxRepository.saveNew(trx);
-
-		return trx;
+		// SumUp accepted the checkout: the reader may charge the card now, so any failure from here on leaves the outcome
+		// unknown (never a definite rejection), see SumUpCallException.ofFailureAfterAccepted
+		try
+		{
+			final SumUpTransaction trx = toSumUpTransaction(checkoutResponse, request, config);
+			trxRepository.saveNew(trx);
+			return trx;
+		}
+		catch (final Exception ex)
+		{
+			throw SumUpCallException.ofFailureAfterAccepted(ex, checkoutResponse.getData().getClient_transaction_id());
+		}
 	}
 
 	public void terminateCardReaderCheckout(@NonNull final SumUpConfigId configId, @NonNull final SumUpCardReaderExternalId cardReaderId)
