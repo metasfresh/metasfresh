@@ -74,7 +74,7 @@ const ORDER_LINE_TAB = 'AD_Tab-187';
 // Auftrag Kompensationsgruppe (C_Order_CompensationGroup) and its order-lines tab
 const ORDER_COMPENSATION_GROUP_WINDOW_ID = 542196;
 const ORDER_COMPENSATION_GROUP_LINES_TAB_ID = 549518;
-// 33026: the lines tab reads a view with only order-line columns; these seven need order context and are not shown
+// The lines tab reads a view with only order-line columns; these seven need order context and are not shown
 const ORDER_COMPENSATION_GROUP_LINES_HIDDEN_COLUMNS = [
   'M_Warehouse_ID', 'M_HU_PI_Item_Product_ID', 'C_Charge_ID', 'C_Flatrate_Term_ID', 'C_Flatrate_Conditions_ID', 'C_BPartner_Vendor_ID', 'M_LU_HU_PI_ID',
 ];
@@ -843,7 +843,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(lineNos, 'line numbers shown').toHaveLength(2);
       expect(lineNos, 'rows in line-no. order').toEqual([...lineNos].sort((a, b) => a - b));
 
-      // TC2 (33026): the tab shows only the order-line columns of its view; the 7 columns that need order context stay hidden
+      // The tab shows only the order-line columns of its view; the 7 columns that need order context stay hidden
       for (const hidden of ORDER_COMPENSATION_GROUP_LINES_HIDDEN_COLUMNS) {
         await expect(groupPage.locator(`th[data-testid="column-${hidden}"]`), `column ${hidden} not shown`).toHaveCount(0);
       }
@@ -1749,7 +1749,7 @@ async function expectOrderGridAmount(page, orderId, discountProduct, amountText)
   await row.scrollIntoViewIfNeeded();
 }
 
-test.describe('Order compensation group window: window health (33026)', () => {
+test.describe('Order compensation group window: window health', () => {
   test('window health check of the order compensation group window reports no missing context variables', async ({ page }) => {
     allure.epic('E0170: Contract Management');
     allure.story('Order compensation group window: window health check without known-missing entries');
@@ -1760,7 +1760,7 @@ test.describe('Order compensation group window: window health (33026)', () => {
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    // TC1: POST /window/health for the window, with the context-variable check on
+    // POST /window/health for the window, with the context-variable check on
     const response = await page.request.post(`${WEBAPI_BASE_URL}/window/health`, {
       data: { onlyAdWindowIds: [ORDER_COMPENSATION_GROUP_WINDOW_ID], checkContextVariables: true },
     });
@@ -1773,7 +1773,7 @@ test.describe('Order compensation group window: window health (33026)', () => {
   });
 });
 
-/** The related documents of an included row (the right-click list), without the windows left out of R-REL, as comparable entries. */
+/** The related documents of an included row (the right-click list), without the windows left out of the comparison, as comparable entries. */
 async function getIncludedDocumentReferences(windowId, documentId, tabId, rowId) {
   const response = await getPage().request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${documentId}/${tabId}/${rowId}/references/sse`, {
     headers: { Accept: 'text/event-stream' },
