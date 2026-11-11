@@ -1,10 +1,7 @@
 import { expect } from '@playwright/test';
 import config, { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { Backend } from '../utils/Backend';
-import { LoginPage } from '../utils/pages/LoginPage';
-import { DashboardPage } from '../utils/pages/DashboardPage';
-import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
+import { createPurchaseReceiptMasterdata, openReceiptCandidateOfNewPurchaseOrder } from '../utils/PurchaseReceiptSetup';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 import { getPage, SLOW_ACTION_TIMEOUT } from '../utils/common';
 
@@ -46,33 +43,9 @@ const BACKGROUND_SELECTED_ROWS = '.table tbody tr.row-selected';
 
 /** Creates a purchase order and opens its receipt candidate (the non-modal receipt-candidates list). */
 async function openReceiptCandidate() {
-  const masterdata = await Backend.createMasterdata({
-    request: {
-      login: { user: { language: 'en_US' } },
-      bpartners: { VENDOR1: { isVendor: true, isCustomer: false, isSoPriceList: false } },
-      products: {
-        Product1: {
-          name: 'Test Product for Receive HUs modal scrollbar',
-          type: 'Item',
-          prices: [{ price: 10.0, currencyCode: 'EUR' }],
-        },
-      },
-    },
-  });
-
-  await LoginPage.goto();
-  await LoginPage.login(masterdata.login.user);
-  await DashboardPage.expectVisible();
-
-  await PurchaseOrderPage.goto();
-  await PurchaseOrderPage.clickNew();
-  await PurchaseOrderPage.selectBusinessPartner(masterdata.bpartners.VENDOR1.bpartnerCode);
-  await PurchaseOrderPage.goToOrderLineTab();
-  await PurchaseOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: '5' });
-  await PurchaseOrderPage.complete();
-
-  await PurchaseOrderPage.openRelatedReceiptCandidate();
-  await ReceiptCandidatesPage.expectQuickActionsVisible();
+  await openReceiptCandidateOfNewPurchaseOrder(
+    await createPurchaseReceiptMasterdata({ productName: 'Test Product for Receive HUs modal scrollbar' }),
+  );
 }
 
 /** Opens the receive-HUs modal for a fresh purchase order's receipt candidate and selects one HU row. */
@@ -139,8 +112,15 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     const wrapper = page.locator('.panel-modal .document-list-wrapper').first();
     const box = await wrapper.boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.wheel(0, 120);
-    await expect.poll(() => wrapper.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+    // the content only overflows once the Merkmale panel has rendered; a wheel before that is a no-op, so wait for
+    // the overflow and retry the wheel as a unit
+    await expect
+      .poll(() => wrapper.evaluate((el) => el.scrollHeight > el.clientHeight), { timeout: SLOW_ACTION_TIMEOUT })
+      .toBe(true);
+    await expect(async () => {
+      await page.mouse.wheel(0, 120);
+      expect(await wrapper.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+    }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
 
     await expectRowSelectedWithPanel(page, 'after the wheel scroll');
   });

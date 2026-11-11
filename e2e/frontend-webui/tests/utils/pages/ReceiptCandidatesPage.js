@@ -1180,6 +1180,14 @@ export class ReceiptCandidatesPage {
           };
         });
 
+      // the content only overflows once the Merkmale panel has rendered: wait for the precondition, do not snapshot it
+      await expect
+        .poll(async () => {
+          const g = await geometry();
+          return g.scrollbarWidth > 0 && g.scrollHeight > g.clientHeight;
+        }, { timeout: SLOW_ACTION_TIMEOUT })
+        .toBe(true)
+        .catch(() => {}); // the asserts below name the failing precondition
       const before = await geometry();
       expect(before.scrollbarWidth, 'the modal list wrapper has no classic vertical scrollbar').toBeGreaterThan(0);
       expect(before.scrollHeight, 'the modal list wrapper does not overflow vertically').toBeGreaterThan(before.clientHeight);
