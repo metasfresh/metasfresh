@@ -14,6 +14,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
@@ -67,6 +68,13 @@ class AssertPickingExpectationsCommand
 		final PickingJobId pickingJobId = getPickingJobIdByMatcherString(matcherStr);
 		final PickingJob pickingJob = services.getPickingJobById(pickingJobId);
 
+		if (pickingExpectation.getDocStatus() != null)
+		{
+			final PickingJobDocStatus expectedDocStatus = parsePickingJobDocStatus(pickingExpectation.getDocStatus());
+			softlyPutContext("pickingJobId", pickingJobId);
+			assertThat(pickingJob.getDocStatus()).as("pickingJob.docStatus").isEqualTo(expectedDocStatus);
+		}
+
 		if (pickingExpectation.getShipmentSchedules() != null)
 		{
 			final Set<ShipmentScheduleId> shipmentScheduleIdSet = pickingJob.getScheduleIds().getShipmentScheduleIds();
@@ -76,6 +84,18 @@ class AssertPickingExpectationsCommand
 			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(shipmentScheduleIdSet);
 			assertShipmentSchedules(pickingExpectation.getShipmentSchedules(), shipmentSchedules);
 		}
+	}
+
+	private static PickingJobDocStatus parsePickingJobDocStatus(@NonNull final String name)
+	{
+		for (final PickingJobDocStatus docStatus : PickingJobDocStatus.values())
+		{
+			if (docStatus.name().equalsIgnoreCase(name))
+			{
+				return docStatus;
+			}
+		}
+		throw new AdempiereException("Unknown picking job docStatus `" + name + "`. Expected one of " + java.util.Arrays.toString(PickingJobDocStatus.values()));
 	}
 
 	/**
