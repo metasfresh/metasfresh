@@ -901,7 +901,7 @@ Feature: POS till card sale with an unknown card result
     And the card payment of POS sale sale1 is retried and the stub answers SUCCESS
     And metasfresh handled the SumUp events
     And saving the card payment of a POS sale works again
-    Then the card payment of POS sale sale1 has status PENDING
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId empty
     When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
     And metasfresh polls SumUp
     Then the card payment of POS sale sale1 has status SUCCESSFUL
