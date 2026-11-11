@@ -85,6 +85,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -127,6 +128,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -134,7 +136,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -865,8 +866,6 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
-	private static final String WEBUI_ROLE_NAME = "WebUI";
-
 	/** Summary returned by the last invoicing-process run. */
 	private String lastInvoicingRunSummary;
 	/** Whether the last invoicing-process run ended in error. */
@@ -899,13 +898,15 @@ public class C_Invoice_Candidate_StepDef
 
 	private ProcessExecutionResult executeInvoicingProcess(@NonNull final DataTable dataTable)
 	{
-		final List<Integer> invoiceCandidateIds = new ArrayList<>();
-		DataTableRows.of(dataTable).forEach(row -> row
-				.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
-				.toCommaSeparatedList()
-				.forEach(identifier -> invoiceCandidateIds.add(invoiceCandTable.getId(identifier).getRepoId())));
+		return executeInvoicingProcess(extractInvoiceCandidateIds(dataTable));
+	}
 
-		return executeInvoicingProcess(invoiceCandidateIds);
+	/** The invoice candidates of the {@code C_Invoice_Candidate_ID} column (comma-separated identifiers allowed) of all rows. */
+	private Set<InvoiceCandidateId> extractInvoiceCandidateIds(@NonNull final DataTable dataTable)
+	{
+		final List<StepDefDataIdentifier> identifiers = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> identifiers.addAll(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).toCommaSeparatedList()));
+		return invoiceCandTable.getIds(identifiers);
 	}
 
 	/**
@@ -938,40 +939,29 @@ public class C_Invoice_Candidate_StepDef
 		return entriesByKey;
 	}
 
-	/** The user {@code metasfresh}, the user the WebUI logs in with. */
-	private static UserId retrieveWebUIUserId()
-	{
-		return StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
-	}
-
-	/** The role {@code WebUI} of the given user, the role the WebUI user logs in with. */
-	private static RoleId retrieveWebUIRoleId(@NonNull final UserId userId)
-	{
-		return StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, WEBUI_ROLE_NAME);
-	}
-
-	/** Permissions of the user {@code metasfresh} with the role {@code WebUI} (the role the WebUI user logs in with). */
+	/** Permissions of the user {@code metasfresh} with the role {@code WebUI} (the user and role the WebUI logs in with). */
 	private IUserRolePermissions retrieveWebUIUserRolePermissions()
 	{
-		final UserId userId = retrieveWebUIUserId();
-		final RoleId roleId = retrieveWebUIRoleId(userId);
-		return userRolePermissionsDAO.getUserRolePermissions(roleId, userId, StepDefConstants.CLIENT_ID, SystemTime.asLocalDate());
+		return userRolePermissionsDAO.getUserRolePermissions(RoleId.WEBUI, UserId.METASFRESH, StepDefConstants.CLIENT_ID, SystemTime.asLocalDate());
 	}
 
-	/** The C_Invoice_Candidate_IDs the user sees in the "related documents" entries of the shipment. */
-	private List<Integer> retrieveInvoiceCandidateIdsOpenedFromShipment(@NonNull final String shipmentIdentifier)
+	/** The invoice candidates the user sees in the "related documents" entries of the shipment. */
+	private Set<InvoiceCandidateId> retrieveInvoiceCandidateIdsOpenedFromShipment(@NonNull final String shipmentIdentifier)
 	{
 		return retrieveInvoiceCandidateEntriesOpenedFromShipment(shipmentIdentifier)
 				.values()
 				.stream()
-				.flatMap(relatedDocuments -> queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-						.filter(TypedSqlQueryFilter.<I_C_Invoice_Candidate>of(relatedDocuments.getQuery().getWhereClause()))
-						.create()
-						.listIds()
-						.stream())
-				.distinct()
-				.sorted()
-				.collect(ImmutableList.toImmutableList());
+				.flatMap(relatedDocuments -> getInvoiceCandidateIds(relatedDocuments).stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** The invoice candidates a "related documents" entry opens, i.e. those matching its target where clause. */
+	private ImmutableList<InvoiceCandidateId> getInvoiceCandidateIds(@NonNull final RelatedDocuments relatedDocuments)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.filter(TypedSqlQueryFilter.<I_C_Invoice_Candidate>of(relatedDocuments.getQuery().getWhereClause()))
+				.create()
+				.listIds(InvoiceCandidateId::ofRepoId);
 	}
 
 	/**
@@ -990,15 +980,9 @@ public class C_Invoice_Candidate_StepDef
 	@Then("the related invoice candidates of shipment {string} are:")
 	public void related_invoice_candidates_of_shipment_are(@NonNull final String shipmentIdentifier, @NonNull final DataTable dataTable)
 	{
-		final Set<Integer> expected = new TreeSet<>();
-		DataTableRows.of(dataTable).forEach(row -> row
-				.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
-				.toCommaSeparatedList()
-				.forEach(identifier -> expected.add(invoiceCandTable.getId(identifier).getRepoId())));
-
-		assertThat(new TreeSet<>(retrieveInvoiceCandidateIdsOpenedFromShipment(shipmentIdentifier)))
+		assertThat(retrieveInvoiceCandidateIdsOpenedFromShipment(shipmentIdentifier))
 				.as("C_Invoice_Candidates listed in the related documents of shipment " + shipmentIdentifier)
-				.isEqualTo(expected);
+				.containsExactlyInAnyOrderElementsOf(extractInvoiceCandidateIds(dataTable));
 	}
 
 	/**
@@ -1047,11 +1031,7 @@ public class C_Invoice_Candidate_StepDef
 	@When("run the invoicing process for the invoice candidates {string}")
 	public void run_invoicing_process_for_invoice_candidates(@NonNull final String invoiceCandidateIdentifiers)
 	{
-		final List<Integer> ids = StepDefDataIdentifier.ofCommaSeparatedString(invoiceCandidateIdentifiers)
-				.stream()
-				.map(identifier -> invoiceCandTable.getId(identifier).getRepoId())
-				.collect(ImmutableList.toImmutableList());
-		final ProcessExecutionResult result = executeInvoicingProcess(ids);
+		final ProcessExecutionResult result = executeInvoicingProcess(invoiceCandTable.getIds(StepDefDataIdentifier.ofCommaSeparatedString(invoiceCandidateIdentifiers)));
 		recordInvoicingRun(result, invoiceCandidateIdentifiers);
 	}
 
@@ -1083,24 +1063,15 @@ public class C_Invoice_Candidate_StepDef
 		assertThat(lastInvoicingRunWasError).as("invoicing run isError; summary=" + lastInvoicingRunSummary).isFalse();
 	}
 
-	private ProcessExecutionResult executeInvoicingProcess(@NonNull final List<Integer> invoiceCandidateIds)
+	private ProcessExecutionResult executeInvoicingProcess(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		Check.assumeNotEmpty(invoiceCandidateIds, "at least one C_Invoice_Candidate_ID.Identifier is required");
+		Check.assumeNotEmpty(invoiceCandidateIds, "at least one C_Invoice_Candidate_ID is required");
 
 		final AdProcessId processId = Services.get(IADProcessDAO.class)
 				.retrieveProcessIdByValue("C_Invoice_Candidate_EnqueueSelectionForInvoicing");
 		assertThat(processId).as("AD_Process C_Invoice_Candidate_EnqueueSelectionForInvoicing must exist").isNotNull();
 
-		final StringBuilder idList = new StringBuilder();
-		for (final Integer id : invoiceCandidateIds)
-		{
-			if (idList.length() > 0)
-			{
-				idList.append(",");
-			}
-			idList.append(id);
-		}
-		final String whereClause = COLUMNNAME_C_Invoice_Candidate_ID + " IN (" + idList + ")";
+		final String whereClause = COLUMNNAME_C_Invoice_Candidate_ID + " IN (" + RepoIdAwares.toCommaSeparatedString(invoiceCandidateIds) + ")";
 
 		final ProcessExecutionResult result;
 		try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
@@ -1138,14 +1109,11 @@ public class C_Invoice_Candidate_StepDef
 	 */
 	private Properties createInvoicingProcessCtx()
 	{
-		final UserId userId = retrieveWebUIUserId();
-		final RoleId roleId = retrieveWebUIRoleId(userId);
-
 		final Properties processCtx = Env.copyCtx(Env.getCtx());
 		Env.setClientId(processCtx, StepDefConstants.CLIENT_ID);
 		Env.setOrgId(processCtx, StepDefConstants.ORG_ID);
-		Env.setLoggedUserId(processCtx, userId);
-		Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+		Env.setLoggedUserId(processCtx, UserId.METASFRESH);
+		Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.WEBUI.getRepoId());
 
 		return processCtx;
 	}
