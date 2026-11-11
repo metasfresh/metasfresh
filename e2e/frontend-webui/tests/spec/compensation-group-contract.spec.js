@@ -868,15 +868,20 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       // Related documents: the related documents of a line row on this tab equal those of the same order line in the
       // sales order window (windows 270, 540394, 363 left out on both sides). The sales order window is the expected side.
-      const lineRowId = String(discountLineRow.id);
-      const orderLineRow = (await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB)).find((row) => String(row.id) === lineRowId);
+      // (a tab row's `id` is the parent document's id; the row's own key is `rowId`)
+      const lineRowId = String(discountLineRow.rowId);
+      const orderLineRow = (await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB)).find((row) => String(row.rowId) === lineRowId);
       expect(orderLineRow, 'the same C_OrderLine in the sales order window').toBeTruthy();
-      const expectedReferences = relatedDocumentsComparable(
+      // (the entries of the line come from async work after the order is completed, e.g. the shipment schedule and
+      // the material-cockpit detail, so the expected side is polled until it has at least one entry)
+      const readExpectedReferences = async () => relatedDocumentsComparable(
         await getIncludedDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId));
+      await expect.poll(async () => (await readExpectedReferences()).length,
+        { message: 'the line has at least one related document other than 270/540394/363 (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
+        .toBeGreaterThanOrEqual(1);
+      const expectedReferences = await readExpectedReferences();
       const actualReferences = relatedDocumentsComparable(
         await getIncludedDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId));
-      expect(expectedReferences.length, 'the line has at least one related document other than 270/540394/363 (an empty list on both sides proves nothing)')
-        .toBeGreaterThanOrEqual(1);
       expect(actualReferences, 'related documents of the line row (without windows 270, 540394, 363)').toEqual(expectedReferences);
       // Only the SALES group is seeded by this spec (the purchase order of step 6 stays unsaved),
       // so the purchase side of this tab is not covered here.
