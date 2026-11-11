@@ -924,7 +924,7 @@ public class POSOrdersService
 	private boolean isCardPaymentReleaseTooEarly(@NonNull final POSOrder order, @NonNull final POSPayment payment)
 	{
 		final Instant startedAt = Check.assumeNotNull(payment.getCardCheckoutStartedAt(), "the card checkout of {} was started", payment);
-		final Instant releasableAt = startedAt.plus(cardReleaseWait.getReleaseAfter(order.getClientAndOrgId()));
+		final Instant releasableAt = cardReleaseWait.getReleasableAt(order.getClientAndOrgId(), startedAt);
 		return !releasableAt.isBefore(SystemTime.asInstant());
 	}
 

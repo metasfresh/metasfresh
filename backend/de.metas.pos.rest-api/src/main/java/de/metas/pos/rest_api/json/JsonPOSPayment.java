@@ -14,9 +14,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.function.Supplier;
 
 @Value
 @Builder
@@ -47,20 +45,9 @@ public class JsonPOSPayment
 	int hashCode;
 
 	/**
-	 * @return the payment without {@link #releasableAt}, see {@link #of(POSPayment, Supplier)}
+	 * @param releasableAt see {@link #releasableAt}
 	 */
-	public static JsonPOSPayment of(@NonNull final POSPayment payment)
-	{
-		return of(payment, null);
-	}
-
-	/**
-	 * @param getReleaseAfter the configured wait after which an unknown card payment may be released, for the order's client and org;
-	 *                        called only for a card payment whose result is unknown, null if {@link #releasableAt} is not wanted
-	 */
-	public static JsonPOSPayment of(
-			@NonNull final POSPayment payment,
-			@Nullable final Supplier<Duration> getReleaseAfter)
+	public static JsonPOSPayment of(@NonNull final POSPayment payment, @Nullable final Instant releasableAt)
 	{
 		final POSPaymentProcessingStatus paymentProcessingStatus = payment.getPaymentProcessingStatus();
 
@@ -76,23 +63,9 @@ public class JsonPOSPayment
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())
 				.allowDelete(payment.isAllowDelete())
 				.allowRefund(payment.isAllowRefund())
-				.releasableAt(extractReleasableAt(payment, getReleaseAfter))
+				.releasableAt(releasableAt)
 				.hashCode(payment.hashCode())
 				.build();
-	}
-
-	@Nullable
-	private static Instant extractReleasableAt(@NonNull final POSPayment payment, @Nullable final Supplier<Duration> getReleaseAfter)
-	{
-		if (getReleaseAfter == null
-				|| !payment.getPaymentMethod().isCard()
-				|| !payment.isUnknown()
-				|| payment.getCardCheckoutStartedAt() == null)
-		{
-			return null;
-		}
-
-		return payment.getCardCheckoutStartedAt().plus(getReleaseAfter.get());
 	}
 
 	@Nullable

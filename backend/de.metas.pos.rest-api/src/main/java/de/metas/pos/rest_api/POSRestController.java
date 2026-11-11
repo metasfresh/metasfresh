@@ -9,6 +9,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.pos.POSCardPaymentCheckResult;
+import de.metas.pos.POSCardPaymentReleaseRequest;
+import de.metas.pos.POSCardPaymentReleaseResult;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
@@ -22,11 +25,6 @@ import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
 import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
 import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
-import de.metas.pos.POSCardPaymentCheckResult;
-import de.metas.pos.POSCardPaymentReleaseRequest;
-import de.metas.pos.POSCardPaymentReleaseResult;
-import de.metas.pos.POSCardReleaseWait;
-import de.metas.pos.POSOrdersService;
 import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
@@ -53,14 +51,15 @@ import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
 import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
+import de.metas.pos.rest_api.json.JsonPOSOrderMapper;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSPaymentCheckoutRequest;
 import de.metas.pos.rest_api.json.JsonPOSPaymentRefundRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
-import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
-import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
 import de.metas.pos.returns.POSReturnRequestedLine;
@@ -106,8 +105,7 @@ public class POSRestController
 	@NonNull private final POSReturnService posReturnService;
 	@NonNull private final POSInvoiceSettlementService posInvoiceSettlementService;
 	@NonNull private final POSInvoiceCardSettlementService posInvoiceCardSettlementService;
-	@NonNull private final POSOrdersService posOrdersService;
-	@NonNull private final POSCardReleaseWait posCardReleaseWait;
+	@NonNull private final JsonPOSOrderMapper jsonPOSOrderMapper;
 
 	private String getADLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
@@ -137,7 +135,7 @@ public class POSRestController
 
 		return JsonPOSTerminal.builderFrom(posTerminal, adLanguage)
 				.products(JsonProduct.fromList(products.toList(), adLanguage))
-				.openOrders(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol, posCardReleaseWait::getReleaseAfter))
+				.openOrders(jsonPOSOrderMapper.toJsonList(orders, jsonContext::getCurrencySymbol))
 				.build();
 	}
 
@@ -275,7 +273,8 @@ public class POSRestController
 			missingIds = ImmutableSet.of();
 		}
 
-		return JsonPOSOrdersList.from(orders, newJsonContext())
+		return JsonPOSOrdersList.builder()
+				.list(jsonPOSOrderMapper.toJsonList(orders, newJsonContext()::getCurrencySymbol))
 				.missingIds(missingIds)
 				.build();
 	}
@@ -347,7 +346,7 @@ public class POSRestController
 	@PostMapping("/orders/checkPayment")
 	public JsonPOSOrder checkPayment(@RequestBody final JsonPOSCardPaymentCheckRequest request)
 	{
-		final POSCardPaymentCheckResult result = posOrdersService.checkCardPayment(
+		final POSCardPaymentCheckResult result = posService.checkCardPayment(
 				request.getPosTerminalId(),
 				request.getOrder_uuid(),
 				request.getPayment_uuid(),
@@ -362,7 +361,7 @@ public class POSRestController
 	@PostMapping("/orders/releasePayment")
 	public JsonPOSCardPaymentReleaseResponse releasePayment(@RequestBody final JsonPOSCardPaymentReleaseRequest request)
 	{
-		final POSCardPaymentReleaseResult result = posOrdersService.releaseCardPayment(POSCardPaymentReleaseRequest.builder()
+		final POSCardPaymentReleaseResult result = posService.releaseCardPayment(POSCardPaymentReleaseRequest.builder()
 				.posTerminalId(request.getPosTerminalId())
 				.posOrderExternalId(request.getOrder_uuid())
 				.posPaymentExternalId(request.getPayment_uuid())
@@ -382,7 +381,7 @@ public class POSRestController
 
 	private JsonPOSOrder toJson(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
 	{
-		return JsonPOSOrder.from(order, jsonContext::getCurrencySymbol, posCardReleaseWait::getReleaseAfter);
+		return jsonPOSOrderMapper.toJson(order, jsonContext::getCurrencySymbol);
 	}
 
 	@PostMapping("/orders/refundPayment")

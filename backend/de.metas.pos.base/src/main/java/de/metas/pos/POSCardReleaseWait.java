@@ -7,6 +7,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.Instant;
 
 /**
  * The wait after which the cashier may release a till card payment whose result is not known: a card sale's payment
@@ -33,5 +34,15 @@ public class POSCardReleaseWait
 	{
 		final int seconds = sysConfigBL.getIntValue(SYSCONFIG_ReleaseAfterSeconds, DEFAULT_ReleaseAfterSeconds, clientAndOrgId);
 		return Duration.ofSeconds(Math.max(seconds, MIN_ReleaseAfterSeconds));
+	}
+
+	/**
+	 * @return the instant from which a card payment, whose current checkout started at {@code checkoutStartedAt}, may be released
+	 * (the start plus {@link #getReleaseAfter}); the one formula of the release check and of what the till is told
+	 */
+	@NonNull
+	public Instant getReleasableAt(@NonNull final ClientAndOrgId clientAndOrgId, @NonNull final Instant checkoutStartedAt)
+	{
+		return checkoutStartedAt.plus(getReleaseAfter(clientAndOrgId));
 	}
 }

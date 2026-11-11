@@ -19,7 +19,6 @@ import de.metas.pos.POSCardReleaseWait;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
-import de.metas.pos.POSOrdersService;
 import de.metas.pos.POSPayment;
 import de.metas.pos.POSPaymentExternalId;
 import de.metas.pos.POSPaymentMethod;
@@ -29,6 +28,8 @@ import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
+import de.metas.pos.rest_api.json.JsonPOSOrderMapper;
+import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSPaymentStatus;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -36,7 +37,6 @@ import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemAndListId;
 import org.adempiere.warehouse.WarehouseId;
-import java.time.Duration;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalId;
 import de.metas.pos.POSService;
@@ -111,7 +111,7 @@ class POSRestControllerTest
 	private POSReturnService posReturnService;
 	private POSRestController controller;
 	private POSInvoiceCardSettlementService cardSettlementService;
-	private POSOrdersService ordersService;
+	private POSService posService;
 	private POSCardReleaseWait cardReleaseWait;
 
 	@BeforeEach
@@ -123,18 +123,17 @@ class POSRestControllerTest
 		currencyId = createCurrency();
 		posReturnService = Mockito.mock(POSReturnService.class);
 		cardSettlementService = Mockito.mock(POSInvoiceCardSettlementService.class);
-		ordersService = Mockito.mock(POSOrdersService.class);
+		posService = Mockito.mock(POSService.class);
 		cardReleaseWait = Mockito.mock(POSCardReleaseWait.class);
 
 		controller = new POSRestController(
-				Mockito.mock(POSService.class),
+				posService,
 				new CurrencyRepository(),
 				Mockito.mock(POSCashWithdrawalService.class),
 				posReturnService,
 				Mockito.mock(POSInvoiceSettlementService.class),
 				cardSettlementService,
-				ordersService,
-				cardReleaseWait);
+				new JsonPOSOrderMapper(cardReleaseWait));
 	}
 
 	@Test
@@ -360,7 +359,7 @@ class POSRestControllerTest
 						.grandTotal(Money.of(new BigDecimal("10"), currencyId)).openAmt(Money.of(new BigDecimal("10"), currencyId)).build()));
 		final POSRestController controllerWithInvoices = new POSRestController(
 				Mockito.mock(POSService.class), new CurrencyRepository(), Mockito.mock(POSCashWithdrawalService.class),
-				posReturnService, invoiceSettlementService, cardSettlementService, ordersService, cardReleaseWait);
+				posReturnService, invoiceSettlementService, cardSettlementService, new JsonPOSOrderMapper(cardReleaseWait));
 
 		final JsonPOSOpenInvoicesList list = controllerWithInvoices.getOpenInvoices("1", "001");
 
@@ -404,13 +403,32 @@ class POSRestControllerTest
 				.build();
 	}
 
+	private void mockReleasableAt()
+	{
+		Mockito.when(cardReleaseWait.getReleasableAt(ClientAndOrgId.ofClientAndOrg(1, 1), CHECKOUT_STARTED_AT))
+				.thenReturn(CHECKOUT_STARTED_AT.plusSeconds(180));
+	}
+
+	@Test
+	void getOpenOrders_unknownCardPayment_hasReleasableAt()
+	{
+		mockReleasableAt();
+		Mockito.when(posService.getOpenOrders(any(), any(), any()))
+				.thenReturn(ImmutableList.of(newOrderWithCardPayment(POSPaymentProcessingStatus.UNKNOWN)));
+
+		final JsonPOSOrdersList response = controller.getOpenOrders("1", null);
+
+		assertThat(response.getList()).hasSize(1);
+		assertThat(response.getList().get(0).getPayments().get(0).getReleasableAt()).isEqualTo(CHECKOUT_STARTED_AT.plusSeconds(180));
+	}
+
 	@Test
 	void checkPayment_usesLoggedCashier_andMapsOrder_withReleasableAtOfUnknownCardPayment()
 	{
 		final POSOrder order = newOrderWithCardPayment(POSPaymentProcessingStatus.UNKNOWN);
-		Mockito.when(ordersService.checkCardPayment(any(), any(), any(), any()))
+		Mockito.when(posService.checkCardPayment(any(), any(), any(), any()))
 				.thenReturn(POSCardPaymentCheckResult.builder().order(order).build());
-		Mockito.when(cardReleaseWait.getReleaseAfter(ClientAndOrgId.ofClientAndOrg(1, 1))).thenReturn(Duration.ofSeconds(180));
+		mockReleasableAt();
 
 		final JsonPOSOrder response = controller.checkPayment(JsonPOSCardPaymentCheckRequest.builder()
 				.posTerminalId(TERMINAL_ID)
@@ -418,19 +436,18 @@ class POSRestControllerTest
 				.payment_uuid(PAYMENT_UUID)
 				.build());
 
-		Mockito.verify(ordersService).checkCardPayment(TERMINAL_ID, ORDER_UUID, PAYMENT_UUID, CASHIER_ID);
+		Mockito.verify(posService).checkCardPayment(TERMINAL_ID, ORDER_UUID, PAYMENT_UUID, CASHIER_ID);
 		assertThat(response.getUuid()).isEqualTo(ORDER_UUID);
 		assertThat(response.getPayments()).hasSize(1);
 		assertThat(response.getPayments().get(0).getStatus()).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
 		assertThat(response.getPayments().get(0).getReleasableAt()).isEqualTo(CHECKOUT_STARTED_AT.plusSeconds(180));
-		Mockito.verify(cardReleaseWait, Mockito.times(1)).getReleaseAfter(any());
-	}
+			}
 
 	@Test
 	void checkPayment_paymentNotUnknown_hasNoReleasableAt_andReleaseWaitIsNotAsked()
 	{
 		final POSOrder order = newOrderWithCardPayment(POSPaymentProcessingStatus.SUCCESSFUL);
-		Mockito.when(ordersService.checkCardPayment(any(), any(), any(), any()))
+		Mockito.when(posService.checkCardPayment(any(), any(), any(), any()))
 				.thenReturn(POSCardPaymentCheckResult.builder().order(order).build());
 
 		final JsonPOSOrder response = controller.checkPayment(JsonPOSCardPaymentCheckRequest.builder()
@@ -444,8 +461,8 @@ class POSRestControllerTest
 	void releasePayment_mapsRequest_andTranslatesRefusedMessage()
 	{
 		final POSOrder order = newOrderWithCardPayment(POSPaymentProcessingStatus.UNKNOWN);
-		Mockito.when(cardReleaseWait.getReleaseAfter(any())).thenReturn(Duration.ofSeconds(180));
-		Mockito.when(ordersService.releaseCardPayment(any())).thenReturn(POSCardPaymentReleaseResult.builder()
+		mockReleasableAt();
+		Mockito.when(posService.releaseCardPayment(any())).thenReturn(POSCardPaymentReleaseResult.builder()
 				.order(order)
 				.confirmationRequired(true)
 				.checkFailed(true)
@@ -461,7 +478,7 @@ class POSRestControllerTest
 				.build());
 
 		final ArgumentCaptor<POSCardPaymentReleaseRequest> captor = ArgumentCaptor.forClass(POSCardPaymentReleaseRequest.class);
-		Mockito.verify(ordersService).releaseCardPayment(captor.capture());
+		Mockito.verify(posService).releaseCardPayment(captor.capture());
 		assertThat(captor.getValue().getPosTerminalId()).isEqualTo(TERMINAL_ID);
 		assertThat(captor.getValue().getPosOrderExternalId()).isEqualTo(ORDER_UUID);
 		assertThat(captor.getValue().getPosPaymentExternalId()).isEqualTo(PAYMENT_UUID);
@@ -480,14 +497,14 @@ class POSRestControllerTest
 	void releasePayment_withoutExpectedStatus_passesNull_andNoRefusedMessage()
 	{
 		final POSOrder order = newOrderWithCardPayment(POSPaymentProcessingStatus.SUCCESSFUL);
-		Mockito.when(ordersService.releaseCardPayment(any()))
+		Mockito.when(posService.releaseCardPayment(any()))
 				.thenReturn(POSCardPaymentReleaseResult.builder().order(order).confirmationRequired(true).build());
 
 		final JsonPOSCardPaymentReleaseResponse response = controller.releasePayment(JsonPOSCardPaymentReleaseRequest.builder()
 				.posTerminalId(TERMINAL_ID).order_uuid(ORDER_UUID).payment_uuid(PAYMENT_UUID).build());
 
 		final ArgumentCaptor<POSCardPaymentReleaseRequest> captor = ArgumentCaptor.forClass(POSCardPaymentReleaseRequest.class);
-		Mockito.verify(ordersService).releaseCardPayment(captor.capture());
+		Mockito.verify(posService).releaseCardPayment(captor.capture());
 		assertThat(captor.getValue().isConfirmNotCharged()).isFalse();
 		assertThat(captor.getValue().getExpectedStatus()).isNull();
 		assertThat(response.isConfirmationRequired()).isTrue();
