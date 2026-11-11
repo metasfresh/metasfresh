@@ -3,6 +3,7 @@ package de.metas.pos;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
@@ -376,6 +377,7 @@ class JsonSerializeDeserializeTest
 
 	/**
 	 * A card payment whose result is unknown travels as {@code UNKNOWN}, in both directions; it can be neither checked out nor deleted.
+	 * Its {@code releasableAt} travels as an ISO instant, as the invoice card settlement's.
 	 */
 	@Test
 	void test_JsonPOSPayment_unknownStatus() throws JsonProcessingException
@@ -396,6 +398,9 @@ class JsonSerializeDeserializeTest
 		assertThat(payment.getStatus()).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		assertThat(jsonObjectMapper.writeValueAsString(payment)).contains("\"status\":\"UNKNOWN\"");
+		// also with a mapper that writes dates as timestamps, as the REST responses' one does
+		assertThat(jsonObjectMapper.copy().enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).writeValueAsString(payment))
+				.contains("\"releasableAt\":\"2026-11-10T10:03:00Z\"");
 		assertThat(jsonObjectMapper.readValue("\"UNKNOWN\"", JsonPOSPaymentStatus.class)).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
 	}
 
