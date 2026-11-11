@@ -3,6 +3,8 @@
 -- In-scope tables (via C_DocType.DocBaseType): C_Invoice, M_InOut, C_Payment, M_Movement, M_Inventory,
 -- PP_Cost_Collector, C_AllocationHdr. Only AD_Document_Action_Access rows are inserted / reactivated;
 -- nothing is removed. A backup of the table is taken first.
+-- A pair whose RC row (active or not) is stored in a different AD_Client_ID than the VO row is NOT changed: the
+-- role filter (login client) would not see that row anyway; it is logged once per pair and skipped.
 
 DO
 $$
@@ -19,7 +21,7 @@ $$
         v_inserted integer := 0;
         v_reactivated integer := 0;
         v_other    text;
-        v_crossClient integer;
+        v_skipped  integer := 0;
     BEGIN
         PERFORM backup_table('AD_Document_Action_Access', '_RC_where_VO');
 
@@ -28,7 +30,9 @@ $$
                    vo.ad_role_id,
                    vo.c_doctype_id,
                    TRIM(dt.docbasetype)::text AS docbasetype,
-                   rc.ad_document_action_access_id AS rc_id
+                   rc.ad_document_action_access_id AS rc_id,
+                   rc.ad_client_id AS rc_client_id,
+                   rc.isactive AS rc_isactive
             FROM ad_document_action_access vo
                      JOIN c_doctype dt ON dt.c_doctype_id = vo.c_doctype_id
                      LEFT JOIN ad_document_action_access rc
@@ -38,10 +42,14 @@ $$
             WHERE vo.ad_ref_list_id = 182
               AND vo.isactive = 'Y'
               AND TRIM(dt.docbasetype) = ANY (v_inScope)
-              AND (rc.ad_document_action_access_id IS NULL OR rc.isactive <> 'Y')
+              AND (rc.ad_document_action_access_id IS NULL OR rc.isactive <> 'Y' OR rc.ad_client_id <> vo.ad_client_id)
             ORDER BY vo.ad_role_id, vo.c_doctype_id
             LOOP
-                IF r.rc_id IS NULL THEN
+                IF r.rc_id IS NOT NULL AND r.rc_client_id <> r.ad_client_id THEN
+                    v_skipped := v_skipped + 1;
+                    RAISE NOTICE 'DocActionAccess RC: skipped cross-client pair AD_Role_ID=% C_DocType_ID=% (DocBaseType %): VO row AD_Client_ID=%, RC row AD_Client_ID=%, RC IsActive=% (not changed)',
+                        r.ad_role_id, r.c_doctype_id, r.docbasetype, r.ad_client_id, r.rc_client_id, r.rc_isactive;
+                ELSIF r.rc_id IS NULL THEN
                     INSERT INTO ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby,
                                                            updated, updatedby, c_doctype_id, ad_ref_list_id,
                                                            ad_role_id)
@@ -61,23 +69,7 @@ $$
                 END IF;
             END LOOP;
 
-        RAISE NOTICE 'DocActionAccess RC: % inserted, % reactivated', v_inserted, v_reactivated;
-
-        -- Surface (no write) active RC grants whose client differs from the VO grant's client: the role filter
-        -- (login client) would not see them, so the role may still lack a visible RC.
-        SELECT COUNT(*)
-        INTO v_crossClient
-        FROM ad_document_action_access vo
-                 JOIN c_doctype dt ON dt.c_doctype_id = vo.c_doctype_id
-                 JOIN ad_document_action_access rc
-                      ON rc.ad_role_id = vo.ad_role_id AND rc.c_doctype_id = vo.c_doctype_id AND rc.ad_ref_list_id = 184
-        WHERE vo.ad_ref_list_id = 182
-          AND vo.isactive = 'Y'
-          AND rc.isactive = 'Y'
-          AND rc.ad_client_id <> vo.ad_client_id
-          AND TRIM(dt.docbasetype) = ANY (v_inScope);
-        RAISE NOTICE 'DocActionAccess RC: % in-scope role/doctype pair(s) have an active RC grant in a different AD_Client_ID than the VO grant (not changed)',
-            v_crossClient;
+        RAISE NOTICE 'DocActionAccess RC: % inserted, % reactivated, % skipped (cross-client)', v_inserted, v_reactivated, v_skipped;
 
         SELECT STRING_AGG(DISTINCT COALESCE(NULLIF(TRIM(dt.docbasetype), ''), '(blank)'), ', ')
         INTO v_other
