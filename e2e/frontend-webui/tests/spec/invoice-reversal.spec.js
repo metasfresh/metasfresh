@@ -196,8 +196,9 @@ which is essential for handling billing errors and credit adjustments.
             await page.waitForTimeout(500);
 
             // A completed sales invoice offers Reverse-Correct only; Void must not be offered
-            await expect(page.getByTestId('status-VO')).toHaveCount(0);
+            // RC first: proves the dropdown rendered, so the VO absence check below cannot pass vacuously
             await expect(page.getByTestId('status-RC')).toBeVisible();
+            await expect(page.getByTestId('status-VO')).toHaveCount(0);
 
             // Click "Reverse - Correct" action (RC = Reverse-Correct action key)
             await page.getByTestId('status-RC').click();
