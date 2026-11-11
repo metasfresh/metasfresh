@@ -273,7 +273,7 @@ INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Org_ID, AD_Reference_ID, AD_Table_ID,
 VALUES (0, 0, 542156, 542660, 593830 /* C_Order_CompensationGroup_Line_V.C_OrderLine_ID */, TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y', 'N', 'N', TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 INSERT INTO AD_RelationType (AD_Client_ID, AD_Org_ID, AD_RelationType_ID, AD_Reference_Source_ID, AD_Reference_Target_ID, Created, CreatedBy, EntityType, InternalName, IsActive, IsDirected, IsExplicit, IsTableRecordIDTarget, Name, Role_Source, Role_Target, Type, Updated, UpdatedBy)
-SELECT 0, 0, 540513 /*From ID Server*/, 542156, rt.AD_Reference_Target_ID, TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, rt.EntityType, 'C_Order_CompensationGroup_Line_V_MD_Stock_PerWeek', 'Y', 'Y', rt.IsExplicit, rt.IsTableRecordIDTarget,
+SELECT 0, 0, 540513 /*From ID Server*/, 542156, rt.AD_Reference_Target_ID, TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'C_Order_CompensationGroup_Line_V_MD_Stock_PerWeek', 'Y', 'Y', rt.IsExplicit, rt.IsTableRecordIDTarget,
        'C_Order_CompensationGroup_Line_V -> MD_Stock_PerWeek_V', rt.Role_Source, rt.Role_Target, rt.Type, TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_RelationType rt WHERE rt.AD_RelationType_ID = 540499
 ;
