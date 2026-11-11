@@ -1794,9 +1794,11 @@ async function getIncludedDocumentReferences(windowId, documentId, tabId, rowId)
     .flatMap((event) => event.partialGroup.references || []);
 }
 
+// (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
+// name of its source table, which differs between the line table and its view)
 function relatedDocumentsComparable(references) {
   return references
     .filter((reference) => !RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS.includes(String(reference.targetWindowId)))
-    .map((reference) => `${reference.internalName}|${reference.targetWindowId}|${reference.documentsCount}`)
+    .map((reference) => `${reference.caption}|${reference.targetWindowId}|${reference.documentsCount}`)
     .sort();
 }
