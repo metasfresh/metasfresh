@@ -20,6 +20,10 @@ Feature: POS till card sale with an unknown card result
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-09-24T08:00:00+02:00[Europe/Berlin]
     And temporarily set sys config boolean value true for sys config 'de.metas.report.jasper.IsMockReportService'
+    # The card release wait is read at the terminal's client/org: every scenario starts without a configured wait, whatever row another
+    # test left (e.g. a mobile E2E spec writes it at its configuration level); a scenario sets its own wait at SYSTEM level.
+    And temporarily deactivate sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds' below SYSTEM level
+    And temporarily set sys config String value 'null' for sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds'
     And metasfresh contains C_TaxCategory
       | Identifier    |
       | taxCategory07 |

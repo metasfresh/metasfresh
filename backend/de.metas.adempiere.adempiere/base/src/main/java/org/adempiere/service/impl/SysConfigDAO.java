@@ -123,6 +123,27 @@ public class SysConfigDAO implements ISysConfigDAO
 	}
 
 	@Override
+	public Optional<Boolean> isActiveExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
+		return sysConfig != null ? Optional.of(sysConfig.isActive()) : Optional.empty();
+	}
+
+	@Override
+	public void setActiveExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId, final boolean active)
+	{
+		final I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
+		if (sysConfig == null || sysConfig.isActive() == active)
+		{
+			return;
+		}
+
+		sysConfig.setIsActive(active);
+		InterfaceWrapperHelper.save(sysConfig);
+		logger.info("Set SysConfig `{}` IsActive={} (Client/Org: {})", name, active, clientAndOrgId);
+	}
+
+	@Override
 	public void setValue(final @NonNull String name, final int value, final @NonNull ClientAndOrgId clientAndOrgId)
 	{
 		setValue(name, String.valueOf(value), clientAndOrgId);

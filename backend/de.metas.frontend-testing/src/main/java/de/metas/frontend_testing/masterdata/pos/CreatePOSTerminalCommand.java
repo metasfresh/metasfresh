@@ -25,8 +25,8 @@ import de.metas.frontend_testing.masterdata.PricingSetupHelper;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
-import de.metas.frontend_testing.masterdata.sysconfig.JsonSysconfig;
 import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigRows;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
@@ -69,9 +69,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -114,8 +111,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
+	@NonNull private final SysconfigRows sysconfigRows = new SysconfigRows();
 
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final ProductPriceRepository productPriceRepository;
@@ -242,9 +238,9 @@ public class CreatePOSTerminalCommand
 	 */
 	private void setSystemSysconfig(@NonNull final String name, @NonNull final String value)
 	{
-		previousSysconfigsCollector.add(JsonSysconfig.of(name, sysConfigDAO.getValueOfExactRow(name, ClientAndOrgId.SYSTEM).orElse(null), ClientAndOrgId.SYSTEM));
+		previousSysconfigsCollector.add(sysconfigRows.getState(name, ClientAndOrgId.SYSTEM));
 
-		sysConfigBL.setValue(name, value, ClientId.SYSTEM, OrgId.ANY);
+		sysconfigRows.setActiveValue(name, value, ClientAndOrgId.SYSTEM);
 	}
 
 	/**

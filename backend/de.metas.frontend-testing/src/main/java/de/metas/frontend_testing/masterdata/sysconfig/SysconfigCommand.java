@@ -7,9 +7,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.ISysConfigDAO;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -40,7 +40,7 @@ public class SysconfigCommand
 	private static final String NO_VALUE = "-";
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
+	@NonNull private final SysconfigRows sysconfigRows = new SysconfigRows();
 
 	@Nullable private final Map<String, String> sysconfigs;
 	/**
@@ -59,6 +59,7 @@ public class SysconfigCommand
 		{
 			names.addAll(sysconfigs.keySet());
 		}
+		final LinkedHashMap<String, ClientAndOrgId> targetsByName = new LinkedHashMap<>();
 		for (final String name : names)
 		{
 			final ClientAndOrgId target = sysConfigBL.getConfigLevelTarget(name);
@@ -67,14 +68,15 @@ public class SysconfigCommand
 				// fail loud instead of creating it: a missing row means the sysconfig was renamed or retired
 				throw new AdempiereException("Scanner sysconfig does not exist: " + name + " - update SCANNER_SYSCONFIG_DEFAULTS");
 			}
-			previousSysconfigsCollector.add(JsonSysconfig.of(name, sysConfigDAO.getValueOfExactRow(name, target).orElse(null), target));
+			previousSysconfigsCollector.add(sysconfigRows.getState(name, target));
+			targetsByName.put(name, target);
 		}
 
-		SCANNER_SYSCONFIG_DEFAULTS.forEach(sysConfigBL::setValueAtConfigLevel);
+		SCANNER_SYSCONFIG_DEFAULTS.forEach((name, value) -> sysconfigRows.setActiveValue(name, value, targetsByName.get(name)));
 
 		if (sysconfigs != null)
 		{
-			sysconfigs.forEach((name, value) -> sysConfigBL.setValueAtConfigLevel(name, value != null ? value : NO_VALUE));
+			sysconfigs.forEach((name, value) -> sysconfigRows.setActiveValue(name, value != null ? value : NO_VALUE, targetsByName.get(name)));
 		}
 	}
 }

@@ -87,6 +87,45 @@ public class RestoreSysconfigsCommandTest
 	}
 
 	@Test
+	public void systemSysconfig_onAnInactiveRow_shouldTakeEffect_andRestoreShouldDeactivateItAgain()
+	{
+		createInactiveRow(NAME, "old", ClientAndOrgId.SYSTEM);
+
+		final ImmutableList<JsonSysconfig> previous = setSystemSysconfig("new");
+		assertThat(previous).containsExactly(JsonSysconfig.ofRow(NAME, "old", false, ClientAndOrgId.SYSTEM));
+		assertThat(sysConfigBL.getValue(NAME, ClientAndOrgId.SYSTEM)).isEqualTo("new");
+
+		restore(previous);
+		assertThat(sysConfigBL.getValue(NAME, "default")).isEqualTo("default");
+		assertThat(sysConfigDAO.getValueOfExactRow(NAME, ClientAndOrgId.SYSTEM)).contains("old");
+		assertThat(sysConfigDAO.isActiveExactRow(NAME, ClientAndOrgId.SYSTEM)).contains(false);
+	}
+
+	/**
+	 * The org-level row the POS card settlement spec writes ({@code de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds}) may exist inactive,
+	 * e.g. deactivated by another suite; a value written to it must take effect, and the restore must leave the row as it was.
+	 * ({@link SysconfigCommand} itself resolves the row by SQL, so it is not usable here; it writes through {@link SysconfigRows} like this.)
+	 */
+	@Test
+	public void configLevelRow_inactive_shouldTakeEffect_andRestoreShouldDeactivateItAgain()
+	{
+		sysConfigBL.setValue(NAME, "system", ClientAndOrgId.SYSTEM.getClientId(), ClientAndOrgId.SYSTEM.getOrgId());
+		createInactiveRow(NAME, "150", ClientAndOrgId.MAIN);
+		final SysconfigRows sysconfigRows = new SysconfigRows();
+
+		final JsonSysconfig previous = sysconfigRows.getState(NAME, ClientAndOrgId.MAIN);
+		assertThat(previous).isEqualTo(JsonSysconfig.ofRow(NAME, "150", false, ClientAndOrgId.MAIN));
+
+		sysconfigRows.setActiveValue(NAME, "200", ClientAndOrgId.MAIN);
+		assertThat(sysConfigBL.getValue(NAME, ClientAndOrgId.MAIN)).isEqualTo("200");
+
+		restore(ImmutableList.of(previous));
+		assertThat(sysConfigBL.getValue(NAME, ClientAndOrgId.MAIN)).isEqualTo("system");
+		assertThat(sysConfigDAO.getValueOfExactRow(NAME, ClientAndOrgId.MAIN)).contains("150");
+		assertThat(sysConfigDAO.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).contains(false);
+	}
+
+	@Test
 	public void callAndRestoreOnFailure_whenAWriteFails_shouldRestoreTheRowsWrittenBeforeIt()
 	{
 		sysConfigBL.setValue(NAME, "old", ClientAndOrgId.SYSTEM.getClientId(), ClientAndOrgId.SYSTEM.getOrgId());
@@ -150,8 +189,25 @@ public class RestoreSysconfigsCommandTest
 		final ObjectMapper objectMapper = new ObjectMapper();
 		final String json = objectMapper.writeValueAsString(JsonSysconfig.of(NAME, null, ClientAndOrgId.MAIN));
 
-		assertThat(json).isEqualTo("{\"name\":\"" + NAME + "\",\"value\":null,\"clientId\":1000000,\"orgId\":1000000}");
+		assertThat(json).isEqualTo("{\"name\":\"" + NAME + "\",\"value\":null,\"clientId\":1000000,\"orgId\":1000000,\"active\":true}");
 		assertThat(objectMapper.readValue(json, JsonSysconfig.class)).isEqualTo(JsonSysconfig.of(NAME, null, ClientAndOrgId.MAIN));
+	}
+
+	@Test
+	public void json_inactiveRow_shouldRoundTrip_andAMissingActiveFlagShouldMeanActive() throws Exception
+	{
+		final ObjectMapper objectMapper = new ObjectMapper();
+		final JsonSysconfig inactive = JsonSysconfig.ofRow(NAME, "150", false, ClientAndOrgId.MAIN);
+
+		assertThat(objectMapper.readValue(objectMapper.writeValueAsString(inactive), JsonSysconfig.class)).isEqualTo(inactive);
+		assertThat(objectMapper.readValue("{\"name\":\"" + NAME + "\",\"value\":\"150\",\"clientId\":1000000,\"orgId\":1000000}", JsonSysconfig.class))
+				.isEqualTo(JsonSysconfig.of(NAME, "150", ClientAndOrgId.MAIN));
+	}
+
+	private void createInactiveRow(final String name, final String value, final ClientAndOrgId clientAndOrgId)
+	{
+		sysConfigDAO.setValue(name, value, clientAndOrgId);
+		sysConfigDAO.setActiveExactRow(name, clientAndOrgId, false);
 	}
 
 	private static ImmutableList<JsonSysconfig> setSystemSysconfig(final String value)

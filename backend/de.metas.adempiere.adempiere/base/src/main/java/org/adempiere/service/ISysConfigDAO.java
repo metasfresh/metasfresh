@@ -60,6 +60,15 @@ public interface ISysConfigDAO extends ISingletonService
 	/** Deletes exactly the given row, if it exists; reads then fall back to the next less specific row. */
 	void deleteExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
 
+	/**
+	 * @return {@code IsActive} of exactly the given row; empty if there is no such row. Reads ignore an inactive row, so a value
+	 * written to it with {@link #setValue(String, String, ClientAndOrgId)} does not take effect until the row is activated.
+	 */
+	Optional<Boolean> isActiveExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
+
+	/** Sets {@code IsActive} of exactly the given row, if it exists. */
+	void setActiveExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId, boolean active);
+
 	/** @return the ConfigurationLevel ('S'/'C'/'O') declared on the System-level (client=0,org=0) record, or empty if none. */
 	Optional<String> getConfigurationLevel(@NonNull String name);
 }

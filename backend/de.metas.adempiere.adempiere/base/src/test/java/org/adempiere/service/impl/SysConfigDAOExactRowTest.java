@@ -61,4 +61,33 @@ class SysConfigDAOExactRowTest
 
 		assertThat(dao.getValueOfExactRow(NAME, ClientAndOrgId.SYSTEM)).contains("system");
 	}
+
+	@Test
+	void setActiveExactRow_inactiveRow_isIgnoredByReads_untilReactivated()
+	{
+		dao.setValue(NAME, "system", ClientAndOrgId.SYSTEM);
+		dao.setValue(NAME, "main", ClientAndOrgId.MAIN);
+
+		dao.setActiveExactRow(NAME, ClientAndOrgId.MAIN, false);
+		assertThat(dao.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).contains(false);
+		assertThat(dao.getValue(NAME, ClientAndOrgId.MAIN)).contains("system");
+
+		dao.setValue(NAME, "main2", ClientAndOrgId.MAIN);
+		assertThat(dao.getValue(NAME, ClientAndOrgId.MAIN)).as("a value written to an inactive row does not take effect").contains("system");
+
+		dao.setActiveExactRow(NAME, ClientAndOrgId.MAIN, true);
+		assertThat(dao.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).contains(true);
+		assertThat(dao.getValue(NAME, ClientAndOrgId.MAIN)).contains("main2");
+	}
+
+	@Test
+	void isActiveExactRow_whenThereIsNoSuchRow_shouldBeEmpty_andSetActiveShouldDoNothing()
+	{
+		dao.setValue(NAME, "system", ClientAndOrgId.SYSTEM);
+
+		dao.setActiveExactRow(NAME, ClientAndOrgId.MAIN, true);
+
+		assertThat(dao.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).isEmpty();
+		assertThat(dao.getValueOfExactRow(NAME, ClientAndOrgId.MAIN)).isEmpty();
+	}
 }
