@@ -14,6 +14,8 @@ import {
 import { PAYMENT_METHOD_CARD, PAYMENT_METHOD_CASH } from '../../constants/paymentMethods';
 import { checkPaymentAPI, getOpenOrders, releasePaymentAPI } from '../../api/orders';
 import { toastError } from '../../../../utils/toast';
+import { usePollWhile } from '../card_release/usePollWhile';
+import { useCardRelease } from '../card_release/useCardRelease';
 
 const UNKNOWN_PAYMENT_POLL_MILLIS = 2000;
 
@@ -39,21 +41,58 @@ const PendingPaymentModal = ({
     payment?.paymentMethod === PAYMENT_METHOD_CARD && payment?.status === PAYMENT_STATUS_UNKNOWN ? payment.uuid : null;
 
   const [isSubmitting, setSubmitting] = useState(false);
-  // the status the cashier was asked to confirm "not charged" for; null while no confirmation is asked
-  const [releaseConfirmationStatus, setReleaseConfirmationStatus] = useState(null);
-  const [releaseMessage, setReleaseMessage] = useState(null);
   const [isCheckFailed, setCheckFailed] = useState(false);
   const [now, setNow] = useState(Date.now());
 
-  // the confirmation stays only while the payment is still in the status it was asked for
-  const isReleaseConfirmationShown =
-    releaseConfirmationStatus != null && !!unknownCardPayment_uuid && payment.status === releaseConfirmationStatus;
+  //
+  // Poll the order while the card payment's result is unknown and keep "now" current for the release button.
+  const { markChanged: markOrderChanged } = usePollWhile({
+    isActive: !!unknownCardPayment_uuid,
+    pollKey: `${posTerminalId}/${order_uuid}/${unknownCardPayment_uuid}`,
+    intervalMillis: UNKNOWN_PAYMENT_POLL_MILLIS,
+    poll: () => getOpenOrders({ posTerminalId, ids: [order_uuid] }),
+    onResult: (result) => {
+      const order = result?.list?.find((order) => order.uuid === order_uuid);
+      if (order) {
+        dispatch(updateOrderFromBackendAction({ order }));
+      }
+    },
+    onTick: () => setNow(Date.now()),
+  });
+
+  /** Applies an order from a check / release response; an older poll answer arriving later is ignored */
+  const applyOrder = (order) => {
+    markOrderChanged();
+    dispatch(updateOrderFromBackendAction({ order }));
+  };
+
+  const cardRelease = useCardRelease({
+    status: payment?.status,
+    isReleasable: !!unknownCardPayment_uuid,
+    isSubmitting,
+    setSubmitting,
+    release: ({ confirmNotCharged, expectedStatus }) =>
+      releasePaymentAPI({
+        posTerminalId,
+        order_uuid,
+        payment_uuid: unknownCardPayment_uuid,
+        confirmNotCharged,
+        expectedStatus,
+      }).then((response) => {
+        applyOrder(response.order);
+        setCheckFailed(!!response.checkFailed);
+        return {
+          status: response.order?.payments?.find((p) => p.uuid === unknownCardPayment_uuid)?.status ?? null,
+          confirmationRequired: response.confirmationRequired,
+          refusedMessage: response.refusedMessage,
+        };
+      }),
+  });
 
   //
   // Opening an unknown card payment: forget the previous payment's release state and ask SumUp once for its result.
   useEffect(() => {
-    setReleaseConfirmationStatus(null);
-    setReleaseMessage(null);
+    cardRelease.reset();
     setCheckFailed(false);
     setNow(Date.now());
     if (!unknownCardPayment_uuid) {
@@ -61,62 +100,21 @@ const PendingPaymentModal = ({
     }
 
     let isStopped = false;
+    setSubmitting(true);
     checkPaymentAPI({ posTerminalId, order_uuid, payment_uuid: unknownCardPayment_uuid })
-      .then((order) => {
+      .then((response) => {
         if (!isStopped) {
-          dispatch(updateOrderFromBackendAction({ order }));
+          applyOrder(response.order);
+          setCheckFailed(!!response.checkFailed);
         }
       })
-      .catch((axiosError) => console.warn('Failed checking card payment', { unknownCardPayment_uuid, axiosError }));
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setSubmitting(false));
 
     return () => {
       isStopped = true;
     };
-  }, [unknownCardPayment_uuid]);
-
-  //
-  // Poll the order while the card payment's result is unknown and keep "now" current for the release button.
-  // The next request is scheduled only after the previous one finished, so polls never overlap; a response arriving
-  // after the poll stopped is ignored.
-  useEffect(() => {
-    if (!unknownCardPayment_uuid) {
-      return;
-    }
-
-    let isStopped = false;
-    let timeoutId = null;
-    const pollOnce = () => {
-      getOpenOrders({ posTerminalId, ids: [order_uuid] })
-        .then((result) => {
-          const order = result?.list?.find((order) => order.uuid === order_uuid);
-          if (!isStopped && order) {
-            dispatch(updateOrderFromBackendAction({ order }));
-          }
-        })
-        .catch((axiosError) => console.warn('Failed polling order', { order_uuid, axiosError }))
-        .finally(() => {
-          if (!isStopped) {
-            setNow(Date.now());
-            timeoutId = setTimeout(pollOnce, UNKNOWN_PAYMENT_POLL_MILLIS);
-          }
-        });
-    };
-    timeoutId = setTimeout(pollOnce, UNKNOWN_PAYMENT_POLL_MILLIS);
-
-    return () => {
-      isStopped = true;
-      clearTimeout(timeoutId);
-    };
-  }, [posTerminalId, order_uuid, unknownCardPayment_uuid]);
-
-  //
-  // The payment left the status the confirmation was asked for (e.g. it was approved meanwhile): drop the
-  // confirmation, the modal shows the new state instead.
-  useEffect(() => {
-    if (releaseConfirmationStatus != null && !isReleaseConfirmationShown) {
-      setReleaseConfirmationStatus(null);
-    }
-  }, [releaseConfirmationStatus, isReleaseConfirmationShown]);
+  }, [dispatch, posTerminalId, order_uuid, unknownCardPayment_uuid]);
 
   if (!payment) return null;
 
@@ -134,32 +132,6 @@ const PendingPaymentModal = ({
 
   const handleDelete = () => {
     dispatch(removePayment({ posTerminalId, order_uuid, payment_uuid: payment.uuid }));
-  };
-
-  const applyReleaseResponse = (response) => {
-    dispatch(updateOrderFromBackendAction({ order: response.order }));
-    // remember the status the confirmation is asked for: the confirm request must refer to exactly that one
-    const releasedPayment = response.order?.payments?.find((p) => p.uuid === payment.uuid);
-    setReleaseConfirmationStatus(response.confirmationRequired ? releasedPayment?.status ?? null : null);
-    setReleaseMessage(response.refusedMessage ?? null);
-    setCheckFailed(!!response.checkFailed);
-  };
-
-  const callRelease = ({ confirmNotCharged, expectedStatus } = {}) => {
-    if (isSubmitting) return;
-
-    setSubmitting(true);
-    releasePaymentAPI({ posTerminalId, order_uuid, payment_uuid: payment.uuid, confirmNotCharged, expectedStatus })
-      .then(applyReleaseResponse)
-      .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => setSubmitting(false));
-  };
-
-  const handleRelease = () => callRelease();
-  const handleConfirmRelease = () => {
-    if (!isReleaseConfirmationShown) return;
-    // released only if the payment is still in the status the cashier confirmed
-    callRelease({ confirmNotCharged: true, expectedStatus: releaseConfirmationStatus });
   };
 
   if (payment.paymentMethod === PAYMENT_METHOD_CASH) {
@@ -195,11 +167,11 @@ const PendingPaymentModal = ({
         onCheckout={handleCheckout}
         onDelete={handleDelete}
         isReleaseEnabled={isReleaseEnabled}
-        onRelease={handleRelease}
-        isReleaseConfirmationShown={isReleaseConfirmationShown}
-        onConfirmRelease={handleConfirmRelease}
-        onCancelReleaseConfirmation={() => setReleaseConfirmationStatus(null)}
-        releaseMessage={releaseMessage}
+        onRelease={cardRelease.onRelease}
+        isReleaseConfirmationShown={cardRelease.isConfirmationShown}
+        onConfirmRelease={cardRelease.onConfirmRelease}
+        onCancelReleaseConfirmation={cardRelease.onCancelConfirmation}
+        releaseMessage={cardRelease.releaseMessage}
         isCheckFailed={isCheckFailed}
         isSubmitting={isSubmitting}
       />

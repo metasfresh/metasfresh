@@ -123,15 +123,9 @@
         "orderOpenAmt": "Amount (open)",
         "payAmt": "Payment amount",
         "cardReader": "Card reader",
-        "unknown": "Result unknown — please check the card reader",
-        "checkFailed": "SumUp not reachable — showing the last known state",
-        "releaseConfirmation": "I checked the card reader: the card was not charged",
         "actions": {
           "checkout": "Checkout",
-          "cancel": "Cancel",
-          "release": "Check / release card payment",
-          "confirmRelease": "Confirm",
-          "cancelRelease": "Cancel"
+          "cancel": "Cancel"
         }
       }
     }
@@ -189,7 +183,6 @@
     "openAmt": "Open amount",
     "card": {
       "waiting": "Waiting for card reader",
-      "unknown": "Result unknown — please check the card reader",
       "failed": "Card payment not successful",
       "bookingPending": "Paid by card — booking pending",
       "bookingFailed": "Paid by card — booking failed, please inform the back office",
@@ -199,15 +192,18 @@
       "refunded": "Card payment refunded",
       "released": "Released",
       "otherStatus": "Card payment: status %(status)s",
-      "checkFailed": "SumUp not reachable — showing the last known state",
-      "releaseConfirmation": "I checked the card reader: the card was not charged",
       "cardPaymentOpen": "Card payment open",
-      "cardPaymentStillOpen": "A card payment for this invoice is still open",
-      "actions": {
-        "release": "Check / release card payment",
-        "confirmRelease": "Confirm",
-        "cancelRelease": "Cancel"
-      }
+      "cardPaymentStillOpen": "A card payment for this invoice is still open"
+    }
+  },
+  "cardRelease": {
+    "unknown": "Result unknown — please check the card reader",
+    "checkFailed": "SumUp not reachable — showing the last known state",
+    "releaseConfirmation": "I checked the card reader: the card was not charged",
+    "actions": {
+      "release": "Check / release card payment",
+      "confirmRelease": "Confirm",
+      "cancelRelease": "Cancel"
     }
   }
 }

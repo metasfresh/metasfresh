@@ -95,7 +95,8 @@ export const refundPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
 
 /**
  * POSTs {@code /api/v2/pos/orders/checkPayment}: asks SumUp once for the current result of a card payment whose result is
- * unknown and reconciles the payment with it. Returns the order.
+ * unknown and reconciles the payment with it. Returns {@code { order, checkFailed }}; {@code checkFailed} is set if SumUp
+ * could not be asked.
  */
 export const checkPaymentAPI = ({ posTerminalId, order_uuid, payment_uuid }) => {
   return axios

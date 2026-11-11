@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { trl } from '../../../../utils/translations';
+import CardReleaseControls from '../card_release/CardReleaseControls';
 
 const _ = (key, args) => trl(`pos.invoiceSettlement.card.${key}`, args);
 
@@ -51,7 +52,7 @@ const getStatusMessage = ({ settlement, isStarting }) => {
     case CARD_STATUS_PENDING:
       return _('waiting');
     case CARD_STATUS_UNKNOWN:
-      return _('unknown');
+      return trl('pos.cardRelease.unknown');
     case CARD_STATUS_APPROVED:
       return _('bookingPending');
     case CARD_STATUS_BOOKING_ERROR:
@@ -106,46 +107,18 @@ const CardSettlementStatusPanel = ({
         {status === CARD_STATUS_PENDING && <i className="fa-solid fa-spinner fa-spin status-icon" />}
         {getStatusMessage({ settlement, isStarting })}
       </div>
-      {settlement?.checkFailed && <div className="status-note">{_('checkFailed')}</div>}
-      {releaseMessage && (
-        <div className="status-note" data-testid="pos-card-settlement-release-message">
-          {releaseMessage}
-        </div>
-      )}
-      {isConfirmationRequired ? (
-        <div className="release-confirmation" data-testid="pos-card-settlement-release-confirmation">
-          <div className="release-confirmation-text">{_('releaseConfirmation')}</div>
-          <div className="buttons">
-            <button
-              className="button is-medium is-danger"
-              data-testid="pos-card-settlement-release-confirm-button"
-              disabled={isDisabled}
-              onClick={onConfirmRelease}
-            >
-              {_('actions.confirmRelease')}
-            </button>
-            <button
-              className="button is-medium"
-              data-testid="pos-card-settlement-release-cancel-button"
-              disabled={isDisabled}
-              onClick={onCancelConfirmation}
-            >
-              {_('actions.cancelRelease')}
-            </button>
-          </div>
-        </div>
-      ) : (
-        isReleaseShown && (
-          <button
-            className="button is-medium is-fullwidth release-button"
-            data-testid="pos-card-settlement-release-button"
-            disabled={isDisabled || !isReleaseEnabled}
-            onClick={onRelease}
-          >
-            {_('actions.release')}
-          </button>
-        )
-      )}
+      <CardReleaseControls
+        testIdPrefix="pos-card-settlement"
+        isCheckFailed={!!settlement?.checkFailed}
+        releaseMessage={releaseMessage}
+        isReleaseShown={isReleaseShown}
+        isReleaseEnabled={isReleaseEnabled}
+        onRelease={onRelease}
+        isConfirmationShown={isConfirmationRequired}
+        onConfirmRelease={onConfirmRelease}
+        onCancelConfirmation={onCancelConfirmation}
+        isDisabled={isDisabled}
+      />
     </div>
   );
 };

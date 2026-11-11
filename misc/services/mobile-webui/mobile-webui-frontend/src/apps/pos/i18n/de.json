@@ -123,15 +123,9 @@
         "orderOpenAmt": "Betrag (offen)",
         "payAmt": "Zahlungsbetrag",
         "cardReader": "Kartenleser",
-        "unknown": "Ergebnis unbekannt — bitte Kartenterminal prüfen",
-        "checkFailed": "SumUp nicht erreichbar – angezeigt ist der zuletzt bekannte Stand",
-        "releaseConfirmation": "Ich habe das Kartenterminal geprüft: Die Karte wurde nicht belastet",
         "actions": {
           "checkout": "Zur Kasse",
-          "cancel": "Abbrechen",
-          "release": "Kartenzahlung prüfen / freigeben",
-          "confirmRelease": "Bestätigen",
-          "cancelRelease": "Abbrechen"
+          "cancel": "Abbrechen"
         }
       }
     }
@@ -190,7 +184,6 @@
     "openAmt": "Offener Betrag",
     "card": {
       "waiting": "Warte auf Kartenterminal",
-      "unknown": "Ergebnis unbekannt — bitte Kartenterminal prüfen",
       "failed": "Kartenzahlung nicht erfolgreich",
       "bookingPending": "Mit Karte bezahlt – Buchung ausstehend",
       "bookingFailed": "Mit Karte bezahlt – Buchung fehlgeschlagen, bitte Backoffice informieren",
@@ -200,15 +193,18 @@
       "refunded": "Kartenzahlung erstattet",
       "released": "Freigegeben",
       "otherStatus": "Kartenzahlung: Status %(status)s",
-      "checkFailed": "SumUp nicht erreichbar – angezeigt ist der zuletzt bekannte Stand",
-      "releaseConfirmation": "Ich habe das Kartenterminal geprüft: Die Karte wurde nicht belastet",
       "cardPaymentOpen": "Kartenzahlung offen",
-      "cardPaymentStillOpen": "Für diese Rechnung ist noch eine Kartenzahlung offen",
-      "actions": {
-        "release": "Kartenzahlung prüfen / freigeben",
-        "confirmRelease": "Bestätigen",
-        "cancelRelease": "Abbrechen"
-      }
+      "cardPaymentStillOpen": "Für diese Rechnung ist noch eine Kartenzahlung offen"
+    }
+  },
+  "cardRelease": {
+    "unknown": "Ergebnis unbekannt — bitte Kartenterminal prüfen",
+    "checkFailed": "SumUp nicht erreichbar – angezeigt ist der zuletzt bekannte Stand",
+    "releaseConfirmation": "Ich habe das Kartenterminal geprüft: Die Karte wurde nicht belastet",
+    "actions": {
+      "release": "Kartenzahlung prüfen / freigeben",
+      "confirmRelease": "Bestätigen",
+      "cancelRelease": "Abbrechen"
     }
   }
 }

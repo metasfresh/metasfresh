@@ -12,6 +12,7 @@ import {
   PAYMENT_STATUS_UNKNOWN,
 } from '../../constants/paymentStatus';
 import { trl } from '../../../../utils/translations';
+import CardReleaseControls from '../card_release/CardReleaseControls';
 
 const _ = (key) => trl(`pos.payment.modal.card.${key}`);
 
@@ -98,19 +99,22 @@ const CardPaymentDetailsModal = ({
             </div>
           )}
           {isUnknown && (
-            <div className="detail-line has-text-danger" data-testid="pos-card-payment-unknown-message">
-              {_('unknown')}
-            </div>
-          )}
-          {isUnknown && isCheckFailed && <div className="detail-line">{_('checkFailed')}</div>}
-          {isUnknown && releaseMessage && (
-            <div className="detail-line" data-testid="pos-card-payment-release-message">
-              {releaseMessage}
-            </div>
-          )}
-          {isUnknown && isReleaseConfirmationShown && (
-            <div className="detail-line" data-testid="pos-card-payment-release-confirmation">
-              {_('releaseConfirmation')}
+            <div className="card-payment-unknown">
+              <div className="card-payment-unknown-message" data-testid="pos-card-payment-unknown-message">
+                {trl('pos.cardRelease.unknown')}
+              </div>
+              <CardReleaseControls
+                testIdPrefix="pos-card-payment"
+                isCheckFailed={isCheckFailed}
+                releaseMessage={releaseMessage}
+                isReleaseShown={true}
+                isReleaseEnabled={isReleaseEnabled}
+                onRelease={onRelease}
+                isConfirmationShown={isReleaseConfirmationShown}
+                onConfirmRelease={onConfirmRelease}
+                onCancelConfirmation={onCancelReleaseConfirmation}
+                isDisabled={isSubmitting}
+              />
             </div>
           )}
           {isPending && (
@@ -121,36 +125,6 @@ const CardPaymentDetailsModal = ({
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
-            {isUnknown &&
-              (isReleaseConfirmationShown ? (
-                <>
-                  <button
-                    className="button is-large is-danger"
-                    data-testid="pos-card-payment-release-confirm-button"
-                    disabled={isSubmitting}
-                    onClick={onConfirmRelease}
-                  >
-                    {_('actions.confirmRelease')}
-                  </button>
-                  <button
-                    className="button is-large"
-                    data-testid="pos-card-payment-release-cancel-button"
-                    disabled={isSubmitting}
-                    onClick={onCancelReleaseConfirmation}
-                  >
-                    {_('actions.cancelRelease')}
-                  </button>
-                </>
-              ) : (
-                <button
-                  className="button is-large"
-                  data-testid="pos-card-payment-release-button"
-                  disabled={isSubmitting || !isReleaseEnabled}
-                  onClick={onRelease}
-                >
-                  {_('actions.release')}
-                </button>
-              ))}
             {isAllowCheckout && (
               <button
                 className="button is-large"

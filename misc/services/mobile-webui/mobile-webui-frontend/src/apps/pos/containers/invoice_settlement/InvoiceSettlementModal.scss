@@ -123,30 +123,7 @@
         }
       }
 
-      .status-note {
-        font-style: italic;
-      }
-
-      .release-confirmation {
-        display: flex;
-        flex-flow: column nowrap;
-        gap: 0.4em;
-
-        .release-confirmation-text {
-          font-weight: bold;
-        }
-
-        .buttons {
-          display: flex;
-          flex-flow: row nowrap;
-          margin-bottom: 0;
-
-          .button {
-            flex: 1 1 0;
-            margin-bottom: 0;
-          }
-        }
-      }
+      // the check / release controls are styled by CardReleaseControls.scss
     }
   }
 

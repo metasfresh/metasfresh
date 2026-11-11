@@ -24,6 +24,8 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { toastError } from '../../../../utils/toast';
 import { trl } from '../../../../utils/translations';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
+import { usePollWhile } from '../card_release/usePollWhile';
+import { useCardRelease } from '../card_release/useCardRelease';
 
 const _ = (key, args) => trl(`pos.invoiceSettlement.${key}`, args);
 
@@ -64,62 +66,43 @@ const InvoiceSettlementModal = () => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [cardSettlement, setCardSettlement] = useState(null);
-  // the status the cashier was asked to confirm "not charged" for; null while no confirmation is asked
-  const [releaseConfirmationStatus, setReleaseConfirmationStatus] = useState(null);
-  const [releaseMessage, setReleaseMessage] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [cashBackStage, setCashBackStage] = useState(STAGE_RESULTS);
 
   const isCardSettlementBlocking = isBlockingCardSettlement(cardSettlement);
-  // the confirmation stays only while the payment is still in the status it was asked for
-  const isReleaseConfirmationShown =
-    releaseConfirmationStatus != null &&
-    isReleasableStatus(cardSettlement) &&
-    cardSettlement.status === releaseConfirmationStatus;
 
   //
   // Poll the unfinished card payment (local state only, no SumUp call) and keep "now" current for the release button.
-  // The next request is scheduled only after the previous one finished, so polls never overlap; a response arriving
-  // after the poll stopped (e.g. the dialog was closed) is ignored.
-  useEffect(() => {
-    if (stage !== STAGE_CARD || !cardSettlement || !isCardSettlementBlocking) {
-      return;
-    }
+  const { markChanged: markCardSettlementChanged } = usePollWhile({
+    isActive: stage === STAGE_CARD && !!cardSettlement && isCardSettlementBlocking,
+    pollKey: cardSettlement?.id,
+    intervalMillis: CARD_SETTLEMENT_POLL_MILLIS,
+    poll: () => getInvoiceCardSettlement({ id: cardSettlement.id }),
+    onResult: (settlement) => setCardSettlement((prev) => (prev?.id === settlement.id ? settlement : prev)),
+    onTick: () => setNow(Date.now()),
+  });
 
-    const settlementId = cardSettlement.id;
-    let isStopped = false;
-    let timeoutId = null;
-    const pollOnce = () => {
-      getInvoiceCardSettlement({ id: settlementId })
-        .then((settlement) => {
-          if (!isStopped) {
-            setCardSettlement((prev) => (prev?.id === settlement.id ? settlement : prev));
-          }
-        })
-        .catch((axiosError) => console.warn('Failed polling card settlement', { settlementId, axiosError }))
-        .finally(() => {
-          if (!isStopped) {
-            setNow(Date.now());
-            timeoutId = setTimeout(pollOnce, CARD_SETTLEMENT_POLL_MILLIS);
-          }
-        });
-    };
-    timeoutId = setTimeout(pollOnce, CARD_SETTLEMENT_POLL_MILLIS);
+  /** Sets the card payment from a response; an older poll answer arriving later is ignored */
+  const applyCardSettlement = (settlement) => {
+    markCardSettlementChanged();
+    setCardSettlement(settlement);
+  };
 
-    return () => {
-      isStopped = true;
-      clearTimeout(timeoutId);
-    };
-  }, [stage, cardSettlement?.id, isCardSettlementBlocking]);
-
-  //
-  // The payment left the status the confirmation was asked for (e.g. it was approved meanwhile): drop the
-  // confirmation, the panel shows the new state instead.
-  useEffect(() => {
-    if (releaseConfirmationStatus != null && !isReleaseConfirmationShown) {
-      setReleaseConfirmationStatus(null);
-    }
-  }, [releaseConfirmationStatus, isReleaseConfirmationShown]);
+  const cardRelease = useCardRelease({
+    status: cardSettlement?.status,
+    isReleasable: isReleasableStatus(cardSettlement),
+    isSubmitting,
+    setSubmitting,
+    release: ({ confirmNotCharged, expectedStatus }) =>
+      releaseInvoiceCardSettlement({ id: cardSettlement.id, confirmNotCharged, expectedStatus }).then((response) => {
+        applyCardSettlement(response.settlement);
+        return {
+          status: response.settlement.status,
+          confirmationRequired: response.confirmationRequired,
+          refusedMessage: response.refusedMessage,
+        };
+      }),
+  });
 
   //
   // An approved and booked card payment: the invoice is paid.
@@ -164,9 +147,8 @@ const InvoiceSettlementModal = () => {
   };
 
   const resetCardSettlement = (settlement) => {
-    setCardSettlement(settlement);
-    setReleaseConfirmationStatus(null);
-    setReleaseMessage(null);
+    applyCardSettlement(settlement);
+    cardRelease.reset();
     setNow(Date.now());
   };
 
@@ -179,7 +161,7 @@ const InvoiceSettlementModal = () => {
       setStage(STAGE_CARD);
       setSubmitting(true);
       checkInvoiceCardSettlement({ id: invoice.blockingCardSettlement.id })
-        .then((settlement) => setCardSettlement(settlement))
+        .then(applyCardSettlement)
         .catch((axiosError) => toastError({ axiosError }))
         .finally(() => setSubmitting(false));
     } else if (isCardOffered) {
@@ -203,43 +185,12 @@ const InvoiceSettlementModal = () => {
     setStage(STAGE_CARD);
     setSubmitting(true);
     startInvoiceCardSettlement({ posTerminalId, invoiceId: selectedInvoice.invoiceId })
-      .then((settlement) => setCardSettlement(settlement))
+      .then(applyCardSettlement)
       .catch((axiosError) => {
         // nothing was sent (e.g. the invoice is no longer open, no open cash journal): back to the choice
         toastError({ axiosError });
         setStage(STAGE_METHOD);
       })
-      .finally(() => setSubmitting(false));
-  };
-
-  const applyReleaseResponse = (response) => {
-    setCardSettlement(response.settlement);
-    // remember the status the confirmation is asked for: the confirm request must refer to exactly that one
-    setReleaseConfirmationStatus(response.confirmationRequired ? response.settlement.status : null);
-    setReleaseMessage(response.refusedMessage ?? null);
-  };
-
-  const onRelease = () => {
-    if (isSubmitting || !cardSettlement) return;
-
-    setSubmitting(true);
-    releaseInvoiceCardSettlement({ id: cardSettlement.id })
-      .then(applyReleaseResponse)
-      .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => setSubmitting(false));
-  };
-
-  const onConfirmRelease = () => {
-    if (isSubmitting || !cardSettlement || !isReleaseConfirmationShown) return;
-
-    setSubmitting(true);
-    releaseInvoiceCardSettlement({
-      id: cardSettlement.id,
-      confirmNotCharged: true,
-      expectedStatus: releaseConfirmationStatus, // released only if the payment is still in the status the cashier confirmed
-    })
-      .then(applyReleaseResponse)
-      .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setSubmitting(false));
   };
 
@@ -357,11 +308,11 @@ const InvoiceSettlementModal = () => {
                   isStarting={isStartingCardPayment}
                   isReleaseShown={isReleaseShown}
                   isReleaseEnabled={isReleaseEnabled}
-                  onRelease={onRelease}
-                  isConfirmationRequired={isReleaseConfirmationShown}
-                  onConfirmRelease={onConfirmRelease}
-                  onCancelConfirmation={() => setReleaseConfirmationStatus(null)}
-                  releaseMessage={releaseMessage}
+                  onRelease={cardRelease.onRelease}
+                  isConfirmationRequired={cardRelease.isConfirmationShown}
+                  onConfirmRelease={cardRelease.onConfirmRelease}
+                  onCancelConfirmation={cardRelease.onCancelConfirmation}
+                  releaseMessage={cardRelease.releaseMessage}
                   isDisabled={isSubmitting}
                 />
               )}
