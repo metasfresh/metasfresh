@@ -14,9 +14,9 @@ import { VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
  *    its line shows the values recalculated from the first one's posted cost price;
  *  - a second quick-input line for the same product is refused with a message naming the product, not framed as "Server error";
  *  - a revaluation with a past posting date completes; its line shows qty on hand x (new - old);
- *  - the status menu of a completed manual revaluation offers Stornieren only until it is posted, then only Schliessen;
+ *  - the status menu of a completed manual revaluation offers Annullieren only until it is posted, then only Schliessen;
  *  - the status menu of a completed manual revaluation whose posting failed before anything was booked offers
- *    Schliessen and Stornieren.
+ *    Schliessen and Annullieren.
  *
  * Runs at the accounting schema's costing level (organization level on the standard test DB);
  * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:36-38`.
@@ -228,12 +228,12 @@ A stocked product (10 on hand) gets a Kosten Neubewertung (source Manual) with a
 its current cost price, and it is completed.
 
 - Right after Complete the user opens the status menu. Reaktivieren (Reactivate) is never offered on a completed
-  revaluation. Stornieren (Void) is offered only as long as no line has its revaluation cost detail yet; the posting
-  creates the cost detail before it sets Posted = Y, so whether this first read still shows Stornieren depends on timing.
+  revaluation. Annullieren (Void) is offered only as long as no line has its revaluation cost detail yet; the posting
+  creates the cost detail before it sets Posted = Y, so whether this first read still shows Annullieren depends on timing.
 - Once the posting has finished (accounting facts exist, Posted = Y), the status menu offers only Schliessen (Close):
-  Stornieren is gone because the line is booked.
+  Annullieren is gone because the line is booked.
 
-The second read goes through the same lookup the first one primed, so when the first read showed Stornieren, the
+The second read goes through the same lookup the first one primed, so when the first read showed Annullieren, the
 second one proves the menu follows the posting instead of serving the cached answer.
     `);
 
@@ -252,8 +252,8 @@ second one proves the menu follows the posting instead of serving the cached ans
       const posted = fieldKey(await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'Posted'));
       const keys = await getStatusMenuKeys(page, recordId);
       console.log(`[INFO] right after Complete: Posted=${posted}, status menu=${JSON.stringify(keys)}`);
-      // Not asserted: whether Stornieren is offered here. It is offered until the posting has created the line's cost detail,
-      // which happens before Posted turns Y, so "Posted is not Y" does not imply "Stornieren is offered".
+      // Not asserted: whether Annullieren is offered here. It is offered until the posting has created the line's cost detail,
+      // which happens before Posted turns Y, so "Posted is not Y" does not imply "Annullieren is offered".
       test.info().annotations.push({
         type: 'status menu right after Complete',
         description: `Posted=${posted}, offered=${JSON.stringify(keys)}`,
@@ -289,7 +289,7 @@ A stocked product (10 on hand) gets a Kosten Neubewertung (source Manual) whose 
 which no accounting period exists (${DATE_ACCT_WITHOUT_PERIOD}), and it is completed. Its posting fails with
 "Period closed" before the line is booked: no cost detail is created and Posted ends as p (Period closed).
 
-The status menu then offers exactly Schliessen (Close) and Stornieren (Void): nothing was booked, so voiding is allowed;
+The status menu then offers exactly Schliessen (Close) and Annullieren (Void): nothing was booked, so voiding is allowed;
 Reaktivieren is never offered. This proves the document's id, source and posting status reach the status menu logic:
 without them it offers only Schliessen.
     `);
