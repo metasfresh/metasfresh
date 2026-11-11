@@ -239,6 +239,41 @@ public class DemandCandidateHandlerTest
 				.enqueueEventNow(Mockito.any());
 	}
 
+	/**
+	 * A non-DEMAND candidate handled here (e.g. an {@link CandidateType#UNEXPECTED_DECREASE} SHIPMENT candidate) whose
+	 * qty later DECREASES (negative qtyDelta, e.g. a shipment reactivation/reversal lowering 15 -> 5) must NOT fire a
+	 * SupplyRequiredDecreasedEvent: only a real DEMAND decrease binds/reduces supply. Before the fix the decrease branch
+	 * fired unconditionally and {@code SupplyRequiredEventCreator.verifyCandidateType} threw IllegalArgumentException
+	 * ("Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type"), swallowed to AD_Issue.
+	 * Mirror of the DEMAND-only guard already present on the qty-increase branch.
+	 */
+	@Test
+	public void onCandidateNewOrChange_unexpectedDecrease_qtyDecreased_firesNoSupplyRequiredDecreasedEvent()
+	{
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
+				.quantity(new BigDecimal("15"))
+				.date(NOW)
+				.build();
+		final Candidate candidate = Candidate.builder()
+				.type(CandidateType.UNEXPECTED_DECREASE)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.materialDescriptor(materialDescriptor)
+				.build();
+
+		// create the candidate at qty=15 (positive delta on create -> no decrease event)
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+
+		// update the SAME candidate to a lower qty=5 -> negative qtyDelta reaches the decrease branch
+		final Candidate decreasedCandidate = candidate.withQuantity(new BigDecimal("5"));
+		demandCandidateHandler.onCandidateNewOrChange(decreasedCandidate, OnNewOrChangeAdvise.DEFAULT);
+
+		// a non-DEMAND decrease must not enqueue any supply(-required-decreased) event
+		Mockito.verify(postMaterialEventService, Mockito.never())
+				.enqueueEventAfterNextCommit(Mockito.any());
+	}
+
 	@SuppressWarnings("SameParameterValue")
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{

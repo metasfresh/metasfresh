@@ -61,6 +61,10 @@ public class PostingServiceTest
 		documentPostingLogService = mock(DocumentPostingLogService.class);
 		userNotificationService = mock(DocumentPostingUserNotificationService.class);
 
+		// By default, treat the document's table as an accounting table (e.g. C_Invoice);
+		// individual tests override this for non-accounting tables.
+		when(acctDocRegistry.isAccountingTable(any())).thenReturn(true);
+
 		SpringContextHolder.registerJUnitBean(AcctDocRegistry.class, acctDocRegistry);
 		SpringContextHolder.registerJUnitBean(DocumentPostingLogService.class, documentPostingLogService);
 		SpringContextHolder.registerJUnitBean(DocumentPostingUserNotificationService.class, userNotificationService);
@@ -136,6 +140,32 @@ public class PostingServiceTest
 
 			verify(documentPostingLogService).logPostingError(any(), any());
 			verify(userNotificationService).notifyPostingError(eq(NOTIFY_USER_ID), eq(documentRef), any(Exception.class));
+		}
+	}
+
+	@Nested
+	@DisplayName("document's table is not an accounting table")
+	class NonAccountingDocument
+	{
+		/**
+		 * A document whose table has no accounting {@code Doc} provider (e.g. PP_Product_BOM, M_Forecast) can never be
+		 * posted. Previously every completeIt() still scheduled a posting, and AcctDocRegistry.get(..) threw
+		 * "No accountable document found", which PostingService swallowed into AD_Issue (~120 such entries per cucumber run).
+		 * The posting must be skipped before reaching the registry, without logging an error or notifying anyone.
+		 */
+		@Test
+		@DisplayName("skips posting entirely: AcctDocRegistry.get is never called and no posting error is logged")
+		void skipsPostingWithoutError()
+		{
+			final String nonAccountingTableName = "PP_Product_BOM";
+			when(acctDocRegistry.isAccountingTable(nonAccountingTableName)).thenReturn(false);
+			final TableRecordReference nonAccountingRef = TableRecordReference.of(nonAccountingTableName, 9649545);
+
+			postNow(nonAccountingRef);
+
+			verify(acctDocRegistry, never()).get(any(), any());
+			verify(documentPostingLogService, never()).logPostingError(any(), any());
+			verify(userNotificationService, never()).notifyPostingError(any(UserId.class), any(), any(Exception.class));
 		}
 	}
 }

@@ -63,6 +63,15 @@ public class CucumberLifeCycleSupport
 
 	private static boolean beforeAllMethodDone;
 
+	/** @return true if the infrastructure and metasfresh were started already, i.e. the DB can be accessed */
+	public static boolean isBeforeAllDone()
+	{
+		synchronized (CucumberLifeCycleSupport.class)
+		{
+			return beforeAllMethodDone;
+		}
+	}
+
 	public static void beforeAll()
 	{
 		synchronized (CucumberLifeCycleSupport.class)
