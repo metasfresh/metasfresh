@@ -334,21 +334,22 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * The cashier retries the card payment of the sale after the SumUp stub is told to accept the next checkout; as
-	 * the stub answers {@code SUCCESS} by default, this only makes the answer explicit. The new SumUp transaction is
-	 * PENDING at the stub until a step reports another status for it.
+	 * The cashier retries the card payment of the sale after the SumUp stub is told how to answer the next checkout:
+	 * {@code SUCCESS} accepts it (the stub's default; the new SumUp transaction is PENDING at the stub until a step reports
+	 * another status for it), {@code HTTP 5xx} answers with a server error, so no SumUp transaction id becomes known.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
 	 * And the card payment of POS sale sale1 is retried and the stub answers SUCCESS
+	 * And the card payment of POS sale sale1 is retried and the stub answers HTTP 5xx
 	 * </pre>
 	 */
-	@And("^the card payment of POS sale (\\S+) is retried and the stub answers SUCCESS$")
-	public void cardPaymentRetried(@NonNull final String saleIdentifier)
+	@And("^the card payment of POS sale (\\S+) is retried and the stub answers (SUCCESS|HTTP 5xx)$")
+	public void cardPaymentRetried(@NonNull final String saleIdentifier, @NonNull final String stubAnswer)
 	{
 		final Sale sale = getSale(saleIdentifier);
-		SumUpApiStub.setNextCheckoutBehavior(SumUpApiStub.CheckoutBehavior.SUCCESS);
+		settlementStepDef.stubAnswersNextCheckout(stubAnswer);
 		sale.lastCheckoutAnswer = posService.checkoutPayment(newCheckoutRequest(sale));
 		assignAcceptedStubCheckouts(sale);
 	}

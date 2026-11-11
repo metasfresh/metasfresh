@@ -789,3 +789,48 @@ Feature: POS till card sale with an unknown card result
     And the card payment of POS sale sale1 does not carry the card details of the first SumUp transaction
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
     And the card payment of POS sale sale1 has no payment receipt
+
+  # ##########################################################################
+  # Cause (i) twice, then cause (ii): checkouts A and B are released, the third checkout C gets no answer (no SumUp id) and is
+  # released too. A late approval of A is not booked: a released payment is never turned successful.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_32
+  Scenario: A late approval of an earlier released checkout is not booked after a release of a checkout without SumUp id
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId set
+    And saving a SumUp transaction works again
+    And metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
+    And SumUp API stub reports the transaction of POS sale sale1 as PENDING
+    When the card payment of POS sale sale1 is released by cashier metasfresh
+    And the card payment of POS sale sale1 is released by cashier metasfresh with confirmation expecting UNKNOWN
+    Then the card payment of POS sale sale1 has status FAILED
+    When metasfresh's clock advances by 1 seconds
+    And saving a SumUp transaction fails with a database error
+    And the card payment of POS sale sale1 is retried and the stub answers SUCCESS
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId of the latest transaction
+    And saving a SumUp transaction works again
+    And metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
+    And SumUp API stub reports the transaction of POS sale sale1 as PENDING
+    When the card payment of POS sale sale1 is released by cashier metasfresh
+    And the card payment of POS sale sale1 is released by cashier metasfresh with confirmation expecting UNKNOWN
+    Then the card payment of POS sale sale1 has status FAILED
+    When metasfresh's clock advances by 1 seconds
+    And the card payment of POS sale sale1 is retried and the stub answers HTTP 5xx
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId empty
+    When metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
+    And the card payment of POS sale sale1 is released by cashier metasfresh
+    And the card payment of POS sale sale1 is released by cashier metasfresh with confirmation expecting UNKNOWN
+    Then the card payment of POS sale sale1 has status FAILED
+    And the card payment of POS sale sale1 has 3 AD_Issues with AD_Message 'de.metas.pos.POSPayment.ReleasedAsNotCharged'
+    When SumUp API stub reports the first transaction of POS sale sale1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status FAILED
+    And the card payment of POS sale sale1 does not carry the card details of the first SumUp transaction
+    And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+    And the card payment of POS sale sale1 has no payment receipt

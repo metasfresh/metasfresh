@@ -198,17 +198,25 @@ public class POSPayment
 	}
 
 	/**
-	 * Applies a status reported by the payment processor.
-	 * <p>
-	 * A late SumUp approval never revives a payment the till already gave up on:
+	 * Applies a status reported by the payment processor. These rules are checked in this order:
+	 * <ol>
+	 * <li>a result of the released checkout ({@code releasedSumUpClientTransactionId}) leaves the payment unchanged;</li>
+	 * <li>a result of an earlier checkout leaves the payment unchanged (see {@link #isOfAnEarlierCheckout}):
 	 * <ul>
-	 * <li>an event of the released checkout leaves the payment unchanged (a SUCCESSFUL one is flagged: not booked, to be reviewed);</li>
-	 * <li>so does an event of any other earlier checkout of this payment, i.e. one naming a SumUp transaction other than the one of
-	 * the payment's current checkout (e.g. a checkout released before the last release);</li>
-	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged and flagged (a stale SUCCESSFUL event processed after a refund is flagged too: a harmless extra record for the back office);</li>
-	 * <li>PENDING on an UNKNOWN payment keeps it UNKNOWN;</li>
-	 * <li>everything else, including SUCCESSFUL on a plain FAILED / CANCELLED payment, is applied as is.</li>
+	 * <li>the result and the payment's current checkout both name a SumUp transaction, and they differ; or</li>
+	 * <li>the payment was released at least once, its current checkout names no SumUp transaction, the result names one, and
+	 * the payment does not await a result (neither PENDING nor UNKNOWN);</li>
 	 * </ul>
+	 * </li>
+	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged;</li>
+	 * <li>PENDING on an UNKNOWN payment keeps it UNKNOWN;</li>
+	 * <li>any other result is applied as is (e.g. SUCCESSFUL on a FAILED / CANCELLED payment that was never released, or on one
+	 * whose current checkout's own result it is).</li>
+	 * </ol>
+	 * A result that leaves the payment unchanged by rules 1 to 3 is flagged as a late approval not booked (to be reviewed by
+	 * the back office) if it is SUCCESSFUL. So a released payment that does not await a result is never turned SUCCESSFUL by a result naming a SumUp transaction.
+	 * Limit: while a payment awaits a result and its current checkout names no SumUp transaction yet, a result of an earlier
+	 * checkout other than the last released one cannot be told apart from the current checkout's own, and is applied.
 	 */
 	public POSPaymentRemoteUpdateResult changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
 	{
@@ -220,7 +228,7 @@ public class POSPayment
 		{
 			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful());
 		}
-		if (isOfAnotherCheckoutThanTheCurrentOne(response))
+		if (isOfAnEarlierCheckout(response))
 		{
 			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful());
 		}
@@ -249,17 +257,33 @@ public class POSPayment
 	}
 
 	/**
-	 * @return whether the result is of an earlier checkout: both the result and the payment's current checkout name a SumUp
-	 * transaction, and they differ. While the current checkout names none yet (between its start and the storing of SumUp's
-	 * answer), a result cannot be told apart from the current checkout's own and is applied: SumUp's status event of a new
-	 * checkout may arrive before its answer is stored.
+	 * @return whether the result is of an earlier checkout of this payment, not of its current one:
+	 * <ul>
+	 * <li>both the result and the payment's current checkout name a SumUp transaction, and they differ; or</li>
+	 * <li>the payment was released at least once, its current checkout names no SumUp transaction, the result names one,
+	 * and the payment does not await a result. While it awaits one (PENDING or UNKNOWN), the result may be the current
+	 * checkout's own: SumUp's status event of a new checkout may arrive before its answer is stored. Otherwise (e.g. FAILED
+	 * after a release of a checkout that got no answer) only an earlier checkout can still report.</li>
+	 * </ul>
+	 * A payment that was never released is not covered by the second case: its results are applied as before.
 	 */
-	private boolean isOfAnotherCheckoutThanTheCurrentOne(@NonNull final POSPaymentProcessResponse response)
+	private boolean isOfAnEarlierCheckout(@NonNull final POSPaymentProcessResponse response)
 	{
 		final String remoteClientTransactionId = response.getClientTransactionId();
-		return sumUpClientTransactionId != null
-				&& remoteClientTransactionId != null
-				&& !sumUpClientTransactionId.equals(remoteClientTransactionId);
+		if (remoteClientTransactionId == null)
+		{
+			return false;
+		}
+		if (sumUpClientTransactionId != null)
+		{
+			return !sumUpClientTransactionId.equals(remoteClientTransactionId);
+		}
+		return releasedSumUpClientTransactionId != null && !isAwaitingAResult();
+	}
+
+	private boolean isAwaitingAResult()
+	{
+		return isPending() || isUnknown();
 	}
 
 	/**

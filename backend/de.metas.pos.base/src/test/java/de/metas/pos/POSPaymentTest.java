@@ -129,10 +129,19 @@ class POSPaymentTest
 			assertThat(result.isLateApprovalNotBooked()).as("flag for " + status).isEqualTo(status == POSPaymentProcessingStatus.SUCCESSFUL);
 		}
 
-		// an event of another checkout (e.g. the retry) is applied as today
-		final POSPaymentRemoteUpdateResult retry = released.changingStatusFromRemote(response(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX));
+		// the retry's own event, while the retry awaits its result (PENDING, naming OTHER_TRX): applied, since that payment is not released
+		final POSPayment retrying = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING)
+				.sumUpClientTransactionId(OTHER_TRX)
+				.releasedSumUpClientTransactionId(RELEASED_TRX)
+				.build();
+		final POSPaymentRemoteUpdateResult retry = retrying.changingStatusFromRemote(response(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX));
 		assertThat(retry.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
 		assertThat(retry.isLateApprovalNotBooked()).isFalse();
+
+		// another checkout's SUCCESSFUL on the released FAILED payment naming no current checkout: not applied, flagged, since a released payment is never turned successful
+		final POSPaymentRemoteUpdateResult otherOnReleased = released.changingStatusFromRemote(response(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX));
+		assertThat(otherOnReleased.getPayment()).isEqualTo(released);
+		assertThat(otherOnReleased.isLateApprovalNotBooked()).isTrue();
 
 		// a payment that was never released (null) does not match an event without client transaction id
 		final POSPayment notReleased = cardPayment(POSPaymentProcessingStatus.FAILED);
@@ -293,5 +302,31 @@ class POSPaymentTest
 		assertThat(result.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
 		assertThat(result.getPayment().getCardProcessingDetails().getTransactionId()).isEqualTo("ext-1");
 		assertThat(result.isLateApprovalNotBooked()).isFalse();
+	}
+
+	@Test
+	void remote_releasedPaymentNamingNoCurrentCheckout_resultOfAnEarlierCheckout_appliedOnlyWhileAwaitingAResult()
+	{
+		// released twice (the last one named OTHER_TRX); the third checkout named no SumUp transaction
+		for (final POSPaymentProcessingStatus status : POSPaymentProcessingStatus.values())
+		{
+			final POSPayment payment = cardPaymentBuilder(status).releasedSumUpClientTransactionId(OTHER_TRX).build();
+			final boolean awaitingAResult = status == POSPaymentProcessingStatus.PENDING || status == POSPaymentProcessingStatus.UNKNOWN;
+
+			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response(POSPaymentProcessingStatus.SUCCESSFUL, RELEASED_TRX));
+
+			if (awaitingAResult)
+			{
+				// a new checkout's own result may arrive before its SumUp id is stored on the payment
+				assertThat(result.getPayment().getPaymentProcessingStatus()).as("status " + status).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+				assertThat(result.isLateApprovalNotBooked()).as("flag for " + status).isFalse();
+			}
+			else
+			{
+				// not awaiting a result: the result is an earlier checkout's
+				assertThat(result.getPayment()).as("status " + status).isEqualTo(payment);
+				assertThat(result.isLateApprovalNotBooked()).as("flag for " + status).isTrue();
+			}
+		}
 	}
 }
