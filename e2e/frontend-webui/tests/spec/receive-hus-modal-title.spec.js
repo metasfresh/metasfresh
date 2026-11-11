@@ -63,7 +63,7 @@ test.describe('Receive HUs modal - title', () => {
     });
   }
 
-  // the receive modal is opened from two different windows: the title is the same
+  // the receive modal is opened from three places (receipt candidates, "Logistik", delivery planning): the title is the same
   const RECEIVE_WINDOWS = [
     {
       name: 'Wareneingangsdisposition Logistik',
@@ -87,49 +87,49 @@ test.describe('Receive HUs modal - title', () => {
         page,
         request,
       }) => {
-      describeReceiveHUsCase(`Receive HUs modal title from ${receiveWindow.name} ${language}`);
-      const masterdata = await createPurchaseReceiptMasterdata({ language, productName: 'Test Product for Receive HUs modal title' });
-      const productId = masterdata.products.Product1.id;
-      const vendorId = masterdata.bpartners.VENDOR1.id;
+        describeReceiveHUsCase(`Receive HUs modal title from ${receiveWindow.name} ${language}`);
+        const masterdata = await createPurchaseReceiptMasterdata({ language, productName: 'Test Product for Receive HUs modal title' });
+        const productId = masterdata.products.Product1.id;
+        const vendorId = masterdata.bpartners.VENDOR1.id;
 
-      // REST setup session on the `request` fixture (not page.request: that would log the browser in)
-      await authenticateRestSetupSession(request);
+        // REST setup session on the `request` fixture (not page.request: that would log the browser in)
+        await authenticateRestSetupSession(request);
 
-      const purchaseOrderId = (await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, 'NEW', null, null, [])).id;
-      await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
-        { op: 'replace', path: 'C_BPartner_ID', value: Number(vendorId) },
-      ]);
-      await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID, 'NEW', [
-        { op: 'replace', path: 'M_Product_ID', value: Number(productId) },
-        { op: 'replace', path: 'QtyEntered', value: 5 },
-      ]);
-      await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
-        { op: 'replace', path: 'DocAction', value: 'CO' },
-      ]);
+        const purchaseOrderId = (await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, 'NEW', null, null, [])).id;
+        await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
+          { op: 'replace', path: 'C_BPartner_ID', value: Number(vendorId) },
+        ]);
+        await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID, 'NEW', [
+          { op: 'replace', path: 'M_Product_ID', value: Number(productId) },
+          { op: 'replace', path: 'QtyEntered', value: 5 },
+        ]);
+        await patchDocument(request, PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
+          { op: 'replace', path: 'DocAction', value: 'CO' },
+        ]);
 
-      // the receipt-schedule row is created asynchronously: poll the window's own view for this order
-      const ownRows = () =>
-        fetchOwnViewRows({
-          request,
-          windowId: receiveWindow.windowId,
-          orderBy: receiveWindow.orderBy,
-          isOwnRow: (row) => receiveWindow.isOwnRow(row, { productId, purchaseOrderId }),
-        });
-      await expect.poll(async () => (await ownRows()).length, { timeout: 90000, intervals: [1000, 2000] }).toBe(1);
-      const rowIds = (await ownRows()).map((row) => Number(row.id));
+        // the receipt-schedule row is created asynchronously: poll the window's own view for this order
+        const ownRows = () =>
+          fetchOwnViewRows({
+            request,
+            windowId: receiveWindow.windowId,
+            orderBy: receiveWindow.orderBy,
+            isOwnRow: (row) => receiveWindow.isOwnRow(row, { productId, purchaseOrderId }),
+          });
+        await expect.poll(async () => (await ownRows()).length, { timeout: 90000, intervals: [1000, 2000] }).toBe(1);
+        const rowIds = (await ownRows()).map((row) => Number(row.id));
 
-      await LoginPage.goto();
-      await LoginPage.login(masterdata.login.user);
-      await DashboardPage.expectVisible();
+        await LoginPage.goto();
+        await LoginPage.login(masterdata.login.user);
+        await DashboardPage.expectVisible();
 
-      await openWindowOnOwnRows(page, receiveWindow.windowId, rowIds);
+        await openWindowOnOwnRows(page, receiveWindow.windowId, rowIds);
 
-      const row = page.locator('table tbody tr').first();
-      await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      await selectRowUnlessSelected(row);
+        const row = page.locator('table tbody tr').first();
+        await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+        await selectRowUnlessSelected(row);
 
-      await ReceiptCandidatesPage.executeDefaultQuickAction();
-      await expect(page.locator(MODAL_TITLE).first()).toHaveText(expectedTitle, { timeout: SLOW_ACTION_TIMEOUT });
+        await ReceiptCandidatesPage.executeDefaultQuickAction();
+        await expect(page.locator(MODAL_TITLE).first()).toHaveText(expectedTitle, { timeout: SLOW_ACTION_TIMEOUT });
       });
     }
   }
