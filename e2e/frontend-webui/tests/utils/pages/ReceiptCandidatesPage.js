@@ -1207,7 +1207,8 @@ export class ReceiptCandidatesPage {
         await page.mouse.move(x, dragToY, { steps: 5 });
       }
       await page.mouse.up();
-      await page.waitForTimeout(500);
+      // wait until the scroll position moved (the caller asserts that it did); a press that does not scroll just times out here
+      await expect.poll(async () => (await geometry()).scrollTop, { timeout: 5000 }).not.toBe(before.scrollTop).catch(() => {});
 
       const after = await geometry();
       return { scrollbarWidth: before.scrollbarWidth, scrollTopBefore: before.scrollTop, scrollTopAfter: after.scrollTop };
