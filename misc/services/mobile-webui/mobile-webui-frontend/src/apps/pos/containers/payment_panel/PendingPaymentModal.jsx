@@ -94,6 +94,7 @@ const PendingPaymentModal = ({
   useEffect(() => {
     cardRelease.reset();
     setCheckFailed(false);
+    setSubmitting(false);
     setNow(Date.now());
     if (!unknownCardPayment_uuid) {
       return;
