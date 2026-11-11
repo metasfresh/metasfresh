@@ -15,6 +15,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -22,6 +23,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -30,6 +32,7 @@ import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,6 +114,14 @@ public class PickingJobRepository
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
 		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBuilderDraftJobsByPickerId(ValueRestriction.equalsToOrNull(query.getPickerId()));
+
+		// A drafted job whose schedules were all delivered/closed has nothing left to pick, so it must not be offered as "already started".
+		// Applied here (not in queryBuilderDraftJobsByPickerId) because abort/unassign must still see such stranded drafts.
+		queryBuilder.addInSubQueryFilter(
+				I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID,
+				I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID,
+				queryLinesWithSomethingToPick());
+
 		final Set<BPartnerId> onlyCustomerIds = query.getOnlyCustomerIds();
 		if (!onlyCustomerIds.isEmpty())
 		{
@@ -166,6 +177,30 @@ public class PickingJobRepository
 
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
 				.streamPickingJobReferences(pickingJobIds);
+	}
+
+	/**
+	 * Picking job lines whose shipment schedule still has something to pick.
+	 * Mirrors the "nothing left to pick" part of the "new orders" view {@code M_Packageable_V}: active, not processed, not closed,
+	 * and QtyToDeliver or QtyPickList greater than zero. (The view additionally filters on other dimensions, e.g. the customer's
+	 * SO credit status, which are out of scope for this launcher guard.)
+	 */
+	private IQuery<I_M_Picking_Job_Line> queryLinesWithSomethingToPick()
+	{
+		final IQueryBuilder<I_M_ShipmentSchedule> schedulesQueryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
+		schedulesQueryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addCompareFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.addCompareFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		final IQuery<I_M_ShipmentSchedule> schedulesWithSomethingToPickQuery = schedulesQueryBuilder.create();
+
+		return queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedulesWithSomethingToPickQuery)
+				.create();
 	}
 
 	public boolean hasDraftJobsUsingPickingSlot(
