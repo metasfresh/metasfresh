@@ -187,10 +187,23 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
-		final int backwardStep = Math.min(-leadTimeDays + 1, 0);
-		final LocalDate preparationDate = WorkdayCalculator.workday(datePromised.toLocalDate(), backwardStep);
+		final LocalDate preparationDate = computeLeadTimePreparationDate(datePromised.toLocalDate(), leadTimeDays);
 		order.setPreparationDate(TimeUtil.asTimestamp(preparationDate.atStartOfDay(timeZone)));
 		return true;
+	}
+
+	/**
+	 * The lead-time provisioning date: {@code workday(deliveryDate, min(-leadTimeDays + 1, 0))} (Mon-Fri business days).
+	 * The backward step is clamped to {@code <= 0} so a 0 or negative lead time never pushes the result <i>after</i> the
+	 * delivery date (invariant: PreparationDate &lt;= DatePromised, always). Shared by the order-header path
+	 * ({@link #setPreparationDateFromLeadTime}) and the per-line / shipment-schedule path ({@link #computePreparationDate})
+	 * so both derive exactly the same date.
+	 */
+	@VisibleForTesting
+	static LocalDate computeLeadTimePreparationDate(@NonNull final LocalDate deliveryDate, final int leadTimeDays)
+	{
+		final int backwardStep = Math.min(-leadTimeDays + 1, 0);
+		return WorkdayCalculator.workday(deliveryDate, backwardStep);
 	}
 
 	/**
@@ -217,6 +230,27 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final ZonedDateTime deliveryDate)
 	{
 		final ZoneId timeZone = orderBL.getTimeZone(order);
+
+		// Shipper lead time (field presence = opt-in), sales orders only: derive the per-line / shipment-schedule
+		// PreparationDate backward from the (per-line) delivery date, exactly as the header does
+		// (setPreparationDateFromLeadTime). This path feeds the shipment schedule's PreparationDate
+		// (ShipmentScheduleOrderReferenceProvider), which in turn dates the material-demand event
+		// (ShipmentScheduleEffectiveBL.getPreparationDate -> MD_Candidate / stock projection). Without it the schedule
+		// would fall back to the delivery date and the downstream stock views would not reflect the lead time (task 28993).
+		final Integer leadTimeDays = order.isSOTrx() ? getLeadTimeDaysOrNull(order) : null;
+		if (leadTimeDays != null)
+		{
+			// IsFixedPreparationDate='Y' pins the prep date: the header keeps its manually set value
+			// (setPreparationDateFromLeadTime returns early), so mirror that value here; fall back to the delivery
+			// date when the header carries none.
+			if (order.isFixedPreparationDate())
+			{
+				final ZonedDateTime headerPreparationDate = TimeUtil.asZonedDateTime(order.getPreparationDate(), timeZone);
+				return headerPreparationDate != null ? headerPreparationDate : deliveryDate;
+			}
+			return computeLeadTimePreparationDate(deliveryDate.toLocalDate(), leadTimeDays).atStartOfDay(timeZone);
+		}
+
 		// the tour calculation needs a bpartner location; if absent, fall back to the order's stored preparation date
 		if (BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
 		{
