@@ -318,7 +318,7 @@ without them it offers only Schliessen.
         .toBe('p');
     });
 
-    await test.step('The status menu offers exactly Schliessen and Stornieren', async () => {
+    await test.step('The status menu offers exactly Schliessen and Annullieren', async () => {
       const keys = await getStatusMenuKeys(page, recordId);
       console.log(`[INFO] posting failed: status menu=${JSON.stringify(keys)}`);
       expect(keys).toEqual(['CL', 'VO']);
