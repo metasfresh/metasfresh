@@ -94,10 +94,10 @@ function countBackgroundSelectedRows(page) {
 }
 
 /** First point inside `wrapperSelector`'s client box that hits the wrapper itself or a direct child outside `js-not-unselect`. */
-function findBlankPoint(page, wrapperSelector, excludeModal) {
+function findBlankPoint(page, wrapperSelector, shouldExcludeModal) {
   return page.evaluate(
-    ([sel, noModal]) => {
-      const wrappers = [...document.querySelectorAll(sel)].filter((w) => !noModal || !w.closest('.panel-modal'));
+    ([sel, shouldExcludeModal]) => {
+      const wrappers = [...document.querySelectorAll(sel)].filter((w) => !shouldExcludeModal || !w.closest('.panel-modal'));
       for (const el of wrappers) {
         const r = el.getBoundingClientRect();
         for (let y = r.top + el.clientTop + 2; y < r.top + el.clientTop + el.clientHeight; y += 4) {
@@ -111,7 +111,7 @@ function findBlankPoint(page, wrapperSelector, excludeModal) {
       }
       return null;
     },
-    [wrapperSelector, excludeModal]
+    [wrapperSelector, shouldExcludeModal]
   );
 }
 
@@ -159,7 +159,7 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     describeCase('Scrollbar thumb drag keeps the selection');
     await openReceiveModalAndSelectRow(page);
 
-    const result = await ReceiptCandidatesPage.pressVerticalScrollbarOfModal({ drag: true });
+    const result = await ReceiptCandidatesPage.pressVerticalScrollbarOfModal({ isDrag: true });
 
     await expectRowSelectedWithPanel(page, 'after the scrollbar press');
     expect(result.scrollTopAfter, 'dragging the scrollbar thumb scrolled the content').toBeGreaterThan(result.scrollTopBefore);

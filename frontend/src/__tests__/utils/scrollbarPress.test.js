@@ -2,12 +2,12 @@ import { isMouseDownOnScrollbar } from "../../utils/scrollbarPress";
 
 /**
  * Builds a fake mousedown event on a box at (left=100, top=50) with border 1px, 200x100 client box and the given
- * scrollbar sizes; `scroll` controls whether the content overflows.
+ * scrollbar sizes; `isScrollable` controls whether the content overflows.
  */
 const eventAt = (
   clientX,
   clientY,
-  { vBar = 15, hBar = 0, scroll = true } = {}
+  { vBar = 15, hBar = 0, isScrollable = true } = {}
 ) => {
   const border = 1;
   const clientWidth = 200;
@@ -23,8 +23,8 @@ const eventAt = (
     clientTop: border,
     clientWidth,
     clientHeight,
-    scrollHeight: scroll ? 400 : clientHeight,
-    scrollWidth: scroll ? 400 : clientWidth,
+    scrollHeight: isScrollable ? 400 : clientHeight,
+    scrollWidth: isScrollable ? 400 : clientWidth,
   };
   return { clientX, clientY, target };
 };
@@ -51,7 +51,7 @@ describe("isMouseDownOnScrollbar", () => {
   });
 
   it("is false for a point on the border of a non-scrollable box", () => {
-    expect(isMouseDownOnScrollbar(eventAt(308, 100, { scroll: false }))).toBe(
+    expect(isMouseDownOnScrollbar(eventAt(308, 100, { isScrollable: false }))).toBe(
       false
     );
   });

@@ -1148,18 +1148,18 @@ export class ReceiptCandidatesPage {
 
   /**
    * Presses the mouse on the VERTICAL SCROLLBAR of the HU editor modal's list wrapper (`.document-list-wrapper`):
-   * a real `mouse.down()`/`mouse.up()` at a point inside the scrollbar, like a user. With `drag`, the thumb is grabbed
+   * a real `mouse.down()`/`mouse.up()` at a point inside the scrollbar, like a user. With `isDrag`, the thumb is grabbed
    * and dragged down instead of pressing the track. The target of such a mousedown is the wrapper itself, which is
    * what the table's click-outside handling sees.
    *
    * The browser must draw classic scrollbars (the spec removes `--hide-scrollbars`) and the modal content must
    * overflow (small viewport); both are asserted here, so a missing scrollbar fails loudly instead of passing vacuously.
    *
-   * @param {{drag?: boolean}} [options]
+   * @param {{isDrag?: boolean}} [options]
    * @returns {Promise<{scrollbarWidth: number, scrollTopBefore: number, scrollTopAfter: number}>}
    */
-  static async pressVerticalScrollbarOfModal({ drag = false } = {}) {
-    return await test.step(`ReceiptCandidatesPage - ${drag ? 'Drag' : 'Press'} the modal's vertical scrollbar`, async () => {
+  static async pressVerticalScrollbarOfModal({ isDrag = false } = {}) {
+    return await test.step(`ReceiptCandidatesPage - ${isDrag ? 'Drag' : 'Press'} the modal's vertical scrollbar`, async () => {
       const page = getPage();
       const wrapper = page.locator('.panel-modal .document-list-wrapper').first();
       await wrapper.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -1187,7 +1187,7 @@ export class ReceiptCandidatesPage {
       const x = before.left + before.clientLeft + before.clientWidth + before.scrollbarWidth / 2;
       let y;
       let dragToY;
-      if (drag) {
+      if (isDrag) {
         const thumbHeight = (before.clientHeight * before.clientHeight) / before.scrollHeight;
         y = before.top + before.clientTop + thumbHeight / 2; // thumb sits at the top at scrollTop 0
         dragToY = y + 60;
@@ -1203,7 +1203,7 @@ export class ReceiptCandidatesPage {
 
       await page.mouse.move(x, y);
       await page.mouse.down();
-      if (drag) {
+      if (isDrag) {
         await page.mouse.move(x, dragToY, { steps: 5 });
       }
       await page.mouse.up();
