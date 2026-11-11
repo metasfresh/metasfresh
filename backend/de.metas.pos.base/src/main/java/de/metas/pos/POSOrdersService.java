@@ -19,6 +19,7 @@ import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
+import de.metas.pos.payment_gateway.sumup.SumUpUtils;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.tax.api.ITaxDAO;
@@ -80,10 +81,10 @@ public class POSOrdersService
 	@NonNull private final Sleeper sleeper;
 
 	/**
-	 * Waits between the attempts of a retried write; a test can record the waits instead.
+	 * Waits between the attempts of a retried write. Without such a bean, the plain sleep; a test can record or pause the waits instead.
 	 */
 	@FunctionalInterface
-	interface Sleeper
+	public interface Sleeper
 	{
 		void sleep(@NonNull Duration duration);
 	}
@@ -96,9 +97,10 @@ public class POSOrdersService
 			@NonNull final POSOrderProcessingServices posOrderProcessingServices,
 			@NonNull final SumUpService sumUpService,
 			@NonNull final POSCardReleaseWait cardReleaseWait,
-			@NonNull final POSCardReaderCheckoutTerminator cardReaderCheckoutTerminator)
+			@NonNull final POSCardReaderCheckoutTerminator cardReaderCheckoutTerminator,
+			@NonNull final Optional<Sleeper> sleeper)
 	{
-		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, sumUpService, cardReleaseWait, cardReaderCheckoutTerminator, POSOrdersService::sleepUninterruptibly);
+		this(posTerminalService, ordersRepository, currencyRepository, posOrderProcessingServices, sumUpService, cardReleaseWait, cardReaderCheckoutTerminator, sleeper.orElse(POSOrdersService::sleepUninterruptibly));
 	}
 
 	@VisibleForTesting
@@ -193,16 +195,47 @@ public class POSOrdersService
 			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
 			@NonNull final POSPaymentProcessResponse response)
 	{
+		createCardPaymentIssueNoFail(order, posOrderAndPaymentId, response.getClientTransactionId(), new AdempiereException(MSG_LateApprovalNotBooked), "the late approval");
+	}
+
+	/**
+	 * Records an AD_Issue for the back office on the card payment, in its own transaction and in the order's client / org,
+	 * naming the POS order and SumUp's client transaction id (by which the back office finds the charge in the SumUp dashboard).
+	 *
+	 * @throws RuntimeException if the AD_Issue cannot be written
+	 */
+	private void createCardPaymentIssue(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@Nullable final String sumUpClientTransactionId,
+			@NonNull final AdempiereException issue)
+	{
 		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
 		{
-			errorManager.createIssue(new AdempiereException(MSG_LateApprovalNotBooked)
+			errorManager.createIssue(issue
 					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
-					.setParameter("sumUpClientTransactionId", response.getClientTransactionId())
-					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, posOrderAndPaymentId.getPaymentId())));
+					.setParameter("sumUpClientTransactionId", sumUpClientTransactionId)
+					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId())));
+		}
+	}
+
+	/**
+	 * Like {@link #createCardPaymentIssue}, but a failure to write the AD_Issue is only logged ("Failed recording {what} of ...").
+	 */
+	private void createCardPaymentIssueNoFail(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@Nullable final String sumUpClientTransactionId,
+			@NonNull final AdempiereException issue,
+			@NonNull final String what)
+	{
+		try
+		{
+			createCardPaymentIssue(order, orderAndPaymentId, sumUpClientTransactionId, issue);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed recording the late approval of {} as AD_Issue. Ignored.", posOrderAndPaymentId, ex);
+			logger.warn("Failed recording {} of {} as AD_Issue. Ignored.", what, orderAndPaymentId, ex);
 		}
 	}
 
@@ -441,9 +474,15 @@ public class POSOrdersService
 
 			try
 			{
+				final AtomicReference<ImmutableList<POSPaymentProcessResponse>> lateApprovals = new AtomicReference<>(ImmutableList.of());
 				trxManager.runInNewTrx(() -> ordersRepository.updatePaymentByIdForUpdate(
 						orderAndPaymentId,
-						(lockedOrder, payment) -> payment.changingStatusFromSendResult(response)));
+						(lockedOrder, payment) -> {
+							final POSPayment answered = applyOwnFinalSumUpResult(payment.changingStatusFromSendResult(response));
+							lateApprovals.set(findLateApprovalsOfEarlierCheckouts(orderAndPaymentId, answered));
+							return answered;
+						}));
+				lateApprovals.get().forEach(lateApproval -> recordLateApprovalNotBooked(order, orderAndPaymentId, lateApproval));
 				return true;
 			}
 			catch (final Exception ex)
@@ -459,6 +498,48 @@ public class POSOrdersService
 
 		recordCardResultNotStored(order, orderAndPaymentId, response, lastFailure);
 		return false;
+	}
+
+	/**
+	 * The card payment's own SumUp transaction, as metasfresh stores it, resolves a PENDING card payment naming it, if that
+	 * transaction is final: its status event may have reached the payment before the payment named it, and was then not applied
+	 * (see {@link POSPayment#SUMUP_CLOCK_SKEW_ALLOWANCE}), or it was lost. Reads the database only (no SumUp call).
+	 *
+	 * @return the payment with the stored final result applied (as SumUp's status event does), else the payment unchanged
+	 */
+	private POSPayment applyOwnFinalSumUpResult(@NonNull final POSPayment payment)
+	{
+		if (!payment.getPaymentMethod().isCard() || !payment.isPending())
+		{
+			return payment;
+		}
+		return findOwnSumUpTransaction(payment)
+				.filter(sumUpTrx -> !sumUpTrx.getStatus().isPending())
+				.map(sumUpTrx -> payment.changingStatusFromRemote(SumUpUtils.extractProcessResponse(sumUpTrx)).getPayment())
+				.orElse(payment);
+	}
+
+	/**
+	 * Step 3 of a card checkout, after its answer was applied: the SumUp approvals of earlier checkouts of the payment that
+	 * reached it while the checkout awaited its SumUp id (approved since the checkout started, see
+	 * {@link POSPayment#isLateApprovalOfAnEarlierCheckout}). They were neither applied nor flagged then, as each might have been
+	 * the checkout's own approval. Reads the database only (no SumUp call).
+	 */
+	private ImmutableList<POSPaymentProcessResponse> findLateApprovalsOfEarlierCheckouts(
+			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@NonNull final POSPayment payment)
+	{
+		final Instant startedAt = payment.getCardCheckoutStartedAt();
+		if (startedAt == null)
+		{
+			return ImmutableList.of();
+		}
+		return sumUpService.listSuccessfulTransactionsByPOSRefUpdatedSince(toSumUpPOSRef(orderAndPaymentId), startedAt)
+				.stream()
+				.filter(sumUpTrx -> !sumUpTrx.isRefunded())
+				.map(SumUpUtils::extractProcessResponse)
+				.filter(payment::isLateApprovalOfAnEarlierCheckout)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static boolean isDatabaseFailure(@NonNull final Throwable ex)
@@ -488,17 +569,9 @@ public class POSOrdersService
 		logger.error("The card checkout result could not be stored: posOrderExternalId={}, {}, sumUpClientTransactionId={}, status={}, indeterminate={}",
 				order.getExternalId().getAsString(), orderAndPaymentId, clientTransactionId, response.getStatus(), response.isIndeterminate(), cause);
 
-		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
-		{
-			trxManager.runInNewTrx(() -> errorManager.createIssue(new AdempiereException(cause, MSG_CardResultNotStored, clientTransactionId != null ? clientTransactionId : "")
-					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
-					.setParameter("sumUpClientTransactionId", clientTransactionId)
-					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId()))));
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed recording the unstored card checkout result of {} as AD_Issue. Ignored.", orderAndPaymentId, ex);
-		}
+		createCardPaymentIssueNoFail(order, orderAndPaymentId, clientTransactionId,
+				new AdempiereException(cause, MSG_CardResultNotStored, clientTransactionId != null ? clientTransactionId : ""),
+				"the unstored card checkout result");
 	}
 
 	/**
@@ -645,6 +718,43 @@ public class POSOrdersService
 		}));
 	}
 
+	/**
+	 * @return the card payments to be reconciled by the background sweep, case (c), oldest first: PENDING card payments naming a
+	 * SumUp transaction that metasfresh stores as final (see {@link #reconcileCardPaymentWithItsSumUpTransaction})
+	 */
+	public ImmutableList<POSOrderAndPaymentId> getCardPaymentIdsToReconcile()
+	{
+		try (final Stream<POSOrderAndPaymentId> stream = ordersRepository.streamPendingCardPaymentsNamingAFinalSumUpTransaction())
+		{
+			return stream.collect(ImmutableList.toImmutableList());
+		}
+	}
+
+	/**
+	 * Background sweep, case (c): a PENDING card payment naming a SumUp transaction that metasfresh stores as final, whose status
+	 * event did not resolve the payment (it was lost, or it arrived before the payment named the transaction): the stored result
+	 * is applied as SumUp's status event does ({@link #updatePaymentStatusFromRemoteAndTryCompleteOrder}), so the same rules hold,
+	 * and the order is completed if it can be. Reads the database only (no SumUp call). Does nothing if the payment no longer qualifies.
+	 */
+	public void reconcileCardPaymentWithItsSumUpTransaction(@NonNull final POSOrderAndPaymentId orderAndPaymentId)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		final POSPayment payment = ordersRepository.getById(orderAndPaymentId.getOrderId()).getPaymentById(orderAndPaymentId.getPaymentId());
+		if (!payment.getPaymentMethod().isCard() || !payment.isPending())
+		{
+			return;
+		}
+
+		final SumUpTransaction ownTransaction = findOwnSumUpTransaction(payment).orElse(null);
+		if (ownTransaction == null || ownTransaction.getStatus().isPending())
+		{
+			return;
+		}
+
+		updatePaymentStatusFromRemoteAndTryCompleteOrder(orderAndPaymentId, SumUpUtils.extractProcessResponse(ownTransaction));
+	}
+
 	private static boolean isUnknownCardPaymentNamingSumUpTransaction(@NonNull final POSPayment payment)
 	{
 		return payment.isUnknownCardPayment() && payment.getSumUpClientTransactionId() != null;
@@ -747,17 +857,7 @@ public class POSOrdersService
 			@NonNull final Exception lookupFailure)
 	{
 		final String clientTransactionId = order.getPaymentById(orderAndPaymentId.getPaymentId()).getSumUpClientTransactionId();
-		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
-		{
-			errorManager.createIssue(new AdempiereException(lookupFailure, MSG_SumUpLookupFailed)
-					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
-					.setParameter("sumUpClientTransactionId", clientTransactionId)
-					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId())));
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed recording the failed SumUp lookup of {} as AD_Issue. Ignored.", orderAndPaymentId, ex);
-		}
+		createCardPaymentIssueNoFail(order, orderAndPaymentId, clientTransactionId, new AdempiereException(lookupFailure, MSG_SumUpLookupFailed), "the failed SumUp lookup");
 	}
 
 	/**
@@ -981,14 +1081,8 @@ public class POSOrdersService
 			@NonNull final POSPayment released,
 			@NonNull final UserId cashierId)
 	{
-		try (final IAutoCloseable ignored = SumUpContext.temporarySwitchTo(order.getClientAndOrgId()))
-		{
-			errorManager.createIssue(new AdempiereException(MSG_ReleasedAsNotCharged)
-					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
-					.setParameter("sumUpClientTransactionId", released.getSumUpClientTransactionId())
-					.setParameter("releasedByUserId", cashierId.getRepoId())
-					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId())));
-		}
+		createCardPaymentIssue(order, orderAndPaymentId, released.getSumUpClientTransactionId(),
+				new AdempiereException(MSG_ReleasedAsNotCharged).setParameter("releasedByUserId", cashierId.getRepoId()));
 	}
 
 	public POSOrder refundPayment(

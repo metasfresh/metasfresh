@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 
 @Data
 public class POSPayment
@@ -29,11 +30,12 @@ public class POSPayment
 	 * checkout started: about 30 s beyond this allowance. That checkout is caught by its released id anyway, whenever it names
 	 * one; every checkout before it is at least two release waits older.
 	 * <p>
-	 * Accepted limit: if SumUp's clock runs more than this behind, a result of the current checkout that arrives before the
-	 * checkout's SumUp id is stored on the payment is taken as an earlier checkout's: it is not applied, and a SUCCESSFUL one is
-	 * recorded for the back office as a late approval not booked. The SumUp poller does not bring it again (it re-reads only
-	 * PENDING SumUp transactions); a later result of that transaction, e.g. the back office's update of it, names the stored id
-	 * and is applied.
+	 * If SumUp's clock runs more than this behind, a result of the current checkout that arrives before the checkout's SumUp id
+	 * is stored on the payment (step 3 of the checkout) looks like an earlier checkout's: it is not applied then, and, while the
+	 * checkout awaits its SumUp id, not flagged as a late approval either. Once step 3 stores the id, the checkout's own SumUp
+	 * transaction, as metasfresh stores it, is applied if it is final (so the current checkout's result is not lost), and an
+	 * approval of another checkout that arrived meanwhile is flagged then (see {@link #isLateApprovalOfAnEarlierCheckout}). A
+	 * PENDING card payment naming a SumUp transaction that is final is also reconciled by the background sweep.
 	 */
 	static final Duration SUMUP_CLOCK_SKEW_ALLOWANCE = Duration.ofSeconds(60);
 
@@ -243,7 +245,8 @@ public class POSPayment
 	 * checkout's step 3 stores it).</li>
 	 * </ol>
 	 * A SUCCESSFUL result that leaves the payment unchanged by rules 1 to 3 is flagged as a late approval not booked (to be
-	 * reviewed by the back office).
+	 * reviewed by the back office), except one left unchanged by rule 2 only for its creation time while the current checkout
+	 * awaits its SumUp id: it may be that checkout's own approval, so step 3 decides (see {@link #isLateApprovalOfAnEarlierCheckout}).
 	 */
 	public POSPaymentRemoteUpdateResult changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
 	{
@@ -257,7 +260,9 @@ public class POSPayment
 		}
 		if (isOfAnEarlierCheckout(response))
 		{
-			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful());
+			// while the current checkout awaits its SumUp id, only the creation time can make it an earlier checkout's: it may be the
+			// current checkout's own approval (SumUp's clock behind); which it is shows when step 3 stores the id, which flags it then
+			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful() && !isAwaitingItsSumUpId());
 		}
 		if (isDeleted() && remoteStatus.isSuccessful())
 		{
@@ -316,6 +321,22 @@ public class POSPayment
 		return remoteClientTransactionId != null && releasedSumUpClientTransactionId != null && !isAwaitingAResult();
 	}
 
+	/**
+	 * For step 3 of a card checkout, once the checkout's SumUp id is stored: whether the given result, which may have arrived
+	 * while the checkout awaited that id (and was then neither applied nor flagged, see {@link #changingStatusFromRemote}), is a
+	 * SumUp approval of an earlier checkout of this payment, to be flagged as a late approval not booked. It is one if it is
+	 * SUCCESSFUL, names neither the current checkout's SumUp transaction nor the released one (whose results are flagged when they
+	 * arrive), and its SumUp transaction was created more than {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started.
+	 */
+	public boolean isLateApprovalOfAnEarlierCheckout(@NonNull final POSPaymentProcessResponse response)
+	{
+		final String remoteClientTransactionId = response.getClientTransactionId();
+		return response.getStatus().isSuccessful()
+				&& !Objects.equals(sumUpClientTransactionId, remoteClientTransactionId)
+				&& !Objects.equals(releasedSumUpClientTransactionId, remoteClientTransactionId)
+				&& isCreatedBeforeTheCurrentCheckoutStarted(response);
+	}
+
 	private boolean isCreatedBeforeTheCurrentCheckoutStarted(@NonNull final POSPaymentProcessResponse response)
 	{
 		final Instant transactionCreated = response.getTransactionCreated();
@@ -327,6 +348,14 @@ public class POSPayment
 	private boolean isAwaitingAResult()
 	{
 		return isPending() || isUnknown();
+	}
+
+	/**
+	 * @return whether the current card checkout awaits its step 3, which stores the checkout's SumUp id (PENDING, naming none yet)
+	 */
+	private boolean isAwaitingItsSumUpId()
+	{
+		return isPending() && sumUpClientTransactionId == null;
 	}
 
 	/**

@@ -86,6 +86,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,6 +163,9 @@ public class POS_CardSale_StepDef
 		@Nullable POSCardPaymentCheckResult lastCheckResult;
 		// the order the till got back from its last card checkout
 		@Nullable POSOrder lastCheckoutAnswer;
+		// a card checkout running in the background, paused before it retries storing SumUp's answer
+		@Nullable Future<POSOrder> pausedCheckout;
+		@Nullable ExecutorService pausedCheckoutExecutor;
 
 		private Sale(
 				@NonNull final POSTerminalId terminalId,
@@ -1090,6 +1094,102 @@ public class POS_CardSale_StepDef
 		{
 			return false; // the stub records the checkout before it knows its transaction; try again
 		}
+	}
+
+	/**
+	 * The till checks out the card payment of the sale on a background thread, and the checkout pauses in its wait before it
+	 * retries storing SumUp's answer (its step 3; a scenario makes the first attempt fail with
+	 * {@code saving the card payment of a POS sale fails with a database error for the next 1 attempt}). Returns once the
+	 * checkout paused: it holds no lock and no transaction then, so SumUp's results can reach metasfresh "before the checkout
+	 * stored SumUp's answer". Continued by {@code the till's card checkout of POS sale ... retries storing SumUp's answer}.
+	 * The SumUp transaction the stub accepted for the checkout is assigned to the sale.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the sale was created by {@code a POS card sale ... is prepared at ...}; the first attempt of storing
+	 * SumUp's answer fails
+	 * @cucumber.example
+	 * <pre>
+	 * When the card payment of POS sale sale1 is checked out, the checkout pausing before it retries storing SumUp's answer
+	 * </pre>
+	 */
+	@And("^the card payment of POS sale (\\S+) is checked out, the checkout pausing before it retries storing SumUp's answer$")
+	public void cardPaymentCheckedOutPausingBeforeRetry(@NonNull final String saleIdentifier) throws InterruptedException
+	{
+		final Sale sale = getSale(saleIdentifier);
+		assertThat(sale.pausedCheckout).as("paused card checkout of POS sale %s", saleIdentifier).isNull();
+		SumUpApiStub.setNextCheckoutBehavior(SumUpApiStub.CheckoutBehavior.SUCCESS);
+		POSCardCheckoutRetryPause.pauseNextWait();
+
+		final Properties ctx = Env.getCtx();
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		sale.pausedCheckoutExecutor = executor;
+		sale.pausedCheckout = executor.submit(() -> {
+			try (final IAutoCloseable ignored = Env.switchContext(ctx))
+			{
+				return posService.checkoutPayment(newCheckoutRequest(sale));
+			}
+		});
+
+		POSCardCheckoutRetryPause.awaitPaused();
+		assignAcceptedStubCheckouts(sale);
+	}
+
+	/**
+	 * Lets the paused card checkout of the sale (see {@code the card payment of POS sale ... is checked out, the checkout
+	 * pausing before it retries storing SumUp's answer}) retry storing SumUp's answer, and waits (at most 60 s) until the
+	 * checkout returned the order to the till.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the till's card checkout of POS sale sale1 retries storing SumUp's answer
+	 * </pre>
+	 */
+	@And("^the till's card checkout of POS sale (\\S+) retries storing SumUp's answer$")
+	public void pausedCardCheckoutRetries(@NonNull final String saleIdentifier) throws Exception
+	{
+		final Sale sale = getSale(saleIdentifier);
+		final Future<POSOrder> checkout = sale.pausedCheckout;
+		final ExecutorService executor = sale.pausedCheckoutExecutor;
+		assertThat(checkout).as("paused card checkout of POS sale %s", saleIdentifier).isNotNull();
+		assertThat(executor).isNotNull();
+		try
+		{
+			POSCardCheckoutRetryPause.resume();
+			sale.lastCheckoutAnswer = checkout.get(60, TimeUnit.SECONDS);
+		}
+		finally
+		{
+			executor.shutdownNow();
+			sale.pausedCheckout = null;
+			sale.pausedCheckoutExecutor = null;
+		}
+	}
+
+	/**
+	 * Lets a card checkout still paused at the end of a scenario go on, so that it does not hang.
+	 */
+	@After
+	public void resumePausedCardCheckout()
+	{
+		POSCardCheckoutRetryPause.reset();
+	}
+
+	/**
+	 * From now on, SumUp's clock runs the given number of seconds behind metasfresh's: a transaction SumUp creates for a
+	 * checkout is timestamped that much before metasfresh's time (see {@link SumUpApiStub#setClockBehind}). Reset after
+	 * every scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given SumUp's clock runs 61 seconds behind metasfresh's
+	 * </pre>
+	 */
+	@And("^SumUp's clock runs (\\d+) seconds behind metasfresh's$")
+	public void sumUpClockBehind(final int seconds)
+	{
+		SumUpApiStub.setClockBehind(Duration.ofSeconds(seconds));
 	}
 
 	/**

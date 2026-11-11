@@ -397,6 +397,42 @@ class POSPaymentTest
 		assertThat(refunded.isLateApprovalNotBooked()).isFalse();
 	}
 
+	@Test
+	void remoteSuccessful_createdLongBeforeTheStart_whileTheCurrentCheckoutAwaitsItsSumUpId_unchangedAndNotFlaggedYet()
+	{
+		// SumUp's clock runs more than the allowance behind: the current checkout's own approval may look older than the
+		// checkout; whose approval it is shows once step 3 stores the checkout's SumUp id
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
+		final POSPayment awaitingItsId = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).cardCheckoutStartedAt(startedAt).build();
+
+		final POSPaymentRemoteUpdateResult result = awaitingItsId.changingStatusFromRemote(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt.minusSeconds(61)));
+
+		assertThat(result.getPayment()).isEqualTo(awaitingItsId);
+		assertThat(result.isLateApprovalNotBooked()).isFalse();
+	}
+
+	@Test
+	void isLateApprovalOfAnEarlierCheckout_onlyAnotherCheckoutsApprovalCreatedLongBeforeTheStart()
+	{
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
+		final Instant longBefore = startedAt.minusSeconds(61);
+		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING)
+				.sumUpClientTransactionId("current-trx")
+				.releasedSumUpClientTransactionId(RELEASED_TRX)
+				.cardCheckoutStartedAt(startedAt)
+				.build();
+
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, longBefore))).isTrue();
+		// the current checkout's own approval, whatever SumUp's clock says
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, "current-trx", longBefore))).isFalse();
+		// the released checkout's approval was flagged when it arrived
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, RELEASED_TRX, longBefore))).isFalse();
+		// no approval
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseCreatedAt(POSPaymentProcessingStatus.FAILED, OTHER_TRX, longBefore))).isFalse();
+		// within the clock skew allowance
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt.minusSeconds(60)))).isFalse();
+	}
+
 	private static POSPaymentProcessResponse responseCreatedAt(final POSPaymentProcessingStatus status, final String clientTransactionId, final Instant transactionCreated)
 	{
 		return POSPaymentProcessResponse.builder()

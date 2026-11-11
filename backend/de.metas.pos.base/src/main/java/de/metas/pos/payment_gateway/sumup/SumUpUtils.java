@@ -20,7 +20,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 
 @UtilityClass
-class SumUpUtils
+public class SumUpUtils
 {
 	public static POSPaymentProcessResponse extractProcessResponse(final SumUpTransaction sumUpTrx)
 	{

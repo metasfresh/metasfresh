@@ -31,7 +31,10 @@ import java.util.function.Consumer;
  * unknown, and back office gets one AD_Issue per payment per outage;</li>
  * <li>(b) the orphan rule: a PENDING card payment whose checkout started more than
  * 150 s ago ({@link POSOrdersService#getOrphanCardPaymentIds}) and stopped before SumUp's answer was stored → UNKNOWN
- * ({@link POSOrdersService#markCardPaymentUnknownIfOrphan}).</li>
+ * ({@link POSOrdersService#markCardPaymentUnknownIfOrphan});</li>
+ * <li>(c) a PENDING card payment naming a SumUp transaction that metasfresh stores as final (its status event did not resolve
+ * the payment: lost, or arrived before the payment named the transaction) → the stored result is applied as its status event
+ * does ({@link POSOrdersService#reconcileCardPaymentWithItsSumUpTransaction}). No SumUp lookup.</li>
  * </ul>
  * Each card payment is swept on its own, oldest first, in its own transactions, in its order's client/org context (the
  * poller thread has no login context), and with its own error capture: a failure is logged, recorded once as an AD_Issue of
@@ -63,9 +66,10 @@ public class POSCardPaymentSweeper implements SumUpPollerCycleListener
 
 		final ImmutableList<POSOrderAndPaymentId> idsToImport = ordersService.getCardPaymentIdsToImport();
 		final ImmutableList<POSOrderAndPaymentId> orphanIds = ordersService.getOrphanCardPaymentIds();
+		final ImmutableList<POSOrderAndPaymentId> idsToReconcile = ordersService.getCardPaymentIdsToReconcile();
 
 		// forget payments that are no longer swept
-		failureRecorder.retainOnly(ImmutableSet.<POSOrderAndPaymentId>builder().addAll(idsToImport).addAll(orphanIds).build());
+		failureRecorder.retainOnly(ImmutableSet.<POSOrderAndPaymentId>builder().addAll(idsToImport).addAll(orphanIds).addAll(idsToReconcile).build());
 
 		for (final POSOrderAndPaymentId id : idsToImport)
 		{
@@ -74,6 +78,10 @@ public class POSCardPaymentSweeper implements SumUpPollerCycleListener
 		for (final POSOrderAndPaymentId id : orphanIds)
 		{
 			sweep(id, ordersService::markCardPaymentUnknownIfOrphan);
+		}
+		for (final POSOrderAndPaymentId id : idsToReconcile)
+		{
+			sweep(id, ordersService::reconcileCardPaymentWithItsSumUpTransaction);
 		}
 	}
 

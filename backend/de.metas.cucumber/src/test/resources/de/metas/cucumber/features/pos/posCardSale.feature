@@ -909,3 +909,30 @@ Feature: POS till card sale with an unknown card result
     And SumUp calls back for the transaction of POS sale sale1
     Then the card payment of POS sale sale1 has status DELETED
     And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+
+  # ##########################################################################
+  # SumUp's clock runs more than 60 s behind metasfresh's, and SumUp's approval of the checkout reaches metasfresh before the
+  # checkout stored SumUp's answer on the card payment (here: the first attempt of storing it failed). The approval then looks
+  # older than the checkout, so it is not applied yet; storing SumUp's answer names the checkout's SumUp transaction, and its
+  # approval, as metasfresh stores it, completes the sale. It is the sale's own charge, so it is no late approval.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_35
+  Scenario: SumUp's approval reaching metasfresh before the checkout stored SumUp's answer completes the sale, also when SumUp's clock runs behind
+    Given SumUp's clock runs 61 seconds behind metasfresh's
+    And a POS card sale sale1 is prepared at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    And saving the card payment of a POS sale fails with a database error for the next 1 attempt
+    When the card payment of POS sale sale1 is checked out, the checkout pausing before it retries storing SumUp's answer
+    And SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId empty
+    When the till's card checkout of POS sale sale1 retries storing SumUp's answer
+    Then the till's card checkout of POS sale sale1 answered the card payment with status SUCCESSFUL and sumUpClientTransactionId set
+    And the card payment of POS sale sale1 has status SUCCESSFUL and sumUpClientTransactionId of the latest transaction
+    And after not more than 30s, POS sale sale1 is completed
+    And the invoice of POS sale sale1 is paid
+    And POS sale sale1 has 1 payment receipt
+    And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'

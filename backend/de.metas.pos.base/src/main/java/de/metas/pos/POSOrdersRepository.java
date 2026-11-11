@@ -26,6 +26,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: C_POS_Order, C_POS_OrderLine, C_POS_Payment, AD_Issue (read only: the issues recorded on a card payment), SUMUP_Transaction (read only, in the sweep candidate subqueries)
+ * Repository Cluster: POSOrdersRepository, POSOrdersLoaderAndSaver, {@link de.metas.payment.sumup.repository.SumUpTransactionRepository}
+ */
 @Repository
 @RequiredArgsConstructor
 public class POSOrdersRepository
@@ -140,6 +144,27 @@ public class POSOrdersRepository
 						+ " WHERE t.C_POS_Order_ID = " + paymentTable + "." + I_C_POS_Payment.COLUMNNAME_C_POS_Order_ID
 						+ " AND t.C_POS_Payment_ID = " + paymentTable + "." + I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID
 						+ " AND t.Created >= " + paymentTable + "." + I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt + ")"))
+				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
+				.create()
+				.stream()
+				.map(POSOrdersRepository::toPOSOrderAndPaymentId);
+	}
+
+	/**
+	 * The PENDING card payments that name a SumUp client transaction id for which metasfresh stores a SumUp transaction that is
+	 * no longer PENDING: its status event did not resolve the payment, so the stored result is to be applied. Oldest first. The
+	 * caller must close the stream.
+	 */
+	public Stream<POSOrderAndPaymentId> streamPendingCardPaymentsNamingAFinalSumUpTransaction()
+	{
+		return queryBL.createQueryBuilder(I_C_POS_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus.PENDING.getCode())
+				.addNotNull(I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID)
+				.filter(TypedSqlQueryFilter.of("EXISTS (SELECT 1 FROM SUMUP_Transaction t"
+						+ " WHERE t.SUMUP_ClientTransactionId = " + I_C_POS_Payment.Table_Name + "." + I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID
+						+ " AND t.Status <> 'PENDING')"))
 				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
 				.create()
 				.stream()

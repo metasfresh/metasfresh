@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
  * A transaction's timestamp (when SumUp created it) is taken from metasfresh's clock ({@link SystemTime}), which a scenario
- * may freeze or advance: SumUp's clock runs with the till's.
+ * may freeze or advance: SumUp's clock runs with the till's, unless a scenario sets it behind ({@link #setClockBehind}).
  * <p>
  * State is static: one stub per JVM, reset between scenarios via {@link #reset()}.
  */
@@ -85,6 +86,8 @@ public final class SumUpApiStub
 	private static String baseUrl;
 
 	private static CheckoutBehavior nextCheckoutBehavior = CheckoutBehavior.SUCCESS;
+	// how far SumUp's clock runs behind metasfresh's: the timestamp of a transaction SumUp creates for a checkout
+	private static Duration clockBehind = Duration.ZERO;
 	private static boolean failStatusLookup;
 	private static boolean terminateFails;
 	// set while the next checkout is to be held; the held request waits until the latch is counted down
@@ -141,6 +144,7 @@ public final class SumUpApiStub
 		synchronized (lock)
 		{
 			nextCheckoutBehavior = CheckoutBehavior.SUCCESS;
+			clockBehind = Duration.ZERO;
 			failStatusLookup = false;
 			terminateFails = false;
 			releaseHeldCheckout();
@@ -173,6 +177,18 @@ public final class SumUpApiStub
 		synchronized (lock)
 		{
 			unreadableLookupClientTransactionIds.add(clientTransactionId);
+		}
+	}
+
+	/**
+	 * From now on, SumUp's clock runs the given time behind metasfresh's ({@link SystemTime}): a transaction SumUp creates
+	 * for a checkout is timestamped that much earlier.
+	 */
+	public static void setClockBehind(@NonNull final Duration behind)
+	{
+		synchronized (lock)
+		{
+			clockBehind = behind;
 		}
 	}
 
@@ -433,7 +449,7 @@ public final class SumUpApiStub
 						.merchantCode(merchantCode)
 						.amount(amount)
 						.currency(currency)
-						.timestamp(SystemTime.asInstant().toString())
+						.timestamp(SystemTime.asInstant().minus(clockBehind).toString())
 						.status("PENDING")
 						.build());
 			}
