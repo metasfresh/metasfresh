@@ -103,16 +103,6 @@ public class SumUpTransactionRepository
 	}
 
 	/**
-	 * @return when metasfresh first saved the transaction with the given client transaction id (its {@code Created}, by
-	 * metasfresh's own clock), if metasfresh has it
-	 */
-	public Optional<Instant> findRecordedAtByClientTransactionId(@NonNull final SumUpClientTransactionId clientTransactionId)
-	{
-		return retrieveSingleRecordIfExists(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId))
-				.map(record -> record.getCreated().toInstant());
-	}
-
-	/**
 	 * @param posRef must reference something (at least one id &gt; 0)
 	 * @return the SUCCESSFUL transactions (refunded ones included) carrying the given POS reference that metasfresh changed at or
 	 * after the given time (by its own clock), oldest first
@@ -179,13 +169,15 @@ public class SumUpTransactionRepository
 		updateRecord(record, trx);
 		InterfaceWrapperHelper.save(record);
 
+		// the event's transaction tells when metasfresh first saved it (e.g. to tell an earlier card checkout's result from the current one's)
+		final SumUpTransaction trxSaved = trx.toBuilder().recordedAt(extractRecordedAt(record)).build();
 		if (isNew)
 		{
-			eventsDispatcher.fireNewTransaction(trx);
+			eventsDispatcher.fireNewTransaction(trxSaved);
 		}
 		else
 		{
-			eventsDispatcher.fireStatusChangedIfNeeded(trx, trxPrev);
+			eventsDispatcher.fireStatusChangedIfNeeded(trxSaved, trxPrev);
 		}
 
 	}
@@ -250,7 +242,14 @@ public class SumUpTransactionRepository
 				.json(record.getJsonResponse())
 				.posRef(extractPOSRef(record))
 				.lastSync(extractLastSync(record))
+				.recordedAt(extractRecordedAt(record))
 				.build();
+	}
+
+	@Nullable
+	private static Instant extractRecordedAt(final I_SUMUP_Transaction record)
+	{
+		return record.getCreated() != null ? record.getCreated().toInstant() : null;
 	}
 
 	@Nullable

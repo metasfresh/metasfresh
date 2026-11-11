@@ -32,7 +32,10 @@ public class POSPayment
 	 * <p>
 	 * An earlier checkout whose SumUp transaction metasfresh saved before the current checkout started (e.g. one the cashier saw
 	 * declined, then retried within this allowance) is recognised by that, by metasfresh's own clock, whatever SumUp's clock says
-	 * (see {@link #isOfAnEarlierCheckout}).
+	 * (see {@link #isOfAnEarlierCheckout}). That compares {@code SUMUP_Transaction.Created} with {@code CardCheckoutStartedAt},
+	 * both stamped by metasfresh's {@code SystemTime}, normally by the same webapi JVM (the till's checkout request saves both). With
+	 * several webapi nodes whose host clocks differ, it is weaker only for a retry started within that difference of the earlier
+	 * checkout's save (milliseconds with NTP); such a retry is still covered by the other rules.
 	 * <p>
 	 * If SumUp's clock runs more than this behind, a result of the current checkout that arrives before the checkout's SumUp id
 	 * is stored on the payment (step 3 of the checkout) looks like an earlier checkout's: it is not applied then, and, while the
@@ -339,9 +342,11 @@ public class POSPayment
 	 * For step 3 of a card checkout, once the checkout's SumUp id is stored: whether the given result, which may have arrived
 	 * while the checkout awaited that id (and was then neither applied nor flagged, see {@link #changingStatusFromRemote}), is a
 	 * SumUp approval of an earlier checkout of this payment, to be flagged as a late approval not booked. It is one if it is
-	 * SUCCESSFUL, names neither the current checkout's SumUp transaction nor the released one, was not saved by metasfresh before the
-	 * current checkout started (the results of both are flagged when they arrive), and its SumUp transaction was created more than
-	 * {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started.
+	 * SUCCESSFUL, names neither the current checkout's SumUp transaction nor the released one (whose results are flagged when they
+	 * arrive), and metasfresh saved its SumUp transaction before the current checkout started (see
+	 * {@link #isRecordedBeforeTheCurrentCheckoutStarted}) or SumUp created it more than {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before
+	 * that. One saved before the start was flagged when it arrived too, unless its status event was lost: the caller does not
+	 * record it twice.
 	 */
 	public boolean isLateApprovalOfAnEarlierCheckout(@NonNull final POSPaymentProcessResponse response)
 	{
@@ -349,15 +354,15 @@ public class POSPayment
 		return response.getStatus().isSuccessful()
 				&& !Objects.equals(sumUpClientTransactionId, remoteClientTransactionId)
 				&& !Objects.equals(releasedSumUpClientTransactionId, remoteClientTransactionId)
-				&& !isRecordedBeforeTheCurrentCheckoutStarted(response)
-				&& isCreatedBeforeTheCurrentCheckoutStarted(response);
+				&& (isRecordedBeforeTheCurrentCheckoutStarted(response) || isCreatedBeforeTheCurrentCheckoutStarted(response));
 	}
 
 	/**
 	 * @return whether metasfresh saved the result's SumUp transaction before the current checkout started, both by metasfresh's
 	 * own clock: then it is an earlier checkout's, since the current checkout's SumUp transaction is saved only once that
 	 * checkout was sent (step 2, after step 1 recorded its start). Unknown (not saved, or a payment checked out before the
-	 * checkout start was recorded) counts as not.
+	 * checkout start was recorded) counts as not. Both instants come from metasfresh's clock; see
+	 * {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} for what differing clocks of several webapi nodes mean.
 	 */
 	private boolean isRecordedBeforeTheCurrentCheckoutStarted(@NonNull final POSPaymentProcessResponse response)
 	{
@@ -373,6 +378,15 @@ public class POSPayment
 		return transactionCreated != null
 				&& cardCheckoutStartedAt != null
 				&& transactionCreated.isBefore(cardCheckoutStartedAt.minus(SUMUP_CLOCK_SKEW_ALLOWANCE));
+	}
+
+	/**
+	 * @return whether the payment's current card checkout is the one that started at the given time (step 1 saved it), i.e. no
+	 * other checkout of the payment started since
+	 */
+	public boolean isCardCheckoutStartedAt(@Nullable final Instant checkoutStartedAt)
+	{
+		return Objects.equals(cardCheckoutStartedAt, checkoutStartedAt);
 	}
 
 	private boolean isAwaitingAResult()

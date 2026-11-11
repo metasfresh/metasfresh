@@ -191,7 +191,7 @@ public class POSOrdersService
 			{
 				return payment;
 			}
-			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(withTransactionRecordedAt(response));
+			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response);
 			lateApprovalNotBooked.set(result.isLateApprovalNotBooked());
 			return result.getPayment();
 		});
@@ -205,23 +205,6 @@ public class POSOrdersService
 	}
 
 	/**
-	 * @return the response with when metasfresh saved its SumUp transaction (by metasfresh's own clock), if metasfresh has it, so
-	 * that a result of a card checkout that started before the payment's current one is never taken as the current checkout's
-	 * (see {@link POSPayment#changingStatusFromRemote}). Reads the database only (no SumUp call).
-	 */
-	private POSPaymentProcessResponse withTransactionRecordedAt(@NonNull final POSPaymentProcessResponse response)
-	{
-		final String clientTransactionId = response.getClientTransactionId();
-		if (clientTransactionId == null || response.getTransactionRecordedAt() != null)
-		{
-			return response;
-		}
-		return sumUpService.findTransactionRecordedAt(SumUpClientTransactionId.ofString(clientTransactionId))
-				.map(recordedAt -> response.toBuilder().transactionRecordedAt(recordedAt).build())
-				.orElse(response);
-	}
-
-	/**
 	 * Written after the payment update committed, in its own transaction: a late SumUp approval of a deleted or released card payment
 	 * is not booked; the issue (on the payment) tells the back office to review it. A failure here is only logged.
 	 */
@@ -231,6 +214,26 @@ public class POSOrdersService
 			@NonNull final POSPaymentProcessResponse response)
 	{
 		createCardPaymentIssueNoFail(order, posOrderAndPaymentId, response.getClientTransactionId(), new AdempiereException(MSG_LateApprovalNotBooked), "the late approval");
+	}
+
+	/**
+	 * Like {@link #recordLateApprovalNotBooked}, unless such a record of that SumUp transaction already exists on the payment (e.g.
+	 * written when its status event arrived). Step 3 uses it, so that a late approval whose status event was lost is still
+	 * recorded, and one already recorded is not recorded twice.
+	 */
+	private void recordLateApprovalNotBookedUnlessRecorded(
+			@NonNull final POSOrder order,
+			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
+			@NonNull final POSPaymentProcessResponse response)
+	{
+		final String clientTransactionId = response.getClientTransactionId();
+		final String errorCode = new AdempiereException(MSG_LateApprovalNotBooked).getErrorCode();
+		if (clientTransactionId != null
+				&& ordersRepository.existsIssueByPaymentId(posOrderAndPaymentId.getPaymentId(), errorCode, clientTransactionId))
+		{
+			return;
+		}
+		recordLateApprovalNotBooked(order, posOrderAndPaymentId, response);
 	}
 
 	/**
@@ -250,6 +253,8 @@ public class POSOrdersService
 			errorManager.createIssue(issue
 					.setParameter("posOrderExternalId", order.getExternalId().getAsString())
 					.setParameter("sumUpClientTransactionId", sumUpClientTransactionId)
+					// so that the issue's summary names them: the back office finds the charge by its SumUp client transaction id
+					.appendParametersToMessage()
 					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, orderAndPaymentId.getPaymentId())));
 		}
 	}
@@ -450,7 +455,7 @@ public class POSOrdersService
 		final POSPaymentProcessResponse response = posOrderProcessingServices.sendCardPayment(startedPayment, startedOrder);
 
 		// step 3
-		final boolean resultStored = applyCardSendResult(startedOrder, orderAndPaymentId, response);
+		final boolean resultStored = applyCardSendResult(startedOrder, orderAndPaymentId, startedPayment.getCardCheckoutStartedAt(), response);
 		if (resultStored)
 		{
 			tryCompleteNoFail(orderAndPaymentId.getOrderId());
@@ -491,12 +496,19 @@ public class POSOrdersService
 	 * the database fails, it is tried {@link #CARD_SEND_RESULT_MAX_ATTEMPTS} times in all, each time re-locking and re-reading the
 	 * order, waiting {@link #CARD_SEND_RESULT_RETRY_BACKOFFS} in between. If all attempts fail, the answer is logged at ERROR
 	 * and recorded as an AD_Issue on the payment (best effort): the payment stays PENDING, without SumUp's id, as saved by step 1.
+	 * <p>
+	 * The answer is applied only while the payment is still in this checkout (its checkout start is the one step 1 saved). If
+	 * another checkout of the payment started meanwhile (e.g. this checkout's SumUp call outlived the orphan wait, and the
+	 * payment was released and retried), the payment is left unchanged: only the payment's current checkout is ever assigned to
+	 * it; a later result of this checkout is handled as an earlier checkout's (see {@link POSPayment#changingStatusFromRemote}).
 	 *
-	 * @return true if the answer was stored
+	 * @param checkoutStartedAt the checkout start step 1 saved for this checkout
+	 * @return true if the answer was stored (or, another checkout having started meanwhile, there was nothing to store)
 	 */
 	private boolean applyCardSendResult(
 			@NonNull final POSOrder order,
 			@NonNull final POSOrderAndPaymentId orderAndPaymentId,
+			@Nullable final Instant checkoutStartedAt,
 			@NonNull final POSPaymentProcessResponse response)
 	{
 		Exception lastFailure = null;
@@ -513,11 +525,17 @@ public class POSOrdersService
 				trxManager.runInNewTrx(() -> ordersRepository.updatePaymentByIdForUpdate(
 						orderAndPaymentId,
 						(lockedOrder, payment) -> {
+							if (!payment.isCardCheckoutStartedAt(checkoutStartedAt))
+							{
+								logger.warn("Card checkout result of {} not applied: another checkout of the payment started meanwhile (this one started at {}, the current one at {}); sumUpClientTransactionId={}, status={}, indeterminate={}",
+										orderAndPaymentId, checkoutStartedAt, payment.getCardCheckoutStartedAt(), response.getClientTransactionId(), response.getStatus(), response.isIndeterminate());
+								return payment;
+							}
 							final POSPayment answered = applyOwnFinalSumUpResult(payment.changingStatusFromSendResult(response));
 							lateApprovals.set(findLateApprovalsOfEarlierCheckouts(orderAndPaymentId, answered));
 							return answered;
 						}));
-				lateApprovals.get().forEach(lateApproval -> recordLateApprovalNotBooked(order, orderAndPaymentId, lateApproval));
+				lateApprovals.get().forEach(lateApproval -> recordLateApprovalNotBookedUnlessRecorded(order, orderAndPaymentId, lateApproval));
 				return true;
 			}
 			catch (final Exception ex)
@@ -583,7 +601,6 @@ public class POSOrdersService
 				.stream()
 				.filter(sumUpTrx -> !sumUpTrx.isRefunded())
 				.map(SumUpUtils::extractProcessResponse)
-				.map(this::withTransactionRecordedAt)
 				.filter(payment::isLateApprovalOfAnEarlierCheckout)
 				.collect(ImmutableList.toImmutableList());
 	}

@@ -480,19 +480,26 @@ class POSPaymentTest
 	}
 
 	@Test
-	void isLateApprovalOfAnEarlierCheckout_notForAnApprovalMetasfreshRecordedBeforeTheStart()
+	void isLateApprovalOfAnEarlierCheckout_alsoAnApprovalMetasfreshRecordedBeforeTheStart()
 	{
-		// such an approval is flagged when it arrives (see above), so step 3 does not flag it a second time
+		// such an approval is flagged when it arrives; step 3 lists it again (deduplicated there), so that it is recorded also
+		// when its status event was lost
 		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
-		final Instant longBefore = startedAt.minusSeconds(61);
 		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING)
 				.sumUpClientTransactionId("current-trx")
 				.cardCheckoutStartedAt(startedAt)
 				.build();
 
-		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, longBefore, longBefore))).isFalse();
-		// recorded once the checkout started (e.g. imported later): step 3 still flags it
+		// within the clock skew allowance by SumUp's clock, but recorded by metasfresh before the start
+		final Instant thirtySecondsBefore = startedAt.minusSeconds(30);
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, thirtySecondsBefore, thirtySecondsBefore))).isTrue();
+		// recorded once the checkout started (e.g. imported later), created long before by SumUp's clock
+		final Instant longBefore = startedAt.minusSeconds(61);
 		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, longBefore, startedAt))).isTrue();
+		// recorded once the checkout started, within the allowance: may be the current checkout's own
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, thirtySecondsBefore, startedAt))).isFalse();
+		// the current checkout's own approval, also if recorded before (cannot happen; the own id decides)
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, "current-trx", thirtySecondsBefore, thirtySecondsBefore))).isFalse();
 	}
 
 	private static POSPaymentProcessResponse responseRecordedAt(

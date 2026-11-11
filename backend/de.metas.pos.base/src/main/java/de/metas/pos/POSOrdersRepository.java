@@ -193,6 +193,25 @@ public class POSOrdersRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * @return whether an AD_Issue with the given {@code ErrorCode} is recorded for the given payment whose summary contains the given text
+	 * (e.g. the SumUp client transaction id the issue names)
+	 */
+	public boolean existsIssueByPaymentId(
+			@NonNull final POSPaymentId posPaymentId,
+			@NonNull final String errorCode,
+			@NonNull final String summaryContains)
+	{
+		final TableRecordReference paymentRef = TableRecordReference.of(I_C_POS_Payment.Table_Name, posPaymentId);
+		return queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, paymentRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, paymentRef.getRecord_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_ErrorCode, errorCode)
+				.create()
+				.stream() // a payment has few issues; the summary spans several lines
+				.anyMatch(issue -> issue.getIssueSummary() != null && issue.getIssueSummary().contains(summaryContains));
+	}
+
 	public POSOrder getById(@NonNull final POSOrderId posOrderId)
 	{
 		return newLoaderAndSaver().getById(posOrderId);

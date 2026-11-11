@@ -997,3 +997,41 @@ Feature: POS till card sale with an unknown card result
     And the invoice of POS sale sale1 is paid
     And POS sale sale1 has 1 payment receipt
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+
+  # ##########################################################################
+  # Checkout A outlives the orphan wait before it stores SumUp's answer (here: saving its SumUp transaction failed, and the
+  # first attempt of storing SumUp's answer failed too, so the checkout waits before retrying). Meanwhile the card payment
+  # becomes UNKNOWN, the cashier releases it and retries: checkout B. When A finally stores its answer, the card payment is
+  # in checkout B, so A's answer leaves it unchanged: only B is assigned to the payment, and B's approval completes the sale.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_38
+  Scenario: A checkout storing SumUp's answer after the card payment was released and retried leaves the retry's card payment unchanged
+    Given a POS card sale sale1 is prepared at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    And saving a SumUp transaction fails with a database error
+    And saving the card payment of a POS sale fails with a database error for the next 1 attempt
+    When the card payment of POS sale sale1 is checked out, the checkout pausing before it retries storing SumUp's answer
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId empty
+    And metasfresh has no SumUp transaction of POS sale sale1
+    When saving a SumUp transaction works again
+    And metasfresh's clock is 151 seconds after the card checkout of POS sale sale1
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId empty
+    When metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
+    And the card payment of POS sale sale1 is released by cashier metasfresh
+    And the card payment of POS sale sale1 is released by cashier metasfresh with confirmation expecting UNKNOWN
+    Then the card payment of POS sale sale1 has status FAILED
+    When metasfresh's clock advances by 1 seconds
+    And the card payment of POS sale sale1 is retried and the stub answers SUCCESS
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
+    When the till's card checkout of POS sale sale1 retries storing SumUp's answer
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
+    When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
+    And SumUp calls back for the transaction of POS sale sale1
+    Then the card payment of POS sale sale1 has status SUCCESSFUL and sumUpClientTransactionId of the latest transaction
+    And after not more than 30s, POS sale sale1 is completed
+    And the invoice of POS sale sale1 is paid
+    And POS sale sale1 has 1 payment receipt

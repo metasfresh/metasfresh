@@ -18,6 +18,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.time.Instant;
@@ -104,20 +105,30 @@ class SumUpTransactionRepositoryTest
 	}
 
 	@Test
-	void findRecordedAtByClientTransactionId_whenMetasfreshFirstSavedTheTransaction()
+	void recordedAt_whenMetasfreshFirstSavedTheTransaction_alsoOnTheTransactionsOfItsEvents()
 	{
+		final SumUpEventsDispatcher eventsDispatcher = Mockito.mock(SumUpEventsDispatcher.class);
+		final SumUpTransactionRepository repository = new SumUpTransactionRepository(eventsDispatcher);
 		try
 		{
 			SystemTime.setFixedTimeSource("2026-11-10T10:00:00Z");
 			final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
 			repository.saveNew(trx);
 
-			// a later status change does not change when metasfresh first saved it
+			// a later status change, e.g. SumUp's approval, does not change when metasfresh first saved it
 			SystemTime.setFixedTimeSource("2026-11-10T10:05:00Z");
 			repository.save(trx.toBuilder().status(SumUpTransactionStatus.SUCCESSFUL).build());
 
-			assertThat(repository.findRecordedAtByClientTransactionId(trx.getClientTransactionId())).contains(Instant.parse("2026-11-10T10:00:00Z"));
-			assertThat(repository.findRecordedAtByClientTransactionId(SumUpClientTransactionId.ofString("unknown"))).isEmpty();
+			final Instant recordedAt = Instant.parse("2026-11-10T10:00:00Z");
+			assertThat(repository.getById(trx.getExternalId()).getRecordedAt()).isEqualTo(recordedAt);
+
+			final ArgumentCaptor<SumUpTransaction> newTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
+			Mockito.verify(eventsDispatcher).fireNewTransaction(newTrx.capture());
+			assertThat(newTrx.getValue().getRecordedAt()).as("transaction of the creation event").isEqualTo(recordedAt);
+
+			final ArgumentCaptor<SumUpTransaction> changedTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
+			Mockito.verify(eventsDispatcher).fireStatusChangedIfNeeded(changedTrx.capture(), Mockito.any());
+			assertThat(changedTrx.getValue().getRecordedAt()).as("transaction of the status event").isEqualTo(recordedAt);
 		}
 		finally
 		{

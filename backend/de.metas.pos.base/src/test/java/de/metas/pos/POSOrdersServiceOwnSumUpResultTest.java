@@ -31,11 +31,14 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Issue;
+import de.metas.common.util.time.SystemTime;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,6 +70,12 @@ class POSOrdersServiceOwnSumUpResultTest
 	private POSOrderProcessingServices posOrderProcessingServices;
 	private SumUpService sumUpService;
 	private POSOrdersService service;
+
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
+	}
 
 	@BeforeEach
 	void beforeEach()
@@ -111,6 +120,11 @@ class POSOrdersServiceOwnSumUpResultTest
 				o -> {});
 	}
 
+	private static SumUpTransaction sumUpTransaction(final String clientTransactionId, final SumUpTransactionStatus status, final Instant createdAtSumUp, final Instant recordedAt)
+	{
+		return sumUpTransaction(clientTransactionId, status, createdAtSumUp).toBuilder().recordedAt(recordedAt).build();
+	}
+
 	private static SumUpTransaction sumUpTransaction(final String clientTransactionId, final SumUpTransactionStatus status, final Instant createdAtSumUp)
 	{
 		return SumUpTransaction.builder()
@@ -145,6 +159,17 @@ class POSOrdersServiceOwnSumUpResultTest
 				.userId(CASHIER_ID)
 				.build());
 		return ordersRepository.getById(order.getLocalIdNotNull()).getPaymentById(cardPayment.getLocalIdNotNull());
+	}
+
+	private List<String> retrieveIssueSummaries(final POSPaymentId paymentId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, Services.get(IADTableDAO.class).retrieveTableId(I_C_POS_Payment.Table_Name))
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, paymentId.getRepoId())
+				.create()
+				.stream()
+				.map(I_AD_Issue::getIssueSummary)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<String> retrieveIssueErrorCodes(final POSPaymentId paymentId)
@@ -219,11 +244,10 @@ class POSOrdersServiceOwnSumUpResultTest
 				.cardCheckoutStartedAt(bStartedAt));
 		final POSPayment cardPayment = order.getAllPayments().get(0);
 		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
-		when(sumUpService.findTransactionRecordedAt(SumUpClientTransactionId.ofString(EARLIER_TRX))).thenReturn(Optional.of(aStartedAt));
 
 		service.updatePaymentStatusFromRemoteAndTryCompleteOrder(
 				orderAndPaymentId,
-				SumUpUtils.extractProcessResponse(sumUpTransaction(EARLIER_TRX, SumUpTransactionStatus.SUCCESSFUL, aStartedAt)));
+				SumUpUtils.extractProcessResponse(sumUpTransaction(EARLIER_TRX, SumUpTransactionStatus.SUCCESSFUL, aStartedAt, aStartedAt)));
 
 		final POSPayment payment = ordersRepository.getById(order.getLocalIdNotNull()).getPaymentById(cardPayment.getLocalIdNotNull());
 		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
@@ -240,16 +264,85 @@ class POSOrdersServiceOwnSumUpResultTest
 				.cardCheckoutStartedAt(startedAt));
 		final POSPayment cardPayment = order.getAllPayments().get(0);
 		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
-		when(sumUpService.findTransactionRecordedAt(SumUpClientTransactionId.ofString(CURRENT_TRX))).thenReturn(Optional.of(startedAt.plusSeconds(1)));
 
 		service.updatePaymentStatusFromRemoteAndTryCompleteOrder(
 				orderAndPaymentId,
-				SumUpUtils.extractProcessResponse(sumUpTransaction(CURRENT_TRX, SumUpTransactionStatus.SUCCESSFUL, startedAt.plusSeconds(1))));
+				SumUpUtils.extractProcessResponse(sumUpTransaction(CURRENT_TRX, SumUpTransactionStatus.SUCCESSFUL, startedAt.plusSeconds(1), startedAt.plusSeconds(1))));
 
 		final POSPayment payment = ordersRepository.getById(order.getLocalIdNotNull()).getPaymentById(cardPayment.getLocalIdNotNull());
 		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
 		assertThat(payment.getSumUpClientTransactionId()).isEqualTo(CURRENT_TRX);
 		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).isEmpty();
+	}
+
+	@Test
+	void stepThree_anotherCheckoutStartedMeanwhile_unchanged()
+	{
+		// checkout A's SumUp call outlived the orphan wait: meanwhile the payment became UNKNOWN, was released, and the
+		// cashier retried it (checkout B, PENDING, its SumUp id not stored yet). A's step 3 must not touch B.
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder().paymentProcessingStatus(POSPaymentProcessingStatus.NEW));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		final Instant bStartedAt = Instant.parse("2026-11-10T10:04:00Z");
+		when(posOrderProcessingServices.sendCardPayment(any(), any())).thenAnswer(invocation -> {
+			ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (o, p) -> p.toBuilder()
+					.paymentProcessingStatus(POSPaymentProcessingStatus.PENDING)
+					.sumUpClientTransactionId(null)
+					.cardCheckoutStartedAt(bStartedAt)
+					.build());
+			return accepted(EARLIER_TRX);
+		});
+
+		final POSPayment payment = checkout(order);
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
+		assertThat(payment.getSumUpClientTransactionId()).isNull();
+		assertThat(payment.getCardCheckoutStartedAt()).isEqualTo(bStartedAt);
+	}
+
+	@Test
+	void stepThree_approvalOfAnEarlierCheckoutRecordedBeforeTheStart_itsStatusEventLost_recordedOnceNamingIt()
+	{
+		// A was declined, the cashier retried (B) 30 s after A started; A's approval was saved while B awaited its SumUp id, but
+		// its status event never reached the payment
+		final Instant bStartedAt = Instant.parse("2026-11-10T10:00:30Z");
+		final Instant aStartedAt = bStartedAt.minusSeconds(30);
+		SystemTime.setFixedTimeSource(bStartedAt.atZone(ZoneId.of("UTC")));
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder().paymentProcessingStatus(POSPaymentProcessingStatus.NEW));
+		when(posOrderProcessingServices.sendCardPayment(any(), any())).thenReturn(accepted(CURRENT_TRX));
+		when(sumUpService.listSuccessfulTransactionsByPOSRefUpdatedSince(any(), any()))
+				.thenReturn(ImmutableList.of(sumUpTransaction(EARLIER_TRX, SumUpTransactionStatus.SUCCESSFUL, aStartedAt, aStartedAt)));
+
+		final POSPayment payment = checkout(order);
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
+		assertThat(payment.getSumUpClientTransactionId()).isEqualTo(CURRENT_TRX);
+		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).containsExactly("de.metas.pos.POSPayment.LateApprovalNotBooked");
+		// the back office finds the charge in the SumUp dashboard by its client transaction id
+		assertThat(retrieveIssueSummaries(payment.getLocalIdNotNull())).singleElement().asString().contains(EARLIER_TRX);
+	}
+
+	@Test
+	void stepThree_approvalOfAnEarlierCheckoutAlreadyRecordedOnArrival_notRecordedAgain()
+	{
+		final Instant bStartedAt = Instant.parse("2026-11-10T10:00:30Z");
+		final Instant aStartedAt = bStartedAt.minusSeconds(30);
+		SystemTime.setFixedTimeSource(bStartedAt.atZone(ZoneId.of("UTC")));
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder().paymentProcessingStatus(POSPaymentProcessingStatus.NEW));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		final SumUpTransaction aApproved = sumUpTransaction(EARLIER_TRX, SumUpTransactionStatus.SUCCESSFUL, aStartedAt, aStartedAt);
+		when(posOrderProcessingServices.sendCardPayment(any(), any())).thenAnswer(invocation -> {
+			// A's approval reaches the payment while B is being sent: flagged on arrival
+			service.updatePaymentStatusFromRemoteAndTryCompleteOrder(orderAndPaymentId, SumUpUtils.extractProcessResponse(aApproved));
+			return accepted(CURRENT_TRX);
+		});
+		when(sumUpService.listSuccessfulTransactionsByPOSRefUpdatedSince(any(), any())).thenReturn(ImmutableList.of(aApproved));
+
+		final POSPayment payment = checkout(order);
+
+		assertThat(payment.getSumUpClientTransactionId()).isEqualTo(CURRENT_TRX);
+		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).containsExactly("de.metas.pos.POSPayment.LateApprovalNotBooked");
 	}
 
 	@Test

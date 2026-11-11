@@ -42,6 +42,12 @@ public class SumUpTransaction
 
 	@Nullable LastSync lastSync;
 
+	/**
+	 * When metasfresh first saved this transaction ({@code SUMUP_Transaction.Created}), by metasfresh's own clock; null until
+	 * saved. Not written: it is set from the saved record (also on the transaction a status event carries).
+	 */
+	@Nullable Instant recordedAt;
+
 	@Builder(toBuilder = true)
 	@Jacksonized
 	private SumUpTransaction(
@@ -58,7 +64,8 @@ public class SumUpTransaction
 			@Nullable final String json,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@Nullable final SumUpPOSRef posRef,
-			@Nullable final LastSync lastSync)
+			@Nullable final LastSync lastSync,
+			@Nullable final Instant recordedAt)
 	{
 		this.configId = configId;
 		this.externalId = externalId;
@@ -74,6 +81,7 @@ public class SumUpTransaction
 		this.clientAndOrgId = clientAndOrgId;
 		this.posRef = posRef;
 		this.lastSync = lastSync;
+		this.recordedAt = recordedAt;
 
 		Amount.assertSameCurrency(this.amount, this.amountRefunded);
 	}
