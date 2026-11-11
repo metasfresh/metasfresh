@@ -55,7 +55,7 @@ public class DefaultDocActionOptionsCustomizerTest
 		AdempiereTestHelper.get().init();
 	}
 
-	private static Set<String> offeredActions(final String tableName, final String docStatus, final boolean processing)
+	private static Set<String> optionsContext(final String tableName, final String docStatus, final boolean processing)
 	{
 		final DocActionOptionsContext optionsCtx = DocActionOptionsContext.builder()
 				.userRolePermissionsKey(UserRolePermissionsKey.of(RoleId.SYSTEM, UserId.SYSTEM, ClientId.SYSTEM, LocalDate.parse("2026-11-11")))
@@ -75,7 +75,7 @@ public class DefaultDocActionOptionsCustomizerTest
 	@ValueSource(strings = { "M_InOut", "C_Invoice", "C_Payment", "C_AllocationHdr", "M_Movement", "M_Inventory", "PP_Cost_Collector" })
 	public void completed_reverseCorrectTables_offerRC_noVoid(final String tableName)
 	{
-		final Set<String> actions = offeredActions(tableName, IDocument.STATUS_Completed, false);
+		final Set<String> actions = optionsContext(tableName, IDocument.STATUS_Completed, false);
 
 		assertThat(actions).contains(IDocument.ACTION_Reverse_Correct);
 		assertThat(actions).doesNotContain(IDocument.ACTION_Void);
@@ -89,7 +89,7 @@ public class DefaultDocActionOptionsCustomizerTest
 	@ValueSource(strings = { "C_Order", "PP_Order", "DD_Order", "C_Cash", "C_BankStatement", "HR_Process" })
 	public void completed_voidOnlyTables_keepVoid(final String tableName)
 	{
-		final Set<String> actions = offeredActions(tableName, IDocument.STATUS_Completed, false);
+		final Set<String> actions = optionsContext(tableName, IDocument.STATUS_Completed, false);
 
 		assertThat(actions).contains(IDocument.ACTION_Void);
 		assertThat(actions).doesNotContain(IDocument.ACTION_Reverse_Correct);
@@ -107,7 +107,7 @@ public class DefaultDocActionOptionsCustomizerTest
 	})
 	public void notCompleted_reverseCorrectTables_unchanged(final String tableName, final String docStatus)
 	{
-		final Set<String> actions = offeredActions(tableName, docStatus, false);
+		final Set<String> actions = optionsContext(tableName, docStatus, false);
 
 		assertThat(actions).contains(IDocument.ACTION_Void);
 		assertThat(actions).doesNotContain(IDocument.ACTION_Reverse_Correct);
@@ -116,7 +116,7 @@ public class DefaultDocActionOptionsCustomizerTest
 	@Test
 	public void completed_locked_invoice_offersUnlockAndRC_noVoid()
 	{
-		final Set<String> actions = offeredActions("C_Invoice", IDocument.STATUS_Completed, true);
+		final Set<String> actions = optionsContext("C_Invoice", IDocument.STATUS_Completed, true);
 
 		assertThat(actions).contains(IDocument.ACTION_Unlock, IDocument.ACTION_Reverse_Correct);
 		assertThat(actions).doesNotContain(IDocument.ACTION_Void);
@@ -125,7 +125,7 @@ public class DefaultDocActionOptionsCustomizerTest
 	@Test
 	public void completed_glJournal_unchanged()
 	{
-		final Set<String> actions = offeredActions("GL_Journal", IDocument.STATUS_Completed, false);
+		final Set<String> actions = optionsContext("GL_Journal", IDocument.STATUS_Completed, false);
 
 		assertThat(actions).containsExactlyInAnyOrder(
 				IDocument.ACTION_ReActivate,
