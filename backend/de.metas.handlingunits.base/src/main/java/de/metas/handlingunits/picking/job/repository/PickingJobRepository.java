@@ -181,7 +181,9 @@ public class PickingJobRepository
 
 	/**
 	 * Picking job lines whose shipment schedule still has something to pick.
-	 * Same condition as the "new orders" view {@code M_Packageable_V}: active, not processed, not closed, and QtyToDeliver or QtyPickList greater than zero.
+	 * Mirrors the "nothing left to pick" part of the "new orders" view {@code M_Packageable_V}: active, not processed, not closed,
+	 * and QtyToDeliver or QtyPickList greater than zero. (The view additionally filters on other dimensions, e.g. the customer's
+	 * SO credit status, which are out of scope for this launcher guard.)
 	 */
 	private IQuery<I_M_Picking_Job_Line> queryLinesWithSomethingToPick()
 	{

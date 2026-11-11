@@ -143,8 +143,8 @@ const deliverPickedQtyBackOffice = async ({ masterdata, pickingJobId, expectedPi
     // every schedule of the job needs an expectation: on the two-line order P2 picked nothing
     if (expectP2NothingPicked) shipmentSchedules.P2 = { qtyPicked: [] };
     await Backend.expect({
-        title: 'picked qty was delivered and its records are processed',
-        pickings: { [pickingJobId]: { shipmentSchedules } },
+        title: 'picked qty was delivered, its records are processed, and the picking job itself is still Drafted (not completed/voided)',
+        pickings: { [pickingJobId]: { docStatus: 'Drafted', shipmentSchedules } },
     });
 };
 
