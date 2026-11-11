@@ -30,6 +30,10 @@ public class POSPayment
 	 * checkout started: about 30 s beyond this allowance. That checkout is caught by its released id anyway, whenever it names
 	 * one; every checkout before it is at least two release waits older.
 	 * <p>
+	 * An earlier checkout whose SumUp transaction metasfresh saved before the current checkout started (e.g. one the cashier saw
+	 * declined, then retried within this allowance) is recognised by that, by metasfresh's own clock, whatever SumUp's clock says
+	 * (see {@link #isOfAnEarlierCheckout}).
+	 * <p>
 	 * If SumUp's clock runs more than this behind, a result of the current checkout that arrives before the checkout's SumUp id
 	 * is stored on the payment (step 3 of the checkout) looks like an earlier checkout's: it is not applied then, and, while the
 	 * checkout awaits its SumUp id, not flagged as a late approval either. Once step 3 stores the id, the checkout's own SumUp
@@ -231,6 +235,7 @@ public class POSPayment
 	 * does not name the SumUp transaction of the payment's current checkout and
 	 * <ul>
 	 * <li>names another one while the current checkout names one; or</li>
+	 * <li>metasfresh saved its SumUp transaction before the current checkout started (by metasfresh's own clock); or</li>
 	 * <li>its SumUp transaction was created more than {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started; or</li>
 	 * <li>the payment was released at least once, its current checkout names no SumUp transaction, the result names one, and
 	 * the payment does not await a result (neither PENDING nor UNKNOWN);</li>
@@ -245,8 +250,9 @@ public class POSPayment
 	 * checkout's step 3 stores it).</li>
 	 * </ol>
 	 * A SUCCESSFUL result that leaves the payment unchanged by rules 1 to 3 is flagged as a late approval not booked (to be
-	 * reviewed by the back office), except one left unchanged by rule 2 only for its creation time while the current checkout
-	 * awaits its SumUp id: it may be that checkout's own approval, so step 3 decides (see {@link #isLateApprovalOfAnEarlierCheckout}).
+	 * reviewed by the back office), except one left unchanged by rule 2 only for its creation time by SumUp's clock while the
+	 * current checkout awaits its SumUp id: it may be that checkout's own approval, so step 3 decides (see
+	 * {@link #isLateApprovalOfAnEarlierCheckout}).
 	 */
 	public POSPaymentRemoteUpdateResult changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
 	{
@@ -260,9 +266,11 @@ public class POSPayment
 		}
 		if (isOfAnEarlierCheckout(response))
 		{
-			// while the current checkout awaits its SumUp id, only the creation time can make it an earlier checkout's: it may be the
-			// current checkout's own approval (SumUp's clock behind); which it is shows when step 3 stores the id, which flags it then
-			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful() && !isAwaitingItsSumUpId());
+			// while the current checkout awaits its SumUp id, a result that is an earlier checkout's only by SumUp's clock may be the
+			// current checkout's own approval (SumUp's clock behind); which it is shows when step 3 stores the id, which flags it then.
+			// One whose SumUp transaction metasfresh saved before the current checkout started is surely an earlier checkout's.
+			final boolean surelyOfAnEarlierCheckout = !isAwaitingItsSumUpId() || isRecordedBeforeTheCurrentCheckoutStarted(response);
+			return POSPaymentRemoteUpdateResult.of(this, remoteStatus.isSuccessful() && surelyOfAnEarlierCheckout);
 		}
 		if (isDeleted() && remoteStatus.isSuccessful())
 		{
@@ -295,6 +303,8 @@ public class POSPayment
 	 * transaction of the current checkout is always the current checkout's own. Otherwise it is an earlier checkout's if:
 	 * <ul>
 	 * <li>it names another SumUp transaction while the current checkout names one; or</li>
+	 * <li>metasfresh saved its SumUp transaction before the current checkout started, by metasfresh's own clock (so no clock skew
+	 * applies): the current checkout's SumUp transaction is saved only once that checkout was sent; or</li>
 	 * <li>its SumUp transaction was created more than {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started
 	 * (a payment checked out before the checkout start was recorded has none, and is not covered); or</li>
 	 * <li>the payment was released at least once, its current checkout names no SumUp transaction, the result names one,
@@ -314,6 +324,10 @@ public class POSPayment
 		{
 			return true;
 		}
+		if (isRecordedBeforeTheCurrentCheckoutStarted(response))
+		{
+			return true;
+		}
 		if (isCreatedBeforeTheCurrentCheckoutStarted(response))
 		{
 			return true;
@@ -325,8 +339,9 @@ public class POSPayment
 	 * For step 3 of a card checkout, once the checkout's SumUp id is stored: whether the given result, which may have arrived
 	 * while the checkout awaited that id (and was then neither applied nor flagged, see {@link #changingStatusFromRemote}), is a
 	 * SumUp approval of an earlier checkout of this payment, to be flagged as a late approval not booked. It is one if it is
-	 * SUCCESSFUL, names neither the current checkout's SumUp transaction nor the released one (whose results are flagged when they
-	 * arrive), and its SumUp transaction was created more than {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started.
+	 * SUCCESSFUL, names neither the current checkout's SumUp transaction nor the released one, was not saved by metasfresh before the
+	 * current checkout started (the results of both are flagged when they arrive), and its SumUp transaction was created more than
+	 * {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started.
 	 */
 	public boolean isLateApprovalOfAnEarlierCheckout(@NonNull final POSPaymentProcessResponse response)
 	{
@@ -334,7 +349,22 @@ public class POSPayment
 		return response.getStatus().isSuccessful()
 				&& !Objects.equals(sumUpClientTransactionId, remoteClientTransactionId)
 				&& !Objects.equals(releasedSumUpClientTransactionId, remoteClientTransactionId)
+				&& !isRecordedBeforeTheCurrentCheckoutStarted(response)
 				&& isCreatedBeforeTheCurrentCheckoutStarted(response);
+	}
+
+	/**
+	 * @return whether metasfresh saved the result's SumUp transaction before the current checkout started, both by metasfresh's
+	 * own clock: then it is an earlier checkout's, since the current checkout's SumUp transaction is saved only once that
+	 * checkout was sent (step 2, after step 1 recorded its start). Unknown (not saved, or a payment checked out before the
+	 * checkout start was recorded) counts as not.
+	 */
+	private boolean isRecordedBeforeTheCurrentCheckoutStarted(@NonNull final POSPaymentProcessResponse response)
+	{
+		final Instant transactionRecordedAt = response.getTransactionRecordedAt();
+		return transactionRecordedAt != null
+				&& cardCheckoutStartedAt != null
+				&& transactionRecordedAt.isBefore(cardCheckoutStartedAt);
 	}
 
 	private boolean isCreatedBeforeTheCurrentCheckoutStarted(@NonNull final POSPaymentProcessResponse response)

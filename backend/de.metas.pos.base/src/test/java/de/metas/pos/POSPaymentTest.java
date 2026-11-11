@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
@@ -431,6 +432,78 @@ class POSPaymentTest
 		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseCreatedAt(POSPaymentProcessingStatus.FAILED, OTHER_TRX, longBefore))).isFalse();
 		// within the clock skew allowance
 		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt.minusSeconds(60)))).isFalse();
+	}
+
+	@Test
+	void remote_ofATransactionMetasfreshRecordedBeforeTheCurrentCheckoutStarted_unchanged_successfulFlagged()
+	{
+		// checkout A was declined; the cashier retried (checkout B) 30 s after A started, and B awaits its SumUp id. A's late
+		// approval arrives: by SumUp's clock A is within the clock skew allowance, but metasfresh recorded A's SumUp transaction
+		// before B started, so it is A's, never B's
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:30Z");
+		final Instant aStarted = startedAt.minusSeconds(30);
+		final POSPayment retryAwaitingItsId = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).cardCheckoutStartedAt(startedAt).build();
+
+		for (final POSPaymentProcessingStatus status : POSPaymentProcessingStatus.values())
+		{
+			final POSPaymentRemoteUpdateResult result = retryAwaitingItsId.changingStatusFromRemote(responseRecordedAt(status, OTHER_TRX, aStarted, aStarted));
+			assertThat(result.getPayment()).as("status " + status).isEqualTo(retryAwaitingItsId);
+			assertThat(result.isLateApprovalNotBooked()).as("flag for " + status).isEqualTo(status == POSPaymentProcessingStatus.SUCCESSFUL);
+		}
+
+		// the same, once the retry's result is unknown, or after it failed
+		for (final POSPaymentProcessingStatus paymentStatus : ImmutableList.of(POSPaymentProcessingStatus.UNKNOWN, POSPaymentProcessingStatus.FAILED))
+		{
+			final POSPayment retry = cardPaymentBuilder(paymentStatus).cardCheckoutStartedAt(startedAt).build();
+			final POSPaymentRemoteUpdateResult result = retry.changingStatusFromRemote(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, aStarted, aStarted));
+			assertThat(result.getPayment()).as("payment " + paymentStatus).isEqualTo(retry);
+			assertThat(result.isLateApprovalNotBooked()).as("flag on " + paymentStatus).isTrue();
+		}
+	}
+
+	@Test
+	void remote_ofATransactionMetasfreshRecordedOnceTheCurrentCheckoutStarted_applied()
+	{
+		// the current checkout's own result, arriving before its SumUp id is stored: metasfresh recorded its SumUp transaction
+		// when the checkout was sent, i.e. not before the checkout started (with a frozen clock: at the same instant)
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:30Z");
+		for (final Instant recordedAt : ImmutableList.of(startedAt, startedAt.plusMillis(1)))
+		{
+			final POSPayment pending = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).cardCheckoutStartedAt(startedAt).build();
+
+			final POSPaymentRemoteUpdateResult result = pending.changingStatusFromRemote(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt, recordedAt));
+
+			assertThat(result.getPayment().getPaymentProcessingStatus()).as("recorded at " + recordedAt).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+			assertThat(result.getPayment().getSumUpClientTransactionId()).as("recorded at " + recordedAt).isEqualTo(OTHER_TRX);
+			assertThat(result.isLateApprovalNotBooked()).as("recorded at " + recordedAt).isFalse();
+		}
+	}
+
+	@Test
+	void isLateApprovalOfAnEarlierCheckout_notForAnApprovalMetasfreshRecordedBeforeTheStart()
+	{
+		// such an approval is flagged when it arrives (see above), so step 3 does not flag it a second time
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
+		final Instant longBefore = startedAt.minusSeconds(61);
+		final POSPayment payment = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING)
+				.sumUpClientTransactionId("current-trx")
+				.cardCheckoutStartedAt(startedAt)
+				.build();
+
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, longBefore, longBefore))).isFalse();
+		// recorded once the checkout started (e.g. imported later): step 3 still flags it
+		assertThat(payment.isLateApprovalOfAnEarlierCheckout(responseRecordedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, longBefore, startedAt))).isTrue();
+	}
+
+	private static POSPaymentProcessResponse responseRecordedAt(
+			final POSPaymentProcessingStatus status,
+			final String clientTransactionId,
+			final Instant transactionCreated,
+			final Instant transactionRecordedAt)
+	{
+		return responseCreatedAt(status, clientTransactionId, transactionCreated).toBuilder()
+				.transactionRecordedAt(transactionRecordedAt)
+				.build();
 	}
 
 	private static POSPaymentProcessResponse responseCreatedAt(final POSPaymentProcessingStatus status, final String clientTransactionId, final Instant transactionCreated)

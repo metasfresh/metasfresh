@@ -103,6 +103,16 @@ public class SumUpTransactionRepository
 	}
 
 	/**
+	 * @return when metasfresh first saved the transaction with the given client transaction id (its {@code Created}, by
+	 * metasfresh's own clock), if metasfresh has it
+	 */
+	public Optional<Instant> findRecordedAtByClientTransactionId(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		return retrieveSingleRecordIfExists(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId))
+				.map(record -> record.getCreated().toInstant());
+	}
+
+	/**
 	 * @param posRef must reference something (at least one id &gt; 0)
 	 * @return the SUCCESSFUL transactions (refunded ones included) carrying the given POS reference that metasfresh changed at or
 	 * after the given time (by its own clock), oldest first

@@ -1099,7 +1099,8 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * The till checks out the card payment of the sale on a background thread, and the checkout pauses in its wait before it
+	 * The till checks out (or, the cashier retrying a failed card payment, checks out again) the card payment of the sale on a
+	 * background thread, and the checkout pauses in its wait before it
 	 * retries storing SumUp's answer (its step 3; a scenario makes the first attempt fail with
 	 * {@code saving the card payment of a POS sale fails with a database error for the next 1 attempt}). Returns once the
 	 * checkout paused: it holds no lock and no transaction then, so SumUp's results can reach metasfresh "before the checkout
@@ -1107,14 +1108,16 @@ public class POS_CardSale_StepDef
 	 * The SumUp transaction the stub accepted for the checkout is assigned to the sale.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.depends the sale was created by {@code a POS card sale ... is prepared at ...}; the first attempt of storing
-	 * SumUp's answer fails
+	 * @cucumber.depends the sale was created by {@code a POS card sale ... is prepared at ...} (for a retry: by
+	 * {@code a POS card sale ... is checked out at ...}, its card payment failed since); the first attempt of storing SumUp's
+	 * answer fails
 	 * @cucumber.example
 	 * <pre>
 	 * When the card payment of POS sale sale1 is checked out, the checkout pausing before it retries storing SumUp's answer
+	 * When the card payment of POS sale sale1 is retried, the checkout pausing before it retries storing SumUp's answer
 	 * </pre>
 	 */
-	@And("^the card payment of POS sale (\\S+) is checked out, the checkout pausing before it retries storing SumUp's answer$")
+	@And("^the card payment of POS sale (\\S+) is (?:checked out|retried), the checkout pausing before it retries storing SumUp's answer$")
 	public void cardPaymentCheckedOutPausingBeforeRetry(@NonNull final String saleIdentifier) throws InterruptedException
 	{
 		final Sale sale = getSale(saleIdentifier);

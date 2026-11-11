@@ -959,3 +959,41 @@ Feature: POS till card sale with an unknown card result
     And the invoice of POS sale sale1 is paid
     And POS sale sale1 has 1 payment receipt
     And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+
+  # ##########################################################################
+  # The cashier sees checkout A declined and retries: checkout B starts 30 s after A started. B was sent, but its SumUp id is
+  # not stored on the card payment yet (here: the first attempt of storing SumUp's answer failed), when SumUp's late approval of
+  # A arrives. By SumUp's clock A is only 30 s older than B (within the clock skew allowance), but metasfresh saved A's SumUp
+  # transaction before B started, so it is A's: it is not booked onto the payment, the back office gets a record to refund it,
+  # and only B's approval completes the sale.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_37
+  Scenario: A late approval of a declined checkout arriving while the retry, started within 60 s, awaits its SumUp id is not booked
+    Given SumUp API stub answers the next checkout with SUCCESS
+    And a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    And the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
+    When SumUp API stub reports the transaction of POS sale sale1 as FAILED
+    And SumUp calls back for the transaction of POS sale sale1
+    Then the card payment of POS sale sale1 has status FAILED and sumUpClientTransactionId of the first transaction
+    When metasfresh's clock is 30 seconds after the card checkout of POS sale sale1
+    And saving the card payment of a POS sale fails with a database error for the next 1 attempt
+    And the card payment of POS sale sale1 is retried, the checkout pausing before it retries storing SumUp's answer
+    And SumUp API stub reports the first transaction of POS sale sale1 as SUCCESSFUL
+    And SumUp calls back for the first transaction of POS sale sale1
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId empty
+    And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+    When the till's card checkout of POS sale sale1 retries storing SumUp's answer
+    Then the till's card checkout of POS sale sale1 answered the card payment with status PENDING and sumUpClientTransactionId set
+    And the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
+    When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
+    And SumUp calls back for the transaction of POS sale sale1
+    Then the card payment of POS sale sale1 has status SUCCESSFUL and sumUpClientTransactionId of the latest transaction
+    And the card payment of POS sale sale1 does not carry the card details of the first SumUp transaction
+    And after not more than 30s, POS sale sale1 is completed
+    And the invoice of POS sale sale1 is paid
+    And POS sale sale1 has 1 payment receipt
+    And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'

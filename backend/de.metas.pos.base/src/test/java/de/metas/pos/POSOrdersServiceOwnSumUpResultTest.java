@@ -21,6 +21,7 @@ import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
+import de.metas.pos.payment_gateway.sumup.SumUpUtils;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.user.UserId;
@@ -203,6 +204,52 @@ class POSOrdersServiceOwnSumUpResultTest
 
 		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
 		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).containsExactly("de.metas.pos.POSPayment.LateApprovalNotBooked");
+	}
+
+	@Test
+	void statusEvent_approvalOfAnEarlierCheckoutRecordedBeforeTheRetryStarted_whileTheRetryAwaitsItsSumUpId_notAppliedAndRecorded()
+	{
+		// checkout A was declined; the cashier retried (checkout B) 30 s after A started; B was sent, but its SumUp id is not
+		// stored yet. A's late approval arrives: by SumUp's clock A was created only 30 s before B started (within the clock skew
+		// allowance), but metasfresh recorded A's SumUp transaction when A was sent, before B started
+		final Instant aStartedAt = Instant.parse("2026-11-10T10:00:00Z");
+		final Instant bStartedAt = aStartedAt.plusSeconds(30);
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder()
+				.paymentProcessingStatus(POSPaymentProcessingStatus.PENDING)
+				.cardCheckoutStartedAt(bStartedAt));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		when(sumUpService.findTransactionRecordedAt(SumUpClientTransactionId.ofString(EARLIER_TRX))).thenReturn(Optional.of(aStartedAt));
+
+		service.updatePaymentStatusFromRemoteAndTryCompleteOrder(
+				orderAndPaymentId,
+				SumUpUtils.extractProcessResponse(sumUpTransaction(EARLIER_TRX, SumUpTransactionStatus.SUCCESSFUL, aStartedAt)));
+
+		final POSPayment payment = ordersRepository.getById(order.getLocalIdNotNull()).getPaymentById(cardPayment.getLocalIdNotNull());
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
+		assertThat(payment.getSumUpClientTransactionId()).isNull();
+		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).containsExactly("de.metas.pos.POSPayment.LateApprovalNotBooked");
+	}
+
+	@Test
+	void statusEvent_ownApprovalRecordedOnceTheCheckoutStarted_whileItAwaitsItsSumUpId_applied()
+	{
+		final Instant startedAt = Instant.parse("2026-11-10T10:00:30Z");
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder()
+				.paymentProcessingStatus(POSPaymentProcessingStatus.PENDING)
+				.cardCheckoutStartedAt(startedAt));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		when(sumUpService.findTransactionRecordedAt(SumUpClientTransactionId.ofString(CURRENT_TRX))).thenReturn(Optional.of(startedAt.plusSeconds(1)));
+
+		service.updatePaymentStatusFromRemoteAndTryCompleteOrder(
+				orderAndPaymentId,
+				SumUpUtils.extractProcessResponse(sumUpTransaction(CURRENT_TRX, SumUpTransactionStatus.SUCCESSFUL, startedAt.plusSeconds(1))));
+
+		final POSPayment payment = ordersRepository.getById(order.getLocalIdNotNull()).getPaymentById(cardPayment.getLocalIdNotNull());
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+		assertThat(payment.getSumUpClientTransactionId()).isEqualTo(CURRENT_TRX);
+		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).isEmpty();
 	}
 
 	@Test

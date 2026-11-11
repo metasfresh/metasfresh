@@ -245,6 +245,15 @@ public class SumUpService
 	}
 
 	/**
+	 * @return when metasfresh first saved the transaction with the given client transaction id (by metasfresh's own clock), if
+	 * metasfresh has it. Reads the database only (no SumUp call).
+	 */
+	public Optional<Instant> findTransactionRecordedAt(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		return trxRepository.findRecordedAtByClientTransactionId(clientTransactionId);
+	}
+
+	/**
 	 * @param posRef must reference something (at least one id &gt; 0)
 	 * @return whether a transaction carrying the given POS reference was created at or after the given time
 	 */

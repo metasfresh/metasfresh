@@ -191,7 +191,7 @@ public class POSOrdersService
 			{
 				return payment;
 			}
-			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response);
+			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(withTransactionRecordedAt(response));
 			lateApprovalNotBooked.set(result.isLateApprovalNotBooked());
 			return result.getPayment();
 		});
@@ -202,6 +202,23 @@ public class POSOrdersService
 		}
 
 		tryCompleteNoFail(posOrderAndPaymentId.getOrderId());
+	}
+
+	/**
+	 * @return the response with when metasfresh saved its SumUp transaction (by metasfresh's own clock), if metasfresh has it, so
+	 * that a result of a card checkout that started before the payment's current one is never taken as the current checkout's
+	 * (see {@link POSPayment#changingStatusFromRemote}). Reads the database only (no SumUp call).
+	 */
+	private POSPaymentProcessResponse withTransactionRecordedAt(@NonNull final POSPaymentProcessResponse response)
+	{
+		final String clientTransactionId = response.getClientTransactionId();
+		if (clientTransactionId == null || response.getTransactionRecordedAt() != null)
+		{
+			return response;
+		}
+		return sumUpService.findTransactionRecordedAt(SumUpClientTransactionId.ofString(clientTransactionId))
+				.map(recordedAt -> response.toBuilder().transactionRecordedAt(recordedAt).build())
+				.orElse(response);
 	}
 
 	/**
@@ -566,6 +583,7 @@ public class POSOrdersService
 				.stream()
 				.filter(sumUpTrx -> !sumUpTrx.isRefunded())
 				.map(SumUpUtils::extractProcessResponse)
+				.map(this::withTransactionRecordedAt)
 				.filter(payment::isLateApprovalOfAnEarlierCheckout)
 				.collect(ImmutableList.toImmutableList());
 	}

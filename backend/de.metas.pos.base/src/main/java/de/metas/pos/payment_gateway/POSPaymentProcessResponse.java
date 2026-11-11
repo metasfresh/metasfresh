@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class POSPaymentProcessResponse
 {
 	@NonNull POSPaymentProcessingStatus status;
@@ -23,6 +23,11 @@ public class POSPaymentProcessResponse
 	@Nullable String clientTransactionId;
 	/** when the payment processor created the transaction this response belongs to, if known */
 	@Nullable Instant transactionCreated;
+	/**
+	 * when metasfresh first saved the transaction this response belongs to, by metasfresh's own clock, if known: a transaction
+	 * recorded before a card payment's current checkout started belongs to an earlier checkout of that payment
+	 */
+	@Nullable Instant transactionRecordedAt;
 	@Nullable String summary;
 
 	@Nullable String errorMessage;

@@ -12,6 +12,7 @@ import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -100,6 +101,28 @@ class SumUpTransactionRepositoryTest
 				.build());
 
 		assertThat(result).extracting(SumUpTransaction::getExternalId).containsExactly(trx1.getExternalId());
+	}
+
+	@Test
+	void findRecordedAtByClientTransactionId_whenMetasfreshFirstSavedTheTransaction()
+	{
+		try
+		{
+			SystemTime.setFixedTimeSource("2026-11-10T10:00:00Z");
+			final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
+			repository.saveNew(trx);
+
+			// a later status change does not change when metasfresh first saved it
+			SystemTime.setFixedTimeSource("2026-11-10T10:05:00Z");
+			repository.save(trx.toBuilder().status(SumUpTransactionStatus.SUCCESSFUL).build());
+
+			assertThat(repository.findRecordedAtByClientTransactionId(trx.getClientTransactionId())).contains(Instant.parse("2026-11-10T10:00:00Z"));
+			assertThat(repository.findRecordedAtByClientTransactionId(SumUpClientTransactionId.ofString("unknown"))).isEmpty();
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
 	}
 
 	@Test
