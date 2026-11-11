@@ -14,6 +14,7 @@ import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import Table from './Table';
 import TablePagination from './TablePagination';
+import { isMouseDownOnScrollbar } from '../../utils/scrollbarPress';
 
 class TableWrapper extends PureComponent {
   constructor(props) {
@@ -205,6 +206,11 @@ class TableWrapper extends PureComponent {
       parentView,
       deselectTableRows,
     } = this.props;
+
+    // a press on the list's own scrollbar targets the wrapper itself; it is not a click outside the table
+    if (limitOnClickOutside && isMouseDownOnScrollbar(event)) {
+      return;
+    }
 
     const parentNode = event.target.parentNode;
     const closeIncluded =
