@@ -22,6 +22,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -65,12 +66,16 @@ public class HUsToReceiveViewFactoryTest
 		});
 	}
 
-	private static void setAlwaysUseSameLayout(final boolean value)
+	private static void setAlwaysUseSameLayout(final boolean isAlwaysUseSameLayout)
 	{
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_AlwaysUseSameLayout, value, ClientId.SYSTEM, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_AlwaysUseSameLayout, isAlwaysUseSameLayout, ClientId.SYSTEM, OrgId.ANY);
 	}
 
-	/** Replaces the database-backed SqlViewBinding (needs the application dictionary) by a stub; the caption does not depend on it. */
+	/**
+	 * Puts a stub into the factory's SqlViewBinding cache: the real binding is database-backed (needs the application
+	 * dictionary) and the caption does not depend on it. Reflection is used because the cache is private and no
+	 * production seam exists for it; the factory under test stays the real class.
+	 */
 	private static <T extends HUEditorViewFactoryTemplate> T withStubbedBinding(final T factory) throws Exception
 	{
 		final SqlViewBinding binding = Mockito.mock(SqlViewBinding.class);
@@ -91,9 +96,9 @@ public class HUsToReceiveViewFactoryTest
 		return constructor.newInstance(Optional.empty());
 	}
 
-	private void assertReceiveCaptions(final boolean alwaysUseSameLayout) throws Exception
+	private void assertReceiveCaptions(final boolean isAlwaysUseSameLayout) throws Exception
 	{
-		setAlwaysUseSameLayout(alwaysUseSameLayout);
+		setAlwaysUseSameLayout(isAlwaysUseSameLayout);
 		final HUsToReceiveViewFactory factory = withStubbedBinding(new HUsToReceiveViewFactory());
 
 		final ViewLayout layout = factory.getViewLayout(HUsToReceiveViewFactory.WINDOW_ID, JSONViewDataType.grid, null);
@@ -103,24 +108,28 @@ public class HUsToReceiveViewFactoryTest
 		assertThat(layout.getCaption("en_US")).isEqualTo("Receive HUs");
 	}
 
-	@Test
-	void receiveViewCaption_translated_whenLayoutCustomized() throws Exception
+	@Nested
+	class ReceiveViewCaption
 	{
-		assertReceiveCaptions(false);
-	}
+		@Test
+		void translated_whenLayoutCustomized() throws Exception
+		{
+			assertReceiveCaptions(false);
+		}
 
-	@Test
-	void receiveViewCaption_translated_whenAlwaysUseSameLayout() throws Exception
-	{
-		assertReceiveCaptions(true);
+		@Test
+		void translated_whenAlwaysUseSameLayout() throws Exception
+		{
+			assertReceiveCaptions(true);
+		}
 	}
 
 	@Test
 	void defaultHUEditorCaption_unchanged() throws Exception
 	{
-		for (final boolean alwaysUseSameLayout : new boolean[] { false, true })
+		for (final boolean isAlwaysUseSameLayout : new boolean[] { false, true })
 		{
-			setAlwaysUseSameLayout(alwaysUseSameLayout);
+			setAlwaysUseSameLayout(isAlwaysUseSameLayout);
 			final DefaultHUEditorViewFactory factory = withStubbedBinding(newDefaultHUEditorViewFactory());
 
 			final ViewLayout layout = factory.getViewLayout(WindowId.fromJson(WEBUI_HU_Constants.WEBUI_HU_Window_ID_String), JSONViewDataType.grid, null);
