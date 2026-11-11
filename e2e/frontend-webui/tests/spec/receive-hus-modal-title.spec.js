@@ -10,6 +10,7 @@ import { PURCHASE_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import {
   authenticateRestSetupSession,
+  fetchOwnViewRows,
   openWindowOnOwnRows,
   patchDocument,
   selectRowUnlessSelected,
@@ -80,7 +81,6 @@ test.describe('Receive HUs modal - title', () => {
     }) => {
       describeCase(`Receive HUs modal title from Logistik window ${language}`);
       const masterdata = await createPurchaseReceiptMasterdata({ language, productName: 'Test Product for Receive HUs modal title' });
-      const REST = WEBAPI_BASE_URL;
       const productId = masterdata.products.Product1.id;
       const vendorId = masterdata.bpartners.VENDOR1.id;
 
@@ -100,22 +100,13 @@ test.describe('Receive HUs modal - title', () => {
       ]);
 
       // the receipt-schedule row is created asynchronously: poll the window's own view for this order
-      const ownRows = async () => {
-        const view = await (
-          await request.post(`${REST}/documentView/${LOGISTIK_WINDOW_ID}`, {
-            data: { windowId: String(LOGISTIK_WINDOW_ID), viewType: 'grid' },
-          })
-        ).json();
-        const rowsPage = await (
-          await request.get(
-            `${REST}/documentView/${LOGISTIK_WINDOW_ID}/${view.viewId}` +
-              `?firstRow=0&pageLength=500&orderBy=-M_ReceiptSchedule_ID`,
-          )
-        ).json();
-        return (rowsPage.result || []).filter(
-          (row) => String(row.fieldsByName?.M_Product_ID?.value?.key) === String(productId),
-        );
-      };
+      const ownRows = () =>
+        fetchOwnViewRows({
+          request,
+          windowId: LOGISTIK_WINDOW_ID,
+          orderBy: '-M_ReceiptSchedule_ID',
+          isOwnRow: (row) => String(row.fieldsByName?.M_Product_ID?.value?.key) === String(productId),
+        });
       await expect.poll(async () => (await ownRows()).length, { timeout: 90000, intervals: [1000, 2000] }).toBe(1);
       const rowIds = (await ownRows()).map((row) => Number(row.id));
 

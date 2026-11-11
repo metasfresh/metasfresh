@@ -71,3 +71,33 @@ export const selectRowUnlessSelected = async (row) => {
   }
   await expect(row).toHaveClass(/row-selected/);
 };
+
+/**
+ * The rows of a window that satisfy `isOwnRow`, read from a FRESH server-side view (newest first via `orderBy`,
+ * paged to the end), so neither the grid's cached state nor other runs' records are involved. Use it for windows
+ * without a filter field.
+ * @param {{request: object, windowId: number|string, orderBy: string, isOwnRow: (row: object) => boolean}} options
+ */
+export const fetchOwnViewRows = async ({ request, windowId, orderBy, isOwnRow }) => {
+  const view = await (
+    await request.post(`${WEBAPI_BASE_URL}/documentView/${windowId}`, {
+      data: { windowId: String(windowId), viewType: 'grid' },
+    })
+  ).json();
+
+  const PAGE_LENGTH = 500;
+  const ownRows = [];
+  for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
+    const rowsPage = await (
+      await request.get(
+        `${WEBAPI_BASE_URL}/documentView/${windowId}/${view.viewId}` +
+          `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=${orderBy}`,
+      )
+    ).json();
+    const rows = rowsPage.result || [];
+    ownRows.push(...rows.filter(isOwnRow));
+    if (rows.length < PAGE_LENGTH) {
+      return ownRows;
+    }
+  }
+};

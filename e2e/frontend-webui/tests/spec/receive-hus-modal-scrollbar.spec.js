@@ -3,7 +3,7 @@ import config, { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { createPurchaseReceiptMasterdata, openReceiptCandidateOfNewPurchaseOrder } from '../utils/PurchaseReceiptSetup';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
-import { getPage, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * "Receive HUs" modal: a mouse press on the modal's scrollbar must keep the selected HU row.

@@ -9,6 +9,7 @@ import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import {
   authenticateRestSetupSession,
+  fetchOwnViewRows,
   firstDocument,
   openWindowOnOwnRows as openWindowOnRowsOf,
   patchDocument as patchDocumentVia,
@@ -243,31 +244,13 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     //
     // Polled through the window's own view because the tab carries no filter field at all: a fresh view per
     // attempt, NEWEST FIRST via ?orderBy=, paged to the end, matched on THIS order's C_Order_ID.
-    const ownReceiptDispositionRows = async () => {
-      const view = await (
-        await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
-          data: { windowId: String(RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID), viewType: 'grid' },
-        })
-      ).json();
-
-      const PAGE_LENGTH = 500;
-      const ownRows = [];
-      for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
-        const rowsPage = await (
-          await request.get(
-            `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
-              `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
-          )
-        ).json();
-        const rows = rowsPage.result || [];
-        ownRows.push(
-          ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
-        );
-        if (rows.length < PAGE_LENGTH) {
-          return ownRows;
-        }
-      }
-    };
+    const ownReceiptDispositionRows = () =>
+      fetchOwnViewRows({
+        request,
+        windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
+        orderBy: '-RV_ReceiptDisposition_DeliveryPlanning_ID',
+        isOwnRow: (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId),
+      });
 
     await test.step('wait for the two receipt-schedule rows the completion creates asynchronously', async () => {
       await expect
@@ -468,30 +451,13 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
 
       // The rows of THIS purchase order on the window, read from a fresh view of the server (newest first, paged to
       // the end - the tab has no filter field), so neither the grid's cached state nor other records are involved.
-      const ownRows = async () => {
-        const view = await (
-          await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
-            data: { windowId: String(RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID), viewType: 'grid' },
-          })
-        ).json();
-        const PAGE_LENGTH = 500;
-        const own = [];
-        for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
-          const rowsPage = await (
-            await request.get(
-              `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
-                `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
-            )
-          ).json();
-          const rows = rowsPage.result || [];
-          own.push(
-            ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
-          );
-          if (rows.length < PAGE_LENGTH) {
-            return own;
-          }
-        }
-      };
+      const ownRows = () =>
+        fetchOwnViewRows({
+          request,
+          windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
+          orderBy: '-RV_ReceiptDisposition_DeliveryPlanning_ID',
+          isOwnRow: (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId),
+        });
 
       await test.step('wait for the receipt-schedule row the completion creates asynchronously', async () => {
         await expect
