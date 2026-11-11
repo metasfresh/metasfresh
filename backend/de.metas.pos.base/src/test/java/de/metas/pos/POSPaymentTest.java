@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -328,5 +329,57 @@ class POSPaymentTest
 				assertThat(result.isLateApprovalNotBooked()).as("flag for " + status).isTrue();
 			}
 		}
+	}
+
+	@Test
+	void remote_ofATransactionCreatedLongBeforeTheCurrentCheckoutStarted_unchanged_successfulFlagged()
+	{
+		// the current checkout started at 10:10 and names no SumUp transaction yet; the result's transaction was created at 10:00
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
+		final POSPayment awaiting = cardPaymentBuilder(POSPaymentProcessingStatus.UNKNOWN).cardCheckoutStartedAt(startedAt).build();
+
+		for (final POSPaymentProcessingStatus status : POSPaymentProcessingStatus.values())
+		{
+			final POSPaymentRemoteUpdateResult result = awaiting.changingStatusFromRemote(responseCreatedAt(status, RELEASED_TRX, Instant.parse("2026-11-10T10:00:00Z")));
+			assertThat(result.getPayment()).as("status " + status).isEqualTo(awaiting);
+			assertThat(result.isLateApprovalNotBooked()).as("flag for " + status).isEqualTo(status == POSPaymentProcessingStatus.SUCCESSFUL);
+		}
+	}
+
+	@Test
+	void remote_ofATransactionCreatedAfterTheCurrentCheckoutStarted_applied()
+	{
+		// the current checkout's own result, arriving before its SumUp id is stored on the payment
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
+		final POSPayment pending = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).cardCheckoutStartedAt(startedAt).build();
+
+		final POSPaymentRemoteUpdateResult result = pending.changingStatusFromRemote(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt.plusSeconds(1)));
+
+		assertThat(result.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+		assertThat(result.isLateApprovalNotBooked()).isFalse();
+	}
+
+	@Test
+	void remote_ofATransactionCreatedWithinTheClockSkewAllowanceBeforeTheStart_applied()
+	{
+		// SumUp's clock may run behind the till's
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
+		final POSPayment pending = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING).cardCheckoutStartedAt(startedAt).build();
+
+		final POSPaymentRemoteUpdateResult result = pending.changingStatusFromRemote(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt.minusSeconds(60)));
+
+		assertThat(result.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+		assertThat(result.isLateApprovalNotBooked()).isFalse();
+	}
+
+	private static POSPaymentProcessResponse responseCreatedAt(final POSPaymentProcessingStatus status, final String clientTransactionId, final Instant transactionCreated)
+	{
+		return POSPaymentProcessResponse.builder()
+				.status(status)
+				.config(POSTerminalPaymentProcessorConfig.builder().type(POSPaymentProcessorType.SumUp).build())
+				.transactionId("ext-1")
+				.clientTransactionId(clientTransactionId)
+				.transactionCreated(transactionCreated)
+				.build();
 	}
 }

@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -20,6 +21,8 @@ public class POSPaymentProcessResponse
 	@Nullable String transactionId;
 	/** SumUp's client transaction id of the checkout this response belongs to, if known */
 	@Nullable String clientTransactionId;
+	/** when the payment processor created the transaction this response belongs to, if known */
+	@Nullable Instant transactionCreated;
 	@Nullable String summary;
 
 	@Nullable String errorMessage;

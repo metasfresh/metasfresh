@@ -30,6 +30,7 @@ class SumUpUtils
 				.cardReader(extractCardReader(sumUpTrx.getCardReader()))
 				.transactionId(sumUpTrx.getExternalId().getAsString())
 				.clientTransactionId(sumUpTrx.getClientTransactionId().getAsString())
+				.transactionCreated(sumUpTrx.getTimestamp())
 				.summary(sumUpTrx.getCard() != null ? sumUpTrx.getCard().getAsString() : null)
 				.build();
 	}

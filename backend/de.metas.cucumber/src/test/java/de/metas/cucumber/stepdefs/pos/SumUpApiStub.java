@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import de.metas.common.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,6 +42,9 @@ import java.util.concurrent.TimeUnit;
  *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure, an unreadable answer ({@link #answerLookupUnreadable}), or HTTP 404 ({@link #answerLookupNotFound}) (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
+ * A transaction's timestamp (when SumUp created it) is taken from metasfresh's clock ({@link SystemTime}), which a scenario
+ * may freeze or advance: SumUp's clock runs with the till's.
+ * <p>
  * State is static: one stub per JVM, reset between scenarios via {@link #reset()}.
  */
 public final class SumUpApiStub
@@ -429,7 +433,7 @@ public final class SumUpApiStub
 						.merchantCode(merchantCode)
 						.amount(amount)
 						.currency(currency)
-						.timestamp(Instant.now().toString())
+						.timestamp(SystemTime.asInstant().toString())
 						.status("PENDING")
 						.build());
 			}
@@ -509,7 +513,7 @@ public final class SumUpApiStub
 					.merchantCode("STUBMERCHANT")
 					.amount(BigDecimal.ZERO)
 					.currency("EUR")
-					.timestamp(Instant.now().toString())
+					.timestamp(SystemTime.asInstant().toString())
 					.status("PENDING")
 					.build();
 		}

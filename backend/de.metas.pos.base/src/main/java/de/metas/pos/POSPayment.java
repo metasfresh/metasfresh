@@ -13,11 +13,19 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 
 @Data
 public class POSPayment
 {
+	/**
+	 * How far SumUp's clock may run behind the till's: a SumUp transaction created more than this before the payment's current
+	 * checkout started belongs to an earlier checkout. Safe, because a released checkout is at least the release wait
+	 * ({@link POSCardReleaseWait}, at least 150 s) older than the next checkout's start, so the allowance cannot hide it.
+	 */
+	static final Duration SUMUP_CLOCK_SKEW_ALLOWANCE = Duration.ofSeconds(60);
+
 	@NonNull private final POSPaymentExternalId externalId;
 	@Nullable private POSPaymentId localId;
 
@@ -201,22 +209,22 @@ public class POSPayment
 	 * Applies a status reported by the payment processor. These rules are checked in this order:
 	 * <ol>
 	 * <li>a result of the released checkout ({@code releasedSumUpClientTransactionId}) leaves the payment unchanged;</li>
-	 * <li>a result of an earlier checkout leaves the payment unchanged (see {@link #isOfAnEarlierCheckout}):
+	 * <li>a result of an earlier checkout leaves the payment unchanged (see {@link #isOfAnEarlierCheckout}); it is one if it
+	 * does not name the SumUp transaction of the payment's current checkout and
 	 * <ul>
-	 * <li>the result and the payment's current checkout both name a SumUp transaction, and they differ; or</li>
+	 * <li>names another one while the current checkout names one; or</li>
+	 * <li>its SumUp transaction was created more than {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started; or</li>
 	 * <li>the payment was released at least once, its current checkout names no SumUp transaction, the result names one, and
 	 * the payment does not await a result (neither PENDING nor UNKNOWN);</li>
 	 * </ul>
 	 * </li>
 	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged;</li>
 	 * <li>PENDING on an UNKNOWN payment keeps it UNKNOWN;</li>
-	 * <li>any other result is applied as is (e.g. SUCCESSFUL on a FAILED / CANCELLED payment that was never released, or on one
-	 * whose current checkout's own result it is).</li>
+	 * <li>any other result is applied as is (e.g. the current checkout's own result, or SUCCESSFUL on a FAILED / CANCELLED
+	 * payment that was never released and whose checkout start is not known).</li>
 	 * </ol>
-	 * A result that leaves the payment unchanged by rules 1 to 3 is flagged as a late approval not booked (to be reviewed by
-	 * the back office) if it is SUCCESSFUL. So a released payment that does not await a result is never turned SUCCESSFUL by a result naming a SumUp transaction.
-	 * Limit: while a payment awaits a result and its current checkout names no SumUp transaction yet, a result of an earlier
-	 * checkout other than the last released one cannot be told apart from the current checkout's own, and is applied.
+	 * A SUCCESSFUL result that leaves the payment unchanged by rules 1 to 3 is flagged as a late approval not booked (to be
+	 * reviewed by the back office).
 	 */
 	public POSPaymentRemoteUpdateResult changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
 	{
@@ -257,28 +265,42 @@ public class POSPayment
 	}
 
 	/**
-	 * @return whether the result is of an earlier checkout of this payment, not of its current one:
+	 * @return whether the result is of an earlier checkout of this payment, not of its current one. A result naming the SumUp
+	 * transaction of the current checkout is always the current checkout's own. Otherwise it is an earlier checkout's if:
 	 * <ul>
-	 * <li>both the result and the payment's current checkout name a SumUp transaction, and they differ; or</li>
+	 * <li>it names another SumUp transaction while the current checkout names one; or</li>
+	 * <li>its SumUp transaction was created more than {@link #SUMUP_CLOCK_SKEW_ALLOWANCE} before the current checkout started
+	 * (a payment checked out before the checkout start was recorded has none, and is not covered); or</li>
 	 * <li>the payment was released at least once, its current checkout names no SumUp transaction, the result names one,
-	 * and the payment does not await a result. While it awaits one (PENDING or UNKNOWN), the result may be the current
-	 * checkout's own: SumUp's status event of a new checkout may arrive before its answer is stored. Otherwise (e.g. FAILED
-	 * after a release of a checkout that got no answer) only an earlier checkout can still report.</li>
+	 * and the payment does not await a result: then no result of the current checkout can arrive.</li>
 	 * </ul>
-	 * A payment that was never released is not covered by the second case: its results are applied as before.
+	 * Otherwise, while the current checkout names no SumUp transaction yet, the result is taken as its own: SumUp's status event
+	 * of a new checkout may arrive before its answer is stored.
 	 */
 	private boolean isOfAnEarlierCheckout(@NonNull final POSPaymentProcessResponse response)
 	{
 		final String remoteClientTransactionId = response.getClientTransactionId();
-		if (remoteClientTransactionId == null)
+		if (sumUpClientTransactionId != null && sumUpClientTransactionId.equals(remoteClientTransactionId))
 		{
 			return false;
 		}
-		if (sumUpClientTransactionId != null)
+		if (sumUpClientTransactionId != null && remoteClientTransactionId != null)
 		{
-			return !sumUpClientTransactionId.equals(remoteClientTransactionId);
+			return true;
 		}
-		return releasedSumUpClientTransactionId != null && !isAwaitingAResult();
+		if (isCreatedBeforeTheCurrentCheckoutStarted(response))
+		{
+			return true;
+		}
+		return remoteClientTransactionId != null && releasedSumUpClientTransactionId != null && !isAwaitingAResult();
+	}
+
+	private boolean isCreatedBeforeTheCurrentCheckoutStarted(@NonNull final POSPaymentProcessResponse response)
+	{
+		final Instant transactionCreated = response.getTransactionCreated();
+		return transactionCreated != null
+				&& cardCheckoutStartedAt != null
+				&& transactionCreated.isBefore(cardCheckoutStartedAt.minus(SUMUP_CLOCK_SKEW_ALLOWANCE));
 	}
 
 	private boolean isAwaitingAResult()
