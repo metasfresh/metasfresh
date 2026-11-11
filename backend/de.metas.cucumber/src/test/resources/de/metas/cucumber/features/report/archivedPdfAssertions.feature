@@ -98,3 +98,19 @@ Feature: Asserting on the rendered PDF of an archived document
 
     # nothing is printed on top of anything else, anywhere in the document
     And the PDF archived for the record identified by "order" has no overlapping text
+
+    # font weight. "Zahlungsbedingungen" is a section heading printed in the bold face; "Kundenbetreuer:" is
+    # a plain label in the regular face (used only in the deliberately wrong RED check of this step)
+    And in the PDF archived for the record identified by "order", text "Zahlungsbedingungen" is printed in bold
+
+    # horizontal position on one line. Position 10's row prints the position number "10" at the left margin,
+    # then the name "AlphaItem", and the unit "Stk" further right - so the name starts right of where the
+    # position number ends, and "Stk" starts right of where the name ends
+    And in the PDF archived for the record identified by "order", text "AlphaItem" starts right of where text "10" ends on the same line
+    And in the PDF archived for the record identified by "order", text "Stk" starts right of where text "AlphaItem" ends on the same line
+
+    # indent: the product number "ALPHA-NR" is set in from the left margin, where the label "Kundenbetreuer:" starts
+    And in the PDF archived for the record identified by "order", text "ALPHA-NR" starts right of where text "Kundenbetreuer:" starts
+
+    # same page: everything of this small order is on page 1
+    And in the PDF archived for the record identified by "order", text "GammaItem" is on the same page as the last occurrence of text "AlphaItem"

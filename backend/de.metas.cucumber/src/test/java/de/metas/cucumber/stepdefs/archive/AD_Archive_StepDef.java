@@ -940,6 +940,206 @@ public class AD_Archive_StepDef
 		}
 	}
 
+	/**
+	 * Verifies that the text is printed in a bold font: SOME occurrence of the text has every one of its glyphs
+	 * in a font whose name contains {@code Bold} (case-insensitive). Matching is on the glyph runs in
+	 * content-stream order, not on visual lines, so the text must be printed as one run.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", text "Auftrag" is printed in bold
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, text {string} is printed in bold")
+	public void assert_archived_pdf_text_is_bold(
+			@NonNull final String recordIdentifier,
+			@NonNull final String text)
+	{
+		final List<List<PdfWord>> matches = findGlyphRuns(extractPdfWords(recordIdentifier), text);
+
+		assertThat(matches)
+				.as("Occurrences of text '%s' in the PDF archived for record %s", text, recordIdentifier)
+				.isNotEmpty();
+
+		final boolean anyBold = matches.stream()
+				.anyMatch(run -> run.stream().allMatch(word -> word.getFontName().toLowerCase().contains("bold")));
+		assertThat(anyBold)
+				.as("Some occurrence of text '%s' printed in a bold font. Occurrences (page, fonts): %s",
+						text,
+						matches.stream()
+								.map(run -> "page " + run.get(0).getPageIndex() + " " + run.stream().map(PdfWord::getFontName).distinct().collect(Collectors.toList()))
+								.collect(Collectors.toList()))
+				.isTrue();
+	}
+
+	/**
+	 * Verifies that {@code rightText} is printed on the same line as {@code leftText}, wholly to its right:
+	 * there is an occurrence of each on the same page, their bottoms differ by at most 2 points, and the
+	 * left edge of {@code rightText} lies beyond the right edge of {@code leftText}. Any pair of occurrences
+	 * may satisfy it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", text "10,00" starts right of where text "AlphaItem" ends on the same line
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, text {string} starts right of where text {string} ends on the same line")
+	public void assert_archived_pdf_text_starts_right_of_end_on_same_line(
+			@NonNull final String recordIdentifier,
+			@NonNull final String rightText,
+			@NonNull final String leftText)
+	{
+		final List<PdfWord> words = extractPdfWords(recordIdentifier);
+		final List<List<PdfWord>> rightMatches = findGlyphRuns(words, rightText);
+		final List<List<PdfWord>> leftMatches = findGlyphRuns(words, leftText);
+		assertMatchesFound(recordIdentifier, rightText, rightMatches, leftText, leftMatches);
+
+		final boolean found = rightMatches.stream().anyMatch(a -> leftMatches.stream().anyMatch(b ->
+				samePage(a, b)
+						&& Math.abs(bottomOf(a) - bottomOf(b)) <= SAME_LINE_TOLERANCE_POINTS
+						&& leftOf(a) > rightOf(b)));
+		assertThat(found)
+				.as("Text '%s' starts right of where text '%s' ends on the same line (same page, |bottom diff| <= %s pt, left(first) > right(second)). '%s' at %s; '%s' at %s",
+						rightText, leftText, SAME_LINE_TOLERANCE_POINTS,
+						rightText, describeRuns(rightMatches), leftText, describeRuns(leftMatches))
+				.isTrue();
+	}
+
+	/**
+	 * Verifies that {@code indentedText} starts more than 10 points right of where {@code marginText} starts —
+	 * an indent, on any line: there is an occurrence of each on the same page with
+	 * {@code left(indentedText) > left(marginText) + 10}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", text "ALPHA-NR" starts right of where text "AlphaItem" starts
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, text {string} starts right of where text {string} starts")
+	public void assert_archived_pdf_text_starts_right_of_start(
+			@NonNull final String recordIdentifier,
+			@NonNull final String indentedText,
+			@NonNull final String marginText)
+	{
+		final List<PdfWord> words = extractPdfWords(recordIdentifier);
+		final List<List<PdfWord>> indentedMatches = findGlyphRuns(words, indentedText);
+		final List<List<PdfWord>> marginMatches = findGlyphRuns(words, marginText);
+		assertMatchesFound(recordIdentifier, indentedText, indentedMatches, marginText, marginMatches);
+
+		final boolean found = indentedMatches.stream().anyMatch(a -> marginMatches.stream().anyMatch(b ->
+				samePage(a, b) && leftOf(a) > leftOf(b) + INDENT_MIN_POINTS));
+		assertThat(found)
+				.as("Text '%s' starts more than %s pt right of where text '%s' starts (same page). '%s' at %s; '%s' at %s",
+						indentedText, INDENT_MIN_POINTS, marginText,
+						indentedText, describeRuns(indentedMatches), marginText, describeRuns(marginMatches))
+				.isTrue();
+	}
+
+	/**
+	 * Verifies that the FIRST occurrence of {@code text} is on the same page as the LAST occurrence of
+	 * {@code lastText} — e.g. that a total line was not pushed onto the following page, away from the block it
+	 * belongs to.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", text "GammaItem" is on the same page as the last occurrence of text "AlphaItem"
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, text {string} is on the same page as the last occurrence of text {string}")
+	public void assert_archived_pdf_text_on_same_page_as_last_occurrence(
+			@NonNull final String recordIdentifier,
+			@NonNull final String text,
+			@NonNull final String lastText)
+	{
+		final List<PdfWord> words = extractPdfWords(recordIdentifier);
+		final List<List<PdfWord>> matches = findGlyphRuns(words, text);
+		final List<List<PdfWord>> lastMatches = findGlyphRuns(words, lastText);
+		assertMatchesFound(recordIdentifier, text, matches, lastText, lastMatches);
+
+		final List<PdfWord> first = matches.get(0);
+		final List<PdfWord> last = lastMatches.get(lastMatches.size() - 1);
+		assertThat(first.get(0).getPageIndex())
+				.as("Page of the first occurrence of text '%s' (%s) vs page of the last occurrence of text '%s' (%s)",
+						text, describeRuns(matches), lastText, describeRuns(lastMatches))
+				.isEqualTo(last.get(0).getPageIndex());
+	}
+
+	private static final float SAME_LINE_TOLERANCE_POINTS = 2f;
+	private static final float INDENT_MIN_POINTS = 10f;
+
+	private static void assertMatchesFound(
+			final String recordIdentifier,
+			final String textA, final List<List<PdfWord>> matchesA,
+			final String textB, final List<List<PdfWord>> matchesB)
+	{
+		assertThat(matchesA).as("Occurrences of text '%s' in the PDF archived for record %s", textA, recordIdentifier).isNotEmpty();
+		assertThat(matchesB).as("Occurrences of text '%s' in the PDF archived for record %s", textB, recordIdentifier).isNotEmpty();
+	}
+
+	private static boolean samePage(final List<PdfWord> a, final List<PdfWord> b)
+	{
+		return a.get(0).getPageIndex() == b.get(0).getPageIndex();
+	}
+
+	private static float leftOf(final List<PdfWord> run)
+	{
+		return run.get(0).getLeft();
+	}
+
+	private static float rightOf(final List<PdfWord> run)
+	{
+		return run.get(run.size() - 1).getRight();
+	}
+
+	private static float bottomOf(final List<PdfWord> run)
+	{
+		return run.get(0).getBottom();
+	}
+
+	private static String describeRuns(final List<List<PdfWord>> runs)
+	{
+		return runs.stream()
+				.map(run -> String.format("[page %s, left %.1f, right %.1f, bottom %.1f]",
+						run.get(0).getPageIndex(), leftOf(run), rightOf(run), bottomOf(run)))
+				.collect(Collectors.toList())
+				.toString();
+	}
+
+	/**
+	 * Every occurrence of {@code text} (whitespace ignored, as the glyph list carries none) as a run of
+	 * consecutive glyphs on one page, in content-stream order.
+	 */
+	private static List<List<PdfWord>> findGlyphRuns(@NonNull final List<PdfWord> words, @NonNull final String text)
+	{
+		final String needle = text.replaceAll("\\s+", "");
+		final List<List<PdfWord>> result = new ArrayList<>();
+		if (needle.isEmpty())
+		{
+			return result;
+		}
+
+		for (int start = 0; start < words.size(); start++)
+		{
+			final int page = words.get(start).getPageIndex();
+			final StringBuilder collected = new StringBuilder();
+			int end = start;
+			while (end < words.size() && words.get(end).getPageIndex() == page && collected.length() < needle.length())
+			{
+				collected.append(words.get(end).getText());
+				end++;
+			}
+			if (collected.toString().equals(needle))
+			{
+				result.add(new ArrayList<>(words.subList(start, end)));
+			}
+		}
+		return result;
+	}
+
 	/** Tolerance in PDF user-space points, matching the frontend PdfLayoutValidator default. */
 	private static final int DEFAULT_OVERLAP_TOLERANCE_POINTS = 2;
 
@@ -1021,6 +1221,7 @@ public class AD_Archive_StepDef
 		float top;
 		float bottom;
 		@NonNull String text;
+		@NonNull String fontName;
 	}
 
 	/**
@@ -1055,6 +1256,12 @@ public class AD_Archive_StepDef
 			return words;
 		}
 
+		private static String fontNameOf(final TextPosition position)
+		{
+			final String name = position.getFont() != null ? position.getFont().getName() : null;
+			return name != null ? name : "";
+		}
+
 		@Override
 		protected void writeString(final String text, final List<TextPosition> textPositions)
 		{
@@ -1076,7 +1283,8 @@ public class AD_Archive_StepDef
 						x + position.getWidthDirAdj(),
 						y - height,
 						y,
-						glyph));
+						glyph,
+						fontNameOf(position)));
 			}
 		}
 	}
