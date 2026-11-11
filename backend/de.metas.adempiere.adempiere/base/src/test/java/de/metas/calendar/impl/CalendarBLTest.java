@@ -25,9 +25,14 @@ package de.metas.calendar.impl;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.YearId;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.util.Services;
+import de.metas.util.calendar.IBusinessDayMatcher;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.TimeUtil;
@@ -36,6 +41,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 public class CalendarBLTest extends CalendarTestBase
 {
@@ -302,6 +308,54 @@ public class CalendarBLTest extends CalendarTestBase
 
 		final Timestamp lastDayOfYear = Services.get(ICalendarBL.class).getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(calendar.getC_Calendar_ID()), year1.getC_Year_ID()));
 		Assertions.assertEquals(0, lastDayOfYear.compareTo(TimeUtil.getDay(2013, 5, 5)), "Wrong last day of year");
+	}
+
+	@Test
+	public void getBusinessDayMatcher_skipsWeekendAndCalendarHoliday()
+	{
+		final I_C_Calendar calendar = db.newInstance(I_C_Calendar.class);
+		db.save(calendar);
+
+		// A fixed (non-recurrent) holiday on Wed 2026-08-12.
+		final I_C_NonBusinessDay holiday = db.newInstance(I_C_NonBusinessDay.class);
+		holiday.setC_Calendar_ID(calendar.getC_Calendar_ID());
+		holiday.setDate1(TimeUtil.asTimestamp(LocalDate.of(2026, 8, 12)));
+		db.save(holiday);
+
+		final OrgId orgId = OrgId.ofRepoId(1_000_000);
+		createOrgInfo(orgId, calendar.getC_Calendar_ID());
+
+		final IBusinessDayMatcher matcher = Services.get(ICalendarBL.class).getBusinessDayMatcher(orgId);
+
+		Assertions.assertTrue(matcher.isBusinessDay(LocalDate.of(2026, 8, 11)), "Tue is a business day");
+		Assertions.assertFalse(matcher.isBusinessDay(LocalDate.of(2026, 8, 12)), "calendar holiday is not a business day");
+		Assertions.assertFalse(matcher.isBusinessDay(LocalDate.of(2026, 8, 15)), "Sat is not a business day");
+	}
+
+	@Test
+	public void getBusinessDayMatcher_noCalendar_fallsBackToWeekendOnly()
+	{
+		// Org has an AD_OrgInfo but no C_Calendar, and no default calendar exists -> weekend-only, never throws.
+		final OrgId orgId = OrgId.ofRepoId(1_000_001);
+		createOrgInfo(orgId, 0);
+
+		final IBusinessDayMatcher matcher = Services.get(ICalendarBL.class).getBusinessDayMatcher(orgId);
+
+		Assertions.assertTrue(matcher.isBusinessDay(LocalDate.of(2026, 8, 14)), "Fri is a business day");
+		Assertions.assertFalse(matcher.isBusinessDay(LocalDate.of(2026, 8, 15)), "Sat is not a business day");
+	}
+
+	private void createOrgInfo(final OrgId orgId, final int calendarId)
+	{
+		final I_AD_OrgInfo orgInfo = db.newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(orgId.getRepoId());
+		// StoreCreditCardData must be a valid code: OrgDAO.toOrgInfo maps it via StoreCreditCardNumberMode.ofCode (NPE otherwise).
+		orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		if (calendarId > 0)
+		{
+			orgInfo.setC_Calendar_ID(calendarId);
+		}
+		db.save(orgInfo);
 	}
 
 	@Test

@@ -32,8 +32,13 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import com.google.common.collect.ImmutableList;
+import de.metas.calendar.CalendarNonBusinessDays;
+import de.metas.util.calendar.CompositeBusinessDayMatcher;
 import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
+
+import javax.annotation.Nullable;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
@@ -220,5 +225,37 @@ public class CalendarBL implements ICalendarBL
 		final I_C_Calendar calendar = calendarDAO.getDefaultCalendar(orgId);
 
 		return CalendarId.ofRepoId(calendar.getC_Calendar_ID());
+	}
+
+	@Override
+	@NonNull
+	public IBusinessDayMatcher getBusinessDayMatcher(@NonNull final OrgId orgId)
+	{
+		final IBusinessDayMatcher weekendMatcher = ExcludeWeekendBusinessDayMatcher.DEFAULT;
+
+		final CalendarId calendarId = getOrgCalendarOrDefaultOrNull(orgId);
+		if (calendarId == null)
+		{
+			// No org/default C_Calendar configured: degrade to weekends-only (Mon-Fri), never throw.
+			return weekendMatcher;
+		}
+
+		final CalendarNonBusinessDays nonBusinessDays = calendarDAO.getCalendarNonBusinessDays(calendarId);
+		return CompositeBusinessDayMatcher.compose(ImmutableList.of(weekendMatcher, nonBusinessDays));
+	}
+
+	@Nullable
+	private CalendarId getOrgCalendarOrDefaultOrNull(@NonNull final OrgId orgId)
+	{
+		final OrgInfo orgInfo = orgDAO.getOrgInfoByIdInTrx(orgId);
+		if (orgInfo.getCalendarId() != null)
+		{
+			return orgInfo.getCalendarId();
+		}
+
+		final I_C_Calendar defaultCalendar = calendarDAO.getDefaultCalendarOrNull(orgId);
+		return defaultCalendar != null
+				? CalendarId.ofRepoId(defaultCalendar.getC_Calendar_ID())
+				: null;
 	}
 }

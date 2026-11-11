@@ -2,6 +2,7 @@ package de.metas.tourplanning.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.calendar.ICalendarBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
@@ -10,6 +11,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.tourplanning.api.IDeliveryDayBL;
@@ -18,6 +20,7 @@ import de.metas.tourplanning.api.WorkdayCalculator;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,6 +56,16 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+
+	/**
+	 * The business-day matcher governing the lead-time date math for this order: Mon-Fri, plus any holidays
+	 * configured on the order org's {@code C_Calendar}. Degrades to weekends-only when the org has no calendar.
+	 */
+	private IBusinessDayMatcher getBusinessDayMatcher(@NonNull final I_C_Order order)
+	{
+		return calendarBL.getBusinessDayMatcher(OrgId.ofRepoId(order.getAD_Org_ID()));
+	}
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
@@ -134,7 +147,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 
 		// Clamp the forward step to >= 0 so a (mis-configured) negative lead time never places DatePromised before
 		// DateOrdered; a negative lead time then behaves like 0. The backward step is clamped symmetrically to <= 0.
-		final LocalDate datePromised = WorkdayCalculator.workday(dateOrdered.toLocalDate(), Math.max(leadTimeDays, 0));
+		final LocalDate datePromised = WorkdayCalculator.addBusinessDays(dateOrdered.toLocalDate(), Math.max(leadTimeDays, 0), getBusinessDayMatcher(order));
 		order.setDatePromised(TimeUtil.asTimestamp(datePromised.atStartOfDay(timeZone)));
 		return true;
 	}
@@ -187,7 +200,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
-		final LocalDate preparationDate = computeLeadTimePreparationDate(datePromised.toLocalDate(), leadTimeDays);
+		final LocalDate preparationDate = computeLeadTimePreparationDate(datePromised.toLocalDate(), leadTimeDays, getBusinessDayMatcher(order));
 		order.setPreparationDate(TimeUtil.asTimestamp(preparationDate.atStartOfDay(timeZone)));
 		return true;
 	}
@@ -200,10 +213,10 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	 * so both derive exactly the same date.
 	 */
 	@VisibleForTesting
-	static LocalDate computeLeadTimePreparationDate(@NonNull final LocalDate deliveryDate, final int leadTimeDays)
+	static LocalDate computeLeadTimePreparationDate(@NonNull final LocalDate deliveryDate, final int leadTimeDays, @NonNull final IBusinessDayMatcher businessDayMatcher)
 	{
 		final int backwardStep = Math.min(-leadTimeDays + 1, 0);
-		return WorkdayCalculator.workday(deliveryDate, backwardStep);
+		return WorkdayCalculator.addBusinessDays(deliveryDate, backwardStep, businessDayMatcher);
 	}
 
 	/**
@@ -248,7 +261,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 				final ZonedDateTime headerPreparationDate = TimeUtil.asZonedDateTime(order.getPreparationDate(), timeZone);
 				return headerPreparationDate != null ? headerPreparationDate : deliveryDate;
 			}
-			return computeLeadTimePreparationDate(deliveryDate.toLocalDate(), leadTimeDays).atStartOfDay(timeZone);
+			return computeLeadTimePreparationDate(deliveryDate.toLocalDate(), leadTimeDays, getBusinessDayMatcher(order)).atStartOfDay(timeZone);
 		}
 
 		// the tour calculation needs a bpartner location; if absent, fall back to the order's stored preparation date

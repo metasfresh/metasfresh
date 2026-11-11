@@ -80,6 +80,14 @@ public interface ICalendarBL extends ISingletonService
 	IBusinessDayMatcher createBusinessDayMatcherExcluding(Set<DayOfWeek> excludeWeekendDays);
 
 	/**
+	 * @return a business-day matcher for the given org: Mon-Fri weekends excluded, composed with the non-business
+	 * days (holidays) of the org's {@code C_Calendar} (org calendar, else default calendar). When no calendar is
+	 * configured for the org it degrades to weekends-only (never throws), so callers that only need "skip weekends,
+	 * and holidays when configured" are safe regardless of calendar setup.
+	 */
+	@NonNull IBusinessDayMatcher getBusinessDayMatcher(@NonNull OrgId orgId);
+
+	/**
 	 * Get Calender from AD_OrgInfo.
 	 * Fallback to Calendar of current Org which has flag "default" to true.
 	 * Fallback to Org=Any.
