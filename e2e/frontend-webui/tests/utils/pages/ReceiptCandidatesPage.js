@@ -1145,6 +1145,74 @@ export class ReceiptCandidatesPage {
       );
     });
   }
+
+  /**
+   * Presses the mouse on the VERTICAL SCROLLBAR of the HU editor modal's list wrapper (`.document-list-wrapper`):
+   * a real `mouse.down()`/`mouse.up()` at a point inside the scrollbar, like a user. With `drag`, the thumb is grabbed
+   * and dragged down instead of pressing the track. The target of such a mousedown is the wrapper itself, which is
+   * what the table's click-outside handling sees.
+   *
+   * The browser must draw classic scrollbars (the spec removes `--hide-scrollbars`) and the modal content must
+   * overflow (small viewport); both are asserted here, so a missing scrollbar fails loudly instead of passing vacuously.
+   *
+   * @param {{drag?: boolean}} [options]
+   * @returns {Promise<{scrollbarWidth: number, scrollTopBefore: number, scrollTopAfter: number}>}
+   */
+  static async pressVerticalScrollbarOfModal({ drag = false } = {}) {
+    return await test.step(`ReceiptCandidatesPage - ${drag ? 'Drag' : 'Press'} the modal's vertical scrollbar`, async () => {
+      const page = getPage();
+      const wrapper = page.locator('.panel-modal .document-list-wrapper').first();
+      await wrapper.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      const geometry = () =>
+        wrapper.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            left: r.left,
+            top: r.top,
+            clientLeft: el.clientLeft,
+            clientTop: el.clientTop,
+            clientWidth: el.clientWidth,
+            clientHeight: el.clientHeight,
+            scrollHeight: el.scrollHeight,
+            scrollTop: el.scrollTop,
+            scrollbarWidth: r.width - el.clientWidth - 2 * el.clientLeft,
+          };
+        });
+
+      const before = await geometry();
+      expect(before.scrollbarWidth, 'the modal list wrapper has no classic vertical scrollbar').toBeGreaterThan(0);
+      expect(before.scrollHeight, 'the modal list wrapper does not overflow vertically').toBeGreaterThan(before.clientHeight);
+
+      const x = before.left + before.clientLeft + before.clientWidth + before.scrollbarWidth / 2;
+      let y;
+      let dragToY;
+      if (drag) {
+        const thumbHeight = (before.clientHeight * before.clientHeight) / before.scrollHeight;
+        y = before.top + before.clientTop + thumbHeight / 2; // thumb sits at the top at scrollTop 0
+        dragToY = y + 60;
+      } else {
+        y = before.top + before.clientTop + before.clientHeight - 20; // track below the thumb
+      }
+
+      const target = await page.evaluate(([px, py]) => {
+        const e = document.elementFromPoint(px, py);
+        return e && e.className;
+      }, [x, y]);
+      expect(String(target), 'the scrollbar point does not hit the modal list wrapper').toContain('document-list-wrapper');
+
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      if (drag) {
+        await page.mouse.move(x, dragToY, { steps: 5 });
+      }
+      await page.mouse.up();
+      await page.waitForTimeout(500);
+
+      const after = await geometry();
+      return { scrollbarWidth: before.scrollbarWidth, scrollTopBefore: before.scrollTop, scrollTopAfter: after.scrollTop };
+    });
+  }
 }
 
 /** True for `POST /process/{processId}`, which creates a process instance. */
