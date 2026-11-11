@@ -50,6 +50,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,6 +58,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_DocType;
@@ -331,6 +333,62 @@ public class CreatePOSTerminalCommandTest
 		assertThat(response.getBankAccountId().getRepoId()).isNotEqualTo(nonCashBankAccount.getC_BP_BankAccount_ID());
 		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(response.getBankAccountId(), I_C_BP_BankAccount.class);
 		assertThat(new BankRepository().isCashBank(BankId.ofRepoId(bankAccount.getC_Bank_ID()))).isTrue();
+	}
+
+	@Test
+	public void execute_whenSeveralCashBankAccountsMatch_shouldAlwaysReuseTheOneWithTheLowestId()
+	{
+		final BankId cashBankId = new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Cash")
+				.routingNo("000000")
+				.cashBank(true)
+				.build()).getBankId();
+		final int lowerId = createOrgBPartnerEURBankAccount(cashBankId);
+		final int higherId = createOrgBPartnerEURBankAccount(cashBankId);
+		assertThat(higherId).isGreaterThan(lowerId);
+
+		assertThat(executeMinimalEURTerminal("T_BA4").getBankAccountId().getRepoId()).isEqualTo(lowerId);
+		assertThat(executeMinimalEURTerminal("T_BA5").getBankAccountId().getRepoId()).isEqualTo(lowerId);
+		assertThat(retrieveActiveOrgBPartnerBankAccounts()).hasSize(2);
+	}
+
+	@Test
+	public void execute_whenTheOnlyCashBankAccountsAreInactiveOrOfAnInactiveBank_shouldCreateANewOne()
+	{
+		final BankId cashBankId = new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Cash")
+				.routingNo("000000")
+				.cashBank(true)
+				.build()).getBankId();
+		final int inactiveAccountId = createOrgBPartnerEURBankAccount(cashBankId);
+		final I_C_BP_BankAccount inactiveAccount = InterfaceWrapperHelper.load(inactiveAccountId, I_C_BP_BankAccount.class);
+		inactiveAccount.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(inactiveAccount);
+
+		final BankId inactiveCashBankId = new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Inactive cash")
+				.routingNo("000000")
+				.cashBank(true)
+				.build()).getBankId();
+		final I_C_Bank inactiveCashBank = InterfaceWrapperHelper.load(inactiveCashBankId, I_C_Bank.class);
+		inactiveCashBank.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(inactiveCashBank);
+		final int accountOfInactiveBankId = createOrgBPartnerEURBankAccount(inactiveCashBankId);
+
+		final int newAccountId = executeMinimalEURTerminal("T_BA6").getBankAccountId().getRepoId();
+
+		assertThat(newAccountId).isNotIn(inactiveAccountId, accountOfInactiveBankId);
+	}
+
+	private int createOrgBPartnerEURBankAccount(@NonNull final BankId bankId)
+	{
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BPartner_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_ID.getRepoId());
+		bankAccount.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
+		bankAccount.setC_Currency_ID(currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR).getRepoId());
+		bankAccount.setC_Bank_ID(bankId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(bankAccount);
+		return bankAccount.getC_BP_BankAccount_ID();
 	}
 
 	private JsonPOSTerminalResponse executeMinimalEURTerminal(final String identifier)

@@ -44,6 +44,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -385,25 +386,23 @@ public class AD_SysConfig_StepDef
 			return;
 		}
 
-		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
-		{
-			final String sysConfigName = entry.getKey();
-			final String priorValue = entry.getValue();
-			if (priorValue == null)
-			{
-				deleteSystemSysConfig(sysConfigName);
-			}
-			else
-			{
-				sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-			}
-		}
-
-		// after the SYSTEM rows: a SYSTEM row created by this scenario has ConfigurationLevel 'S', which forbids saving an org-level row
-		// every row is attempted, also after one failed, so a single failure does not leave the others inactive for later scenarios
-		final List<RuntimeException> reactivationFailures = new ArrayList<>();
+		// every row is attempted, also after one failed, so a single failure does not leave the others changed for later scenarios
+		final List<RuntimeException> restoreFailures = new ArrayList<>();
 		try
 		{
+			for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
+			{
+				try
+				{
+					restoreSystemSysConfig(entry.getKey(), entry.getValue());
+				}
+				catch (final RuntimeException ex)
+				{
+					restoreFailures.add(ex);
+				}
+			}
+
+			// after the SYSTEM rows: a SYSTEM row created by this scenario has ConfigurationLevel 'S', which forbids saving an org-level row
 			for (final int sysConfigId : deactivatedSysConfigIds)
 			{
 				try
@@ -414,7 +413,7 @@ public class AD_SysConfig_StepDef
 				}
 				catch (final RuntimeException ex)
 				{
-					reactivationFailures.add(ex);
+					restoreFailures.add(ex);
 				}
 			}
 		}
@@ -434,11 +433,24 @@ public class AD_SysConfig_StepDef
 			}
 		}
 
-		if (!reactivationFailures.isEmpty())
+		if (!restoreFailures.isEmpty())
 		{
-			final RuntimeException firstFailure = reactivationFailures.get(0);
-			reactivationFailures.subList(1, reactivationFailures.size()).forEach(firstFailure::addSuppressed);
+			final RuntimeException firstFailure = restoreFailures.get(0);
+			restoreFailures.subList(1, restoreFailures.size()).forEach(firstFailure::addSuppressed);
 			throw firstFailure;
+		}
+	}
+
+	/** Puts the SYSTEM row back to its prior value, or deletes it if there was none. */
+	private void restoreSystemSysConfig(@NonNull final String sysConfigName, @Nullable final String priorValue)
+	{
+		if (priorValue == null)
+		{
+			deleteSystemSysConfig(sysConfigName);
+		}
+		else
+		{
+			sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 		}
 	}
 }

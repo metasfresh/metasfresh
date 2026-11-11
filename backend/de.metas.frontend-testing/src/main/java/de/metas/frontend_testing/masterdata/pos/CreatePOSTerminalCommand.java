@@ -268,7 +268,8 @@ public class CreatePOSTerminalCommand
 	}
 
 	/**
-	 * Reuses the org bpartner's active cash-bank account of the given currency in {@link #orgId}; creates one only if there is none.
+	 * Reuses the org bpartner's active account of the given currency in {@link #orgId} whose bank is an active cash bank (the one with the
+	 * lowest ID, if there are several); creates one only if there is none.
 	 * One account per terminal would pile up on the shared DB, and cucumber's bank account step, which looks up the org bpartner's active
 	 * account of a currency expecting at most one, would then fail after any POS E2E run.
 	 */
@@ -288,6 +289,7 @@ public class CreatePOSTerminalCommand
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyId)
 				.addInSubQueryFilter(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, I_C_Bank.COLUMNNAME_C_Bank_ID,
 						queryBL.createQueryBuilder(I_C_Bank.class)
+								.addOnlyActiveRecordsFilter()
 								.addEqualsFilter(I_C_Bank.COLUMNNAME_IsCashBank, true)
 								.create())
 				.orderBy(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
