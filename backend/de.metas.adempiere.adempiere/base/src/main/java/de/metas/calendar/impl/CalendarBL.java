@@ -23,6 +23,7 @@
 package de.metas.calendar.impl;
 
 import de.metas.calendar.CalendarId;
+import de.metas.calendar.CalendarNonBusinessDays;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.YearId;
@@ -32,14 +33,14 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import com.google.common.collect.ImmutableList;
-import de.metas.calendar.CalendarNonBusinessDays;
 import de.metas.util.calendar.CompositeBusinessDayMatcher;
 import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
 
+import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
@@ -216,15 +217,12 @@ public class CalendarBL implements ICalendarBL
 	@NonNull
 	public CalendarId getOrgCalendarOrDefault(final @NonNull OrgId orgId)
 	{
-		final OrgInfo orgInfo = orgDAO.getOrgInfoByIdInTrx(orgId);
-		if (orgInfo.getCalendarId() != null)
+		final CalendarId calendarId = getOrgCalendarOrDefaultOrNull(orgId);
+		if (calendarId == null)
 		{
-			return orgInfo.getCalendarId();
+			throw new AdempiereException(MSG_SET_DEFAULT_OR_ORG_CALENDAR);
 		}
-
-		final I_C_Calendar calendar = calendarDAO.getDefaultCalendar(orgId);
-
-		return CalendarId.ofRepoId(calendar.getC_Calendar_ID());
+		return calendarId;
 	}
 
 	@Override

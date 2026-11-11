@@ -343,6 +343,9 @@ public class CalendarBLTest extends CalendarTestBase
 
 		Assertions.assertTrue(matcher.isBusinessDay(LocalDate.of(2026, 8, 14)), "Fri is a business day");
 		Assertions.assertFalse(matcher.isBusinessDay(LocalDate.of(2026, 8, 15)), "Sat is not a business day");
+		// Isolate the fallback branch: 2026-08-12 (a Wed) is the holiday the other test configures; with no
+		// calendar it must stay a business day, proving the weekend-only fallback (no holiday calendar applied).
+		Assertions.assertTrue(matcher.isBusinessDay(LocalDate.of(2026, 8, 12)), "Wed is a business day when no calendar is configured");
 	}
 
 	private void createOrgInfo(final OrgId orgId, final int calendarId)
