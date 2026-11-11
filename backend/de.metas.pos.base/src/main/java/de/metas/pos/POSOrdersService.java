@@ -229,7 +229,7 @@ public class POSOrdersService
 		final String clientTransactionId = response.getClientTransactionId();
 		final String errorCode = new AdempiereException(MSG_LateApprovalNotBooked).getErrorCode();
 		if (clientTransactionId != null
-				&& ordersRepository.existsIssueByPaymentId(posOrderAndPaymentId.getPaymentId(), errorCode, clientTransactionId))
+				&& ordersRepository.hasIssueWithPaymentIdAndErrorCodeAndSummaryContaining(posOrderAndPaymentId.getPaymentId(), errorCode, clientTransactionId))
 		{
 			return;
 		}

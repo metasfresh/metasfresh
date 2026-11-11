@@ -197,7 +197,7 @@ public class POSOrdersRepository
 	 * @return whether an AD_Issue with the given {@code ErrorCode} is recorded for the given payment whose summary contains the given text
 	 * (e.g. the SumUp client transaction id the issue names)
 	 */
-	public boolean existsIssueByPaymentId(
+	public boolean hasIssueWithPaymentIdAndErrorCodeAndSummaryContaining(
 			@NonNull final POSPaymentId posPaymentId,
 			@NonNull final String errorCode,
 			@NonNull final String summaryContains)
