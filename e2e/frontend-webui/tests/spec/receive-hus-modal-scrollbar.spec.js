@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import config, { test } from '../../playwright.config';
-import { allure } from 'allure-playwright';
+import { describeReceiveHUsCase } from '../utils/ReceiveHUsAllure';
 import { createPurchaseReceiptMasterdata, openReceiptCandidateOfNewPurchaseOrder } from '../utils/PurchaseReceiptSetup';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
@@ -94,19 +94,11 @@ async function expectRowSelectedWithPanel(page, when = 'before the press') {
   await expect(page.locator(MODAL_QUICK_ACTION).first(), 'modal action enabled').not.toHaveClass(/disabled/);
 }
 
-function describeCase(story) {
-  allure.epic('E0150: Material Receipt');
-  allure.tag('F65010: Material Receipt Candidates');
-  allure.tag('F65010');
-  allure.story(story);
-  allure.severity('normal');
-}
-
 test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
   test.setTimeout(180000);
 
-  test('TC1a: wheel scroll keeps the selected HU row', async ({ page }) => {
-    describeCase('Wheel scroll keeps the selection');
+  test('wheel scroll keeps the selected HU row', async ({ page }) => {
+    describeReceiveHUsCase('Wheel scroll keeps the selection');
     await openReceiveModalAndSelectRow(page);
 
     const wrapper = page.locator('.panel-modal .document-list-wrapper').first();
@@ -125,8 +117,8 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     await expectRowSelectedWithPanel(page, 'after the wheel scroll');
   });
 
-  test('TC1b: pressing the vertical scrollbar keeps the selected HU row', async ({ page }) => {
-    describeCase('Scrollbar press keeps the selection');
+  test('pressing the vertical scrollbar keeps the selected HU row', async ({ page }) => {
+    describeReceiveHUsCase('Scrollbar press keeps the selection');
     await openReceiveModalAndSelectRow(page);
 
     const result = await ReceiptCandidatesPage.pressVerticalScrollbarOfModal();
@@ -135,8 +127,8 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     expect(result.scrollTopAfter, 'the press on the scrollbar track scrolled the content').toBeGreaterThan(result.scrollTopBefore);
   });
 
-  test('TC1c: dragging the scrollbar thumb keeps the selected HU row', async ({ page }) => {
-    describeCase('Scrollbar thumb drag keeps the selection');
+  test('dragging the scrollbar thumb keeps the selected HU row', async ({ page }) => {
+    describeReceiveHUsCase('Scrollbar thumb drag keeps the selection');
     await openReceiveModalAndSelectRow(page);
 
     const result = await ReceiptCandidatesPage.pressVerticalScrollbarOfModal({ isDrag: true });
@@ -145,8 +137,8 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     expect(result.scrollTopAfter, 'dragging the scrollbar thumb scrolled the content').toBeGreaterThan(result.scrollTopBefore);
   });
 
-  test('TC1d: a click on blank list area inside the modal still deselects (unchanged behaviour)', async ({ page }) => {
-    describeCase('Blank area click still deselects');
+  test('a click on blank list area inside the modal still deselects (unchanged behaviour)', async ({ page }) => {
+    describeReceiveHUsCase('Blank area click still deselects');
     await openReceiveModalAndSelectRow(page);
 
     // a point on the list area outside the table and the Merkmale panel
@@ -158,8 +150,8 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     await expect(page.locator(MODAL_SELECTED_ROWS)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
   });
 
-  test('TC1e: a press on the modal scrollbar keeps the receipt-candidate row selected in the background window', async ({ page }) => {
-    describeCase('Scrollbar press keeps the background selection');
+  test('a press on the modal scrollbar keeps the receipt-candidate row selected in the background window', async ({ page }) => {
+    describeReceiveHUsCase('Scrollbar press keeps the background selection');
     await openReceiveModalAndSelectRow(page);
     // the modal carries a parentView (the receipt-candidates view), so a wrongly handled press would also clear it
     const backgroundBefore = await countBackgroundSelectedRows(page);
@@ -171,8 +163,8 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     expect(await countBackgroundSelectedRows(page), 'background receipt-candidate row still selected').toBe(backgroundBefore);
   });
 
-  test('TC1f: a blank-area click on a NON-modal grid still deselects (unchanged behaviour); records scrollbar behaviour there', async ({ page }) => {
-    describeCase('Non-modal grid blank click unchanged');
+  test('a blank-area click on a NON-modal grid still deselects (unchanged behaviour); records scrollbar behaviour there', async ({ page }) => {
+    describeReceiveHUsCase('Non-modal grid blank click unchanged');
     await openReceiptCandidate();
 
     if ((await page.locator(BACKGROUND_SELECTED_ROWS).count()) === 0) {
@@ -189,7 +181,7 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
         documentOverflowY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
       };
     });
-    console.log('TC1f non-modal observation: ' + JSON.stringify(info));
+    console.log('non-modal grid observation: ' + JSON.stringify(info));
 
     const point = await findBlankPoint(page, '.document-list-wrapper', true);
     expect(point, 'no blank list-area point found on the non-modal grid at this viewport').not.toBeNull();
