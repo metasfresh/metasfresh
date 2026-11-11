@@ -1,11 +1,13 @@
 package de.metas.ui.web.receiptSchedule;
 
-import de.metas.cache.CCache;
 import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.impl.PlainMsgBL;
+import de.metas.organization.OrgId;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
@@ -15,11 +17,10 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
-import de.metas.organization.OrgId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -51,11 +52,11 @@ public class HUsToReceiveViewFactoryTest
 		Services.registerService(IMsgBL.class, new PlainMsgBL()
 		{
 			@Override
-			public ITranslatableString translatable(final String text)
+			public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
 			{
-				if (!MSG_KEY.equals(text))
+				if (!MSG_KEY.equals(adMessage.toAD_Message()))
 				{
-					return super.translatable(text); // e.g. the column captions of the layout
+					return super.getTranslatableMsgText(adMessage, msgParameters); // e.g. the layout's empty-result texts
 				}
 				return ImmutableTranslatableString.ofMap(
 						ImmutableMap.of("de_CH", "HUs vereinnahmen", "en_US", "Receive HUs"),

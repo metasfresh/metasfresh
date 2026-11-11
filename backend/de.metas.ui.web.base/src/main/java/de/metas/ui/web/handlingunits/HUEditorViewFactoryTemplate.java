@@ -109,7 +109,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 
 	@Autowired

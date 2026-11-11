@@ -14,6 +14,10 @@ import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
  * "Receive HUs" modal: its title is the translated "HUs vereinnahmen" / "Receive HUs", not the constant "HU Editor".
  * Only the receive view changes; every other HU editor keeps "HU Editor".
  *
+ * Exception to the language-independence rule (e2e/frontend-webui/CLAUDE.md): the translated title text IS the
+ * feature under test, so it cannot be replaced by an identifier; the spec therefore runs per language and asserts the
+ * exact text.
+ *
  * The frontend takes a modal's title from the view layout caption (ViewActions.js), so the title assertion reads
  * `.panel-modal-header-title` of the real modal.
  */
@@ -64,7 +68,7 @@ test.describe('Receive HUs modal - title', () => {
   test.setTimeout(240000);
 
   for (const [language, expectedTitle] of LANGUAGES) {
-    test(`TC2-${language}: the receive modal opened from the receipt candidates is titled "${expectedTitle}" (AC1, AC2)`, async ({
+    test(`TC2-${language}: the receive modal opened from the receipt candidates is titled "${expectedTitle}"`, async ({
       page,
     }) => {
       describeCase(`Receive HUs modal title ${language}`);
@@ -93,7 +97,7 @@ test.describe('Receive HUs modal - title', () => {
     ['de_DE', DE_TITLE],
     ['en_US', EN_TITLE],
   ]) {
-    test(`TC2-Logistik-${language}: the receive modal opened from "Wareneingangsdisposition Logistik" is titled "${expectedTitle}" (AC10)`, async ({
+    test(`TC2-Logistik-${language}: the receive modal opened from "Wareneingangsdisposition Logistik" is titled "${expectedTitle}"`, async ({
       page,
       request,
     }) => {
@@ -193,7 +197,7 @@ test.describe('Receive HUs modal - title', () => {
     });
   }
 
-  test('TC2-default: the default HU editor keeps the caption "HU Editor" (AC4)', async ({ page }) => {
+  test('TC2-default: the default HU editor keeps the caption "HU Editor"', async ({ page }) => {
     describeCase('Default HU editor caption unchanged');
     const masterdata = await createMasterdata('en_US');
     await LoginPage.goto();

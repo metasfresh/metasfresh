@@ -1,6 +1,6 @@
 -- 11.11.2026 17:30
 -- Caption (modal title) of the receive-HUs view (window "husToReceive"): translatable instead of the constant "HU Editor"
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,546013,0,TO_TIMESTAMP('2026-11-11 17:30:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','HUs vereinnahmen','I',TO_TIMESTAMP('2026-11-11 17:30:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web.handlingunits.HUsToReceive.ViewCaption')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,546013 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-11 17:30:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','HUs vereinnahmen','I',TO_TIMESTAMP('2026-11-11 17:30:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web.handlingunits.HUsToReceive.ViewCaption')
 ;
 
 -- 11.11.2026 17:30

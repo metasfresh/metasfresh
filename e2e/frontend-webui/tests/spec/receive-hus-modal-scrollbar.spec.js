@@ -132,7 +132,7 @@ function describeCase(story) {
 test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
   test.setTimeout(180000);
 
-  test('TC1a: wheel scroll keeps the selected HU row (AC7)', async ({ page }) => {
+  test('TC1a: wheel scroll keeps the selected HU row', async ({ page }) => {
     describeCase('Wheel scroll keeps the selection');
     await openReceiveModalAndSelectRow(page);
 
@@ -145,7 +145,7 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     await expectRowSelectedWithPanel(page, 'after the wheel scroll');
   });
 
-  test('TC1b: pressing the vertical scrollbar keeps the selected HU row (AC5, AC6)', async ({ page }) => {
+  test('TC1b: pressing the vertical scrollbar keeps the selected HU row', async ({ page }) => {
     describeCase('Scrollbar press keeps the selection');
     await openReceiveModalAndSelectRow(page);
 
@@ -155,7 +155,7 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     expect(result.scrollTopAfter, 'the press on the scrollbar track scrolled the content').toBeGreaterThan(result.scrollTopBefore);
   });
 
-  test('TC1c: dragging the scrollbar thumb keeps the selected HU row (AC5, AC6)', async ({ page }) => {
+  test('TC1c: dragging the scrollbar thumb keeps the selected HU row', async ({ page }) => {
     describeCase('Scrollbar thumb drag keeps the selection');
     await openReceiveModalAndSelectRow(page);
 
@@ -178,7 +178,7 @@ test.describe('Receive HUs modal - scrollbar press keeps the selection', () => {
     await expect(page.locator(MODAL_SELECTED_ROWS)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
   });
 
-  test('TC1e: a press on the modal scrollbar keeps the receipt-candidate row selected in the background window (AC5)', async ({ page }) => {
+  test('TC1e: a press on the modal scrollbar keeps the receipt-candidate row selected in the background window', async ({ page }) => {
     describeCase('Scrollbar press keeps the background selection');
     await openReceiveModalAndSelectRow(page);
     // the modal carries a parentView (the receipt-candidates view), so a wrongly handled press would also clear it

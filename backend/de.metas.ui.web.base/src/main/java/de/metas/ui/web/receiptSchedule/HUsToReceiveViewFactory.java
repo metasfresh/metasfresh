@@ -3,7 +3,7 @@ package de.metas.ui.web.receiptSchedule;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.process.M_HU_Report_QRCode;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
@@ -15,7 +15,6 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColu
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -46,9 +45,7 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 	public static final String WINDOW_ID_STRING = "husToReceive";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	private static final String MSG_ViewCaption = "de.metas.ui.web.handlingunits.HUsToReceive.ViewCaption";
-
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private static final AdMessageKey MSG_ViewCaption = AdMessageKey.of("de.metas.ui.web.handlingunits.HUsToReceive.ViewCaption");
 
 	public HUsToReceiveViewFactory()
 	{
@@ -76,7 +73,7 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected ITranslatableString getViewCaption()
 	{
-		return msgBL.translatable(MSG_ViewCaption);
+		return msgBL.getTranslatableMsgText(MSG_ViewCaption);
 	}
 
 	@Override
