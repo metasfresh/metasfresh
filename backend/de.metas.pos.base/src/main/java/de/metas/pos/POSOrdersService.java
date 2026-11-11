@@ -501,6 +501,8 @@ public class POSOrdersService
 	 * another checkout of the payment started meanwhile (e.g. this checkout's SumUp call outlived the orphan wait, and the
 	 * payment was released and retried), the payment is left unchanged: only the payment's current checkout is ever assigned to
 	 * it; a later result of this checkout is handled as an earlier checkout's (see {@link POSPayment#changingStatusFromRemote}).
+	 * An approval in that answer is recorded as a late approval not booked (unless already recorded); any other answer is only
+	 * logged.
 	 *
 	 * @param checkoutStartedAt the checkout start step 1 saved for this checkout
 	 * @return true if the answer was stored (or, another checkout having started meanwhile, there was nothing to store)
@@ -529,6 +531,8 @@ public class POSOrdersService
 							{
 								logger.warn("Card checkout result of {} not applied: another checkout of the payment started meanwhile (this one started at {}, the current one at {}); sumUpClientTransactionId={}, status={}, indeterminate={}",
 										orderAndPaymentId, checkoutStartedAt, payment.getCardCheckoutStartedAt(), response.getClientTransactionId(), response.getStatus(), response.isIndeterminate());
+								// an approval of this (earlier) checkout is never booked; the back office reviews it
+								lateApprovals.set(response.getStatus().isSuccessful() ? ImmutableList.of(response) : ImmutableList.of());
 								return payment;
 							}
 							final POSPayment answered = applyOwnFinalSumUpResult(payment.changingStatusFromSendResult(response));

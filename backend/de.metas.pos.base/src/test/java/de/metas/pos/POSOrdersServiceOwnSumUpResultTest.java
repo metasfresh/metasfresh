@@ -301,6 +301,81 @@ class POSOrdersServiceOwnSumUpResultTest
 	}
 
 	@Test
+	void stepThree_anotherCheckoutStartedMeanwhile_approvedAnswer_unchangedAndRecordedOnceNamingIt()
+	{
+		// as above, but SumUp's answer to checkout A is an approval: it is never booked onto checkout B, and the back office gets
+		// a record of it naming A's SumUp transaction
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder().paymentProcessingStatus(POSPaymentProcessingStatus.NEW));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		final Instant bStartedAt = Instant.parse("2026-11-10T10:04:00Z");
+		when(posOrderProcessingServices.sendCardPayment(any(), any())).thenAnswer(invocation -> {
+			ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (o, p) -> p.toBuilder()
+					.paymentProcessingStatus(POSPaymentProcessingStatus.PENDING)
+					.sumUpClientTransactionId(null)
+					.cardCheckoutStartedAt(bStartedAt)
+					.build());
+			return accepted(EARLIER_TRX).toBuilder().status(POSPaymentProcessingStatus.SUCCESSFUL).build();
+		});
+
+		final POSPayment payment = checkout(order);
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
+		assertThat(payment.getSumUpClientTransactionId()).isNull();
+		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).containsExactly("de.metas.pos.POSPayment.LateApprovalNotBooked");
+		assertThat(retrieveIssueSummaries(payment.getLocalIdNotNull())).singleElement().asString().contains(EARLIER_TRX);
+
+		assertThat(payment.getCardCheckoutStartedAt()).isEqualTo(bStartedAt);
+	}
+
+	@Test
+	void stepThree_anotherCheckoutStartedMeanwhile_approvedAnswerAlreadyRecorded_notRecordedAgain()
+	{
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder().paymentProcessingStatus(POSPaymentProcessingStatus.NEW));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		final Instant bStartedAt = Instant.parse("2026-11-10T10:04:00Z");
+		final Instant aCreatedAtSumUp = bStartedAt.minusSeconds(200);
+		when(posOrderProcessingServices.sendCardPayment(any(), any())).thenAnswer(invocation -> {
+			ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (o, p) -> p.toBuilder()
+					.paymentProcessingStatus(POSPaymentProcessingStatus.FAILED)
+					.sumUpClientTransactionId(null)
+					.cardCheckoutStartedAt(bStartedAt)
+					.build());
+			// A's approval reached the payment (now in checkout B, failed) first: flagged on arrival
+			service.updatePaymentStatusFromRemoteAndTryCompleteOrder(orderAndPaymentId,
+					SumUpUtils.extractProcessResponse(sumUpTransaction(EARLIER_TRX, SumUpTransactionStatus.SUCCESSFUL, aCreatedAtSumUp, aCreatedAtSumUp)));
+			return accepted(EARLIER_TRX).toBuilder().status(POSPaymentProcessingStatus.SUCCESSFUL).build();
+		});
+
+		final POSPayment payment = checkout(order);
+
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.FAILED);
+		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).containsExactly("de.metas.pos.POSPayment.LateApprovalNotBooked");
+	}
+
+	@Test
+	void stepThree_anotherCheckoutStartedMeanwhile_notApprovedAnswer_noRecord()
+	{
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder().paymentProcessingStatus(POSPaymentProcessingStatus.NEW));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		when(posOrderProcessingServices.sendCardPayment(any(), any())).thenAnswer(invocation -> {
+			ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (o, p) -> p.toBuilder()
+					.paymentProcessingStatus(POSPaymentProcessingStatus.PENDING)
+					.sumUpClientTransactionId(null)
+					.cardCheckoutStartedAt(Instant.parse("2026-11-10T10:04:00Z"))
+					.build());
+			return accepted(EARLIER_TRX);
+		});
+
+		final POSPayment payment = checkout(order);
+
+		assertThat(payment.getSumUpClientTransactionId()).isNull();
+		assertThat(retrieveIssueErrorCodes(payment.getLocalIdNotNull())).isEmpty();
+	}
+
+	@Test
 	void stepThree_approvalOfAnEarlierCheckoutRecordedBeforeTheStart_itsStatusEventLost_recordedOnceNamingIt()
 	{
 		// A was declined, the cashier retried (B) 30 s after A started; A's approval was saved while B awaited its SumUp id, but
