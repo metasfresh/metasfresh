@@ -32,4 +32,28 @@ public enum JsonPOSPaymentStatus
 				throw new AdempiereException("Unknown paymentProcessingStatus: " + paymentProcessingStatus);
 		}
 	}
+
+	/**
+	 * @return the processing status this one stands for; {@link #FAILED} stands for {@link POSPaymentProcessingStatus#FAILED}
+	 * only, so a cancelled payment never matches it
+	 */
+	@NonNull
+	public POSPaymentProcessingStatus toPOSPaymentProcessingStatus()
+	{
+		switch (this)
+		{
+			case SUCCESSFUL:
+				return POSPaymentProcessingStatus.SUCCESSFUL;
+			case FAILED:
+				return POSPaymentProcessingStatus.FAILED;
+			case PENDING:
+				return POSPaymentProcessingStatus.PENDING;
+			case NEW:
+				return POSPaymentProcessingStatus.NEW;
+			case UNKNOWN:
+				return POSPaymentProcessingStatus.UNKNOWN;
+			default:
+				throw new AdempiereException("Unknown status: " + this);
+		}
+	}
 }

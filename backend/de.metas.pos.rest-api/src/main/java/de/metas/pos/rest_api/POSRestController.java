@@ -22,6 +22,11 @@ import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
 import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
 import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
+import de.metas.pos.POSCardPaymentCheckResult;
+import de.metas.pos.POSCardPaymentReleaseRequest;
+import de.metas.pos.POSCardPaymentReleaseResult;
+import de.metas.pos.POSCardReleaseWait;
+import de.metas.pos.POSOrdersService;
 import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
@@ -37,6 +42,9 @@ import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
 import de.metas.pos.rest_api.json.JsonContext;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlement;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseRequest;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseResponse;
@@ -98,6 +106,8 @@ public class POSRestController
 	@NonNull private final POSReturnService posReturnService;
 	@NonNull private final POSInvoiceSettlementService posInvoiceSettlementService;
 	@NonNull private final POSInvoiceCardSettlementService posInvoiceCardSettlementService;
+	@NonNull private final POSOrdersService posOrdersService;
+	@NonNull private final POSCardReleaseWait posCardReleaseWait;
 
 	private String getADLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
@@ -127,7 +137,7 @@ public class POSRestController
 
 		return JsonPOSTerminal.builderFrom(posTerminal, adLanguage)
 				.products(JsonProduct.fromList(products.toList(), adLanguage))
-				.openOrders(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol))
+				.openOrders(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol, posCardReleaseWait::getReleaseAfter))
 				.build();
 	}
 
@@ -306,14 +316,14 @@ public class POSRestController
 		final POSOrderExternalId externalId = request.getOrder_uuid();
 		final UserId loggedUserId = getLoggedUserId();
 		final POSOrder order = posService.changeStatusTo(posTerminalId, externalId, nextStatus, loggedUserId);
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
 	}
 
 	@PostMapping("/orders")
 	public JsonPOSOrder updateOrder(@RequestBody @NonNull final JsonPOSOrder remoteOrder)
 	{
 		final POSOrder order = posService.updateOrderFromRemote(remoteOrder.toRemotePOSOrder(), getLoggedUserId());
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
 	}
 
 	@PostMapping("/orders/checkoutPayment")
@@ -327,14 +337,59 @@ public class POSRestController
 				.cardPayAmount(request.getCardPayAmount())
 				.cashTenderedAmount(request.getCashTenderedAmount())
 				.build());
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
+	}
+
+	/**
+	 * Checks a card payment whose result is unknown against SumUp; any other payment is left as it is.
+	 * Local failure to ask SumUp is not an error here, the till sees the order as it is.
+	 */
+	@PostMapping("/orders/checkPayment")
+	public JsonPOSOrder checkPayment(@RequestBody final JsonPOSCardPaymentCheckRequest request)
+	{
+		final POSCardPaymentCheckResult result = posOrdersService.checkCardPayment(
+				request.getPosTerminalId(),
+				request.getOrder_uuid(),
+				request.getPayment_uuid(),
+				getLoggedUserId());
+		return toJson(result.getOrder(), newJsonContext());
+	}
+
+	/**
+	 * Releases a card payment whose result is unknown, in two requests (see {@link JsonPOSCardPaymentReleaseRequest}).
+	 * A refusal is reported in {@code refusedMessage}, translated for the logged-in user.
+	 */
+	@PostMapping("/orders/releasePayment")
+	public JsonPOSCardPaymentReleaseResponse releasePayment(@RequestBody final JsonPOSCardPaymentReleaseRequest request)
+	{
+		final POSCardPaymentReleaseResult result = posOrdersService.releaseCardPayment(POSCardPaymentReleaseRequest.builder()
+				.posTerminalId(request.getPosTerminalId())
+				.posOrderExternalId(request.getOrder_uuid())
+				.posPaymentExternalId(request.getPayment_uuid())
+				.cashierId(getLoggedUserId())
+				.confirmNotCharged(request.isConfirmNotCharged())
+				.expectedStatus(request.getExpectedStatus() != null ? request.getExpectedStatus().toPOSPaymentProcessingStatus() : null)
+				.build());
+
+		final JsonContext jsonContext = newJsonContext();
+		return JsonPOSCardPaymentReleaseResponse.builder()
+				.order(toJson(result.getOrder(), jsonContext))
+				.confirmationRequired(result.isConfirmationRequired())
+				.checkFailed(result.isCheckFailed())
+				.refusedMessage(result.getRefusedMessage() != null ? result.getRefusedMessage().translate(jsonContext.getAdLanguage()) : null)
+				.build();
+	}
+
+	private JsonPOSOrder toJson(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
+	{
+		return JsonPOSOrder.from(order, jsonContext::getCurrencySymbol, posCardReleaseWait::getReleaseAfter);
 	}
 
 	@PostMapping("/orders/refundPayment")
 	public JsonPOSOrder refundPayment(@RequestBody JsonPOSPaymentRefundRequest request)
 	{
 		final POSOrder order = posService.refundPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
 	}
 
 	@GetMapping("/orders/receipt/{filename:.*}")

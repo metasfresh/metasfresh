@@ -25,6 +25,9 @@ import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSPayment;
 import de.metas.pos.rest_api.json.JsonPOSPaymentStatus;
 import de.metas.pos.rest_api.json.JsonPOSReturnLine;
@@ -385,6 +388,7 @@ class JsonSerializeDeserializeTest
 				.allowCheckout(false)
 				.allowDelete(false)
 				.allowRefund(false)
+				.releasableAt(Instant.parse("2026-11-10T10:03:00Z"))
 				.hashCode(543)
 				.build();
 		testSerializeDeserialize(payment);
@@ -393,6 +397,39 @@ class JsonSerializeDeserializeTest
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		assertThat(jsonObjectMapper.writeValueAsString(payment)).contains("\"status\":\"UNKNOWN\"");
 		assertThat(jsonObjectMapper.readValue("\"UNKNOWN\"", JsonPOSPaymentStatus.class)).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentCheckRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentCheckRequest.builder()
+				.posTerminalId(POSTerminalId.ofRepoId(1))
+				.order_uuid(POSOrderExternalId.ofString(UUID.randomUUID().toString()))
+				.payment_uuid(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
+				.build());
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentReleaseRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentReleaseRequest.builder()
+				.posTerminalId(POSTerminalId.ofRepoId(1))
+				.order_uuid(POSOrderExternalId.ofString(UUID.randomUUID().toString()))
+				.payment_uuid(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
+				.confirmNotCharged(true)
+				.expectedStatus(JsonPOSPaymentStatus.UNKNOWN)
+				.build());
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentReleaseResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentReleaseResponse.builder()
+				.order(newJsonPOSOrder())
+				.confirmationRequired(true)
+				.checkFailed(true)
+				.refusedMessage("Release not yet allowed")
+				.build());
 	}
 
 	@Test

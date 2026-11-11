@@ -14,6 +14,9 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.function.Supplier;
 
 @Value
 @Builder
@@ -35,9 +38,29 @@ public class JsonPOSPayment
 	boolean allowDelete;
 	boolean allowRefund;
 
+	/**
+	 * For a card payment whose result is unknown: the instant from which the cashier may release it (the start of its
+	 * current checkout plus the configured wait); null for any other payment.
+	 */
+	@Nullable Instant releasableAt;
+
 	int hashCode;
 
+	/**
+	 * @return the payment without {@link #releasableAt}, see {@link #of(POSPayment, Supplier)}
+	 */
 	public static JsonPOSPayment of(@NonNull final POSPayment payment)
+	{
+		return of(payment, null);
+	}
+
+	/**
+	 * @param getReleaseAfter the configured wait after which an unknown card payment may be released, for the order's client and org;
+	 *                        called only for a card payment whose result is unknown, null if {@link #releasableAt} is not wanted
+	 */
+	public static JsonPOSPayment of(
+			@NonNull final POSPayment payment,
+			@Nullable final Supplier<Duration> getReleaseAfter)
 	{
 		final POSPaymentProcessingStatus paymentProcessingStatus = payment.getPaymentProcessingStatus();
 
@@ -53,8 +76,23 @@ public class JsonPOSPayment
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())
 				.allowDelete(payment.isAllowDelete())
 				.allowRefund(payment.isAllowRefund())
+				.releasableAt(extractReleasableAt(payment, getReleaseAfter))
 				.hashCode(payment.hashCode())
 				.build();
+	}
+
+	@Nullable
+	private static Instant extractReleasableAt(@NonNull final POSPayment payment, @Nullable final Supplier<Duration> getReleaseAfter)
+	{
+		if (getReleaseAfter == null
+				|| !payment.getPaymentMethod().isCard()
+				|| !payment.isUnknown()
+				|| payment.getCardCheckoutStartedAt() == null)
+		{
+			return null;
+		}
+
+		return payment.getCardCheckoutStartedAt().plus(getReleaseAfter.get());
 	}
 
 	@Nullable

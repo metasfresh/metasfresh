@@ -1,9 +1,11 @@
 package de.metas.pos.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
@@ -16,9 +18,11 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Value
 @Builder
@@ -50,8 +54,27 @@ public class JsonPOSOrder
 
 	int hashCode;
 
+	/**
+	 * @return the order without {@link JsonPOSPayment#getReleasableAt()} on its payments, see {@link #from(POSOrder, Function, Function)}
+	 */
 	public static JsonPOSOrder from(@NonNull final POSOrder order, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
 	{
+		return from(order, getCurrencySymbolById, null);
+	}
+
+	/**
+	 * @param getReleaseAfterByClientAndOrgId the configured wait after which an unknown card payment may be released; called at most
+	 *                                        once per order, and only if the order has such a payment; null if not wanted
+	 */
+	public static JsonPOSOrder from(
+			@NonNull final POSOrder order,
+			@NonNull final Function<CurrencyId, String> getCurrencySymbolById,
+			@Nullable final Function<ClientAndOrgId, Duration> getReleaseAfterByClientAndOrgId)
+	{
+		final Supplier<Duration> getReleaseAfter = getReleaseAfterByClientAndOrgId != null
+				? Suppliers.memoize(() -> getReleaseAfterByClientAndOrgId.apply(order.getClientAndOrgId()))
+				: null;
+
 		final String currencySymbol = getCurrencySymbolById.apply(order.getCurrencyId());
 
 		final BooleanWithReason allowDraft = order.checkCanTransitionToDrafted();
@@ -74,7 +97,7 @@ public class JsonPOSOrder
 						.map(line -> JsonPOSOrderLine.of(line, currencySymbol))
 						.collect(ImmutableList.toImmutableList()))
 				.payments(order.streamPaymentsNotDeleted()
-						.map(JsonPOSPayment::of)
+						.map(payment -> JsonPOSPayment.of(payment, getReleaseAfter))
 						.collect(ImmutableList.toImmutableList()))
 				//
 				.allowDraft(allowDraft.isTrue())
@@ -95,9 +118,20 @@ public class JsonPOSOrder
 
 	public static ImmutableList<JsonPOSOrder> fromList(@NonNull final List<POSOrder> orders, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
 	{
+		return fromList(orders, getCurrencySymbolById, null);
+	}
+
+	/**
+	 * @see #from(POSOrder, Function, Function)
+	 */
+	public static ImmutableList<JsonPOSOrder> fromList(
+			@NonNull final List<POSOrder> orders,
+			@NonNull final Function<CurrencyId, String> getCurrencySymbolById,
+			@Nullable final Function<ClientAndOrgId, Duration> getReleaseAfterByClientAndOrgId)
+	{
 		return orders.stream()
 				.sorted(Comparator.comparing(posOrder -> posOrder.getLocalId() != null ? posOrder.getLocalId().getRepoId() : Integer.MAX_VALUE))
-				.map(order -> from(order, getCurrencySymbolById))
+				.map(order -> from(order, getCurrencySymbolById, getReleaseAfterByClientAndOrgId))
 				.collect(ImmutableList.toImmutableList());
 	}
 
