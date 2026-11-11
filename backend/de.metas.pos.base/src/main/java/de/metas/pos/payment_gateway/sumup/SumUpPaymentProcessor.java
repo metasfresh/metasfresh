@@ -8,7 +8,6 @@ import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
 import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
-import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
@@ -108,11 +107,18 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 		return appApiUrl + SumUp.ENDPOINT_PaymentCheckoutCallback;
 	}
 
+	/**
+	 * Refunds the card payment's own SumUp transaction (the one it names): other transactions may carry the same POS reference,
+	 * e.g. a late approval of an earlier checkout that was not booked. A card payment naming none (e.g. paid before the payment
+	 * stored it) is refunded by its POS reference, which needs exactly one approved, not refunded transaction carrying it.
+	 */
 	@Override
 	public POSPaymentProcessResponse refund(@NonNull final POSRefundRequest request)
 	{
-		final SumUpPOSRef posRef = SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId());
-		final SumUpTransaction trx = sumUpService.refundTransaction(posRef);
+		final String sumUpClientTransactionId = request.getSumUpClientTransactionId();
+		final SumUpTransaction trx = sumUpClientTransactionId != null
+				? sumUpService.refundTransaction(SumUpClientTransactionId.ofString(sumUpClientTransactionId))
+				: sumUpService.refundTransaction(SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId()));
 		return SumUpUtils.extractProcessResponse(trx);
 	}
 

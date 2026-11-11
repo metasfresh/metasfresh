@@ -14,6 +14,7 @@ import de.metas.organization.OrgId;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
+import de.metas.pos.payment_gateway.POSRefundRequest;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.user.UserId;
 import org.adempiere.exceptions.AdempiereException;
@@ -22,6 +23,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -111,6 +113,31 @@ class POSOrderProcessingServicesTest
 				.posTerminalId(POSTerminalId.ofRepoId(1))
 				.payments(payments)
 				.build();
+	}
+
+	@Test
+	void refund_ofACardPayment_asksTheProcessorToRefundTheSumUpTransactionThePaymentNames()
+	{
+		final POSPayment payment = POSPayment.builder()
+				.externalId(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
+				.localId(POSPaymentId.ofRepoId(20))
+				.paymentMethod(POSPaymentMethod.CARD)
+				.amount(Money.of(new BigDecimal("10.00"), EUR))
+				.paymentProcessingStatus(POSPaymentProcessingStatus.SUCCESSFUL)
+				.sumUpClientTransactionId("own-trx")
+				.build();
+		when(paymentProcessorService.refund(any())).thenReturn(POSPaymentProcessResponse.builder()
+				.status(POSPaymentProcessingStatus.DELETED)
+				.config(SUMUP_CONFIG)
+				.clientTransactionId("own-trx")
+				.build());
+
+		final POSPayment refunded = services.refundPOSPayment(payment, POSOrderId.ofRepoId(10), SUMUP_CONFIG);
+
+		final ArgumentCaptor<POSRefundRequest> request = ArgumentCaptor.forClass(POSRefundRequest.class);
+		verify(paymentProcessorService).refund(request.capture());
+		assertThat(request.getValue().getSumUpClientTransactionId()).isEqualTo("own-trx");
+		assertThat(refunded.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.DELETED);
 	}
 
 	@Test

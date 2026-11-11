@@ -254,6 +254,16 @@ public class SumUpService
 	}
 
 	/**
+	 * @param posRef must reference something (at least one id &gt; 0)
+	 * @return the SUCCESSFUL transactions (refunded ones included) carrying the given POS reference that metasfresh changed at
+	 * or after the given time (by metasfresh's clock), e.g. because SumUp's approval reached metasfresh then
+	 */
+	public List<SumUpTransaction> listSuccessfulTransactionsByPOSRefUpdatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant updatedSince)
+	{
+		return trxRepository.listSuccessfulByPOSRefUpdatedSince(posRef, updatedSince);
+	}
+
+	/**
 	 * @return true if SumUp answered that it does not know the transaction (HTTP 404), as opposed to a failure of the call
 	 */
 	private static boolean isNotFound(@NonNull final Exception ex)
@@ -479,6 +489,19 @@ public class SumUpService
 		{
 			return trxs.get(0).getExternalId();
 		}
+	}
+
+	/**
+	 * Refunds the transaction with the given client transaction id at SumUp (e.g. the one a card payment names), whatever
+	 * other transactions carry the same POS reference.
+	 *
+	 * @throws AdempiereException if metasfresh has no transaction with that id
+	 */
+	public SumUpTransaction refundTransaction(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		final SumUpTransaction trx = findTransactionByClientTransactionId(clientTransactionId)
+				.orElseThrow(() -> new AdempiereException("No SumUp transaction found for client transaction id " + clientTransactionId));
+		return refundTransaction(trx.getExternalId());
 	}
 
 	public SumUpTransaction refundTransaction(@NonNull final SumUpTransactionExternalId id)

@@ -5,6 +5,12 @@ import de.metas.currency.CurrencyCode;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpCallException;
 import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
+import de.metas.payment.sumup.SumUpClientTransactionId;
+import de.metas.payment.sumup.SumUpMerchantCode;
+import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransactionExternalId;
+import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
@@ -18,6 +24,7 @@ import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
+import de.metas.pos.payment_gateway.POSRefundRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +33,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -147,5 +155,53 @@ class SumUpPaymentProcessorTest
 		assertThat(response.getStatus()).isEqualTo(POSPaymentProcessingStatus.FAILED);
 		assertThat(response.isIndeterminate()).isFalse();
 		verify(sumUpService, never()).cardReaderCheckout(any());
+	}
+
+	@Test
+	void refund_ofACardPaymentNamingItsSumUpTransaction_refundsThatTransaction_notByPOSReference()
+	{
+		final SumUpClientTransactionId ownTrx = SumUpClientTransactionId.ofString("own-trx");
+		when(sumUpService.refundTransaction(ownTrx)).thenReturn(refundedTransaction(ownTrx));
+
+		final POSPaymentProcessResponse response = processor.refund(POSRefundRequest.builder()
+				.paymentProcessorConfig(terminalConfig)
+				.posOrderAndPaymentId(POSOrderAndPaymentId.of(POSOrderId.ofRepoId(10), POSPaymentId.ofRepoId(20)))
+				.sumUpClientTransactionId(ownTrx.getAsString())
+				.build());
+
+		verify(sumUpService).refundTransaction(ownTrx);
+		verify(sumUpService, never()).refundTransaction(any(SumUpPOSRef.class));
+		assertThat(response.getStatus()).isEqualTo(POSPaymentProcessingStatus.DELETED);
+		assertThat(response.getClientTransactionId()).isEqualTo("own-trx");
+	}
+
+	@Test
+	void refund_ofACardPaymentNamingNoSumUpTransaction_refundsByPOSReference()
+	{
+		final SumUpClientTransactionId trx = SumUpClientTransactionId.ofString("found-by-pos-ref");
+		when(sumUpService.refundTransaction(any(SumUpPOSRef.class))).thenReturn(refundedTransaction(trx));
+
+		processor.refund(POSRefundRequest.builder()
+				.paymentProcessorConfig(terminalConfig)
+				.posOrderAndPaymentId(POSOrderAndPaymentId.of(POSOrderId.ofRepoId(10), POSPaymentId.ofRepoId(20)))
+				.build());
+
+		verify(sumUpService).refundTransaction(SumUpPOSRef.builder().posOrderId(10).posPaymentId(20).build());
+		verify(sumUpService, never()).refundTransaction(any(SumUpClientTransactionId.class));
+	}
+
+	private static SumUpTransaction refundedTransaction(final SumUpClientTransactionId clientTransactionId)
+	{
+		return SumUpTransaction.builder()
+				.configId(CONFIG_ID)
+				.externalId(SumUpTransactionExternalId.ofString("ext-" + clientTransactionId.getAsString()))
+				.clientTransactionId(clientTransactionId)
+				.merchantCode(SumUpMerchantCode.ofString("M1"))
+				.timestamp(Instant.parse("2026-11-10T10:00:00Z"))
+				.status(SumUpTransactionStatus.REFUNDED)
+				.amount(Amount.of(new BigDecimal("12.50"), CurrencyCode.EUR))
+				.amountRefunded(Amount.of(new BigDecimal("12.50"), CurrencyCode.EUR))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				.build();
 	}
 }

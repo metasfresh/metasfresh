@@ -172,6 +172,7 @@ public class POSOrderProcessingServices
 				POSRefundRequest.builder()
 						.paymentProcessorConfig(paymentProcessorConfig)
 						.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull()))
+						.sumUpClientTransactionId(posPayment.getSumUpClientTransactionId())
 						.build()
 		);
 		posPayment = posPayment.changingStatusFromRemote(refundResponse).getPayment();

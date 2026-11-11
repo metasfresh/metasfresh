@@ -102,6 +102,22 @@ public class SumUpTransactionRepository
 				.anyMatch();
 	}
 
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0)
+	 * @return the SUCCESSFUL transactions (refunded ones included) carrying the given POS reference that metasfresh changed at or
+	 * after the given time (by its own clock), oldest first
+	 */
+	public List<SumUpTransaction> listSuccessfulByPOSRefUpdatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant updatedSince)
+	{
+		assumeReferencesSomething(posRef);
+		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).status(SumUpTransactionStatus.SUCCESSFUL).build())
+				.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Updated, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Timestamp.from(updatedSince))
+				.create()
+				.stream()
+				.map(SumUpTransactionRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private static void assumeReferencesSomething(@NonNull final SumUpPOSRef posRef)
 	{
 		Check.assume(posRef.getPosOrderId() > 0 || posRef.getPosPaymentId() > 0 || posRef.getPosInvoiceCardSettlementId() > 0,
