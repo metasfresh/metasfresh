@@ -45,6 +45,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OrderDeliveryDayBLTest
 {
 	@Nested
+	class computeLeadTimePreparationDate
+	{
+		// 2026-08-19 is a Wednesday; stepping back 6 working days (lead 7 -> step -6) skips the weekend to 2026-08-11.
+		@Test
+		void leadTime7_sixWorkingDaysBack_skipsWeekend()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 7))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 11));
+		}
+
+		@Test
+		void leadTime0_and_1_yieldSameDay()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 1))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 0))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+		}
+
+		@Test
+		void negativeLeadTime_clampedToSameDay()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), -3))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+		}
+	}
+
+	@Nested
 	class computePreparationTime
 	{
 		@Test

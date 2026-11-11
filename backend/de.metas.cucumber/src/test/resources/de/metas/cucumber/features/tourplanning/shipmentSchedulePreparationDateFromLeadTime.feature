@@ -98,3 +98,27 @@ Feature: Tour planning — the shipment schedule's PreparationDate follows the s
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | PreparationDate |
       | schedule              | 2026-08-14      |
+
+  @Id:S28993_TC13d
+  Scenario: Lead-time route set on an order with a pinned promised date — the schedule follows the new route, not the line's stale value
+    # Created with a no-lead-time route, so the line's PreparationDate is derived as the fallback (= DatePromised, no tour).
+    # The route is then changed to a lead-time shipper while DatePromised is pinned (IsFixedDatePromised=Y): the header
+    # does not propagate a new DatePromised and the line interceptor (which watches only line columns) never re-derives
+    # the line, so the line keeps its stale 2026-08-19. The schedule must still follow the new route's lead time (2026-08-11).
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DateOrdered | DatePromised | IsFixedDatePromised | M_PricingSystem_ID | M_Shipper_ID |
+      | order      | true    | customer      | warehouse      | 2026-08-03  | 2026-08-19Z  | Y                   | ps                 | noLeadTime   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | DatePromised |
+      | orderLine  | order      | product      | 10         | 2026-08-19Z  |
+    When update order
+      | C_Order_ID | M_Shipper_ID |
+      | order      | shipper      |
+    And the order identified by order is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | schedule   | orderLine      | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | PreparationDate |
+      | schedule              | 2026-08-11      |

@@ -263,12 +263,22 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	@Nullable
 	public ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine, @NonNull final ZonedDateTime deliveryDate)
 	{
-		// An explicit per-line C_OrderLine.PreparationDate override wins verbatim; otherwise derive from the
-		// (per-line) delivery date. This method is the single owner of the override-or-derive decision.
-		final Timestamp lineOverride = orderLine.getPreparationDate();
-		if (lineOverride != null)
+		// A lead-time order's preparation date is DERIVED from the route, so it is always recomputed here and the
+		// stored C_OrderLine.PreparationDate is NOT consulted as an override. That column is itself a derived value
+		// (written by setLinePreparationDate) that goes stale when the route or promised date changes on the header
+		// after the line exists — the C_OrderLine interceptor watches only line columns, so a header M_Shipper /
+		// DatePromised change (e.g. a route change on an IsFixedDatePromised order) never re-derives it. For a
+		// route-driven order a per-line manual preparation-date override does not apply. task 28993.
+		//
+		// A non-lead order keeps the original rule: an explicit per-line C_OrderLine.PreparationDate override wins
+		// verbatim; otherwise derive from the (per-line) delivery date.
+		if (!hasLeadTime(order))
 		{
-			return TimeUtil.asZonedDateTime(lineOverride, orderBL.getTimeZone(order));
+			final Timestamp lineOverride = orderLine.getPreparationDate();
+			if (lineOverride != null)
+			{
+				return TimeUtil.asZonedDateTime(lineOverride, orderBL.getTimeZone(order));
+			}
 		}
 		return computePreparationDate(order, deliveryDate);
 	}
