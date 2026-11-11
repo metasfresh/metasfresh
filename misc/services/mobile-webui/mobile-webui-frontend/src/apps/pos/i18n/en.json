@@ -100,7 +100,8 @@
       "SUCCESSFUL": "Successful",
       "FAILED": "Failed",
       "PENDING": "Pending",
-      "NEW": "New"
+      "NEW": "New",
+      "UNKNOWN": "Unknown"
     },
     "actions": {
       "back": "Back",
@@ -122,9 +123,15 @@
         "orderOpenAmt": "Amount (open)",
         "payAmt": "Payment amount",
         "cardReader": "Card reader",
+        "unknown": "Result unknown — please check the card reader",
+        "checkFailed": "SumUp not reachable — showing the last known state",
+        "releaseConfirmation": "I checked the card reader: the card was not charged",
         "actions": {
           "checkout": "Checkout",
-          "cancel": "Cancel"
+          "cancel": "Cancel",
+          "release": "Check / release card payment",
+          "confirmRelease": "Confirm",
+          "cancelRelease": "Cancel"
         }
       }
     }

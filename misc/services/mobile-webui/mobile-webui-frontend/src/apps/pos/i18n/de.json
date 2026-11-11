@@ -100,7 +100,8 @@
       "SUCCESSFUL": "Erfolgreich",
       "FAILED": "Fehlgeschlagen",
       "PENDING": "Ausstehend",
-      "NEW": "Neu"
+      "NEW": "Neu",
+      "UNKNOWN": "Unbekannt"
     },
     "actions": {
       "back": "Zurück",
@@ -122,9 +123,15 @@
         "orderOpenAmt": "Betrag (offen)",
         "payAmt": "Zahlungsbetrag",
         "cardReader": "Kartenleser",
+        "unknown": "Ergebnis unbekannt — bitte Kartenterminal prüfen",
+        "checkFailed": "SumUp nicht erreichbar – angezeigt ist der zuletzt bekannte Stand",
+        "releaseConfirmation": "Ich habe das Kartenterminal geprüft: Die Karte wurde nicht belastet",
         "actions": {
           "checkout": "Zur Kasse",
-          "cancel": "Abbrechen"
+          "cancel": "Abbrechen",
+          "release": "Kartenzahlung prüfen / freigeben",
+          "confirmRelease": "Bestätigen",
+          "cancelRelease": "Abbrechen"
         }
       }
     }

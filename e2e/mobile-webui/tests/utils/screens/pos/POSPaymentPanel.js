@@ -12,16 +12,19 @@ const RECEIPT_PDF_TIMEOUT = 70000;
 // The card checkout is sent to the reader synchronously; a SumUp that does not answer ends at the client's 60 s read timeout.
 const CARD_CHECKOUT_TIMEOUT = 90_000;
 
+// the texts the spec's de_DE login shows; the elements themselves are found by their data-testid
 const CARD_RESULT_UNKNOWN_TEXT = 'Ergebnis unbekannt — bitte Kartenterminal prüfen';
-const CARD_RELEASE_BUTTON_NAME = 'Kartenzahlung prüfen / freigeben';
 const CARD_RELEASE_CONFIRMATION_TEXT = 'Ich habe das Kartenterminal geprüft: Die Karte wurde nicht belastet';
-const CARD_CONFIRM_BUTTON_NAME = 'Bestätigen';
-const CANCEL_BUTTON_NAME = 'Abbrechen';
+const CARD_RESULT_UNKNOWN_TESTID = 'pos-card-payment-unknown-message';
+const CARD_RELEASE_CONFIRMATION_TESTID = 'pos-card-payment-release-confirmation';
+const CARD_RELEASE_BUTTON_TESTID = 'pos-card-payment-release-button';
+const CARD_CONFIRM_BUTTON_TESTID = 'pos-card-payment-release-confirm-button';
+const CARD_CANCEL_BUTTON_TESTID = 'pos-card-payment-cancel-button';
 // the card modal's retry button (pos.payment.modal.card.actions.checkout)
-const RETRY_BUTTON_NAME = 'Zur Kasse';
+const CARD_RETRY_BUTTON_TESTID = 'pos-card-payment-checkout-button';
 
 /** @returns {import('@playwright/test').Locator} */
-const buttonElement = (name) => containerElement().getByRole('button', { name, exact: true });
+const buttonElement = (testId) => containerElement().getByTestId(testId);
 
 export const POSPaymentPanel = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -82,19 +85,21 @@ export const POSPaymentPanel = {
         const checkoutAnswered = page.waitForResponse((response) =>
             response.request().method() === 'POST' && response.url().endsWith('/api/v2/pos/orders/checkoutPayment'),
             { timeout: CARD_CHECKOUT_TIMEOUT });
-        await buttonElement(RETRY_BUTTON_NAME).tap({ timeout: SLOW_ACTION_TIMEOUT });
+        await buttonElement(CARD_RETRY_BUTTON_TESTID).tap({ timeout: SLOW_ACTION_TIMEOUT });
         await checkoutAnswered;
     }),
 
     /** The card payment shows that its result is unknown and that the cashier must check the card terminal. */
     expectCardPaymentUnknown: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Expect card payment result unknown`, async () => {
-        await expect(containerElement().getByText(CARD_RESULT_UNKNOWN_TEXT)).toBeVisible({ timeout });
+        const message = containerElement().getByTestId(CARD_RESULT_UNKNOWN_TESTID);
+        await expect(message).toBeVisible({ timeout });
+        await expect(message).toHaveText(CARD_RESULT_UNKNOWN_TEXT);
     }),
 
     /** An unknown card payment must be neither cancelled nor retried: no "Abbrechen", no retry ("Zur Kasse"). */
     expectNoCancelOrRetry: async () => await test.step(`${NAME} - Expect no cancel or retry`, async () => {
-        await expect(buttonElement(CANCEL_BUTTON_NAME)).toHaveCount(0);
-        await expect(buttonElement(RETRY_BUTTON_NAME)).toHaveCount(0);
+        await expect(buttonElement(CARD_CANCEL_BUTTON_TESTID)).toHaveCount(0);
+        await expect(buttonElement(CARD_RETRY_BUTTON_TESTID)).toHaveCount(0);
     }),
 
     /** @param amount the open amount as rendered in the spec's login language, e.g. '0,00' for a de_DE login */
@@ -113,7 +118,7 @@ export const POSPaymentPanel = {
     }),
 
     expectCardReleaseEnabled: async ({ isEnabled, timeout = SLOW_ACTION_TIMEOUT }) => await test.step(`${NAME} - Expect card release ${isEnabled ? 'enabled' : 'disabled'}`, async () => {
-        const button = buttonElement(CARD_RELEASE_BUTTON_NAME);
+        const button = buttonElement(CARD_RELEASE_BUTTON_TESTID);
         await expect(button).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         if (isEnabled) {
             await expect(button).toBeEnabled({ timeout });
@@ -127,18 +132,20 @@ export const POSPaymentPanel = {
      * with `confirm`, confirms it.
      */
     releaseCardPayment: async ({ confirm }) => await test.step(`${NAME} - Release card payment, confirm=${confirm}`, async () => {
-        await buttonElement(CARD_RELEASE_BUTTON_NAME).tap({ timeout: SLOW_ACTION_TIMEOUT });
-        await expect(containerElement().getByText(CARD_RELEASE_CONFIRMATION_TEXT)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await buttonElement(CARD_RELEASE_BUTTON_TESTID).tap({ timeout: SLOW_ACTION_TIMEOUT });
+        const confirmation = containerElement().getByTestId(CARD_RELEASE_CONFIRMATION_TESTID);
+        await expect(confirmation).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(confirmation).toHaveText(CARD_RELEASE_CONFIRMATION_TEXT);
         if (confirm) {
-            await buttonElement(CARD_CONFIRM_BUTTON_NAME).tap({ timeout: SLOW_ACTION_TIMEOUT });
-            await expect(containerElement().getByText(CARD_RELEASE_CONFIRMATION_TEXT)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+            await buttonElement(CARD_CONFIRM_BUTTON_TESTID).tap({ timeout: SLOW_ACTION_TIMEOUT });
+            await expect(confirmation).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
         }
     }),
 
     /** After a release: the payment shows failed, and the cashier can cancel it ("Abbrechen") or retry ("Zur Kasse"). */
     expectCardPaymentFailedWithCancelAndRetry: async () => await test.step(`${NAME} - Expect card payment failed with cancel and retry`, async () => {
-        await expect(containerElement().getByText(CARD_RESULT_UNKNOWN_TEXT)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
-        await expect(buttonElement(CANCEL_BUTTON_NAME)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-        await expect(buttonElement(RETRY_BUTTON_NAME)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(containerElement().getByTestId(CARD_RESULT_UNKNOWN_TESTID)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(buttonElement(CARD_CANCEL_BUTTON_TESTID)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(buttonElement(CARD_RETRY_BUTTON_TESTID)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 };
