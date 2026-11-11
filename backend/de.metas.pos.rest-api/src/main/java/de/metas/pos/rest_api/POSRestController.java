@@ -41,6 +41,7 @@ import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
 import de.metas.pos.rest_api.json.JsonContext;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckResponse;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlement;
@@ -341,17 +342,20 @@ public class POSRestController
 
 	/**
 	 * Checks a card payment whose result is unknown against SumUp; any other payment is left as it is.
-	 * Local failure to ask SumUp is not an error here, the till sees the order as it is.
+	 * Failure to ask SumUp is not an error here: the till sees the order as it is, with {@code checkFailed} set.
 	 */
 	@PostMapping("/orders/checkPayment")
-	public JsonPOSOrder checkPayment(@RequestBody final JsonPOSCardPaymentCheckRequest request)
+	public JsonPOSCardPaymentCheckResponse checkPayment(@RequestBody final JsonPOSCardPaymentCheckRequest request)
 	{
 		final POSCardPaymentCheckResult result = posService.checkCardPayment(
 				request.getPosTerminalId(),
 				request.getOrder_uuid(),
 				request.getPayment_uuid(),
 				getLoggedUserId());
-		return toJson(result.getOrder(), newJsonContext());
+		return JsonPOSCardPaymentCheckResponse.builder()
+				.order(toJson(result.getOrder(), newJsonContext()))
+				.checkFailed(result.isCheckFailed())
+				.build();
 	}
 
 	/**

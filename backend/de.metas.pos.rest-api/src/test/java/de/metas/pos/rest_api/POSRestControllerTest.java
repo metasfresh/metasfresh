@@ -25,6 +25,7 @@ import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSPaymentProcessingStatus;
 import de.metas.pos.POSShipFrom;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckResponse;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
@@ -427,14 +428,16 @@ class POSRestControllerTest
 	{
 		final POSOrder order = newOrderWithCardPayment(POSPaymentProcessingStatus.UNKNOWN);
 		Mockito.when(posService.checkCardPayment(any(), any(), any(), any()))
-				.thenReturn(POSCardPaymentCheckResult.builder().order(order).build());
+				.thenReturn(POSCardPaymentCheckResult.builder().order(order).checkFailed(false).build());
 		mockReleasableAt();
 
-		final JsonPOSOrder response = controller.checkPayment(JsonPOSCardPaymentCheckRequest.builder()
+		final JsonPOSCardPaymentCheckResponse checkResponse = controller.checkPayment(JsonPOSCardPaymentCheckRequest.builder()
 				.posTerminalId(TERMINAL_ID)
 				.order_uuid(ORDER_UUID)
 				.payment_uuid(PAYMENT_UUID)
 				.build());
+		assertThat(checkResponse.isCheckFailed()).isFalse();
+		final JsonPOSOrder response = checkResponse.getOrder();
 
 		Mockito.verify(posService).checkCardPayment(TERMINAL_ID, ORDER_UUID, PAYMENT_UUID, CASHIER_ID);
 		assertThat(response.getUuid()).isEqualTo(ORDER_UUID);
@@ -442,6 +445,24 @@ class POSRestControllerTest
 		assertThat(response.getPayments().get(0).getStatus()).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
 		assertThat(response.getPayments().get(0).getReleasableAt()).isEqualTo(CHECKOUT_STARTED_AT.plusSeconds(180));
 			}
+
+	/**
+	 * SumUp could not be asked: the till is told so, as by the invoice card settlement's check.
+	 */
+	@Test
+	void checkPayment_mapsCheckFailed()
+	{
+		final POSOrder order = newOrderWithCardPayment(POSPaymentProcessingStatus.UNKNOWN);
+		Mockito.when(posService.checkCardPayment(any(), any(), any(), any()))
+				.thenReturn(POSCardPaymentCheckResult.builder().order(order).checkFailed(true).build());
+		mockReleasableAt();
+
+		final JsonPOSCardPaymentCheckResponse response = controller.checkPayment(JsonPOSCardPaymentCheckRequest.builder()
+				.posTerminalId(TERMINAL_ID).order_uuid(ORDER_UUID).payment_uuid(PAYMENT_UUID).build());
+
+		assertThat(response.isCheckFailed()).isTrue();
+		assertThat(response.getOrder().getPayments().get(0).getStatus()).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
+	}
 
 	@Test
 	void checkPayment_paymentNotUnknown_hasNoReleasableAt_andReleaseWaitIsNotAsked()
@@ -451,7 +472,7 @@ class POSRestControllerTest
 				.thenReturn(POSCardPaymentCheckResult.builder().order(order).build());
 
 		final JsonPOSOrder response = controller.checkPayment(JsonPOSCardPaymentCheckRequest.builder()
-				.posTerminalId(TERMINAL_ID).order_uuid(ORDER_UUID).payment_uuid(PAYMENT_UUID).build());
+				.posTerminalId(TERMINAL_ID).order_uuid(ORDER_UUID).payment_uuid(PAYMENT_UUID).build()).getOrder();
 
 		assertThat(response.getPayments().get(0).getReleasableAt()).isNull();
 		Mockito.verifyZeroInteractions(cardReleaseWait);

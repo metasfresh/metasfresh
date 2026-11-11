@@ -3,7 +3,6 @@ package de.metas.pos;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
@@ -28,6 +27,7 @@ import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckResponse;
 import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSPayment;
 import de.metas.pos.rest_api.json.JsonPOSPaymentStatus;
@@ -423,6 +423,15 @@ class JsonSerializeDeserializeTest
 				.payment_uuid(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
 				.confirmNotCharged(true)
 				.expectedStatus(JsonPOSPaymentStatus.UNKNOWN)
+				.build());
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentCheckResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentCheckResponse.builder()
+				.order(newJsonPOSOrder())
+				.checkFailed(true)
 				.build());
 	}
 
