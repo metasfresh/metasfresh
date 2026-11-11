@@ -10,7 +10,8 @@ import { ShipmentPage } from '../utils/pages/ShipmentPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { SALES_INVOICE_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { expectDocStatus } from '../utils/ContractWindowHelpers';
 
 /**
  * Invoice Reversal E2E test suite.
@@ -194,6 +195,10 @@ which is essential for handling billing errors and credit adjustments.
             await page.getByTestId('status-button').click();
             await page.waitForTimeout(500);
 
+            // A completed sales invoice offers Reverse-Correct only; Void must not be offered
+            await expect(page.getByTestId('status-VO')).toHaveCount(0);
+            await expect(page.getByTestId('status-RC')).toBeVisible();
+
             // Click "Reverse - Correct" action (RC = Reverse-Correct action key)
             await page.getByTestId('status-RC').click();
 
@@ -206,6 +211,11 @@ which is essential for handling billing errors and credit adjustments.
                 .catch(() => {});
 
             console.log(`[${language}] Invoice ${invoiceDocNo} reversed`);
+
+            // The original invoice is reversed (DocStatus RE), read back from the backend
+            const invoiceId = page.url().match(new RegExp(`/window/${SALES_INVOICE_WINDOW_ID}/(\\d+)`))?.[1];
+            expect(invoiceId).toBeTruthy();
+            await expectDocStatus(SALES_INVOICE_WINDOW_ID, invoiceId, 'RE');
 
             // Step 9: Verify reversal — language-independent checks
             const docNoAfterReversal = await page.locator('.form-field-DocumentNo input, input[name="DocumentNo"]')
