@@ -1,6 +1,11 @@
 package de.metas.ui.web.receiptSchedule;
 
 import de.metas.cache.CCache;
+import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
@@ -14,8 +19,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ClientId;
 import de.metas.organization.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_Message;
-import org.compiere.model.I_AD_Message_Trl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +28,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Optional;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -43,22 +44,24 @@ public class HUsToReceiveViewFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_AD_Message message = newInstanceOutOfTrx(I_AD_Message.class);
-		message.setValue(MSG_KEY);
-		message.setMsgText("HUs vereinnahmen");
-		save(message);
-		createTrl(message, "en_US", "Receive HUs");
-		createTrl(message, "de_CH", "HUs vereinnahmen");
-	}
-
-	private static void createTrl(final I_AD_Message message, final String adLanguage, final String text)
-	{
-		final I_AD_Message_Trl trl = newInstanceOutOfTrx(I_AD_Message_Trl.class);
-		trl.setAD_Message_ID(message.getAD_Message_ID());
-		trl.setAD_Language(adLanguage);
-		trl.setMsgText(text);
-		trl.setIsTranslated(true);
-		save(trl);
+		// Unit tests cannot run the real MsgBL (it reads AD_Message through a direct DB connection). The stub below
+		// answers exactly the lookup the factory must make - the AD_Message key - with the translations the
+		// migration script 5834340_sys_HUsToReceive_view_caption_AD_Message.sql creates. The real AD_Message
+		// lookup is covered by the E2E title test and the psql check of the migration.
+		Services.registerService(IMsgBL.class, new PlainMsgBL()
+		{
+			@Override
+			public ITranslatableString translatable(final String text)
+			{
+				if (!MSG_KEY.equals(text))
+				{
+					return super.translatable(text); // e.g. the column captions of the layout
+				}
+				return ImmutableTranslatableString.ofMap(
+						ImmutableMap.of("de_CH", "HUs vereinnahmen", "en_US", "Receive HUs"),
+						"HUs vereinnahmen");
+			}
+		});
 	}
 
 	private static void setAlwaysUseSameLayout(final boolean value)
