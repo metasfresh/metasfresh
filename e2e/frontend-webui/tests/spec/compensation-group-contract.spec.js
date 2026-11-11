@@ -81,7 +81,7 @@ const ORDER_COMPENSATION_GROUP_LINES_HIDDEN_COLUMNS = [
 const ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS = [
   'Line', 'M_Product_ID', 'QtyEntered', 'C_UOM_ID', 'PriceEntered', 'Price_UOM_ID', 'LineNetAmt', 'GroupCompensationType', 'GroupCompensationAmtType',
 ];
-// related-document windows left out of the R-REL comparison (loss accepted by the human 2026-11-11)
+// related-document windows left out of the comparison: their entries are not generated for a view-backed row (change log, event log, issues)
 const RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS = ['270', '540394', '363'];
 // Bestellung (purchase order) and its line tab
 const PURCHASE_ORDER_WINDOW_ID = 181;
@@ -866,7 +866,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await productPage.waitForURL(new RegExp(`/window/\\d+/${masterdata.products.DISCOUNT_A.id}$`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
       await productPage.close();
 
-      // R-REL (approved 2026-11-11): the related documents of a line row on this tab equal those of the same order line in the
+      // Related documents: the related documents of a line row on this tab equal those of the same order line in the
       // sales order window (windows 270, 540394, 363 left out on both sides). The sales order window is the expected side.
       const lineRowId = String(discountLineRow.id);
       const orderLineRow = (await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB)).find((row) => String(row.id) === lineRowId);
@@ -878,8 +878,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(expectedReferences.length, 'the line has at least one related document other than 270/540394/363 (an empty list on both sides proves nothing)')
         .toBeGreaterThanOrEqual(1);
       expect(actualReferences, 'related documents of the line row (without windows 270, 540394, 363)').toEqual(expectedReferences);
-      // Coverage note (33026 TC2): only the SALES group is seeded by this spec (the purchase order of step 6 stays unsaved).
-      // The purchase side of the tab / R-REL is proven live only (plan T10); recorded in ai-work/33026/TRACKING.md.
+      // Only the SALES group is seeded by this spec (the purchase order of step 6 stays unsaved),
+      // so the purchase side of this tab is not covered here.
     });
 
     await test.step('4c. List: filter "Vertrag" narrows the groups to the ones of that contract', async () => {
