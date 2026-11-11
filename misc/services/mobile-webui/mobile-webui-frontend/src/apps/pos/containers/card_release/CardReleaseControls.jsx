@@ -7,8 +7,8 @@ const _ = (key) => trl(`pos.cardRelease.${key}`);
 
 /**
  * The cashier's check / release of a card payment whose result is unknown (see {@link useCardRelease}): the "SumUp not
- * reachable" note, a refusal, and either the "not charged" confirmation or the release button (enabled from the
- * payment's {@code releasableAt}). Shared by the till's card sale and the invoice settlement's card payment.
+ * reachable" note, a refusal, and either the "not charged" confirmation or the release button. Renders nothing when
+ * none of them is shown.
  *
  * @param testIdPrefix the prefix of every {@code data-testid}, e.g. {@code pos-card-settlement}
  */

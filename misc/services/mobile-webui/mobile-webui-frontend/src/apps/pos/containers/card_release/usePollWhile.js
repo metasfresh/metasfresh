@@ -4,9 +4,8 @@ import { useEffect, useRef } from 'react';
  * Polls while {@code isActive}: calls {@code poll()} every {@code intervalMillis}, the next request only after the
  * previous one finished, so polls never overlap. Polling restarts when {@code pollKey} changes.
  * <ul>
- * <li>A result is passed to {@code onResult} unless polling stopped meanwhile (e.g. the dialog was closed) or
- * {@code markChanged} was called after the request was sent: a newer state (e.g. from a release response) is never
- * overwritten by an older poll answer.</li>
+ * <li>A result is passed to {@code onResult} unless polling stopped meanwhile or {@code markChanged} was called after
+ * the request was sent: a state set from another response is never overwritten by an older poll answer.</li>
  * <li>{@code onTick} runs after every poll, answered or not; a failed poll is only logged.</li>
  * </ul>
  *

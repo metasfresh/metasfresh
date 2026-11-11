@@ -123,30 +123,32 @@ const CardPaymentDetailsModal = ({
             </div>
           )}
         </section>
-        <footer className="modal-card-foot">
-          <div className="buttons">
-            {isAllowCheckout && (
-              <button
-                className="button is-large"
-                data-testid="pos-card-payment-checkout-button"
-                disabled={!isAllowCheckout}
-                onClick={handleCheckoutClicked}
-              >
-                {_('actions.checkout')}
-              </button>
-            )}
-            {isAllowCancel && (
-              <button
-                className="button is-large"
-                data-testid="pos-card-payment-cancel-button"
-                disabled={!isAllowCancel}
-                onClick={handleCancelClicked}
-              >
-                {_('actions.cancel')}
-              </button>
-            )}
-          </div>
-        </footer>
+        {(isAllowCheckout || isAllowCancel) && (
+          <footer className="modal-card-foot">
+            <div className="buttons">
+              {isAllowCheckout && (
+                <button
+                  className="button is-large"
+                  data-testid="pos-card-payment-checkout-button"
+                  disabled={!isAllowCheckout}
+                  onClick={handleCheckoutClicked}
+                >
+                  {_('actions.checkout')}
+                </button>
+              )}
+              {isAllowCancel && (
+                <button
+                  className="button is-large"
+                  data-testid="pos-card-payment-cancel-button"
+                  disabled={!isAllowCancel}
+                  onClick={handleCancelClicked}
+                >
+                  {_('actions.cancel')}
+                </button>
+              )}
+            </div>
+          </footer>
+        )}
       </div>
     </div>
   );

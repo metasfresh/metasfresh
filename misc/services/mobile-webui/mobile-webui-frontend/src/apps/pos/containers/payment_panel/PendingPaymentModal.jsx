@@ -108,8 +108,16 @@ const PendingPaymentModal = ({
           setCheckFailed(!!response.checkFailed);
         }
       })
-      .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => setSubmitting(false));
+      .catch((axiosError) => {
+        if (!isStopped) {
+          toastError({ axiosError });
+        }
+      })
+      .finally(() => {
+        if (!isStopped) {
+          setSubmitting(false);
+        }
+      });
 
     return () => {
       isStopped = true;
