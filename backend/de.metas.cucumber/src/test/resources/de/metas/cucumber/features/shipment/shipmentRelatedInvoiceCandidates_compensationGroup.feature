@@ -290,8 +290,8 @@ Feature: Related documents of a shipment list the invoice candidates the invoici
       | ol_goods3  | order      | goods3       | 1          |
     # set before the order is completed, as the flag is copied once to the invoice candidate when it is created
     And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.IsAllowSeparateInvoicing |
-      | ol_goods1                 | Y                            |
+      | C_OrderLine_ID.Identifier | IsAllowSeparateInvoicing |
+      | ol_goods1                 | Y                        |
     And the order identified by order is completed
     Then validate the created order lines
       | C_OrderLine_ID | C_Order_ID | M_Product_ID | QtyOrdered | IsGroupCompensationLine |

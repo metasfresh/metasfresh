@@ -58,7 +58,6 @@ Feature: Invoicing from a shipment of an order with a contract bonus (customer c
       | Identifier   | IsCustomer | M_PricingSystem_ID | InvoiceRule |
       | headOfficeBP | Y          | contractPS         | D           |
       | storeBP      | Y          | contractPS         | D           |
-      | plainBP      | Y          | contractPS         | D           |
 
     And metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name          | IsAdditive |

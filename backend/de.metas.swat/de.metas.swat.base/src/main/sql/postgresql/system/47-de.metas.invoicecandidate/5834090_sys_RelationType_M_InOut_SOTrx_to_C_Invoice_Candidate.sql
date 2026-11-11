@@ -36,6 +36,7 @@ WHERE l.IsActive = 'Y'
 -- Key: C_Invoice_Candidate.C_Invoice_Candidate_ID
 -- AD_Window_ID stays empty: the window comes from AD_Table.AD_Window_ID of C_Invoice_Candidate (540092).
 -- WhereClause: direct rows (M_InOut_ID = the shipment) UNION their compensation group siblings.
+-- NOTE: this UNION form is replaced by script 5834100 (single sub-select, no UNION, same rows; the WebUI ParsedSql cannot handle the UNION). Do not change the INSERT below: it is already applied on existing DBs.
 -- The sibling predicate is the one of view C_Invoice_Candidate_SelectionIncompleteGroups (de.metas.swat.base .../ddl/de_metas_invoicecandidate/views/C_Invoice_Candidate_SelectionIncompleteGroups.sql: same C_Order_ID + C_Order_CompensationGroup_ID, IsAllowSeparateInvoicing='N' on both rows).
 -- Like the view, it has no filter on Processed, IsActive or quantities, so it lists exactly the candidates the invoicing guard demands. If the view changes, change this WhereClause too (nothing links them mechanically).
 INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy, WhereClause)

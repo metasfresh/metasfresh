@@ -794,11 +794,9 @@ public class C_OrderLine_StepDef
 			orderLine.setM_AttributeSetInstance_ID(asiId);
 		}
 
-		final String isAllowSeparateInvoicing = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_IsAllowSeparateInvoicing);
-		if (Check.isNotBlank(isAllowSeparateInvoicing))
-		{
-			orderLine.setIsAllowSeparateInvoicing(StringUtils.toBoolean(isAllowSeparateInvoicing));
-		}
+		DataTableRow.singleRow(row)
+				.getAsOptionalBoolean(I_C_OrderLine.COLUMNNAME_IsAllowSeparateInvoicing)
+				.ifPresent(orderLine::setIsAllowSeparateInvoicing);
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(projectIdentifier))
