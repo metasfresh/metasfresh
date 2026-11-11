@@ -99,9 +99,10 @@ Feature: Asserting on the rendered PDF of an archived document
     # nothing is printed on top of anything else, anywhere in the document
     And the PDF archived for the record identified by "order" has no overlapping text
 
-    # font weight. "Zahlungsbedingungen" is a section heading printed in the bold face; "Kundenbetreuer:" is
-    # a plain label in the regular face (used only in the deliberately wrong RED check of this step)
-    And in the PDF archived for the record identified by "order", text "Zahlungsbedingungen" is printed in bold
+    # font weight. "Artikel" is the header of the item column, printed in the bold face; "Kundenbetreuer:" is
+    # a plain label in the regular face (used only in the deliberately wrong RED check of this step).
+    # Anchored to the column header because its label is the same on every branch (the payment-term label is not)
+    And in the PDF archived for the record identified by "order", text "Artikel" is printed in bold
 
     # horizontal position on one line. Position 10's row prints the position number "10" at the left margin,
     # then the name "AlphaItem", and the unit "Stk" further right - so the name starts right of where the
