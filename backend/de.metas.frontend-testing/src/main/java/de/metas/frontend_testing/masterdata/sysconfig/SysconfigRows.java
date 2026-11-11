@@ -15,6 +15,10 @@ import javax.annotation.Nullable;
  * <p>
  * Every write resets the sysconfig cache at once, so the test's next request reads the new value; the invalidation fired by the save
  * may be processed later.
+ * <p>
+ * Every write saves the row through the {@code AD_SysConfig} interceptor, which recomputes its {@code ConfigurationLevel}; so a row whose
+ * stored level differs from the computed one is normalized (e.g. an org row to 'O' when there is no SYSTEM row), and a restore puts back
+ * the row's value and {@code IsActive}, not necessarily its prior level.
  */
 public class SysconfigRows
 {
@@ -27,7 +31,7 @@ public class SysconfigRows
 		return JsonSysconfig.ofRow(
 				name,
 				sysConfigDAO.getValueOfExactRow(name, clientAndOrgId).orElse(null),
-				sysConfigDAO.isActiveExactRow(name, clientAndOrgId).orElse(true),
+				sysConfigDAO.isActiveExactRow(name, clientAndOrgId).orElseTrue(),
 				clientAndOrgId);
 	}
 

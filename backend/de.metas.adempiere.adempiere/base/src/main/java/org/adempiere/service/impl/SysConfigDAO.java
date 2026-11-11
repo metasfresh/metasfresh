@@ -29,6 +29,7 @@ import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -123,10 +124,10 @@ public class SysConfigDAO implements ISysConfigDAO
 	}
 
 	@Override
-	public Optional<Boolean> isActiveExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
+	public OptionalBoolean isActiveExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
-		return sysConfig != null ? Optional.of(sysConfig.isActive()) : Optional.empty();
+		return sysConfig != null ? OptionalBoolean.ofBoolean(sysConfig.isActive()) : OptionalBoolean.UNKNOWN;
 	}
 
 	@Override

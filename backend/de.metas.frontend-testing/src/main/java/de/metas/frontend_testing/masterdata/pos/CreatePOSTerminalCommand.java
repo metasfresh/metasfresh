@@ -67,12 +67,14 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
@@ -84,7 +86,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing: a dedicated cashbook, a fresh
+ * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing: a cashbook (the org bpartner's cash-bank account, reused), a fresh
  * sales pricing setup ({@code M_PricingSystem} + {@code M_PriceList} + {@code M_PriceList_Version} with
  * {@code M_ProductPrice} for the requested products), a walk-in customer, a ship-from warehouse and the
  * sales-order document type. When {@code CARD} is among the requested payment methods it also creates a SumUp
@@ -108,6 +110,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -135,7 +138,7 @@ public class CreatePOSTerminalCommand
 	{
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(request.getPriceListCurrency());
 
-		final BankAccountId bankAccountId = createCashbookBankAccount(currencyId);
+		final BankAccountId bankAccountId = getOrCreateCashbookBankAccount(currencyId);
 
 		final PricingSetupHelper.PricingSetupResult pricingSetup = PricingSetupHelper.createPricingSystemAndPriceList(
 				priceListVersionRepository,
@@ -262,6 +265,34 @@ public class CreatePOSTerminalCommand
 				.build());
 
 		return sumUpConfigId;
+	}
+
+	/**
+	 * Reuses the org bpartner's active cash-bank account of the given currency in {@link #orgId}; creates one only if there is none.
+	 * One account per terminal would pile up on the shared DB, and cucumber's bank account step, which looks up the org bpartner's active
+	 * account of a currency expecting at most one, would then fail after any POS E2E run.
+	 */
+	private BankAccountId getOrCreateCashbookBankAccount(@NonNull final CurrencyId currencyId)
+	{
+		return retrieveCashbookBankAccountId(currencyId)
+				.orElseGet(() -> createCashbookBankAccount(currencyId));
+	}
+
+	@NonNull
+	private Optional<BankAccountId> retrieveCashbookBankAccountId(@NonNull final CurrencyId currencyId)
+	{
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, MasterdataContext.METASFRESH_ORG_BPARTNER_ID)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyId)
+				.addInSubQueryFilter(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, I_C_Bank.COLUMNNAME_C_Bank_ID,
+						queryBL.createQueryBuilder(I_C_Bank.class)
+								.addEqualsFilter(I_C_Bank.COLUMNNAME_IsCashBank, true)
+								.create())
+				.orderBy(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
+				.create()
+				.firstIdOptional(BankAccountId::ofRepoIdOrNull);
 	}
 
 	private BankAccountId createCashbookBankAccount(@NonNull final CurrencyId currencyId)

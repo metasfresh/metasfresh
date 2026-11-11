@@ -307,6 +307,10 @@ public class AD_SysConfig_StepDef
 	 * reads the SYSTEM value set by the "temporarily set sys config" steps (or the code's default, if there is none) at every client and org,
 	 * whatever more specific row another test left behind (e.g. a mobile E2E spec writes at the sys config's configuration level).
 	 * The rows are reactivated after the scenario.
+	 * <p>
+	 * Deactivating and reactivating save the row through the {@code AD_SysConfig} interceptor, which recomputes its
+	 * {@code ConfigurationLevel}; so a row whose stored level differs from the computed one is normalized (e.g. an org row to 'O' when there
+	 * is no SYSTEM row) and is not restored with exactly its prior level.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -396,23 +400,45 @@ public class AD_SysConfig_StepDef
 		}
 
 		// after the SYSTEM rows: a SYSTEM row created by this scenario has ConfigurationLevel 'S', which forbids saving an org-level row
-		for (final int sysConfigId : deactivatedSysConfigIds)
+		// every row is attempted, also after one failed, so a single failure does not leave the others inactive for later scenarios
+		final List<RuntimeException> reactivationFailures = new ArrayList<>();
+		try
 		{
-			final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.load(sysConfigId, I_AD_SysConfig.class);
-			sysConfig.setIsActive(true);
-			InterfaceWrapperHelper.saveRecord(sysConfig);
+			for (final int sysConfigId : deactivatedSysConfigIds)
+			{
+				try
+				{
+					final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.load(sysConfigId, I_AD_SysConfig.class);
+					sysConfig.setIsActive(true);
+					InterfaceWrapperHelper.saveRecord(sysConfig);
+				}
+				catch (final RuntimeException ex)
+				{
+					reactivationFailures.add(ex);
+				}
+			}
 		}
-		deactivatedSysConfigIds.clear();
+		finally
+		{
+			deactivatedSysConfigIds.clear();
 
-		final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
-		priorValueBySysConfigName.clear();
-		if (reportServerChanged)
-		{
-			CacheMgt.get().reset();
+			final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
+			priorValueBySysConfigName.clear();
+			if (reportServerChanged)
+			{
+				CacheMgt.get().reset();
+			}
+			else
+			{
+				resetSysConfigCache();
+			}
 		}
-		else
+
+		if (!reactivationFailures.isEmpty())
 		{
-			resetSysConfigCache();
+			final RuntimeException firstFailure = reactivationFailures.get(0);
+			reactivationFailures.subList(1, reactivationFailures.size()).forEach(firstFailure::addSuppressed);
+			throw firstFailure;
 		}
 	}
 }

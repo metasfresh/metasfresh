@@ -3,6 +3,8 @@ package de.metas.frontend_testing.masterdata.pos;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeTypeId;
@@ -290,6 +292,66 @@ public class CreatePOSTerminalCommandTest
 		final I_M_PriceList priceList = InterfaceWrapperHelper.load(posRecord.getM_PriceList_ID(), I_M_PriceList.class);
 		assertThat(priceList.isTaxIncluded()).isFalse();
 		assertThat(priceList.isSOPriceList()).isTrue();
+	}
+
+	/**
+	 * Cucumber's bank account step looks up the org bpartner's active account of a currency with {@code firstOnly}; one more account per
+	 * created terminal makes that lookup fail after any POS E2E run on the same DB.
+	 */
+	@Test
+	public void execute_twice_shouldReuseTheOrgBPartnersCashBankAccount_insteadOfCreatingAnotherOne()
+	{
+		final JsonPOSTerminalResponse first = executeMinimalEURTerminal("T_BA1");
+		final JsonPOSTerminalResponse second = executeMinimalEURTerminal("T_BA2");
+
+		assertThat(second.getBankAccountId()).isEqualTo(first.getBankAccountId());
+		assertThat(retrieveActiveOrgBPartnerBankAccounts()).hasSize(1);
+
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(first.getBankAccountId(), I_C_BP_BankAccount.class);
+		assertThat(bankAccount.getAD_Org_ID()).isEqualTo(MasterdataContext.ORG_ID.getRepoId());
+		assertThat(new BankRepository().isCashBank(BankId.ofRepoId(bankAccount.getC_Bank_ID()))).isTrue();
+	}
+
+	@Test
+	public void execute_whenTheOrgBPartnerHasOnlyANonCashBankAccount_shouldCreateACashBankAccount()
+	{
+		final I_C_BP_BankAccount nonCashBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		nonCashBankAccount.setC_BPartner_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_ID.getRepoId());
+		nonCashBankAccount.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
+		nonCashBankAccount.setC_Currency_ID(currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR).getRepoId());
+		nonCashBankAccount.setC_Bank_ID(BankId.toRepoId(new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Real bank")
+				.routingNo("123456")
+				.cashBank(false)
+				.build()).getBankId()));
+		InterfaceWrapperHelper.saveRecord(nonCashBankAccount);
+
+		final JsonPOSTerminalResponse response = executeMinimalEURTerminal("T_BA3");
+
+		assertThat(response.getBankAccountId().getRepoId()).isNotEqualTo(nonCashBankAccount.getC_BP_BankAccount_ID());
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(response.getBankAccountId(), I_C_BP_BankAccount.class);
+		assertThat(new BankRepository().isCashBank(BankId.ofRepoId(bankAccount.getC_Bank_ID()))).isTrue();
+	}
+
+	private JsonPOSTerminalResponse executeMinimalEURTerminal(final String identifier)
+	{
+		return commandBuilder()
+				.request(JsonPOSTerminalRequest.builder()
+						.priceListCurrency(CurrencyCode.EUR)
+						.isTaxIncluded(false)
+						.build())
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private List<I_C_BP_BankAccount> retrieveActiveOrgBPartnerBankAccounts()
+	{
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, MasterdataContext.METASFRESH_ORG_BPARTNER_ID)
+				.create()
+				.list();
 	}
 
 	@Test

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -98,7 +99,7 @@ public class RestoreSysconfigsCommandTest
 		restore(previous);
 		assertThat(sysConfigBL.getValue(NAME, "default")).isEqualTo("default");
 		assertThat(sysConfigDAO.getValueOfExactRow(NAME, ClientAndOrgId.SYSTEM)).contains("old");
-		assertThat(sysConfigDAO.isActiveExactRow(NAME, ClientAndOrgId.SYSTEM)).contains(false);
+		assertThat(sysConfigDAO.isActiveExactRow(NAME, ClientAndOrgId.SYSTEM)).isEqualTo(OptionalBoolean.FALSE);
 	}
 
 	/**
@@ -122,7 +123,7 @@ public class RestoreSysconfigsCommandTest
 		restore(ImmutableList.of(previous));
 		assertThat(sysConfigBL.getValue(NAME, ClientAndOrgId.MAIN)).isEqualTo("system");
 		assertThat(sysConfigDAO.getValueOfExactRow(NAME, ClientAndOrgId.MAIN)).contains("150");
-		assertThat(sysConfigDAO.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).contains(false);
+		assertThat(sysConfigDAO.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).isEqualTo(OptionalBoolean.FALSE);
 	}
 
 	@Test
