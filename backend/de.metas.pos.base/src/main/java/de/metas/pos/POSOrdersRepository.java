@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 /**
  * Repository Tables: C_POS_Order, C_POS_OrderLine, C_POS_Payment, AD_Issue (read only: the issues recorded on a card payment), SUMUP_Transaction (read only, in the sweep candidate subqueries)
- * Repository Cluster: POSOrdersRepository, POSOrdersLoaderAndSaver, {@link de.metas.payment.sumup.repository.SumUpTransactionRepository}
+ * Repository Cluster: POSOrdersRepository, POSOrdersLoaderAndSaver
  */
 @Repository
 @RequiredArgsConstructor

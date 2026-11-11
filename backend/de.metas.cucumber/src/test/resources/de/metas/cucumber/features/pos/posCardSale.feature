@@ -936,3 +936,26 @@ Feature: POS till card sale with an unknown card result
     And the invoice of POS sale sale1 is paid
     And POS sale sale1 has 1 payment receipt
     And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
+
+  # ##########################################################################
+  # SumUp approves the charge and metasfresh saves the approval on its SumUp transaction, but the status event never reaches
+  # the card payment (e.g. the system stopped right after saving it). The card payment still waits for the card reader; the
+  # next SumUp poll applies the saved approval to it, so the sale completes. It is the sale's own charge: no late approval.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_36
+  Scenario: A saved SumUp approval whose status event never reached the card payment completes the sale with the next SumUp poll
+    Given SumUp API stub answers the next checkout with SUCCESS
+    And a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    And the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
+    When SumUp's approval of the transaction of POS sale sale1 is saved without its status event reaching the sale
+    Then the card payment of POS sale sale1 has status PENDING and sumUpClientTransactionId of the latest transaction
+    When metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status SUCCESSFUL and sumUpClientTransactionId of the latest transaction
+    And after not more than 30s, POS sale sale1 is completed
+    And the invoice of POS sale sale1 is paid
+    And POS sale sale1 has 1 payment receipt
+    And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'

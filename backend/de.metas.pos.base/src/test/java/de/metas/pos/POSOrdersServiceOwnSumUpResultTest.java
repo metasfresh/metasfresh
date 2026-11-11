@@ -41,7 +41,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -235,5 +237,36 @@ class POSOrdersServiceOwnSumUpResultTest
 
 		final POSPayment payment = ordersRepository.getById(order.getLocalIdNotNull()).getPaymentById(cardPayment.getLocalIdNotNull());
 		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
+	}
+
+	@Test
+	void sweep_paymentNoLongerNamingTheSumUpTransactionUnderTheLock_unchanged()
+	{
+		// the sweep read the payment naming CURRENT_TRX, whose SumUp transaction is final (FAILED) ...
+		final Instant startedAt = Instant.parse("2026-11-10T10:00:00Z");
+		final POSOrder order = newOrderWithCardPayment(POSPayment.builder()
+				.paymentProcessingStatus(POSPaymentProcessingStatus.PENDING)
+				.sumUpClientTransactionId(CURRENT_TRX)
+				.cardCheckoutStartedAt(startedAt));
+		final POSPayment cardPayment = order.getAllPayments().get(0);
+		final POSOrderAndPaymentId orderAndPaymentId = POSOrderAndPaymentId.of(order.getLocalIdNotNull(), cardPayment.getLocalIdNotNull());
+		final POSOrder orderAsReadBySweep = ordersRepository.getById(order.getLocalIdNotNull());
+		when(sumUpService.findTransactionByClientTransactionId(SumUpClientTransactionId.ofString(CURRENT_TRX)))
+				.thenReturn(Optional.of(sumUpTransaction(CURRENT_TRX, SumUpTransactionStatus.FAILED, startedAt.plusSeconds(1))));
+		// ... but before it locked the order, the cashier retried: a new checkout, PENDING and naming no SumUp transaction yet
+		ordersRepository.updatePaymentByIdForUpdate(orderAndPaymentId, (o, p) -> p.toBuilder()
+				.sumUpClientTransactionId(null)
+				.cardCheckoutStartedAt(startedAt.plusSeconds(30))
+				.build());
+		final POSOrdersRepository repositoryReturningTheOrderAsReadBySweep = spy(ordersRepository);
+		doReturn(orderAsReadBySweep).when(repositoryReturningTheOrderAsReadBySweep).getById(order.getLocalIdNotNull());
+		final POSOrdersService sweepingService = new POSOrdersService(mock(POSTerminalService.class), repositoryReturningTheOrderAsReadBySweep, mock(CurrencyRepository.class), posOrderProcessingServices, sumUpService, new POSCardReleaseWait(), new POSCardReaderCheckoutTerminator(mock(POSTerminalService.class), mock(SumUpService.class)), duration -> {});
+
+		sweepingService.reconcileCardPaymentWithItsSumUpTransaction(orderAndPaymentId);
+
+		// the earlier checkout's result is not applied to the new checkout
+		final POSPayment payment = ordersRepository.getById(order.getLocalIdNotNull()).getPaymentById(cardPayment.getLocalIdNotNull());
+		assertThat(payment.getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.PENDING);
+		assertThat(payment.getSumUpClientTransactionId()).isNull();
 	}
 }

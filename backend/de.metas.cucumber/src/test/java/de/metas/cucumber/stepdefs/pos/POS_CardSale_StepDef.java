@@ -42,6 +42,7 @@ import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.pos.POSCardPaymentCheckResult;
 import de.metas.pos.POSCardPaymentReleaseRequest;
 import de.metas.pos.POSCardPaymentReleaseResult;
@@ -74,6 +75,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
@@ -1173,6 +1175,35 @@ public class POS_CardSale_StepDef
 	public void resumePausedCardCheckout()
 	{
 		POSCardCheckoutRetryPause.reset();
+	}
+
+	/**
+	 * SumUp approves the sale's (latest) transaction, and metasfresh saves the approval on its SumUp transaction, but the status
+	 * event of that change never reaches the till sale (e.g. the system stopped right after saving it): the stub reports the
+	 * transaction SUCCESSFUL, and metasfresh's {@code SUMUP_Transaction} row is set SUCCESSFUL directly, without the SumUp
+	 * transaction repository, which is what fires status events.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the stub accepted a checkout for the sale and metasfresh saved its SumUp transaction
+	 * @cucumber.example
+	 * <pre>
+	 * When SumUp's approval of the transaction of POS sale sale1 is saved without its status event reaching the sale
+	 * </pre>
+	 */
+	@And("^SumUp's approval of the transaction of POS sale (\\S+) is saved without its status event reaching the sale$")
+	public void sumUpApprovalSavedWithoutStatusEvent(@NonNull final String saleIdentifier) throws InterruptedException
+	{
+		final String clientTransactionId = getAcceptedClientTransactionId(getSale(saleIdentifier), false);
+		SumUpApiStub.setTransactionStatus(clientTransactionId, "SUCCESSFUL", null);
+		// events fired so far (e.g. the transaction's creation) are handled first, so none of them is mistaken for the approval's
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
+
+		final I_SUMUP_Transaction record = queryBL.createQueryBuilder(I_SUMUP_Transaction.class)
+				.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_SUMUP_ClientTransactionId, clientTransactionId)
+				.create()
+				.firstOnlyNotNull(I_SUMUP_Transaction.class);
+		record.setStatus("SUCCESSFUL");
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	/**

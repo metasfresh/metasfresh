@@ -43,9 +43,11 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Service
@@ -163,6 +165,18 @@ public class POSOrdersService
 			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
 			@NonNull final POSPaymentProcessResponse response)
 	{
+		updatePaymentStatusFromRemoteAndTryCompleteOrder(posOrderAndPaymentId, response, payment -> true);
+	}
+
+	/**
+	 * Like {@link #updatePaymentStatusFromRemoteAndTryCompleteOrder(POSOrderAndPaymentId, POSPaymentProcessResponse)}, but the
+	 * result is applied only if the payment, as locked, still satisfies {@code applyIf}; otherwise it is left unchanged.
+	 */
+	private void updatePaymentStatusFromRemoteAndTryCompleteOrder(
+			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
+			@NonNull final POSPaymentProcessResponse response,
+			@NonNull final Predicate<POSPayment> applyIf)
+	{
 		// NOTE: 
 		// Make sure we are running out of transaction. 
 		// Keep [POS payment update] and [POS order completing] in 2 separate transactions
@@ -172,8 +186,12 @@ public class POSOrdersService
 		final AtomicReference<POSOrder> orderRef = new AtomicReference<>();
 		final AtomicBoolean lateApprovalNotBooked = new AtomicBoolean(false);
 		ordersRepository.updatePaymentByIdForUpdate(posOrderAndPaymentId, (order, payment) -> {
-			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response);
 			orderRef.set(order);
+			if (!applyIf.test(payment))
+			{
+				return payment;
+			}
+			final POSPaymentRemoteUpdateResult result = payment.changingStatusFromRemote(response);
 			lateApprovalNotBooked.set(result.isLateApprovalNotBooked());
 			return result.getPayment();
 		});
@@ -509,14 +527,24 @@ public class POSOrdersService
 	 */
 	private POSPayment applyOwnFinalSumUpResult(@NonNull final POSPayment payment)
 	{
+		return findOwnFinalSumUpResult(payment)
+				.map(ownResult -> payment.changingStatusFromRemote(ownResult).getPayment())
+				.orElse(payment);
+	}
+
+	/**
+	 * @return the final result of the card payment's own SumUp transaction, as metasfresh stores it, if the payment is a PENDING
+	 * card payment naming a SumUp transaction that is no longer PENDING; else empty. Reads the database only (no SumUp call).
+	 */
+	private Optional<POSPaymentProcessResponse> findOwnFinalSumUpResult(@NonNull final POSPayment payment)
+	{
 		if (!payment.getPaymentMethod().isCard() || !payment.isPending())
 		{
-			return payment;
+			return Optional.empty();
 		}
 		return findOwnSumUpTransaction(payment)
 				.filter(sumUpTrx -> !sumUpTrx.getStatus().isPending())
-				.map(sumUpTrx -> payment.changingStatusFromRemote(SumUpUtils.extractProcessResponse(sumUpTrx)).getPayment())
-				.orElse(payment);
+				.map(SumUpUtils::extractProcessResponse);
 	}
 
 	/**
@@ -741,18 +769,17 @@ public class POSOrdersService
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		final POSPayment payment = ordersRepository.getById(orderAndPaymentId.getOrderId()).getPaymentById(orderAndPaymentId.getPaymentId());
-		if (!payment.getPaymentMethod().isCard() || !payment.isPending())
+		final POSPaymentProcessResponse ownResult = findOwnFinalSumUpResult(payment).orElse(null);
+		if (ownResult == null)
 		{
 			return;
 		}
 
-		final SumUpTransaction ownTransaction = findOwnSumUpTransaction(payment).orElse(null);
-		if (ownTransaction == null || ownTransaction.getStatus().isPending())
-		{
-			return;
-		}
-
-		updatePaymentStatusFromRemoteAndTryCompleteOrder(orderAndPaymentId, SumUpUtils.extractProcessResponse(ownTransaction));
+		// read without a lock: applied only if the payment, as locked, still names that transaction (e.g. not retried meanwhile)
+		updatePaymentStatusFromRemoteAndTryCompleteOrder(
+				orderAndPaymentId,
+				ownResult,
+				lockedPayment -> Objects.equals(lockedPayment.getSumUpClientTransactionId(), ownResult.getClientTransactionId()));
 	}
 
 	private static boolean isUnknownCardPaymentNamingSumUpTransaction(@NonNull final POSPayment payment)
