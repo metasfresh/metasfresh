@@ -1,6 +1,6 @@
 /**
  * True when the mouse event's point lies on the target's own scrollbar: inside its border box, outside its
- * client box (which excludes borders and scrollbars), and the target actually isOverflowing.
+ * client box (which excludes borders and scrollbars), and the target actually overflows.
  * A press on a scrollbar is dispatched with the scrollable element itself as target, so it can otherwise not be told
  * apart from a click on the element's blank area.
  *

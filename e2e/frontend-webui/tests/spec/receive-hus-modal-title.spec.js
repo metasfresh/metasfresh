@@ -14,6 +14,7 @@ import {
   openWindowOnOwnRows,
   patchDocument,
   selectRowUnlessSelected,
+  startActionFromMenu,
 } from '../utils/WebAPISetup';
 
 /**
@@ -47,20 +48,19 @@ const LOGISTIK_WINDOW_ID = 541954;
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
 
 /** The receive modal is opened from three places (receipt candidates, "Logistik", delivery planning). */
-const RECEIVE_WINDOWS = [
-  {
-    name: 'Wareneingangsdisposition Logistik',
-    windowId: LOGISTIK_WINDOW_ID,
-    orderBy: '-M_ReceiptSchedule_ID',
-    isOwnRow: (row, { productId }) => String(row.fieldsByName?.M_Product_ID?.value?.key) === String(productId),
-  },
-  {
-    name: 'Wareneingangsdisposition inkl. Lieferplanung',
-    windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
-    orderBy: '-RV_ReceiptDisposition_DeliveryPlanning_ID',
-    isOwnRow: (row, { purchaseOrderId }) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId),
-  },
-];
+const LOGISTIK_RECEIVE_WINDOW = {
+  name: 'Wareneingangsdisposition Logistik',
+  windowId: LOGISTIK_WINDOW_ID,
+  orderBy: '-M_ReceiptSchedule_ID',
+  isOwnRow: (row, { productId }) => String(row.fieldsByName?.M_Product_ID?.value?.key) === String(productId),
+};
+const DELIVERY_PLANNING_RECEIVE_WINDOW = {
+  name: 'Wareneingangsdisposition inkl. Lieferplanung',
+  windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
+  orderBy: '-RV_ReceiptDisposition_DeliveryPlanning_ID',
+  isOwnRow: (row, { purchaseOrderId }) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId),
+};
+const RECEIVE_WINDOWS = [LOGISTIK_RECEIVE_WINDOW, DELIVERY_PLANNING_RECEIVE_WINDOW];
 
 /**
  * Creates a purchase order through the web API and opens `receiveWindow` on a view scoped to its receipt schedule,
@@ -106,36 +106,6 @@ async function openReceiveWindowOnOwnRow({ page, request, receiveWindow, languag
   const row = page.locator('table tbody tr').first();
   await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
   await selectRowUnlessSelected(row);
-}
-
-/**
- * Opens the header's action menu ("...") and starts the action carrying the given AD_Process.Value.
- * The menu lists the actions of the current selection once the server has answered, so opening is retried (closing and
- * reopening the menu) until the action is offered.
- * @param {{page: object, processValue: string, rowToSelect?: object}} options `rowToSelect`: a grid row to (re)select
- * after the click that dismisses overlays, because that click also clears a grid selection
- */
-async function startActionFromMenu({ page, processValue, rowToSelect = null }) {
-  await page.locator('body').click({ position: { x: 5, y: 5 } });
-  if (rowToSelect) {
-    await selectRowUnlessSelected(rowToSelect);
-  }
-  const action = page.locator(`[data-testid="action-${processValue}"]`);
-  const subheader = page.locator('.subheader-container').first();
-  const actionsToggle = page.locator('.meta-icon-more').first();
-  await expect(async () => {
-    if (!(await subheader.isVisible())) {
-      await actionsToggle.click();
-      await subheader.waitFor({ state: 'visible', timeout: 3000 });
-    }
-    try {
-      await expect(action).toBeVisible({ timeout: 3000 });
-    } catch (e) {
-      await actionsToggle.click(); // close the menu: the next attempt reopens it and reloads the action list
-      throw e;
-    }
-  }).toPass({ timeout: SLOW_ACTION_TIMEOUT, intervals: [1000, 2000] });
-  await action.click();
 }
 
 test.describe('Receive HUs modal - title', () => {
@@ -211,7 +181,7 @@ test.describe('Receive HUs modal - title', () => {
         describeReceiveHUsCase(`Receive HUs modal title: ${processLeg.name} ${language}`);
 
         if (processLeg.source === 'deliveryPlanning') {
-          await openReceiveWindowOnOwnRow({ page, request, receiveWindow: RECEIVE_WINDOWS[1], language });
+          await openReceiveWindowOnOwnRow({ page, request, receiveWindow: DELIVERY_PLANNING_RECEIVE_WINDOW, language });
         } else {
           await openReceiptCandidateOfNewPurchaseOrder(
             await createPurchaseReceiptMasterdata({ language, productName: 'Test Product for Receive HUs modal title' }),

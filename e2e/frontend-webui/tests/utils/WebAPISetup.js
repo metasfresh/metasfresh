@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { FRONTEND_BASE_URL } from './common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from './common';
 import { WEBAPI_BASE_URL } from './WebAPIValidation';
 
 /**
@@ -100,4 +100,34 @@ export const fetchOwnViewRows = async ({ request, windowId, orderBy, isOwnRow })
       return ownRows;
     }
   }
+};
+
+/**
+ * Opens the header's action menu ("...") and starts the action carrying the given AD_Process.Value.
+ * The menu lists the actions of the current selection once the server has answered, so opening is retried (closing and
+ * reopening the menu) until the action is offered.
+ * @param {{page: object, processValue: string, rowToSelect?: object}} options `rowToSelect`: a grid row to (re)select
+ * after the click that dismisses overlays, because that click also clears a grid selection
+ */
+export const startActionFromMenu = async ({ page, processValue, rowToSelect = null }) => {
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  if (rowToSelect) {
+    await selectRowUnlessSelected(rowToSelect);
+  }
+  const action = page.locator(`[data-testid="action-${processValue}"]`);
+  const subheader = page.locator('.subheader-container').first();
+  const actionsToggle = page.locator('.meta-icon-more').first();
+  await expect(async () => {
+    if (!(await subheader.isVisible())) {
+      await actionsToggle.click();
+      await subheader.waitFor({ state: 'visible', timeout: 3000 });
+    }
+    try {
+      await expect(action).toBeVisible({ timeout: 3000 });
+    } catch (e) {
+      await actionsToggle.click(); // close the menu: the next attempt reopens it and reloads the action list
+      throw e;
+    }
+  }).toPass({ timeout: SLOW_ACTION_TIMEOUT, intervals: [1000, 2000] });
+  await action.click();
 };
