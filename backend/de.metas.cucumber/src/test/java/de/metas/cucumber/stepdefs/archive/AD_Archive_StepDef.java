@@ -67,6 +67,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -963,7 +964,7 @@ public class AD_Archive_StepDef
 				.isNotEmpty();
 
 		final boolean anyBold = matches.stream()
-				.anyMatch(run -> run.stream().allMatch(word -> word.getFontName().toLowerCase().contains("bold")));
+				.anyMatch(run -> run.stream().allMatch(word -> word.getFontName().toLowerCase(Locale.ROOT).contains("bold")));
 		assertThat(anyBold)
 				.as("Some occurrence of text '%s' printed in a bold font. Occurrences (page, fonts): %s",
 						text,
@@ -1039,6 +1040,37 @@ public class AD_Archive_StepDef
 	}
 
 	/**
+	 * Verifies that {@code leftText} ends left of where {@code rightText} starts: there is an occurrence of each
+	 * on the same page with {@code right(leftText) < left(rightText)}, on any line. Any pair of occurrences may
+	 * satisfy it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", text "ALPHA-NR" ends left of where text "BetaItem" starts
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, text {string} ends left of where text {string} starts")
+	public void assert_archived_pdf_text_ends_left_of_start(
+			@NonNull final String recordIdentifier,
+			@NonNull final String leftText,
+			@NonNull final String rightText)
+	{
+		final List<PdfWord> words = extractPdfWords(recordIdentifier);
+		final List<List<PdfWord>> leftMatches = findGlyphRuns(words, leftText);
+		final List<List<PdfWord>> rightMatches = findGlyphRuns(words, rightText);
+		assertMatchesFound(recordIdentifier, leftText, leftMatches, rightText, rightMatches);
+
+		final boolean found = leftMatches.stream().anyMatch(a -> rightMatches.stream().anyMatch(b ->
+				samePage(a, b) && rightOf(a) < leftOf(b)));
+		assertThat(found)
+				.as("Text '%s' ends left of where text '%s' starts (same page, right(first) < left(second)). '%s' at %s; '%s' at %s",
+						leftText, rightText,
+						leftText, describeRuns(leftMatches), rightText, describeRuns(rightMatches))
+				.isTrue();
+	}
+
+	/**
 	 * Verifies that the FIRST occurrence of {@code text} is on the same page as the LAST occurrence of
 	 * {@code lastText} — e.g. that a total line was not pushed onto the following page, away from the block it
 	 * belongs to.
@@ -1103,7 +1135,7 @@ public class AD_Archive_StepDef
 	private static String describeRuns(final List<List<PdfWord>> runs)
 	{
 		return runs.stream()
-				.map(run -> String.format("[page %s, left %.1f, right %.1f, bottom %.1f]",
+				.map(run -> String.format(Locale.ROOT, "[page %s, left %.1f, right %.1f, bottom %.1f]",
 						run.get(0).getPageIndex(), leftOf(run), rightOf(run), bottomOf(run)))
 				.collect(Collectors.toList())
 				.toString();

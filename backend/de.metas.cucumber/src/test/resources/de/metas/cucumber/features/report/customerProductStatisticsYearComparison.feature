@@ -7,7 +7,7 @@ Feature: Customer/Product Statistics (Long) - customer total lines
   ## - Data: customer A has 11 products, invoiced in 2025 (1 PCE x 90.00 each) and 2026 (1 PCE x 100.00 each);
   ##   customer B only in 2025 (cpsA01, 50.00); customer C only in 2026 (cpsA01, 70.00).
   ## - Amount is read from the accounting, so the report runs once the invoices are posted.
-  ## - Number format: de_DE 1.234,56 / en_US 1,234.56. A: 2026 = 6x100 = 1.100,00; 2025 = 6x90 = 990,00.
+  ## - Number format: de_DE 1.234,56 / en_US 1,234.56. A: 2026 = 11x100 = 1.100,00; 2025 = 11x90 = 990,00.
   ## - Customer A's name has 61 characters on purpose: it is the long-name case (the name must stay on one line next to
   ##   the label, and wrap instead of overlapping the amount when longer).
   ## - PriceStd 100.00 in the price list is only the list price; the invoice line Price overrides it.
@@ -158,7 +158,7 @@ Feature: Customer/Product Statistics (Long) - customer total lines
     And in the PDF archived for the record identified by "cpsCustomerA", text "Summe für Kunde" starts right of where text "cpsA11" starts
     And in the PDF archived for the record identified by "cpsCustomerA", text "990,00" starts right of where text "Vorperiode:" ends on the same line
     And in the PDF archived for the record identified by "cpsCustomerA", text "Vorperiode:" starts right of where text "Summe für Kunde" starts
-    And in the PDF archived for the record identified by "cpsCustomerA", text "November" starts right of where text "Vorperiode:" starts
+    And in the PDF archived for the record identified by "cpsCustomerA", text "Vorperiode:" ends left of where text "November" starts
     And the PDF archived for the record identified by "cpsCustomerA" does not contain text "Abweichung % 90,00"
     And the visual line containing text "Abweichung %" in the PDF archived for the record identified by "cpsCustomerA" is exactly "Abweichung %"
     And the PDF archived for the record identified by "cpsCustomerA" does not contain text "Kundensumme Vorjahreskunde"
