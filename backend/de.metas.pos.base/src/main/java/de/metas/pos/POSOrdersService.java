@@ -647,7 +647,7 @@ public class POSOrdersService
 
 	private static boolean isUnknownCardPaymentNamingSumUpTransaction(@NonNull final POSPayment payment)
 	{
-		return isUnknownCardPayment(payment) && payment.getSumUpClientTransactionId() != null;
+		return payment.isUnknownCardPayment() && payment.getSumUpClientTransactionId() != null;
 	}
 
 	/**
@@ -801,7 +801,7 @@ public class POSOrdersService
 			@NonNull final POSOrder order,
 			@NonNull final POSPayment payment)
 	{
-		if (!isUnknownCardPayment(payment))
+		if (!payment.isUnknownCardPayment())
 		{
 			return refusedRelease(order, MSG_ReleaseOnlyIfResultUnknown);
 		}
@@ -910,11 +910,6 @@ public class POSOrdersService
 				.refusedMessageKey(MSG_ReleaseNotYetAllowed)
 				.refusedMessage(TranslatableStrings.adMessage(MSG_ReleaseNotYetAllowed, String.valueOf(releaseAfterSeconds)))
 				.build();
-	}
-
-	private static boolean isUnknownCardPayment(@NonNull final POSPayment payment)
-	{
-		return payment.getPaymentMethod().isCard() && payment.isUnknown();
 	}
 
 	/**

@@ -110,6 +110,11 @@ public class POSPayment
 
 	public boolean isUnknown() {return paymentProcessingStatus.isUnknown();}
 
+	/**
+	 * @return whether this is a card payment whose SumUp result is unknown (it can be checked and, after the wait, released)
+	 */
+	public boolean isUnknownCardPayment() {return getPaymentMethod().isCard() && isUnknown();}
+
 	public boolean isAllowDeleteFromDB() {return paymentProcessingStatus.checkAllowDeleteFromDB().isTrue();}
 
 	public boolean isAllowDelete()

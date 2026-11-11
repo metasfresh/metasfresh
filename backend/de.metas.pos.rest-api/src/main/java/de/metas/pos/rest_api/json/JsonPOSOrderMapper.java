@@ -45,7 +45,7 @@ public class JsonPOSOrderMapper
 	@Nullable
 	private Instant getReleasableAt(@NonNull final POSOrder order, @NonNull final POSPayment payment)
 	{
-		if (!payment.getPaymentMethod().isCard() || !payment.isUnknown() || payment.getCardCheckoutStartedAt() == null)
+		if (!payment.isUnknownCardPayment() || payment.getCardCheckoutStartedAt() == null)
 		{
 			return null;
 		}
