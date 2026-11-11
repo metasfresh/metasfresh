@@ -21,7 +21,7 @@
 --   AD_Table 542660; AD_Column 593830..593848; AD_Reference 542156; AD_RelationType 540513
 
 -- ============================================================================
--- 1) AD_Table (template X_TableTemplate 540290: AccessLevel, ChangeLog etc.; IsView='Y')
+-- 1) AD_Table (modelled on template X_TableTemplate 540290; AccessLevel '3' = Client+Org as usual for views, the template has '4'; IsView='Y')
 -- ============================================================================
 INSERT INTO AD_Table (AD_Client_ID, AD_Org_ID, AD_Table_ID, AccessLevel, ACTriggerLength, Created, CreatedBy, EntityType, ImportTable, IsActive, IsAutocomplete, IsChangeLog, IsDeleteable, IsDLM, IsEnableRemoteCacheInvalidation, IsHighVolume, IsSecurityEnabled, IsView, LoadSeq, Name, PersonalDataCategory, ReplicationType, TableName, TooltipType, Updated, UpdatedBy)
 VALUES (0, 0, 542660 /*From ID Server*/, '3', 0, TO_TIMESTAMP('2026-11-11 12:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 0, 'C_Order_CompensationGroup_Line_V', 'NP', 'L', 'C_Order_CompensationGroup_Line_V', 'DTI', TO_TIMESTAMP('2026-11-11 12:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100)
