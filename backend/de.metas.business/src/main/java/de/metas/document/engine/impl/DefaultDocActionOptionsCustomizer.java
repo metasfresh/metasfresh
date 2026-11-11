@@ -165,11 +165,10 @@ import de.metas.util.Check;
 		 */
 		else if (I_M_InOut.Table_Name.equals(tableName))
 		{
-			// Complete .. CO
+			// Complete .. CO. Void is not offered: on a completed document it runs reverse-correct anyway, so only Reverse-Correct is offered
 			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
 				docActions.add(IDocument.ACTION_Reverse_Correct);
-				docActions.add(IDocument.ACTION_Void);
 				docActions.add(IDocument.ACTION_Close);
 			}
 		}
@@ -181,7 +180,6 @@ import de.metas.util.Check;
 			// Complete .. CO
 			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(IDocument.ACTION_Void);
 				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
@@ -193,7 +191,6 @@ import de.metas.util.Check;
 			// Complete .. CO
 			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(IDocument.ACTION_Void);
 				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
@@ -218,7 +215,6 @@ import de.metas.util.Check;
 			// Complete .. CO
 			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(IDocument.ACTION_Void);
 				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
@@ -254,7 +250,6 @@ import de.metas.util.Check;
 			// Complete .. CO
 			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(IDocument.ACTION_Void);
 				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
@@ -292,7 +287,6 @@ import de.metas.util.Check;
 			// Complete .. CO
 			else if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(IDocument.ACTION_Void);
 				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
