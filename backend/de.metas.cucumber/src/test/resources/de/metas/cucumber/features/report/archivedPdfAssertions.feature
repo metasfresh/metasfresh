@@ -112,5 +112,8 @@ Feature: Asserting on the rendered PDF of an archived document
     # indent: the product number "ALPHA-NR" is set in from the left margin, where the label "Kundenbetreuer:" starts
     And in the PDF archived for the record identified by "order", text "ALPHA-NR" starts right of where text "Kundenbetreuer:" starts
 
+    # ends left of: the name "AlphaItem" ends before the unit "Stk" starts (every "Stk" prints right of the names)
+    And in the PDF archived for the record identified by "order", text "AlphaItem" ends left of where text "Stk" starts
+
     # same page: everything of this small order is on page 1
     And in the PDF archived for the record identified by "order", text "GammaItem" is on the same page as the last occurrence of text "AlphaItem"

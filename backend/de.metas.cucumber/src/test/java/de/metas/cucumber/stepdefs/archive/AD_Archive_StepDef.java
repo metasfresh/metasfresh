@@ -1016,7 +1016,7 @@ public class AD_Archive_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * Then in the PDF archived for the record identified by "order", text "ALPHA-NR" starts right of where text "AlphaItem" starts
+	 * Then in the PDF archived for the record identified by "order", text "ALPHA-NR" starts right of where text "Kundenbetreuer:" starts
 	 * </pre>
 	 */
 	@Then("in the PDF archived for the record identified by {string}, text {string} starts right of where text {string} starts")
@@ -1047,7 +1047,7 @@ public class AD_Archive_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * Then in the PDF archived for the record identified by "order", text "ALPHA-NR" ends left of where text "BetaItem" starts
+	 * Then in the PDF archived for the record identified by "order", text "AlphaItem" ends left of where text "Stk" starts
 	 * </pre>
 	 */
 	@Then("in the PDF archived for the record identified by {string}, text {string} ends left of where text {string} starts")
