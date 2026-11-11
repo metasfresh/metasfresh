@@ -21,8 +21,19 @@ public class POSPayment
 {
 	/**
 	 * How far SumUp's clock may run behind the till's: a SumUp transaction created more than this before the payment's current
-	 * checkout started belongs to an earlier checkout. Safe, because a released checkout is at least the release wait
-	 * ({@link POSCardReleaseWait}, at least 150 s) older than the next checkout's start, so the allowance cannot hide it.
+	 * checkout started belongs to an earlier checkout.
+	 * <p>
+	 * Enough to catch earlier checkouts: a checkout is released no earlier than the release wait ({@link POSCardReleaseWait},
+	 * at least 150 s) after it started, and SumUp creates its transaction up to about 60 s (the SumUp client's connect timeout)
+	 * after that start. So the transaction of the checkout released last was created at least about 90 s before the next
+	 * checkout started: about 30 s beyond this allowance. That checkout is caught by its released id anyway, whenever it names
+	 * one; every checkout before it is at least two release waits older.
+	 * <p>
+	 * Accepted limit: if SumUp's clock runs more than this behind, a result of the current checkout that arrives before the
+	 * checkout's SumUp id is stored on the payment is taken as an earlier checkout's: it is not applied, and a SUCCESSFUL one is
+	 * recorded for the back office as a late approval not booked. The SumUp poller does not bring it again (it re-reads only
+	 * PENDING SumUp transactions); a later result of that transaction, e.g. the back office's update of it, names the stored id
+	 * and is applied.
 	 */
 	static final Duration SUMUP_CLOCK_SKEW_ALLOWANCE = Duration.ofSeconds(60);
 
@@ -221,7 +232,10 @@ public class POSPayment
 	 * <li>SUCCESSFUL on a DELETED payment leaves it unchanged;</li>
 	 * <li>PENDING on an UNKNOWN payment keeps it UNKNOWN;</li>
 	 * <li>any other result is applied as is (e.g. the current checkout's own result, or SUCCESSFUL on a FAILED / CANCELLED
-	 * payment that was never released and whose checkout start is not known).</li>
+	 * payment that was never released and whose checkout start is not known). If the payment names no SumUp client
+	 * transaction id yet and the applied result is not PENDING, the result's client transaction id is stored as the payment's,
+	 * so later results of that transaction count as the current checkout's own; a PENDING result leaves the id unset (the
+	 * checkout's step 3 stores it).</li>
 	 * </ol>
 	 * A SUCCESSFUL result that leaves the payment unchanged by rules 1 to 3 is flagged as a late approval not booked (to be
 	 * reviewed by the back office).
@@ -254,6 +268,8 @@ public class POSPayment
 
 		final POSPayment paymentChanged = toBuilder()
 				.paymentProcessingStatus(remoteStatus)
+				// a non-PENDING result is the current checkout's own: if no SumUp id is stored yet, store the result's
+				.sumUpClientTransactionId(sumUpClientTransactionId != null || remoteStatus.isPending() ? sumUpClientTransactionId : response.getClientTransactionId())
 				.cardProcessingDetails(POSPaymentCardProcessingDetails.builder()
 						.config(response.getConfig())
 						.transactionId(response.getTransactionId())

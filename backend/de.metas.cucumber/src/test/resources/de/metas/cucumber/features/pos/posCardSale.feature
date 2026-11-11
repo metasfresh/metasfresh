@@ -874,3 +874,38 @@ Feature: POS till card sale with an unknown card result
     And the card payment of POS sale sale1 does not carry the card details of the first SumUp transaction
     And the card payment of POS sale sale1 has 1 AD_Issue with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'
     And the card payment of POS sale sale1 has no payment receipt
+
+  # ##########################################################################
+  # Cause (i), then the retry's own approval reaches the payment before the retry's SumUp id is stored on it (here: storing
+  # SumUp's answer fails). The approval names the retry's SumUp transaction, so SumUp's refund of the retry's charge counts as
+  # the retry's own result: it deletes the payment and is no late approval.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_SALE_TC23_34
+  Scenario: After a release, a refund of the retry's charge approved before its SumUp id was stored deletes the card payment
+    Given saving a SumUp transaction fails with a database error
+    And SumUp API stub answers the next checkout with SUCCESS
+    When a POS card sale sale1 is checked out at shopTill for:
+      | M_Product_ID | Price | C_TaxCategory_ID |
+      | product1     | 2.50  | taxCategory07    |
+    Then the card payment of POS sale sale1 has status UNKNOWN and sumUpClientTransactionId set
+    And saving a SumUp transaction works again
+    And metasfresh's clock is 200 seconds after the card checkout of POS sale sale1
+    And SumUp API stub reports the transaction of POS sale sale1 as PENDING
+    When the card payment of POS sale sale1 is released by cashier metasfresh
+    And the card payment of POS sale sale1 is released by cashier metasfresh with confirmation expecting UNKNOWN
+    Then the card payment of POS sale sale1 has status FAILED
+    When metasfresh's clock advances by 1 seconds
+    And saving the card payment of a POS sale fails with a database error for the next 3 attempts
+    And the card payment of POS sale sale1 is retried and the stub answers SUCCESS
+    And metasfresh handled the SumUp events
+    And saving the card payment of a POS sale works again
+    Then the card payment of POS sale sale1 has status PENDING
+    When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL
+    And metasfresh polls SumUp
+    Then the card payment of POS sale sale1 has status SUCCESSFUL
+    When SumUp API stub reports the transaction of POS sale sale1 as SUCCESSFUL refunded 2.50
+    And SumUp calls back for the transaction of POS sale sale1
+    Then the card payment of POS sale sale1 has status DELETED
+    And the card payment of POS sale sale1 has 0 AD_Issues with AD_Message 'de.metas.pos.POSPayment.LateApprovalNotBooked'

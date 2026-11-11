@@ -372,6 +372,31 @@ class POSPaymentTest
 		assertThat(result.isLateApprovalNotBooked()).isFalse();
 	}
 
+	@Test
+	void remote_currentCheckoutsOwnResultBeforeItsIdIsStored_namesTheCheckout_laterResultsApplied()
+	{
+		// a retry after a release: PENDING, its SumUp id not stored yet; SumUp's approval of the retry arrives first
+		final Instant startedAt = Instant.parse("2026-11-10T10:10:00Z");
+		final POSPayment retry = cardPaymentBuilder(POSPaymentProcessingStatus.PENDING)
+				.releasedSumUpClientTransactionId(RELEASED_TRX)
+				.cardCheckoutStartedAt(startedAt)
+				.build();
+
+		final POSPaymentRemoteUpdateResult approved = retry.changingStatusFromRemote(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt.plusSeconds(1)));
+		assertThat(approved.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+		assertThat(approved.getPayment().getSumUpClientTransactionId()).isEqualTo(OTHER_TRX);
+
+		// the same approval again (e.g. the back office's update of the SumUp transaction re-sends its status) is the payment's own booked charge
+		final POSPaymentRemoteUpdateResult approvedAgain = approved.getPayment().changingStatusFromRemote(responseCreatedAt(POSPaymentProcessingStatus.SUCCESSFUL, OTHER_TRX, startedAt.plusSeconds(1)));
+		assertThat(approvedAgain.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.SUCCESSFUL);
+		assertThat(approvedAgain.isLateApprovalNotBooked()).isFalse();
+
+		// SumUp refunds the retry's charge
+		final POSPaymentRemoteUpdateResult refunded = approvedAgain.getPayment().changingStatusFromRemote(responseCreatedAt(POSPaymentProcessingStatus.DELETED, OTHER_TRX, startedAt.plusSeconds(1)));
+		assertThat(refunded.getPayment().getPaymentProcessingStatus()).isEqualTo(POSPaymentProcessingStatus.DELETED);
+		assertThat(refunded.isLateApprovalNotBooked()).isFalse();
+	}
+
 	private static POSPaymentProcessResponse responseCreatedAt(final POSPaymentProcessingStatus status, final String clientTransactionId, final Instant transactionCreated)
 	{
 		return POSPaymentProcessResponse.builder()
