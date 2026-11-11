@@ -257,6 +257,23 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	/**
+	 * Runs the given document action on the invoice through the document engine and checks the resulting doc status.
+	 * Unlike {@code the invoice identified by ... is (completed|reversed|voided)}, the action and the expected status are free,
+	 * so it can pin e.g. that {@code VO} on a completed invoice ends in {@code RE}.
+	 * <p>
+	 * Example: {@code And the invoice identified by invoice is processed with DocAction VO expecting DocStatus RE}
+	 */
+	@And("^the invoice identified by (.*) is processed with DocAction (\\w+) expecting DocStatus (\\w+)$")
+	public void invoice_processed_with_docAction(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String docAction,
+			@NonNull final String expectedDocStatus)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		documentBL.processEx(invoice, docAction, expectedDocStatus);
+	}
+
 	@And("^the reversal of invoice (.*) is identified by (.*)$")
 	public void identify_reversal_invoice(
 			@NonNull final String invoiceIdentifier,
