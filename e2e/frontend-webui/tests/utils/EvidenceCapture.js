@@ -11,6 +11,11 @@ const HIGHLIGHT_OUTLINE = '5px solid #b00020';
  * A still is the whole window (run with UAT_CAPTURE=1 for 1920x1080), the page URL in a banner at the bottom (a
  * headless capture has no address bar), and the given elements outlined (outline only, no fill). The outline is
  * removed again afterwards and, in an evidence run, held on screen for a moment so that the recorded video shows it too.
+ *
+ * Other places keep their own inline variants of the same idea (`highlightForCaptureIfEnabled` in CostRevaluationPage.js,
+ * `evidenceStill` in payment-bonus-header.spec.js, `snap` in compensationGroupCalibration.js). They differ in the outline
+ * (3 px, other colours: not verified by outline-contrast-check.py), in the switch (UAT_CAPTURE, PAYMENT_BONUS_EVIDENCE_DIR)
+ * and in what they save, and are not migrated here; new evidence stills should use this one.
  */
 export class EvidenceCapture {
   /**

@@ -7,6 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { getFieldData } from '../utils/WebAPIValidation';
 import { EvidenceCapture } from '../utils/EvidenceCapture';
+import { POS_INVOICE_CARD_SETTLEMENT_WINDOW_ID as WINDOW_ID } from '../utils/WindowIds';
 
 /**
  * Back-office window "POS invoice card settlements" (C_POS_InvoiceCardSettlement, window 542201): the card
@@ -15,7 +16,9 @@ import { EvidenceCapture } from '../utils/EvidenceCapture';
  * mark refunded), each offered only for the statuses it applies to.
  *
  * The settlements are created in the statuses the real flow reaches only through a SumUp transaction and an
- * asynchronous booking (see the `posInvoiceCardSettlements` masterdata). Everything asserted is identified by
+ * asynchronous booking (see the `posInvoiceCardSettlements` masterdata: SU and CR are booked by the production
+ * booking, so they carry their payment; PE, UN and AP are not offered, the background SumUp sweep changes them).
+ * Everything asserted is identified by
  * ColumnName / process value / record id, never by a localized text, so the spec is run in German (the customer's
  * language) here and does not depend on it.
  *
@@ -23,7 +26,6 @@ import { EvidenceCapture } from '../utils/EvidenceCapture';
  * EvidenceCapture.
  */
 
-const WINDOW_ID = 542201;
 const LANGUAGE = 'de_DE';
 
 const PROCESS_RETRY_BOOKING = 'C_POS_InvoiceCardSettlement_RetryBooking';
@@ -105,16 +107,19 @@ async function statusKeyOf(id) {
 }
 
 test('a back-office user finds card settlements by status and works on them with the processes that fit the status', async ({ page }) => {
+  allure.epic('E0500: Point of Sale (POS)');
+  allure.tag('F18030: POS Checkout');
+  allure.tag('F18030');
   allure.story('POS invoice card settlements window');
   allure.severity('normal');
   test.setTimeout(420000);
 
-  // The user's open invoices: the customer's real case is one sales invoice per till payment attempt. The unique
-  // blocking index allows one blocking settlement (PE/UN/AP/BE, not abandoned) per invoice, hence an invoice each.
+  // The customer's real case is one sales invoice per till payment attempt. SU pays the first invoice, so a second
+  // settlement of it (CR) is customer credit, as in the real flow; the unique blocking index allows one blocking
+  // settlement (PE/UN/AP/BE, not abandoned) per invoice, hence BE has an invoice of its own (AB is not blocking).
   const run = Date.now().toString(36);
   const invoiceOf = (salesOrder) => ({ salesOrder });
-  const orderLine = { product: 'P1', qty: 1 };
-  const order = { bpartner: 'C1', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', paymentTerm: '1000', lines: [orderLine] };
+  const order = { bpartner: 'C1', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', paymentTerm: '1000', lines: [{ product: 'P1', qty: 1 }] };
   const masterdata = await Backend.createMasterdata({
     request: {
       login: { user: { language: LANGUAGE } },
@@ -122,34 +127,42 @@ test('a back-office user finds card settlements by status and works on them with
       products: { P1: { prices: [{ price: 10.0, taxCategory: 'Reduced' }] } },
       warehouses: { wh: {} },
       posTerminals: { T1: { priceListCurrency: 'EUR', isTaxIncluded: true, paymentMethods: ['CASH', 'CARD'] } },
-      salesOrders: { SO_CR: order, SO_BE: order, SO_AP: order },
-      invoices: { INV_CR: invoiceOf('SO_CR'), INV_BE: invoiceOf('SO_BE'), INV_AP: invoiceOf('SO_AP') },
+      salesOrders: { SO_PAID: order, SO_BE: order },
+      invoices: { INV_PAID: invoiceOf('SO_PAID'), INV_BE: invoiceOf('SO_BE') },
       posInvoiceCardSettlements: {
-        CR: { posTerminal: 'T1', invoice: 'INV_CR', cashier: 'user', status: 'CR', note: `E2E ${run} credit refund pending` },
-        SU: { posTerminal: 'T1', invoice: 'INV_CR', cashier: 'user', status: 'SU' },
+        SU: { posTerminal: 'T1', invoice: 'INV_PAID', cashier: 'user', status: 'SU' },
+        CR: { posTerminal: 'T1', invoice: 'INV_PAID', cashier: 'user', status: 'CR', note: `E2E ${run} credit refund pending` },
+        // AB before BE: a settlement is created as PE, which the blocking index refuses next to a BE one of the same invoice
+        AB: { posTerminal: 'T1', invoice: 'INV_BE', cashier: 'user', status: 'AB', isAbandoned: true },
         BE: { posTerminal: 'T1', invoice: 'INV_BE', cashier: 'user', status: 'BE', errorMsg: `E2E ${run} booking failed`, bookingAttempts: 2 },
-        AP: { posTerminal: 'T1', invoice: 'INV_AP', cashier: 'user', status: 'AP' },
       },
     },
   });
   allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
   const ids = Object.fromEntries(Object.entries(masterdata.posInvoiceCardSettlements).map(([name, settlement]) => [name, settlement.id]));
+  const SETTLEMENTS = ['CR', 'SU', 'BE', 'AB'];
+
   await LoginPage.goto();
   await LoginPage.login(masterdata.login.user);
   await DashboardPage.expectVisible();
 
-  // the fixture created each settlement in the status its name says
-  for (const name of ['CR', 'SU', 'BE', 'AP']) {
+  // the fixture created each settlement in the status its name says; the booked ones carry the payment the booking created
+  for (const name of SETTLEMENTS) {
     expect(await statusKeyOf(ids[name]), `status of the ${name} settlement`).toBe(name);
   }
+  for (const name of ['SU', 'CR']) {
+    expect((await getFieldData(WINDOW_ID, ids[name], 'C_Payment_ID')).value, `payment of the ${name} settlement`).toBeTruthy();
+  }
+  expect((await getFieldData(WINDOW_ID, ids.BE, 'C_Payment_ID')).value, 'a booking error without payment').toBeFalsy();
 
   let crStatusCaption;
+  let abStatusCaption;
 
   await test.step('The grid lists the settlements with all its columns', async () => {
     await page.goto(`${FRONTEND_BASE_URL}/window/${WINDOW_ID}`);
     await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-    for (const settlementName of ['CR', 'SU', 'BE', 'AP']) {
+    for (const settlementName of SETTLEMENTS) {
       await expectInViewport(gridRow(page, ids[settlementName]), { wholeWidth: false });
     }
 
@@ -158,10 +171,11 @@ test('a back-office user finds card settlements by status and works on them with
 
     crStatusCaption = (await cell(page, ids.CR, 'Status').innerText()).trim();
     expect(crStatusCaption).not.toBe('');
+    abStatusCaption = (await cell(page, ids.AB, 'Status').innerText()).trim();
     const beStatusCaption = (await cell(page, ids.BE, 'Status').innerText()).trim();
     expect(beStatusCaption, 'the grid shows each settlement\'s own status').not.toBe(crStatusCaption);
 
-    await EvidenceCapture.still(page, 'de_DE-01a-grid-columns-left.png', [page.locator('th[data-testid="column-Status"]'), ...['CR', 'SU', 'BE', 'AP'].map((name) => cell(page, ids[name], 'Status'))], { inset: true });
+    await EvidenceCapture.still(page, 'de_DE-01a-grid-columns-left.png', [page.locator('th[data-testid="column-Status"]'), page.locator('th[data-testid="column-IsAbandoned"]'), ...SETTLEMENTS.map((name) => cell(page, ids[name], 'Status'))], { inset: true });
     // the columns right of the window's width: scroll the grid to its end
     await page.locator('th[data-testid="column-Note"]').scrollIntoViewIfNeeded();
     await page.locator('th[data-testid="column-AD_Org_ID"]').scrollIntoViewIfNeeded();
@@ -170,13 +184,12 @@ test('a back-office user finds card settlements by status and works on them with
       page.locator('th[data-testid="column-Note"]'),
       page.locator('th[data-testid="column-AD_Org_ID"]'),
       cell(page, ids.CR, 'Note'),
-    ]);
+    ], { inset: true });
   });
 
   await test.step('The Status filter narrows the grid to the settlements in that status', async () => {
     await page.goto(`${FRONTEND_BASE_URL}/window/${WINDOW_ID}`);
     await gridRow(page, ids.CR).waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-    const rowCountBefore = await page.locator('tbody tr[data-testid^="table-row-"]').count();
 
     await page.locator('.filter-wrapper .btn-filter').first().click();
     await page.locator('.filter-option-default').click();
@@ -184,20 +197,22 @@ test('a back-office user finds card settlements by status and works on them with
     await statusField.click();
     const option = page.locator('.input-dropdown-list .input-dropdown-list-option').getByText(crStatusCaption, { exact: true });
     await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await EvidenceCapture.still(page, 'de_DE-02a-filter-status-list.png', [option], { inset: true });
+    // the status list also offers the settlements released as abandoned (AB); the still shows that entry
+    const abOption = page.locator('.input-dropdown-list .input-dropdown-list-option').getByText(abStatusCaption, { exact: true });
+    await expect(abOption).toHaveCount(1);
+    await EvidenceCapture.still(page, 'de_DE-02a-filter-status-list.png', [abOption], { inset: true });
     await option.click();
     await EvidenceCapture.still(page, 'de_DE-02b-filter-status-selected.png', [page.locator('.filters-overlay .form-field-Status')], { inset: true });
     await page.locator('[data-testid="filter-apply-button"]').click();
 
-    // narrowed: the BE, AP and SU settlements are gone, the CR one stays, and every shown row carries that status
+    // narrowed: the BE, AB and SU settlements are gone, the CR one stays, and every shown row carries that status
     await gridRow(page, ids.BE).waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     await expectInViewport(gridRow(page, ids.CR), { wholeWidth: false });
-    await expect(gridRow(page, ids.AP)).toHaveCount(0);
+    await expect(gridRow(page, ids.AB)).toHaveCount(0);
     await expect(gridRow(page, ids.SU)).toHaveCount(0);
     const shownStatuses = await page.locator('tbody tr[data-testid^="table-row-"] [data-cy="cell-Status"]').evaluateAll((els) => [...new Set(els.map((el) => el.textContent.trim()))]);
     expect(shownStatuses).toEqual([crStatusCaption]);
     expect(await page.locator('tbody tr[data-testid^="table-row-"]').count(), 'rows after the filter').toBeGreaterThan(0);
-    console.log(`[INFO] rows on the first page before the filter: ${rowCountBefore}`);
     await EvidenceCapture.still(page, 'de_DE-02c-filtered-grid.png', [page.locator('.filter-wrapper .btn-filter'), cell(page, ids.CR, 'Status')]);
   });
 
@@ -206,13 +221,13 @@ test('a back-office user finds card settlements by status and works on them with
     await gridRow(page, ids.CR).waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
     await gridRow(page, ids.CR).dblclick();
     await page.waitForURL(new RegExp(`/window/${WINDOW_ID}/${ids.CR}$`), { timeout: SLOW_ACTION_TIMEOUT });
-    for (const field of ['C_Invoice_ID', 'C_BPartner_ID', 'Amount', 'C_Currency_ID', 'Status', 'Note', 'C_POS_ID', 'Cashier_ID']) {
+    for (const field of ['C_Invoice_ID', 'C_BPartner_ID', 'Amount', 'C_Currency_ID', 'Status', 'Note', 'C_POS_ID', 'Cashier_ID', 'IsAbandoned']) {
       await expectInViewport(page.locator(`.form-field-${field}`).first());
     }
     await EvidenceCapture.still(page, 'de_DE-03-single-row.png', [
       page.locator('.form-field-Status').first(),
       page.locator('.form-field-Note').first(),
-      page.locator('.form-field-C_POS_ID').first(),
+      page.locator('.form-field-IsAbandoned').first(),
     ]);
   });
 
@@ -220,12 +235,12 @@ test('a back-office user finds card settlements by status and works on them with
     await page.keyboard.press('Alt+e');
     const modal = page.locator('.panel-modal');
     await modal.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    for (const field of ['C_Invoice_ID', 'Amount', 'Status', 'Note', 'C_POS_ID', 'Cashier_ID']) {
+    for (const field of ['C_Invoice_ID', 'Amount', 'Status', 'Note', 'C_POS_ID', 'Cashier_ID', 'IsAbandoned']) {
       await expectInViewport(modal.locator(`.form-field-${field}`).first());
     }
     // the note the fixture stored is what the modal shows
     await expect(modal.locator('.form-field-Note textarea').first()).toHaveValue(`E2E ${run} credit refund pending`);
-    await EvidenceCapture.still(page, 'de_DE-04-advanced-edit.png', [modal.locator('.form-field-Status').first(), modal.locator('.form-field-Note').first()]);
+    await EvidenceCapture.still(page, 'de_DE-04-advanced-edit.png', [modal.locator('.form-field-Status').first(), modal.locator('.form-field-Note').first(), modal.locator('.form-field-IsAbandoned').first()]);
     await page.keyboard.press('Escape');
     await expect(modal).toBeHidden({ timeout: SLOW_ACTION_TIMEOUT });
   });
@@ -234,10 +249,12 @@ test('a back-office user finds card settlements by status and works on them with
     const expectedByStatus = {
       CR: [PROCESS_MARK_REFUNDED],
       BE: [PROCESS_RETRY_BOOKING, PROCESS_MARK_RESOLVED],
-      AP: [PROCESS_RETRY_BOOKING, PROCESS_MARK_RESOLVED],
       SU: [],
+      AB: [],
     };
-    for (const name of ['CR', 'BE', 'AP', 'SU']) {
+    for (const name of ['CR', 'BE', 'SU', 'AB']) {
+      // no background process changes a settlement in these statuses; assert it right before the processes are read
+      expect(await statusKeyOf(ids[name]), `status of the ${name} settlement`).toBe(name);
       await openSingleRow(page, ids[name]);
       const offered = await openActionsAndListProcesses(page);
       expect(offered.enabled, `processes offered for a ${name} settlement`).toEqual([...expectedByStatus[name]].sort());
@@ -272,6 +289,7 @@ test('a back-office user finds card settlements by status and works on them with
   });
 
   await test.step('A process dialog asks for the Note and is cancelled without running the process', async () => {
+    expect(await statusKeyOf(ids.BE), 'status of the BE settlement before the process is opened').toBe('BE');
     await openSingleRow(page, ids.BE);
     await openActionsAndListProcesses(page);
     await page.locator(`.subheader-container [data-testid="action-${PROCESS_MARK_RESOLVED}"]`).click();
