@@ -1070,34 +1070,37 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Updates fields of a {@code C_Order} previously registered under an identifier.
+	 * Updates one or more already-created {@code C_Order} records (each resolved by its identifier), then saves —
+	 * so model interceptors / callouts fire on the changed columns (e.g. a shipper or order-date change triggers the
+	 * tour-planning lead-time recompute).
 	 *
-	 * <p>Required column:
-	 * <ul>
-	 *   <li>{@code C_Order_ID} – identifier of the order to update</li>
-	 * </ul>
-	 * Optional field columns (each applied only when present):
-	 * <ul>
-	 *   <li>{@code DocBaseType} + {@code DocSubType} – both together select a new C_DocType / C_DocTypeTarget</li>
-	 *   <li>{@code IsReprintOrderCheckup} – whether completing the order reprints the Bestellkontrolle</li>
-	 *   <li>{@code PaymentRule}</li>
-	 *   <li>{@code PreparationDate}</li>
-	 *   <li>{@code LC_Date}</li>
-	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
-	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
-	 *       repeated local runs</li>
-	 *   <li>{@code DescriptionBottom} – text printed at the end of the order document. Deliberately NOT a
-	 *       creation-time column ({@code metasfresh contains C_Orders:} has no such field): setting
-	 *       {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} at creation re-derives it from the doc type's
-	 *       {@code DocumentNote} ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so
-	 *       a value set at creation time is silently overwritten before the insert.</li>
-	 * </ul>
-	 *
-	 * <p>Example:
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order to update, from a prior create step<br>
+	 *   <b>DocBaseType</b> + <b>DocSubType</b> — (optional, as a pair) select a new C_DocType / C_DocTypeTarget<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) new business partner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) new partner location<br>
+	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) new delivery route (Lieferweg)<br>
+	 *   <b>DateOrdered</b> — (optional, local date yyyy-MM-dd) new order date<br>
+	 *   <b>DatePromised</b> — (optional, instant) note: setting it fires the order's preparation-date interceptor,
+	 *     which may recompute {@code PreparationDate}<br>
+	 *   <b>PreparationDate</b> / <b>LC_Date</b> — (optional, instant)<br>
+	 *   <b>PaymentRule</b> — (optional, string)<br>
+	 *   <b>POReference</b> — (optional, string) the customer's purchase-order reference; a {@code @Date@}
+	 *     placeholder in the value is resolved to the current timestamp, so a scenario can keep it unique across
+	 *     repeated local runs<br>
+	 *   <b>DescriptionBottom</b> — (optional, string) text printed at the end of the order document. Deliberately
+	 *     NOT a creation-time column ({@code metasfresh contains C_Orders:} has no such field): at creation,
+	 *     {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} re-derive it from the doc type's {@code DocumentNote}
+	 *     ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so a value set at creation time
+	 *     is silently overwritten before the insert<br>
+	 *   <b>IsReprintOrderCheckup</b> — (optional, boolean) whether completing the order reprints the Bestellkontrolle<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Shipper_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
 	 * <pre>
 	 * When update order
-	 *   | C_Order_ID | POReference    |
-	 *   | o_1        | PO_1234_@Date@ |
+	 *   | C_Order_ID | M_Shipper_ID  |
+	 *   | so         | leadTimeRoute |
 	 * </pre>
 	 */
 	@And("update order")
@@ -1139,8 +1142,12 @@ public class C_Order_StepDef
 				.ifPresent(order::setIsReprintOrderCheckup);
 		tableRow.getAsOptionalString(COLUMNNAME_PaymentRule)
 				.ifPresent(order::setPaymentRule);
+		tableRow.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateOrdered)
+				.ifPresent(order::setDateOrdered);
 		tableRow.getAsOptionalInstant(COLUMNNAME_PreparationDate)
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
+		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> order.setDatePromised(Timestamp.from(datePromised)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
 		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
@@ -1148,6 +1155,11 @@ public class C_Order_StepDef
 				.ifPresent(order::setPOReference);
 		tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DescriptionBottom)
 				.ifPresent(order::setDescriptionBottom);
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::get)
+				.map(shipperTable::extractIdFromRecord)
+				.map(ShipperId::getRepoId)
+				.ifPresent(order::setM_Shipper_ID);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
