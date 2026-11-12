@@ -3,6 +3,8 @@ package de.metas.ui.web.receiptSchedule;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.process.M_HU_Report_QRCode;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
@@ -43,6 +45,8 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 	public static final String WINDOW_ID_STRING = "husToReceive";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	private static final AdMessageKey MSG_ViewCaption = AdMessageKey.of("de.metas.ui.web.handlingunits.HUsToReceive.ViewCaption");
+
 	public HUsToReceiveViewFactory()
 	{
 		super(ImmutableList.of(
@@ -64,6 +68,12 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
+	}
+
+	@Override
+	protected ITranslatableString getViewCaption()
+	{
+		return msgBL.getTranslatableMsgText(MSG_ViewCaption);
 	}
 
 	@Override
