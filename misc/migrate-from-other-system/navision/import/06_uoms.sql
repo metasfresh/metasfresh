@@ -20,9 +20,6 @@
  * #L%
  */
 
-
-
-
 -- One UOM per Navision "Unit of Measure"; key: C_UOM.X12DE355 = the Navision code (max. 4 characters in metasfresh).
 -- A unit whose X12DE355 or name already exists is skipped, so the script can be re-run and standard UOMs are reused.
 --

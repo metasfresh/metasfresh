@@ -20,13 +20,33 @@
  * #L%
  */
 
--- Prerequisites: 00_parameters.sql, 06_uoms.sql. Alternative to 07_products_and_prices.sql: products only, without prices.
+-- Navision stores a date formula (e.g. "Due Date Calculation") as a number followed by a unit control character:
+-- CHAR(2) = days, other control characters = other units (week, month, quarter, year, current period, ...),
+-- optionally with a leading '+'. Example: '+28' || CHR(2) = 28 days.
+-- Some staging generators already strip CHAR(2); a plain number is therefore also read as days.
+-- Returns the number of days, 0 for an empty formula, and NULL for any other formula (other units, combined formulas):
+-- such a formula cannot be expressed as a fixed number of days and must not be approximated.
+CREATE OR REPLACE FUNCTION migration_data.nav_dateformula_days(p_formula text)
+    RETURNS numeric
+    LANGUAGE sql
+    IMMUTABLE
+AS
+$$
+SELECT CASE
+           WHEN p_formula IS NULL OR BTRIM(p_formula) = ''                     THEN 0
+           WHEN BTRIM(p_formula) ~ ('^\+?[0-9]+' || CHR(2) || '?$')            THEN REGEXP_REPLACE(BTRIM(p_formula), '[^0-9]', '', 'g')::numeric
+                                                                               ELSE NULL
+       END
+$$
+;
+
+-- Prerequisites: 06_uoms.sql. Alternative to 07_products_and_prices.sql: products only, without prices.
 -- Afterwards run the metasfresh product import (I_Product) on the inserted rows.
 -- ADAPT PER PROJECT: the mappings marked with ADAPT; this example takes the product name from "Search Description",
 -- and maps the VAT product posting groups by pattern ('%19%' / '%7%').
 
 -- Report: items whose "Expiration Calculation" is not a number of days; GuaranteeDaysMin is set to 0 for them
--- (see migration_data.nav_dateformula_days in 00_parameters.sql). Set those few values manually after the import.
+-- (see migration_data.nav_dateformula_days above). Set those few values manually after the import.
 SELECT T_Item."No_", T_Item."Description", T_Item."Expiration Calculation"
 FROM "migration_data"."Navision$Item" AS T_Item
 WHERE migration_data.nav_dateformula_days(T_Item."Expiration Calculation") IS NULL
@@ -37,7 +57,7 @@ DROP TABLE IF EXISTS migration_data.i_product_inserts_products_only
 
 CREATE TABLE migration_data.i_product_inserts_products_only AS
 SELECT 1000000                                                         AS ad_client_id,
-       (SELECT ad_org_id FROM migration_data.nav_import_params) AS ad_org_id,
+       1000000 AS ad_org_id, -- adapt per project
        'Y'                                                             AS isactive,
        NOW()                                                           AS created,
        99                                                              AS createdby,
@@ -168,7 +188,7 @@ SELECT 1000000                                                         AS ad_cli
        NULL::numeric                                                   AS qtycu,
        NULL                                                            AS qtycu_uom_code,
        'Y'                                                             AS isupdatename,
-       COALESCE(migration_data.nav_dateformula_days(T_Item."Expiration Calculation"), 0) AS GuaranteeDaysMin -- days only, see 00_parameters.sql; 0 for other units
+       COALESCE(migration_data.nav_dateformula_days(T_Item."Expiration Calculation"), 0) AS GuaranteeDaysMin -- days only, see migration_data.nav_dateformula_days above; 0 for other units
 FROM "migration_data"."Navision$Item" AS T_Item
 ;
 

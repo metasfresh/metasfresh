@@ -20,7 +20,6 @@
  * #L%
  */
 
--- Prerequisite: 00_parameters.sql
 -- One business partner group per Navision "Customer Group" and "Vendor Group" (key: Value = the Navision "Code").
 -- A group whose Value or Name already exists is skipped, so the script can be re-run. Customer groups are created first,
 -- so a vendor group with the same code or description as a customer group is skipped and the customer group is used.
@@ -35,7 +34,7 @@ DROP TABLE IF EXISTS migration_data.c_bp_group_Customer
 
 CREATE TABLE migration_data.c_bp_group_Customer AS
 SELECT 1000000                                  AS ad_client_id,
-       (SELECT ad_org_id FROM migration_data.nav_import_params) AS ad_org_id,
+       1000000 AS ad_org_id, -- adapt per project
        'Y'::bpchar                              AS isactive,
        NOW()                                    AS created,
        99                                       AS createdby,
@@ -155,7 +154,7 @@ DROP TABLE IF EXISTS migration_data.c_bp_group_Vendor
 
 CREATE TABLE migration_data.c_bp_group_Vendor AS
 SELECT 1000000                                  AS ad_client_id,
-       (SELECT ad_org_id FROM migration_data.nav_import_params) AS ad_org_id,
+       1000000 AS ad_org_id, -- adapt per project
        'Y'::bpchar                              AS isactive,
        NOW()                                    AS created,
        99                                       AS createdby,

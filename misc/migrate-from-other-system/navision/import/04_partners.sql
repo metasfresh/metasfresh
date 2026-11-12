@@ -20,7 +20,7 @@
  * #L%
  */
 
--- Prerequisites: 00_parameters.sql, 01_payment_terms.sql, 02_shipper.sql, 03_pricing_systems_lists_and_versions.sql.
+-- Prerequisites: 01_payment_terms.sql, 02_shipper.sql, 03_pricing_systems_lists_and_versions.sql.
 -- Afterwards run the metasfresh Business Partner import (I_BPartner) on the inserted rows.
 --
 -- Locations: Navision has no "default ship-to address". The main address of the customer / vendor is the default
@@ -32,10 +32,10 @@
 --  * the Navision "Business Relation Code" of customers / vendors (Marketing Setup in Navision),
 --  * the tables "CMM Recipient" and "Route" (with its column "Beschreibung") are not standard Navision, but an
 --    add-on / customisation of one source system; remove those references if the source has no such tables,
---  * Value: customers and vendors both get Value = "No_" (without key_prefix; the ExternalIds have it). If the Navision
+--  * Value: customers and vendors both get Value = "No_" (without '001 - '; the ExternalIds have it). If the Navision
 --    customer and vendor number series overlap, prefix one of them, otherwise a vendor and a customer with the same
 --    number end up as one partner.
--- The fallback country of an address is default_countrycode in 00_parameters.sql.
+-- The fallback country of an address is 'DE' (adapt per project).
 
 -- Report: partners whose payment terms code has no metasfresh payment term (see 01_payment_terms.sql);
 -- they are imported without payment term. Create the missing payment terms first, or set them afterwards.
@@ -44,7 +44,7 @@ FROM migration_data."Navision$Customer" c
 WHERE TRIM(c."Payment Terms Code") <> ''
   AND NOT EXISTS (SELECT 1
                   FROM c_paymentterm pt
-                  WHERE pt.value = (SELECT key_prefix FROM migration_data.nav_import_params) || c."Payment Terms Code"
+                  WHERE pt.value = '001 - ' || c."Payment Terms Code" -- adapt per project
                     AND pt.isactive = 'Y')
 UNION ALL
 SELECT 'Vendor', v."No_", v."Name", v."Payment Terms Code"
@@ -52,14 +52,14 @@ FROM migration_data."Navision$Vendor" v
 WHERE TRIM(v."Payment Terms Code") <> ''
   AND NOT EXISTS (SELECT 1
                   FROM c_paymentterm pt
-                  WHERE pt.value = (SELECT key_prefix FROM migration_data.nav_import_params) || v."Payment Terms Code"
+                  WHERE pt.value = '001 - ' || v."Payment Terms Code" -- adapt per project
                     AND pt.isactive = 'Y')
 ;
 
 DROP TABLE IF EXISTS migration_data.i_bpartner_vendor;
 CREATE TABLE migration_data.i_bpartner_vendor AS
 SELECT 1000000                                                           AS ad_client_id,
-       prm.ad_org_id                                                     AS ad_org_id,
+       1000000                                                     AS ad_org_id, -- adapt per project
        'Y'                                                               AS isactive,
        now()                                                             AS created,
        99                                                                AS createdby,
@@ -87,7 +87,7 @@ SELECT 1000000                                                           AS ad_c
        NULL                                                              AS regionname,
        NULL::numeric                                                     AS c_country_id,
        COALESCE(NULLIF(TRIM(LEFT(v."Country_Region Code", 2)), ''),
-                prm.default_countrycode)                                 AS countrycode, -- Fallback as country is mandatory if we have an address
+                'DE')                                 AS countrycode, -- adapt per project; Fallback as country is mandatory if we have an address
        LEFT(con."Job Title", 40)                                         AS title,
        NULL                                                              AS contactname,
        LEFT(con."Person Information", 255)                               AS contactdescription,
@@ -213,9 +213,9 @@ SELECT 1000000                                                           AS ad_c
        NULL                                                              AS statusinfo,
        NULL                                                              AS ad_user_memo4,
        NULL                                                              AS gln,
-       (prm.key_prefix || con."No_")                                           AS ad_user_externalid,
-       (prm.key_prefix || v."No_")                                             AS c_bpartner_externalid,
-       (prm.key_prefix || v."No_")                                             AS c_bpartner_location_externalid,
+       ('001 - ' || con."No_")                                           AS ad_user_externalid, -- adapt per project
+       ('001 - ' || v."No_")                                             AS c_bpartner_externalid, -- adapt per project
+       ('001 - ' || v."No_")                                             AS c_bpartner_location_externalid, -- adapt per project
        LEFT(v."Home Page", 120)                                          AS url,
        NULL::numeric                                                     AS m_pricingsystem_id,
        NULL::numeric                                                     AS po_pricingsystem_id,
@@ -242,7 +242,6 @@ SELECT 1000000                                                           AS ad_c
        cus."Name"
 
 FROM migration_data."Navision$Vendor" v
-         CROSS JOIN migration_data.nav_import_params prm
          LEFT JOIN migration_data."Navision$Payment Method" pm
                    ON v."Payment Method Code" = pm."Code"
          LEFT JOIN migration_data."Navision$Contact Business Relation" rel
@@ -250,7 +249,7 @@ FROM migration_data."Navision$Vendor" v
          LEFT JOIN migration_data."Navision$Contact" con
                    ON rel."Contact No_" = con."No_"
          LEFT JOIN c_paymentterm pt -- created by 01_payment_terms.sql
-                   ON pt.value = prm.key_prefix || v."Payment Terms Code" AND pt.isactive = 'Y'
+                   ON pt.value = '001 - ' || v."Payment Terms Code" AND pt.isactive = 'Y' -- adapt per project
          LEFT JOIN migration_data."Navision$Customer" cus
                    ON cus."Name" = v."Name"
          LEFT JOIN LATERAL (SELECT LEFT(ba."IBAN", 255)       AS iban,
@@ -448,7 +447,7 @@ FROM migration_data.i_bpartner_vendor t
 DROP TABLE IF EXISTS migration_data.i_bpartner_customer;
 CREATE TABLE migration_data.i_bpartner_customer AS
 SELECT 1000000                                                                  AS ad_client_id,
-       prm.ad_org_id                                                            AS ad_org_id,
+       1000000                                                            AS ad_org_id, -- adapt per project
        'Y'                                                                      AS isactive,
        now()                                                                    AS created,
        99                                                                       AS createdby,
@@ -597,9 +596,9 @@ SELECT 1000000                                                                  
        NULL                                                                     AS statusinfo,
        NULL                                                                     AS ad_user_memo4,
        NULL                                                                     AS gln,
-       (prm.key_prefix || location_contact_print_info.ad_user_externalid)             AS ad_user_externalid,
-       (prm.key_prefix || c."No_")                                                    AS c_bpartner_externalid,
-       (prm.key_prefix || location_contact_print_info.c_bpartner_location_externalid) AS c_bpartner_location_externalid,
+       ('001 - ' || location_contact_print_info.ad_user_externalid)             AS ad_user_externalid, -- adapt per project
+       ('001 - ' || c."No_")                                                    AS c_bpartner_externalid, -- adapt per project
+       ('001 - ' || location_contact_print_info.c_bpartner_location_externalid) AS c_bpartner_location_externalid, -- adapt per project
        LEFT(c."Home Page", 120)                                                 AS url,
        COALESCE(ps_customer.m_pricingsystem_id, ps_cpg.m_pricingsystem_id)      AS m_pricingsystem_id,
        NULL::numeric                                                            AS po_pricingsystem_id,
@@ -628,7 +627,6 @@ SELECT 1000000                                                                  
        location_contact_print_info.bpartnername                                 AS bpartnername,
        location_contact_print_info.bpartnername2                                AS bpartnername2
 FROM migration_data."Navision$Customer" c
-         CROSS JOIN migration_data.nav_import_params prm
          LEFT JOIN migration_data."Navision$Payment Method" pm
                    ON c."Payment Method Code" = pm."Code"
          LEFT JOIN migration_data."Navision$Contact Business Relation" rel
@@ -640,7 +638,7 @@ FROM migration_data."Navision$Customer" c
          LEFT JOIN migration_data."Navision$Contact" con
                    ON rel."Contact No_" = con."No_"
          LEFT JOIN c_paymentterm pt -- created by 01_payment_terms.sql
-                   ON pt.value = prm.key_prefix || c."Payment Terms Code" AND pt.isactive = 'Y'
+                   ON pt.value = '001 - ' || c."Payment Terms Code" AND pt.isactive = 'Y' -- adapt per project
          LEFT JOIN migration_data."Navision$Customer Price Group" cpg
                    ON c."Customer Price Group" = cpg."Code"
          LEFT JOIN migration_data."Navision$Vendor" ven
@@ -648,11 +646,11 @@ FROM migration_data."Navision$Customer" c
          LEFT JOIN migration_data."Navision$Payment Method" pm_vendor
                    ON ven."Payment Method Code" = pm_vendor."Code"
          LEFT JOIN c_paymentterm pt_vendor
-                   ON pt_vendor.value = prm.key_prefix || ven."Payment Terms Code" AND pt_vendor.isactive = 'Y'
+                   ON pt_vendor.value = '001 - ' || ven."Payment Terms Code" AND pt_vendor.isactive = 'Y' -- adapt per project
          LEFT JOIN m_pricingsystem ps_customer
-                   ON ps_customer.migration_key = (prm.key_prefix || c."No_")
+                   ON ps_customer.migration_key = ('001 - ' || c."No_") -- adapt per project
          LEFT JOIN m_pricingsystem ps_cpg
-                   ON ps_cpg.migration_key = (prm.key_prefix || c."Customer Price Group")
+                   ON ps_cpg.migration_key = ('001 - ' || c."Customer Price Group") -- adapt per project
          LEFT JOIN LATERAL (
     -- taking info from customer (contact of business relation info is identical)
     -- invoice copies
@@ -663,7 +661,7 @@ FROM migration_data."Navision$Customer" c
            LEFT(c."Post Code", 10)                                                AS postal,
            LEFT(c."City", 60)                                                     AS city,
            COALESCE(NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
-                    prm.default_countrycode)                                      AS countrycode, -- Fallback as country is mandatory if we have an address
+                    'DE')                                      AS countrycode, -- adapt per project; Fallback as country is mandatory if we have an address
            LEFT(c."Phone No_", 40)                                                AS phone,
            LEFT(con."Mobile Phone No_", 40)                                       AS phone2,
            LEFT(c."Fax No_", 40)                                                  AS fax,
@@ -723,7 +721,7 @@ FROM migration_data."Navision$Customer" c
            LEFT(c."Post Code", 10)                                                AS postal,
            LEFT(c."City", 60)                                                     AS city,
            COALESCE(NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
-                    prm.default_countrycode)                                      AS countrycode, -- Fallback as country is mandatory if we have an address
+                    'DE')                                      AS countrycode, -- adapt per project; Fallback as country is mandatory if we have an address
            LEFT(c."Phone No_", 40)                                                AS phone,
            LEFT(con."Mobile Phone No_", 40)                                       AS phone2,
            LEFT(c."Fax No_", 40)                                                  AS fax,
@@ -770,7 +768,7 @@ FROM migration_data."Navision$Customer" c
            LEFT(inner_ship_to."City", 60)                             AS city,
            COALESCE(NULLIF(TRIM(LEFT(inner_ship_to."Country_Region Code", 2)), ''),
                     NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
-                    prm.default_countrycode)                          AS countrycode, -- Fallback as country is mandatory if we have an address
+                    'DE')                          AS countrycode, -- adapt per project; Fallback as country is mandatory if we have an address
            NULL                                                       AS phone,
            NULL                                                       AS phone2,
            NULL                                                       AS fax,

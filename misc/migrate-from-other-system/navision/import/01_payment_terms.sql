@@ -20,14 +20,32 @@
  * #L%
  */
 
--- Prerequisite: 00_parameters.sql
---
--- Key of a payment term: Value = key_prefix || Navision "Code" (an existing payment term with this Value is skipped).
+-- Navision stores a date formula (e.g. "Due Date Calculation") as a number followed by a unit control character:
+-- CHAR(2) = days, other control characters = other units (week, month, quarter, year, current period, ...),
+-- optionally with a leading '+'. Example: '+28' || CHR(2) = 28 days.
+-- Some staging generators already strip CHAR(2); a plain number is therefore also read as days.
+-- Returns the number of days, 0 for an empty formula, and NULL for any other formula (other units, combined formulas):
+-- such a formula cannot be expressed as a fixed number of days and must not be approximated.
+CREATE OR REPLACE FUNCTION migration_data.nav_dateformula_days(p_formula text)
+    RETURNS numeric
+    LANGUAGE sql
+    IMMUTABLE
+AS
+$$
+SELECT CASE
+           WHEN p_formula IS NULL OR BTRIM(p_formula) = ''                     THEN 0
+           WHEN BTRIM(p_formula) ~ ('^\+?[0-9]+' || CHR(2) || '?$')            THEN REGEXP_REPLACE(BTRIM(p_formula), '[^0-9]', '', 'g')::numeric
+                                                                               ELSE NULL
+       END
+$$
+;
+
+-- Key of a payment term: Value = '001 - ' || Navision "Code" (an existing payment term with this Value is skipped).
 -- Name = Navision "Description". C_PaymentTerm.Name must be unique, so a description that is used twice in Navision,
 -- or that is already used by another metasfresh payment term, gets the code appended: "<Description> (<Code>)".
 -- 04_partners.sql resolves the partners' payment terms via the Value, so it is not affected by this renaming.
 --
--- Date formulas: only "<n> days" is converted (see migration_data.nav_dateformula_days in 00_parameters.sql).
+-- Date formulas: only "<n> days" is converted (see migration_data.nav_dateformula_days above).
 -- A payment term with any other formula (weeks, months, current month, ...) is NOT imported and is listed by the
 -- report below; create those few payment terms manually in metasfresh (with the same Value), before importing partners.
 
@@ -44,7 +62,7 @@ WHERE migration_data.nav_dateformula_days(T."Due Date Calculation") IS NULL
 DROP TABLE IF EXISTS migration_data.c_paymentterm;
 CREATE TABLE migration_data.c_paymentterm AS
 WITH source AS (SELECT T.*,
-                       (SELECT key_prefix FROM migration_data.nav_import_params) || T."Code" AS key,
+                       '001 - ' || T."Code" AS key, -- adapt per project
                        migration_data.nav_dateformula_days(T."Due Date Calculation")      AS due_days,
                        migration_data.nav_dateformula_days(T."Discount Date Calculation") AS discount_days,
                        (COUNT(*) OVER (PARTITION BY LEFT(T."Description", 70)) > 1

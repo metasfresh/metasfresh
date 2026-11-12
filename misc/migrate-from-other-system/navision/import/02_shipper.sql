@@ -20,8 +20,7 @@
  * #L%
  */
 
--- Prerequisite: 00_parameters.sql
--- One shipper per Navision "Shipment Method"; key: InternalName = key_prefix || "Code".
+-- One shipper per Navision "Shipment Method"; key: InternalName = '001 - ' || "Code".
 -- A shipment method whose InternalName or Name already exists is skipped, so the script can be re-run.
 
 DROP TABLE IF EXISTS migration_data.m_shipper;
@@ -40,15 +39,14 @@ SELECT 1000000               AS ad_client_id,
        'N'                   AS isdefault,
        NULL                  AS shippergateway,
        sm."Description"      AS value,
-       prm.key_prefix || sm."Code" AS internalname,
+       '001 - ' || sm."Code" AS internalname, -- adapt per project
        '1970-01-01 08:00:00'::timestamp AS pickuptimefrom, -- mandatory; same default as in the M_Shipper window
        '1970-01-01 17:00:00'::timestamp AS pickuptimeto
 FROM migration_data."Navision$Shipment Method" sm
-         CROSS JOIN migration_data.nav_import_params prm
 WHERE NOT EXISTS (SELECT 1
                   FROM m_shipper s
                   WHERE s.name = sm."Description"
-                     OR s.internalname = prm.key_prefix || sm."Code")
+                     OR s.internalname = '001 - ' || sm."Code") -- adapt per project
 ;
 
 
@@ -80,7 +78,7 @@ FROM migration_data.m_shipper
 
 -- Routing codes. ADAPT PER PROJECT, or drop this part:
 -- the table "Route" (column "Beschreibung") is not standard Navision but an add-on / customisation of one source system,
--- and all its routes are attached to ONE shipper, identified by its InternalName (key_prefix || 'shipperWithRoutes' below).
+-- and all its routes are attached to ONE shipper, identified by its InternalName ('001 - ' || 'shipperWithRoutes' below).
 -- Create that shipper manually before (a Navision shipment method code has max. 10 characters, so it is not one of them),
 -- or change the name below; without it no routing code is created.
 DROP TABLE IF EXISTS migration_data.m_shipper_routes;
@@ -95,9 +93,8 @@ SELECT 1000000              AS ad_client_id,
        r."Beschreibung"     AS name,
        shipper.m_shipper_id AS m_shipper_id
 FROM migration_data."Navision$Route" r
-         CROSS JOIN migration_data.nav_import_params prm
          JOIN m_shipper shipper
-              ON shipper.internalname = prm.key_prefix || 'shipperWithRoutes'
+              ON shipper.internalname = '001 - ' || 'shipperWithRoutes' -- adapt per project
 WHERE NOT EXISTS (SELECT 1
                   FROM m_shipper_routingcode
                   WHERE name = r."Beschreibung"

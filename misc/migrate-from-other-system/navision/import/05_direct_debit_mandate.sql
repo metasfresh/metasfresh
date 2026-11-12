@@ -20,7 +20,7 @@
  * #L%
  */
 
--- Prerequisites: 00_parameters.sql; partners imported via 04_partners.sql + the I_BPartner import (bank accounts included).
+-- Prerequisites: partners imported via 04_partners.sql + the I_BPartner import (bank accounts included).
 -- A mandate whose "Mandate ID" already exists in the org is skipped, so the script can be re-run.
 -- The partner is found by C_BPartner.DebtorID, which 04_partners.sql sets only for numeric customer numbers; mandates
 -- that find no partner or bank account are listed by the report below (run it after this script).
@@ -33,7 +33,7 @@
 DROP TABLE IF EXISTS migration_data.c_bp_bankaccount_directdebitmandate;
 CREATE TABLE migration_data.c_bp_bankaccount_directdebitmandate AS
 SELECT 1000000                AS ad_client_id,
-       prm.ad_org_id          AS ad_org_id,
+       1000000          AS ad_org_id, -- adapt per project
        bp.c_bpartner_id       AS c_bpartner_id,
        ba.c_bp_bankaccount_id AS c_bp_bankaccount_id,
        NOW()                  AS created,
@@ -65,16 +65,15 @@ SELECT 1000000                AS ad_client_id,
        NOW()                  AS updated,
        99                     AS updatedby
 FROM migration_data."Navision$Bank Account Mandate" AS T_BAM
-         CROSS JOIN migration_data.nav_import_params prm
          JOIN migration_data."Navision$Customer Bank Account" cba
               ON T_BAM."Mandate ID" = cba."Mandate ID"
          JOIN c_bpartner bp ON bp.debtorid = CASE WHEN cba."Customer No_" ~ '^[0-9]+$' THEN cba."Customer No_"::numeric END
-                                   AND bp.ad_org_id = prm.ad_org_id -- debtorid = numeric Navision customer number, see 04_partners.sql
+                                   AND bp.ad_org_id = 1000000 -- adapt per project; debtorid = numeric Navision customer number, see 04_partners.sql
          JOIN c_bp_bankaccount ba ON ba.iban = cba."IBAN" AND ba.c_bpartner_id = bp.c_bpartner_id
 WHERE NOT EXISTS (SELECT 1
                   FROM c_bp_bankaccount_directdebitmandate m
                   WHERE m.mandatereference = T_BAM."Mandate ID"
-                    AND m.ad_org_id = prm.ad_org_id)
+                    AND m.ad_org_id = 1000000) -- adapt per project
 ;
 
 INSERT INTO c_bp_bankaccount_directdebitmandate (ad_client_id,
@@ -120,5 +119,5 @@ FROM migration_data."Navision$Bank Account Mandate" AS T_BAM
 WHERE NOT EXISTS (SELECT 1
                   FROM c_bp_bankaccount_directdebitmandate m
                   WHERE m.mandatereference = T_BAM."Mandate ID"
-                    AND m.ad_org_id = (SELECT ad_org_id FROM migration_data.nav_import_params))
+                    AND m.ad_org_id = 1000000) -- adapt per project
 ;
