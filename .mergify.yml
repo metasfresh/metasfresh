@@ -107,7 +107,6 @@ pull_request_rules:
               - base=fresh_wasabi_hotfix
               - base=logical_play_hotfix
               - base=galaxy_module_hotfix
-              - base=temporary_test202607_hotfix
               - base=new_dawn_hotfix
               - base=purple_mandolin_hotfix
               - base=music_violin_hotfix
@@ -153,7 +152,6 @@ pull_request_rules:
               - base=fresh_wasabi_release
               - base=logical_play_release
               - base=galaxy_module_release
-              - base=temporary_test202607_release
               - base=new_dawn_release
               - base=purple_mandolin_release
               - base=music_violin_release
