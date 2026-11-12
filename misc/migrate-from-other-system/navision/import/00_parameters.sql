@@ -2,7 +2,7 @@
  * #%L
  * work-metas
  * %%
- * Copyright (C) 2026 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,14 +25,16 @@
 -- ADAPT PER PROJECT: every value below. The other scripts read them from migration_data.nav_import_params,
 -- so they are set in this one place.
 --
--- Not a parameter (an SQL identifier cannot be one): the company table prefix of the staging tables,
+-- Not parameters: AD_Client_ID 1000000 (the standard metasfresh client) and CreatedBy/UpdatedBy 99, which the scripts
+-- also use to recognise their own price list versions; search/replace them if your instance differs.
+-- Not a parameter either (an SQL identifier cannot be one): the company table prefix of the staging tables,
 -- migration_data."<Company>$<Table>". The examples use the company name "Navision"; search/replace
 -- "Navision$" with "<YourCompany>$" in all scripts if the staging tables were dumped under another name.
 
 DROP TABLE IF EXISTS migration_data.nav_import_params;
 CREATE TABLE migration_data.nav_import_params AS
 SELECT 1000000::numeric                 AS ad_org_id,              -- AD_Org_ID of the imported partners, prices, products, groups and mandates
-       '001 - '::text                   AS key_prefix,             -- prefix of every Value / migration_key / ExternalId derived from a Navision code; one per source company, so several companies can be imported into one metasfresh
+       '001 - '::text                   AS key_prefix,             -- prefix of the keys listed in ../README.md (payment term Value, shipper InternalName, pricing system Value/migration_key, partner ExternalIds)
        'DE'::text                       AS default_countrycode,    -- used when a Navision address has no "Country_Region Code" (a country is mandatory for a metasfresh location)
        'EUR'::text                      AS default_currency,       -- used when a Navision price has no "Currency Code" (= local currency of the source company)
        '2025-09-01 00:00:00'::timestamp AS pricelist_validfrom,    -- ValidFrom of the price list versions that hold the current prices (usually the go-live date)

@@ -23,7 +23,7 @@
 -- Prerequisites: 00_parameters.sql, 06_uoms.sql. Alternative to 07_products_and_prices.sql: products only, without prices.
 -- Afterwards run the metasfresh product import (I_Product) on the inserted rows.
 -- ADAPT PER PROJECT: the mappings marked with ADAPT; this example takes the product name from "Search Description",
--- maps the VAT product posting groups by pattern ('%19%' / '%7%') and resolves the UOM by C_UOM.Name.
+-- and maps the VAT product posting groups by pattern ('%19%' / '%7%').
 
 -- Report: items whose "Expiration Calculation" is not a number of days; GuaranteeDaysMin is set to 0 for them
 -- (see migration_data.nav_dateformula_days in 00_parameters.sql). Set those few values manually after the import.
@@ -55,8 +55,8 @@ SELECT 1000000                                                         AS ad_cli
        NULL                                                            AS sku,
        CASE T_Item."Base Unit of Measure" -- ADAPT: map the Navision "Base Unit of Measure" codes of the project to X12DE355 (see 06_uoms.sql)
            WHEN 'KG' THEN 'KGM'
-           WHEN 'ST' THEN 'PCE'
-                     ELSE uom.x12de355
+           WHEN 'STCK' THEN 'PCE'
+           ELSE T_Item."Base Unit of Measure"
        END                                                             AS x12de355,
        NULL::numeric                                                   AS c_uom_id,
        'Standard'                                                      AS productcategory_value, -- ADAPT: product category value
@@ -170,7 +170,6 @@ SELECT 1000000                                                         AS ad_cli
        'Y'                                                             AS isupdatename,
        COALESCE(migration_data.nav_dateformula_days(T_Item."Expiration Calculation"), 0) AS GuaranteeDaysMin -- days only, see 00_parameters.sql; 0 for other units
 FROM "migration_data"."Navision$Item" AS T_Item
-         LEFT JOIN C_UOM uom ON T_Item."Base Unit of Measure" = UOM.name
 ;
 
 

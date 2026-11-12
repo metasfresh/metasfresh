@@ -26,7 +26,16 @@
 --  * one pricing system per customer that has own sales prices (key: migration_key = key_prefix || customer "No_");
 --    its price list version is based on the version of the customer's price group.
 -- Existing pricing systems / price lists / versions with the same key are skipped, so the script can be re-run.
+-- Both kinds share one key space, and the later scripts look a pricing system up by key_prefix || "Sales Code".
+-- So a Customer Price Group code must not equal a customer number; the report below lists such codes.
+-- If it lists any, give one kind its own sub-prefix here and in all lookups (04, 07, 08, 09) before going on.
 -- ADAPT PER PROJECT: Default_TaxCategory_ID of the price lists ('Reduced' below).
+
+-- Report: Customer Price Group codes that are also customer numbers (they would share one pricing system)
+SELECT cpg."Code", cpg."Description", c."Name" AS customer_name
+FROM migration_data."Navision$Customer Price Group" cpg
+         JOIN migration_data."Navision$Customer" c ON c."No_" = cpg."Code"
+;
 
 DROP TABLE IF EXISTS migration_data.m_pricingsystem;
 CREATE TABLE migration_data.m_pricingsystem AS

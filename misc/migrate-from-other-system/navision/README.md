@@ -38,8 +38,8 @@ Every script states its prerequisites at the top. The scripts that write metasfr
 
 ## What to adapt per project
 
-- **`00_parameters.sql`**: the org (`ad_org_id`), the key prefix, the fallback country and currency, the `ValidFrom` of the current price list versions, the earliest historical price, and the "no end date" convention.
-- **Key prefix** (default `'001 - '`): put in front of every Value, migration key and ExternalId that comes from a Navision code. Use one prefix per source company, so that several Navision companies can be imported into one metasfresh.
+- **`00_parameters.sql`**: the org (`ad_org_id`), the key prefix, the fallback country and currency, the `ValidFrom` of the current price list versions, the earliest historical price, and the "no end date" convention. The client (`AD_Client_ID` 1000000, the standard metasfresh client) and `CreatedBy` 99 are fixed in the scripts.
+- **Key prefix** (default `'001 - '`): put in front of the payment term Value, the shipper InternalName, the pricing system Value and migration key, and the partner, location and contact ExternalIds. Partner Value, product Value, business partner group Value and UOM code are the plain Navision codes. To import several Navision companies into one metasfresh, give each its own prefix and prefix those codes as well.
 - **Mappings marked `ADAPT`** in the scripts:
   - Navision units of measure to `C_UOM.X12DE355` (at most 4 characters),
   - VAT product posting groups to tax categories,
@@ -50,6 +50,7 @@ Every script states its prerequisites at the top. The scripts that write metasfr
 - **Non-standard tables**: `CMM Recipient`, `Route` (column `Beschreibung`) and `Bank Account Mandate` come from add-ons in one source system. Remove or adapt them if your source has no such tables.
 - **Missing staging scripts**: `Customer Group` and `Vendor Group`, used by `10_bp_groups.sql`, have no file in `migration_data/`. Stage them in the same way as the other tables.
 - **Number series**: customers and vendors both use the Navision `No_` as Value. If the two number series overlap, prefix one of them, so that a customer and a vendor with the same number do not become one partner.
+- **Pricing system keys**: customer price groups and customers with their own prices share one key space (key prefix + code / number). `03` reports price group codes that are also customer numbers; give one of them a sub-prefix if it reports any.
 
 ## Conventions used by the scripts
 

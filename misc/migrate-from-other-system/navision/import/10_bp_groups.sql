@@ -22,7 +22,8 @@
 
 -- Prerequisite: 00_parameters.sql
 -- One business partner group per Navision "Customer Group" and "Vendor Group" (key: Value = the Navision "Code").
--- A group whose Value or Name already exists is skipped, so the script can be re-run.
+-- A group whose Value or Name already exists is skipped, so the script can be re-run. Customer groups are created first,
+-- so a vendor group with the same code or description as a customer group is skipped and the customer group is used.
 -- The staging tables "Customer Group" / "Vendor Group" are not part of ../migration_data; dump them like the other tables.
 -- 04_partners.sql does not assign these groups (GroupValue is NULL, so the import uses the default group); ADAPT it if needed.
 --

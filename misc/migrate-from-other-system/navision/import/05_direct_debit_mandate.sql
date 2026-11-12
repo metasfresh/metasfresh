@@ -22,6 +22,8 @@
 
 -- Prerequisites: 00_parameters.sql; partners imported via 04_partners.sql + the I_BPartner import (bank accounts included).
 -- A mandate whose "Mandate ID" already exists in the org is skipped, so the script can be re-run.
+-- The partner is found by C_BPartner.DebtorID, which 04_partners.sql sets only for numeric customer numbers; mandates
+-- that find no partner or bank account are listed by the report below (run it after this script).
 --
 -- The source table "Navision$Bank Account Mandate" comes from a third-party SEPA add-on, not from standard Navision.
 -- The option values mapped below are that add-on's: "Mandate Type" 0 = CORE, 1 = B2B;
@@ -108,4 +110,15 @@ SELECT s.ad_client_id,
        s.updated,
        s.updatedby
 FROM migration_data.c_bp_bankaccount_directdebitmandate s
+;
+
+-- Report: mandates that were not imported (no partner with that DebtorID in the org, or no bank account with that IBAN)
+SELECT T_BAM."Mandate ID", cba."Customer No_", cba."IBAN"
+FROM migration_data."Navision$Bank Account Mandate" AS T_BAM
+         JOIN migration_data."Navision$Customer Bank Account" cba
+              ON T_BAM."Mandate ID" = cba."Mandate ID"
+WHERE NOT EXISTS (SELECT 1
+                  FROM c_bp_bankaccount_directdebitmandate m
+                  WHERE m.mandatereference = T_BAM."Mandate ID"
+                    AND m.ad_org_id = (SELECT ad_org_id FROM migration_data.nav_import_params))
 ;

@@ -32,9 +32,29 @@
 --  * the Navision "Business Relation Code" of customers / vendors (Marketing Setup in Navision),
 --  * the tables "CMM Recipient" and "Route" (with its column "Beschreibung") are not standard Navision, but an
 --    add-on / customisation of one source system; remove those references if the source has no such tables,
---  * Value / ExternalId: customers and vendors both get Value = "No_". If the Navision customer and vendor number
---    series overlap, prefix one of them, otherwise a vendor and a customer with the same number end up as one partner.
+--  * Value: customers and vendors both get Value = "No_" (without key_prefix; the ExternalIds have it). If the Navision
+--    customer and vendor number series overlap, prefix one of them, otherwise a vendor and a customer with the same
+--    number end up as one partner.
 -- The fallback country of an address is default_countrycode in 00_parameters.sql.
+
+-- Report: partners whose payment terms code has no metasfresh payment term (see 01_payment_terms.sql);
+-- they are imported without payment term. Create the missing payment terms first, or set them afterwards.
+SELECT 'Customer' AS source, c."No_", c."Name", c."Payment Terms Code"
+FROM migration_data."Navision$Customer" c
+WHERE TRIM(c."Payment Terms Code") <> ''
+  AND NOT EXISTS (SELECT 1
+                  FROM c_paymentterm pt
+                  WHERE pt.value = (SELECT key_prefix FROM migration_data.nav_import_params) || c."Payment Terms Code"
+                    AND pt.isactive = 'Y')
+UNION ALL
+SELECT 'Vendor', v."No_", v."Name", v."Payment Terms Code"
+FROM migration_data."Navision$Vendor" v
+WHERE TRIM(v."Payment Terms Code") <> ''
+  AND NOT EXISTS (SELECT 1
+                  FROM c_paymentterm pt
+                  WHERE pt.value = (SELECT key_prefix FROM migration_data.nav_import_params) || v."Payment Terms Code"
+                    AND pt.isactive = 'Y')
+;
 
 DROP TABLE IF EXISTS migration_data.i_bpartner_vendor;
 CREATE TABLE migration_data.i_bpartner_vendor AS
