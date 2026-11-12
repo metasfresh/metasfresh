@@ -30,16 +30,16 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Contact No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Contact No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Contact No_], '''', '''''') + '''' + ', ' +
 
         -- "Business Relation Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Business Relation Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Business Relation Code], '''', '''''') + '''' + ', ' +
 
         -- "Link to Table" INTEGER NOT NULL
     CAST([Link to Table] AS NVARCHAR(MAX)) + ', ' +
 
         -- "No_" VARCHAR(20) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE(No_, '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE(No_, '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Contact Business Relation];

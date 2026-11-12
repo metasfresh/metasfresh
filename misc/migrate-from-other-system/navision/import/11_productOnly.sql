@@ -1,11 +1,43 @@
+/*
+ * #%L
+ * work-metas
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
+-- Prerequisites: 00_parameters.sql, 06_uoms.sql. Alternative to 07_products_and_prices.sql: products only, without prices.
+-- Afterwards run the metasfresh product import (I_Product) on the inserted rows.
+-- ADAPT PER PROJECT: the mappings marked with ADAPT; this example takes the product name from "Search Description",
+-- maps the VAT product posting groups by pattern ('%19%' / '%7%') and resolves the UOM by C_UOM.Name.
+
+-- Report: items whose "Expiration Calculation" is not a number of days; GuaranteeDaysMin is set to 0 for them
+-- (see migration_data.nav_dateformula_days in 00_parameters.sql). Set those few values manually after the import.
+SELECT T_Item."No_", T_Item."Description", T_Item."Expiration Calculation"
+FROM "migration_data"."Navision$Item" AS T_Item
+WHERE migration_data.nav_dateformula_days(T_Item."Expiration Calculation") IS NULL
+;
 
 DROP TABLE IF EXISTS migration_data.i_product_inserts_products_only
 ;
 
 CREATE TABLE migration_data.i_product_inserts_products_only AS
 SELECT 1000000                                                         AS ad_client_id,
-       1000000                                                         AS ad_org_id,
+       (SELECT ad_org_id FROM migration_data.nav_import_params) AS ad_org_id,
        'Y'                                                             AS isactive,
        NOW()                                                           AS created,
        99                                                              AS createdby,
@@ -21,13 +53,13 @@ SELECT 1000000                                                         AS ad_cli
        NULL                                                            AS help,
        NULL                                                            AS upc,
        NULL                                                            AS sku,
-       CASE T_Item."Base Unit of Measure" -- x12de355: Map Navision "Base Unit of Measure"
+       CASE T_Item."Base Unit of Measure" -- ADAPT: map the Navision "Base Unit of Measure" codes of the project to X12DE355 (see 06_uoms.sql)
            WHEN 'KG' THEN 'KGM'
            WHEN 'ST' THEN 'PCE'
                      ELSE uom.x12de355
        END                                                             AS x12de355,
        NULL::numeric                                                   AS c_uom_id,
-       'Standard'                                                      AS productcategory_value,
+       'Standard'                                                      AS productcategory_value, -- ADAPT: product category value
        NULL::numeric                                                   AS m_product_category_id,
        CASE T_Item."Type" -- producttype: Map Navision Type (0 for Item, 1 for Service)
            WHEN 0 THEN 'I'
@@ -62,7 +94,7 @@ SELECT 1000000                                                         AS ad_cli
        'N'                                                             AS processed,
        NULL::numeric                                                   AS pricestd,
        NULL::numeric                                                   AS pricelimit,
-       CASE
+       CASE -- ADAPT: Navision "VAT Prod_ Posting Group" codes of the project -> C_TaxCategory.InternalName
            WHEN T_Item."VAT Prod_ Posting Group" ILIKE '%19%' THEN (SELECT c_taxcategory_id
                                                                     FROM c_taxcategory
                                                                     WHERE internalname = 'Normal')
@@ -76,7 +108,7 @@ SELECT 1000000                                                         AS ad_cli
        NULL::numeric                                                   AS package_uom_id,
        NULL                                                            AS packagesize,
        NULL                                                            AS productmanufacturer,
-       CASE T_Item."Blocked" WHEN 1 THEN 'N' ELSE 'Y' END              AS issold,
+       CASE T_Item."Blocked" WHEN TRUE THEN 'N' ELSE 'Y' END             AS issold,
        CASE T_Item."Type" WHEN 0 THEN 'Y' ELSE 'N' END                 AS isstocked,
        NULL                                                            AS a00pgeinh,
        'N'                                                             AS isprescription,
@@ -136,10 +168,7 @@ SELECT 1000000                                                         AS ad_cli
        NULL::numeric                                                   AS qtycu,
        NULL                                                            AS qtycu_uom_code,
        'Y'                                                             AS isupdatename,
-       CASE
-           WHEN NULLIF(TRIM(T_Item."Expiration Calculation"), '') IS NULL THEN 0
-                                                                          ELSE REGEXP_REPLACE(TRIM(T_Item."Expiration Calculation"), '\D', '', 'g')::numeric
-       END                                                             AS GuaranteeDaysMin
+       COALESCE(migration_data.nav_dateformula_days(T_Item."Expiration Calculation"), 0) AS GuaranteeDaysMin -- days only, see 00_parameters.sql; 0 for other units
 FROM "migration_data"."Navision$Item" AS T_Item
          LEFT JOIN C_UOM uom ON T_Item."Base Unit of Measure" = UOM.name
 ;

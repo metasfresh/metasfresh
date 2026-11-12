@@ -35,10 +35,10 @@ SELECT
     CAST([Source Type] AS NVARCHAR(MAX)) + ', ' +
 
     -- "Source Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Source Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Source Code], '''', '''''') + '''' + ', ' +
 
     -- "Document Type" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Document Type], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Document Type], '''', '''''') + '''' + ', ' +
 
     -- "Recipient Type" INTEGER NOT NULL
     CAST([Recipient Type] AS NVARCHAR(MAX)) + ', ' +
@@ -47,10 +47,10 @@ SELECT
     CAST([Address Source Type] AS NVARCHAR(MAX)) + ', ' +
 
     -- "Custom Address" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([Custom Address], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Custom Address], '''', '''''') + '''' + ', ' +
 
     -- "Contact No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Contact No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Contact No_], '''', '''''') + '''' + ', ' +
 
     -- "Dispatch Type" INTEGER NOT NULL
     CAST([Dispatch Type] AS NVARCHAR(MAX)) + ', ' +
@@ -62,13 +62,13 @@ SELECT
     '''' + CONVERT(NVARCHAR(MAX), Created, 126) + '''' + ', ' +
 
     -- "Created By" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Created By], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Created By], '''', '''''') + '''' + ', ' +
 
     -- "Modified" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), Modified, 126) + '''' + ', ' +
 
     -- "Modified By" VARCHAR(50) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE([Modified By], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Modified By], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$CMM Recipient];

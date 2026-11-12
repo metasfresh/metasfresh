@@ -30,7 +30,7 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
     -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
     -- "Price Includes VAT" BOOLEAN NOT NULL
     (CASE WHEN [Price Includes VAT] = 1 THEN 'TRUE' ELSE 'FALSE' END) + ', ' +
@@ -39,10 +39,10 @@ SELECT
     (CASE WHEN [Allow Invoice Disc_] = 1 THEN 'TRUE' ELSE 'FALSE' END) + ', ' +
 
     -- "VAT Bus_ Posting Gr_ (Price)" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Bus_ Posting Gr_ (Price)], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Bus_ Posting Gr_ (Price)], '''', '''''') + '''' + ', ' +
 
     -- "Description" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Description, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Description, '''', '''''') + '''' + ', ' +
 
     -- "Allow Line Disc_" BOOLEAN NOT NULL (LAST COLUMN, no comma after)
     (CASE WHEN [Allow Line Disc_] = 1 THEN 'TRUE' ELSE 'FALSE' END) +

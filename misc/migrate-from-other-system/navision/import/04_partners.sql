@@ -20,11 +20,26 @@
  * #L%
  */
 
+-- Prerequisites: 00_parameters.sql, 01_payment_terms.sql, 02_shipper.sql, 03_pricing_systems_lists_and_versions.sql.
+-- Afterwards run the metasfresh Business Partner import (I_BPartner) on the inserted rows.
+--
+-- Locations: Navision has no "default ship-to address". The main address of the customer / vendor is the default
+-- bill-to AND default ship-to location; every Navision "Ship-to Address" becomes an additional ship-to location
+-- (not default).
+--
+-- ADAPT PER PROJECT (search for "ADAPT"):
+--  * the payment method mappings (Navision "Payment Method Code" -> PaymentRule / PaymentRulePO),
+--  * the Navision "Business Relation Code" of customers / vendors (Marketing Setup in Navision),
+--  * the tables "CMM Recipient" and "Route" (with its column "Beschreibung") are not standard Navision, but an
+--    add-on / customisation of one source system; remove those references if the source has no such tables,
+--  * Value / ExternalId: customers and vendors both get Value = "No_". If the Navision customer and vendor number
+--    series overlap, prefix one of them, otherwise a vendor and a customer with the same number end up as one partner.
+-- The fallback country of an address is default_countrycode in 00_parameters.sql.
 
 DROP TABLE IF EXISTS migration_data.i_bpartner_vendor;
 CREATE TABLE migration_data.i_bpartner_vendor AS
 SELECT 1000000                                                           AS ad_client_id,
-       1000000                                                           AS ad_org_id,
+       prm.ad_org_id                                                     AS ad_org_id,
        'Y'                                                               AS isactive,
        now()                                                             AS created,
        99                                                                AS createdby,
@@ -52,7 +67,7 @@ SELECT 1000000                                                           AS ad_c
        NULL                                                              AS regionname,
        NULL::numeric                                                     AS c_country_id,
        COALESCE(NULLIF(TRIM(LEFT(v."Country_Region Code", 2)), ''),
-                'DE')                                                    AS countrycode, -- Fallback as country is mandatory if we have an address
+                prm.default_countrycode)                                 AS countrycode, -- Fallback as country is mandatory if we have an address
        LEFT(con."Job Title", 40)                                         AS title,
        NULL                                                              AS contactname,
        LEFT(con."Person Information", 255)                               AS contactdescription,
@@ -120,12 +135,12 @@ SELECT 1000000                                                           AS ad_c
        NULL::timestamp
            with time zone                                                AS firstsale,
        NULL                                                              AS invoiceschedule,
-       CASE pm."Code"
+       CASE pm."Code" -- ADAPT: payment method codes of the source -> PaymentRule ('D' = direct debit, 'T' = direct deposit)
            WHEN 'SEPA-B2B' THEN 'D'
            WHEN 'SEPA K' THEN 'T'
            END                                                           AS paymentrulepo,
        NULL::numeric                                                     AS po_paymentterm_id,
-       LEFT(pt."Description", 255)                                       AS paymentterm,
+       pt.name                                                           AS paymentterm, -- the I_BPartner import resolves the payment term by name
        NULL                                                              AS shortdescription,
        NULL::numeric                                                     AS c_invoiceschedule_id,
        NULL::numeric                                                     AS c_dataimport_id,
@@ -167,7 +182,7 @@ SELECT 1000000                                                           AS ad_c
        NULL                                                              AS retourfax,
        NULL                                                              AS pharma_phone,
        NULL                                                              AS contacts,
-       v."No_"::numeric                                                  AS creditorid,
+       CASE WHEN v."No_" ~ '^[0-9]+$' THEN v."No_"::numeric END          AS creditorid, -- only a numeric partner number fits
        NULL                                                              AS customernoatvendor,
        NULL                                                              AS printformat_name,
        NULL::numeric                                                     AS ad_printformat_id,
@@ -178,9 +193,9 @@ SELECT 1000000                                                           AS ad_c
        NULL                                                              AS statusinfo,
        NULL                                                              AS ad_user_memo4,
        NULL                                                              AS gln,
-       ('001 - ' || con."No_")                                           AS ad_user_externalid,
-       ('001 - ' || v."No_")                                             AS c_bpartner_externalid,
-       ('001 - ' || v."No_")                                             AS c_bpartner_location_externalid,
+       (prm.key_prefix || con."No_")                                           AS ad_user_externalid,
+       (prm.key_prefix || v."No_")                                             AS c_bpartner_externalid,
+       (prm.key_prefix || v."No_")                                             AS c_bpartner_location_externalid,
        LEFT(v."Home Page", 120)                                          AS url,
        NULL::numeric                                                     AS m_pricingsystem_id,
        NULL::numeric                                                     AS po_pricingsystem_id,
@@ -207,14 +222,15 @@ SELECT 1000000                                                           AS ad_c
        cus."Name"
 
 FROM migration_data."Navision$Vendor" v
+         CROSS JOIN migration_data.nav_import_params prm
          LEFT JOIN migration_data."Navision$Payment Method" pm
                    ON v."Payment Method Code" = pm."Code"
          LEFT JOIN migration_data."Navision$Contact Business Relation" rel
-                   ON v."No_" = rel."No_" AND rel."Business Relation Code" = 'KRED'
+                   ON v."No_" = rel."No_" AND rel."Business Relation Code" = 'KRED' -- ADAPT: business relation code of vendors
          LEFT JOIN migration_data."Navision$Contact" con
                    ON rel."Contact No_" = con."No_"
-         LEFT JOIN migration_data."Navision$Payment Terms" pt
-                   ON v."Payment Terms Code" = pt."Code"
+         LEFT JOIN c_paymentterm pt -- created by 01_payment_terms.sql
+                   ON pt.value = prm.key_prefix || v."Payment Terms Code" AND pt.isactive = 'Y'
          LEFT JOIN migration_data."Navision$Customer" cus
                    ON cus."Name" = v."Name"
          LEFT JOIN LATERAL (SELECT LEFT(ba."IBAN", 255)       AS iban,
@@ -412,7 +428,7 @@ FROM migration_data.i_bpartner_vendor t
 DROP TABLE IF EXISTS migration_data.i_bpartner_customer;
 CREATE TABLE migration_data.i_bpartner_customer AS
 SELECT 1000000                                                                  AS ad_client_id,
-       1000000                                                                  AS ad_org_id,
+       prm.ad_org_id                                                            AS ad_org_id,
        'Y'                                                                      AS isactive,
        now()                                                                    AS created,
        99                                                                       AS createdby,
@@ -460,7 +476,7 @@ SELECT 1000000                                                                  
        'Y'                                                                      AS iscustomer,
        'N'                                                                      AS isemployee,
        CASE WHEN ven."No_" IS NULL THEN 'N' ELSE 'Y' END                        AS isvendor,
-       CASE WHEN c."No_"::int < 15000 THEN LEFT(c."Name", 255) END              AS companyname, -- legal name is always stored here in navision / starting from 15000 customers are private persons
+       CASE WHEN c."Partner Type" <> 2 THEN LEFT(c."Name", 255) END             AS companyname, -- Navision "Partner Type": 0 = blank, 1 = Company, 2 = Person. ADAPT if the source marks private persons differently (e.g. by a number range)
        location_contact_print_info.firstname                                    AS firstname,
        location_contact_print_info.lastname                                     AS lastname,
        location_contact_print_info.isbillto                                     AS isbillto,
@@ -494,7 +510,7 @@ SELECT 1000000                                                                  
        'N'                                                                      AS issepasigned,
        NULL                                                                     AS pharmaproductpermlaw52,
        'N'                                                                      AS ispharmaciepermission,
-       CASE pm."Code"
+       CASE pm."Code" -- ADAPT: payment method codes of the source -> PaymentRule ('D' = direct debit, 'T' = direct deposit)
            WHEN 'SEPA-B2B' THEN 'D'
            WHEN 'ÜBERWEISUN' THEN 'T'
            END                                                                  AS paymentrule,
@@ -503,12 +519,12 @@ SELECT 1000000                                                                  
        NULL::numeric                                                            AS c_bp_bankaccount_id,
        NULL::timestamp with time zone                                           AS firstsale,
        NULL                                                                     AS invoiceschedule,
-       CASE pm_vendor."Code"
+       CASE pm_vendor."Code" -- ADAPT: same mapping as for the vendors above
            WHEN 'SEPA-B2B' THEN 'D'
            WHEN 'SEPA K' THEN 'T'
            END                                                                  AS paymentrulepo,
        NULL::numeric                                                            AS po_paymentterm_id,
-       LEFT(pt_vendor."Description", 255)                                       AS paymentterm,
+       pt_vendor.name                                                           AS paymentterm, -- the I_BPartner import resolves the payment term by name
        NULL                                                                     AS shortdescription,
        NULL::numeric                                                            AS c_invoiceschedule_id,
        NULL::numeric                                                            AS c_dataimport_id,
@@ -522,7 +538,7 @@ SELECT 1000000                                                                  
        'N'                                                                      AS isdecider,
        'N'                                                                      AS ismanagement,
        'N'                                                                      AS ismultiplier,
-       c."No_"::numeric                                                         AS debtorid,
+       CASE WHEN c."No_" ~ '^[0-9]+$' THEN c."No_"::numeric END                 AS debtorid, -- only a numeric partner number fits
        LEFT(c."County", 60)                                                     AS region,
        NULL                                                                     AS c_bpartner_memo,
        NULL                                                                     AS salesgroup,
@@ -550,7 +566,7 @@ SELECT 1000000                                                                  
        NULL                                                                     AS retourfax,
        NULL                                                                     AS pharma_phone,
        NULL                                                                     AS contacts,
-       ven."No_"::numeric                                                       AS creditorid,
+       CASE WHEN ven."No_" ~ '^[0-9]+$' THEN ven."No_"::numeric END             AS creditorid,
        NULL                                                                     AS customernoatvendor,
        NULL                                                                     AS printformat_name,
        NULL::numeric                                                            AS ad_printformat_id,
@@ -561,9 +577,9 @@ SELECT 1000000                                                                  
        NULL                                                                     AS statusinfo,
        NULL                                                                     AS ad_user_memo4,
        NULL                                                                     AS gln,
-       ('001 - ' || location_contact_print_info.ad_user_externalid)             AS ad_user_externalid,
-       ('001 - ' || c."No_")                                                    AS c_bpartner_externalid,
-       ('001 - ' || location_contact_print_info.c_bpartner_location_externalid) AS c_bpartner_location_externalid,
+       (prm.key_prefix || location_contact_print_info.ad_user_externalid)             AS ad_user_externalid,
+       (prm.key_prefix || c."No_")                                                    AS c_bpartner_externalid,
+       (prm.key_prefix || location_contact_print_info.c_bpartner_location_externalid) AS c_bpartner_location_externalid,
        LEFT(c."Home Page", 120)                                                 AS url,
        COALESCE(ps_customer.m_pricingsystem_id, ps_cpg.m_pricingsystem_id)      AS m_pricingsystem_id,
        NULL::numeric                                                            AS po_pricingsystem_id,
@@ -573,7 +589,7 @@ SELECT 1000000                                                                  
        NULL                                                                     AS pobox,
        NULL                                                                     AS countryname,
        NULL                                                                     AS memo_delivery,
-       LEFT(pt."Description", 255)                                              AS paymenttermvalue,
+       pt.name                                                                  AS paymenttermvalue, -- the I_BPartner import resolves the payment term by name
        NULL::numeric                                                            AS c_paymentterm_id,
        NULL                                                                     AS url3,
        NULL                                                                     AS globalid,
@@ -592,30 +608,31 @@ SELECT 1000000                                                                  
        location_contact_print_info.bpartnername                                 AS bpartnername,
        location_contact_print_info.bpartnername2                                AS bpartnername2
 FROM migration_data."Navision$Customer" c
+         CROSS JOIN migration_data.nav_import_params prm
          LEFT JOIN migration_data."Navision$Payment Method" pm
                    ON c."Payment Method Code" = pm."Code"
          LEFT JOIN migration_data."Navision$Contact Business Relation" rel
-                   ON c."No_" = rel."No_" AND rel."Business Relation Code" = 'DEB'
+                   ON c."No_" = rel."No_" AND rel."Business Relation Code" = 'DEB' -- ADAPT: business relation code of customers
          LEFT JOIN migration_data."Navision$Shipment Method" ship_method
                    ON c."Shipment Method Code" = ship_method."Code"
          LEFT JOIN migration_data."Navision$Route" route
                    ON c."Routing Code" = route."Code"
          LEFT JOIN migration_data."Navision$Contact" con
                    ON rel."Contact No_" = con."No_"
-         LEFT JOIN migration_data."Navision$Payment Terms" pt
-                   ON c."Payment Terms Code" = pt."Code"
+         LEFT JOIN c_paymentterm pt -- created by 01_payment_terms.sql
+                   ON pt.value = prm.key_prefix || c."Payment Terms Code" AND pt.isactive = 'Y'
          LEFT JOIN migration_data."Navision$Customer Price Group" cpg
                    ON c."Customer Price Group" = cpg."Code"
          LEFT JOIN migration_data."Navision$Vendor" ven
                    ON ven."Name" = c."Name"
          LEFT JOIN migration_data."Navision$Payment Method" pm_vendor
                    ON ven."Payment Method Code" = pm_vendor."Code"
-         LEFT JOIN migration_data."Navision$Payment Terms" pt_vendor
-                   ON ven."Payment Terms Code" = pt_vendor."Code"
+         LEFT JOIN c_paymentterm pt_vendor
+                   ON pt_vendor.value = prm.key_prefix || ven."Payment Terms Code" AND pt_vendor.isactive = 'Y'
          LEFT JOIN m_pricingsystem ps_customer
-                   ON ps_customer.migration_key = ('001 - ' || c."No_")
+                   ON ps_customer.migration_key = (prm.key_prefix || c."No_")
          LEFT JOIN m_pricingsystem ps_cpg
-                   ON ps_customer.migration_key = ('001 - ' || c."Customer Price Group")
+                   ON ps_cpg.migration_key = (prm.key_prefix || c."Customer Price Group")
          LEFT JOIN LATERAL (
     -- taking info from customer (contact of business relation info is identical)
     -- invoice copies
@@ -626,7 +643,7 @@ FROM migration_data."Navision$Customer" c
            LEFT(c."Post Code", 10)                                                AS postal,
            LEFT(c."City", 60)                                                     AS city,
            COALESCE(NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
-                    'DE')                                                         AS countrycode, -- Fallback as country is mandatory if we have an address
+                    prm.default_countrycode)                                      AS countrycode, -- Fallback as country is mandatory if we have an address
            LEFT(c."Phone No_", 40)                                                AS phone,
            LEFT(con."Mobile Phone No_", 40)                                       AS phone2,
            LEFT(c."Fax No_", 40)                                                  AS fax,
@@ -634,11 +651,7 @@ FROM migration_data."Navision$Customer" c
            'Y'                                                                    AS isbillto,
            'Y'                                                                    AS isshipto,
            'Y'                                                                    AS isbilltodefault,
-           CASE
-               WHEN EXISTS(SELECT 1
-                           FROM migration_data."Navision$Ship-to Address" inner_ship_to
-                           WHERE inner_ship_to."Customer No_" = c."No_") THEN 'N'
-               ELSE 'Y' END                                                       AS isshiptodefault,
+           'Y'                                                                    AS isshiptodefault, -- the main address is the default ship-to location
            'Y'                                                                    AS isdefaultcontact,
            'Y'                                                                    AS isbilltocontact_default,
            'Y'                                                                    AS isshiptocontact_default,
@@ -690,7 +703,7 @@ FROM migration_data."Navision$Customer" c
            LEFT(c."Post Code", 10)                                                AS postal,
            LEFT(c."City", 60)                                                     AS city,
            COALESCE(NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
-                    'DE')                                                         AS countrycode, -- Fallback as country is mandatory if we have an address
+                    prm.default_countrycode)                                      AS countrycode, -- Fallback as country is mandatory if we have an address
            LEFT(c."Phone No_", 40)                                                AS phone,
            LEFT(con."Mobile Phone No_", 40)                                       AS phone2,
            LEFT(c."Fax No_", 40)                                                  AS fax,
@@ -698,11 +711,7 @@ FROM migration_data."Navision$Customer" c
            'Y'                                                                    AS isbillto,
            'Y'                                                                    AS isshipto,
            'Y'                                                                    AS isbilltodefault,
-           CASE
-               WHEN EXISTS(SELECT 1
-                           FROM migration_data."Navision$Ship-to Address" inner_ship_to
-                           WHERE inner_ship_to."Customer No_" = c."No_") THEN 'N'
-               ELSE 'Y' END                                                       AS isshiptodefault,
+           'Y'                                                                    AS isshiptodefault, -- the main address is the default ship-to location
            'Y'                                                                    AS isdefaultcontact,
            'Y'                                                                    AS isbilltocontact_default,
            'Y'                                                                    AS isshiptocontact_default,
@@ -741,7 +750,7 @@ FROM migration_data."Navision$Customer" c
            LEFT(inner_ship_to."City", 60)                             AS city,
            COALESCE(NULLIF(TRIM(LEFT(inner_ship_to."Country_Region Code", 2)), ''),
                     NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
-                    'DE')                                             AS countrycode, -- Fallback as country is mandatory if we have an address
+                    prm.default_countrycode)                          AS countrycode, -- Fallback as country is mandatory if we have an address
            NULL                                                       AS phone,
            NULL                                                       AS phone2,
            NULL                                                       AS fax,
@@ -749,7 +758,7 @@ FROM migration_data."Navision$Customer" c
            'N'                                                        AS isbillto,
            'Y'                                                        AS isshipto,
            'N'                                                        AS isbilltodefault,
-           CASE WHEN inner_ship_to."Code" = '1' THEN 'Y' ELSE 'N' END AS isshiptodefault,
+           'N'                                                        AS isshiptodefault, -- additional ship-to location; Navision has no default ship-to address
            'N'                                                        AS isdefaultcontact,
            'N'                                                        AS isbilltocontact_default,
            'N'                                                        AS isshiptocontact_default,

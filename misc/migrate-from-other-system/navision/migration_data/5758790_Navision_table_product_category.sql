@@ -30,16 +30,16 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Item Category Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Item Category Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Item Category Code], '''', '''''') + '''' + ', ' +
 
         -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
         -- "Description" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Description, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Description, '''', '''''') + '''' + ', ' +
 
         -- "Warehouse Class Code" VARCHAR(10) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE([Warehouse Class Code], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Warehouse Class Code], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Product Group];

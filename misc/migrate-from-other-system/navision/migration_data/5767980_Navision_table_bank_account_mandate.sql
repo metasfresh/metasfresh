@@ -30,25 +30,25 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
     -- "Mandate ID" VARCHAR(35) NOT NULL
-    '''' + REPLACE(REPLACE([Mandate ID], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Mandate ID], '''', '''''') + '''' + ', ' +
 
     -- "Account Type" INTEGER NOT NULL
     CAST([Account Type] AS NVARCHAR(MAX)) + ', ' +
 
     -- "Account No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Account No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Account No_], '''', '''''') + '''' + ', ' +
 
     -- "Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Name, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Name, '''', '''''') + '''' + ', ' +
 
     -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
     -- "IBAN" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(IBAN, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(IBAN, '''', '''''') + '''' + ', ' +
 
     -- "SWIFT Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([SWIFT Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([SWIFT Code], '''', '''''') + '''' + ', ' +
 
     -- "Mandate Date" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Mandate Date], 126) + '''' + ', ' +
@@ -90,10 +90,10 @@ SELECT
     CASE WHEN [Single Payment] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
     -- "OrgnlMndtId" VARCHAR(35) NOT NULL
-    '''' + REPLACE(REPLACE(OrgnlMndtId, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(OrgnlMndtId, '''', '''''') + '''' + ', ' +
 
     -- "Alt_ Creditor Identifier" VARCHAR(38) NOT NULL (LAST COLUMN)
-    '''' + REPLACE(REPLACE([Alt_ Creditor Identifier], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Alt_ Creditor Identifier], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Bank Account Mandate];

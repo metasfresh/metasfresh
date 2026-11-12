@@ -1,4 +1,29 @@
+/*
+ * #%L
+ * work-metas
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
+-- Prerequisites: 00_parameters.sql, 03_pricing_systems_lists_and_versions.sql, 07_products_and_prices.sql (+ I_Product import).
+-- Historical regular prices: one additional price list version per distinct "Starting Date" between historical_prices_from
+-- and pricelist_validfrom (customer price groups and customers), then the prices as I_Product rows; run the
+-- I_Product import again afterwards. Price list versions that already exist (same price list + ValidFrom) are skipped.
 
 DROP TABLE IF EXISTS migration_data.m_pricelist_version_5years;
 CREATE TABLE migration_data.m_pricelist_version_5years AS
@@ -21,17 +46,18 @@ SELECT pl.ad_client_id                                                AS ad_clie
 FROM m_pricelist pl
          JOIN m_pricingsystem ps ON pl.m_pricingsystem_id = ps.m_pricingsystem_id
          JOIN "migration_data"."Navision$Customer Price Group" AS t_cpg_source
-              ON ps.migration_key = ('001 - ' || t_cpg_source."Code")
+              ON ps.migration_key = ((SELECT key_prefix FROM migration_data.nav_import_params) || t_cpg_source."Code")
          JOIN LATERAL (
     SELECT DISTINCT "Starting Date" AS date
     FROM "migration_data"."Navision$Sales Price" sp
              JOIN "migration_data"."Navision$Item" AS T_Item ON sp."Item No_" = T_Item."No_"
     WHERE t_cpg_source."Code" = "Sales Code"
-      AND SP."Sales Type" = 1
-      AND "Starting Date" < '2025-09-01'
-      AND "Starting Date" > '2020-01-01'
-      AND "Ending Date" > '2027-01-01' --exclude campaign prices
+      AND SP."Sales Type" = 1 -- 1 = Customer Price Group
+      AND "Starting Date" < (SELECT pricelist_validfrom FROM migration_data.nav_import_params)
+      AND "Starting Date" > (SELECT historical_prices_from FROM migration_data.nav_import_params)
+      AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= (SELECT no_end_date_from FROM migration_data.nav_import_params)) -- regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
+WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl.m_pricelist_id AND v.validfrom = startdates.date)
 ;
 
 
@@ -93,17 +119,18 @@ SELECT pl_customer.ad_client_id                                                A
 FROM m_pricelist pl_customer
          JOIN m_pricingsystem ps_customer ON pl_customer.m_pricingsystem_id = ps_customer.m_pricingsystem_id
          JOIN "migration_data"."Navision$Customer" AS c
-              ON ps_customer.migration_key = ('001 - ' || c."No_")
+              ON ps_customer.migration_key = ((SELECT key_prefix FROM migration_data.nav_import_params) || c."No_")
          JOIN LATERAL (
     SELECT DISTINCT "Starting Date" AS date
     FROM "migration_data"."Navision$Sales Price" sp
              JOIN "migration_data"."Navision$Item" AS T_Item ON sp."Item No_" = T_Item."No_"
     WHERE c."No_" = "Sales Code"
-      AND SP."Sales Type" = 0
-      AND "Starting Date" < '2025-09-01'
-      AND "Starting Date" > '2020-01-01'
-      AND "Ending Date" > '2027-01-01' --exclude campaign prices
+      AND SP."Sales Type" = 0 -- 0 = Customer
+      AND "Starting Date" < (SELECT pricelist_validfrom FROM migration_data.nav_import_params)
+      AND "Starting Date" > (SELECT historical_prices_from FROM migration_data.nav_import_params)
+      AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= (SELECT no_end_date_from FROM migration_data.nav_import_params)) -- regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
+WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl_customer.m_pricelist_id AND v.validfrom = startdates.date)
 ;
 
 INSERT INTO m_pricelist_version (m_pricelist_version_id,
@@ -147,7 +174,7 @@ FROM migration_data.m_pricelist_version_partners_5years
 DROP TABLE IF EXISTS "migration_data".i_product_inserts_prices_5years;
 CREATE TABLE "migration_data".i_product_inserts_prices_5years AS
 SELECT 1000000                                                                                 AS ad_client_id,
-       1000000                                                                                 AS ad_org_id,
+       (SELECT ad_org_id FROM migration_data.nav_import_params) AS ad_org_id,
        'Y'                                                                                     AS isactive,
        NOW()                                                                                   AS created,
        99                                                                                      AS createdby,
@@ -163,13 +190,13 @@ SELECT 1000000                                                                  
        NULL                                                                                    AS help,
        NULL                                                                                    AS upc,
        NULL                                                                                    AS sku,
-       CASE T_Item."Base Unit of Measure" -- x12de355: Map Navision "Base Unit of Measure"
+       CASE T_Item."Base Unit of Measure" -- ADAPT: map the Navision "Base Unit of Measure" codes of the project to X12DE355 (see 06_uoms.sql)
            WHEN 'KG' THEN 'KGM'
            WHEN 'STCK' THEN 'PCE'
            ELSE T_Item."Base Unit of Measure"
            END                                                                                 AS x12de355,
        NULL::numeric                                                                           AS c_uom_id,
-       'Standard'                                                                              AS productcategory_value,
+       'Standard'                                                                              AS productcategory_value, -- ADAPT: product category value
        NULL::numeric                                                                           AS m_product_category_id,
        CASE T_Item."Type" -- producttype: Map Navision Type (0 for Item, 1 for Service)
            WHEN 0 THEN 'I'
@@ -189,7 +216,7 @@ SELECT 1000000                                                                  
        NULL                                                                                    AS descriptionurl,
        NULL                                                                                    AS bpartner_value,
        NULL::numeric                                                                           AS c_bpartner_id,
-       COALESCE(NULLIF(TRIM(LEFT(SP."Currency Code", 3)), ''), 'EUR')                          AS iso_code,
+       COALESCE(NULLIF(TRIM(LEFT(SP."Currency Code", 3)), ''), (SELECT default_currency FROM migration_data.nav_import_params))                          AS iso_code,
        NULL::numeric                                                                           AS pricelist,
        NULL::numeric                                                                           AS pricepo,
        0                                                                                       AS royaltyamt,
@@ -204,7 +231,7 @@ SELECT 1000000                                                                  
        'N'                                                                                     AS processed,
        SP."Unit Price"                                                                         AS pricestd,
        NULL::numeric                                                                           AS pricelimit,
-       CASE
+       CASE -- ADAPT: Navision "VAT Prod_ Posting Group" codes of the project -> C_TaxCategory.InternalName
            WHEN T_Item."VAT Prod_ Posting Group" = '19ST' THEN (SELECT c_taxcategory_id
                                                                 FROM c_taxcategory
                                                                 WHERE internalname = 'Normal')
@@ -273,42 +300,19 @@ SELECT 1000000                                                                  
        NULL::numeric                                                                           AS qtycu,
        NULL                                                                                    AS qtycu_uom_code,
        'Y'                                                                                     AS isupdatename,
-       CASE
-           WHEN NULLIF(TRIM(T_Item."Expiration Calculation"), '') IS NULL THEN 0
-           ELSE regexp_replace(TRIM(T_Item."Expiration Calculation"), '\D', '', 'g')::numeric
-           END                                                                                 AS GuaranteeDaysMin
+       COALESCE(migration_data.nav_dateformula_days(T_Item."Expiration Calculation"), 0) AS GuaranteeDaysMin -- days only, see 00_parameters.sql; 0 for other units
 FROM "migration_data"."Navision$Item" AS T_Item
          LEFT JOIN "migration_data"."Navision$Product Group" AS T_PG
                    ON T_Item."Product Group Code" = T_PG."Code"
          JOIN "migration_data"."Navision$Sales Price" AS SP
               ON SP."Item No_" = T_Item."No_"
-         JOIN m_pricingsystem ps ON ps.migration_key = ('001 - ' || SP."Sales Code")
+         JOIN m_pricingsystem ps ON ps.migration_key = ((SELECT key_prefix FROM migration_data.nav_import_params) || SP."Sales Code")
          JOIN m_pricelist pl ON ps.m_pricingsystem_id = pl.m_pricingsystem_id AND pl.issopricelist = 'Y'
          JOIN m_pricelist_version plv ON pl.m_pricelist_id = plv.m_pricelist_id
     AND plv.validfrom = SP."Starting Date"
     AND plv.createdby = 99
-WHERE  "Starting Date" < '2025-09-01'
-  AND "Ending Date" > '2027-01-01' /*
- * #%L
- * work-metas
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */ --exclude campaign prices
+WHERE  "Starting Date" < (SELECT pricelist_validfrom FROM migration_data.nav_import_params)
+  AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= (SELECT no_end_date_from FROM migration_data.nav_import_params)) -- regular price = no end date; excludes campaign prices
 ;
 
 
