@@ -115,7 +115,7 @@ public class ApiResponseMapper
 		}
 		else if (contentType.includes(MediaType.TEXT_PLAIN))
 		{
-			return new String(responseWrapper.getContentAsByteArray());
+			return new String(responseWrapper.getContentAsByteArray(), getCharset(responseWrapper));
 		}
 		else if (contentType.includes(MediaType.APPLICATION_JSON))
 		{

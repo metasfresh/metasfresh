@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, holdForCaptureIfEnabled, isUatCapture, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FRONTEND_BASE_URL, getPage, holdForCaptureIfEnabled, isUatCapture, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 
 const BANK_STATEMENT_WINDOW_ID = 194;
 const ORDER_FIELD = 'C_Order_ID';
@@ -61,19 +61,8 @@ export class BankStatementPage {
     return await test.step('BankStatementPage - the line advanced-edit form has the order field', async () => {
       const page = getPage();
       const field = page.locator(`.form-field-${ORDER_FIELD}`).first();
-      for (let attempt = 0; attempt < 4 && !(await field.count()); attempt++) {
-        const cell = page.locator('tbody tr').first().locator('td').nth(3);
-        await cell.click();
-        await page.waitForTimeout(1500);
-        await cell.click();
-        await page.waitForTimeout(1000);
-        await page.keyboard.press('Alt+e');
-        await field.waitFor({ timeout: 5000 }).catch(() => {});
-        if (!(await field.count())) {
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(1500);
-        }
-      }
+      await selectRows([page.locator('tbody tr').first()]);
+      await page.keyboard.press('Alt+e');
       await expect(field).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await field.scrollIntoViewIfNeeded();
       await this.#showForCapture(field, '02-line-form-order-field');
@@ -88,8 +77,12 @@ export class BankStatementPage {
       await field.locator('.input-dropdown, .input-block, input, .raw-list').first().click();
       const list = page.locator('.input-dropdown-list');
       await list.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-      const options = list.locator('.input-dropdown-list-option');
+      // Real options carry data-testid="option-*"; the loading spinner row has the same `input-dropdown-list-option`
+      // class (SelectionDropdown renderHeader), so only the test id tells them apart. Wait for the first real option,
+      // then for the spinner to be gone, so the list is complete before it is read.
+      const options = list.locator('[data-testid^="option-"]');
       await options.first().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+      await expect(list.locator('.input-dropdown-list-header .icon-rotate')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
       await this.#showForCapture(list, '03-order-dropdown');
       return (await options.allInnerTexts()).map((text) => text.trim());
     });

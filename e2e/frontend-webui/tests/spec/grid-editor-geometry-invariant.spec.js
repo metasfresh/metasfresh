@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { BusinessPartnerPage } from '../utils/pages/BusinessPartnerPage';
-import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForWebFonts } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, selectRows, waitForWebFonts } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { createMasterdata, ORDER_LINE_TAB_ID } from '../utils/OrderLineHarness';
@@ -445,7 +445,7 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
     await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
     await test.step('Selecting the row extends it (multi-line column)', async () => {
-      await row.locator('[data-cy="cell-Line"]').click();
+      await selectRows([row]);
       await expect(row.locator('.cell-text-wrapper.extended').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       const rowHeight = await row.evaluate((tr) => tr.getBoundingClientRect().height);
       expect(rowHeight, 'an extended row is taller than a normal 42px row').toBeGreaterThan(60);

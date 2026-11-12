@@ -271,8 +271,10 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			// on the first save, interceptor C_Payment.updateFromOrder overwrites PayAmt with the order's total minus the payment term discount
 			// (the builder only saves; the interceptor is not changed here because other callers, e.g. the REST order payment, rely on it);
 			// this payment is the cash received on the bank statement line, which may be less or more than the order total, so PayAmt is set back.
-			// DiscountAmt is intentionally left as the interceptor sets it, the same as for a payment entered by hand in window Zahlung.
+			// The interceptor's DiscountAmt belongs to its PayAmt (order total minus discount); with the line amount as PayAmt it would be allocated on top of the cash, so it is cleared.
+			// A line of exactly the order total minus the discount does not get here and keeps its discount.
 			payment.setPayAmt(payAmount.toBigDecimal());
+			payment.setDiscountAmt(BigDecimal.ZERO);
 			paymentDAO.save(payment);
 		}
 		return payment;

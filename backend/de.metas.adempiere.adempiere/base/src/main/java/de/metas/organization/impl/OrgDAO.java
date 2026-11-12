@@ -286,6 +286,18 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	public Optional<WarehouseId> getOrgWarehouseIdIfExists(@NonNull final OrgId orgId)
+	{
+		if (orgId.isAny())
+		{
+			return Optional.empty();
+		}
+
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfoRecordOrNull(orgId, ITrx.TRXNAME_None);
+		return orgInfo != null ? Optional.ofNullable(WarehouseId.ofRepoIdOrNull(orgInfo.getM_Warehouse_ID())) : Optional.empty();
+	}
+
+	@Override
 	public WarehouseId getOrgPOWarehouseId(@NonNull final OrgId orgId)
 	{
 		return getOrgInfoById(orgId).getPurchaseWarehouseId();

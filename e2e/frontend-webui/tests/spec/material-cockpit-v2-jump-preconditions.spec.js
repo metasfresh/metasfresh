@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows } from '../utils/common';
 
 /**
  * Material Cockpit v2 — the three bespoke jump actions must be offered as disabled-with-a-reason
@@ -104,11 +104,7 @@ async function selectCockpitRow(page, viewId, rowId) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${MATERIAL_COCKPIT_V2_WINDOW_ID}?viewId=${viewId}`);
   const row = page.locator(`tbody tr[data-testid="table-row-${rowId}"]`);
   await row.waitFor({ state: 'visible', timeout: 30000 });
-  // A click right after the grid renders does not always land as a selection — assert it.
-  await expect(async () => {
-    await row.click();
-    await expect(row).toHaveClass(/row-selected/, { timeout: 2000 });
-  }).toPass({ timeout: 30000 });
+  await selectRows([row]);
   return row;
 }
 

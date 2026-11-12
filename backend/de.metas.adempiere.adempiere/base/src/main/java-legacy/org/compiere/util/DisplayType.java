@@ -96,6 +96,8 @@ public final class DisplayType
 	public static final int URL = 40;
 	/** Display Type 42	PrinterName	*/
 	public static final int PrinterName = 42;
+	/** Display Type 43	Password (a String whose value is masked in the UI)	*/
+	public static final int Password = 43;
 	//	Candidates: 
 
 	/** Maximum number of digits    */
@@ -168,21 +170,39 @@ public final class DisplayType
 		if (displayType == String || displayType == Text
 				|| displayType == TextLong || displayType == Memo
 				|| displayType == FilePath || displayType == FileName
-				|| displayType == URL || displayType == PrinterName)
+				|| displayType == URL || displayType == PrinterName
+				|| displayType == Password)
 			return true;
 		return false;
 	}    //	isText
 
-	public static boolean isPassword(final String columnName, final int displayType)
+	/**
+	 * @return true if the display type holds a single-line string: {@link #String} or {@link #Password}
+	 */
+	public static boolean isString(final int displayType)
 	{
-		// TODO: introduce DisplayType.Password so we would not have to guess ;)
+		return displayType == String || displayType == Password;
+	}
 
+	public static boolean isPassword(final int displayType)
+	{
+		return displayType == Password;
+	}
+
+	public static boolean isPassword(@NonNull final String columnName, final int displayType)
+	{
+		if (isPassword(displayType))
+		{
+			return true;
+		}
+
+		// fallback for columns which are not (yet) using DisplayType.Password: guess by name
 		if (!DisplayType.isText(displayType))
 		{
 			return false;
 		}
 
-		return columnName.toLowerCase().indexOf("password") >= 0
+		return columnName.toLowerCase().contains("password")
 				|| columnName.endsWith("PW")
 				|| columnName.equals("EMail_From_Pwd");
 	}
@@ -555,6 +575,8 @@ public final class DisplayType
 			return "URL";
 		if (displayType == PrinterName)
 			return "PrinterName";
+		if (displayType == Password)
+			return "Password";
 		//
 		return "UNKNOWN DisplayType=" + displayType;
 	}    //	getDescription

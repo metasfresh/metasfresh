@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DocumentProcessingInTrx;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
@@ -604,7 +605,7 @@ public class C_Order_StepDef
 		{
 			case reactivated:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
 				break;
 			case completed:
@@ -612,15 +613,15 @@ public class C_Order_StepDef
 				break;
 			case closed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			case voided:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case reversed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")

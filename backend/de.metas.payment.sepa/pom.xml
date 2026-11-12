@@ -18,6 +18,7 @@
 		<module>base</module>
 		<module>schema-pain_001_01_03_ch_02</module>
 		<module>schema-pain_001_001_09_ch_03</module>
+		<module>schema-pain_008_001_08</module>
 		<module>schema-pain_008_003_02</module>
 	</modules>
 
