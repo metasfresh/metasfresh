@@ -1,28 +1,24 @@
 package de.metas.document.archive.interceptor;
 
+import de.metas.document.archive.api.impl.DocOutboundLogHeaderPopulator;
 import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
-import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.I_C_Invoice;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -51,17 +47,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Component
 public class C_Doc_Outbound_Log
 {
+	/**
+	 * Set on a log while code that derives the recipient, its address and the invoice-e-mail flag itself saves it,
+	 * so that {@link #updateFromRecipientId(I_C_Doc_Outbound_Log)} does not overwrite them with the values of the recipient contact.
+	 */
+	public static final ModelDynAttributeAccessor<I_C_Doc_Outbound_Log, Boolean> DYNATTR_SkipUpdateFromRecipientId = new ModelDynAttributeAccessor<>("SkipUpdateFromRecipientId", Boolean.class);
+
 	private final DocOutBoundRecipientService docOutBoundRecipientService;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final DocOutboundService docOutBoundService;
+	private final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator;
 
 	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientService docOutBoundRecipientService,
 			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo,
-			@NonNull final DocOutboundService docOutboundService)
+			@NonNull final DocOutboundService docOutboundService,
+			@NonNull final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator)
 	{
 		this.docOutBoundRecipientService = docOutBoundRecipientService;
 		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepo;
 		this.docOutBoundService = docOutboundService;
+		this.docOutboundLogHeaderPopulator = docOutboundLogHeaderPopulator;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -72,6 +77,11 @@ public class C_Doc_Outbound_Log
 			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID)
 	public void updateFromRecipientId(@NonNull final I_C_Doc_Outbound_Log docOutboundlogRecord)
 	{
+		if (DYNATTR_SkipUpdateFromRecipientId.getValue(docOutboundlogRecord, false))
+		{
+			return;
+		}
+
 		final DocOutBoundRecipientId userId = DocOutBoundRecipientId.ofRepoIdOrNull(docOutboundlogRecord.getCurrentEMailRecipient_ID());
 		if (userId == null)
 		{
@@ -110,25 +120,7 @@ public class C_Doc_Outbound_Log
 			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID)
 	public void updateFromBPartnerId(@NonNull final I_C_Doc_Outbound_Log docOutboundlogRecord)
 	{
-		if (docOutboundlogRecord.getC_BPartner_ID() <= 0)
-		{
-			// reset everything
-			docOutboundlogRecord.setCurrentEMailRecipient_ID(-1);
-			docOutboundlogRecord.setCurrentEMailAddress(null);
-			docOutboundlogRecord.setIsInvoiceEmailEnabled(false);
-			return;
-		}
-
-		final int invoiceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
-		if (docOutboundlogRecord.getAD_Table_ID() != invoiceTableId)
-		{
-			docOutboundlogRecord.setIsInvoiceEmailEnabled(false);
-			return;
-		}
-
-		final I_C_BPartner bpartnerRecord = loadOutOfTrx(docOutboundlogRecord.getC_BPartner_ID(), I_C_BPartner.class);
-		docOutboundlogRecord.setIsInvoiceEmailEnabled(StringUtils.toBoolean(bpartnerRecord.getIsInvoiceEmailEnabled()));
-
+		docOutboundLogHeaderPopulator.populateFromBPartner(docOutboundlogRecord);
 	}
 
 }

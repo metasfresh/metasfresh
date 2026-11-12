@@ -27,6 +27,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -75,6 +76,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -100,6 +102,7 @@ public class C_Doc_Outbound_Log_StepDef
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
 	private final AD_Archive_StepDefData archiveTable;
 	private final C_BPartner_StepDefData bpartnerTable;
+	private final AD_User_StepDefData userTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final IdentifiersResolver identifiersResolver;
@@ -111,6 +114,7 @@ public class C_Doc_Outbound_Log_StepDef
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
 			@NonNull final AD_Archive_StepDefData archiveTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final IdentifiersResolver identifiersResolver)
@@ -119,6 +123,7 @@ public class C_Doc_Outbound_Log_StepDef
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
 		this.archiveTable = archiveTable;
 		this.bpartnerTable = bpartnerTable;
+		this.userTable = userTable;
 		this.orderTable = orderTable;
 		this.invoiceTable = invoiceTable;
 		this.identifiersResolver = identifiersResolver;
@@ -321,6 +326,39 @@ public class C_Doc_Outbound_Log_StepDef
 	}
 
 	/**
+	 * Picks an e-mail recipient by hand on an outbound log, as a user does in the outbound documents window:
+	 * sets {@code CurrentEMailRecipient_ID} and saves the log, so the log's recipient interceptor derives the address and the invoice-e-mail flag
+	 * from the picked contact, as it does for the user's edit.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Doc_Outbound_Log_ID</b> — (required, identifier-ref) the log, stored by an earlier validation<br>
+	 *   <b>CurrentEMailRecipient_ID</b> — (required, identifier-ref) the contact (AD_User) to pick<br>
+	 * @cucumber.depends StepDefData: C_Doc_Outbound_Log_StepDefData, AD_User_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the e-mail recipient is picked by hand on C_Doc_Outbound_Log:
+	 *   | C_Doc_Outbound_Log_ID | CurrentEMailRecipient_ID |
+	 *   | invoiceOutboundLog    | contact_2                |
+	 * </pre>
+	 */
+	@And("the e-mail recipient is picked by hand on C_Doc_Outbound_Log:")
+	public void the_email_recipient_is_picked_by_hand(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier logIdentifier = row.getAsIdentifier(COLUMNNAME_C_Doc_Outbound_Log_ID);
+			// reload: the stored instance may predate the last refresh of the header
+			final I_C_Doc_Outbound_Log docOutboundLog = load(logIdentifier.lookupNotNullIn(docOutboundLogTable).getC_Doc_Outbound_Log_ID(), I_C_Doc_Outbound_Log.class);
+
+			final int recipientId = row.getAsIdentifier(I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID).lookupNotNullIn(userTable).getAD_User_ID();
+			docOutboundLog.setCurrentEMailRecipient_ID(recipientId);
+			saveRecord(docOutboundLog);
+
+			docOutboundLogTable.putOrReplace(logIdentifier, docOutboundLog);
+		});
+	}
+
+	/**
 	 * Polls until the outbound log of the given record exists AND all given columns match,
 	 * then stores it under the given identifier. Fails with the last mismatch on timeout.
 	 *
@@ -330,13 +368,15 @@ public class C_Doc_Outbound_Log_StepDef
 	 *   <b>Record_ID</b> — (required, identifier-ref) the order or invoice the log belongs to<br>
 	 *   <b>AD_Table.Name</b> — (required) C_Order or C_Invoice<br>
 	 *   <b>CurrentEMailAddress</b>, <b>CurrentEMailAddressCC</b> — (optional) expected address; the literal <code>null</code> expects none<br>
+	 *   <b>CurrentEMailRecipient_ID</b> — (optional, identifier-ref) expected e-mail recipient (AD_User); the literal <code>null</code> expects none<br>
 	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected business partner; the literal <code>null</code> expects none<br>
 	 *   <b>C_BP_Group_ID</b> — (optional) expected business partner group id (a virtual column derived from the partner)<br>
 	 *   <b>DocBaseType</b> — (optional) expected base type of the log's document type<br>
 	 *   <b>DocStatus</b>, <b>POReference</b>, <b>DocumentNo</b> — (optional) expected values<br>
 	 *   <b>DateDoc</b> — (optional) expected document date, e.g. 2022-05-17<br>
 	 *   <b>IsInvoiceEmailEnabled</b> — (optional) expected flag<br>
-	 * @cucumber.depends StepDefData: C_Doc_Outbound_Log_StepDefData, C_BPartner_StepDefData, C_Order_StepDefData, C_Invoice_StepDefData
+	 *   <b>AD_Archive_ID</b> — (optional, identifier-ref) a PDF already bound by the line validation; the log's DocumentNo and FileName must equal that PDF's DocumentNo and Name<br>
+	 * @cucumber.depends StepDefData: C_Doc_Outbound_Log_StepDefData, C_BPartner_StepDefData, AD_User_StepDefData, AD_Archive_StepDefData, C_Order_StepDefData, C_Invoice_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And after not more than 60s validate C_Doc_Outbound_Log:
@@ -539,6 +579,17 @@ public class C_Doc_Outbound_Log_StepDef
 		}
 
 		// literal "null" = the partner must not be set
+		final Optional<StepDefDataIdentifier> recipientIdentifier = row.getAsOptionalIdentifier(I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID);
+		if (recipientIdentifier.isPresent())
+		{
+			// a log without recipient has CurrentEMailRecipient_ID null, read as 0
+			final int expectedRecipientId = recipientIdentifier.get().isNullPlaceholder() ? 0 : recipientIdentifier.get().lookupNotNullIn(userTable).getAD_User_ID();
+			if (expectedRecipientId != Math.max(docOutboundLog.getCurrentEMailRecipient_ID(), 0))
+			{
+				return mismatch(I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID, expectedRecipientId <= 0 ? "not set" : expectedRecipientId, docOutboundLog.getCurrentEMailRecipient_ID());
+			}
+		}
+
 		final Optional<StepDefDataIdentifier> bpIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID);
 		if (bpIdentifier.isPresent())
 		{
@@ -594,6 +645,20 @@ public class C_Doc_Outbound_Log_StepDef
 		if (isInvoiceEmailEnabled != null && isInvoiceEmailEnabled != docOutboundLog.isInvoiceEmailEnabled())
 		{
 			return mismatch(I_C_Doc_Outbound_Log.COLUMNNAME_IsInvoiceEmailEnabled, isInvoiceEmailEnabled, docOutboundLog.isInvoiceEmailEnabled());
+		}
+
+		final Optional<StepDefDataIdentifier> archiveIdentifier = row.getAsOptionalIdentifier(I_C_Doc_Outbound_Log_Line.COLUMNNAME_AD_Archive_ID);
+		if (archiveIdentifier.isPresent())
+		{
+			final I_AD_Archive archive = archiveIdentifier.get().lookupNotNullIn(archiveTable);
+			if (!Objects.equals(archive.getDocumentNo(), docOutboundLog.getDocumentNo()))
+			{
+				return mismatch(I_C_Doc_Outbound_Log.COLUMNNAME_DocumentNo + " (of the PDF " + archiveIdentifier.get().getAsString() + ")", archive.getDocumentNo(), docOutboundLog.getDocumentNo());
+			}
+			if (!Objects.equals(archive.getName(), docOutboundLog.getFileName()))
+			{
+				return mismatch(I_C_Doc_Outbound_Log.COLUMNNAME_FileName + " (name of the PDF " + archiveIdentifier.get().getAsString() + ")", archive.getName(), docOutboundLog.getFileName());
+			}
 		}
 
 		return Optional.empty();

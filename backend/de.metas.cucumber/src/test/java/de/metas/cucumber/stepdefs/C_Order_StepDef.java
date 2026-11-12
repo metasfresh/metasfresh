@@ -601,7 +601,7 @@ public class C_Order_StepDef
 	 *   (for the three identifier columns above the literal <code>null</code> clears the field)<br>
 	 *   <b>POReference</b> — (optional) new PO reference<br>
 	 *   <b>DateOrdered</b> — (optional) new order date, e.g. 2022-05-17<br>
-	 *   <b>EMail</b> — (optional) new order e-mail address<br>
+	 *   <b>EMail</b> — (optional) new order e-mail address; the literal <code>null</code> clears it<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, AD_User_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -651,13 +651,13 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
 				.ifPresent(id -> order.setC_BPartner_Location_ID(id.isNullPlaceholder() ? 0 : id.lookupNotNullIdIn(bpartnerLocationTable).getRepoId()));
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
-				.ifPresent(id -> order.setAD_User_ID(id.isNullPlaceholder() ? 0 : id.lookupNotNullIdIn(userTable).getRepoId()));
+				.ifPresent(id -> order.setAD_User_ID(id.isNullPlaceholder() ? -1 : id.lookupNotNullIdIn(userTable).getRepoId())); // 0 would be the System user
 		tableRow.getAsOptionalString(COLUMNNAME_POReference)
 				.ifPresent(order::setPOReference);
 		tableRow.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateOrdered)
 				.ifPresent(order::setDateOrdered);
 		tableRow.getAsOptionalString(COLUMNNAME_EMail)
-				.ifPresent(order::setEMail);
+				.ifPresent(email -> order.setEMail(DataTableUtil.NULL_STRING.equals(email) ? null : email));
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);

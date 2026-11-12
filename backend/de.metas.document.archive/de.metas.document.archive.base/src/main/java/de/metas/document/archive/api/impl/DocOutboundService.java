@@ -24,6 +24,7 @@ package de.metas.document.archive.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.interceptor.C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
@@ -40,6 +41,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.archive.api.IPDFArchiveProvider;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -177,6 +179,8 @@ public class DocOutboundService implements IPDFArchiveProvider
 	 * <ul>
 	 * <li>the document fields ({@code POReference}, {@code C_DocType_ID}, {@code DocumentNo}, {@code DateDoc}, {@code FileName}), always;</li>
 	 * <li>the PDF's business partner, if it has one; otherwise the header's partner is kept;</li>
+	 * <li>the e-mail recipients (To and CC, with their addresses) and the invoice-e-mail flag, recomputed from the document and the header's resulting partner,
+	 * as for a newly created log (see {@link DocOutboundLogHeaderPopulator#populateRecipients(I_C_Doc_Outbound_Log)}); a recipient picked by hand is replaced;</li>
 	 * <li>the document's current status, if it is completed ({@code CO}) or waiting for payment ({@code WP}); any other status (e.g. closed) leaves the header's status as it is.</li>
 	 * </ul>
 	 * The print / mail dates, the async batch, the org and the history lines are not touched.
@@ -209,12 +213,18 @@ public class DocOutboundService implements IPDFArchiveProvider
 			logRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
 		}
 
+		docOutboundLogHeaderPopulator.populateRecipients(logRecord);
+
 		final DocStatus documentStatus = documentBL.getDocStatusOrNull(documentRef);
 		if (documentStatus == DocStatus.Completed || documentStatus == DocStatus.WaitingPayment)
 		{
 			logRecord.setDocStatus(documentStatus.getCode());
 		}
 
-		saveRecord(logRecord);
+		// the recipient fields were just derived from the document; the interceptor for a hand-picked recipient would overwrite address and flag with the contact's
+		try (final IAutoCloseable ignored = C_Doc_Outbound_Log.DYNATTR_SkipUpdateFromRecipientId.temporarySetValue(logRecord, true))
+		{
+			saveRecord(logRecord);
+		}
 	}
 }

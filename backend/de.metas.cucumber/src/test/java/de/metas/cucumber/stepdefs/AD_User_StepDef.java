@@ -55,6 +55,7 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_EMail;
 import static org.compiere.model.I_AD_User.COLUMNNAME_IsBillToContact_Default;
+import static org.compiere.model.I_AD_User.COLUMNNAME_IsInvoiceEmailEnabled;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Login;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Name;
 import static org.compiere.model.I_AD_User.COLUMNNAME_NotificationType;
@@ -74,6 +75,26 @@ public class AD_User_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
+	/**
+	 * Creates contacts (AD_User), or updates the one found by e-mail or name.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> or <b>AD_User_ID.Identifier</b> — (required) identifier under which the contact is stored<br>
+	 *   <b>Name</b> — (optional) name; derived from the identifier if missing<br>
+	 *   <b>EMail</b> — (optional) e-mail address; a contact without e-mail is created if missing<br>
+	 *   <b>C_BPartner_ID.Identifier</b>, <b>C_BPartner_Location_ID.Identifier</b> — (optional, identifier-ref) partner and location of the contact<br>
+	 *   <b>IsBillToContact_Default</b> — (optional) default bill-to contact of its partner<br>
+	 *   <b>IsInvoiceEmailEnabled</b> — (optional) the contact's "invoice as e-mail" setting (Y/N); used when the partner's own setting is empty<br>
+	 *   <b>Phone</b>, <b>Login</b>, <b>Password</b>, <b>AD_Language</b>, <b>NotificationType</b>, <b>Role_ID</b> — (optional)<br>
+	 * @cucumber.depends StepDefData: AD_User_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains AD_Users:
+	 *   | Identifier | Name   | OPT.EMail       | OPT.C_BPartner_ID.Identifier | OPT.IsInvoiceEmailEnabled |
+	 *   | user_1     | user_1 | user_1@mail.test | bpartner_1                   | Y                         |
+	 * </pre>
+	 */
 	@Given("metasfresh contains AD_Users:")
 	public void metasfresh_contains_ad_users(@NonNull final DataTable dataTable)
 	{
@@ -191,6 +212,10 @@ public class AD_User_StepDef
 		{
 			userRecord.setIsBillToContact_Default(isBillToContactDefault);
 		}
+
+		tableRow.getAsOptionalString(COLUMNNAME_IsInvoiceEmailEnabled)
+				.filter(Check::isNotBlank)
+				.ifPresent(userRecord::setIsInvoiceEmailEnabled);
 
 		final String notificationType = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + COLUMNNAME_NotificationType);
 		if (Check.isNotBlank(notificationType))
