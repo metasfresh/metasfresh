@@ -493,6 +493,11 @@ public class CreateMasterdataCommand
 	{
 		return CreatePOSInvoiceCardSettlementCommand.builder()
 				.repository(services.posInvoiceCardSettlementRepository)
+				.booking(services.posInvoiceCardSettlementBooking)
+				.posService(services.posService)
+				.sumUpTransactionRepository(services.sumUpTransactionRepository)
+				.sumUpConfigRepository(services.sumUpConfigRepository)
+				.currencyRepository(services.currencyRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
