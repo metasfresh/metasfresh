@@ -81,6 +81,15 @@ async function expectInViewport(locator, { wholeWidth = true } = {}) {
 async function openActionsAndListProcesses(page) {
   await page.locator('.header-left-side .btn-square.btn-header').click();
   await page.locator('.subheader-container [data-testid^="action-"]').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  // the list is loaded asynchronously: wait until it stopped changing, so the menu is painted completely
+  const actionItems = page.locator('.subheader-container [data-testid^="action-"]');
+  let previousCount = -1;
+  await expect(async () => {
+    const count = await actionItems.count();
+    const isStable = count === previousCount;
+    previousCount = count;
+    expect(isStable, 'the actions list is still loading').toBe(true);
+  }).toPass({ timeout: SLOW_ACTION_TIMEOUT, intervals: [400] });
   const items = await page.locator('.subheader-container [data-testid^="action-"]').evaluateAll((els) =>
     els.map((el) => ({ value: el.getAttribute('data-testid').substring('action-'.length), disabled: el.classList.contains('subheader-item-disabled') }))
   );
