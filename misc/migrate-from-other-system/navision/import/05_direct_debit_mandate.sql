@@ -32,7 +32,7 @@
 DROP TABLE IF EXISTS migration_data.c_bp_bankaccount_directdebitmandate;
 CREATE TABLE migration_data.c_bp_bankaccount_directdebitmandate AS
 SELECT 1000000                AS ad_client_id,
-       1000000          AS ad_org_id, -- adapt per project
+       1000000                AS ad_org_id, -- adapt per project
        bp.c_bpartner_id       AS c_bpartner_id,
        ba.c_bp_bankaccount_id AS c_bp_bankaccount_id,
        NOW()                  AS created,

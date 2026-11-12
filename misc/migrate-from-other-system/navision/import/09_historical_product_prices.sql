@@ -73,8 +73,8 @@ FROM m_pricelist pl
              JOIN "migration_data"."Navision$Item" AS T_Item ON sp."Item No_" = T_Item."No_"
     WHERE t_cpg_source."Code" = "Sales Code"
       AND SP."Sales Type" = 1 -- 1 = Customer Price Group
-      AND "Starting Date" < '2025-09-01 00:00:00'::timestamp -- adapt per project
-      AND "Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
+      AND "Starting Date" < '2025-09-01' -- adapt per project
+      AND "Starting Date" > '2020-01-01' -- adapt per project
       AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
 ;
@@ -145,8 +145,8 @@ FROM m_pricelist pl_customer
              JOIN "migration_data"."Navision$Item" AS T_Item ON sp."Item No_" = T_Item."No_"
     WHERE c."No_" = "Sales Code"
       AND SP."Sales Type" = 0 -- 0 = Customer
-      AND "Starting Date" < '2025-09-01 00:00:00'::timestamp -- adapt per project
-      AND "Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
+      AND "Starting Date" < '2025-09-01' -- adapt per project
+      AND "Starting Date" > '2020-01-01' -- adapt per project
       AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
 ;
@@ -192,7 +192,7 @@ FROM migration_data.m_pricelist_version_partners_5years
 DROP TABLE IF EXISTS "migration_data".i_product_inserts_prices_5years;
 CREATE TABLE "migration_data".i_product_inserts_prices_5years AS
 SELECT 1000000                                                                                 AS ad_client_id,
-       1000000 AS ad_org_id, -- adapt per project
+       1000000                                                                                 AS ad_org_id, -- adapt per project
        'Y'                                                                                     AS isactive,
        NOW()                                                                                   AS created,
        99                                                                                      AS createdby,
@@ -329,7 +329,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
          JOIN m_pricelist_version plv ON pl.m_pricelist_id = plv.m_pricelist_id
     AND plv.validfrom = SP."Starting Date"
     AND plv.createdby = 99
-WHERE  "Starting Date" < '2025-09-01 00:00:00'::timestamp -- adapt per project
+WHERE  "Starting Date" < '2025-09-01' -- adapt per project
   AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
 ;
 

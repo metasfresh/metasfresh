@@ -30,7 +30,7 @@
 DROP TABLE IF EXISTS migration_data.i_campaign_price;
 CREATE TABLE migration_data.i_campaign_price AS
 SELECT 1000000                                                          AS ad_client_id,
-       1000000 AS ad_org_id, -- adapt per project
+       1000000                                                          AS ad_org_id, -- adapt per project
        'Y'                                                              AS isactive,
        NOW()                                                            AS created,
        99                                                               AS createdby,
@@ -57,7 +57,7 @@ SELECT 1000000                                                          AS ad_cl
         FROM m_pricingsystem
         WHERE migration_key = ('001 - ' || T_Sales_Price."Sales Code")) AS m_pricingsystem_id, -- adapt per project
        NULL::numeric                                                    AS m_product_id,
-       'DE' AS countrycode, -- adapt per project
+       'DE'                                                             AS countrycode, -- adapt per project
        T_Customer."No_"                                                 AS bpartner_value,
        CASE T_Item."Base Unit of Measure" -- ADAPT: map the Navision "Base Unit of Measure" codes of the project (see 06_uoms.sql)
            WHEN 'KG' THEN (SELECT name FROM c_uom WHERE x12de355 = 'KGM' AND isactive = 'Y')
@@ -72,7 +72,7 @@ FROM "migration_data"."Navision$Sales Price" AS T_Sales_Price
          JOIN "migration_data"."Navision$Item" AS T_Item ON T_Sales_Price."Item No_" = T_Item."No_"
          LEFT JOIN "migration_data"."Navision$Customer" AS T_Customer
                    ON T_Sales_Price."Sales Code" = T_Customer."No_" AND T_Sales_Price."Sales Type" = 0
-WHERE T_Sales_Price."Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
+WHERE T_Sales_Price."Starting Date" > '2020-01-01' -- adapt per project
   AND T_Sales_Price."Ending Date" <> '1753-01-01'
   AND T_Sales_Price."Ending Date" < '2027-01-01' -- adapt per project
 ;

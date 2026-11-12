@@ -28,7 +28,7 @@ DROP TABLE IF EXISTS migration_data.i_product_inserts_products_only
 
 CREATE TABLE migration_data.i_product_inserts_products_only AS
 SELECT 1000000                                                         AS ad_client_id,
-       1000000 AS ad_org_id, -- adapt per project
+       1000000                                                         AS ad_org_id, -- adapt per project
        'Y'                                                             AS isactive,
        NOW()                                                           AS created,
        99                                                              AS createdby,
