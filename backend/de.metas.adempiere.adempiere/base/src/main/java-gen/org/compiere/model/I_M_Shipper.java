@@ -258,6 +258,27 @@ public interface I_M_Shipper
 	String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
+	 * Set Lead time (days).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLeadTimeDays (int LeadTimeDays);
+
+	/**
+	 * Get Lead time (days).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLeadTimeDays();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_LeadTimeDays = new ModelColumn<>(I_M_Shipper.class, "LeadTimeDays", null);
+	String COLUMNNAME_LeadTimeDays = "LeadTimeDays";
+
+	/**
 	 * Set Shipper.
 	 * Method or manner of product delivery
 	 *

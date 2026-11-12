@@ -31,6 +31,46 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	boolean setPreparationDateAndTour(I_C_Order order, boolean fallbackToDatePromised);
 
 	/**
+	 * Forward direction of the shipper lead time: sets {@code DatePromised = workday(DateOrdered, +LeadTimeDays)}
+	 * (Mon-Fri business days).
+	 * <p>
+	 * Only fires for a non-processed sales order, when the forward opt-in sysconfig
+	 * {@code de.metas.tourplanning.LeadTimeForwardCalc.Enabled} is on for the order's client+org, the order's shipper
+	 * has a lead time, {@code DateOrdered} is set and {@code IsFixedDatePromised} is not set. Otherwise leaves the
+	 * order untouched. Does NOT save the order and does NOT touch PreparationDate.
+	 *
+	 * @return true if DatePromised was set.
+	 */
+	boolean setDatePromisedFromLeadTime(@NonNull I_C_Order order);
+
+	/**
+	 * Whether the order's {@code DatePromised} was supplied by the creator rather than left at the {@code MOrder}
+	 * constructor's "today" seed. Used by the create-time interceptor to decide whether to derive DatePromised from
+	 * the shipper lead time (derive only when NOT supplied, so an explicit value from webui / REST / OLCand-EDI /
+	 * a copied order is preserved).
+	 *
+	 * @return true if DatePromised is non-null and differs from today's day-truncated seed.
+	 */
+	boolean isDatePromisedSuppliedAtCreation(@NonNull I_C_Order order);
+
+	/**
+	 * Whether the shipper lead-time path applies to this order, i.e. it is a sales order whose shipper carries a
+	 * {@code LeadTimeDays} (0 counts; only a NULL lead time is "no lead time"). Used by the interceptor to decide
+	 * whether a DateOrdered / M_Shipper_ID change must re-derive PreparationDate from the lead time even when
+	 * DatePromised itself did not move (e.g. IsFixedDatePromised='Y').
+	 */
+	boolean hasLeadTime(@NonNull I_C_Order order);
+
+	/**
+	 * Whether the per-shipper forward lead-time calc GOVERNS this order's DatePromised: a sales order whose shipper has
+	 * a {@code LeadTimeDays} and whose client+org has the forward opt-in sysconfig
+	 * {@code de.metas.tourplanning.LeadTimeForwardCalc.Enabled} on. True even when {@code IsFixedDatePromised='Y'} (the
+	 * promised date is pinned but still owned by the lead-time feature). Callers use it to keep the legacy flat
+	 * {@code de.metas.order.DatePromisedOffsetDays} from overwriting a lead-time order's DatePromised.
+	 */
+	boolean isLeadTimeForwardCalcActive(@NonNull I_C_Order order);
+
+	/**
 	 * Resolves the per-line preparation date for the shipment-schedule provider: if
 	 * {@code C_OrderLine.PreparationDate} is set (normally the derived value written back by
 	 * {@link #setLinePreparationDate}) it is returned as-is; otherwise it is derived fresh from the given
