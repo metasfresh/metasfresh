@@ -4,9 +4,17 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID } from '../utils/WindowIds';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import {
+  authenticateRestSetupSession,
+  fetchOwnViewRows,
+  firstDocument,
+  openWindowOnOwnRows as openWindowOnRowsOf,
+  patchDocument as patchDocumentVia,
+  selectRowUnlessSelected as selectRow,
+} from '../utils/WebAPISetup';
 
 /** AD_Tab_ID of "Bestellposition" (purchase order line) in the purchase order window. */
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
@@ -14,46 +22,11 @@ const MATERIAL_RECEIPT_WINDOW_ID = 184;
 const MATERIAL_RECEIPT_LINE_TAB_ID = 'AD_Tab-297';
 
 /**
- * Selects a grid row. The grid auto-selects its first row on load and a click on a selected row DESELECTS it, so
- * click only when the row is not selected yet, then assert it is.
+ * Opens the receipt-disposition delivery-planning window on a view scoped to exactly the given row ids (the window
+ * has no filter field and its unfiltered list is paged and holds every other run's rows on a shared DB).
  */
-const selectRow = async (row) => {
-  if (!/row-selected/.test((await row.getAttribute('class')) || '')) {
-    await row.click();
-  }
-  await expect(row).toHaveClass(/row-selected/);
-};
-
-/**
- * Opens the receipt-disposition delivery-planning window on a view scoped to exactly the given row ids
- * (JSONCreateViewRequest.filterOnlyIds), created in the browser's own session so the UI can open it via ?viewId=.
- *
- * The window has no filter field, and its unfiltered list is paged (20 rows) and holds every other run's rows on a
- * shared DB (CI shards, repeated runs) - so a test's own rows may not be on the first page. Scoping the view to
- * the test's own ids makes the lookup independent of how many other rows exist.
- */
-const openWindowOnOwnRows = async (page, rowIds) => {
-  const viewId = await page.evaluate(
-    async ({ rest, windowId, ids }) => {
-      const created = await fetch(`${rest}/documentView/${windowId}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ windowId: String(windowId), viewType: 'grid', filterOnlyIds: ids }),
-      });
-      if (!created.ok) {
-        throw new Error(`view scoped to the own rows failed: HTTP ${created.status}`);
-      }
-      return (await created.json()).viewId;
-    },
-    {
-      rest: WEBAPI_BASE_URL,
-      windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
-      ids: rowIds.map(Number),
-    },
-  );
-  await page.goto(`${FRONTEND_BASE_URL}/window/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}?viewId=${viewId}`);
-};
+const openWindowOnOwnRows = (page, rowIds) =>
+  openWindowOnRowsOf(page, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID, rowIds);
 
 /**
  * AD_Process.Value of the receipt-disposition delivery-planning window's default quick action and its fallback
@@ -178,33 +151,15 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 
     const REST = WEBAPI_BASE_URL;
 
-    const firstDocument = (body) => (Array.isArray(body) ? body : body.documents || [body])[0];
-    const patchDocument = async (windowId, documentId, tabId, rowId, changes) => {
-      const path = tabId
-        ? `${REST}/window/${windowId}/${documentId}/${tabId}/${rowId}`
-        : `${REST}/window/${windowId}/${documentId}`;
-      const response = await request.patch(path, { data: changes });
-      if (!response.ok()) {
-        throw new Error(`PATCH ${path} failed: HTTP ${response.status()} ${await response.text()}`);
-      }
-      return firstDocument(await response.json());
-    };
+    const patchDocument = (windowId, documentId, tabId, rowId, changes) =>
+      patchDocumentVia(request, windowId, documentId, tabId, rowId, changes);
 
     // === Authenticate the SETUP session via REST ===
     // On the `request` FIXTURE, not on `page.request`: the latter shares the browser context's cookie jar, so
     // authenticating there logs the browser in as `metasfresh` and the UI login then dies on "User already
     // logged in". Every REST setup call goes through `request`, every UI interaction through `page`.
     await test.step('Authenticate the REST setup session', async () => {
-      const sessionBody = await (await request.get(`${REST}/userSession`)).json().catch(() => ({}));
-      if (!sessionBody.loggedIn) {
-        const authResponse = await request.post(`${REST}/login/authenticate`, {
-          data: { username: 'metasfresh', password: 'metasfresh' },
-        });
-        const authBody = await authResponse.json();
-        if (authBody.loginComplete === false && authBody.roles && authBody.roles.length > 0) {
-          await request.post(`${REST}/login/loginComplete`, { data: authBody.roles[0] });
-        }
-      }
+      await authenticateRestSetupSession(request);
     });
 
     // === Create ONE purchase order with two lines, one per product, and complete it ===
@@ -289,31 +244,13 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     //
     // Polled through the window's own view because the tab carries no filter field at all: a fresh view per
     // attempt, NEWEST FIRST via ?orderBy=, paged to the end, matched on THIS order's C_Order_ID.
-    const ownReceiptDispositionRows = async () => {
-      const view = await (
-        await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
-          data: { windowId: String(RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID), viewType: 'grid' },
-        })
-      ).json();
-
-      const PAGE_LENGTH = 500;
-      const ownRows = [];
-      for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
-        const rowsPage = await (
-          await request.get(
-            `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
-              `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
-          )
-        ).json();
-        const rows = rowsPage.result || [];
-        ownRows.push(
-          ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
-        );
-        if (rows.length < PAGE_LENGTH) {
-          return ownRows;
-        }
-      }
-    };
+    const ownReceiptDispositionRows = () =>
+      fetchOwnViewRows({
+        request,
+        windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
+        orderBy: '-RV_ReceiptDisposition_DeliveryPlanning_ID',
+        isOwnRow: (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId),
+      });
 
     await test.step('wait for the two receipt-schedule rows the completion creates asynchronously', async () => {
       await expect
@@ -485,30 +422,12 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
       expect(productName).toBeTruthy();
 
       const REST = WEBAPI_BASE_URL;
-      const firstDocument = (body) => (Array.isArray(body) ? body : body.documents || [body])[0];
-      const patchDocument = async (windowId, documentId, tabId, rowId, changes) => {
-        const path = tabId
-          ? `${REST}/window/${windowId}/${documentId}/${tabId}/${rowId}`
-          : `${REST}/window/${windowId}/${documentId}`;
-        const response = await request.patch(path, { data: changes });
-        if (!response.ok()) {
-          throw new Error(`PATCH ${path} failed: HTTP ${response.status()} ${await response.text()}`);
-        }
-        return firstDocument(await response.json());
-      };
+      const patchDocument = (windowId, documentId, tabId, rowId, changes) =>
+        patchDocumentVia(request, windowId, documentId, tabId, rowId, changes);
 
       // The setup session goes through the `request` fixture, never `page.request` (see the first test of this file).
       await test.step('Authenticate the REST setup session', async () => {
-        const sessionBody = await (await request.get(`${REST}/userSession`)).json().catch(() => ({}));
-        if (!sessionBody.loggedIn) {
-          const authResponse = await request.post(`${REST}/login/authenticate`, {
-            data: { username: 'metasfresh', password: 'metasfresh' },
-          });
-          const authBody = await authResponse.json();
-          if (authBody.loginComplete === false && authBody.roles && authBody.roles.length > 0) {
-            await request.post(`${REST}/login/loginComplete`, { data: authBody.roles[0] });
-          }
-        }
+        await authenticateRestSetupSession(request);
       });
 
       let purchaseOrderId;
@@ -532,30 +451,13 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
 
       // The rows of THIS purchase order on the window, read from a fresh view of the server (newest first, paged to
       // the end - the tab has no filter field), so neither the grid's cached state nor other records are involved.
-      const ownRows = async () => {
-        const view = await (
-          await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
-            data: { windowId: String(RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID), viewType: 'grid' },
-          })
-        ).json();
-        const PAGE_LENGTH = 500;
-        const own = [];
-        for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
-          const rowsPage = await (
-            await request.get(
-              `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
-                `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
-            )
-          ).json();
-          const rows = rowsPage.result || [];
-          own.push(
-            ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
-          );
-          if (rows.length < PAGE_LENGTH) {
-            return own;
-          }
-        }
-      };
+      const ownRows = () =>
+        fetchOwnViewRows({
+          request,
+          windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
+          orderBy: '-RV_ReceiptDisposition_DeliveryPlanning_ID',
+          isOwnRow: (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId),
+        });
 
       await test.step('wait for the receipt-schedule row the completion creates asynchronously', async () => {
         await expect
