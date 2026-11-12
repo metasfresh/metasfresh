@@ -40,20 +40,12 @@ SELECT CASE
 $$
 ;
 
-
 -- Prerequisites: 03_pricing_systems_lists_and_versions.sql, 06_uoms.sql.
 -- Products with their current regular sales prices as I_Product rows: first the prices of the customer price groups
 -- ("Sales Type" 1), then the customer-specific prices ("Sales Type" 0). Afterwards run the metasfresh product import (I_Product).
 -- Regular price = "Ending Date" is Navision's empty date 1753-01-01 or after 2027-01-01 (the project's "no end date" cut-off; adapt per project);
 -- prices with a real end date are campaign prices (08_campaign_prices.sql).
 -- ADAPT PER PROJECT: the mappings marked with ADAPT (base unit of measure, product category, VAT product posting group).
-
--- Report: items whose "Expiration Calculation" is not a number of days; GuaranteeDaysMin is set to 0 for them
--- (see migration_data.nav_dateformula_days above). Set those few values manually after the import.
-SELECT T_Item."No_", T_Item."Description", T_Item."Expiration Calculation"
-FROM "migration_data"."Navision$Item" AS T_Item
-WHERE migration_data.nav_dateformula_days(T_Item."Expiration Calculation") IS NULL
-;
 
 DROP TABLE IF EXISTS migration_data.i_product_inserts;
 CREATE TABLE migration_data.i_product_inserts AS

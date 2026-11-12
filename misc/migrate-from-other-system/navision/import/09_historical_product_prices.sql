@@ -43,7 +43,7 @@ $$
 -- Prerequisites: 03_pricing_systems_lists_and_versions.sql, 07_products_and_prices.sql (+ I_Product import).
 -- Historical regular prices: one additional price list version per distinct "Starting Date" between 2020-01-01
 -- and 2025-09-01 (customer price groups and customers), then the prices as I_Product rows; run the
--- I_Product import again afterwards. Price list versions that already exist (same price list + ValidFrom) are skipped.
+-- I_Product import again afterwards.
 
 DROP TABLE IF EXISTS migration_data.m_pricelist_version_5years;
 CREATE TABLE migration_data.m_pricelist_version_5years AS
@@ -77,7 +77,6 @@ FROM m_pricelist pl
       AND "Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
       AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
-WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl.m_pricelist_id AND v.validfrom = startdates.date)
 ;
 
 
@@ -150,7 +149,6 @@ FROM m_pricelist pl_customer
       AND "Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
       AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
-WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl_customer.m_pricelist_id AND v.validfrom = startdates.date)
 ;
 
 INSERT INTO m_pricelist_version (m_pricelist_version_id,

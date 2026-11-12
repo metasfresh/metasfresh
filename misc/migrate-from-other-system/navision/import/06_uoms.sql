@@ -21,25 +21,14 @@
  */
 
 -- One UOM per Navision "Unit of Measure"; key: C_UOM.X12DE355 = the Navision code (max. 4 characters in metasfresh).
--- A unit whose X12DE355 or name already exists is skipped, so the script can be re-run and standard UOMs are reused.
+-- A unit whose X12DE355 or name already exists in metasfresh (e.g. a standard UOM) is skipped; the existing UOM is used.
 --
--- ADAPT PER PROJECT: the mapping below (twice: report and import), for
+-- ADAPT PER PROJECT: the mapping below, for
 --  * Navision codes that mean an existing metasfresh UOM under another code ('KG' -> 'KGM', 'STCK' -> 'PCE');
 --    keep it in sync with the "Base Unit of Measure" mapping in 07, 08, 09 and 11,
---  * Navision codes longer than 4 characters (they do not fit into X12DE355 and are reported + skipped if unmapped);
+--  * Navision codes longer than 4 characters (they do not fit into X12DE355 and are skipped if unmapped);
 --    the mapping 'TOLONG' -> 'LONG' only shows the syntax.
--- Within the source, only the first unit per X12DE355 and per name is taken (both are unique in metasfresh).
-
--- Report: units that are NOT imported because their code does not fit into X12DE355
-SELECT source_uom."Code", source_uom."Description"
-FROM migration_data."Navision$Unit of Measure" source_uom
-WHERE LENGTH(CASE source_uom."Code" -- ADAPT: same mapping as below
-                 WHEN 'KG' THEN 'KGM'
-                 WHEN 'STCK' THEN 'PCE'
-                 WHEN 'TOLONG' THEN 'LONG'
-                 ELSE source_uom."Code"
-             END) > 4
-;
+-- Within the source, only the first unit per X12DE355 (the key) and per name (unique per client in metasfresh) is taken.
 
 DROP TABLE IF EXISTS migration_data.c_uom;
 CREATE TABLE migration_data.c_uom AS

@@ -1,28 +1,6 @@
-/*
- * #%L
- * work-metas
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- One business partner group per Navision "Customer Group" and "Vendor Group" (key: Value = the Navision "Code").
--- A group whose Value or Name already exists is skipped, so the script can be re-run. Customer groups are created first,
--- so a vendor group with the same code or description as a customer group is skipped and the customer group is used.
+-- An active group with the same Value is skipped. Customer groups are created first, so a vendor group with the same
+-- code as a customer group is skipped and the customer group is used.
 -- The staging tables "Customer Group" / "Vendor Group" are not part of ../migration_data; dump them like the other tables.
 -- 04_partners.sql does not assign these groups (GroupValue is NULL, so the import uses the default group); ADAPT it if needed.
 --
@@ -82,10 +60,10 @@ SELECT 1000000                                  AS ad_client_id,
        TRIM(LEFT(T."Code", 255))                AS migration_key
 FROM migration_data."Navision$Customer Group" T
 WHERE NOT EXISTS (SELECT 1
-                  FROM c_bp_group g
-                  WHERE g.value = TRIM(LEFT(T."Code", 40))
-                     OR (g.isactive = 'Y' AND g.name = TRIM(LEFT(T."Description", 60))))
-  AND T."Description" != ''
+                  FROM c_bp_group
+                  WHERE isactive = 'Y'
+                    AND value = TRIM(LEFT(T."Code", 40)))
+AND T."Description" != ''
 ;
 
 INSERT INTO c_bp_group (c_bp_group_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
@@ -202,10 +180,9 @@ SELECT 1000000                                  AS ad_client_id,
        TRIM(LEFT(T."Code", 255))                AS migration_key
 FROM migration_data."Navision$Vendor Group" T
 WHERE NOT EXISTS (SELECT 1
-                  FROM c_bp_group g
-                  WHERE g.value = TRIM(LEFT(T."Code", 40))
-                     OR (g.isactive = 'Y' AND g.name = TRIM(LEFT(T."Description", 60))))
-  AND T."Description" != ''
+                  FROM c_bp_group
+                  WHERE isactive = 'Y'
+                    AND value = TRIM(LEFT(T."Code", 40)))
 ;
 
 INSERT INTO c_bp_group (c_bp_group_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,

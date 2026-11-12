@@ -46,18 +46,8 @@ $$
 -- 04_partners.sql resolves the partners' payment terms via the Value, so it is not affected by this renaming.
 --
 -- Date formulas: only "<n> days" is converted (see migration_data.nav_dateformula_days above).
--- A payment term with any other formula (weeks, months, current month, ...) is NOT imported and is listed by the
--- report below; create those few payment terms manually in metasfresh (with the same Value), before importing partners.
-
--- Report: payment terms that are NOT imported because of an unsupported date formula
-SELECT T."Code",
-       T."Description",
-       T."Due Date Calculation",
-       T."Discount Date Calculation"
-FROM migration_data."Navision$Payment Terms" T
-WHERE migration_data.nav_dateformula_days(T."Due Date Calculation") IS NULL
-   OR migration_data.nav_dateformula_days(T."Discount Date Calculation") IS NULL
-;
+-- A payment term with any other formula (weeks, months, current month, ...) is NOT imported;
+-- create those few payment terms manually in metasfresh (with the same Value), before importing partners.
 
 DROP TABLE IF EXISTS migration_data.c_paymentterm;
 CREATE TABLE migration_data.c_paymentterm AS

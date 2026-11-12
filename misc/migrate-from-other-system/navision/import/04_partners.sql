@@ -37,25 +37,6 @@
 --    number end up as one partner.
 -- The fallback country of an address is 'DE' (adapt per project).
 
--- Report: partners whose payment terms code has no metasfresh payment term (see 01_payment_terms.sql);
--- they are imported without payment term. Create the missing payment terms first, or set them afterwards.
-SELECT 'Customer' AS source, c."No_", c."Name", c."Payment Terms Code"
-FROM migration_data."Navision$Customer" c
-WHERE TRIM(c."Payment Terms Code") <> ''
-  AND NOT EXISTS (SELECT 1
-                  FROM c_paymentterm pt
-                  WHERE pt.value = '001 - ' || c."Payment Terms Code" -- adapt per project
-                    AND pt.isactive = 'Y')
-UNION ALL
-SELECT 'Vendor', v."No_", v."Name", v."Payment Terms Code"
-FROM migration_data."Navision$Vendor" v
-WHERE TRIM(v."Payment Terms Code") <> ''
-  AND NOT EXISTS (SELECT 1
-                  FROM c_paymentterm pt
-                  WHERE pt.value = '001 - ' || v."Payment Terms Code" -- adapt per project
-                    AND pt.isactive = 'Y')
-;
-
 DROP TABLE IF EXISTS migration_data.i_bpartner_vendor;
 CREATE TABLE migration_data.i_bpartner_vendor AS
 SELECT 1000000                                                           AS ad_client_id,

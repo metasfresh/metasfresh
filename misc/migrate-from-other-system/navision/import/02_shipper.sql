@@ -21,7 +21,6 @@
  */
 
 -- One shipper per Navision "Shipment Method"; key: InternalName = '001 - ' || "Code".
--- A shipment method whose InternalName or Name already exists is skipped, so the script can be re-run.
 
 DROP TABLE IF EXISTS migration_data.m_shipper;
 CREATE TABLE migration_data.m_shipper AS
@@ -43,10 +42,7 @@ SELECT 1000000               AS ad_client_id,
        '1970-01-01 08:00:00'::timestamp AS pickuptimefrom, -- mandatory; same default as in the M_Shipper window
        '1970-01-01 17:00:00'::timestamp AS pickuptimeto
 FROM migration_data."Navision$Shipment Method" sm
-WHERE NOT EXISTS (SELECT 1
-                  FROM m_shipper s
-                  WHERE s.name = sm."Description"
-                     OR s.internalname = '001 - ' || sm."Code") -- adapt per project
+WHERE NOT EXISTS (SELECT 1 FROM m_shipper WHERE name = sm."Description")
 ;
 
 

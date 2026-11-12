@@ -21,9 +21,8 @@
  */
 
 -- Prerequisites: partners imported via 04_partners.sql + the I_BPartner import (bank accounts included).
--- A mandate whose "Mandate ID" already exists in the org is skipped, so the script can be re-run.
 -- The partner is found by C_BPartner.DebtorID, which 04_partners.sql sets only for numeric customer numbers; mandates
--- that find no partner or bank account are listed by the report below (run it after this script).
+-- that find no partner or bank account are not imported.
 --
 -- The source table "Navision$Bank Account Mandate" comes from a third-party SEPA add-on, not from standard Navision.
 -- The option values mapped below are that add-on's: "Mandate Type" 0 = CORE, 1 = B2B;
@@ -70,10 +69,6 @@ FROM migration_data."Navision$Bank Account Mandate" AS T_BAM
          JOIN c_bpartner bp ON bp.debtorid = CASE WHEN cba."Customer No_" ~ '^[0-9]+$' THEN cba."Customer No_"::numeric END
                                    AND bp.ad_org_id = 1000000 -- adapt per project; debtorid = numeric Navision customer number, see 04_partners.sql
          JOIN c_bp_bankaccount ba ON ba.iban = cba."IBAN" AND ba.c_bpartner_id = bp.c_bpartner_id
-WHERE NOT EXISTS (SELECT 1
-                  FROM c_bp_bankaccount_directdebitmandate m
-                  WHERE m.mandatereference = T_BAM."Mandate ID"
-                    AND m.ad_org_id = 1000000) -- adapt per project
 ;
 
 INSERT INTO c_bp_bankaccount_directdebitmandate (ad_client_id,
@@ -109,15 +104,4 @@ SELECT s.ad_client_id,
        s.updated,
        s.updatedby
 FROM migration_data.c_bp_bankaccount_directdebitmandate s
-;
-
--- Report: mandates that were not imported (no partner with that DebtorID in the org, or no bank account with that IBAN)
-SELECT T_BAM."Mandate ID", cba."Customer No_", cba."IBAN"
-FROM migration_data."Navision$Bank Account Mandate" AS T_BAM
-         JOIN migration_data."Navision$Customer Bank Account" cba
-              ON T_BAM."Mandate ID" = cba."Mandate ID"
-WHERE NOT EXISTS (SELECT 1
-                  FROM c_bp_bankaccount_directdebitmandate m
-                  WHERE m.mandatereference = T_BAM."Mandate ID"
-                    AND m.ad_org_id = 1000000) -- adapt per project
 ;

@@ -24,17 +24,10 @@
 --  * one pricing system per Navision "Customer Price Group" (key: migration_key = '001 - ' || "Code"),
 --  * one pricing system per customer that has own sales prices (key: migration_key = '001 - ' || customer "No_");
 --    its price list version is based on the version of the customer's price group.
--- Existing pricing systems / price lists / versions with the same key are skipped, so the script can be re-run.
 -- Both kinds share one key space, and the later scripts look a pricing system up by '001 - ' || "Sales Code".
--- So a Customer Price Group code must not equal a customer number; the report below lists such codes.
--- If it lists any, give one kind its own sub-prefix here and in all lookups (04, 07, 08, 09) before going on.
+-- So a Customer Price Group code must not equal a customer number; if one does, give one kind its own sub-prefix
+-- here and in all lookups (04, 07, 08, 09).
 -- ADAPT PER PROJECT: Default_TaxCategory_ID of the price lists ('Reduced' below).
-
--- Report: Customer Price Group codes that are also customer numbers (they would share one pricing system)
-SELECT cpg."Code", cpg."Description", c."Name" AS customer_name
-FROM migration_data."Navision$Customer Price Group" cpg
-         JOIN migration_data."Navision$Customer" c ON c."No_" = cpg."Code"
-;
 
 DROP TABLE IF EXISTS migration_data.m_pricingsystem;
 CREATE TABLE migration_data.m_pricingsystem AS
@@ -51,11 +44,7 @@ SELECT 1000000                        AS ad_client_id,
        '001 - ' || "Description"      AS value, -- adapt per project
        'N'                            AS issubscriptiononly,
        '001 - ' || "Code"             AS migration_key -- adapt per project
-FROM migration_data."Navision$Customer Price Group" cpg
-WHERE NOT EXISTS (SELECT 1
-                  FROM m_pricingsystem ps
-                  WHERE ps.migration_key = '001 - ' || cpg."Code" -- adapt per project
-                     OR ps.value = '001 - ' || cpg."Description") -- adapt per project
+FROM migration_data."Navision$Customer Price Group"
 ;
 
 INSERT INTO m_pricingsystem (ad_client_id, ad_org_id, created, createdby, description, isactive, m_pricingsystem_id,
@@ -93,11 +82,7 @@ SELECT 1000000              AS ad_client_id,
        '001 - ' || c."No_"  AS migration_key -- adapt per project
 FROM migration_data."Navision$Sales Price" sp
          JOIN migration_data."Navision$Customer" c ON sp."Sales Code" = c."No_"
-WHERE sp."Sales Type" = 0 -- 0 = Customer
-  AND NOT EXISTS (SELECT 1
-                  FROM m_pricingsystem ps
-                  WHERE ps.migration_key = '001 - ' || c."No_" -- adapt per project
-                     OR ps.value = '001 - ' || c."No_") -- adapt per project
+WHERE sp."Sales Type" = 0
 GROUP BY c."Name", c."No_"
 ;
 
@@ -164,7 +149,6 @@ FROM m_pricingsystem AS T_PS
      c_currency AS T_CUR ON SalesAndCountryData."CurrencyCode" = T_CUR.iso_code
 --          JOIN
 --      c_country AS T_COUNTRY ON SalesAndCountryData."CountryCode" = T_COUNTRY.countrycode
-WHERE NOT EXISTS (SELECT 1 FROM m_pricelist pl WHERE pl.m_pricingsystem_id = T_PS.m_pricingsystem_id AND pl.issopricelist = 'Y')
 ;
 
 
@@ -241,7 +225,6 @@ FROM m_pricelist pl
          JOIN m_pricingsystem ps ON pl.m_pricingsystem_id = ps.m_pricingsystem_id
          JOIN "migration_data"."Navision$Customer Price Group" AS t_cpg_source
               ON ps.migration_key = ('001 - ' || t_cpg_source."Code") -- adapt per project
-WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl.m_pricelist_id AND v.validfrom = '2025-09-01 00:00:00'::timestamp) -- adapt per project
 ;
 
 
@@ -324,7 +307,6 @@ FROM m_pricingsystem AS ps_customer
 
 --         JOIN
 --     c_country AS country ON PriceData."CountryCode" = country.countrycode
-WHERE NOT EXISTS (SELECT 1 FROM m_pricelist pl WHERE pl.m_pricingsystem_id = ps_customer.m_pricingsystem_id AND pl.issopricelist = 'Y')
 ;
 
 
@@ -408,7 +390,6 @@ FROM m_pricelist pl_customer
                    ON ps_cpg.m_pricingsystem_id = pl_cpg.m_pricingsystem_id --AND pl_cpg.c_country_id = pl_customer.c_country_id
          LEFT JOIN m_pricelist_version plv_cpg
                    ON pl_cpg.m_pricelist_id = plv_cpg.m_pricelist_id AND plv_cpg.validfrom = '2025-09-01 00:00:00'::timestamp -- adapt per project
-WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl_customer.m_pricelist_id AND v.validfrom = '2025-09-01 00:00:00'::timestamp) -- adapt per project
 ;
 
 

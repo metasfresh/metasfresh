@@ -1,25 +1,3 @@
-/*
- * #%L
- * work-metas
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- Navision stores a date formula (e.g. "Due Date Calculation") as a number followed by a unit control character:
 -- CHAR(2) = days, other control characters = other units (week, month, quarter, year, current period, ...),
 -- optionally with a leading '+'. Example: '+28' || CHR(2) = 28 days.
@@ -44,13 +22,6 @@ $$
 -- Afterwards run the metasfresh product import (I_Product) on the inserted rows.
 -- ADAPT PER PROJECT: the mappings marked with ADAPT; this example takes the product name from "Search Description",
 -- and maps the VAT product posting groups by pattern ('%19%' / '%7%').
-
--- Report: items whose "Expiration Calculation" is not a number of days; GuaranteeDaysMin is set to 0 for them
--- (see migration_data.nav_dateformula_days above). Set those few values manually after the import.
-SELECT T_Item."No_", T_Item."Description", T_Item."Expiration Calculation"
-FROM "migration_data"."Navision$Item" AS T_Item
-WHERE migration_data.nav_dateformula_days(T_Item."Expiration Calculation") IS NULL
-;
 
 DROP TABLE IF EXISTS migration_data.i_product_inserts_products_only
 ;
