@@ -152,6 +152,13 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonShipmentCreateRequest> shipments;
 	@Nullable Map<String, JsonReceiptCreateRequest> receipts;
 	@Nullable Map<String, JsonInvoiceCreateRequest> invoices;
+
+	/**
+	 * Card settlements of invoices ({@code C_POS_InvoiceCardSettlement}) in a requested status. Created AFTER
+	 * {@code login}, {@code posTerminals} and {@code invoices}, whose identifiers they reference. See
+	 * {@link de.metas.frontend_testing.masterdata.pos.CreatePOSInvoiceCardSettlementCommand}.
+	 */
+	@Nullable Map<String, de.metas.frontend_testing.masterdata.pos.JsonPOSInvoiceCardSettlementRequest> posInvoiceCardSettlements;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
 	@Nullable Map<String, JsonDDOrderFromCandidatesRequest> distributionOrdersFromCandidates;

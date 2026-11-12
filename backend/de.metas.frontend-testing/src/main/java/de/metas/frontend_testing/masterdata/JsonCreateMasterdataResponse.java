@@ -79,6 +79,7 @@ public class JsonCreateMasterdataResponse
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonShipmentCreateResponse> shipments;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonReceiptCreateResponse> receipts;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonInvoiceCreateResponse> invoices;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, de.metas.frontend_testing.masterdata.pos.JsonPOSInvoiceCardSettlementResponse> posInvoiceCardSettlements;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonDDOrderResponse> distributionOrdersFromCandidates;
 	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;
