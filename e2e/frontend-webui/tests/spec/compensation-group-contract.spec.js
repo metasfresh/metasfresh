@@ -74,6 +74,15 @@ const ORDER_LINE_TAB = 'AD_Tab-187';
 // Auftrag Kompensationsgruppe (C_Order_CompensationGroup) and its order-lines tab
 const ORDER_COMPENSATION_GROUP_WINDOW_ID = 542196;
 const ORDER_COMPENSATION_GROUP_LINES_TAB_ID = 549518;
+// The lines tab reads a view with only order-line columns; these seven need order context and are not shown
+const ORDER_COMPENSATION_GROUP_LINES_HIDDEN_COLUMNS = [
+  'M_Warehouse_ID', 'M_HU_PI_Item_Product_ID', 'C_Charge_ID', 'C_Flatrate_Term_ID', 'C_Flatrate_Conditions_ID', 'C_BPartner_Vendor_ID', 'M_LU_HU_PI_ID',
+];
+const ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS = [
+  'Line', 'M_Product_ID', 'QtyEntered', 'C_UOM_ID', 'PriceEntered', 'Price_UOM_ID', 'LineNetAmt', 'GroupCompensationType', 'GroupCompensationAmtType',
+];
+// related-document windows left out of the comparison: their entries are not generated for a view-backed row (change log, event log, issues)
+const RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS = ['270', '540394', '363'];
 // Bestellung (purchase order) and its line tab
 const PURCHASE_ORDER_WINDOW_ID = 181;
 const PURCHASE_ORDER_LINE_TAB_ID = 293;
@@ -833,6 +842,49 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const lineNos = (await rows.locator('[data-cy="cell-Line"]').allTextContents()).map((text) => Number(text.replace(/\D/g, '')));
       expect(lineNos, 'line numbers shown').toHaveLength(2);
       expect(lineNos, 'rows in line-no. order').toEqual([...lineNos].sort((a, b) => a - b));
+
+      // The tab shows only the order-line columns of its view; the 7 columns that need order context stay hidden
+      for (const hidden of ORDER_COMPENSATION_GROUP_LINES_HIDDEN_COLUMNS) {
+        await expect(groupPage.locator(`th[data-testid="column-${hidden}"]`), `column ${hidden} not shown`).toHaveCount(0);
+      }
+      // all shown fields are read-only
+      const discountLineRow = lines.find((row) => lookupKey(row.fieldsByName.M_Product_ID.value) === String(masterdata.products.DISCOUNT_A.id));
+      expect(discountLineRow, 'discount line row on the tab').toBeTruthy();
+      for (const shown of ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS) {
+        expect(discountLineRow.fieldsByName[shown], `field ${shown} present on the row`).toBeTruthy();
+        expect(discountLineRow.fieldsByName[shown].readonly, `field ${shown} read-only`).toBe(true);
+      }
+      // zoom on the product opens that product
+      const productCell = discountRow.locator('[data-cy="cell-M_Product_ID"]');
+      await productCell.click();
+      await productCell.click({ button: 'right' });
+      const productMenu = groupPage.locator('.context-menu');
+      await productMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const productZoomOpened = groupPage.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
+      await productMenu.locator('.context-menu-item').filter({ has: groupPage.locator('.meta-icon-share') }).first().click();
+      const productPage = await productZoomOpened;
+      await productPage.waitForURL(new RegExp(`/window/\\d+/${masterdata.products.DISCOUNT_A.id}$`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await productPage.close();
+
+      // Related documents: the related documents of a line row on this tab equal those of the same order line in the
+      // sales order window (windows 270, 540394, 363 left out on both sides). The sales order window is the expected side.
+      // (a tab row's `id` is the parent document's id; the row's own key is `rowId`)
+      const lineRowId = String(discountLineRow.rowId);
+      const orderLineRow = (await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB)).find((row) => String(row.rowId) === lineRowId);
+      expect(orderLineRow, 'the same C_OrderLine in the sales order window').toBeTruthy();
+      // (the entries of the line come from async work after the order is completed, e.g. the shipment schedule and
+      // the material-cockpit detail, so the expected side is polled until it has at least one entry)
+      const readExpectedReferences = async () => relatedDocumentsComparable(
+        await getIncludedDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId));
+      await expect.poll(async () => (await readExpectedReferences()).length,
+        { message: 'the line has at least one related document other than 270/540394/363 (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
+        .toBeGreaterThanOrEqual(1);
+      const expectedReferences = await readExpectedReferences();
+      const actualReferences = relatedDocumentsComparable(
+        await getIncludedDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId));
+      expect(actualReferences, 'related documents of the line row (without windows 270, 540394, 363)').toEqual(expectedReferences);
+      // Only the SALES group is seeded by this spec (the purchase order of step 6 stays unsaved),
+      // so the purchase side of this tab is not covered here.
     });
 
     await test.step('4c. List: filter "Vertrag" narrows the groups to the ones of that contract', async () => {
@@ -1700,4 +1752,53 @@ async function expectOrderGridAmount(page, orderId, discountProduct, amountText)
   await expect(row).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
   await expect(row.locator('[data-cy="cell-LineNetAmt"]')).toContainText(amountText);
   await row.scrollIntoViewIfNeeded();
+}
+
+test.describe('Order compensation group window: window health', () => {
+  test('window health check of the order compensation group window reports no missing context variables', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Order compensation group window: window health check without known-missing entries');
+    allure.severity('normal');
+
+    const masterdata = await Backend.createMasterdata({ request: { login: { user: { language: LANGUAGE } } } });
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    // POST /window/health for the window, with the context-variable check on
+    const response = await page.request.post(`${WEBAPI_BASE_URL}/window/health`, {
+      data: { onlyAdWindowIds: [ORDER_COMPENSATION_GROUP_WINDOW_ID], checkContextVariables: true },
+    });
+    expect(response.ok(), `HTTP ${response.status()} from /window/health`).toBe(true);
+    const health = await response.json();
+    const missing = health.contextVariables?.missing ?? {};
+    const offending = Object.keys(missing).filter((key) => key.includes(String(ORDER_COMPENSATION_GROUP_WINDOW_ID)) || key.includes(String(ORDER_COMPENSATION_GROUP_LINES_TAB_ID)));
+    expect(offending, 'no 542196 / 549518 key in contextVariables.missing').toEqual([]);
+    expect(health.countErrors, 'window health countErrors').toBe(0);
+  });
+});
+
+/** The related documents of an included row (the right-click list), without the windows left out of the comparison, as comparable entries. */
+async function getIncludedDocumentReferences(windowId, documentId, tabId, rowId) {
+  const response = await getPage().request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${documentId}/${tabId}/${rowId}/references/sse`, {
+    headers: { Accept: 'text/event-stream' },
+  });
+  expect(response.ok(), `HTTP ${response.status()} reading references of ${windowId}/${documentId}/${tabId}/${rowId}`).toBe(true);
+  const events = (await response.text())
+    .split('\n')
+    .filter((line) => line.startsWith('data:'))
+    .map((line) => JSON.parse(line.substring('data:'.length).trim()));
+  expect(events.some((event) => event.type === 'COMPLETED'), 'references stream completed').toBe(true);
+  return events
+    .filter((event) => event.type === 'PARTIAL_RESULT' && event.partialGroup)
+    .flatMap((event) => event.partialGroup.references || []);
+}
+
+// (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
+// name of its source table, which differs between the line table and its view)
+function relatedDocumentsComparable(references) {
+  return references
+    .filter((reference) => !RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS.includes(String(reference.targetWindowId)))
+    .map((reference) => `${reference.caption}|${reference.targetWindowId}|${reference.documentsCount}`)
+    .sort();
 }
