@@ -8,6 +8,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.payment.sumup.SumUpClientTransactionId;
@@ -32,7 +33,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 
 import java.math.BigDecimal;
@@ -69,6 +69,7 @@ public class CreatePOSInvoiceCardSettlementCommand
 			POSInvoiceCardSettlementStatus.ABANDONED);
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@NonNull private final POSInvoiceCardSettlementRepository repository;
 	@NonNull private final POSInvoiceCardSettlementBooking booking;
@@ -91,7 +92,7 @@ public class CreatePOSInvoiceCardSettlementCommand
 		}
 
 		final InvoiceId invoiceId = context.getId(request.getInvoice(), InvoiceId.class);
-		final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceId, I_C_Invoice.class);
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		final UserId cashierId = context.getId(request.getCashier(), UserId.class);
 		final POSTerminalId posTerminalId = context.getId(request.getPosTerminal(), POSTerminalId.class);
 
