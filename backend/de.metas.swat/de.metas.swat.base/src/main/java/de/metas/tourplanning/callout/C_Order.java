@@ -42,7 +42,7 @@ public class C_Order
 {
 	private static final String SYSCONFIG_DatePromisedOffsetDays = "de.metas.order.DatePromisedOffsetDays";
 
-	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DateOrdered })
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DateOrdered, I_C_Order.COLUMNNAME_M_Shipper_ID })
 	public void setDatePromised(final I_C_Order order, final ICalloutField field)
 	{
 		if (field.isRecordCopyingMode())
@@ -57,6 +57,31 @@ public class C_Order
 
 		final LocalDate dateOrdered = TimeUtil.asLocalDate(order.getDateOrdered());
 		if (dateOrdered == null)
+		{
+			return;
+		}
+
+		// Lead-time forward calculation supersedes the flat offset when it applies.
+		// Setting DatePromised here re-triggers setPreparationDate via the webui Document.setValue -> fieldCalloutExecutor.execute chain.
+		final IOrderDeliveryDayBL orderDeliveryDayBL = Services.get(IOrderDeliveryDayBL.class);
+		if (orderDeliveryDayBL.setDatePromisedFromLeadTime(order))
+		{
+			return;
+		}
+
+		// When the forward lead-time feature governs this order (sysconfig on + shipper has a lead time), the per-shipper
+		// lead time OWNS DatePromised even if the forward calc did not re-set it just now (e.g. IsFixedDatePromised=Y):
+		// the legacy flat DatePromisedOffsetDays must not overwrite it. When the feature is off, the
+		// legacy offset keeps its original behaviour.
+		if (orderDeliveryDayBL.isLeadTimeForwardCalcActive(order))
+		{
+			return;
+		}
+
+		// The legacy flat-offset recompute keeps its original DateOrdered-only trigger (the lead-time path above also
+		// fires on M_Shipper_ID): a mere shipper change must not overwrite a manually set DatePromised for customers
+		// that use de.metas.order.DatePromisedOffsetDays.
+		if (!I_C_Order.COLUMNNAME_DateOrdered.equals(field.getColumnName()))
 		{
 			return;
 		}

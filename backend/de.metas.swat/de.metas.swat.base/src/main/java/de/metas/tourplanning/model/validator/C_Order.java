@@ -55,14 +55,61 @@ public class C_Order
 
 	/**
 	 * Search for matching {@link I_M_DeliveryDay} and set order's preparation date from it.
+	 * <p>
+	 * Before that, if the shipper lead-time forward calc applies, sets the order's DatePromised from DateOrdered;
+	 * this is done first (above the "PreparationDate was set explicitly" guard) so that a save in which the UI callout
+	 * also set PreparationDate still gets its DatePromised, and so the preparation date derives from the new DatePromised.
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised, I_C_Order.COLUMNNAME_PreparationDate })
-	public void setPreparationDate(final I_C_Order order)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
+			I_C_Order.COLUMNNAME_DatePromised,
+			I_C_Order.COLUMNNAME_PreparationDate,
+			I_C_Order.COLUMNNAME_DateOrdered,
+			I_C_Order.COLUMNNAME_M_Shipper_ID })
+	public void setPreparationDate(final I_C_Order order, final int timing)
 	{
+		// Forward trigger for DatePromised = workday(DateOrdered, +leadTime).
+		final boolean isForwardTrigger;
+		if (timing == ModelValidator.TYPE_BEFORE_NEW)
+		{
+			// At creation, derive DatePromised ONLY when the creator did not supply one, so an explicit value is
+			// preserved (webui callout / REST / OLCand-EDI import / copied order). "Was DatePromised supplied?" is a
+			// business rule (the MOrder constructor seeds DatePromised with today, so is_ValueChanged cannot tell) and
+			// lives in the BL; the interceptor stays thin glue.
+			isForwardTrigger = !orderDeliveryDayBL.isDatePromisedSuppliedAtCreation(order);
+		}
+		else
+		{
+			// On change: recompute when DateOrdered or the shipper changed. A manual DatePromised edit with
+			// DateOrdered and M_Shipper_ID unchanged is NOT a forward trigger: the manual value sticks and
+			// PreparationDate derives from it.
+			isForwardTrigger = isValueChanged(order, I_C_Order.COLUMNNAME_DateOrdered)
+					|| isValueChanged(order, I_C_Order.COLUMNNAME_M_Shipper_ID);
+		}
+		if (isForwardTrigger)
+		{
+			orderDeliveryDayBL.setDatePromisedFromLeadTime(order);
+		}
+
 		//
 		// If PreparationDate was explicitelly set by user, don't change it
 		if (isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate)
 				&& order.getPreparationDate() != null)
+		{
+			return;
+		}
+
+		// (Re)derive PreparationDate + tour only when something that DRIVES it changed:
+		//  - a classic driving column: delivery location, DatePromised (incl. one the forward calc above just set),
+		//    or an explicitly cleared PreparationDate — this is the only path for a no-lead-time order, so a bare
+		//    DateOrdered / M_Shipper_ID change on such an order does NOT re-run the tour/fallback recompute;
+		//  - OR a forward trigger (DateOrdered / M_Shipper_ID changed, or a new order) on a LEAD-TIME order: then the
+		//    backward lead-time derivation must run even if DatePromised did not move (e.g. IsFixedDatePromised='Y',
+		//    where the pinned DatePromised stays but the new route's lead time shifts PreparationDate).
+		final boolean preparationDrivingColumnChanged = isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
+				|| isValueChanged(order, I_C_Order.COLUMNNAME_DatePromised)
+				|| isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate);
+		if (!preparationDrivingColumnChanged && !(isForwardTrigger && orderDeliveryDayBL.hasLeadTime(order)))
 		{
 			return;
 		}
