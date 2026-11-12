@@ -24,7 +24,7 @@
 -- Afterwards run the metasfresh campaign price import (I_Campaign_Price) on the inserted rows.
 --
 -- Campaign price = a Navision sales price with a real "Ending Date": not Navision's empty date 1753-01-01 and before
--- 2099-12-31 (the project's "no end date" convention; adapt per project). Prices with no end date are the regular
+-- 2027-01-01 (the project's "no end date" cut-off; adapt per project). Prices with no end date are the regular
 -- prices of 07_products_and_prices.sql / 09_historical_product_prices.sql.
 
 DROP TABLE IF EXISTS migration_data.i_campaign_price;
@@ -74,7 +74,7 @@ FROM "migration_data"."Navision$Sales Price" AS T_Sales_Price
                    ON T_Sales_Price."Sales Code" = T_Customer."No_" AND T_Sales_Price."Sales Type" = 0
 WHERE T_Sales_Price."Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
   AND T_Sales_Price."Ending Date" <> '1753-01-01'
-  AND T_Sales_Price."Ending Date" < '2099-12-31 00:00:00'::timestamp -- adapt per project
+  AND T_Sales_Price."Ending Date" < '2027-01-01' -- adapt per project
 ;
 
 INSERT INTO i_campaign_price (ad_client_id, ad_org_id, created, createdby, updated, updatedby,

@@ -44,7 +44,7 @@ $$
 -- Prerequisites: 03_pricing_systems_lists_and_versions.sql, 06_uoms.sql.
 -- Products with their current regular sales prices as I_Product rows: first the prices of the customer price groups
 -- ("Sales Type" 1), then the customer-specific prices ("Sales Type" 0). Afterwards run the metasfresh product import (I_Product).
--- Regular price = "Ending Date" is Navision's empty date 1753-01-01 or on/after 2099-12-31 (the project's "no end date" convention; adapt per project);
+-- Regular price = "Ending Date" is Navision's empty date 1753-01-01 or after 2027-01-01 (the project's "no end date" cut-off; adapt per project);
 -- prices with a real end date are campaign prices (08_campaign_prices.sql).
 -- ADAPT PER PROJECT: the mappings marked with ADAPT (base unit of measure, product category, VAT product posting group).
 
@@ -210,7 +210,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
           FROM "migration_data"."Navision$Sales Price" AS SP_inner
           WHERE SP_inner."Item No_" = T_Item."No_"
             AND SP_inner."Sales Type" = 1
-            AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= '2099-12-31 00:00:00'::timestamp) -- adapt per project; regular price = no end date; excludes campaign prices
+            AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
          ) AS SP
     WHERE SP.rn = 1
     ) AS RSP ON TRUE
@@ -618,7 +618,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
           FROM "migration_data"."Navision$Sales Price" AS SP_inner
           WHERE SP_inner."Item No_" = T_Item."No_"
             AND SP_inner."Sales Type" = 0
-            AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= '2099-12-31 00:00:00'::timestamp) -- adapt per project; regular price = no end date; excludes campaign prices
+            AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
          ) AS SP
     WHERE SP.rn = 1
     ) AS RSP ON TRUE

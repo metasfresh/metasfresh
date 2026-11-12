@@ -75,7 +75,7 @@ FROM m_pricelist pl
       AND SP."Sales Type" = 1 -- 1 = Customer Price Group
       AND "Starting Date" < '2025-09-01 00:00:00'::timestamp -- adapt per project
       AND "Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
-      AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= '2099-12-31 00:00:00'::timestamp) -- adapt per project; regular price = no end date; excludes campaign prices
+      AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
 WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl.m_pricelist_id AND v.validfrom = startdates.date)
 ;
@@ -148,7 +148,7 @@ FROM m_pricelist pl_customer
       AND SP."Sales Type" = 0 -- 0 = Customer
       AND "Starting Date" < '2025-09-01 00:00:00'::timestamp -- adapt per project
       AND "Starting Date" > '2020-01-01 00:00:00'::timestamp -- adapt per project
-      AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= '2099-12-31 00:00:00'::timestamp) -- adapt per project; regular price = no end date; excludes campaign prices
+      AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
     ) startdates ON TRUE
 WHERE NOT EXISTS (SELECT 1 FROM m_pricelist_version v WHERE v.m_pricelist_id = pl_customer.m_pricelist_id AND v.validfrom = startdates.date)
 ;
@@ -332,7 +332,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
     AND plv.validfrom = SP."Starting Date"
     AND plv.createdby = 99
 WHERE  "Starting Date" < '2025-09-01 00:00:00'::timestamp -- adapt per project
-  AND ("Ending Date" = '1753-01-01' OR "Ending Date" >= '2099-12-31 00:00:00'::timestamp) -- adapt per project; regular price = no end date; excludes campaign prices
+  AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
 ;
 
 
