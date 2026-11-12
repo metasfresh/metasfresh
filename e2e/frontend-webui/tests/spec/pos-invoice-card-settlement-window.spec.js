@@ -165,7 +165,6 @@ test('a back-office user finds card settlements by status and works on them with
   expect((await getFieldData(WINDOW_ID, ids.BE, 'C_Payment_ID')).value, 'a booking error without payment').toBeFalsy();
 
   let crStatusCaption;
-  let abStatusCaption;
 
   await test.step('The grid lists the settlements with all its columns', async () => {
     await page.goto(`${FRONTEND_BASE_URL}/window/${WINDOW_ID}`);
@@ -175,12 +174,16 @@ test('a back-office user finds card settlements by status and works on them with
       await expectInViewport(gridRow(page, ids[settlementName]), { wholeWidth: false });
     }
 
+    // the run's rows are looked up on the first page of the grid; that holds because the window sorts Created descending
+    // (AD_Field.SortNo -1): the newest settlement is first, however many earlier runs left rows on this DB
+    const shownIds = (await page.locator('tbody tr[data-testid^="table-row-"]').evaluateAll((els) => els.map((el) => el.getAttribute('data-testid').substring('table-row-'.length)))).map(Number);
+    expect(shownIds, 'the grid lists the newest settlements first').toEqual([...shownIds].sort((a, b) => b - a));
+
     const headers = await page.locator('th[data-testid^="column-"]').evaluateAll((els) => els.map((el) => el.getAttribute('data-testid').substring('column-'.length)));
     expect(headers).toEqual(EXPECTED_GRID_COLUMNS);
 
     crStatusCaption = (await cell(page, ids.CR, 'Status').innerText()).trim();
     expect(crStatusCaption).not.toBe('');
-    abStatusCaption = (await cell(page, ids.AB, 'Status').innerText()).trim();
     const beStatusCaption = (await cell(page, ids.BE, 'Status').innerText()).trim();
     expect(beStatusCaption, 'the grid shows each settlement\'s own status').not.toBe(crStatusCaption);
 
@@ -204,10 +207,10 @@ test('a back-office user finds card settlements by status and works on them with
     await page.locator('.filter-option-default').click();
     const statusField = page.locator('.filters-overlay .form-field-Status .select-dropdown');
     await statusField.click();
-    const option = page.locator('.input-dropdown-list .input-dropdown-list-option').getByText(crStatusCaption, { exact: true });
+    const option = page.locator('.input-dropdown-list [data-testid="option-CR"]');
     await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     // the status list also offers the settlements released as abandoned (AB); the still shows that entry
-    const abOption = page.locator('.input-dropdown-list .input-dropdown-list-option').getByText(abStatusCaption, { exact: true });
+    const abOption = page.locator('.input-dropdown-list [data-testid="option-AB"]');
     await expect(abOption).toHaveCount(1);
     await EvidenceCapture.still(page, 'de_DE-02a-filter-status-list.png', [abOption], { inset: true });
     await option.click();
