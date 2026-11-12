@@ -9,7 +9,8 @@ import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
 import { ShipmentPage } from '../utils/pages/ShipmentPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { openDocumentStatusMenu } from '../utils/DocumentStatus';
 import { SALES_INVOICE_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { expectDocStatus } from '../utils/ContractWindowHelpers';
 
@@ -191,6 +192,8 @@ which is essential for handling billing errors and credit adjustments.
             await InvoicePage.openDetailView();
 
             // Step 8: Reverse-Correct the invoice
+            const invoiceId = page.url().match(new RegExp(`/window/${SALES_INVOICE_WINDOW_ID}/(\\d+)`))?.[1];
+            expect(invoiceId).toBeTruthy();
             // Click the status button to open the action dropdown
             await page.getByTestId('status-button').click();
             await page.waitForTimeout(500);
@@ -201,10 +204,17 @@ which is essential for handling billing errors and credit adjustments.
             await expect(page.getByTestId('status-VO')).toHaveCount(0);
 
             // Click "Reverse - Correct" action (RC = Reverse-Correct action key)
+            // and wait until the server answered the DocAction PATCH, i.e. the reversal finished
+            const reversalPatch = page.waitForResponse(
+                (resp) =>
+                    resp.request().method() === 'PATCH' &&
+                    resp.url().endsWith(`/window/${SALES_INVOICE_WINDOW_ID}/${invoiceId}`) &&
+                    (resp.request().postData() || '').includes('DocAction'),
+                { timeout: VERY_SLOW_ACTION_TIMEOUT }
+            );
             await page.getByTestId('status-RC').click();
-
-            // Wait for the reversal process to complete
-            await page.waitForTimeout(3000);
+            const reversalPatchResp = await reversalPatch;
+            expect(reversalPatchResp.ok(), `reversal PATCH returned HTTP ${reversalPatchResp.status()}`).toBe(true);
 
             // Wait for processing indicators to disappear
             await page.locator('.rotating, .indicator-pending')
@@ -214,8 +224,6 @@ which is essential for handling billing errors and credit adjustments.
             console.log(`[${language}] Invoice ${invoiceDocNo} reversed`);
 
             // The original invoice is reversed (DocStatus RE), read back from the backend
-            const invoiceId = page.url().match(new RegExp(`/window/${SALES_INVOICE_WINDOW_ID}/(\\d+)`))?.[1];
-            expect(invoiceId).toBeTruthy();
             await expectDocStatus(SALES_INVOICE_WINDOW_ID, invoiceId, 'RE');
 
             // Step 9: Verify reversal — language-independent checks
@@ -229,12 +237,11 @@ which is essential for handling billing errors and credit adjustments.
             console.log(`[${language}] Document after reversal: ${docNoAfterReversal}`);
 
             // Language-independent verification: after reversal, Reverse-Correct (RC) should no longer be available
-            await page.getByTestId('status-button').click();
-            await page.waitForTimeout(500);
-            const rcStillAvailable = await page.getByTestId('status-RC').isVisible().catch(() => false);
+            // The dropdown is re-fetched after the reversal, so both the server's list and the rendered list are checked
+            const offeredAfterReversal = await openDocumentStatusMenu({ windowId: SALES_INVOICE_WINDOW_ID, documentId: invoiceId });
+            expect(offeredAfterReversal).not.toContain('RC');
+            await expect(page.getByTestId('status-RC')).toHaveCount(0);
             await page.keyboard.press('Escape');
-
-            expect(rcStillAvailable).toBe(false);
             console.log(`[${language}] Reverse-Correct action no longer available: PASS`);
 
             // Verify the page did not show an error (no error toast)
