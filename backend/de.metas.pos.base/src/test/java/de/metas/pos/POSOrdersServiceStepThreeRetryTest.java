@@ -65,7 +65,7 @@ class POSOrdersServiceStepThreeRetryTest
 		AdempiereTestHelper.get().init();
 		POSTestMessages.createCardResultNotStored();
 
-		ordersRepository = spy(new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty())));
+		ordersRepository = spy(new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource()));
 		posOrderProcessingServices = mock(POSOrderProcessingServices.class);
 		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class), new POSCardReleaseWait(), new POSCardReaderCheckoutTerminator(mock(POSTerminalService.class), mock(SumUpService.class)), sleeps::add);
 	}

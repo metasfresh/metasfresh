@@ -83,7 +83,7 @@ class POSOrdersServiceOwnSumUpResultTest
 		AdempiereTestHelper.get().init();
 		POSTestMessages.createLateApprovalNotBooked();
 
-		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()));
+		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource());
 		posOrderProcessingServices = mock(POSOrderProcessingServices.class);
 		sumUpService = mock(SumUpService.class);
 		when(sumUpService.findTransactionByClientTransactionId(any())).thenReturn(Optional.empty());
