@@ -54,18 +54,31 @@ BEGIN
     --
     -- Approach 1: Find out first cost detail starting from our date.
     -- If found then the prev_* fields of that cost detail is exactly what we need
+    --
+    -- PERFORMANCE: both lookups below first collect the product's matching M_CostDetail_IDs in a
+    -- MATERIALIZED CTE (served by index m_costdetail_product) and only then take MIN/MAX of them.
+    -- Do NOT rewrite them as "ORDER BY m_costdetail_id LIMIT 1": inside this function the statement runs
+    -- with a cached generic plan (product unknown), for which the planner may prefer walking the WHOLE
+    -- primary key in id order and filtering each row until the first hit - on a multi-million-row
+    -- M_CostDetail that costs about a second per lookup, i.e. per product.
+    -- MIN(id) directly on the table has the same trap (min/max is rewritten to the same pk walk).
+    -- All filtered columns are physical M_CostDetail columns, which m_costdetail_v passes through
+    -- unchanged, and its LEFT JOINs are all on primary keys, so the chosen row is the same as before.
     SELECT cd.*
     INTO v_firstCostDetail
     FROM m_costdetail_v cd
-    WHERE cd.ischangingcosts = 'Y'
-      AND cd.c_acctschema_id = p_C_AcctSchema_ID
-      AND cd.m_costelement_id = p_M_CostElement_ID
-      AND cd.M_Product_ID = p_M_Product_ID
-      AND cd.ad_client_id = 1000000
-      AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR cd.ad_org_id = p_AD_Org_ID)
-      AND cd.dateacct >= p_StartDateAcct
-    ORDER BY cd.m_costdetail_id
-    LIMIT 1;
+    WHERE cd.m_costdetail_id = (WITH candidates AS MATERIALIZED
+                                         (SELECT c.m_costdetail_id
+                                          FROM m_costdetail c
+                                          WHERE c.ischangingcosts = 'Y'
+                                            AND c.c_acctschema_id = p_C_AcctSchema_ID
+                                            AND c.m_costelement_id = p_M_CostElement_ID
+                                            AND c.M_Product_ID = p_M_Product_ID
+                                            AND c.ad_client_id = 1000000
+                                            AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR c.ad_org_id = p_AD_Org_ID)
+                                            AND c.dateacct >= p_StartDateAcct)
+                                SELECT MIN(candidates.m_costdetail_id)
+                                FROM candidates);
     --
     IF v_firstCostDetail.m_costdetail_id IS NOT NULL THEN
         v_next_costs_found := TRUE;
@@ -84,19 +97,23 @@ BEGIN
     -- Approach 2: Find out first cost detail right before our target date.
     -- If found then we will use the prev_* fields of that cost detail to compute the current cost.
     IF (NOT v_next_costs_found) THEN
+        -- PERFORMANCE: same MATERIALIZED-CTE + MAX pattern as in Approach 1 (see the note there).
         SELECT cd.*
         INTO v_firstCostDetail
         FROM m_costdetail_v cd
-        WHERE TRUE
-          -- AND cd.ischangingcosts = 'Y' -- anything
-          AND cd.c_acctschema_id = p_C_AcctSchema_ID
-          AND cd.m_costelement_id = p_M_CostElement_Id
-          AND cd.M_Product_ID = p_M_Product_ID
-          AND cd.ad_client_id = 1000000
-          AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR cd.ad_org_id = p_AD_Org_ID)
-          AND cd.dateacct < p_StartDateAcct
-        ORDER BY cd.m_costdetail_id DESC
-        LIMIT 1;
+        WHERE cd.m_costdetail_id = (WITH candidates AS MATERIALIZED
+                                             (SELECT c.m_costdetail_id
+                                              FROM m_costdetail c
+                                              WHERE TRUE
+                                                -- AND c.ischangingcosts = 'Y' -- anything
+                                                AND c.c_acctschema_id = p_C_AcctSchema_ID
+                                                AND c.m_costelement_id = p_M_CostElement_Id
+                                                AND c.M_Product_ID = p_M_Product_ID
+                                                AND c.ad_client_id = 1000000
+                                                AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR c.ad_org_id = p_AD_Org_ID)
+                                                AND c.dateacct < p_StartDateAcct)
+                                    SELECT MAX(candidates.m_costdetail_id)
+                                    FROM candidates);
         --
         IF v_firstCostDetail.m_costdetail_id IS NOT NULL THEN
             RAISE DEBUG 'v_firstCostDetail.m_costdetail_id is, % ', v_firstCostDetail.m_costdetail_id;
