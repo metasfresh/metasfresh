@@ -136,12 +136,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 
 	private List<CostElement> getCostElements()
 	{
-		if (p_costingMethod != null)
-		{
-			return costElementRepository.getMaterialCostingElementsForCostingMethod(p_costingMethod);
-		}
-
-		return costElementRepository.getActiveMaterialCostingElements(getClientID());
+		return costElementRepository.getMaterialCostingElementsForCostingMethod(p_costingMethod);
 	}
 
 	private AcctSchemaId getAccountingSchemaId() {return p_C_AcctSchema_ID;}
