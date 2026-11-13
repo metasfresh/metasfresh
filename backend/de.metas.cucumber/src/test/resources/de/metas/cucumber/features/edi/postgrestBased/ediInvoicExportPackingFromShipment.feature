@@ -378,7 +378,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       ],
       "Lines": [
         {
-          "Invoice_Line": 30,
+          "Invoice_Line": 10,
           "Invoice_QtyInvoiced": 220,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -821,7 +821,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       ],
       "Lines": [
         {
-          "Invoice_Line": 30,
+          "Invoice_Line": 10,
           "Invoice_QtyInvoiced": 550,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -1337,7 +1337,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       ],
       "Lines": [
         {
-          "Invoice_Line": 30,
+          "Invoice_Line": 10,
           "Invoice_QtyInvoiced": 968,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -2116,6 +2116,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   ]
 }
     """
+    # Goods line is invoice line 30: the invoice candidates are processed ordered by header key, dates and id, then numbered 10, 20, 30; the two crate lines come first.
     Then the metasfresh REST-API responds with
     """
 {
