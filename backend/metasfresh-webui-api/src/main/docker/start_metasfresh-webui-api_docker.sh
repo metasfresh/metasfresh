@@ -10,9 +10,6 @@ db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
 db_connection_pool_max_size=${DB_CONNECTION_POOL_MAX_SIZE:-UNSET}
 
-# elastic search
-es_host=${ES_HOST:-search}
-es_port=${ES_PORT:-9300}
 
 # rabbitmq
 rabbitmq_host=${RABBITMQ_HOST:-localhost}
@@ -45,8 +42,6 @@ echo_variable_values()
  echo "RABBITMQ_USER=${rabbitmq_user}"
  echo "RABBITMQ_PASSWORD=*******"
  echo ""
- echo "ES_HOST=${es_host}"
- echo "ES_PORT=${es_port}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
  echo "WEBUI_FRONTEND_URL=${webui_frontend_url}"
@@ -102,8 +97,6 @@ run_metasfresh()
 	webui_frontend_url_params=""
  fi
 
- local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
- 
  local rabbitmq_params="-Dspring.rabbitmq.host=${rabbitmq_host}\
  -Dspring.rabbitmq.port=${rabbitmq_port}\
  -Dspring.rabbitmq.username=${rabbitmq_user}\
@@ -123,7 +116,6 @@ run_metasfresh()
  ${MEMORY_PARAMS} \
  -XX:+HeapDumpOnOutOfMemoryError \
  -Dsun.misc.URLClassPath.disableJarChecking=true \
- ${es_params} \
  ${rabbitmq_params} \
  ${external_lib_params} \
  ${metasfresh_admin_params} \
