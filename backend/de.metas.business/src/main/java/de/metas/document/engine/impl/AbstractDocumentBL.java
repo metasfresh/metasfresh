@@ -116,25 +116,33 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final IDocument document = getDocument(documentObj);
 		final boolean throwExIfNotSuccess = false;
+		final boolean saveDocument = false;
 
-		return processIt(document, action, throwExIfNotSuccess);
+		return processIt(document, action, throwExIfNotSuccess, saveDocument);
 	}
 
+	/**
+	 * @param saveDocument if true, the document is saved after its action, in the action's transaction.
+	 *                     If the engine owns the transaction (no transaction from the caller), the document is thereby committed together with the action's side effects,
+	 *                     so nothing that runs after that commit sees the action's results next to the document's old status.
+	 */
 	private boolean processIt(
 			@NonNull final IDocument document,
 			@NonNull final String action,
-			final boolean throwExIfNotSuccess)
+			final boolean throwExIfNotSuccess,
+			final boolean saveDocument)
 	{
 		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
 		return perfMonServicew.monitor(
-				() -> processIt0(document, action, throwExIfNotSuccess),
+				() -> processIt0(document, action, throwExIfNotSuccess, saveDocument),
 				DocactionAPMHelper.createMetadataFor(document, action));
 	}
 
 	private boolean processIt0(@NonNull final IDocument document,
 							   @NonNull final String action,
-							   final boolean throwExIfNotSuccess)
+							   final boolean throwExIfNotSuccess,
+							   final boolean saveDocument)
 	{
 		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
 
@@ -147,7 +155,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			try
 			{
 				processed = deadlockRetryPolicy.call(
-						() -> trxManager.call(trxName, newProcessCallable(attempts.nextAttemptDocument(), action, throwExIfNotSuccess, trxName)),
+						() -> trxManager.call(trxName, newProcessCallable(attempts.nextAttemptDocument(), action, throwExIfNotSuccess, saveDocument, trxName)),
 						document.getDocumentInfo());
 			}
 			catch (final RuntimeException ex)
@@ -158,7 +166,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		}
 		else
 		{
-			processed = trxManager.call(trxName, newProcessCallable(document, action, throwExIfNotSuccess, trxName));
+			processed = trxManager.call(trxName, newProcessCallable(document, action, throwExIfNotSuccess, saveDocument, trxName));
 		}
 
 		return processed != null && processed;
@@ -168,6 +176,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			@NonNull final IDocument document,
 			@NonNull final String action,
 			final boolean throwExIfNotSuccess,
+			final boolean saveDocument,
 			@Nullable final String initialTrxName)
 	{
 		return new TrxCallable<Boolean>()
@@ -180,6 +189,11 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 				if (!processed && throwExIfNotSuccess)
 				{
 					throw new DocumentProcessingException(document, action);
+				}
+
+				if (saveDocument)
+				{
+					InterfaceWrapperHelper.save(document.getDocumentModel());
 				}
 
 				return processed;
@@ -229,13 +243,12 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final IDocument doc = getDocument(document);
 		final boolean throwExIfNotSuccess = true;
-		processIt(doc, docAction, throwExIfNotSuccess);
+		final boolean saveDocument = true;
+		// IMPORTANT: 'doc' is saved, not 'document', because in case 'document' is a grid tab, then the PO 'doc'
+		// is a different instance. If we saved 'document' in that case, the changes to 'doc' would be lost.
+		processIt(doc, docAction, throwExIfNotSuccess, saveDocument);
 
-		// IMPORTANT: we need to save 'doc', not 'document', because in case 'document' is a grid tab, then the PO 'doc'
-		// is a different instance. If we save 'document' in that case, the changes to 'doc' will be lost.
-		final Object documentModel = doc.getDocumentModel();
-		InterfaceWrapperHelper.save(documentModel);
-		InterfaceWrapperHelper.refresh(documentModel);
+		InterfaceWrapperHelper.refresh(doc.getDocumentModel());
 
 		if (expectedDocStatus != null && !expectedDocStatus.equals(doc.getDocStatus()))
 		{
