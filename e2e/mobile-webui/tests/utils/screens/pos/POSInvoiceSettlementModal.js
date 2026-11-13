@@ -1,4 +1,4 @@
-import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { holdForCaptureIfEnabled, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { expect } from "@playwright/test";
 import { exactTextMatch } from "./posText";
@@ -130,6 +130,8 @@ export const POSInvoiceSettlementModal = {
     /** @param documentNo the settled invoice's document number - the success text reads "Rechnung <no> bezahlt". */
     expectSuccess: async ({ documentNo }) => await test.step(`${NAME} - Expect success ${documentNo}`, async () => {
         await expect(modalElement().getByTestId('pos-invoice-settlement-success')).toContainText(documentNo);
+        // capture runs only: the next step closes the dialog at once, so hold the paid state for the recorder
+        await revealForCaptureIfEnabled(modalElement().getByTestId('pos-invoice-settlement-success'));
     }),
 
     close: async () => await test.step(`${NAME} - Close`, async () => {
@@ -257,12 +259,16 @@ export const POSInvoiceSettlementModal = {
     expectCardPaymentStatus: async ({ text, timeout = VERY_SLOW_ACTION_TIMEOUT }) => await test.step(`${NAME} - Expect card payment status "${text}"`, async () => {
         await expect(cardStatusElement()).toContainText(text, { timeout });
         await expectEntirelyOnScreen(cardStatusElement());
+        // capture runs only: the next step replaces this state at once, so hold it for the recorder
+        await holdForCaptureIfEnabled();
     }),
 
     /** Waits until the till shows the invoice as paid (`Rechnung <no> bezahlt`); the till polls the card payment. */
     expectPaidByCard: async ({ documentNo, timeout = VERY_SLOW_ACTION_TIMEOUT }) => await test.step(`${NAME} - Expect paid by card ${documentNo}`, async () => {
         await expect(modalElement().getByTestId('pos-invoice-settlement-success')).toBeVisible({ timeout });
         await expect(modalElement().getByTestId('pos-invoice-settlement-success')).toContainText(documentNo);
+        // capture runs only: the next step closes the dialog at once, so hold the paid state for the recorder
+        await revealForCaptureIfEnabled(modalElement().getByTestId('pos-invoice-settlement-success'));
     }),
 
     /** Asserts whether **Kartenzahlung prüfen / freigeben** can be tapped (it is on screen either way); waits up to `timeout`. */
