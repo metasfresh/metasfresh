@@ -1,4 +1,4 @@
--- m_costdetail_delete_from_date: use the accounting schema's client (C_AcctSchema.AD_Client_ID) instead of a fixed client id.
+-- m_costdetail_delete_from_date: the starting cost detail lookups use the accounting schema's client (C_AcctSchema.AD_Client_ID) instead of a fixed client id; the anchor guard, the M_CostDetail delete and the M_Cost update/delete no longer filter by client.
 
 -- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/m_costdetail_delete_from_date.sql
 DROP FUNCTION IF EXISTS "de_metas_acct".m_costdetail_delete_from_date(
@@ -46,7 +46,9 @@ BEGIN
     RAISE DEBUG 'm_costdetail_delete_from_date: p_C_AcctSchema_ID=%, p_M_CostElement_ID=%, p_M_Product_ID=%, p_AD_Org_ID=%, p_StartDateAcct=%, p_DryRun=%',
         p_C_AcctSchema_ID, p_M_CostElement_ID, p_M_Product_ID, p_AD_Org_ID, p_StartDateAcct, p_DryRun;
 
-    -- Only M_CostDetail / M_Cost rows of the accounting schema's client are read, deleted and updated.
+    -- Only the lookups of the starting cost detail are restricted to the accounting schema's client.
+    -- The anchor guard, the M_CostDetail DELETE and the M_Cost update/delete do not filter by client:
+    -- they match all rows of the accounting schema + cost element + product (+ org/date) of any client.
     SELECT cas.ad_client_id
     INTO v_AD_Client_ID
     FROM c_acctschema cas
@@ -292,7 +294,6 @@ BEGIN
     WHERE cd.c_acctschema_id = p_C_AcctSchema_ID
       AND cd.m_costelement_id = p_M_CostElement_ID
       AND cd.M_Product_ID = p_M_Product_ID
-      AND cd.ad_client_id = v_AD_Client_ID
       AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR cd.ad_org_id = p_AD_Org_ID)
       AND cd.dateacct >= p_StartDateAcct
       AND cd.m_costrevaluationline_id IS NOT NULL
@@ -317,7 +318,6 @@ BEGIN
                               WHERE cd.c_acctschema_id = p_C_AcctSchema_ID
                                 AND cd.m_costelement_id = p_M_CostElement_ID
                                 AND cd.M_Product_ID = p_M_Product_ID
-                                AND cd.ad_client_id = v_AD_Client_ID
                                 AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR cd.ad_org_id = p_AD_Org_ID)
                                 AND cd.dateacct >= p_StartDateAcct);
     GET DIAGNOSTICS rowcount = ROW_COUNT;
@@ -336,7 +336,6 @@ BEGIN
         WHERE c.c_acctschema_id = p_C_AcctSchema_ID
           AND c.m_costelement_id = p_M_CostElement_ID
           AND c.M_Product_ID = p_M_Product_ID
-          AND c.ad_client_id = v_AD_Client_ID
           AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR c.ad_org_id = p_AD_Org_ID);
         --
         IF (v_m_cost_id IS NULL) THEN
@@ -363,7 +362,6 @@ BEGIN
         WHERE c.c_acctschema_id = p_C_AcctSchema_ID
           AND c.m_costelement_id = p_M_CostElement_Id
           AND c.M_Product_ID = p_M_Product_ID
-          AND c.ad_client_id = v_AD_Client_ID
           AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR c.ad_org_id = p_AD_Org_ID);
         GET DIAGNOSTICS rowcount = ROW_COUNT;
         RAISE DEBUG 'Deleted % M_Cost(s) because: %', rowcount, v_next_costs_debugInfo;

@@ -253,7 +253,6 @@ BEGIN
                  FROM pp_order o
                  WHERE o.pp_order_id = poc.pp_order_id
                    AND o.m_product_id = ANY (v_productIds)
-                   AND o.ad_client_id = v_AD_Client_ID
                    AND o.dateordered >= p_StartDateAcct);
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     RAISE NOTICE 'Deleted % PP_Order_Cost records', rowcount;
