@@ -1292,8 +1292,8 @@ Feature: Invoice export via postgREST
       | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID |
       | salesPLV               | product_S27050_TC5 | 1.45     | PCE      |
     And metasfresh contains C_Orders:
-      | Identifier | REST.Context        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference        | ExternalSystem.Value | ExternalId            |
-      | o_1        | order_S27050_TC5_ID | true    | customer1                | 2021-04-17  | po_ref_mock_S27050_TC5 | Shopware6            | externalId_S27050_TC5 |
+      | Identifier | REST.Context        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference        | ExternalSystem.Value |
+      | o_1        | order_S27050_TC5_ID | true    | customer1                | 2021-04-17  | po_ref_mock_S27050_TC5 | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | product_S27050_TC5      | 330        |
@@ -1319,6 +1319,10 @@ Feature: Invoice export via postgREST
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.IgnoreCreated.M_InOut_ID.Identifier | REST.Context.DocumentNo   |
       | s_s_1                            | s_2                   | s_1                                     | shipmentDocNo2_S27050_TC5 |
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID       | MovementQty |
+      | shipLine_1     | s_1        | product_S27050_TC5 | 110         |
+      | shipLine_2     | s_2        | product_S27050_TC5 | 220         |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 330          |
@@ -1331,11 +1335,15 @@ Feature: Invoice export via postgREST
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1               | invoice_1               | product_S27050_TC5      | 330         | true      |
+    # one invoice line covers both shipments: one match per shipment line
+    And M_MatchInv are found
+      | M_MatchInv_ID | C_InvoiceLine_ID | M_InOutLine_ID | QtyInUOM |
+      | matchInv_1    | invoiceLine_1    | shipLine_1     | 110 PCE  |
+      | matchInv_2    | invoiceLine_1    | shipLine_2     | 220 PCE  |
     # the view keeps the line unsplit as well
     And the edi_cctop_invoic_500_v rows of invoice invoice_1 are exactly:
       | edi_cctop_invoic_500_v_id | Line | M_Product_ID       | QtyInvoiced | LineNetAmt |
       | invoiceLine_1             | 10   | product_S27050_TC5 | 330         | 478.50     |
-
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
@@ -1343,7 +1351,6 @@ Feature: Invoice export via postgREST
       | Key          | Value                          |
       | Content-Type | application/json;charset=UTF-8 |
       | accept       | application/json;charset=UTF-8 |
-
     When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Historical_Invoices_JSON/invoke' and fulfills with '200' status code
     """
 {
@@ -1355,7 +1362,6 @@ Feature: Invoice export via postgREST
   ]
 }
     """
-
     Then the metasfresh REST-API responds with
     """
 [
