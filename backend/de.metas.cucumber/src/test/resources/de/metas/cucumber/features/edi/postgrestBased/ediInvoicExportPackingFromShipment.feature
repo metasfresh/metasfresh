@@ -2844,6 +2844,14 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     # shipment 1 is reversed
     And the shipment identified by shipment1 is reversed as shipment1_reversal
 
+    # the invoice candidate of the order line (async) must exist and be recomputed before the manual invoice is written, as in real life
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | ic_goods               | ol_goods       |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyDelivered |
+      | ic_goods               | ol_goods       | 220          |
+
     # a manual invoice for the order line (no shipment line); completing it links the line to the order line's invoice candidate
     And metasfresh contains C_Invoice:
       | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -2966,6 +2974,14 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID        | MovementQty |
       | goods_line2    | shipment2  | goods_S27050_TC1d_e | 330         |
 
+    # the invoice candidate of the order line (async) must exist and be recomputed before the manual invoice is written, as in real life
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | ic_goods               | ol_goods       |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyDelivered |
+      | ic_goods               | ol_goods       | 330          |
+
     # a manual invoice for the order line (no shipment line); completing it links the line to the order line's invoice candidate
     And metasfresh contains C_Invoice:
       | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -3072,6 +3088,14 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
       | ss_goods              | shipment1  | shipmentDocNo1          |
+    # the invoice candidate of the order line (async) must exist and be recomputed before the manual invoice is written, as in real life
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | ic_goods               | ol_goods       |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyDelivered |
+      | ic_goods               | ol_goods       | 330          |
+
     # a manual invoice for the order line (no shipment line); completing it links the line to the order line's invoice candidate
     And metasfresh contains C_Invoice:
       | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -3179,6 +3203,11 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
       | ss_goods              | shipment1  | shipmentDocNo1          |
     And the shipment identified by shipment1 is reversed as shipment1_reversal
+
+    # the invoice candidate of the order line (async) must exist and be recomputed before the manual invoice is written, as in real life
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | ic_goods               | ol_goods       |
 
     # a manual invoice for the order line (no shipment line); completing it links the line to the order line's invoice candidate
     And metasfresh contains C_Invoice:
