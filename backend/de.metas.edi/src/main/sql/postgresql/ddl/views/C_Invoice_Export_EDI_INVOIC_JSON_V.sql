@@ -132,7 +132,7 @@ FROM edi_cctop_invoic_v invoic_v
                                             'QtyCUsPerTU', v.QtyCUsPerTU,
                                             'QtyCUsPerTU_UOM', v.QtyCUsPerTU_UOM,
                                             'Shipment_DocumentNo', v.Shipment_DocumentNo
-                                        ) ORDER BY v.line, v.Shipment_DocumentNo, v.m_inout_id) AS json_data
+                                        ) ORDER BY v.line, v.m_inout_id NULLS LAST) AS json_data
                                    FROM edi_invoic_json_line_v v
                                             LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
                                             LEFT JOIN c_orderline ol_t ON ol_t.c_orderline_id = v.c_orderline_id AND ol_t.isactive = 'Y'

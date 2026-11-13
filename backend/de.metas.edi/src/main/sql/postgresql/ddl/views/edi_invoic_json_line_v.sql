@@ -23,7 +23,7 @@
 -- View: public.edi_invoic_json_line_v
 -- Copy of edi_cctop_invoic_500_incl_packaging_v that reads the quantities and amounts per delivery note from edi_invoic_json_line_shipment_v
 -- and adds m_inout_id, Shipment_DocumentNo, QtyCUsPerTU and QtyCUsPerTU_UOM.
--- Has dependents once the INVOIC JSON reads it: change it only via db_alter_view in a new migration script.
+-- Has dependents: c_invoice_export_edi_invoic_json_v (the INVOIC JSON): change it only via db_alter_view in a new migration script.
 
 CREATE OR REPLACE VIEW edi_invoic_json_line_v AS
 SELECT il.ispackagingmaterial                                                  AS IsPackagingMaterial,
