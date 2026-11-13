@@ -47,6 +47,7 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -74,7 +75,8 @@ public class M_Inventory_RecomputeCosts_StepDef
 	/**
 	 * Mirrors {@code de.metas.inventory.process.M_Inventory_RecomputeCosts.doIt()} —
 	 * builds the product selection from the given inventory, picks the cost elements
-	 * (just the elements matching the supplied costing method, which is mandatory like the process parameter), and calls
+	 * (all active material elements when no costing method is given, or just the elements
+	 * matching the supplied costing method), and calls
 	 * {@code de_metas_acct.product_costs_recreate_from_date(...)} once per cost element
 	 * with the same {@code 'DD'} truncation the production process uses.
 	 *
@@ -82,7 +84,7 @@ public class M_Inventory_RecomputeCosts_StepDef
 	 * @cucumber.columns
 	 *   <b>M_Inventory_ID</b> — (required, identifier-ref) inventory whose products + MovementDate drive the recompute<br>
 	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) accounting schema to recompute<br>
-	 *   <b>CostingMethod</b> — (mandatory, like the process parameter) costing method code (e.g. <code>A</code>=AveragePO, <code>M</code>=MovingAverageInvoice, <code>S</code>=Standard)<br>
+	 *   <b>CostingMethod</b> — (optional) costing method code (e.g. <code>A</code>=AveragePO, <code>M</code>=MovingAverageInvoice, <code>S</code>=Standard); empty = all active material elements<br>
 	 * @cucumber.depends StepDefData: M_Inventory_StepDefData, C_AcctSchema_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -109,7 +111,7 @@ public class M_Inventory_RecomputeCosts_StepDef
 	 * @cucumber.columns
 	 *   <b>M_Inventory_ID</b> — (required, identifier-ref) inventory whose products + MovementDate drive the recompute<br>
 	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) accounting schema to recompute<br>
-	 *   <b>CostingMethod</b> — (mandatory, like the process parameter) costing method code<br>
+	 *   <b>CostingMethod</b> — (optional) costing method code; empty = all active material elements<br>
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) product whose ID the refusal must name<br>
 	 *   <b>AnchorDateAcct</b> — (required) accounting date of the opening anchor the refusal must name<br>
 	 * @cucumber.depends StepDefData: M_Inventory_StepDefData, C_AcctSchema_StepDefData, M_Product_StepDefData
@@ -147,7 +149,9 @@ public class M_Inventory_RecomputeCosts_StepDef
 		final I_C_AcctSchema acctSchema = row.getAsIdentifier(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID).lookupNotNullIn(acctSchemaTable);
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID());
 
-		final CostingMethod costingMethod = CostingMethod.ofCode(row.getAsString(I_C_AcctSchema.COLUMNNAME_CostingMethod));
+		final CostingMethod costingMethod = row.getAsOptionalString(I_C_AcctSchema.COLUMNNAME_CostingMethod)
+				.map(CostingMethod::ofCode)
+				.orElse(null);
 
 		final Set<InventoryId> inventoryIds = ImmutableSet.of(inventoryId);
 		final Set<ProductId> productIds = inventoryDAO.retrieveUsedProductsByInventoryIds(inventoryIds);
@@ -160,7 +164,9 @@ public class M_Inventory_RecomputeCosts_StepDef
 		final Instant startDate = inventoryDAO.getMinInventoryDate(inventoryIds)
 				.orElseThrow(() -> new AdempiereException("Cannot determine startDate for inventory " + inventoryId));
 
-		final List<CostElement> costElements = costElementRepository.getMaterialCostingElementsForCostingMethod(costingMethod);
+		final List<CostElement> costElements = costingMethod != null
+				? costElementRepository.getMaterialCostingElementsForCostingMethod(costingMethod)
+				: costElementRepository.getActiveMaterialCostingElements(Env.getClientId());
 
 		for (final CostElement costElement : costElements)
 		{
