@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.payment;
 import com.google.common.base.Throwables;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
@@ -109,6 +110,7 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 public class C_Payment_StepDef
 {
 	private static final String COLUMNNAME_PostingError = "PostingError";
+	private static final String COLUMNNAME_IsOnBankStatement = "IsOnBankStatement";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -117,6 +119,7 @@ public class C_Payment_StepDef
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -425,6 +428,7 @@ public class C_Payment_StepDef
 	 *   <b>PostingError</b> — (optional) the payment must carry a {@code PostingError_Issue_ID} whose issue summary contains this text<br>
 	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, OverUnderAmt, IsOverUnderPayment, C_Invoice_ID, DateTrx, C_BPartner_ID,
 	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, TenderType, IsPrepayment, Proforma_Invoice_ID, PaymentBonusAmt)<br>
+	 *   <b>IsOnBankStatement</b> — (optional) whether a bank statement line (e.g. the cash statement line of a cash bank) references the payment<br>
 	 *   <b>PaymentBonus_CreditMemo_ID</b> — (optional, identifier) registers the payment's payment bonus credit memo under the given invoice identifier; {@code null} expects none
 	 * @cucumber.depends StepDefData: C_Payment_StepDefData, C_Charge_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData,
 	 * C_BP_BankAccount_StepDefData, C_DocType_StepDefData
@@ -532,6 +536,11 @@ public class C_Payment_StepDef
 
 		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
 				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));
+
+		row.getAsOptionalBoolean(COLUMNNAME_IsOnBankStatement)
+				.ifPresent(isOnBankStatement -> softly.assertThat(bankStatementBL.isPaymentOnBankStatement(PaymentId.ofRepoId(payment.getC_Payment_ID())))
+						.as("IsOnBankStatement")
+						.isEqualTo(isOnBankStatement));
 
 		// "null" expects the payment to be linked to no bank statement line
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID)

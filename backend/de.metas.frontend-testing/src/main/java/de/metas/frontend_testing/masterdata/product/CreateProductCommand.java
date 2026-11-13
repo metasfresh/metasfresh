@@ -334,14 +334,14 @@ public class CreateProductCommand
 		productPrice.setM_Product_ID(productId.getRepoId());
 		productPrice.setC_UOM_ID(uomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
-		productPrice.setC_TaxCategory_ID(getTaxCategoryId().getRepoId());
+		productPrice.setC_TaxCategory_ID(getTaxCategoryId(priceRequest.getTaxCategory()).getRepoId());
 		productPrice.setInvoicableQtyBasedOn(invoicableQtyBasedOn.getCode());
 		saveRecord(productPrice);
 	}
 
-	private TaxCategoryId getTaxCategoryId()
+	private TaxCategoryId getTaxCategoryId(@Nullable final String requestedInternalName)
 	{
-		final String taxCategoryInternalName = MasterdataContext.DEFAULT_TaxCategory_InternalName;
+		final String taxCategoryInternalName = requestedInternalName != null ? requestedInternalName : MasterdataContext.DEFAULT_TaxCategory_InternalName;
 		return taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
 				.orElseThrow(() -> new AdempiereException("Missing C_TaxCategory for internalName `" + taxCategoryInternalName + "`"));
 	}

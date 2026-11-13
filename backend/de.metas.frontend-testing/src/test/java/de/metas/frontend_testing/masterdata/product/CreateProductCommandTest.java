@@ -17,12 +17,16 @@ import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
@@ -61,6 +65,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateProductCommandTest
 {
+	private IQueryBL queryBL;
 	private ProductRepository productRepository;
 	private ICurrentCostsRepository currentCostsRepository;
 	private MasterdataContext context;
@@ -69,6 +74,7 @@ public class CreateProductCommandTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		productRepository = new ProductRepository();
 		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		context = new MasterdataContext();
@@ -370,6 +376,76 @@ public class CreateProductCommandTest
 		final I_M_Product product = InterfaceWrapperHelper.load(response.getId(), I_M_Product.class);
 		assertThat(product).isNotNull();
 		assertThat(product.getValue()).isEqualTo("PROD_WITH_PRICES");
+	}
+
+	private I_M_ProductPrice createProductWithPrice(final String value, final JsonCreateProductRequest.Price price)
+	{
+		final de.metas.pricing.PriceListVersionId priceListVersionId = de.metas.pricing.PriceListVersionId.ofRepoId(1);
+		context.putIdentifier(Identifier.unique("PLV"), priceListVersionId);
+
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder().value(value).prices(java.util.Collections.singletonList(price)).build())
+				.identifier(Identifier.ofString(value))
+				.build()
+				.execute();
+
+		return queryBL
+				.createQueryBuilder(I_M_ProductPrice.class)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, response.getId())
+				.create()
+				.firstOnlyNotNull(I_M_ProductPrice.class);
+	}
+
+	private static int createTaxCategory(final String internalName)
+	{
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
+		taxCategory.setName(internalName);
+		taxCategory.setInternalName(internalName);
+		InterfaceWrapperHelper.saveRecord(taxCategory);
+		return taxCategory.getC_TaxCategory_ID();
+	}
+
+	@Test
+	public void price_withTaxCategory_usesThatExistingCategory()
+	{
+		createTaxCategory(MasterdataContext.DEFAULT_TaxCategory_InternalName);
+		final int reducedId = createTaxCategory("Reduced");
+
+		final I_M_ProductPrice productPrice = createProductWithPrice("P_REDUCED", JsonCreateProductRequest.Price.builder()
+				.price(new BigDecimal("10.00"))
+				.taxCategory("Reduced")
+				.build());
+
+		assertThat(productPrice.getPriceStd()).isEqualByComparingTo("10.00");
+		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(reducedId);
+	}
+
+	@Test
+	public void price_withoutTaxCategory_usesNormal()
+	{
+		final int normalId = createTaxCategory(MasterdataContext.DEFAULT_TaxCategory_InternalName);
+		createTaxCategory("Reduced");
+
+		final I_M_ProductPrice productPrice = createProductWithPrice("P_NORMAL", JsonCreateProductRequest.Price.builder()
+				.price(new BigDecimal("10.00"))
+				.build());
+
+		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(normalId);
+	}
+
+	@Test
+	public void price_withUnknownTaxCategory_fails()
+	{
+		createTaxCategory(MasterdataContext.DEFAULT_TaxCategory_InternalName);
+
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> createProductWithPrice("P_UNKNOWN", JsonCreateProductRequest.Price.builder()
+				.price(new BigDecimal("10.00"))
+				.taxCategory("NoSuchCategory")
+				.build()))
+				.hasMessageContaining("NoSuchCategory");
 	}
 
 	@Test

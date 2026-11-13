@@ -29,6 +29,7 @@ import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -120,6 +121,27 @@ public class SysConfigDAO implements ISysConfigDAO
 		final String oldValue = sysConfig.getValue();
 		InterfaceWrapperHelper.delete(sysConfig);
 		logger.info("Deleted SysConfig `{}` (Old value: `{}`, Client/Org: {})", name, oldValue, clientAndOrgId);
+	}
+
+	@Override
+	public OptionalBoolean isActiveExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
+		return sysConfig != null ? OptionalBoolean.ofBoolean(sysConfig.isActive()) : OptionalBoolean.UNKNOWN;
+	}
+
+	@Override
+	public void setActiveExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId, final boolean active)
+	{
+		final I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
+		if (sysConfig == null || sysConfig.isActive() == active)
+		{
+			return;
+		}
+
+		sysConfig.setIsActive(active);
+		InterfaceWrapperHelper.save(sysConfig);
+		logger.info("Set SysConfig `{}` IsActive={} (Client/Org: {})", name, active, clientAndOrgId);
 	}
 
 	@Override

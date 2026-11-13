@@ -320,3 +320,14 @@ export const TEST_WINDOW_ID = 127;
  * Window ID: 53009
  */
 export const MANUFACTURING_ORDER_WINDOW_ID = 53009;
+
+// ============================================================================
+// POS WINDOWS
+// ============================================================================
+
+/**
+ * POS invoice card settlements window (POS Rechnungs-Kartenzahlung)
+ * Table: C_POS_InvoiceCardSettlement
+ * Window ID: 542201
+ */
+export const POS_INVOICE_CARD_SETTLEMENT_WINDOW_ID = 542201;

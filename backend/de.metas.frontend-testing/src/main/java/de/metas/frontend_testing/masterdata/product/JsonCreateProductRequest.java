@@ -165,6 +165,12 @@ public class JsonCreateProductRequest
 		@NonNull BigDecimal price;
 		@Nullable X12DE355 uom;
 		@Nullable InvoicableQtyBasedOn invoicableQtyBasedOn;
+
+		/**
+		 * {@code InternalName} of an existing {@code C_TaxCategory} to price the product under, e.g. {@code "Reduced"}
+		 * for the reduced VAT rate. Never created. When {@code null}, the default {@code "Normal"} category is used.
+		 */
+		@Nullable String taxCategory;
 	}
 
 	@Value

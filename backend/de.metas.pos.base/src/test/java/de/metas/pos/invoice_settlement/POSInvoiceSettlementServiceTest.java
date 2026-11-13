@@ -23,6 +23,7 @@ import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalRepository;
 import de.metas.pos.POSTerminalService;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -86,7 +87,8 @@ class POSInvoiceSettlementServiceTest
 
 		service = new POSInvoiceSettlementService(
 				posTerminalService,
-				new POSCashJournalService(new POSCashJournalRepository()));
+				new POSCashJournalService(new POSCashJournalRepository()),
+				new POSInvoiceCardSettlementRepository());
 	}
 
 	@Test

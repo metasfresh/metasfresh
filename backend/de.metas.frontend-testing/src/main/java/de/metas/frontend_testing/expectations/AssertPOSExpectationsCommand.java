@@ -3,6 +3,8 @@ package de.metas.frontend_testing.expectations;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonCashJournalLineExpectation;
+import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCardPaymentExpectation;
+import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCardSettlementExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCreditMemoExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSCreditMemoLineExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPOSExpectation.JsonPOSInvoiceExpectation;
@@ -12,14 +14,17 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.pos.POSCardPaymentStatus;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalLine;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
@@ -28,7 +33,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,6 +96,76 @@ class AssertPOSExpectationsCommand
 		{
 			expectation.getInvoices().forEach(this::assertInvoice);
 		}
+
+		if (expectation.getCardSettlements() != null)
+		{
+			assertCardSettlements(expectation.getCardSettlements());
+		}
+
+		if (expectation.getCardPayments() != null)
+		{
+			final String posTerminalStr = expectation.getPosTerminal();
+			if (posTerminalStr == null)
+			{
+				throw new AdempiereException("JsonPOSExpectation.posTerminal is required when cardPayments is asserted");
+			}
+
+			final POSTerminalId posTerminalId = context.getId(Identifier.ofString(posTerminalStr), POSTerminalId.class);
+			assertCardPayments(posTerminalId, expectation.getCardPayments(), loadCardPayments(posTerminalId));
+		}
+	}
+
+	/** A card payment as found in the DB: its raw status code and the {@code ErrorCode}s of its AD_Issues. */
+	@Value
+	static class ActualCardPayment
+	{
+		@NonNull String status;
+		@NonNull List<String> issueErrorCodes;
+	}
+
+	private List<ActualCardPayment> loadCardPayments(@NonNull final POSTerminalId posTerminalId)
+	{
+		return services.getCardPaymentStatusesByTerminalId(posTerminalId)
+				.stream()
+				.map(payment -> new ActualCardPayment(payment.getStatusCode(), services.getIssueErrorCodesByPaymentId(payment.getPaymentId())))
+				.collect(Collectors.toList());
+	}
+
+	private static List<String> sorted(@NonNull final List<String> list)
+	{
+		return list.stream().sorted().collect(Collectors.toList());
+	}
+
+	static void assertCardPayments(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final List<JsonPOSCardPaymentExpectation> expectedPayments,
+			@NonNull final List<ActualCardPayment> actualPayments)
+	{
+		softly(() -> {
+			softlyPutContext("posTerminalId", posTerminalId);
+			softlyPutContext("cardPaymentExpectations", expectedPayments);
+			softlyPutContext("actualCardPayments", actualPayments);
+
+			assertThat(actualPayments).as("card payments of POS terminal " + posTerminalId).hasSameSize(expectedPayments);
+
+			final int count = Math.min(actualPayments.size(), expectedPayments.size());
+			for (int i = 0; i < count; i++)
+			{
+				final JsonPOSCardPaymentExpectation expected = expectedPayments.get(i);
+				final ActualCardPayment actual = actualPayments.get(i);
+
+				if (expected.getStatus() != null)
+				{
+					assertThat(actual.getStatus()).as("status of card payment[" + i + "] of POS terminal " + posTerminalId).isEqualTo(expected.getStatus());
+				}
+				if (expected.getIssueMessages() != null)
+				{
+					assertThat(sorted(actual.getIssueErrorCodes()))
+							.as("issues (AD_Issue ErrorCodes, any order) of card payment[" + i + "] of POS terminal " + posTerminalId)
+							.isEqualTo(sorted(expected.getIssueMessages()));
+				}
+			}
+		});
 	}
 
 	private void assertReturnLines(@NonNull final InOutId returnInOutId, @NonNull final List<JsonPOSReturnLineExpectation> lineExpectations)
@@ -246,7 +323,7 @@ class AssertPOSExpectationsCommand
 		});
 	}
 
-	private void assertCashJournalLine(@NonNull final JsonCashJournalLineExpectation expected, @NonNull final POSCashJournalLine actual, final int index)
+	static void assertCashJournalLine(@NonNull final JsonCashJournalLineExpectation expected, @NonNull final POSCashJournalLine actual, final int index)
 	{
 		if (expected.getType() != null)
 		{
@@ -258,12 +335,23 @@ class AssertPOSExpectationsCommand
 					.as("amount of cash-journal line[" + index + "]")
 					.isEqualTo(expected.getAmount().stripTrailingZeros());
 		}
+		if (expected.getCardSettlement() != null)
+		{
+			assertThat(actual.getPosInvoiceCardSettlementId() != null)
+					.as("cardSettlement of cash-journal line[" + index + "] (created by an invoice card settlement)")
+					.isEqualTo(expected.getCardSettlement());
+		}
+	}
+
+	private InvoiceId resolveInvoiceId(@NonNull final String invoiceStr)
+	{
+		final Identifier identifier = Identifier.ofString(invoiceStr);
+		return context.getOptionalId(identifier, InvoiceId.class).orElseGet(() -> identifier.toId(InvoiceId.class));
 	}
 
 	private void assertInvoice(@NonNull final JsonPOSInvoiceExpectation expected)
 	{
-		final Identifier identifier = Identifier.ofString(expected.getInvoice());
-		final InvoiceId invoiceId = context.getOptionalId(identifier, InvoiceId.class).orElseGet(() -> identifier.toId(InvoiceId.class));
+		final InvoiceId invoiceId = resolveInvoiceId(expected.getInvoice());
 		final I_C_Invoice invoice = services.getInvoiceById(invoiceId);
 
 		softly(() -> {
@@ -305,9 +393,17 @@ class AssertPOSExpectationsCommand
 		softlyPutContext("allocatedPaymentExpectations", expectedPayments);
 		softlyPutContext("actualAllocatedPayments", actualPayments);
 
-		assertThat(actualPayments).as("allocated payments of invoice C_Invoice_ID=" + invoiceId).hasSameSize(expectedPayments);
-
 		final List<String> actualTenderTypes = actualPayments.stream().map(I_C_Payment::getTenderType).collect(Collectors.toList());
+		assertAllocatedTenderTypes(invoiceId, actualTenderTypes, expectedPayments);
+	}
+
+	static void assertAllocatedTenderTypes(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final List<String> actualTenderTypes,
+			@NonNull final List<JsonPOSExpectation.JsonPOSAllocatedPaymentExpectation> expectedPayments)
+	{
+		assertThat(actualTenderTypes).as("allocated payments of invoice C_Invoice_ID=" + invoiceId).hasSameSize(expectedPayments);
+
 		for (final JsonPOSExpectation.JsonPOSAllocatedPaymentExpectation expectedPayment : expectedPayments)
 		{
 			final String expectedTenderType = expectedPayment.getTenderType();
@@ -318,6 +414,46 @@ class AssertPOSExpectationsCommand
 						.isEqualTo(true);
 			}
 		}
+	}
+
+	private void assertCardSettlements(@NonNull final List<JsonPOSCardSettlementExpectation> expectations)
+	{
+		final LinkedHashMap<String, List<String>> expectedStatusesByInvoice = new LinkedHashMap<>();
+		for (final JsonPOSCardSettlementExpectation expected : expectations)
+		{
+			final List<String> expectedStatuses = expectedStatusesByInvoice.computeIfAbsent(expected.getInvoice(), k -> new ArrayList<>());
+			if (expected.getStatus() != null)
+			{
+				expectedStatuses.add(expected.getStatus());
+			}
+		}
+
+		expectedStatusesByInvoice.forEach((invoiceStr, expectedStatuses) -> {
+			final InvoiceId invoiceId = resolveInvoiceId(invoiceStr);
+			assertCardSettlementStatuses(invoiceId, expectedStatuses, services.getCardSettlementsByInvoiceId(invoiceId));
+		});
+	}
+
+	static void assertCardSettlementStatuses(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final List<String> expectedStatusCodes,
+			@NonNull final List<POSInvoiceCardSettlement> actualSettlements)
+	{
+		softly(() -> {
+			softlyPutContext("invoiceId", invoiceId);
+			softlyPutContext("expectedCardSettlementStatuses", expectedStatusCodes);
+			softlyPutContext("actualCardSettlements", actualSettlements);
+
+			assertThat(actualSettlements).as("card settlements of invoice C_Invoice_ID=" + invoiceId).hasSameSize(expectedStatusCodes);
+
+			final int count = Math.min(actualSettlements.size(), expectedStatusCodes.size());
+			for (int i = 0; i < count; i++)
+			{
+				assertThat(actualSettlements.get(i).getStatus().getCode())
+						.as("status of card settlement[" + i + "] of invoice C_Invoice_ID=" + invoiceId)
+						.isEqualTo(expectedStatusCodes.get(i));
+			}
+		});
 	}
 
 	private void assertQty(

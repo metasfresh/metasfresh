@@ -7,6 +7,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
+import de.metas.pos.POSPayment;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.remote.RemotePOSOrder;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Comparator;
+import java.time.Instant;
 import java.util.List;
 import java.util.function.Function;
 
@@ -55,7 +56,14 @@ public class JsonPOSOrder
 	 */
 	@Nullable Long version;
 
-	public static JsonPOSOrder from(@NonNull final POSOrder order, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
+	/**
+	 * @param getReleasableAt the instant from which an unknown card payment may be released (see {@link JsonPOSPayment#getReleasableAt()});
+	 *                        asked for every payment, answers null for any other
+	 */
+	public static JsonPOSOrder from(
+			@NonNull final POSOrder order,
+			@NonNull final Function<CurrencyId, String> getCurrencySymbolById,
+			@NonNull final Function<POSPayment, Instant> getReleasableAt)
 	{
 		final String currencySymbol = getCurrencySymbolById.apply(order.getCurrencyId());
 
@@ -79,7 +87,7 @@ public class JsonPOSOrder
 						.map(line -> JsonPOSOrderLine.of(line, currencySymbol))
 						.collect(ImmutableList.toImmutableList()))
 				.payments(order.streamPaymentsNotDeleted()
-						.map(JsonPOSPayment::of)
+						.map(payment -> JsonPOSPayment.of(payment, getReleasableAt.apply(payment)))
 						.collect(ImmutableList.toImmutableList()))
 				//
 				.allowDraft(allowDraft.isTrue())
@@ -97,14 +105,6 @@ public class JsonPOSOrder
 				.version(order.getVersion())
 				//
 				.build();
-	}
-
-	public static ImmutableList<JsonPOSOrder> fromList(@NonNull final List<POSOrder> orders, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
-	{
-		return orders.stream()
-				.sorted(Comparator.comparing(posOrder -> posOrder.getLocalId() != null ? posOrder.getLocalId().getRepoId() : Integer.MAX_VALUE))
-				.map(order -> from(order, getCurrencySymbolById))
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	public RemotePOSOrder toRemotePOSOrder()

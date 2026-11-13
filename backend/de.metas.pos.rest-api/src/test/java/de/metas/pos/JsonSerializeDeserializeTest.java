@@ -8,11 +8,16 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.costing.ChargeId;
 import de.metas.invoice.InvoiceId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStatus;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentDetail;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentMethodSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlement;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
 import de.metas.pos.rest_api.json.JsonPOSOpenInvoice;
@@ -20,6 +25,10 @@ import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckResponse;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
 import de.metas.pos.rest_api.json.JsonPOSPayment;
 import de.metas.pos.rest_api.json.JsonPOSPaymentStatus;
 import de.metas.pos.rest_api.json.JsonPOSReturnLine;
@@ -36,6 +45,9 @@ import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -364,6 +376,77 @@ class JsonSerializeDeserializeTest
 				.build();
 	}
 
+	/**
+	 * A card payment whose result is unknown travels as {@code UNKNOWN}, in both directions; it can be neither checked out nor deleted.
+	 * Its {@code releasableAt} travels as an ISO instant, as the invoice card settlement's.
+	 */
+	@Test
+	void test_JsonPOSPayment_unknownStatus() throws JsonProcessingException
+	{
+		final JsonPOSPayment payment = JsonPOSPayment.builder()
+				.uuid(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
+				.paymentMethod(POSPaymentMethod.CARD)
+				.amount(new BigDecimal("29.11"))
+				.status(JsonPOSPaymentStatus.of(POSPaymentProcessingStatus.UNKNOWN))
+				.allowCheckout(false)
+				.allowDelete(false)
+				.allowRefund(false)
+				.releasableAt(Instant.parse("2026-11-10T10:03:00Z"))
+				.hashCode(543)
+				.build();
+		testSerializeDeserialize(payment);
+
+		assertThat(payment.getStatus()).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		assertThat(jsonObjectMapper.writeValueAsString(payment)).contains("\"status\":\"UNKNOWN\"");
+		// also with a mapper that writes dates as timestamps, as the REST responses' one does
+		assertThat(jsonObjectMapper.copy().enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).writeValueAsString(payment))
+				.contains("\"releasableAt\":\"2026-11-10T10:03:00Z\"");
+		assertThat(jsonObjectMapper.readValue("\"UNKNOWN\"", JsonPOSPaymentStatus.class)).isEqualTo(JsonPOSPaymentStatus.UNKNOWN);
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentCheckRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentCheckRequest.builder()
+				.posTerminalId(POSTerminalId.ofRepoId(1))
+				.order_uuid(POSOrderExternalId.ofString(UUID.randomUUID().toString()))
+				.payment_uuid(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
+				.build());
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentReleaseRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentReleaseRequest.builder()
+				.posTerminalId(POSTerminalId.ofRepoId(1))
+				.order_uuid(POSOrderExternalId.ofString(UUID.randomUUID().toString()))
+				.payment_uuid(POSPaymentExternalId.ofString(UUID.randomUUID().toString()))
+				.confirmNotCharged(true)
+				.expectedStatus(JsonPOSPaymentStatus.UNKNOWN)
+				.build());
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentCheckResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentCheckResponse.builder()
+				.order(newJsonPOSOrder())
+				.checkFailed(true)
+				.build());
+	}
+
+	@Test
+	void test_JsonPOSCardPaymentReleaseResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(JsonPOSCardPaymentReleaseResponse.builder()
+				.order(newJsonPOSOrder())
+				.confirmationRequired(true)
+				.checkFailed(true)
+				.refusedMessage("Release not yet allowed")
+				.build());
+	}
+
 	@Test
 	void test_JsonPOSOrderChangedWebSocketEvent() throws JsonProcessingException
 	{
@@ -438,6 +521,110 @@ class JsonSerializeDeserializeTest
 												.build()
 								))
 								.build())
+						.build()
+		);
+	}
+
+	private static JsonPOSInvoiceCardSettlement newJsonPOSInvoiceCardSettlement(final String status, final String allocatedAmount)
+	{
+		return JsonPOSInvoiceCardSettlement.builder()
+				.id(POSInvoiceCardSettlementId.ofRepoId(1))
+				.invoiceId(InvoiceId.ofRepoId(2))
+				.documentNo("INV-001")
+				.amount(new BigDecimal("75.50"))
+				.allocatedAmount(new BigDecimal(allocatedAmount))
+				.currencyCode("EUR")
+				.status(POSInvoiceCardSettlementStatus.ofCode(status))
+				.isAbandoned(false)
+				.releasableAt(Instant.parse("2026-09-24T10:18:30Z"))
+				.checkFailed(false)
+				.build();
+	}
+
+	@Test
+	void test_JsonPOSInvoiceCardSettlement() throws JsonProcessingException
+	{
+		testSerializeDeserialize(newJsonPOSInvoiceCardSettlement("PE", "0"));
+	}
+
+	/**
+	 * The till shows "booking pending" (AP), "booking failed, inform the back office" (BE), "booked as customer credit"
+	 * (CR, nothing allocated) and "invoice paid, remainder booked as customer credit" (CR, partly allocated) from the
+	 * status code and the allocated amount alone.
+	 */
+	@ParameterizedTest
+	@CsvSource({ "AP,0", "BE,0", "CR,0", "CR,50.00" })
+	void test_JsonPOSInvoiceCardSettlement_tillStates(final String status, final String allocatedAmount) throws JsonProcessingException
+	{
+		final JsonPOSInvoiceCardSettlement settlement = newJsonPOSInvoiceCardSettlement(status, allocatedAmount);
+		testSerializeDeserialize(settlement);
+
+		final String json = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(settlement);
+		assertThat(json).contains("\"status\":\"" + status + "\"");
+		assertThat(json).contains("\"isAbandoned\":false").doesNotContain("\"abandoned\"").contains("\"checkFailed\":false");
+		assertThat(json).contains("\"releasableAt\":\"2026-09-24T10:18:30Z\"");
+		assertThat(settlement.getAllocatedAmount()).isEqualByComparingTo(allocatedAmount);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceCardSettlementReleaseRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceCardSettlementReleaseRequest.builder()
+						.confirmNotCharged(true)
+						.expectedStatus(POSInvoiceCardSettlementStatus.UNKNOWN)
+						.build()
+		);
+		testSerializeDeserialize(
+				JsonPOSInvoiceCardSettlementReleaseRequest.builder()
+						.confirmNotCharged(false)
+						.build()
+		);
+	}
+
+	/**
+	 * The status is the enum in Java and its 2-letter code on the wire, for every status, in both directions.
+	 */
+	@ParameterizedTest
+	@EnumSource(POSInvoiceCardSettlementStatus.class)
+	void test_JsonPOSInvoiceCardSettlement_statusWireFormIsTheCode(final POSInvoiceCardSettlementStatus status) throws JsonProcessingException
+	{
+		final JsonPOSInvoiceCardSettlement settlement = newJsonPOSInvoiceCardSettlement(status.getCode(), "0");
+		testSerializeDeserialize(settlement);
+
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		assertThat(jsonObjectMapper.writeValueAsString(settlement)).contains("\"status\":\"" + status.getCode() + "\"");
+		assertThat(jsonObjectMapper.writeValueAsString(JsonPOSInvoiceCardSettlementReleaseRequest.builder().confirmNotCharged(true).expectedStatus(status).build()))
+				.contains("\"expectedStatus\":\"" + status.getCode() + "\"");
+		assertThat(jsonObjectMapper.readValue("{\"confirmNotCharged\":true,\"expectedStatus\":\"" + status.getCode() + "\"}", JsonPOSInvoiceCardSettlementReleaseRequest.class)
+				.getExpectedStatus())
+				.isEqualTo(status);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceCardSettlementReleaseResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceCardSettlementReleaseResponse.builder()
+						.settlement(newJsonPOSInvoiceCardSettlement("PE", "0"))
+						.confirmationRequired(false)
+						.refusedMessage("The release is not yet allowed")
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSOpenInvoice_withBlockingSettlement() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSOpenInvoice.builder()
+						.invoiceId(InvoiceId.ofRepoId(2))
+						.documentNo("INV-001")
+						.bpartnerName("Customer Name")
+						.dateInvoiced(LocalDate.of(2026, 9, 24))
+						.grandTotal(new BigDecimal("100.00"))
+						.openAmt(new BigDecimal("75.50"))
+						.blockingCardSettlement(newJsonPOSInvoiceCardSettlement("UN", "0"))
 						.build()
 		);
 	}

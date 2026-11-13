@@ -42,6 +42,12 @@ public class SumUpTransaction
 
 	@Nullable LastSync lastSync;
 
+	/**
+	 * When metasfresh first saved this transaction ({@code SUMUP_Transaction.Created}), by metasfresh's own clock; null until
+	 * saved. Not written: it is set from the saved record (also on the transaction a status event carries).
+	 */
+	@Nullable Instant recordedAt;
+
 	@Builder(toBuilder = true)
 	@Jacksonized
 	private SumUpTransaction(
@@ -58,7 +64,8 @@ public class SumUpTransaction
 			@Nullable final String json,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@Nullable final SumUpPOSRef posRef,
-			@Nullable final LastSync lastSync)
+			@Nullable final LastSync lastSync,
+			@Nullable final Instant recordedAt)
 	{
 		this.configId = configId;
 		this.externalId = externalId;
@@ -74,14 +81,38 @@ public class SumUpTransaction
 		this.clientAndOrgId = clientAndOrgId;
 		this.posRef = posRef;
 		this.lastSync = lastSync;
+		this.recordedAt = recordedAt;
 
 		Amount.assertSameCurrency(this.amount, this.amountRefunded);
 	}
 
+	/**
+	 * @return whether the charge was refunded in full or in part: SumUp reports the status REFUNDED, or a SUCCESSFUL
+	 * transaction with REFUND events (a refund also fires a status event that still says SUCCESSFUL)
+	 */
 	@JsonIgnore
 	public boolean isRefunded()
 	{
-		return amount.signum() != 0 && amountRefunded.signum() != 0;
+		return SumUpTransactionStatus.REFUNDED.equals(status)
+				|| (amount.signum() != 0 && amountRefunded.signum() != 0);
+	}
+
+	/**
+	 * @return whether SumUp charged the card, whether or not the charge was refunded since: SUCCESSFUL or REFUNDED
+	 */
+	@JsonIgnore
+	public boolean isCharged()
+	{
+		return SumUpTransactionStatus.SUCCESSFUL.equals(status) || SumUpTransactionStatus.REFUNDED.equals(status);
+	}
+
+	/**
+	 * @return whether the card was charged and the charge was not refunded (fully or partly), i.e. the money is still taken
+	 */
+	@JsonIgnore
+	public boolean isSuccessfulAndNotRefunded()
+	{
+		return SumUpTransactionStatus.SUCCESSFUL.equals(status) && !isRefunded();
 	}
 
 	//
@@ -178,6 +209,17 @@ public class SumUpTransaction
 					.status(LastSyncStatus.Error)
 					.timestamp(SystemTime.asInstant())
 					.errorId(errorId)
+					.build();
+		}
+
+		/**
+		 * @return a failed lookup that was not recorded as AD_Issue (the caller reported it otherwise)
+		 */
+		public static LastSync errorWithoutIssue()
+		{
+			return builder()
+					.status(LastSyncStatus.Error)
+					.timestamp(SystemTime.asInstant())
 					.build();
 		}
 	}

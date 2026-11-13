@@ -30,6 +30,16 @@ public class JsonPOSTerminalResponse
 	 */
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, CashWithdrawalCategory> cashWithdrawalCategories;
 
+	/**
+	 * SumUp merchant code of the terminal's SumUp config; only for a {@code CARD} terminal. Specs build the SumUp stub URLs from it.
+	 */
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) String sumUpMerchantCode;
+
+	/**
+	 * External id of the terminal's default SumUp card reader; only for a {@code CARD} terminal. Specs build the SumUp stub URLs from it.
+	 */
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) String sumUpCardReaderId;
+
 	@Value
 	@Builder
 	@Jacksonized
