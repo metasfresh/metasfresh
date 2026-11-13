@@ -21,12 +21,16 @@ public class SumUpTransactionStatus
 	public static final SumUpTransactionStatus CANCELLED = new SumUpTransactionStatus("CANCELLED");
 	public static final SumUpTransactionStatus FAILED = new SumUpTransactionStatus("FAILED");
 	public static final SumUpTransactionStatus PENDING = new SumUpTransactionStatus("PENDING");
+	/**
+	 * The charge was refunded in full or in part (SumUp API reference, transaction status); it comes with REFUND events.
+	 */
+	public static final SumUpTransactionStatus REFUNDED = new SumUpTransactionStatus("REFUNDED");
 
 	@NonNull private static final ConcurrentHashMap<String, SumUpTransactionStatus> intern = new ConcurrentHashMap<>();
 
 	static
 	{
-		Arrays.asList(SUCCESSFUL, CANCELLED, FAILED, PENDING)
+		Arrays.asList(SUCCESSFUL, CANCELLED, FAILED, PENDING, REFUNDED)
 				.forEach(status -> intern.put(status.getCode(), status));
 	}
 

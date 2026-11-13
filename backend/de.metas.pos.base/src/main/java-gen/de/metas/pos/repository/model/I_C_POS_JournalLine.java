@@ -95,6 +95,27 @@ public interface I_C_POS_JournalLine
 	String COLUMNNAME_Cashier_ID = "Cashier_ID";
 
 	/**
+	 * Set POS Invoice Card Settlement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_POS_InvoiceCardSettlement_ID (int C_POS_InvoiceCardSettlement_ID);
+
+	/**
+	 * Get POS Invoice Card Settlement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_POS_InvoiceCardSettlement_ID();
+
+	ModelColumn<I_C_POS_JournalLine, de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement> COLUMN_C_POS_InvoiceCardSettlement_ID = new ModelColumn<>(I_C_POS_JournalLine.class, "C_POS_InvoiceCardSettlement_ID", de.metas.pos.repository.model.I_C_POS_InvoiceCardSettlement.class);
+	String COLUMNNAME_C_POS_InvoiceCardSettlement_ID = "C_POS_InvoiceCardSettlement_ID";
+
+	/**
 	 * Set POS Cash Journal.
 	 *
 	 * <br>Type: Search
@@ -111,10 +132,6 @@ public interface I_C_POS_JournalLine
 	 * <br>Virtual Column: false
 	 */
 	int getC_POS_Journal_ID();
-
-	de.metas.pos.repository.model.I_C_POS_Journal getC_POS_Journal();
-
-	void setC_POS_Journal(de.metas.pos.repository.model.I_C_POS_Journal C_POS_Journal);
 
 	ModelColumn<I_C_POS_JournalLine, de.metas.pos.repository.model.I_C_POS_Journal> COLUMN_C_POS_Journal_ID = new ModelColumn<>(I_C_POS_JournalLine.class, "C_POS_Journal_ID", de.metas.pos.repository.model.I_C_POS_Journal.class);
 	String COLUMNNAME_C_POS_Journal_ID = "C_POS_Journal_ID";
@@ -158,10 +175,6 @@ public interface I_C_POS_JournalLine
 	 */
 	int getC_POS_Order_ID();
 
-	@Nullable de.metas.pos.repository.model.I_C_POS_Order getC_POS_Order();
-
-	void setC_POS_Order(@Nullable de.metas.pos.repository.model.I_C_POS_Order C_POS_Order);
-
 	ModelColumn<I_C_POS_JournalLine, de.metas.pos.repository.model.I_C_POS_Order> COLUMN_C_POS_Order_ID = new ModelColumn<>(I_C_POS_JournalLine.class, "C_POS_Order_ID", de.metas.pos.repository.model.I_C_POS_Order.class);
 	String COLUMNNAME_C_POS_Order_ID = "C_POS_Order_ID";
 
@@ -182,10 +195,6 @@ public interface I_C_POS_JournalLine
 	 * <br>Virtual Column: false
 	 */
 	int getC_POS_Payment_ID();
-
-	@Nullable de.metas.pos.repository.model.I_C_POS_Payment getC_POS_Payment();
-
-	void setC_POS_Payment(@Nullable de.metas.pos.repository.model.I_C_POS_Payment C_POS_Payment);
 
 	ModelColumn<I_C_POS_JournalLine, de.metas.pos.repository.model.I_C_POS_Payment> COLUMN_C_POS_Payment_ID = new ModelColumn<>(I_C_POS_JournalLine.class, "C_POS_Payment_ID", de.metas.pos.repository.model.I_C_POS_Payment.class);
 	String COLUMNNAME_C_POS_Payment_ID = "C_POS_Payment_ID";
@@ -217,6 +226,7 @@ public interface I_C_POS_JournalLine
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -226,6 +236,7 @@ public interface I_C_POS_JournalLine
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false

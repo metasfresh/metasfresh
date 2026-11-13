@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.payment.sumup.SumUpConfigId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -112,6 +113,12 @@ public class POSTerminalRepository
 		record.setC_DocTypeOrder_ID(request.getSalesOrderDocTypeId().getRepoId());
 		record.setM_PriceList_ID(request.getPriceListId().getRepoId());
 		record.setM_Warehouse_ID(request.getShipFromWarehouseId().getRepoId());
+		final POSTerminalPaymentProcessorConfig paymentProcessorConfig = request.getPaymentProcessorConfig();
+		if (paymentProcessorConfig != null)
+		{
+			record.setPOSPaymentProcessor(paymentProcessorConfig.getType().getCode());
+			record.setSUMUP_Config_ID(SumUpConfigId.toRepoId(paymentProcessorConfig.getSumUpConfigId()));
+		}
 		InterfaceWrapperHelper.saveRecord(record);
 
 		return POSTerminalId.ofRepoId(record.getC_POS_ID());

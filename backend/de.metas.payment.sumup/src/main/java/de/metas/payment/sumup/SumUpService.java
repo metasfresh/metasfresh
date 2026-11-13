@@ -7,6 +7,7 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.client.SumUpClient;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
@@ -23,14 +24,18 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -148,10 +153,158 @@ public class SumUpService
 						.build()
 		);
 
-		final SumUpTransaction trx = toSumUpTransaction(checkoutResponse, request, config);
-		trxRepository.saveNew(trx);
+		// SumUp accepted the checkout: the reader may charge the card now, so any failure from here on leaves the outcome
+		// unknown (never a definite rejection), see SumUpCallException.ofFailureAfterAccepted
+		try
+		{
+			final SumUpTransaction trx = toSumUpTransaction(checkoutResponse, request, config);
+			trxRepository.saveNew(trx);
+			return trx;
+		}
+		catch (final Exception ex)
+		{
+			throw SumUpCallException.ofFailureAfterAccepted(ex, checkoutResponse.getData().getClient_transaction_id());
+		}
+	}
 
-		return trx;
+	/**
+	 * Imports a SumUp transaction whose checkout SumUp accepted, but for which metasfresh has no {@link SumUpTransaction}
+	 * (e.g. because saving it failed right after the checkout, see {@link SumUpCallException#getClientTransactionId()}).
+	 * <p>
+	 * No-op if a transaction with that client transaction id exists (it is returned). Otherwise the transaction is looked
+	 * up at SumUp and saved with the given POS reference, which fires the status change event. The outcome of the lookup is
+	 * told by the result: the transaction, {@link SumUpImportResult#isNotFound() not found} (SumUp does not know the id,
+	 * nothing saved) or a {@link SumUpImportResult#getLookupError() lookup error}, e.g. an outage (nothing saved). A lookup
+	 * failure is not recorded as AD_Issue: the caller reports an outage once. Any other failure (config, saving) is thrown.
+	 * <p>
+	 * Safe against a concurrent import of the same id: the database allows one transaction per client transaction id, and
+	 * the loser of the race returns the winner's transaction.
+	 */
+	public SumUpImportResult importAcceptedCheckout(
+			@NonNull final SumUpConfigId configId,
+			@NonNull final SumUpClientTransactionId clientTransactionId,
+			@NonNull final SumUpPOSRef posRef,
+			@NonNull final SumUpCardReaderExternalId cardReaderId,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final SumUpTransaction existingTrx = retrieveByClientTransactionIdOrNull(clientTransactionId);
+		if (existingTrx != null)
+		{
+			return SumUpImportResult.ofTransaction(existingTrx);
+		}
+
+		final SumUpConfig config = configRepository.getById(configId);
+		final SumUpCardReader cardReader = config.getCardReaderById(cardReaderId);
+		final SumUpClient client = clientFactory.newClient(config);
+		client.setPosRef(posRef);
+		client.setCreateIssueOnError(false);
+
+		final JsonGetTransactionResponse remoteTrx;
+		try
+		{
+			remoteTrx = client.getTransactionById(clientTransactionId);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Could not get SumUp transaction {} from SumUp; nothing imported", clientTransactionId, ex);
+			return isNotFound(ex) ? SumUpImportResult.notFound() : SumUpImportResult.ofLookupError(ex);
+		}
+
+		final SumUpTransaction trx = toSumUpTransaction(remoteTrx, config, cardReader, posRef, clientAndOrgId);
+		try
+		{
+			trxRepository.saveNew(trx);
+		}
+		catch (final DBUniqueConstraintException ex)
+		{
+			// a concurrent import saved it meanwhile (unique index): then that one is the result
+			final SumUpTransaction concurrentTrx = retrieveByClientTransactionIdOrNull(clientTransactionId);
+			if (concurrentTrx == null)
+			{
+				throw ex;
+			}
+			logger.info("SumUpTransaction {} was imported concurrently; using it", clientTransactionId, ex);
+			return SumUpImportResult.ofTransaction(concurrentTrx);
+		}
+		return SumUpImportResult.ofTransaction(trx);
+	}
+
+	@Nullable
+	private SumUpTransaction retrieveByClientTransactionIdOrNull(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		final List<SumUpTransaction> trxs = trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(clientTransactionId));
+		return trxs.isEmpty() ? null : trxs.get(0);
+	}
+
+	/**
+	 * @return the transaction with the given client transaction id, if metasfresh has it (at most one exists, by a unique index)
+	 */
+	public Optional<SumUpTransaction> findTransactionByClientTransactionId(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		return Optional.ofNullable(retrieveByClientTransactionIdOrNull(clientTransactionId));
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0)
+	 * @return whether a transaction carrying the given POS reference was created at or after the given time
+	 */
+	public boolean existsTransactionByPOSRefCreatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant createdSince)
+	{
+		return trxRepository.existsByPOSRefCreatedSince(posRef, createdSince);
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0)
+	 * @return the SUCCESSFUL transactions (refunded ones included) carrying the given POS reference that metasfresh changed at
+	 * or after the given time (by metasfresh's clock), e.g. because SumUp's approval reached metasfresh then
+	 */
+	public List<SumUpTransaction> listSuccessfulTransactionsByPOSRefUpdatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant updatedSince)
+	{
+		return trxRepository.listSuccessfulByPOSRefUpdatedSince(posRef, updatedSince);
+	}
+
+	/**
+	 * @return true if SumUp answered that it does not know the transaction (HTTP 404), as opposed to a failure of the call
+	 */
+	private static boolean isNotFound(@NonNull final Exception ex)
+	{
+		return ex instanceof SumUpCallException
+				&& ex.getCause() instanceof HttpClientErrorException
+				&& ((HttpClientErrorException)ex.getCause()).getStatusCode() == HttpStatus.NOT_FOUND;
+	}
+
+	private static SumUpTransaction toSumUpTransaction(
+			@NonNull final JsonGetTransactionResponse remote,
+			@NonNull final SumUpConfig config,
+			@NonNull final SumUpCardReader cardReader,
+			@NonNull final SumUpPOSRef posRef,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return SumUpTransaction.builder()
+				.configId(config.getId())
+				.externalId(remote.getId())
+				.clientTransactionId(remote.getClient_transaction_id())
+				.merchantCode(remote.getMerchant_code())
+				.cardReader(SumUpTransaction.CardReader.builder()
+						.externalId(cardReader.getExternalId())
+						.name(cardReader.getName())
+						.build())
+				.timestamp(Instant.parse(remote.getTimestamp()))
+				.status(SumUpTransactionStatus.ofString(remote.getStatus()))
+				.amount(Amount.of(remote.getAmount(), remote.getCurrency()))
+				.amountRefunded(Amount.of(remote.getAmountRefunded(), remote.getCurrency()))
+				.card(extractSumUpTransactionCard(remote.getCard()))
+				.json(remote.getJson())
+				.lastSync(LastSync.ok())
+				.clientAndOrgId(clientAndOrgId)
+				.posRef(posRef)
+				.build();
+	}
+
+	public void terminateCardReaderCheckout(@NonNull final SumUpConfigId configId, @NonNull final SumUpCardReaderExternalId cardReaderId)
+	{
+		final SumUpConfig config = configRepository.getById(configId);
+		clientFactory.newClient(config).terminateCardReaderCheckout(cardReaderId);
 	}
 
 	private static String getValidCallbackUrlOrNull(@NonNull SumUpCardReaderCheckoutRequest request)
@@ -198,17 +351,39 @@ public class SumUpService
 				.build();
 	}
 
+	/**
+	 * Refreshes the transaction from SumUp; a failed lookup is recorded as AD_Issue and stored as the transaction's
+	 * {@link LastSync}.
+	 */
 	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id)
 	{
-		trxRepository.updateById(id, this::updateTransactionFromRemote);
+		updateTransactionFromRemote(id, true);
+	}
+
+	/**
+	 * Refreshes the transaction from SumUp; a failed lookup is stored as the transaction's {@link LastSync}.
+	 *
+	 * @param isCreateIssueOnError whether a failed lookup is recorded as AD_Issue; if not, it is only logged (for a
+	 *                             caller that repeats a lookup while SumUp is unreachable and reports the outage once
+	 *                             itself)
+	 */
+	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id, final boolean isCreateIssueOnError)
+	{
+		trxRepository.updateById(id, trx -> updateTransactionFromRemote(trx, isCreateIssueOnError));
 	}
 
 	private SumUpTransaction updateTransactionFromRemote(final SumUpTransaction trx)
+	{
+		return updateTransactionFromRemote(trx, true);
+	}
+
+	private SumUpTransaction updateTransactionFromRemote(final SumUpTransaction trx, final boolean isCreateIssueOnError)
 	{
 		final SumUpConfigId configId = trx.getConfigId();
 		final SumUpConfig config = configRepository.getById(configId);
 		final SumUpClient client = clientFactory.newClient(config);
 		client.setPosRef(trx.getPosRef());
+		client.setCreateIssueOnError(isCreateIssueOnError);
 
 		try
 		{
@@ -217,6 +392,14 @@ public class SumUpService
 		}
 		catch (Exception ex)
 		{
+			if (!isCreateIssueOnError)
+			{
+				logger.warn("Could not get SumUp transaction {} from SumUp; not recorded as AD_Issue, as requested by the caller", trx.getClientTransactionId(), ex);
+				return trx.toBuilder()
+						.lastSync(LastSync.errorWithoutIssue())
+						.build();
+			}
+
 			final AdIssueId errorId = errorManager.createIssue(ex);
 			return trx.toBuilder()
 					.lastSync(LastSync.error(errorId))
@@ -306,6 +489,19 @@ public class SumUpService
 		{
 			return trxs.get(0).getExternalId();
 		}
+	}
+
+	/**
+	 * Refunds the transaction with the given client transaction id at SumUp (e.g. the one a card payment names), whatever
+	 * other transactions carry the same POS reference.
+	 *
+	 * @throws AdempiereException if metasfresh has no transaction with that id
+	 */
+	public SumUpTransaction refundTransaction(@NonNull final SumUpClientTransactionId clientTransactionId)
+	{
+		final SumUpTransaction trx = findTransactionByClientTransactionId(clientTransactionId)
+				.orElseThrow(() -> new AdempiereException("No SumUp transaction found for client transaction id " + clientTransactionId));
+		return refundTransaction(trx.getExternalId());
 	}
 
 	public SumUpTransaction refundTransaction(@NonNull final SumUpTransactionExternalId id)

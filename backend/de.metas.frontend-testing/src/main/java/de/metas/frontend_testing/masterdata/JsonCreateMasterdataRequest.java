@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderFromCandidatesRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
@@ -17,6 +18,7 @@ import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSInvoiceCardSettlementRequest;
 import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
@@ -50,6 +52,12 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, Object> context;
 
 	@Nullable Map<String, String> sysconfigs;
+
+	/**
+	 * Sysconfigs written as SYSTEM rows (AD_Client_ID=0, AD_Org_ID=0) instead of at their declared configuration level.
+	 * Use for sysconfigs that the code reads only at SYSTEM level.
+	 */
+	@Nullable Map<String, String> systemSysconfigs;
 
 	/**
 	 * Sets flag columns on {@code AD_Process} records matched by a {@code JasperReport} substring.
@@ -145,8 +153,16 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonShipmentCreateRequest> shipments;
 	@Nullable Map<String, JsonReceiptCreateRequest> receipts;
 	@Nullable Map<String, JsonInvoiceCreateRequest> invoices;
+
+	/**
+	 * Card settlements of invoices ({@code C_POS_InvoiceCardSettlement}) in a requested status. Created AFTER
+	 * {@code login}, {@code posTerminals} and {@code invoices}, whose identifiers they reference. See
+	 * {@link de.metas.frontend_testing.masterdata.pos.CreatePOSInvoiceCardSettlementCommand}.
+	 */
+	@Nullable Map<String, JsonPOSInvoiceCardSettlementRequest> posInvoiceCardSettlements;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
+	@Nullable Map<String, JsonDDOrderFromCandidatesRequest> distributionOrdersFromCandidates;
 	@Nullable List<JsonCustomQRCodeFormatRequest> customQRCodeFormats;
 	@Nullable Map<String, JsonInventoryRequest> inventories;
 }

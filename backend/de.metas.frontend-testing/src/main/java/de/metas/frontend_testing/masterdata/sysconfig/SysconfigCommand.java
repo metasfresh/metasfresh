@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.sysconfig;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -8,6 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -31,42 +33,50 @@ public class SysconfigCommand
 			.put("mobileui.frontend.barcodeScanner.mode.hardware.input.inputMode", "none")
 			.build();
 
+	/**
+	 * What {@code SysConfigDAO} stores for "no value" ({@code SysConfigEntryValue.NO_VALUE_MARKER}, not visible from here);
+	 * a sysconfig with this value reads as missing.
+	 */
+	private static final String NO_VALUE = "-";
+
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final SysconfigRows sysconfigRows = new SysconfigRows();
 
 	@Nullable private final Map<String, String> sysconfigs;
+	/**
+	 * Receives the previous value of each written row (see {@link ISysConfigBL#getConfigLevelTarget(String)}), all before the first write,
+	 * so that the caller can restore them even if a write fails.
+	 */
+	@NonNull private final PreviousSysconfigsCollector previousSysconfigsCollector;
 
 	/**
-	 * @return map from sysconfig name to its previous value, captured before any write
+	 * A {@code null} value in {@link #sysconfigs} unsets the sysconfig.
 	 */
-	public ImmutableMap<String, String> execute()
+	public void execute()
 	{
 		final LinkedHashSet<String> names = new LinkedHashSet<>(SCANNER_SYSCONFIG_DEFAULTS.keySet());
 		if (sysconfigs != null)
 		{
 			names.addAll(sysconfigs.keySet());
 		}
-		final ImmutableMap.Builder<String, String> previousValues = ImmutableMap.builder();
+		final LinkedHashMap<String, ClientAndOrgId> targetsByName = new LinkedHashMap<>();
 		for (final String name : names)
 		{
-			final String prev = sysConfigBL.getValue(name);
-			if (prev != null)
-			{
-				previousValues.put(name, prev);
-			}
-			else if (SCANNER_SYSCONFIG_DEFAULTS.containsKey(name))
+			final ClientAndOrgId target = sysConfigBL.getConfigLevelTarget(name);
+			if (SCANNER_SYSCONFIG_DEFAULTS.containsKey(name) && sysConfigBL.getValue(name, target) == null)
 			{
 				// fail loud instead of creating it: a missing row means the sysconfig was renamed or retired
 				throw new AdempiereException("Scanner sysconfig does not exist: " + name + " - update SCANNER_SYSCONFIG_DEFAULTS");
 			}
+			previousSysconfigsCollector.add(sysconfigRows.getState(name, target));
+			targetsByName.put(name, target);
 		}
 
-		SCANNER_SYSCONFIG_DEFAULTS.forEach(sysConfigBL::setValueAtConfigLevel);
+		SCANNER_SYSCONFIG_DEFAULTS.forEach((name, value) -> sysconfigRows.setActiveValue(name, value, targetsByName.get(name)));
 
 		if (sysconfigs != null)
 		{
-			sysconfigs.forEach(sysConfigBL::setValueAtConfigLevel);
+			sysconfigs.forEach((name, value) -> sysconfigRows.setActiveValue(name, value != null ? value : NO_VALUE, targetsByName.get(name)));
 		}
-
-		return previousValues.build();
 	}
 }

@@ -108,6 +108,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(@NonNull final Set<PPOrderBOMLineId> orderBOMLineIds)
+	{
+		return orderBOMsRepo.getOrderBOMLinesByIds(orderBOMLineIds);
+	}
+
+	@Override
 	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
 	{
 		return getOrderBOMLines(orderId, I_PP_Order_BOMLine.class);

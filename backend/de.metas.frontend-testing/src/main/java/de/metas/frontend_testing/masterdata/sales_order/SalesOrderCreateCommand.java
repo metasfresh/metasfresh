@@ -3,12 +3,15 @@ package de.metas.frontend_testing.masterdata.sales_order;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.DocTypeId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.AsyncQueueProcessorsReadiness;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.frontend_testing.masterdata.payment_term.PaymentTermGetOrCreateCommand;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
@@ -49,6 +52,7 @@ public class SalesOrderCreateCommand
 	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderCreateCommand.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
@@ -106,6 +110,11 @@ public class SalesOrderCreateCommand
 				.datePromised(request.getDatePromised())
 				.poReference(request.getPoReference());
 
+		if (request.getPaymentTerm() != null)
+		{
+			this.salesOrderFactory.paymentTermId(PaymentTermGetOrCreateCommand.builder().value(request.getPaymentTerm()).build().execute());
+		}
+
 		if (request.getShipper() != null)
 		{
 			this.salesOrderFactory.shipperId(context.getId(request.getShipper(), ShipperId.class));
@@ -125,6 +134,7 @@ public class SalesOrderCreateCommand
 		return JsonSalesOrderCreateResponse.builder()
 				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))
 				.documentNo(salesOrderRecord.getDocumentNo())
+				.docTypeName(docTypeBL.getNameById(DocTypeId.ofRepoId(salesOrderRecord.getC_DocType_ID())).translate(context.getAdLanguage()))
 				.build();
 	}
 

@@ -3,6 +3,8 @@ package de.metas.frontend_testing.masterdata.pos;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeTypeId;
@@ -21,12 +23,20 @@ import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.JsonSysconfig;
+import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
+import de.metas.frontend_testing.masterdata.sysconfig.RestoreSysconfigsCommand;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.sumup.repository.SumUpConfigRepository;
+import de.metas.payment.sumup.repository.model.I_SUMUP_CardReader;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Config;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalRepository;
+import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
@@ -40,6 +50,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,6 +58,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_DocType;
@@ -65,7 +77,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,7 +116,7 @@ public class CreatePOSTerminalCommandTest
 	private MasterdataContext context;
 	private DocTypeId salesOrderDocTypeId;
 	private TaxCategoryId normalTaxCategoryId;
-	private HashMap<String, String> previousSysconfigs;
+	private PreviousSysconfigsCollector previousSysconfigs;
 
 	@BeforeEach
 	public void init()
@@ -117,7 +128,7 @@ public class CreatePOSTerminalCommandTest
 		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		mobileApplicationInfoRepository = new MobileApplicationInfoRepository();
 		context = new MasterdataContext();
-		previousSysconfigs = new HashMap<>();
+		previousSysconfigs = new PreviousSysconfigsCollector();
 
 		salesOrderDocTypeId = createSalesOrderDocType();
 		normalTaxCategoryId = createNormalTaxCategory();
@@ -188,6 +199,7 @@ public class CreatePOSTerminalCommandTest
 				.priceListVersionRepository(new PriceListVersionRepository())
 				.chargeRepository(new ChargeRepository())
 				.bankRepository(new BankRepository())
+				.sumUpConfigRepository(new SumUpConfigRepository())
 				.context(context)
 				.previousSysconfigsCollector(previousSysconfigs);
 	}
@@ -282,6 +294,122 @@ public class CreatePOSTerminalCommandTest
 		final I_M_PriceList priceList = InterfaceWrapperHelper.load(posRecord.getM_PriceList_ID(), I_M_PriceList.class);
 		assertThat(priceList.isTaxIncluded()).isFalse();
 		assertThat(priceList.isSOPriceList()).isTrue();
+	}
+
+	/**
+	 * Cucumber's bank account step looks up the org bpartner's active account of a currency with {@code firstOnly}; one more account per
+	 * created terminal makes that lookup fail after any POS E2E run on the same DB.
+	 */
+	@Test
+	public void execute_twice_shouldReuseTheOrgBPartnersCashBankAccount_insteadOfCreatingAnotherOne()
+	{
+		final JsonPOSTerminalResponse first = executeMinimalEURTerminal("T_BA1");
+		final JsonPOSTerminalResponse second = executeMinimalEURTerminal("T_BA2");
+
+		assertThat(second.getBankAccountId()).isEqualTo(first.getBankAccountId());
+		assertThat(retrieveActiveOrgBPartnerBankAccounts()).hasSize(1);
+
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(first.getBankAccountId(), I_C_BP_BankAccount.class);
+		assertThat(bankAccount.getAD_Org_ID()).isEqualTo(MasterdataContext.ORG_ID.getRepoId());
+		assertThat(new BankRepository().isCashBank(BankId.ofRepoId(bankAccount.getC_Bank_ID()))).isTrue();
+	}
+
+	@Test
+	public void execute_whenTheOrgBPartnerHasOnlyANonCashBankAccount_shouldCreateACashBankAccount()
+	{
+		final I_C_BP_BankAccount nonCashBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		nonCashBankAccount.setC_BPartner_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_ID.getRepoId());
+		nonCashBankAccount.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
+		nonCashBankAccount.setC_Currency_ID(currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR).getRepoId());
+		nonCashBankAccount.setC_Bank_ID(BankId.toRepoId(new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Real bank")
+				.routingNo("123456")
+				.cashBank(false)
+				.build()).getBankId()));
+		InterfaceWrapperHelper.saveRecord(nonCashBankAccount);
+
+		final JsonPOSTerminalResponse response = executeMinimalEURTerminal("T_BA3");
+
+		assertThat(response.getBankAccountId().getRepoId()).isNotEqualTo(nonCashBankAccount.getC_BP_BankAccount_ID());
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(response.getBankAccountId(), I_C_BP_BankAccount.class);
+		assertThat(new BankRepository().isCashBank(BankId.ofRepoId(bankAccount.getC_Bank_ID()))).isTrue();
+	}
+
+	@Test
+	public void execute_whenSeveralCashBankAccountsMatch_shouldAlwaysReuseTheOneWithTheLowestId()
+	{
+		final BankId cashBankId = new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Cash")
+				.routingNo("000000")
+				.cashBank(true)
+				.build()).getBankId();
+		final int lowerId = createOrgBPartnerEURBankAccount(cashBankId);
+		final int higherId = createOrgBPartnerEURBankAccount(cashBankId);
+		assertThat(higherId).isGreaterThan(lowerId);
+
+		assertThat(executeMinimalEURTerminal("T_BA4").getBankAccountId().getRepoId()).isEqualTo(lowerId);
+		assertThat(executeMinimalEURTerminal("T_BA5").getBankAccountId().getRepoId()).isEqualTo(lowerId);
+		assertThat(retrieveActiveOrgBPartnerBankAccounts()).hasSize(2);
+	}
+
+	@Test
+	public void execute_whenTheOnlyCashBankAccountsAreInactiveOrOfAnInactiveBank_shouldCreateANewOne()
+	{
+		final BankId cashBankId = new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Cash")
+				.routingNo("000000")
+				.cashBank(true)
+				.build()).getBankId();
+		final int inactiveAccountId = createOrgBPartnerEURBankAccount(cashBankId);
+		final I_C_BP_BankAccount inactiveAccount = InterfaceWrapperHelper.load(inactiveAccountId, I_C_BP_BankAccount.class);
+		inactiveAccount.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(inactiveAccount);
+
+		final BankId inactiveCashBankId = new BankRepository().createBank(BankCreateRequest.builder()
+				.bankName("Inactive cash")
+				.routingNo("000000")
+				.cashBank(true)
+				.build()).getBankId();
+		final I_C_Bank inactiveCashBank = InterfaceWrapperHelper.load(inactiveCashBankId, I_C_Bank.class);
+		inactiveCashBank.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(inactiveCashBank);
+		final int accountOfInactiveBankId = createOrgBPartnerEURBankAccount(inactiveCashBankId);
+
+		final int newAccountId = executeMinimalEURTerminal("T_BA6").getBankAccountId().getRepoId();
+
+		assertThat(newAccountId).isNotIn(inactiveAccountId, accountOfInactiveBankId);
+	}
+
+	private int createOrgBPartnerEURBankAccount(@NonNull final BankId bankId)
+	{
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BPartner_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_ID.getRepoId());
+		bankAccount.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
+		bankAccount.setC_Currency_ID(currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR).getRepoId());
+		bankAccount.setC_Bank_ID(bankId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(bankAccount);
+		return bankAccount.getC_BP_BankAccount_ID();
+	}
+
+	private JsonPOSTerminalResponse executeMinimalEURTerminal(final String identifier)
+	{
+		return commandBuilder()
+				.request(JsonPOSTerminalRequest.builder()
+						.priceListCurrency(CurrencyCode.EUR)
+						.isTaxIncluded(false)
+						.build())
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private List<I_C_BP_BankAccount> retrieveActiveOrgBPartnerBankAccounts()
+	{
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, MasterdataContext.METASFRESH_ORG_BPARTNER_ID)
+				.create()
+				.list();
 	}
 
 	@Test
@@ -540,22 +668,69 @@ public class CreatePOSTerminalCommandTest
 	}
 
 	@Test
-	public void execute_withNonCashPaymentMethod_shouldThrow()
+	public void cardTerminal_hasSumUpConfigAndDefaultReader()
 	{
 		// given
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
 				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
-				.paymentMethods(ImmutableList.of(POSPaymentMethod.CARD))
+				.paymentMethods(ImmutableList.of(POSPaymentMethod.CASH, POSPaymentMethod.CARD))
 				.build();
 
-		final CreatePOSTerminalCommand command = commandBuilder()
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
 				.request(request)
 				.identifier(Identifier.ofString("T_CARD"))
+				.build()
+				.execute();
+
+		// then
+		assertThat(response.getSumUpMerchantCode()).isEqualTo("M-TEST");
+		assertThat(response.getSumUpCardReaderId()).isEqualTo("R-TEST");
+
+		final I_C_POS posRecord = InterfaceWrapperHelper.load(response.getId(), I_C_POS.class);
+		assertThat(posRecord.getPOSPaymentProcessor()).isEqualTo(POSPaymentProcessorType.SumUp.getCode());
+		assertThat(posRecord.getSUMUP_Config_ID()).isGreaterThan(0);
+
+		final I_SUMUP_Config configRecord = InterfaceWrapperHelper.load(posRecord.getSUMUP_Config_ID(), I_SUMUP_Config.class);
+		assertThat(configRecord.isActive()).isTrue();
+		assertThat(configRecord.getSUMUP_merchant_code()).isEqualTo("M-TEST");
+		assertThat(configRecord.getApiKey()).isNotBlank();
+
+		final List<I_SUMUP_CardReader> readers = queryBL.createQueryBuilder(I_SUMUP_CardReader.class)
+				.addEqualsFilter(I_SUMUP_CardReader.COLUMNNAME_SUMUP_Config_ID, configRecord.getSUMUP_Config_ID())
+				.create()
+				.list();
+		assertThat(readers).hasSize(1);
+		assertThat(readers.get(0).getExternalId()).isEqualTo("R-TEST");
+		assertThat(readers.get(0).isActive()).isTrue();
+		assertThat(configRecord.getSUMUP_CardReader_ID()).isEqualTo(readers.get(0).getSUMUP_CardReader_ID());
+	}
+
+	@Test
+	public void cashOnlyTerminal_hasNoSumUpConfig()
+	{
+		// given
+		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.isTaxIncluded(false)
 				.build();
 
-		// when / then
-		assertThatThrownBy(command::execute).isInstanceOf(AdempiereException.class);
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
+				.request(request)
+				.identifier(Identifier.ofString("T_CASHONLY"))
+				.build()
+				.execute();
+
+		// then
+		assertThat(response.getSumUpMerchantCode()).isNull();
+		assertThat(response.getSumUpCardReaderId()).isNull();
+
+		final I_C_POS posRecord = InterfaceWrapperHelper.load(response.getId(), I_C_POS.class);
+		assertThat(posRecord.getPOSPaymentProcessor()).isNull();
+		assertThat(posRecord.getSUMUP_Config_ID()).isLessThanOrEqualTo(0);
+		assertThat(queryBL.createQueryBuilder(I_SUMUP_Config.class).create().anyMatch()).isFalse();
 	}
 
 	@Test
@@ -625,8 +800,9 @@ public class CreatePOSTerminalCommandTest
 		assertThat(sysconfigChargeTypeId).isEqualTo(travelCostsCharge.getC_ChargeType_ID());
 
 		// no sysconfig before: restoring the reported previous value must switch the categories off again
-		assertThat(previousSysconfigs).containsEntry(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "-1");
-		assertThat(ChargeTypeId.ofRepoIdOrNull(Integer.parseInt(previousSysconfigs.get(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId)))).isNull();
+		assertThat(previousSysconfigs.toList()).containsExactly(JsonSysconfig.of(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, null, ClientAndOrgId.SYSTEM));
+		RestoreSysconfigsCommand.builder().sysconfigs(previousSysconfigs.toList()).build().execute();
+		assertThat(ChargeTypeId.ofRepoIdOrNull(Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1))).isNull();
 	}
 
 	@Test
@@ -650,8 +826,11 @@ public class CreatePOSTerminalCommandTest
 				.execute();
 
 		// then
-		assertThat(previousSysconfigs).containsEntry(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "12345");
+		assertThat(previousSysconfigs.toList()).containsExactly(JsonSysconfig.of(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "12345", ClientAndOrgId.SYSTEM));
 		assertThat(sysConfigBL.getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1)).isNotEqualTo(12345);
+
+		RestoreSysconfigsCommand.builder().sysconfigs(previousSysconfigs.toList()).build().execute();
+		assertThat(sysConfigBL.getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1)).isEqualTo(12345);
 	}
 
 	@Test
@@ -672,7 +851,7 @@ public class CreatePOSTerminalCommandTest
 
 		// then
 		assertThat(response.getCashWithdrawalCategories()).isEmpty();
-		assertThat(previousSysconfigs).isEmpty();
+		assertThat(previousSysconfigs.toList()).isEmpty();
 		assertThat(ChargeTypeId.ofRepoIdOrNull(Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1))).isNull();
 	}
 

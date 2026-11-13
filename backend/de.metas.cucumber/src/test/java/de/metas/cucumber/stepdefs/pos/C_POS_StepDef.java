@@ -52,6 +52,12 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpService;
+import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.payment.sumup.repository.SumUpTransactionQuery;
+import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalLine;
 import de.metas.pos.POSCashJournalLineType;
@@ -63,6 +69,7 @@ import de.metas.pos.POSPaymentCheckoutRequest;
 import de.metas.pos.POSPaymentExternalId;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSService;
+import de.metas.pos.POSTerminalCloseJournalRequest;
 import de.metas.pos.POSTerminalCreateRequest;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
@@ -120,6 +127,8 @@ public class C_POS_StepDef
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	@NonNull private final POSService posService = SpringContextHolder.instance.getBean(POSService.class);
 	@NonNull private final POSTerminalRepository posTerminalRepository = SpringContextHolder.instance.getBean(POSTerminalRepository.class);
+	@NonNull private final SumUpTransactionRepository sumUpTransactionRepository = SpringContextHolder.instance.getBean(SumUpTransactionRepository.class);
+	@NonNull private final SumUpService sumUpService = SpringContextHolder.instance.getBean(SumUpService.class);
 
 	/** Seconds to wait for the async {@code C_POSOrder_CreateInvoiceAndShipment} work package (sales order + invoice + shipment) to land. */
 	private static final int ASYNC_INVOICE_TIMEOUT_SEC = 60;
@@ -254,6 +263,28 @@ public class C_POS_StepDef
 	}
 
 	/**
+	 * Closes the POS terminal's open cash journal with a counted closing cash balance, via {@link POSService#closeCashJournal}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the cash journal of POS terminal till is closed with 100 by metasfresh
+	 * </pre>
+	 */
+	@And("^the cash journal of POS terminal (\\S+) is closed with (\\S+) by (\\S+)$")
+	public void closeCashJournal(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String closingBalance,
+			@NonNull final String userLogin)
+	{
+		posService.closeCashJournal(POSTerminalCloseJournalRequest.builder()
+				.posTerminalId(posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier)))
+				.cashierId(StepDefUtil.getUserIdByLogin(userLogin))
+				.cashClosingBalance(new BigDecimal(closingBalance))
+				.build());
+	}
+
+	/**
 	 * Drives a POS cash sale end to end, mirroring the mobile POS client: builds a remote order with the given
 	 * product lines and a single {@code CASH} payment for their total, via {@link POSService#updateOrderFromRemote},
 	 * transitions it to {@code WaitingPayment} ({@link POSService#changeStatusTo}), then checks the cash payment
@@ -288,51 +319,51 @@ public class C_POS_StepDef
 	@And("^a POS cash sale is made at (\\S+):$")
 	public void posCashSale(@NonNull final String terminalIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		posSale(terminalIdentifier, dataTable, POSPaymentMethod.CASH);
+	}
+
+	/**
+	 * Like {@code a POS cash sale is made at}, but the sale is paid by card: the checkout is sent to the terminal's
+	 * SumUp reader (the cucumber SumUp API stub), the stub approves the charge, and metasfresh learns it with one
+	 * SumUp poll, as in real life. The terminal must be configured with SumUp and a default card reader. Same columns
+	 * and the same registered identifiers ({@code <Identifier>} invoice, {@code <Identifier>Receipt} payment).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, C_TaxCategory_StepDefData,
+	 * C_Payment_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And a POS card sale is made at till and approved on the card reader:
+	 *   | M_Product_ID | Price | C_TaxCategory_ID | Identifier |
+	 *   | product      | 2.50  | taxCategory      | cardSale   |
+	 * </pre>
+	 */
+	@And("^a POS card sale is made at (\\S+) and approved on the card reader:$")
+	public void posCardSale(@NonNull final String terminalIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		posSale(terminalIdentifier, dataTable, POSPaymentMethod.CARD);
+	}
+
+	private void posSale(
+			@NonNull final String terminalIdentifier,
+			@NonNull final DataTable dataTable,
+			@NonNull final POSPaymentMethod paymentMethod) throws InterruptedException
+	{
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
 		final UserId cashierId = StepDefUtil.getUserIdByLogin(METASFRESH_VALUE);
 
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
 		final StepDefDataIdentifier saleIdentifier = rows.get(0).getAsOptionalIdentifier().orElseGet(() -> StepDefDataIdentifier.ofString(terminalIdentifier));
 
-		BigDecimal totalAmount = BigDecimal.ZERO;
-		final ImmutableList.Builder<RemotePOSOrderLine> lines = ImmutableList.builder();
-		for (final DataTableRow row : rows)
-		{
-			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-			final TaxCategoryId taxCategoryId = row.getAsIdentifier("C_TaxCategory_ID").lookupNotNullIdIn(taxCategoryTable);
-			final BigDecimal price = row.getAsBigDecimal("Price");
-			final BigDecimal qty = row.getAsOptionalBigDecimal("Qty").orElse(BigDecimal.ONE);
-			final UomId uomId = productBL.getStockUOMId(productId);
-
-			lines.add(RemotePOSOrderLine.builder()
-					.uuid(UUID.randomUUID().toString())
-					.productId(productId)
-					.productName(product.getName())
-					.taxCategoryId(taxCategoryId)
-					.price(price)
-					.qty(qty)
-					.uomId(uomId)
-					.build());
-
-			totalAmount = totalAmount.add(price.multiply(qty));
-		}
-
 		final POSOrderExternalId orderExternalId = POSOrderExternalId.ofString(UUID.randomUUID().toString());
 		final POSPaymentExternalId paymentExternalId = POSPaymentExternalId.ofString(UUID.randomUUID().toString());
 
-		posService.updateOrderFromRemote(
-				RemotePOSOrder.builder()
-						.uuid(orderExternalId)
-						.posTerminalId(posTerminalId)
-						.lines(lines.build())
-						.payments(ImmutableList.of(RemotePOSPayment.builder()
-								.uuid(paymentExternalId)
-								.paymentMethod(POSPaymentMethod.CASH)
-								.amount(totalAmount)
-								.build()))
-						.build(),
-				cashierId);
+		final RemotePOSOrder remoteOrder = newRemotePOSOrder(
+				posTerminalId, orderExternalId, paymentExternalId, paymentMethod, rows,
+				productTable, taxCategoryTable, productBL);
+		final BigDecimal totalAmount = remoteOrder.getPayments().get(0).getAmount();
+
+		posService.updateOrderFromRemote(remoteOrder, cashierId);
 
 		posService.changeStatusTo(posTerminalId, orderExternalId, POSOrderStatus.WaitingPayment, cashierId);
 
@@ -341,9 +372,16 @@ public class C_POS_StepDef
 				.posOrderExternalId(orderExternalId)
 				.posPaymentExternalId(paymentExternalId)
 				.userId(cashierId)
-				.cashTenderedAmount(totalAmount)
+				.cashTenderedAmount(paymentMethod.isCash() ? totalAmount : null)
 				.build());
-		afterCheckout.assertCompleted();
+		if (paymentMethod.isCash())
+		{
+			afterCheckout.assertCompleted();
+		}
+		else
+		{
+			approveCardPaymentOnTheReader(afterCheckout);
+		}
 
 		final POSOrder completedOrder = StepDefUtil.tryAndWaitForItem(
 				ASYNC_INVOICE_TIMEOUT_SEC,
@@ -379,6 +417,80 @@ public class C_POS_StepDef
 		// distinct identifier from the invoice's: IdentifiersResolver (used e.g. by "Fact_Acct records are
 		// matching") probes every StepDefData table for a given identifier and fails if more than one matches.
 		paymentTable.putOrReplace(StepDefDataIdentifier.ofString(saleIdentifier.getAsString() + "Receipt"), paymentReceipt);
+	}
+
+	/**
+	 * Builds the remote order of a POS sale as the mobile POS client sends it: one line per data-table row and a single
+	 * payment of the given method for the lines' total. Shared by the cash/card sale steps here and by the till card sale steps.
+	 *
+	 * @param rows the sale's lines, with the columns {@code M_Product_ID}, {@code Price}, {@code C_TaxCategory_ID} and optional {@code Qty}
+	 */
+	static RemotePOSOrder newRemotePOSOrder(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId orderExternalId,
+			@NonNull final POSPaymentExternalId paymentExternalId,
+			@NonNull final POSPaymentMethod paymentMethod,
+			@NonNull final List<DataTableRow> rows,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
+			@NonNull final IProductBL productBL)
+	{
+		BigDecimal totalAmount = BigDecimal.ZERO;
+		final ImmutableList.Builder<RemotePOSOrderLine> lines = ImmutableList.builder();
+		for (final DataTableRow row : rows)
+		{
+			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+			final TaxCategoryId taxCategoryId = row.getAsIdentifier("C_TaxCategory_ID").lookupNotNullIdIn(taxCategoryTable);
+			final BigDecimal price = row.getAsBigDecimal("Price");
+			final BigDecimal qty = row.getAsOptionalBigDecimal("Qty").orElse(BigDecimal.ONE);
+			final UomId uomId = productBL.getStockUOMId(productId);
+
+			lines.add(RemotePOSOrderLine.builder()
+					.uuid(UUID.randomUUID().toString())
+					.productId(productId)
+					.productName(product.getName())
+					.taxCategoryId(taxCategoryId)
+					.price(price)
+					.qty(qty)
+					.uomId(uomId)
+					.build());
+
+			totalAmount = totalAmount.add(price.multiply(qty));
+		}
+
+		return RemotePOSOrder.builder()
+				.uuid(orderExternalId)
+				.posTerminalId(posTerminalId)
+				.lines(lines.build())
+				.payments(ImmutableList.of(RemotePOSPayment.builder()
+						.uuid(paymentExternalId)
+						.paymentMethod(paymentMethod)
+						.amount(totalAmount)
+						.build()))
+				.build();
+	}
+
+	/**
+	 * The card checkout of the order's (single) payment is pending at SumUp: let the stub approve it and poll SumUp,
+	 * so the status event completes the order.
+	 */
+	private void approveCardPaymentOnTheReader(@NonNull final POSOrder order) throws InterruptedException
+	{
+		final POSPayment posPayment = order.getPaymentsNotDeleted().get(0);
+		final SumUpTransaction sumUpTrx = sumUpTransactionRepository
+				.stream(SumUpTransactionQuery.builder()
+						.posRef(SumUpPOSRef.builder()
+								.posOrderId(order.getLocalIdNotNull().getRepoId())
+								.posPaymentId(posPayment.getLocalIdNotNull().getRepoId())
+								.build())
+						.build())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No SumUp transaction for the POS card payment").setParameter("posPayment", posPayment));
+
+		SumUpApiStub.setTransactionStatus(sumUpTrx.getClientTransactionId().getAsString(), SumUpTransactionStatus.SUCCESSFUL.getCode(), null);
+		sumUpService.bulkUpdatePendingTransactions(false);
+		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
 	/**
@@ -450,6 +562,24 @@ public class C_POS_StepDef
 				assertThat(line.getDescription()).as("Description of line %s (charge name)", lineIdx).isEqualTo(expectedCharge.get().getName());
 			}
 		}
+	}
+
+	/**
+	 * Asserts that the POS terminal's currently open cash journal has no lines, via {@link POSService#getCurrentCashJournal}
+	 * (e.g. nothing was journaled for a card settlement that was not booked). Fails if the terminal has no open cash journal.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the cash journal of POS terminal till contains no lines
+	 * </pre>
+	 */
+	@And("^the cash journal of POS terminal (\\S+) contains no lines$")
+	public void assertCashJournalHasNoLines(@NonNull final String terminalIdentifier)
+	{
+		final POSCashJournal journal = getCurrentCashJournalOrThrow(terminalIdentifier);
+
+		assertThat(journal.getLines()).as("POS terminal %s cash journal lines", terminalIdentifier).isEmpty();
 	}
 
 	private POSCashJournal getCurrentCashJournalOrThrow(@NonNull final String terminalIdentifier)

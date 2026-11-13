@@ -105,7 +105,7 @@ public class C_BP_BankAccount_StepDef
 	 *   <b>IBAN</b> — (optional) IBAN<br>
 	 *   <b>IsCashBank</b> — (optional) when {@code Y} and no {@code C_Bank_ID} is given, links a freshly-created
 	 *   {@code C_Bank} flagged {@code IsCashBank=Y} — the source of truth {@code MPayment#beforeSave} reads to
-	 *   force a payment's {@code TenderType} to Cash rather than DirectDeposit<br>
+	 *   set a payment's {@code TenderType} to Cash rather than DirectDeposit (a credit-card tender type is kept)<br>
 	 * @cucumber.depends StepDefData: C_BP_BankAccount_StepDefData, C_Bank_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -244,9 +244,9 @@ public class C_BP_BankAccount_StepDef
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(bpBankAccount::setIBAN);
 
-		// a "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave force TenderType=Cash
-		// on any payment booked against it; without a linked C_Bank flagged IsCashBank, TenderType defaults to
-		// DirectDeposit regardless of what the caller requests. Auto-creates a minimal C_Bank when none is linked
+		// a "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave set TenderType=Cash
+		// on a payment booked against it; without a linked C_Bank flagged IsCashBank, TenderType becomes
+		// DirectDeposit. Either way, only a credit-card tender type requested by the caller is kept. Auto-creates a minimal C_Bank when none is linked
 		// yet, rather than requiring every cash-till scenario to set one up via the (unrelated) bank-statement-import
 		// "metasfresh contains C_Bank:" step.
 		if (row.getAsOptionalBoolean(I_C_Bank.COLUMNNAME_IsCashBank).orElseFalse() && bpBankAccount.getC_Bank_ID() <= 0)

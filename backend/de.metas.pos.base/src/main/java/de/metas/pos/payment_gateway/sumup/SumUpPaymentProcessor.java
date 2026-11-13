@@ -1,14 +1,17 @@
 package de.metas.pos.payment_gateway.sumup;
 
+import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.payment.sumup.SumUp;
+import de.metas.payment.sumup.SumUpCallException;
 import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
+import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
-import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessor;
@@ -49,7 +52,8 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 							.amount(request.getAmount())
 							.callbackUrl(getCallbackUrl())
 							.clientAndOrgId(request.getClientAndOrgId())
-							.posRef(SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId()))
+							.description(request.getDescription())
+							.posRef(SumUpUtils.toPOSRef(request))
 							.build()
 			);
 
@@ -58,11 +62,28 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 		catch (final Exception ex)
 		{
 			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
-			return POSPaymentProcessResponse.error(
+			// tag the issue with the settlement (no-op if the SumUp client already reported and tagged it)
+			final POSInvoiceCardSettlementId settlementId = request.getPosInvoiceCardSettlementId();
+			if (settlementId != null)
+			{
+				metasfreshException.setRecord(settlementId.toRecordRef());
+			}
+			final String errorMessage = AdempiereException.extractMessage(metasfreshException);
+			final AdIssueId errorId = errorManager.createIssue(metasfreshException);
+
+			// only a failed SumUp call can leave the outcome unknown; anything else (e.g. config error before the call) is definite
+			final boolean isIndeterminate = ex instanceof SumUpCallException && !((SumUpCallException)ex).isDefiniteRejection();
+			if (!isIndeterminate)
+			{
+				return POSPaymentProcessResponse.error(request.getPaymentProcessorConfig(), errorMessage, errorId);
+			}
+
+			final SumUpClientTransactionId clientTransactionId = ((SumUpCallException)ex).getClientTransactionId();
+			return POSPaymentProcessResponse.errorIndeterminate(
 					request.getPaymentProcessorConfig(),
-					AdempiereException.extractMessage(metasfreshException),
-					errorManager.createIssue(metasfreshException)
-			);
+					errorMessage,
+					errorId,
+					clientTransactionId != null ? clientTransactionId.getAsString() : null);
 		}
 	}
 
@@ -86,11 +107,18 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 		return appApiUrl + SumUp.ENDPOINT_PaymentCheckoutCallback;
 	}
 
+	/**
+	 * Refunds the card payment's own SumUp transaction (the one it names): other transactions may carry the same POS reference,
+	 * e.g. a late approval of an earlier checkout that was not booked. A card payment naming none (e.g. paid before the payment
+	 * stored it) is refunded by its POS reference, which needs exactly one approved, not refunded transaction carrying it.
+	 */
 	@Override
 	public POSPaymentProcessResponse refund(@NonNull final POSRefundRequest request)
 	{
-		final SumUpPOSRef posRef = SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId());
-		final SumUpTransaction trx = sumUpService.refundTransaction(posRef);
+		final String sumUpClientTransactionId = request.getSumUpClientTransactionId();
+		final SumUpTransaction trx = sumUpClientTransactionId != null
+				? sumUpService.refundTransaction(SumUpClientTransactionId.ofString(sumUpClientTransactionId))
+				: sumUpService.refundTransaction(SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId()));
 		return SumUpUtils.extractProcessResponse(trx);
 	}
 
