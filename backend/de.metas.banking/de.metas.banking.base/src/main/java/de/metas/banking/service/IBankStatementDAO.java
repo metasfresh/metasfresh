@@ -8,6 +8,7 @@ import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -95,4 +96,10 @@ public interface IBankStatementDAO extends ISingletonService
 	void updateBankStatementLinesProcessedFlag(@NonNull BankStatementId bankStatementId, boolean processed);
 
 	int getLastLineNo(@NonNull BankStatementId bankStatementId);
+
+	/**
+	 * @return those of the given orders that are carried ({@code C_BankStatementLine.C_Order_ID}) by an active, not yet processed bank statement line
+	 */
+	@NonNull
+	ImmutableSet<OrderId> getOrderIdsOnUnprocessedLines(@NonNull Collection<OrderId> orderIds);
 }

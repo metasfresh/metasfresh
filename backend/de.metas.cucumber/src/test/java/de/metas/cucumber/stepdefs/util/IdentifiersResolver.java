@@ -22,11 +22,15 @@
 
 package de.metas.cucumber.stepdefs.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
@@ -40,6 +44,7 @@ import de.metas.cucumber.stepdefs.order.C_Order_MFGWarehouse_Report_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.cucumber.stepdefs.payment.sepa.C_BP_BankAccount_DirectDebitMandate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
@@ -59,6 +64,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
@@ -97,6 +104,48 @@ public class IdentifiersResolver
 	@NonNull private final SAP_GLJournal_StepDefData sapGLJournalTable;
 	@NonNull private final C_Customs_Invoice_StepDefData customsInvoiceTable;
 	@NonNull private final M_Locator_StepDefData locatorTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BP_BankAccount_StepDefData bankAccountTable;
+	@NonNull private final C_BP_BankAccount_DirectDebitMandate_StepDefData mandateTable;
+
+	/**
+	 * @return every registered StepDefData; {@code checkupReportTable} is not a StepDefData, so it is not part of this list
+	 */
+	private ImmutableList<StepDefData<?>> getStepDefDatas()
+	{
+		return ImmutableList.of(invoiceTable, paymentTable, allocationTable, matchInvTable, inOutTable, inventoryTable, orderTable, orderLineTable,
+				dunningDocTable, ppCostCollectorTable, costRevaluationTable, shipperTransportationTable, ppOrderTable, sapGLJournalTable,
+				customsInvoiceTable, locatorTable, bpartnerTable, bankAccountTable, mandateTable);
+	}
+
+	@NonNull
+	public StepDefData<?> getStepDefDataByTableName(@NonNull final String tableName)
+	{
+		final ImmutableList<StepDefData<?>> matches = getStepDefDatas().stream()
+				.filter(stepDefData -> tableName.equals(stepDefData.getTableName()))
+				.collect(ImmutableList.toImmutableList());
+		if (matches.isEmpty())
+		{
+			final ImmutableList<StepDefData<?>> pojoStepDefDatas = getStepDefDatas().stream()
+					.filter(stepDefData -> stepDefData.getTableName() == null)
+					.collect(ImmutableList.toImmutableList());
+			throw new AdempiereException("No StepDefData with a model interface registered for table " + tableName
+					+ "; StepDefData that hold POJOs cannot be looked up by table name: " + pojoStepDefDatas);
+		}
+		else if (matches.size() > 1)
+		{
+			throw new AdempiereException("More than one StepDefData registered for table " + tableName + ": " + matches);
+		}
+		return matches.get(0);
+	}
+
+	/**
+	 * Registers the record referenced by {@code recordRef} under {@code identifier}, in the StepDefData that is responsible for the record's table.
+	 */
+	public void putRecord(@NonNull final StepDefDataIdentifier identifier, @NonNull final TableRecordReference recordRef)
+	{
+		getStepDefDataByTableName(recordRef.getTableName()).putRecord(identifier, recordRef);
+	}
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -178,6 +227,16 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		locatorTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_M_Locator.Table_Name, id))
+				.ifPresent(result::add);
+
+		bpartnerTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_BPartner.Table_Name, id))
+				.ifPresent(result::add);
+		bankAccountTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_BP_BankAccount.Table_Name, id))
+				.ifPresent(result::add);
+		mandateTable.getOptional(identifier)
+				.map(TableRecordReference::of)
 				.ifPresent(result::add);
 
 		if (result.isEmpty())

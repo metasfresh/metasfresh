@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows } from '../utils/common';
 
 /**
  * "Sprung zu Prognose" overlay — the Menge column.
@@ -272,12 +272,8 @@ has nothing to do with the product they jumped from.
     // The grid marks each row with data-testid="table-row-<rowId>" (TableRow.js) — there is no data-id.
     const cockpitRow = page.locator(`tbody tr[data-testid="table-row-${rowId}"]`);
     await cockpitRow.waitFor({ state: 'visible', timeout: 30000 });
-    // The action is offered only for a selected row ("Sprung zu Prognose (Keine Zeilen ausgewählt)"),
-    // and a click right after the grid renders does not always land as a selection — so assert it.
-    await expect(async () => {
-      await cockpitRow.click();
-      await expect(cockpitRow).toHaveClass(/row-selected/, { timeout: 2000 });
-    }).toPass({ timeout: 30000 });
+    // The action is offered only for a selected row ("Sprung zu Prognose (Keine Zeilen ausgewählt)").
+    await selectRows([cockpitRow]);
 
     await test.step('invoke Sprung zu Prognose', async () => {
       // The first action sits on the green button; ours lives behind the dropdown toggle next to it.

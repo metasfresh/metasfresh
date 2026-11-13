@@ -52,6 +52,11 @@ public class JsonPOSOrder
 	int hashCode;
 
 	/**
+	 * See {@link POSOrder#getVersion()}. A client shall ignore a snapshot whose version is not greater than the one it already has for that order.
+	 */
+	@Nullable Long version;
+
+	/**
 	 * @param getReleasableAt the instant from which an unknown card payment may be released (see {@link JsonPOSPayment#getReleasableAt()});
 	 *                        asked for every payment, answers null for any other
 	 */
@@ -97,6 +102,7 @@ public class JsonPOSOrder
 				.allowAddPaymentReason(allowAddPayment.getReasonAsString())
 				//
 				.hashCode(order.hashCode())
+				.version(order.getVersion())
 				//
 				.build();
 	}

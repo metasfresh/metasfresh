@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
@@ -271,13 +271,7 @@ Tests list view capabilities on the Sales Order window:
       if (rowCount > 0) {
         const firstRow = gridRows.first();
 
-        // Single click should select the row
-        await firstRow.click();
-        await page.waitForTimeout(300);
-
-        // Check if row got selected class
-        const isSelected = await firstRow.evaluate((el) => el.classList.contains('row-selected'));
-        console.log(`Row selected on click: ${isSelected}`);
+        await selectRows([firstRow]);
 
         // Double click should open the detail view
         const urlBefore = page.url();

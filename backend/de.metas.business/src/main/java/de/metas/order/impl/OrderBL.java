@@ -151,6 +151,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -1405,6 +1406,13 @@ public class OrderBL implements IOrderBL
 	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
 	{
 		return orderDAO.getByIds(orderIds);
+	}
+
+	@Override
+	@NonNull
+	public Stream<OrderId> streamOrderIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return orderDAO.streamOrderIdsByBPartnerId(bpartnerId);
 	}
 
 	@Override

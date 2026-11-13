@@ -357,7 +357,15 @@
 		<property name="com.jaspersoft.studio.field.name" value="selectedproductname"/>
 		<property name="com.jaspersoft.studio.field.label" value="selectedproductname"/>
 	</field>
-	<group name="Partner Group" keepTogether="true">
+	<variable name="CustomerAmtTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="Partner Group" calculation="Sum">
+		<variableExpression><![CDATA[$F{amt_total} == null ? java.math.BigDecimal.ZERO : $F{amt_total}]]></variableExpression>
+		<initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<variable name="CustomerPrevAmtTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="Partner Group" calculation="Sum">
+		<variableExpression><![CDATA[$F{prevamt_total} == null ? java.math.BigDecimal.ZERO : $F{prevamt_total}]]></variableExpression>
+		<initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<group name="Partner Group" keepTogether="true" preventOrphanFooter="true">
 		<groupExpression><![CDATA[$F{c_bpartner_id}]]></groupExpression>
 		<groupHeader>
 			<band height="62">
@@ -462,7 +470,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="684" y="20" width="116" height="10" uuid="88525c76-3754-4f7b-b647-6f3656a28add"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
@@ -478,6 +486,45 @@
 				</textField>
 			</band>
 		</groupHeader>
+		<groupFooter>
+			<band height="40">
+				<textField isBlankWhenNull="true">
+					<reportElement x="150" y="10" width="70" height="10" uuid="13b284fa-dc61-44b5-a842-974f403144ff"/>
+					<textElement>
+						<font fontName="Arial" size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{CustomerTotal}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="StretchHeight">
+					<reportElement x="220" y="10" width="500" height="10" uuid="447540e8-4e1d-40b9-8cb5-7ea40c41c070"/>
+					<textElement>
+						<font fontName="Arial" size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bpname}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="742" y="10" width="57" height="10" uuid="753a7304-b9ad-49b1-a024-115618119a2c"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{CustomerAmtTotal}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" x="460" y="20" width="200" height="10" uuid="8311d6c9-7ca0-4398-97f5-11d7257cfeb2"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{PreviousPeriodTotal}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="742" y="20" width="57" height="10" uuid="e9f45a7d-a930-41c3-9605-7e7ba5cdf497"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{CustomerPrevAmtTotal}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
 	</group>
 	<group name="Product">
 		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
@@ -1236,13 +1283,6 @@
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dev_12}]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="742" y="58" width="57" height="10" uuid="23a61260-3a67-4b4d-bf1b-ff84ac50b314"/>
-				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{prevamt_total}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

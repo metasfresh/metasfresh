@@ -23,6 +23,7 @@
 package de.metas.calendar.impl;
 
 import de.metas.calendar.CalendarId;
+import de.metas.calendar.CalendarNonBusinessDays;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.YearId;
@@ -32,9 +33,14 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.calendar.CompositeBusinessDayMatcher;
 import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
+
+import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
@@ -211,14 +217,43 @@ public class CalendarBL implements ICalendarBL
 	@NonNull
 	public CalendarId getOrgCalendarOrDefault(final @NonNull OrgId orgId)
 	{
+		final CalendarId calendarId = getOrgCalendarOrDefaultOrNull(orgId);
+		if (calendarId == null)
+		{
+			throw new AdempiereException(MSG_SET_DEFAULT_OR_ORG_CALENDAR);
+		}
+		return calendarId;
+	}
+
+	@Override
+	@NonNull
+	public IBusinessDayMatcher getBusinessDayMatcher(@NonNull final OrgId orgId)
+	{
+		final IBusinessDayMatcher weekendMatcher = ExcludeWeekendBusinessDayMatcher.DEFAULT;
+
+		final CalendarId calendarId = getOrgCalendarOrDefaultOrNull(orgId);
+		if (calendarId == null)
+		{
+			// No org/default C_Calendar configured: degrade to weekends-only (Mon-Fri), never throw.
+			return weekendMatcher;
+		}
+
+		final CalendarNonBusinessDays nonBusinessDays = calendarDAO.getCalendarNonBusinessDays(calendarId);
+		return CompositeBusinessDayMatcher.compose(ImmutableList.of(weekendMatcher, nonBusinessDays));
+	}
+
+	@Nullable
+	private CalendarId getOrgCalendarOrDefaultOrNull(@NonNull final OrgId orgId)
+	{
 		final OrgInfo orgInfo = orgDAO.getOrgInfoByIdInTrx(orgId);
 		if (orgInfo.getCalendarId() != null)
 		{
 			return orgInfo.getCalendarId();
 		}
 
-		final I_C_Calendar calendar = calendarDAO.getDefaultCalendar(orgId);
-
-		return CalendarId.ofRepoId(calendar.getC_Calendar_ID());
+		final I_C_Calendar defaultCalendar = calendarDAO.getDefaultCalendarOrNull(orgId);
+		return defaultCalendar != null
+				? CalendarId.ofRepoId(defaultCalendar.getC_Calendar_ID())
+				: null;
 	}
 }

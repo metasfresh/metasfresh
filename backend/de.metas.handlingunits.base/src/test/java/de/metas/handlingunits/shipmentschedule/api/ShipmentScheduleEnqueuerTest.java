@@ -64,9 +64,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
- * Covers {@link ShipmentScheduleEnqueuer}: the "no valid records" outcome and the lock handling of a run,
- * and that a closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
- * but is put into a new run that ships picks only (quantity type P).
+ * Covers how {@link ShipmentScheduleEnqueuer} selects and locks the schedules of a shipment run:
+ * <ul>
+ * <li>a selection that matched nothing at lock time, and the snapshot over the locked schedules;</li>
+ * <li>a closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
+ * but it is put into a new run that ships picks only (quantity type P).</li>
+ * </ul>
  */
 class ShipmentScheduleEnqueuerTest
 {
@@ -158,27 +161,6 @@ class ShipmentScheduleEnqueuerTest
 		assertThat(query.<Boolean>getOption(IQuery.OPTION_GuaranteedIteratorRequired)).isTrue();
 		final List<I_M_ShipmentSchedule> result = query.list(I_M_ShipmentSchedule.class);
 		assertThat(result).extracting(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID).containsExactly(locked.getM_ShipmentSchedule_ID());
-	}
-
-	/**
-	 * Locks nothing for a selection filter, as if no record matched the filter at lock time.
-	 */
-	private static class NothingMatchedAtLockTimeLockManager extends PlainLockManager
-	{
-		private final PlainLockDatabase lockDatabase = new PlainLockDatabase()
-		{
-			@Override
-			protected int lockByFilters(final ILockCommand lockCommand)
-			{
-				return 0;
-			}
-		};
-
-		@Override
-		public PlainLockDatabase getLockDatabase()
-		{
-			return lockDatabase;
-		}
 	}
 
 	/**
@@ -301,5 +283,26 @@ class ShipmentScheduleEnqueuerTest
 		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
 		InterfaceWrapperHelper.save(schedule);
 		return schedule;
+	}
+
+	/**
+	 * Locks nothing for a selection filter, as if no record matched the filter at lock time.
+	 */
+	private static class NothingMatchedAtLockTimeLockManager extends PlainLockManager
+	{
+		private final PlainLockDatabase lockDatabase = new PlainLockDatabase()
+		{
+			@Override
+			protected int lockByFilters(final ILockCommand lockCommand)
+			{
+				return 0;
+			}
+		};
+
+		@Override
+		public PlainLockDatabase getLockDatabase()
+		{
+			return lockDatabase;
+		}
 	}
 }

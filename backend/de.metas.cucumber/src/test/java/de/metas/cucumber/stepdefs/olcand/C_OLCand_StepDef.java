@@ -298,6 +298,7 @@ public class C_OLCand_StepDef
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) expected bpartner location<br>
 	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing instruction<br>
 	 *   <b>IsError</b> — (optional) expected error flag<br>
+	 *   <b>HasNote</b> — (optional) whether the candidate links an {@code AD_Note} (i.e. {@code AD_Note_ID > 0}), e.g. the error notification<br>
 	 *   <b>IsManualQtyItemCapacity</b> — (optional) expected flag whether the candidate's own QtyItemCapacity is used<br>
 	 *   <b>QtyItemCapacityInternal</b> — (optional) expected TU capacity from the master data<br>
 	 *   <b>QtyEntered, DeliveryRule, DeliveryViaRule, POReference, Processed, PriceActual, …</b> — (optional) asserted when present<br>
@@ -354,6 +355,8 @@ public class C_OLCand_StepDef
 			row.getAsOptionalString(COLUMNNAME_IsError)
 					.map(StringUtils::toBoolean)
 					.ifPresent(isError -> softly.assertThat(olCand.isError()).as(COLUMNNAME_IsError).isEqualTo(isError));
+			row.getAsOptionalBoolean("HasNote")
+					.ifPresent(hasNote -> softly.assertThat(olCand.getAD_Note_ID() > 0).as("AD_Note_ID is set").isEqualTo(hasNote));
 			row.getAsOptionalString(I_C_OLCand.COLUMNNAME_IsManualQtyItemCapacity)
 					.map(StringUtils::toBoolean)
 					.ifPresent(isManual -> softly.assertThat(olCand.isManualQtyItemCapacity()).as(I_C_OLCand.COLUMNNAME_IsManualQtyItemCapacity).isEqualTo(isManual));

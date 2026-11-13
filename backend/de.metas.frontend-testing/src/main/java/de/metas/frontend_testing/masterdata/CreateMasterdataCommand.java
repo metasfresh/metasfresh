@@ -293,6 +293,7 @@ public class CreateMasterdataCommand
 	private JsonCreateRoleResponse createRole(final String identifier, final JsonCreateRoleRequest request)
 	{
 		return CreateRoleCommand.builder()
+				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

@@ -108,12 +108,12 @@ public final class VEditorFactory
 		}
 
 		// String (clear/password)
-		if (displayType == DisplayType.String
+		if (DisplayType.isString(displayType)
 				|| displayType == DisplayType.PrinterName
 				|| tableEditor && (displayType == DisplayType.Text || displayType == DisplayType.TextLong))
 		{
 			final int textFieldColumns = mField.getDisplayLength();
-			if (mField.isEncryptedField())
+			if (mField.isEncryptedField() || DisplayType.isPassword(displayType))
 			{
 				final VPassword vs = new VPassword(columnName, mandatory, readOnly, updateable,
 						textFieldColumns, mField.getFieldLength(), mField.getVFormat());

@@ -159,7 +159,7 @@ export class MaterialReceiptPage {
       await orderSearchInput.fill(orderDocumentNo);
       await page.waitForTimeout(500);
 
-      // Select the order from the list
+      // Select the order from the list. Not selectRows: this locator can match a dropdown option, which never gets `row-selected`.
       await page.locator('.table tbody tr, .input-dropdown-list-option').first().click();
 
       // Language-independent: Confirm selection using data-testid or structural selector

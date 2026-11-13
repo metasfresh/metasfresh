@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
@@ -121,6 +122,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_TransportDays;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_SO_DocTypeTarget_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -137,6 +139,7 @@ public class C_BPartner_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
 	@NonNull private final C_Dunning_StepDefData dunningTable;
+	@NonNull private final C_DocType_StepDefData docTypeTable;
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
@@ -172,6 +175,9 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsFactorer} — {@code Y}/{@code N}; marks the partner as the factorer resolved for its {@code AD_Org_ID}</li>
 	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
+	 * {@code SO_DocTypeTarget_ID} (optional, identifier-ref) — the partner's sales order type (resolved via
+	 * {@link C_DocType_StepDefData}).
+	 * <p>
 	 * {@code M_DiscountSchema_ID} (optional, identifier-ref) — the sales-side discount schema (resolved via
 	 * {@link M_DiscountSchema_StepDefData}); mirrors the already-supported {@code PO_DiscountSchema_ID} column but on
 	 * the sales side, so a customer partner's discount schema can be exercised end-to-end via the pricing engine.
@@ -261,6 +267,7 @@ public class C_BPartner_StepDef
 	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
 	 *                   <b>Name</b> — (optional) new partner name<br>
 	 *                   <b>IsActive</b> — (optional) {@code Y}/{@code N}; activates or deactivates the partner<br>
+	 *                   <b>SO_DocTypeTarget_ID</b> — (optional) step-def identifier of the C_DocType (e.g. from {@code load C_DocType:}) to set as the partner's sales order type<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_BPartner:
@@ -453,6 +460,9 @@ public class C_BPartner_StepDef
 					.value(paymentTermPOValue)
 					.build()).getRepoId());
 		}
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_DocTypeTarget_ID)
+				.ifPresent(docTypeIdentifier -> bPartnerRecord.setSO_DocTypeTarget_ID(docTypeIdentifier.lookupNotNullIdIn(docTypeTable).getRepoId()));
 
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
@@ -653,6 +663,9 @@ public class C_BPartner_StepDef
 
 		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsActive)
 				.ifPresent(bPartner::setIsActive);
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_DocTypeTarget_ID)
+				.ifPresent(docTypeIdentifier -> bPartner.setSO_DocTypeTarget_ID(docTypeIdentifier.lookupNotNullIdIn(docTypeTable).getRepoId()));
 
 		InterfaceWrapperHelper.save(bPartner);
 

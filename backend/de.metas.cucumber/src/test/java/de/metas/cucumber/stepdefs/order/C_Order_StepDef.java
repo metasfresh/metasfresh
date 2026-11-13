@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DocumentProcessingInTrx;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
@@ -109,16 +110,19 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.DB;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -131,9 +135,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -189,6 +196,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 @RequiredArgsConstructor
 public class C_Order_StepDef
 {
+	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@\\s]+@");
 	private static final String COLUMNNAME_Exclude_C_Order_ID = "Exclude_" + COLUMNNAME_C_Order_ID;
 
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
@@ -462,6 +470,7 @@ public class C_Order_StepDef
 		}
 
 		tableRow.getAsOptionalString(COLUMNNAME_DocumentNo)
+				.map(documentNo -> PLACEHOLDER.matcher(documentNo).find() ? restTestContext.resolveVariables(documentNo) : documentNo)
 				.ifPresent(order::setDocumentNo);
 
 		tableRow.getAsOptionalString(COLUMNNAME_ExternalId)
@@ -596,7 +605,7 @@ public class C_Order_StepDef
 		{
 			case reactivated:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
 				break;
 			case completed:
@@ -604,21 +613,90 @@ public class C_Order_StepDef
 				break;
 			case closed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			case voided:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case reversed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Completes a prepay order ({@code C_DocType.DocSubType}='PR'), which then waits for its payment ({@code C_Order.DocStatus}='WP').
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the order identified by o_1 is completed and waits for payment
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) is completed and waits for payment$")
+	public void order_completed_waiting_for_payment(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		order.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_WaitingPayment);
+	}
+
+	/**
+	 * Puts a completed order into {@code C_Order.DocStatus}='WP' directly.
+	 * <p>
+	 * In production this state comes from a payment reservation: completing an order of a payment rule that needs one (e.g. PayPal) runs
+	 * {@code OrderPaymentReservationService.createPaymentReservationIfNeeded}, whose {@code PayPalPaymentProcessor.canReserveMoney} needs a PayPal
+	 * processor that the cucumber stack does not have. The state is the one {@code MOrder.completeIt} produces for it.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the completed order identified by o_paypal is put into waiting for payment as a payment reservation would
+	 * </pre>
+	 */
+	@And("^the completed order identified by (.*) is put into waiting for payment as a payment reservation would$")
+	public void order_put_into_waiting_for_payment_like_a_payment_reservation(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		assertThat(order.getDocStatus()).as("DocStatus of %s", orderIdentifier).isEqualTo(IDocument.STATUS_Completed);
+		order.setDocStatus(IDocument.STATUS_WaitingPayment);
+		saveRecord(order);
+	}
+
+	/**
+	 * Deactivates the order, as a user does by unticking {@code C_Order.IsActive} in the window.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the order identified by o_1 is deactivated
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) is deactivated$")
+	public void order_deactivated(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		order.setIsActive(false);
+		saveRecord(order);
+	}
+
+	/**
+	 * Clears {@code C_Order.IsSOTrx} of the order, as legacy or imported data can have it.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the order identified by o_1 is flagged as no sales order
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) is flagged as no sales order$")
+	public void order_flagged_as_no_sales_order(@NonNull final String orderIdentifier)
+	{
+		// plain SQL: saving a changed IsSOTrx would run the purchase price list lookup of the order interceptors
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_Order SET IsSOTrx='N' WHERE C_Order_ID=?", new Object[] { order.getC_Order_ID() }, ITrx.TRXNAME_None);
 	}
 
 	@And("^the order identified by (.*) cannot be (reactivated|completed|closed|voided|reversed)$")
@@ -727,6 +805,26 @@ public class C_Order_StepDef
 				.count();
 
 		assertThat(actualLineCount).as("Number of C_OrderLine records for order %s", orderIdentifier).isEqualTo(expectedLineCount);
+	}
+
+	/**
+	 * Asserts how many orders (any doc status) the given business partner has.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the business partner identified by customer has exactly 1 orders
+	 * </pre>
+	 */
+	@Then("^the business partner identified by (.*) has exactly (\\d+) orders?$")
+	public void bpartner_has_n_orders(@NonNull final String bpartnerIdentifier, final int expectedOrderCount)
+	{
+		final BPartnerId bpartnerId = bpartnerTable.getId(bpartnerIdentifier);
+
+		final long actualOrderCount = orderBL.streamOrderIdsByBPartnerId(bpartnerId).count();
+
+		assertThat(actualOrderCount).as("Number of C_Order records for partner %s", bpartnerIdentifier).isEqualTo(expectedOrderCount);
 	}
 
 	/**
@@ -1070,34 +1168,37 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Updates fields of a {@code C_Order} previously registered under an identifier.
+	 * Updates one or more already-created {@code C_Order} records (each resolved by its identifier), then saves —
+	 * so model interceptors / callouts fire on the changed columns (e.g. a shipper or order-date change triggers the
+	 * tour-planning lead-time recompute).
 	 *
-	 * <p>Required column:
-	 * <ul>
-	 *   <li>{@code C_Order_ID} – identifier of the order to update</li>
-	 * </ul>
-	 * Optional field columns (each applied only when present):
-	 * <ul>
-	 *   <li>{@code DocBaseType} + {@code DocSubType} – both together select a new C_DocType / C_DocTypeTarget</li>
-	 *   <li>{@code IsReprintOrderCheckup} – whether completing the order reprints the Bestellkontrolle</li>
-	 *   <li>{@code PaymentRule}</li>
-	 *   <li>{@code PreparationDate}</li>
-	 *   <li>{@code LC_Date}</li>
-	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
-	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
-	 *       repeated local runs</li>
-	 *   <li>{@code DescriptionBottom} – text printed at the end of the order document. Deliberately NOT a
-	 *       creation-time column ({@code metasfresh contains C_Orders:} has no such field): setting
-	 *       {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} at creation re-derives it from the doc type's
-	 *       {@code DocumentNote} ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so
-	 *       a value set at creation time is silently overwritten before the insert.</li>
-	 * </ul>
-	 *
-	 * <p>Example:
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order to update, from a prior create step<br>
+	 *   <b>DocBaseType</b> + <b>DocSubType</b> — (optional, as a pair) select a new C_DocType / C_DocTypeTarget<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) new business partner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) new partner location<br>
+	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) new delivery route (Lieferweg)<br>
+	 *   <b>DateOrdered</b> — (optional, local date yyyy-MM-dd) new order date<br>
+	 *   <b>DatePromised</b> — (optional, instant) note: setting it fires the order's preparation-date interceptor,
+	 *     which may recompute {@code PreparationDate}<br>
+	 *   <b>PreparationDate</b> / <b>LC_Date</b> — (optional, instant)<br>
+	 *   <b>PaymentRule</b> — (optional, string)<br>
+	 *   <b>POReference</b> — (optional, string) the customer's purchase-order reference; a {@code @Date@}
+	 *     placeholder in the value is resolved to the current timestamp, so a scenario can keep it unique across
+	 *     repeated local runs<br>
+	 *   <b>DescriptionBottom</b> — (optional, string) text printed at the end of the order document. Deliberately
+	 *     NOT a creation-time column ({@code metasfresh contains C_Orders:} has no such field): at creation,
+	 *     {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} re-derive it from the doc type's {@code DocumentNote}
+	 *     ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so a value set at creation time
+	 *     is silently overwritten before the insert<br>
+	 *   <b>IsReprintOrderCheckup</b> — (optional, boolean) whether completing the order reprints the Bestellkontrolle<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Shipper_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
 	 * <pre>
 	 * When update order
-	 *   | C_Order_ID | POReference    |
-	 *   | o_1        | PO_1234_@Date@ |
+	 *   | C_Order_ID | M_Shipper_ID  |
+	 *   | so         | leadTimeRoute |
 	 * </pre>
 	 */
 	@And("update order")
@@ -1139,8 +1240,12 @@ public class C_Order_StepDef
 				.ifPresent(order::setIsReprintOrderCheckup);
 		tableRow.getAsOptionalString(COLUMNNAME_PaymentRule)
 				.ifPresent(order::setPaymentRule);
+		tableRow.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateOrdered)
+				.ifPresent(order::setDateOrdered);
 		tableRow.getAsOptionalInstant(COLUMNNAME_PreparationDate)
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
+		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> order.setDatePromised(Timestamp.from(datePromised)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
 		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
@@ -1148,6 +1253,11 @@ public class C_Order_StepDef
 				.ifPresent(order::setPOReference);
 		tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DescriptionBottom)
 				.ifPresent(order::setDescriptionBottom);
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::get)
+				.map(shipperTable::extractIdFromRecord)
+				.map(ShipperId::getRepoId)
+				.ifPresent(order::setM_Shipper_ID);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
@@ -1662,6 +1772,39 @@ public class C_Order_StepDef
 
 		orderTable.putOrReplace(orderIdentifier, orderRecord);
 		return true;
+	}
+
+	/**
+	 * Generates a random 5-digit document number per row and stores it in the REST context variable named in the row, so a scenario
+	 * gets numbers that no earlier run left in the database, instead of hard-coded ones.
+	 * A number is never used twice and never matches an existing {@code C_Order.DocumentNo} or {@code C_Invoice.DocumentNo}.
+	 * The variables are used as {@code @name@} in {@code C_Orders}/{@code C_Invoice} {@code DocumentNo} and in the CAMT doc string.
+	 * <pre>{@code
+	 * Given generate unique 5-digit document numbers into the REST context variables:
+	 *   | REST.Context |
+	 *   | om_no_1      |
+	 * }</pre>
+	 */
+	@Given("generate unique 5-digit document numbers into the REST context variables:")
+	public void generateUniqueDocumentNumbers(@NonNull final DataTable dataTable)
+	{
+		final Set<String> usedInThisCall = new HashSet<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String variableName = row.getAsString("REST.Context");
+			String documentNo;
+			do
+			{
+				documentNo = String.valueOf(ThreadLocalRandom.current().nextInt(10_000, 100_000));
+			}
+			while (!usedInThisCall.add(documentNo) || isDocumentNoInUse(documentNo));
+			restTestContext.setVariable(variableName, documentNo);
+		});
+	}
+
+	private boolean isDocumentNoInUse(@NonNull final String documentNo)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class).addEqualsFilter(COLUMNNAME_DocumentNo, documentNo).create().anyMatch()
+				|| queryBL.createQueryBuilder(I_C_Invoice.class).addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo).create().anyMatch();
 	}
 
 	@And("store order-values in TestContext")

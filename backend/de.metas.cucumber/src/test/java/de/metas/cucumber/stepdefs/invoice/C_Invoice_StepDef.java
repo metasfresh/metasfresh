@@ -257,6 +257,23 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	/**
+	 * Runs the given document action on the invoice through the document engine and checks the resulting doc status.
+	 * Unlike {@code the invoice identified by ... is (completed|reversed|voided)}, the action and the expected status are free,
+	 * so it can pin e.g. that {@code VO} on a completed invoice ends in {@code RE}.
+	 * <p>
+	 * Example: {@code And the invoice identified by invoice is processed with DocAction VO expecting DocStatus RE}
+	 */
+	@And("^the invoice identified by (.*) is processed with DocAction (\\w+) expecting DocStatus (\\w+)$")
+	public void invoice_processed_with_docAction(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String docAction,
+			@NonNull final String expectedDocStatus)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		documentBL.processEx(invoice, docAction, expectedDocStatus);
+	}
+
 	@And("^the reversal of invoice (.*) is identified by (.*)$")
 	public void identify_reversal_invoice(
 			@NonNull final String invoiceIdentifier,
@@ -973,30 +990,41 @@ public class C_Invoice_StepDef
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
+	/**
+	 * Updates the given (typically still draft) invoices; only the columns that are present are changed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) identifier of the invoice to update<br>
+	 *   <b>DateInvoiced</b> — (optional) the new invoice date<br>
+	 *   <b>Description</b> — (optional) the new invoice description<br>
+	 *   <b>C_PaymentTerm_ID</b> — (optional, identifier-ref) the new payment term<br>
+	 *   Older features prefix the optional columns with <code>OPT.</code> (e.g. <code>OPT.DateInvoiced</code>); both forms are read.
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, C_PaymentTerm_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice:
+	 *   | Identifier | Description |
+	 *   | inv_1      | Invoice 1   |
+	 * </pre>
+	 */
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			updateInvoice(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateInvoice);
 	}
 
-	private void updateInvoice(@NonNull final Map<String, String> row)
+	private void updateInvoice(@NonNull final DataTableRow row)
 	{
-		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
-
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier();
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
-		if (dateInvoiced != null)
-		{
-			invoice.setDateInvoiced(dateInvoiced);
-		}
+		row.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateInvoiced).ifPresent(invoice::setDateInvoiced);
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_Description).ifPresent(invoice::setDescription);
 
 		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
 		// resolve correctly even when the DB record has a unique timestamped Value.
-		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
+		paymentTermStepDef.extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);

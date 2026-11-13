@@ -109,7 +109,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull protected final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 
 	@Autowired
@@ -313,7 +313,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 		final ViewLayout.Builder viewLayoutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
-				.setCaption("HU Editor")
+				.setCaption(getViewCaption())
 				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
 				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
@@ -330,6 +330,15 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 
 		return viewLayoutBuilder.build();
+	}
+
+	/**
+	 * @return the view's caption, which the frontend shows as the title of the view's modal.
+	 * @apiNote applied where the base layout is built, i.e. also when {@link #isAlwaysUseSameLayout()}.
+	 */
+	protected ITranslatableString getViewCaption()
+	{
+		return TranslatableStrings.constant("HU Editor");
 	}
 
 	protected boolean isMaterialReceipt() { return false; }
