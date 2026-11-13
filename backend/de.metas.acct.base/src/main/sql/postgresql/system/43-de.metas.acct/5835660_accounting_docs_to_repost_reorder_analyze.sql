@@ -19,6 +19,8 @@ BEGIN
 
     -- The callers insert many rows into the queue in the same transaction and call this function right away.
     -- Without fresh statistics the planner can assume an (almost) empty queue and pick a very slow nested loop.
+    -- Note: ANALYZE holds a ShareUpdateExclusiveLock on the queue until the caller's transaction ends. It does not block
+    -- INSERT/SELECT/DELETE on the queue, but it blocks autovacuum of the queue and a second concurrent run of this function.
     ANALYZE "de_metas_acct".accounting_docs_to_repost;
 
     WITH docs AS (SELECT t.*,
