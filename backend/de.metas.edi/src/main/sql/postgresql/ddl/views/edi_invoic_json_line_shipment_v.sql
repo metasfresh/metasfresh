@@ -36,13 +36,13 @@ SELECT il.c_invoice_id,
        END AS qtyinvoiced,
        CASE
            WHEN parts.rn = parts.cnt
-               THEN il.qtyentered - COALESCE(SUM(ROUND(il.qtyentered * parts.share, u_entered.stdprecision::integer)) OVER w_preceding, 0)
-               ELSE ROUND(il.qtyentered * parts.share, u_entered.stdprecision::integer)
+               THEN il.qtyentered - COALESCE(SUM(ROUND(il.qtyentered * parts.share, COALESCE(u_entered.stdprecision, u_stock.stdprecision)::integer)) OVER w_preceding, 0)
+               ELSE ROUND(il.qtyentered * parts.share, COALESCE(u_entered.stdprecision, u_stock.stdprecision)::integer)
        END AS qtyentered,
        CASE
            WHEN parts.rn = parts.cnt
-               THEN il.qtyenteredinbpartneruom - COALESCE(SUM(ROUND(il.qtyenteredinbpartneruom * parts.share, COALESCE(u_bpartner.stdprecision, u_entered.stdprecision)::integer)) OVER w_preceding, 0)
-               ELSE ROUND(il.qtyenteredinbpartneruom * parts.share, COALESCE(u_bpartner.stdprecision, u_entered.stdprecision)::integer)
+               THEN il.qtyenteredinbpartneruom - COALESCE(SUM(ROUND(il.qtyenteredinbpartneruom * parts.share, COALESCE(u_bpartner.stdprecision, u_entered.stdprecision, u_stock.stdprecision)::integer)) OVER w_preceding, 0)
+               ELSE ROUND(il.qtyenteredinbpartneruom * parts.share, COALESCE(u_bpartner.stdprecision, u_entered.stdprecision, u_stock.stdprecision)::integer)
        END AS qtyenteredinbpartneruom,
        CASE
            WHEN parts.rn = parts.cnt
