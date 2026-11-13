@@ -30,10 +30,10 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
     -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
     -- "Beschreibung" VARCHAR(30) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE(Beschreibung, '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE(Beschreibung, '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Route];

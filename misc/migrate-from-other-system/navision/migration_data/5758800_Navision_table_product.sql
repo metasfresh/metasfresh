@@ -31,22 +31,22 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE(No_, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(No_, '''', '''''') + '''' + ', ' +
 
         -- "No_ 2" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([No_ 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([No_ 2], '''', '''''') + '''' + ', ' +
 
         -- "Description" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Description, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Description, '''', '''''') + '''' + ', ' +
 
         -- "Search Description" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Search Description], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Search Description], '''', '''''') + '''' + ', ' +
 
         -- "Description 2" VARCHAR(100) NOT NULL
-    '''' + REPLACE(REPLACE([Description 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Description 2], '''', '''''') + '''' + ', ' +
 
         -- "Base Unit of Measure" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Base Unit of Measure], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Base Unit of Measure], '''', '''''') + '''' + ', ' +
 
         -- "Price Unit Conversion" INTEGER NOT NULL
     CAST([Price Unit Conversion] AS NVARCHAR(MAX)) + ', ' +
@@ -55,13 +55,13 @@ SELECT
     CAST(Type AS NVARCHAR(MAX)) + ', ' +
 
         -- "Inventory Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Inventory Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Inventory Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "Shelf No_" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Shelf No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Shelf No_], '''', '''''') + '''' + ', ' +
 
         -- "Item Disc_ Group" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Item Disc_ Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Item Disc_ Group], '''', '''''') + '''' + ', ' +
 
         -- "Allow Invoice Disc_" BOOLEAN NOT NULL
     CASE WHEN [Allow Invoice Disc_] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
@@ -103,13 +103,13 @@ SELECT
     CASE WHEN [Allow Online Adjustment] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Vendor No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Vendor No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Vendor No_], '''', '''''') + '''' + ', ' +
 
         -- "Vendor Item No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Vendor Item No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Vendor Item No_], '''', '''''') + '''' + ', ' +
 
         -- "Lead Time Calculation" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Lead Time Calculation], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Lead Time Calculation], '''', '''''') + '''' + ', ' +
 
         -- "Reorder Point" NUMERIC(38, 20) NOT NULL
     CAST([Reorder Point] AS NVARCHAR(MAX)) + ', ' +
@@ -121,7 +121,7 @@ SELECT
     CAST([Reorder Quantity] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Alternative Item No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Alternative Item No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Alternative Item No_], '''', '''''') + '''' + ', ' +
 
         -- "Unit List Price" NUMERIC(38, 20) NOT NULL
     CAST([Unit List Price] AS NVARCHAR(MAX)) + ', ' +
@@ -130,7 +130,7 @@ SELECT
     CAST([Duty Due _] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Duty Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Duty Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Duty Code], '''', '''''') + '''' + ', ' +
 
         -- "Gross Weight" NUMERIC(38, 20) NOT NULL
     CAST([Gross Weight] AS NVARCHAR(MAX)) + ', ' +
@@ -145,19 +145,19 @@ SELECT
     CAST([Unit Volume] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Durability" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Durability, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Durability, '''', '''''') + '''' + ', ' +
 
         -- "Freight Type" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Freight Type], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Freight Type], '''', '''''') + '''' + ', ' +
 
         -- "Tariff No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Tariff No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Tariff No_], '''', '''''') + '''' + ', ' +
 
         -- "Duty Unit Conversion" NUMERIC(38, 20) NOT NULL
     CAST([Duty Unit Conversion] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Country_Region Purchased Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Country_Region Purchased Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Country_Region Purchased Code], '''', '''''') + '''' + ', ' +
 
         -- "Budget Quantity" NUMERIC(38, 20) NOT NULL
     CAST([Budget Quantity] AS NVARCHAR(MAX)) + ', ' +
@@ -178,37 +178,37 @@ SELECT
     CASE WHEN [Price Includes VAT] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "VAT Bus_ Posting Gr_ (Price)" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Bus_ Posting Gr_ (Price)], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Bus_ Posting Gr_ (Price)], '''', '''''') + '''' + ', ' +
 
         -- "Gen_ Prod_ Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Gen_ Prod_ Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Gen_ Prod_ Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "Picture" BYTEA
     CASE WHEN Picture IS NULL THEN 'NULL' ELSE 'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(CONVERT(VARBINARY(MAX), Picture)), 3, DATALENGTH(CONVERT(VARBINARY(MAX), Picture)) * 2) + '''' END + ', ' +
 
         -- "Country_Region of Origin Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Country_Region of Origin Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Country_Region of Origin Code], '''', '''''') + '''' + ', ' +
 
         -- "Automatic Ext_ Texts" BOOLEAN NOT NULL
     CASE WHEN [Automatic Ext_ Texts] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "No_ Series" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([No_ Series], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([No_ Series], '''', '''''') + '''' + ', ' +
 
         -- "Tax Group Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Tax Group Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Tax Group Code], '''', '''''') + '''' + ', ' +
 
         -- "VAT Prod_ Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Prod_ Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Prod_ Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "Reserve" INTEGER NOT NULL
     CAST(Reserve AS NVARCHAR(MAX)) + ', ' +
 
         -- "Global Dimension 1 Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Global Dimension 1 Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Global Dimension 1 Code], '''', '''''') + '''' + ', ' +
 
         -- "Global Dimension 2 Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Global Dimension 2 Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Global Dimension 2 Code], '''', '''''') + '''' + ', ' +
 
         -- "Stockout Warning" INTEGER NOT NULL
     CAST([Stockout Warning] AS NVARCHAR(MAX)) + ', ' +
@@ -217,7 +217,7 @@ SELECT
     CAST([Prevent Negative Inventory] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Application Wksh_ User ID" VARCHAR(128) NOT NULL
-    '''' + REPLACE(REPLACE([Application Wksh_ User ID], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Application Wksh_ User ID], '''', '''''') + '''' + ', ' +
 
         -- "Assembly Policy" INTEGER NOT NULL
     CAST([Assembly Policy] AS NVARCHAR(MAX)) + ', ' +
@@ -229,7 +229,7 @@ SELECT
     CAST([Lot Size] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Serial Nos_" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Serial Nos_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Serial Nos_], '''', '''''') + '''' + ', ' +
 
         -- "Last Unit Cost Calc_ Date" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Last Unit Cost Calc_ Date], 120) + '''' + ', ' +
@@ -262,7 +262,7 @@ SELECT
     CAST([Order Multiple] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Safety Lead Time" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Safety Lead Time], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Safety Lead Time], '''', '''''') + '''' + ', ' +
 
         -- "Flushing Method" INTEGER NOT NULL
     CAST([Flushing Method] AS NVARCHAR(MAX)) + ', ' +
@@ -274,13 +274,13 @@ SELECT
     CAST([Rounding Precision] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Sales Unit of Measure" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Sales Unit of Measure], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Sales Unit of Measure], '''', '''''') + '''' + ', ' +
 
         -- "Purch_ Unit of Measure" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Purch_ Unit of Measure], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Purch_ Unit of Measure], '''', '''''') + '''' + ', ' +
 
         -- "Time Bucket" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Time Bucket], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Time Bucket], '''', '''''') + '''' + ', ' +
 
         -- "Reordering Policy" INTEGER NOT NULL
     CAST([Reordering Policy] AS NVARCHAR(MAX)) + ', ' +
@@ -292,13 +292,13 @@ SELECT
     CAST([Manufacturing Policy] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Rescheduling Period" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Rescheduling Period], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Rescheduling Period], '''', '''''') + '''' + ', ' +
 
         -- "Lot Accumulation Period" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Lot Accumulation Period], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Lot Accumulation Period], '''', '''''') + '''' + ', ' +
 
         -- "Dampener Period" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Dampener Period], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Dampener Period], '''', '''''') + '''' + ', ' +
 
         -- "Dampener Quantity" NUMERIC(38, 20) NOT NULL
     CAST([Dampener Quantity] AS NVARCHAR(MAX)) + ', ' +
@@ -307,46 +307,46 @@ SELECT
     CAST([Overflow Level] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Manufacturer Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Manufacturer Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Manufacturer Code], '''', '''''') + '''' + ', ' +
 
         -- "Item Category Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Item Category Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Item Category Code], '''', '''''') + '''' + ', ' +
 
         -- "Created From Nonstock Item" BOOLEAN NOT NULL
     CASE WHEN [Created From Nonstock Item] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Product Group Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Product Group Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Product Group Code], '''', '''''') + '''' + ', ' +
 
         -- "Service Item Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Service Item Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Service Item Group], '''', '''''') + '''' + ', ' +
 
         -- "Item Tracking Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Item Tracking Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Item Tracking Code], '''', '''''') + '''' + ', ' +
 
         -- "Lot Nos_" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Lot Nos_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Lot Nos_], '''', '''''') + '''' + ', ' +
 
         -- "Expiration Calculation" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Expiration Calculation], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Expiration Calculation], '''', '''''') + '''' + ', ' +
 
         -- "Special Equipment Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Special Equipment Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Special Equipment Code], '''', '''''') + '''' + ', ' +
 
         -- "Put-away Template Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Put-away Template Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Put-away Template Code], '''', '''''') + '''' + ', ' +
 
         -- "Put-away Unit of Measure Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Put-away Unit of Measure Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Put-away Unit of Measure Code], '''', '''''') + '''' + ', ' +
 
         -- "Phys Invt Counting Period Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Phys Invt Counting Period Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Phys Invt Counting Period Code], '''', '''''') + '''' + ', ' +
 
         -- "Last Counting Period Update" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Last Counting Period Update], 120) + '''' + ', ' +
 
         -- "Next Counting Period" VARCHAR(250) NOT NULL
-    '''' + REPLACE(REPLACE([Next Counting Period], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Next Counting Period], '''', '''''') + '''' + ', ' +
 
         -- "Use Cross-Docking" BOOLEAN NOT NULL
     CASE WHEN [Use Cross-Docking] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
@@ -358,7 +358,7 @@ SELECT
     '''' + CONVERT(NVARCHAR(MAX), [Next Counting End Date], 120) + '''' + ', ' +
 
         -- "Description 3" VARCHAR(100) NOT NULL
-    '''' + REPLACE(REPLACE([Description 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Description 3], '''', '''''') + '''' + ', ' +
 
         -- "No Commission Statement" BOOLEAN NOT NULL
     CASE WHEN [No Commission Statement] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
@@ -367,10 +367,10 @@ SELECT
     CAST(Itemtype AS NVARCHAR(MAX)) + ', ' +
 
         -- "Routing No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Routing No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Routing No_], '''', '''''') + '''' + ', ' +
 
         -- "Production BOM No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Production BOM No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Production BOM No_], '''', '''''') + '''' + ', ' +
 
         -- "Single-Level Material Cost" NUMERIC(38, 20) NOT NULL
     CAST([Single-Level Material Cost] AS NVARCHAR(MAX)) + ', ' +
@@ -406,7 +406,7 @@ SELECT
     CASE WHEN Critical = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Common Item No_" VARCHAR(20) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE([Common Item No_], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Common Item No_], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Item];
