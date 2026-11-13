@@ -17,6 +17,10 @@ DECLARE
 BEGIN
     RAISE NOTICE 'accounting_docs_to_repost_reorder: p_DateAcct_Trunc=%', p_DateAcct_Trunc;
 
+    -- The callers insert many rows into the queue in the same transaction and call this function right away.
+    -- Without fresh statistics the planner can assume an (almost) empty queue and pick a very slow nested loop.
+    ANALYZE "de_metas_acct".accounting_docs_to_repost;
+
     WITH docs AS (SELECT t.*,
                          ROW_NUMBER() OVER (
                              ORDER BY --
