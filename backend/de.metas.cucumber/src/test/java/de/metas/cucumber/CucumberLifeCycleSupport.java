@@ -25,6 +25,7 @@ package de.metas.cucumber;
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
 import de.metas.acct.housekeeping.AddMissingAcctRecords;
+import de.metas.cucumber.stepdefs.pos.SumUpApiStub;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -48,6 +49,7 @@ import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCON
 import static de.metas.cucumber.InfrastructureSupport.DB_NAME;
 import static de.metas.cucumber.InfrastructureSupport.DB_PASSWORD;
 import static de.metas.cucumber.InfrastructureSupport.DB_USER;
+import static de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.SYSCONFIG_FailOnTrxMismatch;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
 import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_HOUSE_KEEPING;
 
@@ -80,12 +82,18 @@ public class CucumberLifeCycleSupport
 			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
 			System.setProperty("server.port", Integer.toString(appServerPort));
 
+			// in-process SumUp API stub; SumUpClientFactory reads the base URL from this property
+			System.setProperty("sumup.baseUrl", SumUpApiStub.start());
+			// the scenarios drive SumUp polling explicitly (step "metasfresh polls SumUp"); the background poller would race them
+			System.setProperty("sumup.pendingTransactionsUpdater.enabled", "false");
+
 			System.setProperty("java.awt.headless", "true"); // "simulate headless mode
 			System.setProperty("app-server-run-headless", "true"); //
 			System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //
 			System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait
 			System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
 			System.setProperty(SYSCONFIG_POLLINTERVAL_MILLIS, "500");
+			System.setProperty(SYSCONFIG_FailOnTrxMismatch, "Y"); // a flag written outside its record's transaction fails the scenario instead of only warning
 
 			// This is a workaround;
 			// Apparently, backend/metasfresh-dist/serverRoot/src/main/resources/c3p0.properties is not found in the classpass when we run this on github.

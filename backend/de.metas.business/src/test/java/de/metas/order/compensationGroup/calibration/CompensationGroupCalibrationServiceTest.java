@@ -83,7 +83,7 @@ class CompensationGroupCalibrationServiceTest
 		rule.setSeqNo(10);
 		rule.setC_BPartner_ID(bpartnerId);
 		rule.setM_Product_ID(productId.getRepoId());
-		rule.setGroupCompensationCalibrationFactor(new BigDecimal(factor));
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(rule, Percent.of(factor));
 		saveRecord(rule);
 		return rule;
 	}

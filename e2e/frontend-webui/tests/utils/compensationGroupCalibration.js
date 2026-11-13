@@ -216,15 +216,21 @@ export async function openLineAdvancedEdit(page, productCode) {
 
 /**
  * The calibration group of the line's advanced edit shows factor, rule (by its name, which starts with its SeqNo)
- * and uncalibrated quantity, all read-only, and nothing else (no unit widget; the line unit is shown once, outside it).
+ * and uncalibrated quantity, and nothing else. The factor of a calibrated line of a draft document is editable here
+ * (read-only logic: no rule and no uncalibrated qty); rule and uncalibrated quantity are read-only (no unit widget; the line unit is shown once, outside it).
+ * With `factorEditable: false` the factor is expected read-only too (e.g. a completed document).
  */
-export async function expectCalibrationGroup(page, productCode, { factor, rulePrefix, uncalibrated, snapshotName }) {
+export async function expectCalibrationGroup(page, productCode, { factor, rulePrefix, uncalibrated, snapshotName, factorEditable = true }) {
     await openLineAdvancedEdit(page, productCode);
     const modal = page.locator('.panel-modal-content');
     const factorInput = modal.locator(`.form-field-${FIELD_FACTOR} input`);
     await expect(factorInput).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     await expect(factorInput).toHaveValue(new RegExp(`^${factor.replace('.', '[.,]')}$`));
-    await expect(factorInput).toBeDisabled();
+    if (factorEditable) {
+        await expect(factorInput).toBeEnabled();
+    } else {
+        await expect(factorInput).toBeDisabled();
+    }
 
     const ruleInput = modal.locator(`.form-field-${FIELD_RULE} input`).first();
     await expect(ruleInput).toHaveValue(new RegExp(`^${rulePrefix}_.+`));
@@ -245,6 +251,52 @@ export async function expectCalibrationGroup(page, productCode, { factor, rulePr
     await modal.locator(`.form-field-${FIELD_UNCALIBRATED}`).scrollIntoViewIfNeeded();
     await snap(page, snapshotName ?? `advanced-edit-${productCode.split('_')[0].toLowerCase()}-calibrated`);
     await AdvancedEdit.close();
+}
+
+/**
+ * Type a new Kalibrierfaktor into the advanced edit of the line of the product ('' blanks it), commit it with Tab and
+ * wait for the save response. Accepted: the Menge of the advanced edit shows `expectedQty`. Rejected (`rejected: true`):
+ * the save fails (not OK, user-friendly error flag in the JSON) and exactly one error notification shows (language-independent, no text match). Then close and reload, so the grid shows what is stored.
+ */
+export async function setCalibrationFactor(page, productCode, factor, { expectedQty, rejected = false, snapshotName } = {}) {
+    await openLineAdvancedEdit(page, productCode);
+    const modal = page.locator('.panel-modal-content');
+    const factorInput = modal.locator(`.form-field-${FIELD_FACTOR} input`);
+    await expect(factorInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+    await factorInput.click();
+    await page.keyboard.press('Control+a');
+    await factorInput.fill(String(factor));
+    const saveResponse = page.waitForResponse(
+        (response) => response.request().method() === 'PATCH' && /\/window\/\d+\/\d+\//.test(response.url())
+            && (response.request().postData() || '').includes(FIELD_FACTOR),
+        { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await page.keyboard.press('Tab');
+    const response = await saveResponse;
+    let errorNotification = null;
+    if (rejected) {
+        expect(response.ok(), `factor "${factor}" on the ${productCode} line is refused`).toBe(false);
+        // a user-friendly save error is shown as an error notification (frontend App.js), not as a field error
+        const body = await response.json();
+        expect(body.userFriendlyError, `the refusal of factor "${factor}" is a user-friendly error`).toBe(true);
+        errorNotification = page.locator('.notification-handler .notification-item.error');
+        await expect(errorNotification).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    } else {
+        expect(response.ok(), `factor "${factor}" on the ${productCode} line is saved`).toBe(true);
+        const qtyInput = modal.locator('.form-field-QtyEntered input');
+        await expect.poll(async () => parseGermanNumber(await qtyInput.inputValue()), {
+            timeout: SLOW_ACTION_TIMEOUT,
+            message: `Menge of the ${productCode} line after factor "${factor}"`,
+        }).toBeCloseTo(expectedQty, 2);
+    }
+    await snap(page, snapshotName ?? `advanced-edit-${productCode.split('_')[0].toLowerCase()}-factor-${factor === '' ? 'empty' : factor}`);
+    if (errorNotification) {
+        await errorNotification.locator('.meta-icon-close-1').click();
+        await expect(errorNotification).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+    }
+    await AdvancedEdit.close();
+    await page.reload();
+    await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }
 
 /** With no rule matched the calibration group is not shown. */
@@ -306,6 +358,78 @@ export async function setLineQtyInline(page, productCode, quantity) {
     );
     await page.keyboard.press('Enter');
     await saved;
+    await page.reload();
+    await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+}
+
+/** The numeric value of the field shown in the open advanced edit (de_DE format, e.g. "1.500,5" -> 1500.5). */
+async function advancedEditQty(modal, fieldName) {
+    return parseGermanNumber(await modal.locator(`.form-field-${fieldName} input`).first().inputValue());
+}
+
+/**
+ * Pick the Gebinde (packing instruction, M_HU_PI_Item_Product_ID) of the line of the product in its advanced edit,
+ * by the TU name, and wait for the save response. The line then shows `expectedQtyTU` / `expectedQty`
+ * (the packing callout recomputes Menge from the Gebindemenge). Then close and reload, so the grid shows what is stored.
+ */
+export async function setLinePackingInstruction(page, productCode, tuName, { expectedQtyTU, expectedQty } = {}) {
+    await openLineAdvancedEdit(page, productCode);
+    const modal = page.locator('.panel-modal-content');
+    const field = modal.locator('.form-field-M_HU_PI_Item_Product_ID');
+    await field.locator('input').first().click();
+    const option = page.locator('.input-dropdown-list .input-dropdown-list-option').filter({ hasText: tuName }).first();
+    await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const saveResponse = page.waitForResponse(
+        (response) => response.request().method() === 'PATCH' && /\/window\/\d+\/\d+\//.test(response.url())
+            && (response.request().postData() || '').includes('M_HU_PI_Item_Product_ID'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await option.click();
+    const response = await saveResponse;
+    expect(response.ok(), `Gebinde "${tuName}" on the ${productCode} line is saved`).toBe(true);
+    await expect(field.locator('input').first()).toHaveValue(new RegExp(tuName));
+    if (expectedQtyTU !== undefined) {
+        await expect.poll(() => advancedEditQty(modal, 'QtyEnteredTU'), { timeout: SLOW_ACTION_TIMEOUT, message: `Gebindemenge of the ${productCode} line` })
+            .toBeCloseTo(expectedQtyTU, 2);
+    }
+    if (expectedQty !== undefined) {
+        await expect.poll(() => advancedEditQty(modal, 'QtyEntered'), { timeout: SLOW_ACTION_TIMEOUT, message: `Menge of the ${productCode} line` })
+            .toBeCloseTo(expectedQty, 2);
+    }
+    await snap(page, `advanced-edit-${productCode.split('_')[0].toLowerCase()}-packing-instruction`);
+    await AdvancedEdit.close();
+    await page.reload();
+    await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+}
+
+/**
+ * Type a new Gebindemenge (QtyEnteredTU) into the advanced edit of the line of the product, commit it with Tab and wait
+ * for the save response. The packing callout sets Menge = Gebindemenge x CUs per TU (`expectedQty`); on a calibrated
+ * line the factor follows that Menge (`expectedFactor`). Then close and reload, so the grid shows what is stored.
+ */
+export async function setLineQtyTU(page, productCode, qtyTU, { expectedQty, expectedFactor }) {
+    await openLineAdvancedEdit(page, productCode);
+    const modal = page.locator('.panel-modal-content');
+    const qtyTUInput = modal.locator('.form-field-QtyEnteredTU input').first();
+    await expect(qtyTUInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+    await qtyTUInput.click();
+    await page.keyboard.press('Control+a');
+    await qtyTUInput.fill(String(qtyTU));
+    const saveResponse = page.waitForResponse(
+        (response) => response.request().method() === 'PATCH' && /\/window\/\d+\/\d+\//.test(response.url())
+            && (response.request().postData() || '').includes('QtyEnteredTU'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await page.keyboard.press('Tab');
+    const response = await saveResponse;
+    expect(response.ok(), `Gebindemenge ${qtyTU} on the ${productCode} line is saved`).toBe(true);
+    await expect.poll(() => advancedEditQty(modal, 'QtyEntered'), { timeout: SLOW_ACTION_TIMEOUT, message: `Menge of the ${productCode} line after Gebindemenge ${qtyTU}` })
+        .toBeCloseTo(expectedQty, 2);
+    // the factor is stored with 4 decimals (0.6667 = 66.67 %)
+    await expect.poll(() => advancedEditQty(modal, FIELD_FACTOR), { timeout: SLOW_ACTION_TIMEOUT, message: `Kalibrierfaktor of the ${productCode} line after Gebindemenge ${qtyTU}` })
+        .toBeCloseTo(expectedFactor, 4);
+    await snap(page, `advanced-edit-${productCode.split('_')[0].toLowerCase()}-qty-tu-${qtyTU}`);
+    await AdvancedEdit.close();
     await page.reload();
     await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }

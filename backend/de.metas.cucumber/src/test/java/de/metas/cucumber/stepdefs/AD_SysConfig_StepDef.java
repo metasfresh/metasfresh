@@ -26,13 +26,16 @@ import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -40,9 +43,13 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.DB;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -65,9 +72,30 @@ public class AD_SysConfig_StepDef
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	/**
+	 * Rows this scenario deactivated via {@link #temporarily_deactivate_sys_config_below_system_level(String)}; reactivated by
+	 * {@link #restoreTemporarySysConfigsAfterScenario()}.
+	 */
+	private final List<Integer> deactivatedSysConfigIds = new ArrayList<>();
+
+	/**
 	 * {@code ReportsClient} memoizes the report server built from this sys config and rebuilds it only on a reset of all caches.
 	 */
 	private static final String SYSCONFIG_ReportsServerClass = "de.metas.report.jasper.client.JRServerClass";
+
+	/**
+	 * Sysconfigs this scenario overwrote via {@link #temporarily_set_sys_config_to_product_category}, mapped to the
+	 * state of their {@code AD_Client_ID=0, AD_Org_ID=0} row from BEFORE the overwrite. Deliberately separate from
+	 * {@link #priorValueBySysConfigName}: that map only knows "null = nothing to restore", whereas here
+	 * {@code PriorSysConfigState.rowExisted} distinguishes "no row" (delete it again) from "row with NULL/empty value" (restore that).
+	 */
+	private final Map<String, PriorSysConfigState> priorStateByCategorySysConfigName = new LinkedHashMap<>();
+
+	@lombok.Value
+	private static class PriorSysConfigState
+	{
+		boolean rowExisted;
+		@Nullable String value;
+	}
 
 	/**
 	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
@@ -166,6 +194,75 @@ public class AD_SysConfig_StepDef
 		rememberPriorValue(sysConfigName);
 		setSysConfigIntValue(sysConfigName, value);
 		resetSysConfigCache();
+	}
+
+	/**
+	 * Temporarily sets a sys config to the {@code M_Product_Category_ID} of a product category created in this
+	 * scenario; the original state (row absent, or its value) is restored by
+	 * {@link #restoreCategorySysConfigsAfterScenario()}, which deletes the {@code AD_Client_ID=0, AD_Org_ID=0} row again
+	 * if there was none before. Do not use the same sys config name with this step and the other temporary steps in one scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And temporarily set sys config 'PackingMaterialProductCategoryID' to the M_Product_Category identified by 'pallet_category'
+	 * </pre>
+	 */
+	@And("temporarily set sys config {string} to the M_Product_Category identified by {string}")
+	public void temporarily_set_sys_config_to_product_category(@NonNull final String sysConfigName, @NonNull final String productCategoryIdentifier)
+	{
+		final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
+
+		if (!priorStateByCategorySysConfigName.containsKey(sysConfigName))
+		{
+			final int rowCount = DB.getSQLValueEx(ITrx.TRXNAME_None,
+					"SELECT COUNT(1) FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=0 AND AD_Org_ID=0", sysConfigName);
+			final String value = rowCount > 0
+					? DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT Value FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=0 AND AD_Org_ID=0", sysConfigName)
+					: null;
+			priorStateByCategorySysConfigName.put(sysConfigName, new PriorSysConfigState(rowCount > 0, value));
+		}
+
+		setSysConfigIntValue(sysConfigName, productCategory.getM_Product_Category_ID());
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	/**
+	 * Cleanup for {@link #temporarily_set_sys_config_to_product_category}; independent of
+	 * {@link #restoreTemporarySysConfigsAfterScenario()} (own map, own hook, no ordering dependency).
+	 */
+	@After
+	public void restoreCategorySysConfigsAfterScenario()
+	{
+		if (priorStateByCategorySysConfigName.isEmpty())
+		{
+			return;
+		}
+
+		try
+		{
+			for (final Map.Entry<String, PriorSysConfigState> entry : priorStateByCategorySysConfigName.entrySet())
+			{
+				final String sysConfigName = entry.getKey();
+				final PriorSysConfigState prior = entry.getValue();
+				if (prior.isRowExisted())
+				{
+					sysConfigBL.setValue(sysConfigName, prior.getValue(), ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				}
+				else
+				{
+					DB.executeUpdateAndThrowExceptionOnFail(
+							"DELETE FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=0 AND AD_Org_ID=0",
+							new Object[] { sysConfigName },
+							ITrx.TRXNAME_None);
+				}
+			}
+		}
+		finally
+		{
+			priorStateByCategorySysConfigName.clear();
+			CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		}
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -293,6 +390,45 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
+	 * Deactivates, for the current scenario, every active row of the sys config except the SYSTEM row (client 0, org 0). The scenario then
+	 * reads the SYSTEM value set by the "temporarily set sys config" steps (or the code's default, if there is none) at every client and org,
+	 * whatever more specific row another test left behind (e.g. a mobile E2E spec writes at the sys config's configuration level).
+	 * The rows are reactivated after the scenario.
+	 * <p>
+	 * Deactivating and reactivating save the row through the {@code AD_SysConfig} interceptor, which recomputes its
+	 * {@code ConfigurationLevel}; so a row whose stored level differs from the computed one is normalized (e.g. an org row to 'O' when there
+	 * is no SYSTEM row) and is not restored with exactly its prior level.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And temporarily deactivate sys config 'de.metas.pos.InvoiceCardSettlement.ReleaseAfterSeconds' below SYSTEM level
+	 * </pre>
+	 */
+	@And("temporarily deactivate sys config {string} below SYSTEM level")
+	public void temporarily_deactivate_sys_config_below_system_level(@NonNull final String sysConfigName)
+	{
+		final ICompositeQueryFilter<I_AD_SysConfig> belowSystemLevel = queryBL.createCompositeQueryFilter(I_AD_SysConfig.class)
+				.setJoinOr()
+				.addNotEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM)
+				.addNotEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID_SYSTEM);
+
+		queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
+				.filter(belowSystemLevel)
+				.create()
+				.list()
+				.forEach(sysConfig -> {
+					sysConfig.setIsActive(false);
+					InterfaceWrapperHelper.saveRecord(sysConfig);
+					deactivatedSysConfigIds.add(sysConfig.getAD_SysConfig_ID());
+				});
+
+		resetSysConfigCache();
+	}
+
+	/**
 	 * Setting a value also fires a cache invalidation event, but that event may not be processed before the next step runs.
 	 */
 	private static void resetSysConfigCache()
@@ -325,40 +461,82 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * The only restore of the sysconfigs this scenario changed temporarily: an {@code @After} hook, so it also runs when a step failed.
-	 * A sysconfig without prior value is deleted again.
+	 * Restores the sysconfigs in {@link #priorValueBySysConfigName} (the product-category step has its own {@link #restoreCategorySysConfigsAfterScenario()}): an {@code @After} hook, so it also runs when a step failed.
+	 * A sysconfig without prior value is deleted again; rows deactivated below SYSTEM level are reactivated.
 	 */
 	@After
 	public void restoreTemporarySysConfigsAfterScenario()
 	{
-		if (priorValueBySysConfigName.isEmpty())
+		if (priorValueBySysConfigName.isEmpty() && deactivatedSysConfigIds.isEmpty())
 		{
 			return;
 		}
 
-		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
+		// every row is attempted, also after one failed, so a single failure does not leave the others changed for later scenarios
+		final List<RuntimeException> restoreFailures = new ArrayList<>();
+		try
 		{
-			final String sysConfigName = entry.getKey();
-			final String priorValue = entry.getValue();
-			if (priorValue == null)
+			for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
 			{
-				deleteSystemSysConfig(sysConfigName);
+				try
+				{
+					restoreSystemSysConfig(entry.getKey(), entry.getValue());
+				}
+				catch (final RuntimeException ex)
+				{
+					restoreFailures.add(ex);
+				}
+			}
+
+			// after the SYSTEM rows: a SYSTEM row created by this scenario has ConfigurationLevel 'S', which forbids saving an org-level row
+			for (final int sysConfigId : deactivatedSysConfigIds)
+			{
+				try
+				{
+					final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.load(sysConfigId, I_AD_SysConfig.class);
+					sysConfig.setIsActive(true);
+					InterfaceWrapperHelper.saveRecord(sysConfig);
+				}
+				catch (final RuntimeException ex)
+				{
+					restoreFailures.add(ex);
+				}
+			}
+		}
+		finally
+		{
+			deactivatedSysConfigIds.clear();
+
+			final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
+			priorValueBySysConfigName.clear();
+			if (reportServerChanged)
+			{
+				CacheMgt.get().reset();
 			}
 			else
 			{
-				sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				resetSysConfigCache();
 			}
 		}
 
-		final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
-		priorValueBySysConfigName.clear();
-		if (reportServerChanged)
+		if (!restoreFailures.isEmpty())
 		{
-			CacheMgt.get().reset();
+			final RuntimeException firstFailure = restoreFailures.get(0);
+			restoreFailures.subList(1, restoreFailures.size()).forEach(firstFailure::addSuppressed);
+			throw firstFailure;
+		}
+	}
+
+	/** Puts the SYSTEM row back to its prior value, or deletes it if there was none. */
+	private void restoreSystemSysConfig(@NonNull final String sysConfigName, @Nullable final String priorValue)
+	{
+		if (priorValue == null)
+		{
+			deleteSystemSysConfig(sysConfigName);
 		}
 		else
 		{
-			resetSysConfigCache();
+			sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 		}
 	}
 }

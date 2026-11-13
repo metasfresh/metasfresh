@@ -139,3 +139,6 @@ WHERE TRUE
 $$
     LANGUAGE sql STABLE
 ;
+
+COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(date, character varying, numeric) IS 'Used by de.metas.bpartner.service.impl.BPartnerStatsDAO.retrieveOpenItems (C_BPartner_Stats.OpenItems). Do not drop it without changing that caller.'
+;

@@ -58,6 +58,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -70,6 +71,7 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -611,7 +613,7 @@ public class C_OrderLine_StepDef
 	 *   <ul>
 	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
 	 *     <li>{@code C_Flatrate_Term_ID}, {@code QtyEntered}, {@code M_HU_PI_Item_Product_ID},
-	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID} — optional,
+	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID}, {@code Description} — optional,
 	 *         each is applied only when the column is present</li>
 	 *     <li>{@code AsUIAction} — optional, defaults to {@code N}</li>
 	 *   </ul>
@@ -798,6 +800,12 @@ public class C_OrderLine_StepDef
 		{
 			final I_C_Project project = projectTable.get(projectIdentifier);
 			orderLine.setC_Project_ID(project.getC_Project_ID());
+		}
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_Description);
+		if (description != null)
+		{
+			orderLine.setDescription(description);
 		}
 
 		if (asUIAction)
@@ -1154,7 +1162,7 @@ public class C_OrderLine_StepDef
 						.isEqualTo(vendorBPartnerId.getRepoId()));
 
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)
-				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor), expected, "GroupCompensationCalibrationFactor", identifierStr));
+				.ifPresent(expected -> assertNullableBigDecimal(softly, Percent.toFractionBigDecimalOrNull(OrderGroupRepository.getCalibrationFactor(orderLine)), expected, "GroupCompensationCalibrationFactor", identifierStr));
 
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)
 				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated), expected, "GroupCompensationQtyEnteredUncalibrated", identifierStr));

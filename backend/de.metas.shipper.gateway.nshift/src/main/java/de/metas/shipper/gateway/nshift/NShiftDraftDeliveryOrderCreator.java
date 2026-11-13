@@ -243,11 +243,11 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	}
 
 	@NonNull
-	private static ContactPerson toContact(@NonNull final I_C_BPartner bPartner,
-										   @NonNull final I_C_BPartner_Location bPLocation,
-										   @Nullable final User contact)
+	private ContactPerson toContact(@NonNull final I_C_BPartner bPartner,
+									@NonNull final I_C_BPartner_Location bPLocation,
+									@Nullable final User contact)
 	{
-		return DeliveryOrderUtil.getContactPerson(bPartner, bPLocation, contact);
+		return DeliveryOrderUtil.getContactPerson(bPartner, bPLocation, contact, userRepository);
 	}
 
 	@NonNull

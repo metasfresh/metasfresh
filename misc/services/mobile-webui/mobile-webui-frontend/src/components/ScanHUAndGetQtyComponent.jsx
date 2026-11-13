@@ -75,6 +75,9 @@ const ScanHUAndGetQtyComponent = ({
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState(undefined);
   const [isProcessing, setProcessing] = useState(false);
+  // synchronous twin of isProcessing: state is only visible after the next render, so two taps handled
+  // before that render would both pass a state-only check
+  const isResultInFlightRef = useRef(false);
   // GRAI Flow-Through: when graiScanEnabled, the confirmed qty result is stashed here and the GRAI
   // capture is shown inline (non-skippable) before the pick is reported, so qty + GRAIs go out in one
   // atomic onResult call.
@@ -84,18 +87,16 @@ const ScanHUAndGetQtyComponent = ({
   // actual list of already-reported LU-skips, not just a count. A skipped code is NOT added to
   // `codes` (it must never occupy a crate slot), so without its own memory a second delivery of the
   // same physical scan would re-skip and re-count it. BarcodeScannerComponent and
-  // useKeyboardBarcodeReader can both deliver the same scan in one event tick (see the handler-identity
-  // comment below); feeding `prev.skippedCodes` back into mergeGraiArrays makes a redelivered skip a
+  // GraiCapturePanel's own useKeyboardBarcodeReader can both deliver the same scan (see GraiCapturePanel);
+  // feeding `prev.skippedCodes` back into mergeGraiArrays makes a redelivered skip a
   // silent no-op, so the count (and the toast) fire at most once per physical crate.
   const [graiCapture, setGraiCapture] = useState({ codes: [], skippedCodes: [] });
   const { codes: graiCodes, skippedCodes } = graiCapture;
   const skippedCount = skippedCodes.length;
-  // Stable handler identities (matching the HU-Manager useGrais hook): an inline arrow here would be
-  // a new function every render, so GraiCapturePanel's onResolvedResult useCallback would change each
-  // render and BarcodeScannerComponent would re-subscribe its keyboard listener mid-scan — dropping
-  // codes during a rapid RFID burst (multiple GRAIs scanned back-to-back). handleAddGrais additionally
-  // depends on `existingLuGrais`, which is stable for the whole capture session (fetched once per
-  // pick-step entry — see useAvailablePickingTargets), so identity stability still holds.
+  // Stable handler identities (matching the HU-Manager useGrais hook), so GraiCapturePanel's memoised
+  // callbacks do not change on every render. handleAddGrais additionally depends on `existingLuGrais`,
+  // which is stable for the whole capture session (fetched once per pick-step entry — see
+  // useAvailablePickingTargets), so identity stability still holds.
   const handleAddGrais = useCallback(
     (newGrais) =>
       setGraiCapture((prev) => {
@@ -225,15 +226,26 @@ const ScanHUAndGetQtyComponent = ({
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
 
-  // Mirrors GetQuantityDialog.fireOnQtyChange: isProcessing is what suppresses the scan target while
-  // the pick's POST is in flight, and it has to be cleared on the error branch too.
+  // isProcessing suppresses the scan target and the GRAI save button while the pick's POST is in flight,
+  // so a second tap cannot book the same line again. isResultInFlightRef is the synchronous twin that
+  // also blocks a second tap handled before isProcessing's state update has rendered. Cleared in a finally,
+  // so a failed pick gives the screen back to the operator.
   const fireOnResult = (onResultPayload) => {
+    if (isResultInFlightRef.current) {
+      return undefined;
+    }
+    const clearInFlight = () => {
+      isResultInFlightRef.current = false;
+      setProcessing(false);
+    };
+
+    isResultInFlightRef.current = true;
     setProcessing(true);
     try {
       const promise = onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
-      return doFinally(promise, () => setProcessing(false));
+      return doFinally(promise, clearInFlight);
     } catch (error) {
-      setProcessing(false);
+      clearInFlight();
       throw error;
     }
   };
@@ -482,11 +494,7 @@ const ScanHUAndGetQtyComponent = ({
             captionKey="activities.picking.graiScan.save.buttonCaption"
             testId="grai-save-button"
             disabled={!canSave}
-            onClick={() =>
-              onResult({ ...pendingGraiResult, setGrais: true, graiCodes: assignedGrais })?.catch?.((error) =>
-                toastErrorFromObj(error)
-              )
-            }
+            onClick={() => fireOnResult({ ...pendingGraiResult, setGrais: true, graiCodes: assignedGrais })}
             additionalCssClass="action-button"
           />
         </GraiCapturePanel>

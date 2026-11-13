@@ -245,6 +245,256 @@ Feature: Bonus that the customer deducts when paying an invoice
 
   # ##############################################################################################
   # ##############################################################################################
+  # A goods-category bonus and a packaging-category bonus, each on its own base and VAT
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC2b
+  Scenario: A goods-category bonus and a packaging-category bonus become two credit memo lines, each on its own base and VAT; the goods bonus is split per project
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+      | conditionsPack | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 5.2           | goodsCategory         | bonusWare        | Y                   |
+      | configPack | conditionsPack           | monthlySchedule      | 0.8           | packCategory          | bonusPack        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+      | termPack   | conditionsPack                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the sales invoice with the goods on two projects: 6 x 10.00 on project 1 + 4 x 10.00 on project 2 + 5 x 10.00 crates (no project)
+    # GrandTotal = 100.00 + 7.00 + 50.00 + 9.50 = 166.50
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project1   |
+      | project2   |
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | projectInvoice | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Project_ID |
+      | goodsLineP1  | projectInvoice | goodsProduct | 6 PCE       | project1     |
+      | goodsLineP2  | projectInvoice | goodsProduct | 4 PCE       | project2     |
+      | crateLine    | projectInvoice | crateProduct | 5 PCE       | null         |
+    And the invoice identified by projectInvoice is completed
+
+    # the goods bonus: 5.2 % of the 100.00 goods = 5.20 + 7 % VAT 0.36 = 5.56; split by base share: 3.12 on project 1 (60.00), 2.08 on project 2 (40.00)
+    # the packaging bonus: 0.8 % of the 50.00 crates = 0.40 + 19 % VAT 0.08 = 0.48; together 6.04
+    # the customer pays 166.50 - 6.04 = 160.46
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 160.46 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID   | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | projectInvoice | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | projectInvoice  | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 6.04 EUR   | PB         | true   |
+    And validate invoice lines for bonusCreditMemo:
+      | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID | C_Project_ID |
+      | bonusWare    | 1           | 3.12       | lowTax   | project1     |
+      | bonusWare    | 1           | 2.08       | lowTax   | project2     |
+      | bonusPack    | 1           | 0.40       | highTax  | null         |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Account_ID       | Record_ID       | M_Product_ID | C_Tax_ID |
+      | P_Revenue_Acct        | 3.12 EUR    |             | bonusRevenueAcct | bonusCreditMemo | bonusWare    | lowTax   |
+      | P_Revenue_Acct        | 2.08 EUR    |             | bonusRevenueAcct | bonusCreditMemo | bonusWare    | lowTax   |
+      | P_Revenue_Acct        | 0.40 EUR    |             | bonusRevenueAcct | bonusCreditMemo | bonusPack    | highTax  |
+      | T_Due_Acct            | 0.36 EUR    |             |                  | bonusCreditMemo |              | lowTax   |
+      | T_Due_Acct            | 0.08 EUR    |             |                  | bonusCreditMemo |              | highTax  |
+      | C_Receivable_Acct     |             | 6.04 EUR    |                  | bonusCreditMemo |              | -        |
+      | *                     |             |             |                  | bonusCreditMemo |              |          |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # The goods on two projects: one bonus line per project, each carrying its project
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC10
+  Scenario: The bonus on goods of two projects becomes one credit memo line per project, each carrying its project, and the total is unchanged
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 2.6           | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the sales invoice: 3 x 10.00 goods on project 1 + 7 x 10.00 goods on project 2 + 5 x 10.00 crates
+    # GrandTotal = 100.00 + 7.00 + 50.00 + 9.50 = 166.50
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project1   |
+      | project2   |
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | projectInvoice | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Project_ID |
+      | goodsLineP1 | projectInvoice | goodsProduct | 3 PCE       | project1     |
+      | goodsLineP2 | projectInvoice | goodsProduct | 7 PCE       | project2     |
+      | crateLine   | projectInvoice | crateProduct | 5 PCE       | null         |
+    And the invoice identified by projectInvoice is completed
+
+    # bonus: 2.6 % of the 100.00 goods = 2.60 + 7 % VAT 0.18 = 2.78 (as without projects); the customer pays 166.50 - 2.78 = 163.72
+    # split by base share: 0.78 on project 1 (30.00), 1.82 on project 2 (70.00)
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 163.72 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID   | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | projectInvoice | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | projectInvoice  | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 2.78 EUR   | PB         | true   |
+    And validate invoice lines for bonusCreditMemo:
+      | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID | C_Project_ID |
+      | bonusWare    | 1           | 0.78       | lowTax   | project1     |
+      | bonusWare    | 1           | 1.82       | lowTax   | project2     |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # The goods partly on a project, partly without: per-project lines plus one line without project
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC11
+  Scenario: The bonus on goods with and without a project becomes one line per project plus one aggregated line without project, and the total is unchanged
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 2.6           | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the sales invoice: 6 x 10.00 goods on project 1 + 2 x 10.00 and 2 x 10.00 goods without project + 5 x 10.00 crates
+    # GrandTotal = 100.00 + 7.00 + 50.00 + 9.50 = 166.50
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project1   |
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | projectInvoice | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Project_ID |
+      | goodsLineP1  | projectInvoice | goodsProduct | 6 PCE       | project1     |
+      | goodsLineNo1 | projectInvoice | goodsProduct | 2 PCE       | null         |
+      | goodsLineNo2 | projectInvoice | goodsProduct | 2 PCE       | null         |
+      | crateLine    | projectInvoice | crateProduct | 5 PCE       | null         |
+    And the invoice identified by projectInvoice is completed
+
+    # bonus: 2.6 % of the 100.00 goods = 2.60 + 7 % VAT 0.18 = 2.78 (as without projects); the customer pays 166.50 - 2.78 = 163.72
+    # split by base share: 1.56 on project 1 (60.00), 1.04 without project (40.00)
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 163.72 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID   | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | projectInvoice | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | projectInvoice  | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 2.78 EUR   | PB         | true   |
+    And validate invoice lines for bonusCreditMemo:
+      | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID | C_Project_ID |
+      | bonusWare    | 1           | 1.56       | lowTax   | project1     |
+      | bonusWare    | 1           | 1.04       | lowTax   | null         |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # The bonus does not divide into whole cents across the projects: the missing cent goes to one line
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC12
+  Scenario: A bonus that does not divide into whole cents across three projects is rounded once and the missing cent goes to the first project, so the total is unchanged
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 3.34          | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the sales invoice: 1 x 10.00 goods on each of three projects (equal base shares) + 5 x 10.00 crates
+    # GrandTotal = 30.00 + 2.10 + 50.00 + 9.50 = 91.60
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project1   |
+      | project2   |
+      | project3   |
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | projectInvoice | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Project_ID |
+      | goodsLineP1 | projectInvoice | goodsProduct | 1 PCE       | project1     |
+      | goodsLineP2 | projectInvoice | goodsProduct | 1 PCE       | project2     |
+      | goodsLineP3 | projectInvoice | goodsProduct | 1 PCE       | project3     |
+      | crateLine   | projectInvoice | crateProduct | 5 PCE       | null         |
+    And the invoice identified by projectInvoice is completed
+
+    # bonus: 3.34 % of the 30.00 goods = 1.002, rounded once to 1.00 + 7 % VAT 0.07 = 1.07; the customer pays 91.60 - 1.07 = 90.53
+    # 1.00 / 3 = 0.333 per project; rounded alone each would give 0.33 and the total 0.99
+    # all three remainders are equal: the lowest project (project 1) gets the missing cent
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 90.53 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID   | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | projectInvoice | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | TotalLines | DocSubType | IsPaid |
+      | projectInvoice  | 91.60 EUR  | 80.00      |            | true   |
+      | bonusCreditMemo | 1.07 EUR   | 1.00       | PB         | true   |
+    And validate invoice lines for bonusCreditMemo:
+      | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID | C_Project_ID |
+      | bonusWare    | 1           | 0.34       | lowTax   | project1     |
+      | bonusWare    | 1           | 0.33       | lowTax   | project2     |
+      | bonusWare    | 1           | 0.33       | lowTax   | project3     |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
   # Partial payments: the bonus is deducted once
   # ##############################################################################################
   # ##############################################################################################

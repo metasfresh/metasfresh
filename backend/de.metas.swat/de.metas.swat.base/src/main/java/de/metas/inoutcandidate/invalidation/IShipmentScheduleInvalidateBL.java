@@ -10,25 +10,53 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
 {
+	/**
+	 * SysConfig (or system property): when {@code Y}, a recompute flag written outside its record's or data's transaction throws instead of only logging a warning.
+	 */
+	String SYSCONFIG_FailOnTrxMismatch = "de.metas.inoutcandidate.invalidation.FailOnTrxMismatch";
+
 	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
 
 	void flagForRecompute(ShipmentScheduleId shipmentScheduleId);
 
 	void flagForRecompute(Set<ShipmentScheduleId> shipmentScheduleIds);
 
+	/**
+	 * Same as {@link #flagForRecompute(Set)}, but first verifies that the caller's data (the changes that make the flags necessary) is in the
+	 * thread-inherited transaction, which is where the flags are written. A mismatch means the flags would not commit or roll back with the data:
+	 * it throws in unit-test mode or with SysConfig FailOnTrxMismatch=Y, otherwise it only warns (and it only warns inside transaction listener callbacks).
+	 *
+	 * @param dataTrxName the transaction the caller's data change is in (or will be written in); {@code null} for none
+	 */
+	void flagForRecompute(Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable String dataTrxName);
+
+	/**
+	 * Same as {@link #flagSegmentForRecompute(Collection)} for one segment.
+	 */
 	void flagForRecomputeStorageSegment(IShipmentScheduleSegment storageSegment);
 
+	/**
+	 * Flags the shipment schedules of the given storage segments for recompute.
+	 * <p>
+	 * Routes by the thread-inherited transaction: if it is open for writes (active, or created but not yet started - transactions start lazily on
+	 * their first DB access), the flags are written in it (they commit or roll back with the caller's change);
+	 * otherwise (none, or committed and running its after-commit/rollback/close listeners without having been restarted) they are written out of transaction.
+	 * Callers that must not write into the current transaction use {@link #flagSegmentsForRecompute(Collection, PInstanceId)}.
+	 */
 	void flagSegmentForRecompute(Collection<IShipmentScheduleSegment> storageSegments);
 
 	/**
 	 * Invalidates shipment schedules for the given storage segments.
 	 * <p>
 	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
+	 * <p>
+	 * Always writes out of transaction (a separate, immediately committed one), regardless of the thread-inherited transaction.
 	 *
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */

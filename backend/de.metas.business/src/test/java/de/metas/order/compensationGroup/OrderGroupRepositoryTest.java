@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
@@ -46,13 +47,15 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
+import de.metas.order.compensationGroup.calibration.CalibrationMatchKey;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationRuleRepository;
 import de.metas.order.compensationGroup.calibration.GroupCalibrations;
-import de.metas.organization.OrgId;
-import de.metas.util.lang.Percent;
+import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -63,6 +66,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAware;
 
 /*
@@ -906,9 +910,8 @@ public class OrderGroupRepositoryTest
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
-	// Calibration: the factor is a 100-based percent; the base qty (template qty x menu qty)
-	// is rounded half-up to the UOM precision before the factor is applied; a line without a matching rule stores no calibration;
-	// the calibrated result is rounded UP to the UOM precision.
+	// Calibration: the base qty (template qty x menu qty) is rounded half-up to the UOM precision, then x factor rounded UP;
+	// a line without a matching rule stores no calibration.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void calibration_matchingRule_roundsBaseThenAppliesPercent()
@@ -921,7 +924,7 @@ public class OrderGroupRepositoryTest
 		// 0.375 -> 0.38 (precision 2), 0.38 x 120 % = 0.456 -> 0.46
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.46");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.38");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("120");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("120");
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
 	}
 
@@ -934,7 +937,33 @@ public class OrderGroupRepositoryTest
 		// mock case: 1500 x 0.25 LTR x 80 % = 300
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
+	}
+
+	@Test
+	void calibration_storedRuleFactor0_8_toOrderLine()
+	{
+		// rule as saved in the window: the raw stored fraction 0.8
+		final I_C_CompensationGroup_CalibrationRule ruleRecord = newInstance(I_C_CompensationGroup_CalibrationRule.class);
+		ruleRecord.setC_BPartner_ID(1);
+		ruleRecord.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
+		saveRecord(ruleRecord);
+		final CalibrationRule rule = CompensationGroupCalibrationRuleRepository.newInstanceForUnitTesting().getActiveRules()
+				.findFirstMatching(CalibrationMatchKey.builder()
+						.orgId(OrgId.ANY)
+						.bpartnerId(BPartnerId.ofRepoId(1))
+						.bpGroupId(BPGroupId.ofRepoId(1))
+						.productId(productId)
+						.productCategoryId(ProductCategoryId.ofRepoId(1))
+						.build())
+				.orElseThrow(() -> new AssertionError("rule not matched"));
+
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.25", 2);
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("1500"), templateLine, rule));
+
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375"); // 1500 x 0.25
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
 	}
 
 	@Test
@@ -946,7 +975,7 @@ public class OrderGroupRepositoryTest
 
 		// no rule matched: the line is not calibrated, exactly like an uncalibrated line; half-up: RoundingMode.UP would give 0.13
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
-		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
 	}
@@ -959,7 +988,7 @@ public class OrderGroupRepositoryTest
 		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, minimalRequest());
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.13");
-		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
 	}
@@ -984,7 +1013,7 @@ public class OrderGroupRepositoryTest
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("6");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("0");
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
 	}
 
@@ -997,7 +1026,7 @@ public class OrderGroupRepositoryTest
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("100");
 	}
 
 	@Test
@@ -1070,6 +1099,33 @@ public class OrderGroupRepositoryTest
 				.productId(productId)
 				.qty(Quantity.of(new BigDecimal(qty), uom))
 				.build();
+	}
+
+	@Test
+	void calibrationFactor_isStoredAsFraction()
+	{
+		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
+
+		OrderGroupRepository.setCalibrationFactor(line, Percent.of(80));
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
+
+		line.setGroupCompensationCalibrationFactor(new BigDecimal("0.9333"));
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isEqualTo(Percent.of(new BigDecimal("93.33")));
+
+		OrderGroupRepository.setCalibrationFactor(line, null);
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
+	}
+
+	@Test
+	void calibrationFactorFromQty_isQtyEnteredByUncalibratedQty_roundedHalfUpTo4DecimalsOfTheFraction()
+	{
+		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
+
+		OrderGroupRepository.setCalibrationFactorFromQty(line, new BigDecimal("350"), new BigDecimal("375"));
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.9333");
+
+		OrderGroupRepository.setCalibrationFactorFromQty(line, new BigDecimal("2"), new BigDecimal("3"));
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.6667");
 	}
 
 	private static CalibrationRule calibrationRule(final int ruleId, final String factorPercent)

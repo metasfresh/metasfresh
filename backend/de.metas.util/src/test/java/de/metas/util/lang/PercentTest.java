@@ -2,6 +2,7 @@ package de.metas.util.lang;
 
 import static java.math.BigDecimal.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -171,5 +172,59 @@ public class PercentTest
 		assertThat(Percent.ofDelta(ONE, new BigDecimal("1.2")).toBigDecimal()).isEqualByComparingTo("20");
 		assertThat(Percent.ofDelta(ONE, new BigDecimal("0.75")).toBigDecimal()).isEqualByComparingTo("-25");
 		assertThat(Percent.ofDelta(new BigDecimal("0.75"), new BigDecimal("0.750")).toBigDecimal()).isEqualByComparingTo("0");
+	}
+
+	@Test
+	public void ofFraction()
+	{
+		assertThat(Percent.ofFraction(new BigDecimal("0.8"))).isEqualTo(Percent.of(80));
+		assertThat(Percent.ofFraction(ONE)).isSameAs(Percent.ONE_HUNDRED);
+		assertThat(Percent.ofFraction(BigDecimal.ZERO)).isSameAs(Percent.ZERO);
+		assertThatThrownBy(() -> Percent.ofFraction(null)).isInstanceOf(NullPointerException.class);
+	}
+
+	@Test
+	public void ofNullableFraction()
+	{
+		assertThat(Percent.ofNullableFraction(null)).isNull();
+		assertThat(Percent.ofNullableFraction(new BigDecimal("0.8"))).isEqualTo(Percent.of(80));
+		assertThat(Percent.ofNullableFraction(new BigDecimal("0.9333"))).isEqualTo(Percent.of(new BigDecimal("93.33")));
+		assertThat(Percent.ofNullableFraction(new BigDecimal("1.5"))).isEqualTo(Percent.of(150));
+		assertThat(Percent.ofNullableFraction(ONE)).isSameAs(Percent.ONE_HUNDRED);
+		assertThat(Percent.ofNullableFraction(BigDecimal.ZERO)).isSameAs(Percent.ZERO);
+		assertThat(Percent.ofNullableFraction(new BigDecimal("-0.1"))).isEqualTo(Percent.of(-10));
+	}
+
+	@Test
+	public void toFractionBigDecimal()
+	{
+		assertThat(Percent.of(80).toFractionBigDecimal()).isEqualByComparingTo("0.8");
+		assertThat(Percent.of(new BigDecimal("93.33")).toFractionBigDecimal()).isEqualByComparingTo("0.9333");
+		assertThat(Percent.ONE_HUNDRED.toFractionBigDecimal()).isEqualByComparingTo("1");
+		assertThat(Percent.ZERO.toFractionBigDecimal()).isEqualByComparingTo("0");
+		assertThat(Percent.of(150).toFractionBigDecimal()).isEqualByComparingTo("1.5");
+	}
+
+	@Test
+	public void toFractionBigDecimalOrNull()
+	{
+		assertThat(Percent.toFractionBigDecimalOrNull(null)).isNull();
+		assertThat(Percent.toFractionBigDecimalOrNull(Percent.of(80))).isEqualByComparingTo("0.8");
+	}
+
+	@Test
+	public void toBigDecimalOneHundredBased()
+	{
+		assertThat(Percent.of(80).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
+		assertThat(Percent.of(new BigDecimal("12.5")).toBigDecimalOneHundredBased()).isEqualByComparingTo("12.5");
+		assertThat(Percent.ONE_HUNDRED.toBigDecimalOneHundredBased()).isEqualByComparingTo("100");
+		assertThat(Percent.ZERO.toBigDecimalOneHundredBased()).isEqualByComparingTo("0");
+		assertThat(Percent.ofFraction(new BigDecimal("0.8")).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
+	}
+
+	@Test
+	public void ofFraction_toFractionBigDecimal_roundTrips()
+	{
+		assertThat(Percent.ofFraction(new BigDecimal("0.6667")).toFractionBigDecimal()).isEqualByComparingTo("0.6667");
 	}
 }

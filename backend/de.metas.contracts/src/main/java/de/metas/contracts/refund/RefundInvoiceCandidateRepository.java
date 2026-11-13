@@ -19,6 +19,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -205,6 +206,12 @@ public class RefundInvoiceCandidateRepository
 
 		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
 		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
+		if (query.isKeyByProject())
+		{
+			// a null project matches only the candidates without a project (IS NULL), it does not skip the filter
+			final ProjectId projectId = query.getProjectId();
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Project_ID, projectId == null ? null : projectId.getRepoId());
+		}
 
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
@@ -352,13 +359,24 @@ public class RefundInvoiceCandidateRepository
 		@NonNull
 		CurrencyId currencyId;
 
+		/** Only relevant if {@link #keyByProject} is {@code true}: only the refund candidates of this project (or, if {@code null}, without a project) match. */
+		@Nullable
+		ProjectId projectId;
+
+		/** If {@code true}, the project is part of the key, i.e. there is one refund candidate per project. */
+		boolean keyByProject;
+
 		@Builder(toBuilder = true)
 		private RefundInvoiceCandidateQuery(
 				@NonNull final RefundContract refundContract,
 				@NonNull final LocalDate invoicableFrom,
 				@NonNull final SOTrx soTrx,
-				@NonNull final CurrencyId currencyId)
+				@NonNull final CurrencyId currencyId,
+				@Nullable final ProjectId projectId,
+				final boolean keyByProject)
 		{
+			this.projectId = projectId;
+			this.keyByProject = keyByProject;
 			this.soTrx = soTrx;
 			this.currencyId = currencyId;
 			this.refundContract = refundContract;

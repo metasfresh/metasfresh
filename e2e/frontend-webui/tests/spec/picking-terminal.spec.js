@@ -4,6 +4,7 @@ import { allure } from "allure-playwright";
 import { Backend } from "../utils/Backend";
 import {
   FRONTEND_BASE_URL,
+  selectRows,
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from "../utils/common";
@@ -113,6 +114,21 @@ const loginAndNavigate = async (page, masterdata) => {
 };
 
 /**
+ * Wait until the view grid has rendered at least one data row.
+ *
+ * The grid header renders as soon as the view layout is loaded, but the rows arrive with a
+ * separate, later `GET documentView/<windowId>/<viewId>?firstRow=...` request. A one-shot
+ * `count()` right after the header is visible can therefore read 0 rows. An empty grid renders
+ * no `tbody tr` at all (its "no data" hint lives outside the table), so a visible first row
+ * means the rows were loaded and rendered.
+ */
+const expectGridRowsLoaded = async (page) => {
+  await expect(page.locator("table tbody tr").first()).toBeVisible({
+    timeout: VERY_SLOW_ACTION_TIMEOUT,
+  });
+};
+
+/**
  * Helper: Find the shipment schedule ID for the given order.
  * Tries PostgREST first (available locally), falls back to WebAPI view query (for CI).
  */
@@ -200,11 +216,10 @@ languageCases.forEach(({ language, label }) => {
       .waitFor({ state: "visible", timeout: VERY_SLOW_ACTION_TIMEOUT });
 
     // Verify grid loaded with rows
-    const rowCount = await page.locator("table tbody tr").count();
-    expect(rowCount).toBeGreaterThan(0);
+    await expectGridRowsLoaded(page);
 
     // Select first row
-    await page.locator("table tbody tr").first().click();
+    await selectRows([page.locator("table tbody tr").first()]);
     await page.waitForTimeout(1000);
 
     // Verify "Pick" quick action appeared with process-specific data-testid
@@ -259,6 +274,7 @@ languageCases.forEach(({ language, label }) => {
       .locator("table thead tr")
       .first()
       .waitFor({ state: "visible", timeout: VERY_SLOW_ACTION_TIMEOUT });
+    await expectGridRowsLoaded(page);
 
     // Select our row — click the <tr> element directly (not <td>) to trigger row selection
     // Clicking <td> enters cell edit mode; clicking <tr> triggers the row onClick handler
@@ -267,8 +283,8 @@ languageCases.forEach(({ language, label }) => {
       .filter({ hasText: docNo })
       .first();
     if (await ourRow.isVisible().catch(() => false)) {
-      // Our row is visible (filterOnlyIds worked) — click it
-      await ourRow.click();
+      // Our row is visible (filterOnlyIds worked) — select it
+      await selectRows([ourRow]);
     } else {
       // filterOnlyIds not supported yet — find an unlocked row in the full view
       let targetRow = page.locator("table tbody tr").first();
@@ -284,7 +300,7 @@ languageCases.forEach(({ language, label }) => {
           break;
         }
       }
-      await targetRow.click();
+      await selectRows([targetRow]);
     }
     await page.waitForTimeout(1000);
 

@@ -11,6 +11,7 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_Inventory_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -34,6 +35,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inventory.InventoryCandidateService;
 import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -45,12 +47,16 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.pos.POSCardPaymentStatus;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderQuery;
 import de.metas.pos.POSOrdersRepository;
+import de.metas.pos.POSPaymentId;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.pos.returns.POSReturnRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -66,6 +72,8 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mmovement.MovementLineQuery;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -111,7 +119,9 @@ public class AssertExpectationsCommandServices
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final InventoryCandidateService inventoryCandidateService;
 	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -120,6 +130,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final POSOrdersRepository posOrdersRepository;
 	@NonNull private final POSReturnRepository posReturnRepository;
 	@NonNull private final POSService posService;
+	@NonNull private final POSInvoiceCardSettlementRepository posInvoiceCardSettlementRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -184,6 +195,11 @@ public class AssertExpectationsCommandServices
 	public IHUProductStorage getSingleProductStorage(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.getSingleHUProductStorage(hu);
+	}
+
+	public ImmutableAttributeSet getAsiAttributes(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
 	}
 
 	public ImmutableAttributeSet getAttributes(@NonNull final I_M_HU hu)
@@ -288,6 +304,16 @@ public class AssertExpectationsCommandServices
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
+	{
+		return inventoryCandidateService.getInventoryCandidatesByHUId(huId);
+	}
+
+	public int countActiveHUsByProductId(@NonNull final ProductId productId)
+	{
+		return handlingUnitsBL.countActiveHUsByProductId(productId);
+	}
+
 	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)
 	{
 		return inventoryService.getById(inventoryId);
@@ -335,6 +361,21 @@ public class AssertExpectationsCommandServices
 	public I_C_Order getOrderById(@NonNull final OrderId orderId)
 	{
 		return orderDAO.getById(orderId);
+	}
+
+	public List<POSCardPaymentStatus> getCardPaymentStatusesByTerminalId(@NonNull final POSTerminalId posTerminalId)
+	{
+		return posOrdersRepository.listCardPaymentStatusesByTerminalId(posTerminalId);
+	}
+
+	public List<String> getIssueErrorCodesByPaymentId(@NonNull final POSPaymentId posPaymentId)
+	{
+		return posOrdersRepository.listIssueErrorCodesByPaymentId(posPaymentId);
+	}
+
+	public List<POSInvoiceCardSettlement> getCardSettlementsByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return posInvoiceCardSettlementRepository.listByInvoiceId(invoiceId);
 	}
 
 	public List<I_C_Invoice> getInvoicesByOrderId(@NonNull final OrderId orderId)

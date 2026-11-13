@@ -166,18 +166,24 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 	@NonNull
 	public I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId)
 	{
-		final I_C_Calendar calendar = queryBL.createQueryBuilder(I_C_Calendar.class)
-				.addEqualsFilter(I_C_Calendar.COLUMNNAME_IsDefault, true)
-				.addInArrayFilter(I_C_Calendar.COLUMNNAME_AD_Org_ID, ImmutableList.of(orgId, OrgId.ANY))
-				.orderByDescending(I_C_Calendar.COLUMNNAME_AD_Org_ID)
-				.create()
-				.first();
-
+		final I_C_Calendar calendar = getDefaultCalendarOrNull(orgId);
 		if (calendar == null)
 		{
 			throw new AdempiereException(CalendarBL.MSG_SET_DEFAULT_OR_ORG_CALENDAR);
 		}
 		return calendar;
+	}
+
+	@Override
+	@Nullable
+	public I_C_Calendar getDefaultCalendarOrNull(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_C_Calendar.class)
+				.addEqualsFilter(I_C_Calendar.COLUMNNAME_IsDefault, true)
+				.addInArrayFilter(I_C_Calendar.COLUMNNAME_AD_Org_ID, ImmutableList.of(orgId, OrgId.ANY))
+				.orderByDescending(I_C_Calendar.COLUMNNAME_AD_Org_ID)
+				.create()
+				.first();
 	}
 
 	@Nullable

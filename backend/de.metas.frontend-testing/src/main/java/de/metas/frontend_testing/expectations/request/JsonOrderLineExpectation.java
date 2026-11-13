@@ -30,7 +30,7 @@ public class JsonOrderLineExpectation
 	@Nullable BigDecimal qtyEntered;
 
 	/**
-	 * Expected C_OrderLine.GroupCompensationCalibrationFactor, a 100-based percent (80 = 80 %, 100 = unchanged); empty when no rule matched.
+	 * Expected C_OrderLine.GroupCompensationCalibrationFactor, as stored: a fraction (0.8 = 80 %, 1 = unchanged); empty when no rule matched.
 	 */
 	@Nullable BigDecimal calibrationFactor;
 

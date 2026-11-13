@@ -26,40 +26,141 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockCommand;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
+import de.metas.lock.api.impl.PlainLockManager;
+import de.metas.lock.exceptions.LockFailedException;
+import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
- * A closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
- * but it is put into a new run that ships picks only (quantity type P).
+ * Covers how {@link ShipmentScheduleEnqueuer} selects and locks the schedules of a shipment run:
+ * <ul>
+ * <li>a selection that matched nothing at lock time, and the snapshot over the locked schedules;</li>
+ * <li>a closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
+ * but it is put into a new run that ships picks only (quantity type P).</li>
+ * </ul>
  */
 class ShipmentScheduleEnqueuerTest
 {
+	private static final AdMessageKey MSG_NO_VALID_RECORDS = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		// the real isFlaggedForRecompute runs plain SQL; nothing here is flagged for recompute
-		Services.registerService(IShipmentScheduleInvalidateBL.class, Mockito.mock(IShipmentScheduleInvalidateBL.class));
+		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService())
+		{
+			@Override
+			public boolean isFlaggedForRecompute(@NonNull final ShipmentScheduleId shipmentScheduleId)
+			{
+				return false; // the real check is a plain SQL query, which the in-memory test database can't run
+			}
+		});
+	}
+
+	/**
+	 * The selection matched no shipment schedule when it was locked, and one became eligible right afterwards
+	 * (e.g. the recompute committed its quantity to deliver in between).
+	 * Nothing was shippable when "generate shipments" locked its selection, so the user gets the "no valid records" message.
+	 * <p>
+	 * A lock manager double locks nothing for the selection filter. On a real database, holding the lock statement back while only
+	 * not yet eligible schedules are selected needs a picking job schedule in the selection (the only other record that statement locks).
+	 */
+	@Test
+	void emptyLock_failsWithNoValidRecords()
+	{
+		Services.registerService(ILockManager.class, new NothingMatchedAtLockTimeLockManager());
+
+		final I_M_ShipmentSchedule eligibleAfterLocking = newInstance(I_M_ShipmentSchedule.class);
+		eligibleAfterLocking.setHeaderAggregationKey("headerAggregationKey");
+		saveRecord(eligibleAfterLocking);
+
+		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
+				.adPInstanceId(PInstanceId.ofRepoId(1))
+				.queryFilters(Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+						.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, eligibleAfterLocking.getM_ShipmentSchedule_ID()))
+				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.completeShipments(true)
+				.isShipmentDateToday(false)
+				.build();
+
+		final Throwable failure = catchThrowable(() -> ShipmentScheduleEnqueuer.newInstance().createWorkpackages(workPackageParameters));
+
+		final String expectedMessage = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_VALID_RECORDS).translate(Env.getAD_Language());
+		assertThat(failure)
+				.as("Outcome of generating shipments for a selection that matched nothing when it was locked")
+				.isInstanceOf(AdempiereException.class)
+				.isNotInstanceOf(LockFailedException.class)
+				.hasMessage(expectedMessage);
+	}
+
+	/**
+	 * Only the schedules locked by the run's main lock are enqueued (one that became eligible after locking is left for the next run),
+	 * and they are read over a snapshot, so that the lock handover to the work packages does not shrink the result while it is iterated.
+	 */
+	@Test
+	void lockedSchedulesQuery_iteratesOverSnapshot()
+	{
+		final ILockManager lockManager = Services.get(ILockManager.class);
+
+		final I_M_ShipmentSchedule locked = newInstance(I_M_ShipmentSchedule.class);
+		locked.setHeaderAggregationKey("key");
+		saveRecord(locked);
+		final I_M_ShipmentSchedule notLocked = newInstance(I_M_ShipmentSchedule.class);
+		notLocked.setHeaderAggregationKey("key");
+		saveRecord(notLocked);
+
+		final I_M_ShipmentSchedule lockedButFilteredOut = newInstance(I_M_ShipmentSchedule.class);
+		lockedButFilteredOut.setHeaderAggregationKey("key");
+		lockedButFilteredOut.setIsActive(false);
+		saveRecord(lockedButFilteredOut);
+
+		final ILock mainLock = lockManager.lock()
+				.setOwner(LockOwner.newOwner("ShipmentScheduleEnqueuerTest"))
+				.setAutoCleanup(true)
+				.addRecordByModel(locked)
+				.addRecordByModel(lockedButFilteredOut)
+				.acquire();
+
+		final IQuery<I_M_ShipmentSchedule> query = ShipmentScheduleEnqueuer.newInstance()
+				.createLockedShipmentSchedulesQuery(mainLock, Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+						.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, locked.getM_ShipmentSchedule_ID(), notLocked.getM_ShipmentSchedule_ID(), lockedButFilteredOut.getM_ShipmentSchedule_ID())
+						.addOnlyActiveRecordsFilter());
+
+		assertThat(query.<Boolean>getOption(IQuery.OPTION_GuaranteedIteratorRequired)).isTrue();
+		final List<I_M_ShipmentSchedule> result = query.list(I_M_ShipmentSchedule.class);
+		assertThat(result).extracting(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID).containsExactly(locked.getM_ShipmentSchedule_ID());
 	}
 
 	/**
@@ -182,5 +283,26 @@ class ShipmentScheduleEnqueuerTest
 		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
 		InterfaceWrapperHelper.save(schedule);
 		return schedule;
+	}
+
+	/**
+	 * Locks nothing for a selection filter, as if no record matched the filter at lock time.
+	 */
+	private static class NothingMatchedAtLockTimeLockManager extends PlainLockManager
+	{
+		private final PlainLockDatabase lockDatabase = new PlainLockDatabase()
+		{
+			@Override
+			protected int lockByFilters(final ILockCommand lockCommand)
+			{
+				return 0;
+			}
+		};
+
+		@Override
+		public PlainLockDatabase getLockDatabase()
+		{
+			return lockDatabase;
+		}
 	}
 }

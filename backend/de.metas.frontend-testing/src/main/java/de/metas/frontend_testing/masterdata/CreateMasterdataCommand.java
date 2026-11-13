@@ -51,7 +51,10 @@ import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
+import de.metas.frontend_testing.masterdata.pos.CreatePOSInvoiceCardSettlementCommand;
 import de.metas.frontend_testing.masterdata.pos.CreatePOSTerminalCommand;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSInvoiceCardSettlementRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSInvoiceCardSettlementResponse;
 import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
 import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
@@ -202,6 +205,8 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonShipmentCreateResponse> shipments = createShipments();
 		final ImmutableMap<String, JsonReceiptCreateResponse> receipts = createReceipts();
 		final ImmutableMap<String, JsonInvoiceCreateResponse> invoices = createInvoices();
+		// POS invoice card settlements reference a POS terminal, an invoice and a login user: all exist by now.
+		final ImmutableMap<String, JsonPOSInvoiceCardSettlementResponse> posInvoiceCardSettlements = createPOSInvoiceCardSettlements();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrdersFromCandidates = createDistributionOrdersFromCandidates();
@@ -244,6 +249,7 @@ public class CreateMasterdataCommand
 				.shipments(shipments)
 				.receipts(receipts)
 				.invoices(invoices)
+				.posInvoiceCardSettlements(posInvoiceCardSettlements.isEmpty() ? null : posInvoiceCardSettlements)
 				.distributionOrders(distributionOrders)
 				.distributionOrdersFromCandidates(distributionOrdersFromCandidates)
 				.manufacturingOrders(manufacturingOrders)
@@ -287,6 +293,7 @@ public class CreateMasterdataCommand
 	private JsonCreateRoleResponse createRole(final String identifier, final JsonCreateRoleRequest request)
 	{
 		return CreateRoleCommand.builder()
+				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -469,8 +476,30 @@ public class CreateMasterdataCommand
 				.posTerminalRepository(services.posTerminalRepository)
 				.chargeRepository(services.chargeRepository)
 				.bankRepository(services.bankRepository)
+				.sumUpConfigRepository(services.sumUpConfigRepository)
 				.context(context)
 				.previousSysconfigsCollector(previousSysconfigs)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPOSInvoiceCardSettlementResponse> createPOSInvoiceCardSettlements()
+	{
+		return process(request.getPosInvoiceCardSettlements(), this::createPOSInvoiceCardSettlement);
+	}
+
+	private JsonPOSInvoiceCardSettlementResponse createPOSInvoiceCardSettlement(final String identifier, final JsonPOSInvoiceCardSettlementRequest request)
+	{
+		return CreatePOSInvoiceCardSettlementCommand.builder()
+				.repository(services.posInvoiceCardSettlementRepository)
+				.booking(services.posInvoiceCardSettlementBooking)
+				.posService(services.posService)
+				.sumUpTransactionRepository(services.sumUpTransactionRepository)
+				.sumUpConfigRepository(services.sumUpConfigRepository)
+				.currencyRepository(services.currencyRepository)
+				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build()

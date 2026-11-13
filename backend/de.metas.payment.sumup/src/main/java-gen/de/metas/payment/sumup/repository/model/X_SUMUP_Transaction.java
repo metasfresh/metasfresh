@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMUP_Transaction, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -8861295L;
+	private static final long serialVersionUID = 1457766015L;
 
     /** Standard Constructor */
     public X_SUMUP_Transaction (final Properties ctx, final int SUMUP_Transaction_ID, @Nullable final String trxName)
@@ -70,6 +70,21 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	public java.lang.String getCardType() 
 	{
 		return get_ValueAsString(COLUMNNAME_CardType);
+	}
+
+	@Override
+	public void setC_POS_InvoiceCardSettlement_ID (final int C_POS_InvoiceCardSettlement_ID)
+	{
+		if (C_POS_InvoiceCardSettlement_ID < 1) 
+			set_Value (COLUMNNAME_C_POS_InvoiceCardSettlement_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_POS_InvoiceCardSettlement_ID, C_POS_InvoiceCardSettlement_ID);
+	}
+
+	@Override
+	public int getC_POS_InvoiceCardSettlement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_POS_InvoiceCardSettlement_ID);
 	}
 
 	@Override
@@ -176,18 +191,6 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	}
 
 	@Override
-	public de.metas.payment.sumup.repository.model.I_SUMUP_CardReader getSUMUP_CardReader()
-	{
-		return get_ValueAsPO(COLUMNNAME_SUMUP_CardReader_ID, de.metas.payment.sumup.repository.model.I_SUMUP_CardReader.class);
-	}
-
-	@Override
-	public void setSUMUP_CardReader(final de.metas.payment.sumup.repository.model.I_SUMUP_CardReader SUMUP_CardReader)
-	{
-		set_ValueFromPO(COLUMNNAME_SUMUP_CardReader_ID, de.metas.payment.sumup.repository.model.I_SUMUP_CardReader.class, SUMUP_CardReader);
-	}
-
-	@Override
 	public void setSUMUP_CardReader_ID (final int SUMUP_CardReader_ID)
 	{
 		if (SUMUP_CardReader_ID < 1) 
@@ -224,18 +227,6 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	public java.lang.String getSUMUP_ClientTransactionId() 
 	{
 		return get_ValueAsString(COLUMNNAME_SUMUP_ClientTransactionId);
-	}
-
-	@Override
-	public de.metas.payment.sumup.repository.model.I_SUMUP_Config getSUMUP_Config()
-	{
-		return get_ValueAsPO(COLUMNNAME_SUMUP_Config_ID, de.metas.payment.sumup.repository.model.I_SUMUP_Config.class);
-	}
-
-	@Override
-	public void setSUMUP_Config(final de.metas.payment.sumup.repository.model.I_SUMUP_Config SUMUP_Config)
-	{
-		set_ValueFromPO(COLUMNNAME_SUMUP_Config_ID, de.metas.payment.sumup.repository.model.I_SUMUP_Config.class, SUMUP_Config);
 	}
 
 	@Override

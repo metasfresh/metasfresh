@@ -38,6 +38,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -132,6 +133,7 @@ public class AssignableInvoiceCandidateFactory
 				.quantityOld(quantityOld)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.contractCompensationLine(isContractCompensationLine(assignableRecord))
+				.projectId(ProjectId.ofRepoIdOrNull(assignableRecord.getC_Project_ID()))
 				.assignmentsToRefundCandidates(assignments)
 				.build();
 	}

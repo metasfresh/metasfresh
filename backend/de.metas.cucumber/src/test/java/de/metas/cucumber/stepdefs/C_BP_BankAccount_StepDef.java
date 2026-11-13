@@ -32,7 +32,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -44,7 +43,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
@@ -87,6 +85,28 @@ public class C_BP_BankAccount_StepDef
 		this.bankTable = bankTable;
 	}
 
+	/**
+	 * Creates (or re-uses, see below) bank accounts of existing business partners.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> - (required) identifier under which the account is registered<br>
+	 *   <b>C_BPartner_ID</b> - (required, identifier-ref) the partner that owns the account<br>
+	 *   <b>C_Currency_ID</b> - (required) ISO currency code, e.g. EUR<br>
+	 *   <b>AccountNo</b> - (optional) account number<br>
+	 *   <b>C_Bank_ID</b> - (optional, identifier-ref; also written <code>C_Bank_ID.Identifier</code>) the bank<br>
+	 *   <b>IBAN</b> - (optional) IBAN<br>
+	 *   <b>SEPA_CreditorIdentifier</b> - (optional) SEPA creditor identifier (needed for direct debit exports)<br>
+	 *   <b>A_Name</b> - (optional) account holder name<br>
+	 *   <b>A_City</b> - (optional) account holder city<br>
+	 *   An existing active account is re-used if partner, currency and every given AccountNo / C_Bank_ID / IBAN match; otherwise a new account is created.
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_BP_BankAccount
+	 *   | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID  | A_Name              | A_City      |
+	 *   | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank | Account Holder Name | Holder City |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_BP_BankAccount")
 	public void addOrUpdateBPartnerBankAccount(@NonNull final DataTable dataTable)
 	{
@@ -94,21 +114,23 @@ public class C_BP_BankAccount_StepDef
 	}
 
 	/**
-	 * Creates/updates the org's own {@code C_BP_BankAccount} (e.g. a POS till's cashbook).
+	 * Like {@code metasfresh contains C_BP_BankAccount}, but the account is created for the partner linked to the login organization
+	 * (e.g. the creditor account, or a POS till's cashbook; so no <b>C_BPartner_ID</b> column); the same optional columns apply.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
-	 *   <b>C_Currency_ID</b> — (required) ISO currency code<br>
-	 *   <b>AccountNo</b> — (optional) account number<br>
-	 *   <b>C_Bank_ID</b> — (optional, identifier-ref) links an existing {@code C_Bank}<br>
-	 *   <b>IBAN</b> — (optional) IBAN<br>
-	 *   <b>IsCashBank</b> — (optional) when {@code Y} and no {@code C_Bank_ID} is given, links a freshly-created
-	 *   {@code C_Bank} flagged {@code IsCashBank=Y} — the source of truth {@code MPayment#beforeSave} reads to
-	 *   force a payment's {@code TenderType} to Cash rather than DirectDeposit<br>
+	 *   <b>Identifier</b> - (required) identifier under which the account is registered<br>
+	 *   <b>C_Currency_ID</b> - (required) ISO currency code, e.g. EUR<br>
+	 *   <b>AccountNo</b>, <b>C_Bank_ID</b>, <b>IBAN</b>, <b>SEPA_CreditorIdentifier</b>, <b>A_Name</b>, <b>A_City</b> - (optional) as above<br>
+	 *   <b>IsCashBank</b> - (optional) when {@code Y} and no {@code C_Bank_ID} is given, links a freshly-created
+	 *   {@code C_Bank} flagged {@code IsCashBank=Y} - the source of truth {@code MPayment#beforeSave} reads to
+	 *   set a payment's {@code TenderType} to Cash rather than DirectDeposit (a credit-card tender type is kept)<br>
 	 * @cucumber.depends StepDefData: C_BP_BankAccount_StepDefData, C_Bank_StepDefData
 	 * @cucumber.example
 	 * <pre>
+	 * And metasfresh contains organization bank accounts
+	 *   | Identifier | C_Currency_ID | IBAN                   | C_Bank_ID    | SEPA_CreditorIdentifier |
+	 *   | orgAcct    | EUR           | DE91100000000123456789 | creditorBank | DE98ZZZ09999999999      |
 	 * And metasfresh contains organization bank accounts
 	 *   | Identifier | C_Currency_ID | IsCashBank |
 	 *   | cashbook   | EUR           | Y          |
@@ -234,19 +256,18 @@ public class C_BP_BankAccount_StepDef
 		bpBankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
 
-		row.getAsOptionalString(COLUMNNAME_AccountNo)
-				.map(StringUtils::trimBlankToNull)
-				.ifPresent(bpBankAccount::setAccountNo);
+		row.getAsOptionalString(COLUMNNAME_AccountNo).ifPresent(bpBankAccount::setAccountNo);
 		row.getAsOptionalIdentifier(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID)
 				.map(bankTable::getId)
 				.ifPresent(bankId -> bpBankAccount.setC_Bank_ID(bankId.getRepoId()));
-		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN)
-				.map(StringUtils::trimBlankToNull)
-				.ifPresent(bpBankAccount::setIBAN);
+		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN).ifPresent(bpBankAccount::setIBAN);
+		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier).ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
+		row.getAsOptionalString(COLUMNNAME_A_Name).ifPresent(bpBankAccount::setA_Name);
+		row.getAsOptionalString(COLUMNNAME_A_City).ifPresent(bpBankAccount::setA_City);
 
-		// a "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave force TenderType=Cash
-		// on any payment booked against it; without a linked C_Bank flagged IsCashBank, TenderType defaults to
-		// DirectDeposit regardless of what the caller requests. Auto-creates a minimal C_Bank when none is linked
+		// a "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave set TenderType=Cash
+		// on a payment booked against it; without a linked C_Bank flagged IsCashBank, TenderType becomes
+		// DirectDeposit. Either way, only a credit-card tender type requested by the caller is kept. Auto-creates a minimal C_Bank when none is linked
 		// yet, rather than requiring every cash-till scenario to set one up via the (unrelated) bank-statement-import
 		// "metasfresh contains C_Bank:" step.
 		if (row.getAsOptionalBoolean(I_C_Bank.COLUMNNAME_IsCashBank).orElseFalse() && bpBankAccount.getC_Bank_ID() <= 0)
@@ -292,93 +313,63 @@ public class C_BP_BankAccount_StepDef
 				.firstOnlyOptional(I_C_BP_BankAccount.class);
 	}
 
+	/**
+	 * Asserts bank accounts registered by an earlier step. Only the columns present in the table (and not blank) are compared.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BP_BankAccount_ID</b> - (required, identifier-ref) the bank account<br>
+	 *   <b>C_BPartner_ID</b> - (required, identifier-ref) the partner that owns the account<br>
+	 *   <b>Description</b>, <b>IBAN</b>, <b>QR_IBAN</b>, <b>Name</b> - (optional) expected values<br>
+	 *   <b>ISO_Code</b> - (optional) ISO code of the account currency, e.g. EUR<br>
+	 *   <b>IsActive</b>, <b>IsDefault</b> - (optional) expected flags<br>
+	 *   <b>A_Name</b>, <b>A_Street</b>, <b>A_Zip</b>, <b>A_City</b>, <b>A_Country</b> - (optional) expected account holder data; the null placeholder = no value
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_BP_BankAccount:
+	 *   | C_BP_BankAccount_ID | C_BPartner_ID | IBAN                   | ISO_Code | IsActive | A_Name              |
+	 *   | debtorAcct          | debtor        | DE89370400440532013000 | EUR      | true     | Account Holder Name |
+	 * </pre>
+	 */
 	@And("validate C_BP_BankAccount:")
 	public void validate_C_BP_BankAccount(@NonNull final DataTable dataTable)
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String bpBankAccountIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
-			final I_C_BP_BankAccount bpBankAccount = bpBankAccountTable.get(bpBankAccountIdentifier);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_BP_BankAccount bpBankAccount = bpBankAccountTable.get(row.getAsIdentifier(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID));
 
-			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID);
-			final I_C_BPartner bPartnerRecord = bpartnerTable.get(bpIdentifier);
-			softly.assertThat(bpBankAccount.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bPartnerRecord.getC_BPartner_ID());
+			final I_C_BPartner bpartner = bpartnerTable.get(row.getAsIdentifier(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID));
+			softly.assertThat(bpBankAccount.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bpartner.getC_BPartner_ID());
 
-			final String description = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_Description);
-			if (Check.isNotBlank(description))
-			{
-				softly.assertThat(bpBankAccount.getDescription()).as("Description").isEqualTo(description);
-			}
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_Description)
+					.ifPresent(description -> softly.assertThat(bpBankAccount.getDescription()).as("Description").isEqualTo(description));
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN)
+					.ifPresent(iban -> softly.assertThat(bpBankAccount.getIBAN()).as("IBAN").isEqualTo(iban));
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN)
+					.ifPresent(qrIban -> softly.assertThat(bpBankAccount.getQR_IBAN()).as("QR_IBAN").isEqualTo(qrIban));
+			row.getAsOptionalString("ISO_Code")
+					.map(isoCode -> currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode)).getId())
+					.ifPresent(currencyId -> softly.assertThat(bpBankAccount.getC_Currency_ID()).as("C_Currency_ID").isEqualTo(currencyId.getRepoId()));
+			row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_Name)
+					.ifPresent(name -> softly.assertThat(bpBankAccount.getName()).as("Name").isEqualTo(name));
 
-			final String iban = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_IBAN);
-			if (Check.isNotBlank(iban))
-			{
-				softly.assertThat(bpBankAccount.getIBAN()).as("IBAN").isEqualTo(iban);
-			}
+			row.getAsOptionalBoolean(I_C_BP_BankAccount.COLUMNNAME_IsActive)
+					.ifPresent(isActive -> softly.assertThat(bpBankAccount.isActive()).as("IsActive").isEqualTo(isActive));
+			row.getAsOptionalBoolean(I_C_BP_BankAccount.COLUMNNAME_IsDefault)
+					.ifPresent(isDefault -> softly.assertThat(bpBankAccount.isDefault()).as("IsDefault").isEqualTo(isDefault));
 
-			final String qrIban = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_QR_IBAN);
-			if (Check.isNotBlank(qrIban))
-			{
-				softly.assertThat(bpBankAccount.getQR_IBAN()).as("QR_IBAN").isEqualTo(qrIban);
-			}
-
-			final String isoCurrencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "ISO_Code");
-			if (Check.isNotBlank(isoCurrencyCode))
-			{
-				final CurrencyId currencyId = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCurrencyCode)).getId();
-				softly.assertThat(bpBankAccount.getC_Currency_ID()).as("C_Currency_ID").isEqualTo(currencyId.getRepoId());
-			}
-
-			final String name = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_Name);
-			if (Check.isNotBlank(name))
-			{
-				softly.assertThat(bpBankAccount.getName()).as("Name").isEqualTo(name);
-			}
-
-			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(row, I_C_BP_BankAccount.COLUMNNAME_IsActive);
-			if (isActive != null)
-			{
-				softly.assertThat(bpBankAccount.isActive()).as("IsActive").isEqualTo(isActive);
-			}
-
-			final Boolean isDefault = DataTableUtil.extractBooleanForColumnNameOrNull(row, I_C_BP_BankAccount.COLUMNNAME_IsDefault);
-			if (isDefault != null)
-			{
-				softly.assertThat(bpBankAccount.isDefault()).as("isDefault").isEqualTo(isDefault);
-			}
-
-			final String accountName = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Name);
-			if (Check.isNotBlank(accountName))
-			{
-				softly.assertThat(bpBankAccount.getA_Name()).as(COLUMNNAME_A_Name).isEqualTo(DataTableUtil.nullToken2Null(accountName));
-			}
-
-			final String accountStreet = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Street);
-			if (Check.isNotBlank(accountStreet))
-			{
-				softly.assertThat(bpBankAccount.getA_Street()).as(COLUMNNAME_A_Street).isEqualTo(DataTableUtil.nullToken2Null(accountStreet));
-			}
-
-			final String accountZip = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Zip);
-			if (Check.isNotBlank(accountZip))
-			{
-				softly.assertThat(bpBankAccount.getA_Zip()).as(COLUMNNAME_A_Zip).isEqualTo(DataTableUtil.nullToken2Null(accountZip));
-			}
-
-			final String accountCity = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_City);
-			if (Check.isNotBlank(accountCity))
-			{
-				softly.assertThat(bpBankAccount.getA_City()).as(COLUMNNAME_A_City).isEqualTo(DataTableUtil.nullToken2Null(accountCity));
-			}
-
-			final String accountCountry = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_A_Country);
-			if (Check.isNotBlank(accountCountry))
-			{
-				softly.assertThat(bpBankAccount.getA_Country()).as(COLUMNNAME_A_Country).isEqualTo(DataTableUtil.nullToken2Null(accountCountry));
-			}
-		}
+			row.getAsOptionalString(COLUMNNAME_A_Name)
+					.ifPresent(accountName -> softly.assertThat(bpBankAccount.getA_Name()).as(COLUMNNAME_A_Name).isEqualTo(DataTableUtil.nullToken2Null(accountName)));
+			row.getAsOptionalString(COLUMNNAME_A_Street)
+					.ifPresent(accountStreet -> softly.assertThat(bpBankAccount.getA_Street()).as(COLUMNNAME_A_Street).isEqualTo(DataTableUtil.nullToken2Null(accountStreet)));
+			row.getAsOptionalString(COLUMNNAME_A_Zip)
+					.ifPresent(accountZip -> softly.assertThat(bpBankAccount.getA_Zip()).as(COLUMNNAME_A_Zip).isEqualTo(DataTableUtil.nullToken2Null(accountZip)));
+			row.getAsOptionalString(COLUMNNAME_A_City)
+					.ifPresent(accountCity -> softly.assertThat(bpBankAccount.getA_City()).as(COLUMNNAME_A_City).isEqualTo(DataTableUtil.nullToken2Null(accountCity)));
+			row.getAsOptionalString(COLUMNNAME_A_Country)
+					.ifPresent(accountCountry -> softly.assertThat(bpBankAccount.getA_Country()).as(COLUMNNAME_A_Country).isEqualTo(DataTableUtil.nullToken2Null(accountCountry)));
+		});
 
 		softly.assertAll();
 	}

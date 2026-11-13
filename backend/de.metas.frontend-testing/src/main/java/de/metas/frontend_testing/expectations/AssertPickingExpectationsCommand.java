@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.frontend_testing.expectations.request.JsonPickingExpectation;
 import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpectation;
@@ -13,6 +14,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
@@ -66,13 +68,80 @@ class AssertPickingExpectationsCommand
 		final PickingJobId pickingJobId = getPickingJobIdByMatcherString(matcherStr);
 		final PickingJob pickingJob = services.getPickingJobById(pickingJobId);
 
+		if (pickingExpectation.getDocStatus() != null)
+		{
+			final PickingJobDocStatus expectedDocStatus = parsePickingJobDocStatus(pickingExpectation.getDocStatus());
+			softlyPutContext("pickingJobId", pickingJobId);
+			assertThat(pickingJob.getDocStatus()).as("pickingJob.docStatus").isEqualTo(expectedDocStatus);
+		}
+
 		if (pickingExpectation.getShipmentSchedules() != null)
 		{
 			final Set<ShipmentScheduleId> shipmentScheduleIdSet = pickingJob.getScheduleIds().getShipmentScheduleIds();
+			waitExpectedQtyPickedProcessed(pickingExpectation.getShipmentSchedules(), shipmentScheduleIdSet);
 			waitShipmentSchedulesValid(shipmentScheduleIdSet);
 
 			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(shipmentScheduleIdSet);
 			assertShipmentSchedules(pickingExpectation.getShipmentSchedules(), shipmentSchedules);
+		}
+	}
+
+	private static PickingJobDocStatus parsePickingJobDocStatus(@NonNull final String name)
+	{
+		for (final PickingJobDocStatus docStatus : PickingJobDocStatus.values())
+		{
+			if (docStatus.name().equalsIgnoreCase(name))
+			{
+				return docStatus;
+			}
+		}
+		throw new AdempiereException("Unknown picking job docStatus `" + name + "`. Expected one of " + java.util.Arrays.toString(PickingJobDocStatus.values()));
+	}
+
+	/**
+	 * Completing a picking job only enqueues the shipment generation ({@code PickingShipmentService} uses {@code waitForShipments(false)}).
+	 * That async workpackage is what marks the qty-picked records and the picking job schedules as processed, and in the same transaction
+	 * flags the shipment schedules for recompute. Until it commits, the shipment schedules have no recompute record, so
+	 * {@link #waitShipmentSchedulesValid(Set)} would return at once and the schedules would be asserted with their pre-shipment values.
+	 * So when the expectation says the qty-picked records are processed, wait for that first.
+	 * <p>
+	 * Only qty-picked expectations with {@code processed: true} drive this wait; an expectation without a {@code qtyPicked} list
+	 * gets no shipment wait here. A product without shipment schedules, or whose qty-picked record count differs from the expected one,
+	 * is skipped, because {@link #assertShipmentSchedules(Map, Collection)} and {@link #assertQtyPickedList(List, List, ImmutableMap)} report it.
+	 * The schedules loaded here are used only to map products to schedule IDs; the asserted values are loaded after this wait.
+	 *
+	 * @throws AdempiereException if the expected qty-picked records are not processed within {@link #DEFAULT_TIMEOUT}
+	 */
+	private void waitExpectedQtyPickedProcessed(
+			@NonNull final Map<String, JsonShipmentScheduleExpectation> expectations,
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	{
+		final ArrayListMultimap<ProductId, I_M_ShipmentSchedule> shipmentSchedulesByProductId = indexByProductId(services.getShipmentSchedulesByIds(shipmentScheduleIds));
+		for (final Map.Entry<String, JsonShipmentScheduleExpectation> expectationEntry : expectations.entrySet())
+		{
+			final List<JsonShipmentScheduleQtyPickedExpectation> qtyPickedExpectations = expectationEntry.getValue().getQtyPicked();
+			if (qtyPickedExpectations == null)
+			{
+				continue;
+			}
+
+			final ProductId productId = context.getId(Identifier.ofString(expectationEntry.getKey()), ProductId.class);
+			final Set<ShipmentScheduleId> productShipmentScheduleIds = shipmentSchedulesByProductId.get(productId)
+					.stream()
+					.map(shipmentSchedule -> ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productShipmentScheduleIds.isEmpty())
+			{
+				continue; // reported by assertShipmentSchedules
+			}
+
+			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = services.getShipmentScheduleQtyPickedRecords(productShipmentScheduleIds);
+			if (qtyPickedRecords.size() != qtyPickedExpectations.size())
+			{
+				continue; // reported by assertQtyPickedList
+			}
+
+			waitQtyPickedListProcessed(qtyPickedExpectations, qtyPickedRecords);
 		}
 	}
 

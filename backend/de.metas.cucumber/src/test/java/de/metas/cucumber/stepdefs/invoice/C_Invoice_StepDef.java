@@ -171,7 +171,7 @@ public class C_Invoice_StepDef
 	/**
 	 * An {@code @name@} placeholder: two '@' with at least one other character between them.
 	 */
-	private static final Pattern DOCUMENT_NO_PLACEHOLDER = Pattern.compile("@[^@]+@");
+	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@]+@");
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -229,7 +229,7 @@ public class C_Invoice_StepDef
 				.forEach(this::validateInvoice);
 	}
 
-	@And("^the invoice identified by (.*) is (completed|reversed|voided)$")
+	@And("^the invoice identified by (.*) is (completed|reversed|voided|closed)$")
 	public void invoice_action(@NonNull final String invoiceIdentifier, @NonNull final String action)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
@@ -247,11 +247,31 @@ public class C_Invoice_StepDef
 			case voided:
 				documentBL.processEx(invoice, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
+			case closed:
+				documentBL.processEx(invoice, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
 			default:
 				throw new AdempiereException("Unhandled C_Invoice action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Runs the given document action on the invoice through the document engine and checks the resulting doc status.
+	 * Unlike {@code the invoice identified by ... is (completed|reversed|voided)}, the action and the expected status are free,
+	 * so it can pin e.g. that {@code VO} on a completed invoice ends in {@code RE}.
+	 * <p>
+	 * Example: {@code And the invoice identified by invoice is processed with DocAction VO expecting DocStatus RE}
+	 */
+	@And("^the invoice identified by (.*) is processed with DocAction (\\w+) expecting DocStatus (\\w+)$")
+	public void invoice_processed_with_docAction(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String docAction,
+			@NonNull final String expectedDocStatus)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		documentBL.processEx(invoice, docAction, expectedDocStatus);
 	}
 
 	@And("^the reversal of invoice (.*) is identified by (.*)$")
@@ -325,8 +345,11 @@ public class C_Invoice_StepDef
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
 	 *   <li>{@code DateAcct} — accounting date; defaults to today</li>
+	 *   <li>{@code POReference} — optional customer order reference of the invoice header</li>
 	 *   <li>{@code DocumentNo} — the document number; a {@code @name@} placeholder is replaced with the {@link TestContext} variable of that name,
 	 *   e.g. {@code INV-@runId@}, any other value is taken literally. The validation steps (e.g. {@code validate created invoices}) resolve it the same way.</li>
+	 *   <li>{@code ExternalId} — the external id; {@code @name@} placeholders are resolved like in {@code DocumentNo}, so a scenario can
+	 *   make it unique per run (e.g. from a product's {@code REST.Context.Value}).</li>
 	 * </ul>
 	 */
 	@And("metasfresh contains C_Invoice:")
@@ -551,6 +574,7 @@ public class C_Invoice_StepDef
 				});
 
 		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.map(this::resolvePlaceholders)
 				.ifPresent(externalId -> softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
@@ -613,7 +637,7 @@ public class C_Invoice_StepDef
 				});
 
 		row.getAsOptionalString(COLUMNNAME_DocumentNo)
-				.map(this::resolveDocumentNo)
+				.map(this::resolvePlaceholders)
 				.ifPresent(documentNo -> softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo));
 
 		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_M_Warehouse_ID)
@@ -630,12 +654,12 @@ public class C_Invoice_StepDef
 	}
 
 	/**
-	 * Resolves the {@code @name@} placeholders of a DocumentNo; any other value is taken literally
+	 * Resolves the {@code @name@} placeholders of a DocumentNo or ExternalId; any other value is taken literally
 	 * (the expression compiler would throw on a single '@' and turn '@@' into '@').
 	 */
-	private String resolveDocumentNo(@NonNull final String documentNo)
+	private String resolvePlaceholders(@NonNull final String value)
 	{
-		return DOCUMENT_NO_PLACEHOLDER.matcher(documentNo).find() ? restTestContext.resolveVariables(documentNo) : documentNo;
+		return PLACEHOLDER.matcher(value).find() ? restTestContext.resolveVariables(value) : value;
 	}
 
 	private BigDecimal computeOpenAmount(@NonNull final InvoiceId invoiceId)
@@ -938,9 +962,12 @@ public class C_Invoice_StepDef
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
 		row.getAsOptionalString(COLUMNNAME_DocumentNo)
-				.map(this::resolveDocumentNo)
+				.map(this::resolvePlaceholders)
 				.ifPresent(invoice::setDocumentNo);
-		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
+		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.map(this::resolvePlaceholders)
+				.ifPresent(invoice::setExternalId);
+		row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(invoice::setPOReference);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
 				.map(dataSourceTable::getId)
@@ -963,30 +990,41 @@ public class C_Invoice_StepDef
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
+	/**
+	 * Updates the given (typically still draft) invoices; only the columns that are present are changed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) identifier of the invoice to update<br>
+	 *   <b>DateInvoiced</b> — (optional) the new invoice date<br>
+	 *   <b>Description</b> — (optional) the new invoice description<br>
+	 *   <b>C_PaymentTerm_ID</b> — (optional, identifier-ref) the new payment term<br>
+	 *   Older features prefix the optional columns with <code>OPT.</code> (e.g. <code>OPT.DateInvoiced</code>); both forms are read.
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, C_PaymentTerm_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice:
+	 *   | Identifier | Description |
+	 *   | inv_1      | Invoice 1   |
+	 * </pre>
+	 */
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			updateInvoice(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateInvoice);
 	}
 
-	private void updateInvoice(@NonNull final Map<String, String> row)
+	private void updateInvoice(@NonNull final DataTableRow row)
 	{
-		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
-
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier();
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
-		if (dateInvoiced != null)
-		{
-			invoice.setDateInvoiced(dateInvoiced);
-		}
+		row.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateInvoiced).ifPresent(invoice::setDateInvoiced);
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_Description).ifPresent(invoice::setDescription);
 
 		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
 		// resolve correctly even when the DB record has a unique timestamped Value.
-		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
+		paymentTermStepDef.extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);
@@ -1053,7 +1091,7 @@ public class C_Invoice_StepDef
 	@NonNull
 	private ProviderResult<I_C_Invoice> findInvoiceByExternalIdAndCandidateCount(@NonNull final Map<String, String> row)
 	{
-		final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
+		final String externalId = resolvePlaceholders(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId));
 		final int numberOfCandidates = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT.NumberOfCandidates");
 
 		final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)

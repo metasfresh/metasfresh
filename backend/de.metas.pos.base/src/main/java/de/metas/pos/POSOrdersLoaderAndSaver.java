@@ -34,10 +34,13 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -57,27 +60,44 @@ class POSOrdersLoaderAndSaver
 {
 	@NonNull private final IQueryBL queryBL;
 	@NonNull private final POSOrderEventDispatcher eventDispatcher;
+	@NonNull private final POSOrderVersionSource versionSource;
+	@NonNull private final ITrxManager trxManager;
 
 	private final HashMap<POSOrderId, I_C_POS_Order> orderRecordsById = new HashMap<>();
 	private final HashMap<POSOrderExternalId, Optional<I_C_POS_Order>> orderRecordsByExternalId = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
 
-	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
+	/**
+	 * @param versionBeforeRead {@link POSOrderVersionSource#current()}, taken BEFORE the record was read
+	 */
+	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord, final long versionBeforeRead)
 	{
 		addToCacheAndWarmUp(ImmutableList.of(orderRecord));
-		return fromRecord(orderRecord);
+		return withVersion(fromRecord(orderRecord), versionBeforeRead);
 	}
 
-	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
+	/**
+	 * @param versionBeforeRead {@link POSOrderVersionSource#current()}, taken BEFORE the records were read
+	 */
+	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords, final long versionBeforeRead)
 	{
 		addToCacheAndWarmUp(orderRecords);
-		return orderRecords.stream().map(this::fromRecord).collect(ImmutableList.toImmutableList());
+		return orderRecords.stream()
+				.map(orderRecord -> withVersion(fromRecord(orderRecord), versionBeforeRead))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	POSOrder getById(final @NonNull POSOrderId posOrderId)
 	{
-		return fromRecord(getOrderRecordById(posOrderId));
+		final long versionBeforeRead = versionSource.current();
+		return withVersion(fromRecord(getOrderRecordById(posOrderId)), versionBeforeRead);
+	}
+
+	private static POSOrder withVersion(@NonNull final POSOrder order, final long version)
+	{
+		order.setVersion(version);
+		return order;
 	}
 
 	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)
@@ -114,6 +134,45 @@ class POSOrdersLoaderAndSaver
 	{
 		final I_C_POS_Order orderRecord = getOrderRecordById(id);
 		final POSOrder order = fromRecord(orderRecord);
+		updater.accept(order);
+		save(order);
+		return order;
+	}
+
+	/**
+	 * Like {@link #createOrUpdateByExternalId}, for an existing order only, but locks its {@code C_POS_Order} row
+	 * ({@code FOR NO KEY UPDATE}) before loading the order, its lines and payments; the lock is held until the caller's
+	 * transaction ends, so concurrent updaters of the same order run one after the other, each on the other's committed state.
+	 */
+	POSOrder updateByExternalIdForUpdate(@NonNull final POSOrderExternalId externalId, @NonNull final Consumer<POSOrder> updater)
+	{
+		final I_C_POS_Order orderRecord = queryBL.createQueryBuilder(I_C_POS_Order.class)
+				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_ExternalId, externalId.getAsString())
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnlyOptional(I_C_POS_Order.class)
+				.orElseThrow(() -> new AdempiereException("No order found for external id " + externalId));
+		return updateLockedRecord(orderRecord, updater);
+	}
+
+	/**
+	 * Like {@link #updateById}, but locks the {@code C_POS_Order} row first, see {@link #updateByExternalIdForUpdate}.
+	 */
+	POSOrder updateByIdForUpdate(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	{
+		final I_C_POS_Order orderRecord = queryBL.createQueryBuilder(I_C_POS_Order.class)
+				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_C_POS_Order_ID, id)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnlyOptional(I_C_POS_Order.class)
+				.orElseThrow(() -> new AdempiereException("No POSOrder found for " + id));
+		return updateLockedRecord(orderRecord, updater);
+	}
+
+	private POSOrder updateLockedRecord(@NonNull final I_C_POS_Order lockedOrderRecord, @NonNull final Consumer<POSOrder> updater)
+	{
+		addToCache(lockedOrderRecord);
+		final POSOrder order = fromRecord(lockedOrderRecord); // lines and payments are loaded only now, under the lock
 		updater.accept(order);
 		save(order);
 		return order;
@@ -405,6 +464,10 @@ class POSOrdersLoaderAndSaver
 				.paymentProcessingStatus(POSPaymentProcessingStatus.ofCode(record.getPOSPaymentProcessingStatus()))
 				.cardProcessingDetails(extractCardProcessingDetails(record))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
+				.sumUpClientTransactionId(StringUtils.trimBlankToNull(record.getSUMUP_ClientTransactionID()))
+				.releasedSumUpClientTransactionId(StringUtils.trimBlankToNull(record.getReleasedSUMUPClientTransactionID()))
+				.cardCheckoutStartedAt(TimeUtil.asInstant(record.getCardCheckoutStartedAt()))
+				.cardLookupFailingSince(TimeUtil.asInstant(record.getCardLookupFailingSince()))
 				.build();
 	}
 
@@ -419,6 +482,10 @@ class POSOrdersLoaderAndSaver
 		record.setPOSPaymentProcessingStatus(from.getPaymentProcessingStatus().getCode());
 		updateRecord(record, from.getCardProcessingDetails());
 		record.setC_Payment_ID(PaymentId.toRepoId(from.getPaymentReceiptId()));
+		record.setSUMUP_ClientTransactionID(from.getSumUpClientTransactionId());
+		record.setReleasedSUMUPClientTransactionID(from.getReleasedSumUpClientTransactionId());
+		record.setCardCheckoutStartedAt(TimeUtil.asTimestamp(from.getCardCheckoutStartedAt()));
+		record.setCardLookupFailingSince(TimeUtil.asTimestamp(from.getCardLookupFailingSince()));
 	}
 
 	private static void updateRecord(final I_C_POS_Payment record, @Nullable final POSPaymentCardProcessingDetails from)
@@ -555,7 +622,16 @@ class POSOrdersLoaderAndSaver
 			putPaymentRecordsToCache(posOrderId, paymentRecordsNew);
 		}
 
-		eventDispatcher.fireOrderChanged(order);
+		// Stamp only after commit: a load running before the commit reads the old content, so it must not get a version
+		// which is not lower than this save's (else the frontend would drop this save's REST response and event as stale).
+		// Also, a rolled back save neither gets a version nor sends an event.
+		// Known limit: two concurrent saves of the same order commit in lock order, but their after-commit callbacks run in
+		// their own threads and are not ordered; if the first one is delayed past the second, the older content gets the
+		// greater version and the frontend shows it until the next save. Closing that needs a version kept with the order in DB.
+		trxManager.runAfterCommit(() -> {
+			order.setVersion(versionSource.next());
+			eventDispatcher.fireOrderChanged(order);
+		});
 	}
 
 	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)

@@ -1,6 +1,7 @@
 package de.metas.order.compensationGroup.calibration;
 
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
+import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,13 +40,55 @@ class CompensationGroupCalibrationRuleRepositoryTest
 		assertThat(ids).containsExactly(firstOfTie1, firstOfTie2, second);
 	}
 
+	@Test
+	void calibrationFactor_setThenGet_roundTrips()
+	{
+		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
+
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(80));
+
+		assertThat(CompensationGroupCalibrationRuleRepository.getCalibrationFactor(record)).isEqualTo(Percent.of(80));
+	}
+
+	@Test
+	void calibrationFactor_isStoredAsFraction()
+	{
+		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
+
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(80));
+		assertThat(record.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
+
+		record.setGroupCompensationCalibrationFactor(new BigDecimal("1.25"));
+		assertThat(CompensationGroupCalibrationRuleRepository.getCalibrationFactor(record)).isEqualTo(Percent.of(125));
+	}
+
+	@Test
+	void calibrationFactor_unset_readsAsZero()
+	{
+		// mandatory column: like the generated getter, an unset factor reads as 0
+		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
+
+		assertThat(CompensationGroupCalibrationRuleRepository.getCalibrationFactor(record)).isEqualTo(Percent.ZERO);
+	}
+
+	@Test
+	void fromRecord_readsFactorThroughHelper()
+	{
+		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
+		record.setC_BPartner_ID(1);
+		record.setGroupCompensationCalibrationFactor(new BigDecimal("0.8")); // the raw stored fraction: fails if fromRecord bypasses the helper
+		saveRecord(record);
+
+		assertThat(CompensationGroupCalibrationRuleRepository.fromRecord(record).getFactor()).isEqualTo(Percent.of(80));
+	}
+
 	private static int createRule(final int seqNo, final boolean active)
 	{
 		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
 		record.setSeqNo(seqNo);
 		record.setIsActive(active);
 		record.setC_BPartner_ID(1);
-		record.setGroupCompensationCalibrationFactor(new BigDecimal("100"));
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.ONE_HUNDRED);
 		saveRecord(record);
 		return record.getC_CompensationGroup_CalibrationRule_ID();
 	}

@@ -86,7 +86,9 @@ public class ManufacturingOrderRestController
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", request.getTransactionKey()))
 		{
 			manufacturingOrderAPIService.setExportStatus(request);
-			return ResponseEntity.accepted().body("Manufacturing orders updated");
+			return ResponseEntity.accepted()
+					.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
+					.body("Manufacturing orders updated");
 		}
 	}
 

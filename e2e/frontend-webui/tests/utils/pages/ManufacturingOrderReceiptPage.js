@@ -2,8 +2,8 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import {
   FRONTEND_BASE_URL,
-  FAST_ACTION_TIMEOUT,
   getPage,
+  selectRows,
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from '../common';
@@ -73,17 +73,9 @@ export class ManufacturingOrderReceiptPage {
     return await test.step('ManufacturingOrderReceiptPage - Open receipt dialog', async () => {
       const page = getPage();
 
-      // The main product line comes pre-selected (a click would deselect it); wait for that state first.
       const row = page.locator('.panel-modal .table-row').nth(rowIndex);
       await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await page
-        .locator('.panel-modal .table-row.row-selected')
-        .first()
-        .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
-        .catch(() => {});
-      if (!(await row.evaluate((el) => el.classList.contains('row-selected')))) {
-        await row.click();
-      }
+      await selectRows([row]);
       await this.#settle();
 
       await page.getByTestId('quick-action-dropdown-toggle').click();

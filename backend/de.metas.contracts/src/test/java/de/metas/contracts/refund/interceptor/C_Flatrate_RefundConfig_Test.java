@@ -326,6 +326,38 @@ public class C_Flatrate_RefundConfig_Test
 				});
 	}
 
+	/**
+	 * A config that is NOT deducted at payment is invoiced by the refund engine, which needs its invoice schedule. The DB no longer enforces it
+	 * (it is optional for a config deducted at payment), so a non-deducted config saved without a schedule (e.g. via REST/import) is rejected here.
+	 */
+	@Test
+	public void assertValid_notDeductedAtPayment_withoutInvoiceSchedule_fails()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		config.setC_InvoiceSchedule_ID(-1); // no schedule, and not deducted at payment
+		saveRecord(config);
+
+		assertThatThrownBy(() -> interceptor.assertValid(config))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_INVOICE_SCHEDULE_REQUIRED.toAD_Message());
+				});
+	}
+
+	/** A config deducted at payment books its bonus at the payment allocation and is never invoiced by the refund engine, so it needs no invoice schedule. */
+	@Test
+	public void assertValid_deductedAtPayment_withoutInvoiceSchedule_isValid()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		config.setC_InvoiceSchedule_ID(-1);
+		config.setIsDeductedAtPayment(true);
+		saveRecord(config);
+
+		assertThatCode(() -> interceptor.assertValid(config)).doesNotThrowAnyException();
+	}
+
 	private void createTerm(final String docStatus)
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);

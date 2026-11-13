@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_InvoiceSchedule;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -248,7 +249,11 @@ public class RefundConfigRepository
 
 	public RefundConfig ofRecord(@NonNull final I_C_Flatrate_RefundConfig record)
 	{
-		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
+		// a config deducted at payment has no invoice schedule (it is never invoiced by the refund engine); every other config still has one
+		final I_C_InvoiceSchedule invoiceScheduleRecord = record.getC_InvoiceSchedule();
+		final InvoiceSchedule invoiceSchedule = invoiceScheduleRecord != null
+				? invoiceScheduleRepository.ofRecord(invoiceScheduleRecord)
+				: null;
 
 		final RefundConfigBuilder builder = RefundConfig
 				.builder()
@@ -348,8 +353,16 @@ public class RefundConfigRepository
 				break;
 		}
 
-		final InvoiceSchedule savedInvoiceSchedule = invoiceScheduleRepository.save(refundConfig.getInvoiceSchedule());
-		configRecord.setC_InvoiceSchedule_ID(savedInvoiceSchedule.getId().getRepoId());
+		// a config deducted at payment has no invoice schedule to save; it is left unset on the record
+		if (refundConfig.getInvoiceSchedule() != null)
+		{
+			final InvoiceSchedule savedInvoiceSchedule = invoiceScheduleRepository.save(refundConfig.getInvoiceSchedule());
+			configRecord.setC_InvoiceSchedule_ID(savedInvoiceSchedule.getId().getRepoId());
+		}
+		else
+		{
+			configRecord.setC_InvoiceSchedule_ID(-1);
+		}
 
 		configRecord.setC_Flatrate_Conditions_ID(refundConfig.getConditionsId().getRepoId());
 		configRecord.setMinQty(refundConfig.getMinQty());

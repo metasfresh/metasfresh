@@ -55,6 +55,7 @@ import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionProvider;
 import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher.MatchedDeductions;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
+import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;

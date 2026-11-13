@@ -32,6 +32,7 @@ import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
@@ -151,6 +152,49 @@ class PaymentBonusDeductionServiceTest
 		assertThat(line.getTax()).isEqualTo(BONUS_TAX);
 		assertThat(line.getNetAmt().toBigDecimal()).isEqualByComparingTo("2.60"); // 2.6 % of the 100 goods, not of the 50 packaging
 		assertThat(deduction.getGrossAmount().toBigDecimal()).isEqualByComparingTo("2.78"); // + 7 % VAT of the bonus product
+	}
+
+	/**
+	 * Unequal remainders: 2.6 % of 100.00 = 2.60 = 260 units, shares 86.658 / 86.658 / 86.684 units, so 2 units are missing after rounding down.
+	 * They go to the biggest remainders: the third project (.684) first, then the first project (.658, ties: lower ID first) - not to the first two projects by ID order.
+	 */
+	@Test
+	void projectSplit_missingUnitsGoToTheLargestRemainders_notByIdOrder()
+	{
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "33.33", null, ProjectId.ofRepoId(1));
+		createInvoiceLine(invoiceId, fruit, "33.33", null, ProjectId.ofRepoId(2));
+		createInvoiceLine(invoiceId, fruit, "33.34", null, ProjectId.ofRepoId(3));
+
+		final PaymentBonusDeduction deduction = service.computeForInvoice(invoiceId).get();
+
+		assertThat(deduction.getLines())
+				.extracting(PaymentBonusDeductionLine::getProjectId, line -> line.getNetAmt().toBigDecimal().setScale(2).toPlainString())
+				.containsExactly(
+						tuple(ProjectId.ofRepoId(1), "0.87"),
+						tuple(ProjectId.ofRepoId(2), "0.86"),
+						tuple(ProjectId.ofRepoId(3), "0.87"));
+		assertThat(deduction.getLines().stream().map(line -> line.getNetAmt().toBigDecimal()).reduce(BigDecimal.ZERO, BigDecimal::add)).isEqualByComparingTo("2.60");
+	}
+
+	/**
+	 * A project whose share rounds down to 0.00 and gets no missing unit gets no line (the other lines still add up to the whole bonus).
+	 * 1 % of 100.00 = 1.00 = 100 units; project 1 (base 0.01) has the share 0.01 units, project 2 (base 99.99) 99.99 units; the missing unit goes to project 2.
+	 */
+	@Test
+	void projectSplit_projectWithAZeroShare_getsNoLine()
+	{
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "1", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "0.01", null, ProjectId.ofRepoId(1));
+		createInvoiceLine(invoiceId, fruit, "99.99", null, ProjectId.ofRepoId(2));
+
+		final PaymentBonusDeduction deduction = service.computeForInvoice(invoiceId).get();
+
+		assertThat(deduction.getLines())
+				.extracting(PaymentBonusDeductionLine::getProjectId, line -> line.getNetAmt().toBigDecimal().setScale(2).toPlainString())
+				.containsExactly(tuple(ProjectId.ofRepoId(2), "1.00"));
 	}
 
 	/**
@@ -797,10 +841,21 @@ class PaymentBonusDeductionServiceTest
 			@NonNull final String lineNetAmt,
 			@Nullable final I_C_OrderLine orderLine)
 	{
+		return createInvoiceLine(invoiceId, productId, lineNetAmt, orderLine, null);
+	}
+
+	private I_C_InvoiceLine createInvoiceLine(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final ProductId productId,
+			@NonNull final String lineNetAmt,
+			@Nullable final I_C_OrderLine orderLine,
+			@Nullable final ProjectId projectId)
+	{
 		final I_C_InvoiceLine invoiceLine = newInstance(I_C_InvoiceLine.class);
 		invoiceLine.setC_Invoice_ID(invoiceId.getRepoId());
 		invoiceLine.setM_Product_ID(productId.getRepoId());
 		invoiceLine.setLineNetAmt(new BigDecimal(lineNetAmt));
+		invoiceLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		if (orderLine != null)
 		{
 			invoiceLine.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());

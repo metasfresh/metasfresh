@@ -28,6 +28,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
+import de.metas.project.ProjectId;
 
 /*
  * #%L
@@ -131,5 +132,24 @@ public class AssignableInvoiceCandidateFactoryTest
 		// assertThat(cast.getAssignmentsToRefundCandidates().get(0).getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
 		assertThat(ofRecord.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
+	}
+
+	@Test
+	public void ofRecord_carriesProjectIdOfSourceInvoiceCandidate()
+	{
+		assignableIcRecord.setC_Project_ID(540001);
+		save(assignableIcRecord);
+
+		final AssignableInvoiceCandidate ofRecord = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
+
+		assertThat(ofRecord.getProjectId()).isEqualTo(ProjectId.ofRepoId(540001));
+	}
+
+	@Test
+	public void ofRecord_withoutProject_hasNullProjectId()
+	{
+		final AssignableInvoiceCandidate ofRecord = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
+
+		assertThat(ofRecord.getProjectId()).isNull();
 	}
 }

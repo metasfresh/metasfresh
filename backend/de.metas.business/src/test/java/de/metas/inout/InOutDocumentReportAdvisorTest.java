@@ -30,8 +30,11 @@ import de.metas.order.impl.OrderDAO;
 import de.metas.report.DefaultPrintFormatsRepository;
 import de.metas.report.DocumentReportAdvisorUtil;
 import de.metas.report.DocumentReportInfo;
+import de.metas.report.PrintCopies;
 import de.metas.report.PrintFormatId;
 import de.metas.report.PrintFormatRepository;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.impl.ShipperDAO;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -39,19 +42,27 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_PrintFormat;
+import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_MaterialDelivery;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_MaterialReceipt;
 
 /**
- * Boundary test for {@link InOutDocumentReportAdvisor} that pins the caller-side null-order guard.
+ * Boundary test for {@link InOutDocumentReportAdvisor}: pins the Lieferweg ({@code M_Shipper.DocumentCopies}) copy resolution
+ * (precedence over the per-address override, NULL/no-shipper fallback, 0 suppresses) and the caller-side null-order guard.
  * <p>
  * {@link DocumentReportAdvisorUtil#isDropShip} now requires a {@code @NonNull} order. A manual shipment
  * has no {@code C_Order} ({@code C_Order_ID = 0}), so {@link InOutDocumentReportAdvisor} must guard the
@@ -70,6 +81,7 @@ public class InOutDocumentReportAdvisorTest
 
 		Services.registerService(IInOutBL.class, new InOutBL());
 		Services.registerService(IOrderDAO.class, new OrderDAO());
+		Services.registerService(IShipperDAO.class, new ShipperDAO());
 	}
 
 	@Test
@@ -99,6 +111,7 @@ public class InOutDocumentReportAdvisorTest
 		manualShipment.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		manualShipment.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 		manualShipment.setC_DocType_ID(docType.getC_DocType_ID());
+		manualShipment.setIsSOTrx(true);
 		manualShipment.setC_Order_ID(0);
 		manualShipment.setDocumentNo("MANUAL-1");
 		save(manualShipment);
@@ -112,6 +125,179 @@ public class InOutDocumentReportAdvisorTest
 		Assertions.assertThat(reportInfo.getDocumentNo()).isEqualTo("MANUAL-1");
 		// no matching C_BP_PrintFormat row -> auto-print not suppressed (a manual shipment is not a drop-ship)
 		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** AC2: the Lieferweg count wins over the per-address override. */
+	@Test
+	public void shipperCountWinsOverPerAddressOverride()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, new BigDecimal("3"), 1, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(3));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** AC4: Lieferweg count NULL -> per-address override still applies. */
+	@Test
+	public void shipperCountNullFallsBackToPerAddress()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, null, 1, 2);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(1));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** AC3: Lieferweg count 0 -> 0 copies (not the per-address 2, not the default) and auto-print suppressed. */
+	@Test
+	public void shipperCountZeroSuppresses()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, BigDecimal.ZERO, 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ZERO);
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isTrue();
+	}
+
+	/** AC5: no Lieferweg count, no per-address row -> C_DocType.DocumentCopies, as before. */
+	@Test
+	public void noShipperNoAddress_unchangedDefault()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, null, null, 4);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(4));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/**
+	 * A fractional Lieferweg count can only come from a non-UI write (the field accepts whole numbers only);
+	 * it is rounded up, so a positive count never turns into 0 (= print nothing).
+	 */
+	@Test
+	public void shipperCountFractional_roundedUp()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, new BigDecimal("0.4"), 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ONE);
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** Manual shipment without Lieferweg (M_Shipper_ID unset) -> per-address override applies, no exception. */
+	@Test
+	public void noShipper_fallsBackToPerAddress()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(false, null, 5, 2);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(5));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** The Lieferweg count applies to customer shipments only: a material receipt keeps the per-address/doc-type copies. */
+	@Test
+	public void materialReceipt_ignoresShipperCount()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(false, DOCBASETYPE_MaterialReceipt, true, BigDecimal.ZERO, 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(2));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** A vendor return (MMS, not SOTrx) keeps the per-address/doc-type copies: the Lieferweg count needs IsSOTrx. */
+	@Test
+	public void vendorReturn_ignoresShipperCount()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(false, DOCBASETYPE_MaterialDelivery, true, BigDecimal.ZERO, 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(2));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** A customer return (MMR, SOTrx) keeps the per-address/doc-type copies: the Lieferweg count needs DocBaseType MMS. */
+	@Test
+	public void customerReturn_ignoresShipperCount()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, DOCBASETYPE_MaterialReceipt, true, BigDecimal.ZERO, 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(2));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/**
+	 * @param hasShipper      false = M_InOut.M_Shipper_ID left unset
+	 * @param shipperCopies   M_Shipper.DocumentCopies; null = NULL
+	 * @param perAddressCopies C_BP_PrintFormat.DocumentCopies_Override; null = no C_BP_PrintFormat row
+	 */
+	private DocumentReportInfo reportInfoFor(
+			final boolean hasShipper,
+			@Nullable final BigDecimal shipperCopies,
+			final Integer perAddressCopies,
+			final int docTypeCopies)
+	{
+		return reportInfoFor(true, DOCBASETYPE_MaterialDelivery, hasShipper, shipperCopies, perAddressCopies, docTypeCopies);
+	}
+
+	/**
+	 * @param isSOTrx     M_InOut.IsSOTrx
+	 * @param docBaseType the M_InOut's C_DocType.DocBaseType
+	 */
+	private DocumentReportInfo reportInfoFor(
+			final boolean isSOTrx,
+			final String docBaseType,
+			final boolean hasShipper,
+			@Nullable final BigDecimal shipperCopies,
+			final Integer perAddressCopies,
+			final int docTypeCopies)
+	{
+		final InOutDocumentReportAdvisor advisor = new InOutDocumentReportAdvisor(createUtil());
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		save(bpartner);
+		final I_C_BPartner_Location bpartnerLocation = newInstance(I_C_BPartner_Location.class);
+		bpartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		save(bpartnerLocation);
+
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType(docBaseType);
+		docType.setDocumentCopies(docTypeCopies);
+		save(docType);
+
+		final I_AD_PrintFormat printFormat = newInstance(I_AD_PrintFormat.class);
+		printFormat.setJasperProcess_ID(540001);
+		save(printFormat);
+
+		if (perAddressCopies != null)
+		{
+			final I_C_BP_PrintFormat bpPrintFormat = newInstance(I_C_BP_PrintFormat.class);
+			bpPrintFormat.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			bpPrintFormat.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+			bpPrintFormat.setAD_Table_ID(getTableId(I_M_InOut.class));
+			bpPrintFormat.setC_DocType_ID(docType.getC_DocType_ID());
+			bpPrintFormat.setAD_PrintFormat_ID(printFormat.getAD_PrintFormat_ID());
+			bpPrintFormat.setDocumentCopies_Override(perAddressCopies);
+			save(bpPrintFormat);
+		}
+
+		final I_M_Shipper shipper = newInstance(I_M_Shipper.class);
+		if (shipperCopies != null)
+		{
+			shipper.setDocumentCopies(shipperCopies);
+		}
+		save(shipper);
+
+		final I_M_InOut shipment = newInstance(I_M_InOut.class);
+		shipment.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		shipment.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+		shipment.setC_DocType_ID(docType.getC_DocType_ID());
+		shipment.setIsSOTrx(isSOTrx);
+		if (hasShipper)
+		{
+			shipment.setM_Shipper_ID(shipper.getM_Shipper_ID());
+		}
+		shipment.setDocumentNo("SHIPPER-COPIES");
+		save(shipment);
+
+		return advisor.getDocumentReportInfo(
+				TableRecordReference.of(I_M_InOut.Table_Name, shipment.getM_InOut_ID()),
+				PrintFormatId.ofRepoId(printFormat.getAD_PrintFormat_ID()),
+				null);
 	}
 
 	private DocumentReportAdvisorUtil createUtil()

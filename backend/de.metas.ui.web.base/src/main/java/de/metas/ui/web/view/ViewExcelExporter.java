@@ -13,6 +13,7 @@ import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -185,7 +186,11 @@ import java.util.stream.Collectors;
 		}
 
 		final DocumentFieldWidgetType widgetType = getWidgetType(columnIndex);
-		if (widgetType.isDateOrTime())
+		if (value instanceof Password)
+		{
+			return CellValue.ofString(Password.OBFUSCATE_STRING);
+		}
+		else if (widgetType.isDateOrTime())
 		{
 			return CellValue.ofDate(DateTimeConverters.fromObject(value, widgetType));
 		}

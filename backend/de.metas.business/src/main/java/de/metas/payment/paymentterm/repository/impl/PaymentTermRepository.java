@@ -22,6 +22,7 @@
 
 package de.metas.payment.paymentterm.repository.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTerm;
@@ -46,6 +47,7 @@ import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -191,6 +193,26 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	{
 		final List<PaymentTerm> paymentTerms = newLoaderAndSaver().loadAll();
 		return PaymentTermMap.ofList(paymentTerms);
+	}
+
+	@Override
+	@VisibleForTesting
+	public @NonNull PaymentTermId createPaymentTerm(@NonNull final OrgId orgId, @NonNull final String value, @NonNull final String name)
+	{
+		final I_C_PaymentTerm record = newInstance(I_C_PaymentTerm.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setValue(value);
+		record.setName(name);
+		record.setIsActive(true);
+		// NOT NULL columns without a database default: due on the document date, no discount, no grace period
+		record.setNetDays(0);
+		record.setGraceDays(0);
+		record.setDiscount(BigDecimal.ZERO);
+		record.setDiscountDays(0);
+		record.setDiscount2(BigDecimal.ZERO);
+		record.setDiscountDays2(0);
+		saveRecord(record);
+		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 	}
 
 	@Override

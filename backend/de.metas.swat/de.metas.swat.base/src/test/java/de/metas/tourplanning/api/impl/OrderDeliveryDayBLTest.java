@@ -23,6 +23,8 @@
 package de.metas.tourplanning.api.impl;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
+import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -44,6 +46,48 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OrderDeliveryDayBLTest
 {
+	@Nested
+	class computeLeadTimePreparationDate
+	{
+		private final IBusinessDayMatcher weekend = ExcludeWeekendBusinessDayMatcher.DEFAULT;
+
+		// 2026-08-19 is a Wednesday; stepping back 6 working days (lead 7 -> step -6) skips the weekend to 2026-08-11.
+		@Test
+		void leadTime7_sixWorkingDaysBack_skipsWeekend()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 7, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 11));
+		}
+
+		@Test
+		void leadTime0_and_1_yieldSameDay()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 1, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 0, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+		}
+
+		@Test
+		void negativeLeadTime_clampedToSameDay()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), -3, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+		}
+
+		@Test
+		void holidayOnTheBackwardPath_isSkipped()
+		{
+			// delivery Wed 2026-08-19, lead 7 -> step back 6 working days. Weekend-only lands 2026-08-11 (Tue).
+			// Make Tue 2026-08-11 a holiday: the prep date is pushed one more business day back to Mon 2026-08-10.
+			final LocalDate holiday = LocalDate.of(2026, Month.AUGUST, 11);
+			final IBusinessDayMatcher weekendAndHoliday = date -> weekend.isBusinessDay(date) && !date.equals(holiday);
+
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 7, weekendAndHoliday))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 10));
+		}
+	}
+
 	@Nested
 	class computePreparationTime
 	{

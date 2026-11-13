@@ -125,7 +125,7 @@ test.describe('Sales order-line grid — Enter opens a cell with its stored valu
 
     for (const leaveKey of ['Escape', 'Tab']) {
       await test.step(`Select the cell, Enter, then ${leaveKey}`, async () => {
-        await qtyCell.click();
+        await qtyCell.click(); // focuses the cell so Enter opens its editor, not a row selection
         await page.keyboard.press('Enter');
         await editor.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         await expect(editor, 'the editor opens with the stored quantity').toHaveValue('3');

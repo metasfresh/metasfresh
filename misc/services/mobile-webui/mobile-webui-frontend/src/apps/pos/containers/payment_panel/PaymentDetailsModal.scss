@@ -18,6 +18,18 @@
       
     }
 
+    // a card payment whose result is unknown: the warning, then the cashier's check / release controls
+    .card-payment-unknown {
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 0.4em;
+
+      .card-payment-unknown-message {
+        font-weight: bold;
+        color: #cc0f35;
+      }
+    }
+
     .numpad-container {
       display: flex;
       flex-flow: row nowrap;

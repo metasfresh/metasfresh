@@ -23,23 +23,20 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
 import de.metas.location.CountryCode;
 import de.metas.product.PackageDimensions;
-import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
+import de.metas.shipper.gateway.dhl.model.DhlShipperConfigId;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
@@ -49,17 +46,20 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.user.UserRepository;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @UtilityClass
 class DhlTestHelper
@@ -225,18 +225,21 @@ class DhlTestHelper
 		//
 		// create all structures
 
-		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
-		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
+		final DhlClientConfigRepository clientConfigRepository = DhlClientConfigRepository.newInstanceForUnitTesting();
+		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new UserRepository());
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
 		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), new CurrencyRepository(), orderRepository);
 
 		final UomId dummyUom = UomId.ofRepoId(1);
 
 		final DhlClientConfig config = DhlClientConfig.builder()
+				.shipperConfigId(DhlShipperConfigId.ofRepoId(1))
+				.shipperName("dummy")
 				.baseUrl(BASE_URL)
 				.applicationID(USER_NAME)
 				.applicationToken(APP_TOKEN)
 				.accountNumber(accountNumber) // special account number, depending on target country. why dhl why?????
+				.accountNumberInternational(accountNumber)
 				.signature(PASSWORD)
 				.username(USER_NAME)
 				.lengthUomId(dummyUom)
@@ -346,56 +349,39 @@ class DhlTestHelper
 				.build();
 	}
 
+	/**
+	 * Builds the draft through the real entry point, {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder},
+	 * from in-memory records that carry the dummy order's data.
+	 */
 	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder, @NonNull final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator)
 	{
 		final DeliveryOrderParcel firstDeliveryOrderParcel = deliveryOrder.getDeliveryOrderParcels().get(0);
 
-		//
-		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()
-				.packageId(firstDeliveryOrderParcel.getPackageId())
-				.weightInKg(firstDeliveryOrderParcel.getGrossWeightKg())
-				.packageDimension(firstDeliveryOrderParcel.getPackageDimensions())
-				.build();
-
-		//
-		final I_C_BPartner pickupFromBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getPickupAddress());
-		final I_C_Location pickupFromLocation = ShipperTestHelper.createLocation(deliveryOrder.getPickupAddress());
-		final LocalDate pickupDate = deliveryOrder.getPickupDate().getDate();
-
-		//
-		final I_C_BPartner deliverToBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getDeliveryAddress());
-		//noinspection deprecation,ConstantConditions
-		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
-		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
-		final int deliverToBPartnerLocationId = 0;
-		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
-
-		//
-		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
-		final ShipperId shipperId = deliveryOrder.getShipperId();
-		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
-		final PackageDimensions packageDimensions = firstDeliveryOrderParcel.getPackageDimensions();
-
-		final CustomDeliveryData customDeliveryData = null;
-
-		final String customerReference = null;
-
-		//noinspection ConstantConditions
-		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
-				ImmutableSet.of(packageInfo),
+		final Address pickupAddress = deliveryOrder.getPickupAddress();
+		final I_C_BPartner pickupFromBPartner = DhlDraftDeliveryOrderTestFixture.createBPartner(pickupAddress.getCompanyName1(), pickupAddress.getCompanyName2());
+		final int fromOrgId = DhlDraftDeliveryOrderTestFixture.createOrgWithLinkedBPartner(
 				pickupFromBPartner,
-				pickupFromLocation,
-				pickupDate,
-				deliverToBPartner,
-				//deliverToBPartnerLocationId,
-				deliverToLocation,
-				deliverToPhoneNumber,
-				detectedServiceType,
-				shipperId,
-				customerReference,
-				shipperTransportationId,
-				packageDimensions,
-				customDeliveryData);
+				DhlDraftDeliveryOrderTestFixture.createCountry(pickupAddress.getCountry().getAlpha2()),
+				pickupAddress.getStreet1() + " " + pickupAddress.getHouseNo(), pickupAddress.getStreet2(), pickupAddress.getZipCode(), pickupAddress.getCity());
+
+		final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
+		final I_C_BPartner_Location deliverToBPLocation = DhlDraftDeliveryOrderTestFixture.createBPLocation(
+				DhlDraftDeliveryOrderTestFixture.createBPartner(deliveryAddress.getCompanyName1(), deliveryAddress.getCompanyName2()),
+				DhlDraftDeliveryOrderTestFixture.createCountry(deliveryAddress.getCountry().getAlpha2()),
+				deliveryAddress.getStreet1() + " " + deliveryAddress.getHouseNo(), deliveryAddress.getStreet2(), deliveryAddress.getZipCode(), deliveryAddress.getCity(),
+				deliveryOrder.getDeliveryContact().getEmailAddress());
+		deliverToBPLocation.setPhone(deliveryOrder.getDeliveryContact().getSimplePhoneNumber());
+		saveRecord(deliverToBPLocation);
+
+		return DhlDraftDeliveryOrderTestFixture.createDraftDeliveryOrder(
+				draftDeliveryOrderCreator,
+				fromOrgId,
+				deliverToBPLocation,
+				null,
+				deliveryOrder.getPickupDate().getDate(),
+				firstDeliveryOrderParcel.getPackageId(),
+				firstDeliveryOrderParcel.getGrossWeightKg(),
+				firstDeliveryOrderParcel.getPackageDimensions());
 	}
 
 }

@@ -264,7 +264,7 @@ $F{shiplocation}
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{Reference} + ": " + $F{reference}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Reference} + ($R{Reference}.endsWith(":") ? " " : ": ") + $F{reference}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="13">
@@ -950,7 +950,7 @@ $F{shiplocation}
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Weight}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="134" y="18" width="100" height="12" uuid="178f8339-b472-4ca0-b6cf-3db6cfd5f47a"/>

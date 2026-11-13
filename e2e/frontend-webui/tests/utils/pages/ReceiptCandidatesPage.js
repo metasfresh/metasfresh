@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
-import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { getPage, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { PdfDownloader } from '../PdfDownloader';
 import { serverErrorMessage } from '../RestResponse';
 
@@ -254,31 +254,7 @@ export class ReceiptCandidatesPage {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
-      // Scroll row into view and click
-      await firstRow.scrollIntoViewIfNeeded();
-      await firstRow.click();
-
-      // Wait for selection to be processed
-      await page.waitForTimeout(500);
-
-      // Try to verify row is selected, but don't fail if class isn't added
-      // (some modal views might use different selection mechanism)
-      const hasSelectedClass = await firstRow.evaluate(el => el.classList.contains('row-selected'));
-      if (!hasSelectedClass) {
-        // Try clicking again with force option
-        await firstRow.click({ force: true });
-        await page.waitForTimeout(500);
-      }
-
-      // Verify selection by checking if Quick Actions button is visible
-      // (actions appear when rows are selected)
-      const modalQuickAction = page.locator('.panel-modal [data-testid="quick-action-button"], .modal-content [data-testid="quick-action-button"]');
-      const quickActionVisible = await modalQuickAction.isVisible().catch(() => false);
-
-      if (!quickActionVisible) {
-        // If no quick action visible, maybe selection failed - throw error
-        console.log('Warning: Quick Action not visible after row click - selection may have failed');
-      }
+      await selectRows([firstRow]);
     });
   }
 
@@ -888,10 +864,8 @@ export class ReceiptCandidatesPage {
             has: page.locator('.meta-icon-share'),
           }).first();
 
-          // Select the row first and require the selection to register (row gains
-          // 'row-selected'): the Zoom Into action works on the selected row.
-          await tabTableRow.click();
-          await expect(tabTableRow).toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT });
+          // Select the row first: the Zoom Into action works on the selected row.
+          await selectRows([tabTableRow]);
 
           await zoomCell.scrollIntoViewIfNeeded().catch(() => {});
           await zoomCell.click({ button: 'right' });

@@ -64,7 +64,6 @@ import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -90,7 +89,10 @@ import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
@@ -135,6 +137,7 @@ import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
@@ -575,6 +578,7 @@ public class HUTestHelper
 		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(newHandlingUnitsModelInterceptor());
+		clearAggregationKeyHandlersOnNextInit(HUShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
 	}
 
 	private de.metas.handlingunits.model.validator.Main newHandlingUnitsModelInterceptor()
@@ -590,7 +594,7 @@ public class HUTestHelper
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 						new PPOrderIssueScheduleService(
 								new PPOrderIssueScheduleRepository(),
-								new HUQtyService(InventoryService.newInstanceForUnitTesting())
+								HUQtyService.newInstanceForUnitTesting()
 						)),
 				huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
@@ -612,6 +616,21 @@ public class HUTestHelper
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(ReceiptScheduleValidator.instance);
 		InOutCandidateValidator.registerSSAggregationKeyDependencies();
+		clearAggregationKeyHandlersOnNextInit(ReceiptScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
+		clearAggregationKeyHandlersOnNextInit(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
+	}
+
+	/**
+	 * {@link IAggregationKeyRegistry} keeps its handlers in static state that {@link AdempiereTestHelper#init()} does not reset,
+	 * so the handlers registered by this helper would otherwise leak into every later test class of the same JVM.
+	 * This helper is not a JUnit class and can't have an {@code @AfterEach}, so the handlers are cleared when the next test calls {@link AdempiereTestHelper#init()}
+	 * (same mechanism as in {@code HUPricingTestHelper}).
+	 */
+	private static void clearAggregationKeyHandlersOnNextInit(@NonNull final String registrationKey)
+	{
+		AdempiereTestHelper.get().onCleanup(
+				"Clear aggregation key handlers for " + registrationKey,
+				() -> Services.get(IAggregationKeyRegistry.class).clearHandlers(registrationKey));
 	}
 
 	/**

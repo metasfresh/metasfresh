@@ -269,7 +269,11 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
   @from:cucumber
   @Id:S31060_7
   Scenario: The nightly schedule's own selection excludes an organisation that has the online check switched off
-    Given metasfresh contains VATaxID_Config:
+    # Resets bp_viesOff's status for a re-run against a never-reset local database: the unbounded scheduled
+    # sweeps of S31060_6 and S31060_9 check it while the online check is on, and that status survives the
+    # upsert by Value.
+    Given no VATaxID_CheckLog records exist for VATaxID 'NL004495445B01'
+    And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | false              | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:

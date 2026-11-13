@@ -52,7 +52,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Bonus product.
+	 * Set Bonus Product.
 	 * Product of the credit memo line. The tax and accounts of the credit memo follow this product. Required if no product is given.
 	 *
 	 * <br>Type: Search
@@ -62,7 +62,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setBonus_Product_ID (int Bonus_Product_ID);
 
 	/**
-	 * Get Bonus product.
+	 * Get Bonus Product.
 	 * Product of the credit memo line. The tax and accounts of the credit memo follow this product. Required if no product is given.
 	 *
 	 * <br>Type: Search
@@ -142,7 +142,7 @@ public interface I_C_Flatrate_RefundConfig
 	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
@@ -152,14 +152,14 @@ public interface I_C_Flatrate_RefundConfig
 	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_InvoiceSchedule_ID();
 
-	org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule();
+	@Nullable org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule();
 
-	void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule);
+	void setC_InvoiceSchedule(@Nullable org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule);
 
 	ModelColumn<I_C_Flatrate_RefundConfig, org.compiere.model.I_C_InvoiceSchedule> COLUMN_C_InvoiceSchedule_ID = new ModelColumn<>(I_C_Flatrate_RefundConfig.class, "C_InvoiceSchedule_ID", org.compiere.model.I_C_InvoiceSchedule.class);
 	String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
@@ -213,7 +213,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Deducted at payment.
+	 * Set Deducted at Payment.
 	 * If enabled, the customer deducts the bonus when paying. No refund is invoiced, the payment allocation creates a payment bonus credit memo instead.
 	 *
 	 * <br>Type: YesNo
@@ -223,7 +223,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setIsDeductedAtPayment (boolean IsDeductedAtPayment);
 
 	/**
-	 * Get Deducted at payment.
+	 * Get Deducted at Payment.
 	 * If enabled, the customer deducts the bonus when paying. No refund is invoiced, the payment allocation creates a payment bonus credit memo instead.
 	 *
 	 * <br>Type: YesNo
@@ -236,7 +236,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_IsDeductedAtPayment = "IsDeductedAtPayment";
 
 	/**
-	 * Set Filter by packaging.
+	 * Set Filter by Packaging.
 	 * If enabled, only lines with one of the listed packaging options get the bonus.
 	 *
 	 * <br>Type: YesNo
@@ -246,7 +246,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setIsPackingOptionFiltered (boolean IsPackingOptionFiltered);
 
 	/**
-	 * Get Filter by packaging.
+	 * Get Filter by Packaging.
 	 * If enabled, only lines with one of the listed packaging options get the bonus.
 	 *
 	 * <br>Type: YesNo
@@ -259,7 +259,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_IsPackingOptionFiltered = "IsPackingOptionFiltered";
 
 	/**
-	 * Set In profit calculation.
+	 * Set In Profit Calculation.
 	 * Specifies whether the refund parameters shall be included when calculating the expected profit.
 	 *
 	 * <br>Type: YesNo
@@ -269,7 +269,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setIsUseInProfitCalculation (boolean IsUseInProfitCalculation);
 
 	/**
-	 * Get In profit calculation.
+	 * Get In Profit Calculation.
 	 * Specifies whether the refund parameters shall be included when calculating the expected profit.
 	 *
 	 * <br>Type: YesNo
@@ -282,7 +282,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_IsUseInProfitCalculation = "IsUseInProfitCalculation";
 
 	/**
-	 * Set Minimum quantity.
+	 * Set Minimum Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -291,7 +291,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setMinQty (BigDecimal MinQty);
 
 	/**
-	 * Get Minimum quantity.
+	 * Get Minimum Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -347,7 +347,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Refund amount.
+	 * Set Refund Amount.
 	 * Refund amount per product unit
 	 *
 	 * <br>Type: Amount
@@ -357,7 +357,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setRefundAmt (@Nullable BigDecimal RefundAmt);
 
 	/**
-	 * Get Refund amount.
+	 * Get Refund Amount.
 	 * Refund amount per product unit
 	 *
 	 * <br>Type: Amount
@@ -370,7 +370,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_RefundAmt = "RefundAmt";
 
 	/**
-	 * Set Refund based on.
+	 * Set Refund Based On.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -379,7 +379,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setRefundBase (java.lang.String RefundBase);
 
 	/**
-	 * Get Refund based on.
+	 * Get Refund Based On.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -391,7 +391,7 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_RefundBase = "RefundBase";
 
 	/**
-	 * Set Refund per.
+	 * Set Refund Per.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -400,7 +400,7 @@ public interface I_C_Flatrate_RefundConfig
 	void setRefundInvoiceType (java.lang.String RefundInvoiceType);
 
 	/**
-	 * Get Refund per.
+	 * Get Refund Per.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

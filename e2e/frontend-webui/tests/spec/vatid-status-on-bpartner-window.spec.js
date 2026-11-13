@@ -8,7 +8,7 @@ import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { TextWidget } from '../utils/widgets/TextWidget';
 import { NumericWidget } from '../utils/widgets/NumericWidget';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, getPage } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, getPage, selectRows } from '../utils/common';
 import { assertRecordIsValid, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -355,7 +355,7 @@ async function openAddressRowAdvancedEdit(page) {
     timeout: SLOW_ACTION_TIMEOUT,
   });
   const addressRow = addressRows.first();
-  await addressRow.click();
+  await selectRows([addressRow]);
 
   await addressRow.locator('td[data-cy^="cell-"]').first().click({ button: 'right' });
   const contextMenu = page.locator('.context-menu.context-menu-open');

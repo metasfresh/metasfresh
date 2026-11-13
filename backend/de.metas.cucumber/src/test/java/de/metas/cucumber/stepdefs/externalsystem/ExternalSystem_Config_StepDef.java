@@ -109,16 +109,14 @@ public class ExternalSystem_Config_StepDef
 	private final TestContext testContext;
 
 	/**
-	 * {@code IsTriggerOnComplete} scripted-export configs created by this scenario; deactivated by {@link #restoreTriggerOnCompleteConfigsAfterScenario()},
-	 * because an active one fires an export on every later completion of a document of its table, also in the scenarios that run after this one on the executor.
+	 * Trigger-on-complete configs created by the current scenario; deactivated again after the scenario.
 	 */
-	private final Set<Integer> createdTriggerOnCompleteConfigIds = new LinkedHashSet<>();
+	private final Set<ExternalSystemScriptedExportConversionConfigId> createdTriggerOnCompleteConfigIds = new LinkedHashSet<>();
 
 	/**
-	 * Previously active {@code IsTriggerOnComplete} scripted-export configs this scenario deactivated (table-scoped takeover); re-activated by
-	 * {@link #restoreTriggerOnCompleteConfigsAfterScenario()}, unless this scenario created them itself.
+	 * Pre-existing trigger-on-complete configs that the current scenario deactivated; reactivated again after the scenario.
 	 */
-	private final Set<Integer> takenOverTriggerOnCompleteConfigIds = new LinkedHashSet<>();
+	private final Set<ExternalSystemScriptedExportConversionConfigId> takenOverTriggerOnCompleteConfigIds = new LinkedHashSet<>();
 
 	public ExternalSystem_Config_StepDef(
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
@@ -464,7 +462,12 @@ public class ExternalSystem_Config_StepDef
 					.forEach(existing -> {
 						existing.setIsActive(false);
 						InterfaceWrapperHelper.save(existing);
-						takenOverTriggerOnCompleteConfigIds.add(existing.getExternalSystem_Config_ScriptedExportConversion_ID());
+
+						final ExternalSystemScriptedExportConversionConfigId existingId = ExternalSystemScriptedExportConversionConfigId.ofRepoId(existing.getExternalSystem_Config_ScriptedExportConversion_ID());
+						if (!createdTriggerOnCompleteConfigIds.contains(existingId))
+						{
+							takenOverTriggerOnCompleteConfigIds.add(existingId);
+						}
 					});
 		}
 
@@ -478,33 +481,41 @@ public class ExternalSystem_Config_StepDef
 		scriptedExportConversionConfig.setWhereClause(whereClause);
 
 		InterfaceWrapperHelper.save(scriptedExportConversionConfig);
+
+		final ExternalSystemScriptedExportConversionConfigId configId = ExternalSystemScriptedExportConversionConfigId.ofRepoId(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID());
 		if (readStatusColumn)
 		{
-			createdTriggerOnCompleteConfigIds.add(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID());
+			createdTriggerOnCompleteConfigIds.add(configId);
 		}
 
-		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID())
-		);
+		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(configId);
 
 		scriptedExportConversionConfigTable.put(scriptedConfigIdentifier, config);
 	}
 
 	/**
-	 * Guaranteed-execution cleanup for {@link #add_externalSystemConfigWithScriptedExportConversionAndStatusColumn}: an {@code @After} hook, so it also runs when a step failed.
-	 * Deactivates the {@code IsTriggerOnComplete} configs this scenario created and re-activates the ones it took over,
-	 * so a later scenario on the same executor does not export (and, for EPCIS, get its reverse/reactivate blocked by an in-flight export) because of this one.
+	 * Guaranteed-execution cleanup for {@link #add_externalSystemConfigWithScriptedExportConversionAndStatusColumn} -- an {@code @After} hook
+	 * rather than a trailing Gherkin step, since Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the cleanup.
 	 * A no-op for every scenario that never called that step.
+	 * <p>
+	 * A trigger-on-complete config is client-wide, so one left active would export (and, for EPCIS, block the reversal of) the documents of
+	 * every later feature on the same DB. The scripted-export repository filters on the child record's own {@code IsActive}, so that is the flag
+	 * switched here: the configs created by the scenario are deactivated, the pre-existing ones it took over are reactivated.
 	 */
 	@After
-	public void restoreTriggerOnCompleteConfigsAfterScenario()
+	public void deactivateCreatedTriggerOnCompleteConfigsAfterScenario()
 	{
+		if (createdTriggerOnCompleteConfigIds.isEmpty() && takenOverTriggerOnCompleteConfigIds.isEmpty())
+		{
+			return;
+		}
+
 		try
 		{
-			createdTriggerOnCompleteConfigIds.forEach(id -> setScriptedExportConversionConfigActive(id, false));
+			createdTriggerOnCompleteConfigIds.forEach(configId -> setScriptedExportConversionConfigActive(configId, false));
 			takenOverTriggerOnCompleteConfigIds.stream()
-					.filter(id -> !createdTriggerOnCompleteConfigIds.contains(id))
-					.forEach(id -> setScriptedExportConversionConfigActive(id, true));
+					.filter(configId -> !createdTriggerOnCompleteConfigIds.contains(configId))
+					.forEach(configId -> setScriptedExportConversionConfigActive(configId, true));
 		}
 		finally
 		{
@@ -513,14 +524,14 @@ public class ExternalSystem_Config_StepDef
 		}
 	}
 
-	private static void setScriptedExportConversionConfigActive(final int configId, final boolean active)
+	private static void setScriptedExportConversionConfigActive(@NonNull final ExternalSystemScriptedExportConversionConfigId configId, final boolean active)
 	{
-		final I_ExternalSystem_Config_ScriptedExportConversion config = InterfaceWrapperHelper.load(configId, I_ExternalSystem_Config_ScriptedExportConversion.class);
-		if (config == null || config.isActive() == active)
+		final I_ExternalSystem_Config_ScriptedExportConversion record = InterfaceWrapperHelper.load(configId, I_ExternalSystem_Config_ScriptedExportConversion.class);
+		if (record == null || record.isActive() == active)
 		{
 			return; // deleted during the scenario, or nothing to change
 		}
-		config.setIsActive(active);
-		InterfaceWrapperHelper.save(config);
+		record.setIsActive(active);
+		InterfaceWrapperHelper.save(record);
 	}
 }

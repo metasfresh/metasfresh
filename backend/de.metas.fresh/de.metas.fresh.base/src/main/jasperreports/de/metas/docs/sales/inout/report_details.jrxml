@@ -480,7 +480,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Weight}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
 				<reportElement x="108" y="8" width="48" height="12" uuid="176b8871-6783-4b60-8aa8-657b7d60a298"/>

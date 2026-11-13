@@ -46,13 +46,16 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -64,7 +67,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	/**
@@ -83,6 +85,20 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final PickingBOMService pickingBOMService;
+	private final InvalidationTrxChecker trxChecker;
+
+	@Autowired // two constructors: tell spring which one
+	public ShipmentScheduleInvalidateBL(@NonNull final PickingBOMService pickingBOMService)
+	{
+		this(pickingBOMService, new InvalidationTrxChecker());
+	}
+
+	@VisibleForTesting
+	ShipmentScheduleInvalidateBL(@NonNull final PickingBOMService pickingBOMService, @NonNull final InvalidationTrxChecker trxChecker)
+	{
+		this.pickingBOMService = pickingBOMService;
+		this.trxChecker = trxChecker;
+	}
 
 	/**
 	 * The mid-batch flush threshold for the invalidation-segment accumulator. Owned here (this BL owns the
@@ -142,17 +158,22 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
+	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final String dataTrxName)
+	{
+		trxChecker.checkTrx(dataTrxName, "shipment schedules " + shipmentScheduleIds);
+		flagForRecompute(shipmentScheduleIds);
+	}
+
+	@Override
 	public void flagForRecomputeStorageSegment(@NonNull final IShipmentScheduleSegment segment)
 	{
-		final PInstanceId addToSelectionId = null;
-		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(segment), addToSelectionId);
+		flagSegmentsRoutedByTrx(ImmutableSet.of(segment));
 	}
 
 	@Override
 	public void flagSegmentForRecompute(final Collection<IShipmentScheduleSegment> segments)
 	{
-		final PInstanceId addToSelectionId = null;
-		invalidSchedulesRepo.invalidateStorageSegments(segments, addToSelectionId);
+		flagSegmentsRoutedByTrx(segments);
 	}
 
 	@Override
@@ -163,6 +184,35 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		invalidSchedulesRepo.invalidateStorageSegments(segments, addToSelectionId);
 	}
 
+	/**
+	 * With a thread-inherited transaction that is open for writes (active, or not yet started), the flags are written in that transaction, so they
+	 * commit or roll back with the change that made the segments stale. Otherwise (no transaction, or a committed one during its post-commit
+	 * listener dispatch, see {@link ThreadInheritedTrxState}) they are written out of transaction.
+	 */
+	private void flagSegmentsRoutedByTrx(@Nullable final Collection<IShipmentScheduleSegment> segments)
+	{
+		if (ThreadInheritedTrxState.isThreadInheritedTrxOpenForWrites())
+		{
+			flagSegmentsForRecomputeInThreadInheritedTrx(segments);
+		}
+		else
+		{
+			flagSegmentsForRecomputeOutOfTrx(segments);
+		}
+	}
+
+	/** Flags in a separate, immediately committed transaction (not rolled back with the caller). */
+	void flagSegmentsForRecomputeOutOfTrx(@Nullable final Collection<IShipmentScheduleSegment> segments)
+	{
+		invalidSchedulesRepo.invalidateStorageSegments(segments, null);
+	}
+
+	/** Flags in the thread-inherited transaction. */
+	void flagSegmentsForRecomputeInThreadInheritedTrx(@Nullable final Collection<IShipmentScheduleSegment> segments)
+	{
+		invalidSchedulesRepo.invalidateStorageSegmentsInThreadInheritedTrx(segments);
+	}
+
 	@Override
 	public void invalidateJustForLines(final I_M_InOut shipment)
 	{
@@ -170,7 +220,12 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 				.stream()
 				.flatMap(this::streamShipmentScheduleIdsForInOutLine)
 				.collect(ImmutableSet.toImmutableSet());
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
 
+		trxChecker.checkRecordTrx(shipment);
 		flagForRecompute(shipmentScheduleIds);
 	}
 
@@ -179,7 +234,12 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	{
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = streamShipmentScheduleIdsForInOutLine(shipmentLine)
 				.collect(ImmutableSet.toImmutableSet());
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
 
+		trxChecker.checkRecordTrx(shipmentLine);
 		flagForRecompute(shipmentScheduleIds);
 	}
 
@@ -194,10 +254,17 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentsChangedForShipment(final I_M_InOut shipment)
 	{
+		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(shipment);
+		if (inoutLines.isEmpty())
+		{
+			return;
+		}
+
+		trxChecker.checkRecordTrx(shipment);
 		final List<IShipmentScheduleSegment> segments = new ArrayList<>();
 
 		final int bpartnerId = shipment.getC_BPartner_ID();
-		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
+		for (final I_M_InOutLine inoutLine : inoutLines)
 		{
 			if (shouldNarrowToSelfByProductRepoId(inoutLine.getM_Product_ID()))
 			{
@@ -215,6 +282,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForShipmentLine(final I_M_InOutLine shipmentLine)
 	{
+		trxChecker.checkRecordTrx(shipmentLine);
 		if (shouldNarrowToSelfByProductRepoId(shipmentLine.getM_Product_ID()))
 		{
 			flagForRecompute(shipmentLine);
@@ -251,6 +319,8 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			return;
 		}
 
+		trxChecker.checkRecordTrx(schedule);
+
 		// M_ShipmentSchedule.M_Product_ID is Mandatory and never 0 (schedules are only created for real products),
 		// so — unlike the InOutLine/OrderLine siblings, which can be product-less charge lines — no charge-line guard is needed here.
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
@@ -267,6 +337,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForShipmentScheduleInclSched(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
+		trxChecker.checkRecordTrx(shipmentSchedule);
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
 		flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
@@ -294,6 +365,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
+		trxChecker.checkRecordTrx(orderLine);
 		if (shouldNarrowToSelfByProductRepoId(orderLine.getM_Product_ID()))
 		{
 			invalidateJustForOrderLine(orderLine);
@@ -321,6 +393,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			return;
 		}
 
+		trxChecker.checkRecordTrx(orderLine);
 		flagForRecompute(shipmentScheduleId);
 	}
 
@@ -356,6 +429,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 				.collect(ImmutableList.toImmutableList());
 		if (segmentsEffective.isEmpty())
 		{
+			return;
+		}
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (!trxManager.isNull(threadTrx) && !ThreadInheritedTrxState.isThreadTrxOpenForWrites(threadTrx))
+		{
+			// committed trx in its post-commit listener dispatch: a collector on it is never flushed, so the flag is written now
+			flagSegmentsForRecomputeOutOfTrx(segmentsEffective);
 			return;
 		}
 

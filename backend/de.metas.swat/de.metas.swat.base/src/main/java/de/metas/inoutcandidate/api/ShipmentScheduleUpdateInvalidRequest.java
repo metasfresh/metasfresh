@@ -51,4 +51,12 @@ public class ShipmentScheduleUpdateInvalidRequest
 	 * (e.g. for the manual {@code M_ShipmentSchedule_Update} process).
 	 */
 	@NonNull @Builder.Default QueryLimit maxToProcess = QueryLimit.NO_LIMIT;
+
+	/**
+	 * How many failed batches in a row led to this pass: 0 for a normal pass (and for every caller outside a recompute workpackage,
+	 * e.g. the manual {@code M_ShipmentSchedule_Update} process), {@code n} for the n-th retry pass enqueued after a failed batch released its flags.
+	 * Handed to {@link de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository#releaseRecomputeMarkersAfterTrxEnd(PInstanceId, int)},
+	 * which enqueues a further retry pass only while this generation is below the cap.
+	 */
+	@Builder.Default int recomputeRetryGeneration = 0;
 }

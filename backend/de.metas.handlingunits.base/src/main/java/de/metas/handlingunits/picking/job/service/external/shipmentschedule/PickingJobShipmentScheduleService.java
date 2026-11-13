@@ -32,6 +32,7 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -172,6 +173,11 @@ public class PickingJobShipmentScheduleService
 	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		huShipmentScheduleBL.flagForRecompute(shipmentScheduleIds);
+	}
+
+	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final String dataTrxName)
+	{
+		huShipmentScheduleBL.flagForRecompute(shipmentScheduleIds, dataTrxName);
 	}
 
 	public ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newHuShipmentLoadingCache()

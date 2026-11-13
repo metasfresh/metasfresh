@@ -6,10 +6,13 @@ import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.pos.POSOrderAndPaymentId;
 import de.metas.pos.POSPaymentProcessingStatus;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.payment_gateway.POSCardReader;
 import de.metas.pos.payment_gateway.POSCardReaderExternalId;
+import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,7 +20,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 
 @UtilityClass
-class SumUpUtils
+public class SumUpUtils
 {
 	public static POSPaymentProcessResponse extractProcessResponse(final SumUpTransaction sumUpTrx)
 	{
@@ -26,6 +29,9 @@ class SumUpUtils
 				.config(extractPaymentProcessorConfig(sumUpTrx))
 				.cardReader(extractCardReader(sumUpTrx.getCardReader()))
 				.transactionId(sumUpTrx.getExternalId().getAsString())
+				.clientTransactionId(sumUpTrx.getClientTransactionId().getAsString())
+				.transactionCreated(sumUpTrx.getTimestamp())
+				.transactionRecordedAt(sumUpTrx.getRecordedAt())
 				.summary(sumUpTrx.getCard() != null ? sumUpTrx.getCard().getAsString() : null)
 				.build();
 	}
@@ -61,6 +67,11 @@ class SumUpUtils
 					? POSPaymentProcessingStatus.DELETED
 					: POSPaymentProcessingStatus.SUCCESSFUL;
 		}
+		else if (SumUpTransactionStatus.REFUNDED.equals(status))
+		{
+			// refunded in full or in part: like a SUCCESSFUL charge with a refund
+			return POSPaymentProcessingStatus.DELETED;
+		}
 		else if (SumUpTransactionStatus.CANCELLED.equals(status))
 		{
 			return POSPaymentProcessingStatus.CANCELLED;
@@ -84,6 +95,20 @@ class SumUpUtils
 		return SumUpPOSRef.builder()
 				.posOrderId(posOrderAndPaymentId.getOrderId().getRepoId())
 				.posPaymentId(posOrderAndPaymentId.getPaymentId().getRepoId())
+				.build();
+	}
+
+	public static SumUpPOSRef toPOSRef(@NonNull final POSPaymentProcessRequest request)
+	{
+		final POSOrderAndPaymentId posOrderAndPaymentId = request.getPosOrderAndPaymentId();
+		if (posOrderAndPaymentId != null)
+		{
+			return toPOSRef(posOrderAndPaymentId);
+		}
+
+		final POSInvoiceCardSettlementId settlementId = Check.assumeNotNull(request.getPosInvoiceCardSettlementId(), "posInvoiceCardSettlementId is set for {}", request);
+		return SumUpPOSRef.builder()
+				.posInvoiceCardSettlementId(settlementId.getRepoId())
 				.build();
 	}
 

@@ -82,8 +82,10 @@ public class MobileUIPickingUserProfile_StepDef
 	 *   <li>{@code IsAlwaysSplitHUsEnabled} — boolean</li>
 	 *   <li>{@code IsAllowCompletingPartialPickingJob} — boolean</li>
 	 *   <li>{@code IsCatchWeightTUPickingEnabled} — boolean</li>
+	 *   <li>{@code IsShowConfirmationPromptWhenOverPick} — boolean; N means over-picking is blocked</li>
 	 *   <li>{@code IsShipOnCloseLU} — boolean (closing an LU pick target ships that LU right away)</li>
 	 *   <li>{@code IsMassPrinting} — boolean</li>
+ *   <li>{@code IsShowConfirmationPromptWhenOverPick} — boolean (N means over-picking is blocked)</li>
 	 *   <li>{@code IsConsideredOnlyScheduledJobs} — boolean (job-scheduled-to-workplace mode: only demand scheduled to the picker's workplace via a {@code M_Picking_Job_Schedule} is eligible)</li>
 	 * </ul>
 	 *
@@ -109,6 +111,7 @@ public class MobileUIPickingUserProfile_StepDef
 
 		profileService.update((profile) -> {
 			final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsShowConfirmationPromptWhenOverPick).ifPresent(defaultPickingJobOptionsBuilder::isShowConfirmationPromptWhenOverPick);
 			row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(defaultPickingJobOptionsBuilder::isAllowPickingAnyHU);
 			row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);

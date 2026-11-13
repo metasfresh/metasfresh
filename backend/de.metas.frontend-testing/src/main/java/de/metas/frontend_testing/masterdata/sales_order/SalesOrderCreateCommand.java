@@ -8,8 +8,10 @@ import de.metas.document.DocTypeId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.frontend_testing.masterdata.AsyncQueueProcessorsReadiness;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.frontend_testing.masterdata.payment_term.PaymentTermGetOrCreateCommand;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
@@ -71,6 +73,13 @@ public class SalesOrderCreateCommand
 	public JsonSalesOrderCreateResponse execute()
 	{
 		final JsonSalesOrderCreateResponse response = trxManager.callInThreadInheritedTrx(this::execute0);
+
+		// The shipment schedules are created by an async workpackage, so don't spend the poll budgets below on processors that are not started yet
+		if (!lineCreateRequestAndBuilders.isEmpty())
+		{
+			AsyncQueueProcessorsReadiness.awaitStarted();
+		}
+
 		trxManager.runInThreadInheritedTrx(this::createSchedules);
 		waitForShipmentSchedulesToBeValid();
 		return response;
@@ -100,6 +109,11 @@ public class SalesOrderCreateCommand
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
 				.datePromised(request.getDatePromised())
 				.poReference(request.getPoReference());
+
+		if (request.getPaymentTerm() != null)
+		{
+			this.salesOrderFactory.paymentTermId(PaymentTermGetOrCreateCommand.builder().value(request.getPaymentTerm()).build().execute());
+		}
 
 		if (request.getShipper() != null)
 		{
@@ -246,6 +260,7 @@ public class SalesOrderCreateCommand
 		}
 		catch (final InterruptedException e)
 		{
+			Thread.currentThread().interrupt();
 			throw new AdempiereException(e);
 		}
 	}
