@@ -42,6 +42,6 @@ COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;
 task 09182: in OrderPOReference and OrderLine we show reference and line for the original order, but fall back to the invoice''s own reference and line if there is no order(line).
-Packaging-material lines are excluded here (legacy XML export, historical invoices JSON); the INVOIC JSON reads edi_cctop_invoic_500_incl_packaging_v.
+Packaging-material lines are excluded here (legacy XML export, historical invoices JSON); the INVOIC JSON reads edi_invoic_json_line_v.
 '
 ;
