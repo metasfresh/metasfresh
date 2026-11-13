@@ -1,3 +1,6 @@
+-- accounting_docs_to_repost_reorder: ANALYZE the posting queue before the reorder join; optional p_AD_Client_ID restricts the reorder to documents of that client (NULL = all, as before).
+
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/accounting_docs_to_repost_reorder.sql
 DROP FUNCTION IF EXISTS "de_metas_acct".accounting_docs_to_repost_reorder()
 ;
 
@@ -6,8 +9,16 @@ DROP FUNCTION IF EXISTS "de_metas_acct".accounting_docs_to_repost_reorder(
 )
 ;
 
+DROP FUNCTION IF EXISTS "de_metas_acct".accounting_docs_to_repost_reorder(
+    p_DateAcct_Trunc varchar,
+    p_AD_Client_ID   numeric
+)
+;
+
+-- p_AD_Client_ID: when set, only queue rows of documents of this client are reordered; rows of other clients keep their SeqNo.
 CREATE OR REPLACE FUNCTION "de_metas_acct".accounting_docs_to_repost_reorder(
-    p_DateAcct_Trunc varchar = 'DD'
+    p_DateAcct_Trunc varchar = 'DD',
+    p_AD_Client_ID   numeric = NULL
 )
     RETURNS void
 AS
@@ -15,7 +26,7 @@ $BODY$
 DECLARE
     rowcount integer;
 BEGIN
-    RAISE NOTICE 'accounting_docs_to_repost_reorder: p_DateAcct_Trunc=%', p_DateAcct_Trunc;
+    RAISE NOTICE 'accounting_docs_to_repost_reorder: p_DateAcct_Trunc=%, p_AD_Client_ID=%', p_DateAcct_Trunc, p_AD_Client_ID;
 
     -- The callers insert many rows into the queue in the same transaction and call this function right away.
     -- Without fresh statistics the planner can assume an (almost) empty queue and pick a very slow nested loop.
@@ -38,7 +49,9 @@ BEGIN
                                         doc.record_id,
                                         doc.reversal_id
                         FROM "de_metas_acct".accounting_docs_to_repost r
-                                 INNER JOIN "de_metas_acct".accountable_docs_and_lines_v doc ON doc.tablename = r.tablename AND doc.record_id = r.record_id) t)
+                                 INNER JOIN "de_metas_acct".accountable_docs_and_lines_v doc ON doc.tablename = r.tablename AND doc.record_id = r.record_id
+                        WHERE p_AD_Client_ID IS NULL
+                           OR doc.ad_client_id = p_AD_Client_ID) t)
     UPDATE "de_metas_acct".accounting_docs_to_repost t
     SET seqNo=docs.new_seqNo
     FROM docs
