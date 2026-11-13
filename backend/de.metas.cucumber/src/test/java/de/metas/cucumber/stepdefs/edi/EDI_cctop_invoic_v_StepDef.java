@@ -46,15 +46,16 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -205,7 +206,7 @@ public class EDI_cctop_invoic_v_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>edi_cctop_invoic_500_v_id</b> — (required, identifier-ref) the C_InvoiceLine the row belongs to<br>
+	 *   <b>edi_cctop_invoic_500_v_id</b> — (required, identifier-ref) the C_InvoiceLine the row belongs to; the view's id is min(C_InvoiceLine_ID) of a grouped row, so for a grouped row give the lowest invoice line's identifier<br>
 	 *   <b>Line</b> — (required) the row's {@code line}<br>
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) product; compared with the row's {@code value}<br>
 	 *   <b>QtyInvoiced</b> — (required) the row's {@code qtyinvoiced}<br>
@@ -238,7 +239,7 @@ public class EDI_cctop_invoic_v_StepDef
 		}
 		catch (final SQLException e)
 		{
-			throw new RuntimeException("Failed to query edi_cctop_invoic_500_v for C_Invoice_ID=" + invoiceId, e);
+			throw new AdempiereException("Failed to query edi_cctop_invoic_500_v for C_Invoice_ID=" + invoiceId, e);
 		}
 
 		final List<String> expectedRows = DataTableRows.of(dataTable).stream()
