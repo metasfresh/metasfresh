@@ -404,7 +404,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@kikuValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_Line": 20,
@@ -433,7 +436,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@evelinaValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_QtyInvoiced": 15,
@@ -463,7 +469,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_DepositType": "RC",
           "Packaging": {
             "IsPackagingMaterial": true
-          }
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_QtyInvoiced": 20,
@@ -493,7 +502,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_DepositType": "RC",
           "Packaging": {
             "IsPackagingMaterial": true
-          }
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         }
       ],
       "Sums": [
@@ -848,7 +860,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_ProductNo": "@evelinaValue@",
           "Product_DepositType": null,
           "Packaging": null,
-          "Line_Type": "Item"
+          "Line_Type": "Item",
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_Line": 20,
@@ -878,7 +893,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_ProductNo": "@bonusValue@",
           "Product_DepositType": null,
           "Packaging": null,
-          "Line_Type": "Allowance"
+          "Line_Type": "Allowance",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_Line": 30,
@@ -910,7 +928,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Packaging": {
             "IsPackagingMaterial": true
           },
-          "Line_Type": "Item"
+          "Line_Type": "Item",
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         }
       ],
       "Sums": [
@@ -998,8 +1019,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | ss_surcharge          |
       | ss_negative           |
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_goods              | shipment   |
+      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
+      | ss_goods              | shipment   | shipmentDocNo           |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_goods       | ic_goods               |
@@ -1044,17 +1065,26 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Order_Line": 10,
           "NetAmt": 1000,
           "Product_Supplier_ProductNo": "@goodsValue@",
-          "Line_Type": "Item"
+          "Line_Type": "Item",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "NetAmt": 30,
           "Product_Supplier_ProductNo": "@surchargeValue@",
-          "Line_Type": "Charge"
+          "Line_Type": "Charge",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "NetAmt": -5,
           "Product_Supplier_ProductNo": "@negativeValue@",
-          "Line_Type": "Item"
+          "Line_Type": "Item",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         }
       ]
     }
@@ -1363,7 +1393,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@braeburnValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_Line": 20,
@@ -1392,7 +1425,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@elstarValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": 10,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_Line": 30,
@@ -1421,7 +1457,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@kiwiValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": 12,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_QtyInvoiced": 10,
@@ -1451,7 +1490,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_DepositType": "NRC",
           "Packaging": {
             "IsPackagingMaterial": true
-          }
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         },
         {
           "Invoice_QtyInvoiced": 136,
@@ -1481,7 +1523,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_DepositType": "RC",
           "Packaging": {
             "IsPackagingMaterial": true
-          }
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         }
       ],
       "Sums": [
