@@ -98,6 +98,7 @@ services:
       - "SPRING_RABBITMQ_PASSWORD=metasfresh"
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
       - "FRONTEND_TESTING=true"
+      - "SUMUP_BASEURL=http://wiremock:8080/sumup/v0.1"
     depends_on:
       db:
         condition: service_healthy
@@ -133,6 +134,7 @@ services:
       - "SPRING_RABBITMQ_USERNAME=metasfresh"
       - "SPRING_RABBITMQ_PASSWORD=metasfresh"
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+      - "SUMUP_BASEURL=http://wiremock:8080/sumup/v0.1"
     depends_on:
       db:
         condition: service_healthy

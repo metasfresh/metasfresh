@@ -22,8 +22,9 @@ import java.util.List;
  *     posTerminal: 'T1',               // masterdata identifier — needed only by cashJournalLines
  *     returns: [{ product: 'P1', qty: '0.300 KGM', warehouse: 'quality' }],
  *     creditMemos: [{ lines: [{ product: 'P1', qty: '0.300 KGM', price: '15.50', taxRate: 7 }] }],
- *     cashJournalLines: [{ type: 'CASH_INOUT', amount: '-4.65' }],
- *     invoices: [{ invoice: 'INV1', isPaid: true, hasAllocatedPayment: true, allocatedPayments: [{ tenderType: 'X' }] }]
+ *     cashJournalLines: [{ type: 'CASH_INOUT', amount: '-4.65' }, { type: 'CARD_PAY', amount: '16.07', cardSettlement: true }],
+ *     invoices: [{ invoice: 'INV1', isPaid: true, hasAllocatedPayment: true, allocatedPayments: [{ tenderType: 'X' }] }],
+ *     cardSettlements: [{ invoice: 'INV1', status: 'SU' }]
  *   }
  * });
  * </pre>
@@ -54,6 +55,23 @@ public class JsonPOSExpectation
 	@Nullable List<JsonPOSCreditMemoExpectation> creditMemos;
 	@Nullable List<JsonPOSInvoiceExpectation> invoices;
 	@Nullable List<JsonCashJournalLineExpectation> cashJournalLines;
+
+	/**
+	 * The invoice card settlements ({@code C_POS_InvoiceCardSettlement}) of the listed invoices. Per invoice, the
+	 * expected statuses are matched in the order stated against the invoice's settlements, oldest first, and their
+	 * number must be equal. An entry without {@code status} asserts that the invoice has NO card settlement.
+	 * <p>
+	 * Unlike {@code cashJournalLines}, an empty list asserts nothing: the settlements belong to invoices, so only
+	 * an invoice named in an entry is checked.
+	 */
+	@Nullable List<JsonPOSCardSettlementExpectation> cardSettlements;
+
+	/**
+	 * The card payments ({@code C_POS_Payment}, method CARD) of the terminal {@link #posTerminal}, oldest first,
+	 * matched positionally against the stated entries; their number must be equal. An empty list asserts that the
+	 * terminal has no card payment at all. Requires {@code posTerminal}.
+	 */
+	@Nullable List<JsonPOSCardPaymentExpectation> cardPayments;
 
 	/** One line of the return's own {@code M_InOut} — the goods received into the quality-return warehouse. */
 	@Value
@@ -113,7 +131,7 @@ public class JsonPOSExpectation
 	@Jacksonized
 	public static class JsonPOSAllocatedPaymentExpectation
 	{
-		/** {@code C_Payment.TenderType} code, e.g. {@code 'X'} for cash. */
+		/** {@code C_Payment.TenderType} code, e.g. {@code 'X'} for cash or {@code 'C'} for credit card. */
 		@Nullable String tenderType;
 	}
 
@@ -125,5 +143,41 @@ public class JsonPOSExpectation
 	{
 		@Nullable POSCashJournalLineType type;
 		@Nullable BigDecimal amount;
+
+		/**
+		 * Whether the line was created by an invoice card settlement ({@code CARD_PAY} of a settled invoice) rather
+		 * than by a POS order payment. {@code null} (the default) skips this check.
+		 */
+		@Nullable Boolean cardSettlement;
+	}
+
+	/** One card settlement of an invoice, by the settlement status code ({@code PE}, {@code UN}, {@code AP}, {@code BE}, {@code SU}, {@code CR}, {@code RF}, {@code FA}, {@code CA}, {@code AB}). */
+	@Value
+	@Builder
+	@Jacksonized
+	public static class JsonPOSCardSettlementExpectation
+	{
+		/** Masterdata/context identifier of the invoice. */
+		@NonNull String invoice;
+
+		/** Settlement status code; omit it to assert that the invoice has no card settlement at all. */
+		@Nullable String status;
+	}
+
+	/** One card payment of the terminal. */
+	@Value
+	@Builder
+	@Jacksonized
+	public static class JsonPOSCardPaymentExpectation
+	{
+		/** Payment processing status code ({@code UNKNOWN}, {@code SUCCESSFUL}, ...); omit it to skip the check. */
+		@Nullable String status;
+
+		/**
+		 * The {@code AD_Issue.ErrorCode} values (the AD_Message's ErrorCode if it has one, else its key, e.g. {@code de.metas.pos.POSPayment.LateApprovalNotBooked}) of the AD_Issues whose
+		 * {@code AD_Table_ID} / {@code Record_ID} point to this payment, matched as a multiset (order ignored). An
+		 * empty list asserts the payment has no AD_Issue; omit it to skip the check.
+		 */
+		@Nullable List<String> issueMessages;
 	}
 }

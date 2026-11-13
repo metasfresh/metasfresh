@@ -1,6 +1,7 @@
 package org.adempiere.service.impl;
 
 import de.metas.organization.ClientAndOrgId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
@@ -60,5 +61,34 @@ class SysConfigDAOExactRowTest
 		dao.deleteExactRow(NAME, ClientAndOrgId.MAIN);
 
 		assertThat(dao.getValueOfExactRow(NAME, ClientAndOrgId.SYSTEM)).contains("system");
+	}
+
+	@Test
+	void setActiveExactRow_inactiveRow_isIgnoredByReads_untilReactivated()
+	{
+		dao.setValue(NAME, "system", ClientAndOrgId.SYSTEM);
+		dao.setValue(NAME, "main", ClientAndOrgId.MAIN);
+
+		dao.setActiveExactRow(NAME, ClientAndOrgId.MAIN, false);
+		assertThat(dao.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).isEqualTo(OptionalBoolean.FALSE);
+		assertThat(dao.getValue(NAME, ClientAndOrgId.MAIN)).contains("system");
+
+		dao.setValue(NAME, "main2", ClientAndOrgId.MAIN);
+		assertThat(dao.getValue(NAME, ClientAndOrgId.MAIN)).as("a value written to an inactive row does not take effect").contains("system");
+
+		dao.setActiveExactRow(NAME, ClientAndOrgId.MAIN, true);
+		assertThat(dao.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).isEqualTo(OptionalBoolean.TRUE);
+		assertThat(dao.getValue(NAME, ClientAndOrgId.MAIN)).contains("main2");
+	}
+
+	@Test
+	void isActiveExactRow_whenThereIsNoSuchRow_shouldBeUnknown_andSetActiveShouldDoNothing()
+	{
+		dao.setValue(NAME, "system", ClientAndOrgId.SYSTEM);
+
+		dao.setActiveExactRow(NAME, ClientAndOrgId.MAIN, true);
+
+		assertThat(dao.isActiveExactRow(NAME, ClientAndOrgId.MAIN)).isEqualTo(OptionalBoolean.UNKNOWN);
+		assertThat(dao.getValueOfExactRow(NAME, ClientAndOrgId.MAIN)).isEmpty();
 	}
 }

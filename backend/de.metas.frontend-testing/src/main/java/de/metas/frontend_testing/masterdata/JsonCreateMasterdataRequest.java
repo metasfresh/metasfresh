@@ -18,6 +18,7 @@ import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSInvoiceCardSettlementRequest;
 import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
@@ -152,6 +153,13 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonShipmentCreateRequest> shipments;
 	@Nullable Map<String, JsonReceiptCreateRequest> receipts;
 	@Nullable Map<String, JsonInvoiceCreateRequest> invoices;
+
+	/**
+	 * Card settlements of invoices ({@code C_POS_InvoiceCardSettlement}) in a requested status. Created AFTER
+	 * {@code login}, {@code posTerminals} and {@code invoices}, whose identifiers they reference. See
+	 * {@link de.metas.frontend_testing.masterdata.pos.CreatePOSInvoiceCardSettlementCommand}.
+	 */
+	@Nullable Map<String, JsonPOSInvoiceCardSettlementRequest> posInvoiceCardSettlements;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
 	@Nullable Map<String, JsonDDOrderFromCandidatesRequest> distributionOrdersFromCandidates;

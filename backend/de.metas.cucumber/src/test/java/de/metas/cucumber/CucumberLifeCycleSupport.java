@@ -25,6 +25,7 @@ package de.metas.cucumber;
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
 import de.metas.acct.housekeeping.AddMissingAcctRecords;
+import de.metas.cucumber.stepdefs.pos.SumUpApiStub;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -79,6 +80,11 @@ public class CucumberLifeCycleSupport
 
 			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
 			System.setProperty("server.port", Integer.toString(appServerPort));
+
+			// in-process SumUp API stub; SumUpClientFactory reads the base URL from this property
+			System.setProperty("sumup.baseUrl", SumUpApiStub.start());
+			// the scenarios drive SumUp polling explicitly (step "metasfresh polls SumUp"); the background poller would race them
+			System.setProperty("sumup.pendingTransactionsUpdater.enabled", "false");
 
 			System.setProperty("java.awt.headless", "true"); // "simulate headless mode
 			System.setProperty("app-server-run-headless", "true"); //
