@@ -195,11 +195,7 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
-			if (entry == null)
-			{
-				throw new EntityNotFoundException(id.toJson());
-			}
+			final AttachmentEntry entry = getAttachmentEntryLinkedToRecord(id, entryId);
 			return DocumentAttachmentEntry.of(id, entry);
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
@@ -226,7 +222,7 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
+			final AttachmentEntry entry = getAttachmentEntryLinkedToRecord(id, entryId);
 			attachmentEntryService.unattach(recordRef, entry);
 
 			notifyRelatedDocumentTabsChanged();
@@ -246,6 +242,21 @@ final class DocumentAttachments
 		{
 			throw new EntityNotFoundException(id.toJson());
 		}
+	}
+
+	/**
+	 * @return the attachment entry with the given ID, but only if it's attached to this document's record.
+	 * Otherwise, an attachment of any other record could be accessed through this document.
+	 */
+	@NonNull
+	private AttachmentEntry getAttachmentEntryLinkedToRecord(@NonNull final DocumentId id, final int entryId)
+	{
+		final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
+		if (entry == null || !entry.getLinkedRecords().contains(recordRef))
+		{
+			throw new EntityNotFoundException(id.toJson());
+		}
+		return entry;
 	}
 
 	private static IPair<String, Integer> toPrefixAndEntryId(final DocumentId id)
