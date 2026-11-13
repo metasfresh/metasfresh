@@ -378,7 +378,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       ],
       "Lines": [
         {
-          "Invoice_Line": 10,
+          "Invoice_Line": 30,
           "Invoice_QtyInvoiced": 220,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -821,7 +821,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       ],
       "Lines": [
         {
-          "Invoice_Line": 10,
+          "Invoice_Line": 30,
           "Invoice_QtyInvoiced": 550,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -1337,7 +1337,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       ],
       "Lines": [
         {
-          "Invoice_Line": 10,
+          "Invoice_Line": 30,
           "Invoice_QtyInvoiced": 968,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -1814,6 +1814,538 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Tax_Amt": 22.33,
           "Tax_BaseAmt": 319.0,
           "Tax_Percent": 7
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S27050_TC2
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00359_EDI_INVOICE_JSON
+  @F00359
+  Scenario: 330 pieces shipped in two parts (110 and 220): the INVOIC JSON lists one goods entry and one crate entry per delivery note
+    # Real case: 330 goods in crates of 11, delivered in two shipments (110 and 220), invoiced together.
+    # Default handler setting: the invoice has one goods line per shipment; each INVOIC entry names its own delivery note.
+    Given metasfresh contains M_Product_Categories:
+      | Identifier  |
+      | pm_category |
+    And metasfresh contains M_Products:
+      | Identifier       | M_Product_Category_ID | IsStocked | REST.Context.Value    | REST.Context.Name    |
+      | goods_S27050_TC2 |                       | false     | goodsValue_S27050_TC2 | goodsName_S27050_TC2 |
+      | crate_S27050_TC2 | pm_category           | false     | crateValue_S27050_TC2 | crateName_S27050_TC2 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_sales              | goods_S27050_TC2 | 1.45     | PCE      | tax7Category     |
+      | plv_sales              | crate_S27050_TC2 | 0.00     | PCE      | tax19Category    |
+    And metasfresh contains M_HU_PI:
+      | Identifier      |
+      | huPI_S27050_TC2 |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier           | M_HU_PI_ID      | HU_UnitType |
+      | huVersion_S27050_TC2 | huPI_S27050_TC2 | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID     |
+      | pm_S27050_TC2           | crate_S27050_TC2 |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier          | M_HU_PI_Version_ID   | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem_S27050_TC2 | huVersion_S27050_TC2 | 10  | PM       | pm_S27050_TC2           |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier     | M_HU_PI_Item_ID     | Qty | M_Product_ID     |
+      | pip_S27050_TC2 | huPIItem_S27050_TC2 | 11  | goods_S27050_TC2 |
+    And metasfresh contains M_Warehouse:
+      | Identifier    | C_BPartner_ID | C_BPartner_Location_ID |
+      | mainWarehouse | depotOwner    | depotLoc               |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | OPT.Bill_Location_ID.Identifier | DeliveryRule | DateOrdered | PreparationDate      | M_Warehouse_ID | POReference |
+      | salesOrder | true    | store         | storeLoc               | centralLoc                      | F            | 2026-07-01  | 2026-06-30T22:00:00Z | mainWarehouse  | ED27050C    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID     | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_goods   | salesOrder | goods_S27050_TC2 | 330        | pip_S27050_TC2          |
+    When the order identified by salesOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_goods   | ol_goods       | N             |
+    # shipment 1: 110 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_goods              | D            | true                | false       | 110                                             |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
+      | ss_goods              | shipment1  | shipmentDocNo1          |
+    # the schedule must reflect the first delivery before the second run
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_goods   | ol_goods       | N             |
+    # shipment 2: the remaining 220 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_goods              | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | OPT.IgnoreCreated.M_InOut_ID.Identifier | REST.Context.DocumentNo |
+      | ss_goods              | shipment2  | shipment1                               | shipmentDocNo2          |
+    # crates: 110 / 11 = 10 and 220 / 11 = 20
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID     | MovementQty |
+      | goods_line1    | shipment1  | goods_S27050_TC2 | 110         |
+      | crate_line1    | shipment1  | crate_S27050_TC2 | 10          |
+      | goods_line2    | shipment2  | goods_S27050_TC2 | 220         |
+      | crate_line2    | shipment2  | crate_S27050_TC2 | 20          |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_goods       | ic_goods               |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | M_InOutLine_ID |
+      | ic_crate1              | crate_line1    |
+      | ic_crate2              | crate_line2    |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID | IgnoreInvoiceSchedule |
+      | ic_goods               | Y                     |
+      | ic_crate1              | Y                     |
+      | ic_crate2              | Y                     |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID | C_Invoice_Candidate_ID | REST.Context | REST.Context.DocumentNo |
+      | invoice      | ic_goods               | invoice_ID   | invoiceDocNo            |
+    And validate created invoice lines
+      | C_Invoice_ID | M_Product_ID     | QtyInvoiced | M_InOutLine_ID |
+      | invoice      | goods_S27050_TC2 | 110         | goods_line1    |
+      | invoice      | goods_S27050_TC2 | 220         | goods_line2    |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Invoice_DocumentNo": "@invoiceDocNo@",
+      "Invoice_TotalLines": 478.5,
+      "Invoice_TotalVAT": 33.5,
+      "Lines": [
+        {
+          "Invoice_QtyInvoiced": 110,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 159.5,
+          "Tax_Amount": 11.17,
+          "Product_Supplier_ProductNo": "@goodsValue_S27050_TC2@",
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo1@"
+        },
+        {
+          "Invoice_QtyInvoiced": 220,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 319.0,
+          "Tax_Amount": 22.33,
+          "Product_Supplier_ProductNo": "@goodsValue_S27050_TC2@",
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo2@"
+        },
+        {
+          "Invoice_QtyInvoiced": 10,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0,
+          "Product_Supplier_ProductNo": "@crateValue_S27050_TC2@",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo1@"
+        },
+        {
+          "Invoice_QtyInvoiced": 20,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0,
+          "Product_Supplier_ProductNo": "@crateValue_S27050_TC2@",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo2@"
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S27050_TC2b
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00359_EDI_INVOICE_JSON
+  @F00359
+  Scenario: 330 pieces shipped in two parts, handler allows different shipments in one invoice line: one invoice line, the INVOIC JSON still lists one entry per delivery note
+    # Real case: as above, but the invoice candidate handler puts both shipments on ONE goods invoice line (330), matched per shipment line.
+    # The line is split by its match-invoice rows: 110 on shipment 1, the remainder 220 on shipment 2.
+    Given temporarily set IsAllowDifferentShipmentsInSameInvoiceLine=true on the C_ILCandHandler of table C_OrderLine
+    # Set first: the line aggregation key is stored on each invoice candidate when it is computed, i.e. at order completion.
+    And metasfresh contains M_Product_Categories:
+      | Identifier  |
+      | pm_category |
+    And metasfresh contains M_Products:
+      | Identifier        | M_Product_Category_ID | IsStocked | REST.Context.Value     | REST.Context.Name     |
+      | goods_S27050_TC2b |                       | false     | goodsValue_S27050_TC2b | goodsName_S27050_TC2b |
+      | crate_S27050_TC2b | pm_category           | false     | crateValue_S27050_TC2b | crateName_S27050_TC2b |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_sales              | goods_S27050_TC2b | 1.45     | PCE      | tax7Category     |
+      | plv_sales              | crate_S27050_TC2b | 0.00     | PCE      | tax19Category    |
+    And metasfresh contains M_HU_PI:
+      | Identifier       |
+      | huPI_S27050_TC2b |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier            | M_HU_PI_ID       | HU_UnitType |
+      | huVersion_S27050_TC2b | huPI_S27050_TC2b | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID      |
+      | pm_S27050_TC2b          | crate_S27050_TC2b |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier           | M_HU_PI_Version_ID    | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem_S27050_TC2b | huVersion_S27050_TC2b | 10  | PM       | pm_S27050_TC2b          |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier      | M_HU_PI_Item_ID      | Qty | M_Product_ID      |
+      | pip_S27050_TC2b | huPIItem_S27050_TC2b | 11  | goods_S27050_TC2b |
+    And metasfresh contains M_Warehouse:
+      | Identifier    | C_BPartner_ID | C_BPartner_Location_ID |
+      | mainWarehouse | depotOwner    | depotLoc               |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | OPT.Bill_Location_ID.Identifier | DeliveryRule | DateOrdered | PreparationDate      | M_Warehouse_ID | POReference |
+      | salesOrder | true    | store         | storeLoc               | centralLoc                      | F            | 2026-07-01  | 2026-06-30T22:00:00Z | mainWarehouse  | ED27050D    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID      | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_goods   | salesOrder | goods_S27050_TC2b | 330        | pip_S27050_TC2b         |
+    When the order identified by salesOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_goods   | ol_goods       | N             |
+    # shipment 1: 110 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_goods              | D            | true                | false       | 110                                             |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
+      | ss_goods              | shipment1  | shipmentDocNo1          |
+    # the schedule must reflect the first delivery before the second run
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_goods   | ol_goods       | N             |
+    # shipment 2: the remaining 220 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_goods              | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | OPT.IgnoreCreated.M_InOut_ID.Identifier | REST.Context.DocumentNo |
+      | ss_goods              | shipment2  | shipment1                               | shipmentDocNo2          |
+    # crates: 110 / 11 = 10 and 220 / 11 = 20
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID      | MovementQty |
+      | goods_line1    | shipment1  | goods_S27050_TC2b | 110         |
+      | crate_line1    | shipment1  | crate_S27050_TC2b | 10          |
+      | goods_line2    | shipment2  | goods_S27050_TC2b | 220         |
+      | crate_line2    | shipment2  | crate_S27050_TC2b | 20          |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_goods       | ic_goods               |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | M_InOutLine_ID |
+      | ic_crate1              | crate_line1    |
+      | ic_crate2              | crate_line2    |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID | IgnoreInvoiceSchedule |
+      | ic_goods               | Y                     |
+      | ic_crate1              | Y                     |
+      | ic_crate2              | Y                     |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID | C_Invoice_Candidate_ID | REST.Context | REST.Context.DocumentNo |
+      | invoice      | ic_goods               | invoice_ID   | invoiceDocNo            |
+    And validate created invoice lines
+      | C_InvoiceLine_ID  | C_Invoice_ID | M_Product_ID      | QtyInvoiced |
+      | invoiceLine_goods | invoice      | goods_S27050_TC2b | 330         |
+    And M_MatchInv are found
+      | M_MatchInv_ID | C_InvoiceLine_ID  | M_InOutLine_ID | QtyInUOM |
+      | matchInv1     | invoiceLine_goods | goods_line1    | 110 PCE  |
+      | matchInv2     | invoiceLine_goods | goods_line2    | 220 PCE  |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Invoice_DocumentNo": "@invoiceDocNo@",
+      "Invoice_TotalLines": 478.5,
+      "Invoice_TotalVAT": 33.5,
+      "Lines": [
+        {
+          "Invoice_QtyInvoiced": 110,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 159.5,
+          "Tax_Amount": 11.17,
+          "Invoice_Line": 30,
+          "Product_Supplier_ProductNo": "@goodsValue_S27050_TC2b@",
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo1@"
+        },
+        {
+          "Invoice_QtyInvoiced": 220,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 319.0,
+          "Tax_Amount": 22.33,
+          "Invoice_Line": 30,
+          "Product_Supplier_ProductNo": "@goodsValue_S27050_TC2b@",
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo2@"
+        },
+        {
+          "Invoice_QtyInvoiced": 10,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0,
+          "Product_Supplier_ProductNo": "@crateValue_S27050_TC2b@",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo1@"
+        },
+        {
+          "Invoice_QtyInvoiced": 20,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0,
+          "Product_Supplier_ProductNo": "@crateValue_S27050_TC2b@",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": "@shipmentDocNo2@"
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S27050_TC2c
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00359_EDI_INVOICE_JSON
+  @F00359
+  Scenario: 330 pieces shipped in two parts, both shipments reversed after invoicing: the INVOIC JSON still lists every line, without a delivery note
+    # Real case: one goods invoice line (330) and two crate lines; both shipments are reversed afterwards.
+    # No completed shipment is left: the lines stay in the INVOIC JSON, Shipment_DocumentNo is null (never a reversed shipment's number).
+    Given temporarily set IsAllowDifferentShipmentsInSameInvoiceLine=true on the C_ILCandHandler of table C_OrderLine
+    # Set first: the line aggregation key is stored on each invoice candidate when it is computed, i.e. at order completion.
+    And metasfresh contains M_Product_Categories:
+      | Identifier  |
+      | pm_category |
+    And metasfresh contains M_Products:
+      | Identifier        | M_Product_Category_ID | IsStocked | REST.Context.Value     | REST.Context.Name     |
+      | goods_S27050_TC2c |                       | false     | goodsValue_S27050_TC2c | goodsName_S27050_TC2c |
+      | crate_S27050_TC2c | pm_category           | false     | crateValue_S27050_TC2c | crateName_S27050_TC2c |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_sales              | goods_S27050_TC2c | 1.45     | PCE      | tax7Category     |
+      | plv_sales              | crate_S27050_TC2c | 0.00     | PCE      | tax19Category    |
+    And metasfresh contains M_HU_PI:
+      | Identifier       |
+      | huPI_S27050_TC2c |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier            | M_HU_PI_ID       | HU_UnitType |
+      | huVersion_S27050_TC2c | huPI_S27050_TC2c | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID      |
+      | pm_S27050_TC2c          | crate_S27050_TC2c |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier           | M_HU_PI_Version_ID    | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem_S27050_TC2c | huVersion_S27050_TC2c | 10  | PM       | pm_S27050_TC2c          |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier      | M_HU_PI_Item_ID      | Qty | M_Product_ID      |
+      | pip_S27050_TC2c | huPIItem_S27050_TC2c | 11  | goods_S27050_TC2c |
+    And metasfresh contains M_Warehouse:
+      | Identifier    | C_BPartner_ID | C_BPartner_Location_ID |
+      | mainWarehouse | depotOwner    | depotLoc               |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | OPT.Bill_Location_ID.Identifier | DeliveryRule | DateOrdered | PreparationDate      | M_Warehouse_ID | POReference |
+      | salesOrder | true    | store         | storeLoc               | centralLoc                      | F            | 2026-07-01  | 2026-06-30T22:00:00Z | mainWarehouse  | ED27050E    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID      | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_goods   | salesOrder | goods_S27050_TC2c | 330        | pip_S27050_TC2c         |
+    When the order identified by salesOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_goods   | ol_goods       | N             |
+    # shipment 1: 110 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_goods              | D            | true                | false       | 110                                             |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
+      | ss_goods              | shipment1  | shipmentDocNo1          |
+    # the schedule must reflect the first delivery before the second run
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_goods   | ol_goods       | N             |
+    # shipment 2: the remaining 220 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_goods              | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | OPT.IgnoreCreated.M_InOut_ID.Identifier | REST.Context.DocumentNo |
+      | ss_goods              | shipment2  | shipment1                               | shipmentDocNo2          |
+    # crates: 110 / 11 = 10 and 220 / 11 = 20
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID      | MovementQty |
+      | goods_line1    | shipment1  | goods_S27050_TC2c | 110         |
+      | crate_line1    | shipment1  | crate_S27050_TC2c | 10          |
+      | goods_line2    | shipment2  | goods_S27050_TC2c | 220         |
+      | crate_line2    | shipment2  | crate_S27050_TC2c | 20          |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_goods       | ic_goods               |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | M_InOutLine_ID |
+      | ic_crate1              | crate_line1    |
+      | ic_crate2              | crate_line2    |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID | IgnoreInvoiceSchedule |
+      | ic_goods               | Y                     |
+      | ic_crate1              | Y                     |
+      | ic_crate2              | Y                     |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID | C_Invoice_Candidate_ID | REST.Context | REST.Context.DocumentNo |
+      | invoice      | ic_goods               | invoice_ID   | invoiceDocNo            |
+    And validate created invoice lines
+      | C_InvoiceLine_ID  | C_Invoice_ID | M_Product_ID      | QtyInvoiced |
+      | invoiceLine_goods | invoice      | goods_S27050_TC2c | 330         |
+    And M_MatchInv are found
+      | M_MatchInv_ID | C_InvoiceLine_ID  | M_InOutLine_ID | QtyInUOM |
+      | matchInv1     | invoiceLine_goods | goods_line1    | 110 PCE  |
+      | matchInv2     | invoiceLine_goods | goods_line2    | 220 PCE  |
+
+    # both shipments are reversed: the match-invoice rows of the goods line are deleted with them
+    And the shipment identified by shipment1 is reversed as shipment1_reversal
+    And the shipment identified by shipment2 is reversed as shipment2_reversal
+    And no M_MatchInv exists for C_InvoiceLine invoiceLine_goods
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Invoice_DocumentNo": "@invoiceDocNo@",
+      "Invoice_TotalLines": 478.5,
+      "Invoice_TotalVAT": 33.5,
+      "Lines": [
+        {
+          "Invoice_QtyInvoiced": 330,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 478.5,
+          "Tax_Amount": 33.5,
+          "Product_Supplier_ProductNo": "@goodsValue_S27050_TC2c@",
+          "QtyCUsPerTU": 11,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
+        },
+        {
+          "Invoice_QtyInvoiced": 10,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0,
+          "Product_Supplier_ProductNo": "@crateValue_S27050_TC2c@",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
+        },
+        {
+          "Invoice_QtyInvoiced": 20,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0,
+          "Product_Supplier_ProductNo": "@crateValue_S27050_TC2c@",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         }
       ]
     }
