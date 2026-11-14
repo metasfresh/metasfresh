@@ -1,7 +1,7 @@
 # metasfresh flaky-metric extractor
 
 Automates the manual CI-flake audit: pulls test failures from GitHub Actions
-artifacts, classifies each by root-cause **bucket**, and upserts a flakyness
+artifacts, classifies each by root-cause **bucket**, and upserts a flakiness
 metric into a Google Sheet. Tracks https://github.com/metasfresh/me03/issues/30024.
 
 ## What it does
