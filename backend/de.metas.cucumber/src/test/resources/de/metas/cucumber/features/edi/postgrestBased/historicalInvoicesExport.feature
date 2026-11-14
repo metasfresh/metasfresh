@@ -1279,7 +1279,6 @@ Feature: Invoice export via postgREST
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00359_EDI_INVOICE_JSON
-  @F00359
   Scenario: 330 pieces shipped in two parts, handler allows different shipments in one invoice line: Historical Invoices JSON and edi_cctop_invoic_500_v keep one unsplit line
     # Real case: the invoice candidate handler puts both shipments (110, then 220) on ONE invoice line (330).
     # Historical Invoices JSON and the view edi_cctop_invoic_500_v do not split it per delivery note: one line, 330 pieces.

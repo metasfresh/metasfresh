@@ -1937,7 +1937,6 @@ Feature: EDI INVOIC export via postgREST
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00359_EDI_INVOICE_JSON
-  @F00359
   Scenario: Manual invoice without order and shipment, two goods lines without packing instruction: no delivery note and no CUs per TU on the lines
     # Real case: a manual sales invoice (no order, no shipment) with two goods lines.
     # Neither line has a shipment link, so no delivery note is stated; the products have no packing instruction, so no CUs per TU.

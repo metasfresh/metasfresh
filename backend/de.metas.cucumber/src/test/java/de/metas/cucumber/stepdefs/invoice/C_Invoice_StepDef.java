@@ -284,6 +284,25 @@ public class C_Invoice_StepDef
 		invoiceTable.putOrReplace(StepDefDataIdentifier.ofString(reversalIdentifier), reversal);
 	}
 
+	/**
+	 * Stores the ID and the document number of an already identified invoice in the {@link TestContext}, so that API requests can reference them as
+	 * {@code @idVariable@} and {@code @documentNoVariable@}. Needed for an invoice that no step can find by its invoice candidate, e.g. a reversal:
+	 * it and its original both end as {@code RE} and share the same invoice candidates.
+	 * <p>
+	 * Example: {@code And the reversal of invoice invoice is identified by reversal}<br>
+	 * {@code And the ID and document number of invoice reversal are stored in the REST context as reversalInvoiceID and reversalDocNo}
+	 */
+	@And("^the ID and document number of invoice (.*) are stored in the REST context as (.*) and (.*)$")
+	public void store_invoice_in_rest_context(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String idVariableName,
+			@NonNull final String documentNoVariableName)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		restTestContext.setVariable(idVariableName, invoice.getC_Invoice_ID());
+		restTestContext.setVariable(documentNoVariableName, invoice.getDocumentNo());
+	}
+
 	@And("load C_Invoice:")
 	public void loadC_Invoice(@NonNull final DataTable dataTable)
 	{
