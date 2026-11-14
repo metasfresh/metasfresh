@@ -106,7 +106,7 @@ public class M_HU_PI_Item_Product_StepDef
 	 *   <li>{@code IsAllowAnyProduct} — allow any product flag (default: false)</li>
 	 *   <li>{@code IsDefaultForProduct} — default for product flag (default: false)</li>
 	 *   <li>{@code IsInfiniteCapacity} — infinite capacity flag (default: false); when true, Qty is set to 0</li>
-	 *   <li>{@code OPT.IsWithoutUOM} — (default: false) when true, the record is stored without {@code C_UOM_ID} (the column is nullable), as for old packing instructions.
+	 *   <li>{@code IsWithoutUOM} — (default: false) when true, the record is stored without {@code C_UOM_ID} (the column is nullable), as for old packing instructions.
 	 *   {@code Qty} is still required; its unit is then ignored (no unit is stored). Without this flag the unit defaults to EACH.</li>
 	 *   <li>{@code IsOrderInTuUomWhenMatched} — order in TU UOM when matched</li>
 	 *   <li>{@code Name} — display name</li>
@@ -151,7 +151,7 @@ public class M_HU_PI_Item_Product_StepDef
 				? tableRow.getAsQuantity(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, I_C_UOM.COLUMNNAME_C_UOM_ID + ".X12DE355", X12DE355.EACH, uomDAO::getByX12DE355)
 				: null;
 
-		final boolean isWithoutUOM = tableRow.getAsOptionalBoolean("OPT.IsWithoutUOM").orElse(false);
+		final boolean isWithoutUOM = tableRow.getAsOptionalBoolean("IsWithoutUOM").orElse(false);
 
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
 		final Integer bpartnerIdFilter = tableRow.getAsOptionalIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID)

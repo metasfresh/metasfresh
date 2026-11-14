@@ -3458,28 +3458,28 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | Identifier  |
       | pm_category |
     And metasfresh contains M_Products:
-      | Identifier       | M_Product_Category_ID | IsStocked | REST.Context.Value    | REST.Context.Name    |
+      | Identifier        | M_Product_Category_ID | IsStocked | REST.Context.Value     | REST.Context.Name     |
       | goods_S27050_TC1e |                       | false     | goodsValue_S27050_TC1e | goodsName_S27050_TC1e |
       | crate_S27050_TC1e | pm_category           | false     | crateValue_S27050_TC1e | crateName_S27050_TC1e |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | plv_sales              | goods_S27050_TC1e | 1.45     | PCE      | tax7Category     |
       | plv_sales              | crate_S27050_TC1e | 0.00     | PCE      | tax19Category    |
     And metasfresh contains M_HU_PI:
-      | Identifier      |
+      | Identifier       |
       | huPI_S27050_TC1e |
     And metasfresh contains M_HU_PI_Version:
-      | Identifier           | M_HU_PI_ID      | HU_UnitType |
+      | Identifier            | M_HU_PI_ID       | HU_UnitType |
       | huVersion_S27050_TC1e | huPI_S27050_TC1e | TU          |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID | M_Product_ID     |
-      | pm_S27050_TC1e           | crate_S27050_TC1e |
+      | M_HU_PackingMaterial_ID | M_Product_ID      |
+      | pm_S27050_TC1e          | crate_S27050_TC1e |
     And metasfresh contains M_HU_PI_Item:
-      | Identifier          | M_HU_PI_Version_ID   | Qty | ItemType | M_HU_PackingMaterial_ID |
-      | huPIItem_S27050_TC1e | huVersion_S27050_TC1e | 10  | PM       | pm_S27050_TC1e           |
+      | Identifier           | M_HU_PI_Version_ID    | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem_S27050_TC1e | huVersion_S27050_TC1e | 10  | PM       | pm_S27050_TC1e          |
     And metasfresh contains M_HU_PI_Item_Product:
-      | Identifier      | M_HU_PI_Item_ID      | Qty | M_Product_ID      | OPT.IsWithoutUOM |
-      | pip_S27050_TC1e | huPIItem_S27050_TC1e | 11  | goods_S27050_TC1e | true             |
+      | Identifier      | M_HU_PI_Item_ID      | Qty | M_Product_ID      | IsWithoutUOM |
+      | pip_S27050_TC1e | huPIItem_S27050_TC1e | 11  | goods_S27050_TC1e | true         |
     And metasfresh contains M_Warehouse:
       | Identifier    | C_BPartner_ID | C_BPartner_Location_ID |
       | mainWarehouse | depotOwner    | depotLoc               |
@@ -3488,8 +3488,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | OPT.Bill_Location_ID.Identifier | DeliveryRule | DateOrdered | PreparationDate      | M_Warehouse_ID | POReference |
       | salesOrder | true    | store         | storeLoc               | centralLoc                      | F            | 2026-07-01  | 2026-06-30T22:00:00Z | mainWarehouse  | ED27050M    |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID     | QtyEntered | M_HU_PI_Item_Product_ID |
-      | ol_goods   | salesOrder | goods_S27050_TC1e | 330        | pip_S27050_TC1e          |
+      | Identifier | C_Order_ID | M_Product_ID      | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_goods   | salesOrder | goods_S27050_TC1e | 330        | pip_S27050_TC1e         |
     When the order identified by salesOrder is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
@@ -3502,7 +3502,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | ss_goods              | shipment   | shipmentDocNo           |
     # crates: 330 / 11 = 30
     And validate the created shipment lines
-      | M_InOutLine_ID | M_InOut_ID | M_Product_ID     | MovementQty |
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID      | MovementQty |
       | goods_line     | shipment   | goods_S27050_TC1e | 330         |
       | crate_line     | shipment   | crate_S27050_TC1e | 30          |
 
@@ -3520,7 +3520,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | C_Invoice_ID | C_Invoice_Candidate_ID | REST.Context | REST.Context.DocumentNo |
       | invoice      | ic_goods               | invoice_ID   | invoiceDocNo            |
     And validate created invoice lines
-      | C_Invoice_ID | M_Product_ID     | QtyInvoiced | M_InOutLine_ID |
+      | C_Invoice_ID | M_Product_ID      | QtyInvoiced | M_InOutLine_ID |
       | invoice      | goods_S27050_TC1e | 330         | goods_line     |
 
     And the following API_Audit_Config records are created:

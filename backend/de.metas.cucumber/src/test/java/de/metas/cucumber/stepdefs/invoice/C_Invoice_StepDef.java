@@ -288,9 +288,16 @@ public class C_Invoice_StepDef
 	 * Stores the ID and the document number of an already identified invoice in the {@link TestContext}, so that API requests can reference them as
 	 * {@code @idVariable@} and {@code @documentNoVariable@}. Needed for an invoice that no step can find by its invoice candidate, e.g. a reversal:
 	 * it and its original both end as {@code RE} and share the same invoice candidates.
-	 * <p>
-	 * Example: {@code And the reversal of invoice invoice is identified by reversal}<br>
-	 * {@code And the ID and document number of invoice reversal are stored in the REST context as reversalInvoiceID and reversalDocNo}
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   none (inline arguments: the invoice identifier, the ID variable name, the document-number variable name)
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData; for a reversal, step {@code the reversal of invoice ... is identified by ...} first
+	 * @cucumber.example
+	 * <pre>
+	 * And the reversal of invoice invoice is identified by reversal
+	 * And the ID and document number of invoice reversal are stored in the REST context as reversalInvoiceID and reversalDocNo
+	 * </pre>
 	 */
 	@And("^the ID and document number of invoice (.*) are stored in the REST context as (.*) and (.*)$")
 	public void store_invoice_in_rest_context(
