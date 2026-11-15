@@ -198,19 +198,26 @@ public class MProductImportTableSqlUpdater
 
 	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
 	{
-		final String sql = "UPDATE "
-				+ targetTableName + " i "
-				+ " SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p"
-				+ " WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND i.UPC IS NOT NULL) "
-				+ "WHERE M_Product_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
-				+ selection.toSqlWhereClause("i");
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
-		logger.info("Product Existing UPC={}", no);
-
 		dbUpdateProductsByValue(selection);
 
 		dbUpdateProductsByExternalId(selection);
+
+		// UPC is not unique, so it is only the last fallback
+		dbUpdateProductsByUPC(selection);
+	}
+
+	private void dbUpdateProductsByUPC(@NonNull final ImportRecordsSelection selection)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
+				.append(" WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) ")
+				.append(" ORDER BY p.AD_Org_ID DESC LIMIT 1) ")
+				.append("WHERE M_Product_ID IS NULL AND i.UPC IS NOT NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
+				.append(selection.toSqlWhereClause("i"));
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Product Existing UPC={}", no);
 	}
 
 	private void dbUpdateProductsByValue(@NonNull final ImportRecordsSelection selection)
