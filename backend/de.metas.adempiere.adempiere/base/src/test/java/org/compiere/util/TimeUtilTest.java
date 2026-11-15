@@ -931,13 +931,13 @@ public class TimeUtilTest
 		assertThat(TimeUtil.asLocalDateNonNull(timestamp)).isEqualTo("2024-03-30");
 	}
 
-        @Test
-        public void testAsInstantFromISO8601String()
-        {
-                final Instant expected = Instant.parse("2023-01-01T01:01:01Z");
+	@Test
+	public void testAsInstantFromISO8601String()
+	{
+		final Instant expected = Instant.parse("2023-01-01T01:01:01Z");
 
-                assertThat(TimeUtil.asInstant("2023-01-01T01:01:01Z"))
-                                .isEqualTo(expected);
-        }
+		assertThat(TimeUtil.asInstant("2023-01-01T01:01:01Z"))
+				.isEqualTo(expected);
+	}
 
 }

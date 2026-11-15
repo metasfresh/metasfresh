@@ -2055,11 +2055,11 @@ public class TimeUtil
 		}
 		else if (obj instanceof ZonedDateTime)
 		{
-		        return ((ZonedDateTime)obj).toInstant();
+			return ((ZonedDateTime)obj).toInstant();
 		}
 		else if (obj instanceof String)
 		{
-		        return Instant.parse(((String)obj).trim());
+			return Instant.parse(((String)obj).trim());
 		}
 		else if (obj instanceof Integer)
 		{
