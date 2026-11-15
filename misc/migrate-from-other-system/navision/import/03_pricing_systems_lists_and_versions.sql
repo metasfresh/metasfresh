@@ -1,8 +1,38 @@
+/*
+ * #%L
+ * work-metas
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+-- Creates the pricing systems, sales price lists and the current price list versions (ValidFrom = 2025-09-01):
+--  * one pricing system per Navision "Customer Price Group" (key: migration_key = '001 - ' || "Code"),
+--  * one pricing system per customer that has own sales prices (key: migration_key = '001 - ' || customer "No_");
+--    its price list version is based on the version of the customer's price group.
+-- Both kinds share one key space, and the later scripts look a pricing system up by '001 - ' || "Sales Code".
+-- So a Customer Price Group code must not equal a customer number; if one does, give one kind its own sub-prefix
+-- here and in all lookups (04, 07, 08, 09).
+-- ADAPT PER PROJECT: Default_TaxCategory_ID of the price lists ('Reduced' below).
 
 DROP TABLE IF EXISTS migration_data.m_pricingsystem;
 CREATE TABLE migration_data.m_pricingsystem AS
 SELECT 1000000                        AS ad_client_id,
-       1000000                        AS ad_org_id,
+       1000000 AS ad_org_id, -- adapt per project
        NOW()                          AS created,
        99                             AS createdby,
        "Description"                  AS description,
@@ -11,9 +41,9 @@ SELECT 1000000                        AS ad_client_id,
        "Description"                  AS name,
        NOW()                          AS updated,
        99                             AS updatedby,
-       '001 - ' || "Description"      AS value,
+       '001 - ' || "Description"      AS value, -- adapt per project
        'N'                            AS issubscriptiononly,
-       '001 - ' || "Code"             AS migration_key
+       '001 - ' || "Code"             AS migration_key -- adapt per project
 FROM migration_data."Navision$Customer Price Group"
 ;
 
@@ -39,7 +69,7 @@ FROM migration_data.m_pricingsystem
 DROP TABLE IF EXISTS migration_data.m_pricingsystem_partners;
 CREATE TABLE migration_data.m_pricingsystem_partners AS
 SELECT 1000000              AS ad_client_id,
-       1000000              AS ad_org_id,
+       1000000 AS ad_org_id, -- adapt per project
        NOW()                AS created,
        99                   AS createdby,
        c."Name"             AS description,
@@ -47,9 +77,9 @@ SELECT 1000000              AS ad_client_id,
        c."Name"             AS name,
        NOW()                AS updated,
        99                   AS updatedby,
-       '001 - ' || c."Name" AS value,
+       '001 - ' || c."No_" AS value, -- adapt per project; the No_, because several customers may have the same name
        'N'                  AS issubscriptiononly,
-       '001 - ' || c."No_"  AS migration_key
+       '001 - ' || c."No_"  AS migration_key -- adapt per project
 FROM migration_data."Navision$Sales Price" sp
          JOIN migration_data."Navision$Customer" c ON sp."Sales Code" = c."No_"
 WHERE sp."Sales Type" = 0
@@ -101,19 +131,19 @@ SELECT 1000000                                                                  
        NULL::numeric                                                               AS c_country_id,
        T_PS.value                                                                  AS internalname,
        'N'                                                                         AS isroundnetamounttocurrencyprecision,
-       (SELECT c_taxcategory_id FROM c_taxcategory WHERE internalname = 'Reduced') AS default_taxcategory_id
+       (SELECT c_taxcategory_id FROM c_taxcategory WHERE internalname = 'Reduced') AS default_taxcategory_id -- ADAPT
 FROM m_pricingsystem AS T_PS
          JOIN "migration_data"."Navision$Customer Price Group" AS T_CPG_SOURCE
-              ON T_PS.migration_key = ('001 - ' || T_CPG_SOURCE."Code")
+              ON T_PS.migration_key = ('001 - ' || T_CPG_SOURCE."Code") -- adapt per project
          JOIN LATERAL (
-    SELECT DISTINCT COALESCE(NULLIF(TRIM(LEFT(SP."Currency Code", 3)), ''), 'EUR') AS "CurrencyCode"
+    SELECT DISTINCT COALESCE(NULLIF(TRIM(LEFT(SP."Currency Code", 3)), ''), 'EUR') AS "CurrencyCode" -- adapt per project
     --COALESCE(NULLIF(TRIM(LEFT(C."Country_Region Code", 2)), ''), 'DE') AS "CountryCode"
     FROM "migration_data"."Navision$Sales Price" AS SP
              JOIN "migration_data"."Navision$Customer Price Group" AS T_CPG_INNER
                   ON SP."Sales Code" = T_CPG_INNER."Code"
              JOIN "migration_data"."Navision$Customer" AS C
                   ON T_CPG_INNER."Code" = C."Customer Price Group"
-    WHERE ('001 - ' || T_CPG_INNER."Code") = T_PS.migration_key
+    WHERE ('001 - ' || T_CPG_INNER."Code") = T_PS.migration_key -- adapt per project
     ) AS SalesAndCountryData ON TRUE
          JOIN
      c_currency AS T_CUR ON SalesAndCountryData."CurrencyCode" = T_CUR.iso_code
@@ -186,7 +216,7 @@ SELECT pl.ad_client_id                  AS ad_client_id,
        NULL                             AS description,
        pl.m_pricelist_id                AS m_pricelist_id,
        NULL::numeric                    AS m_discountschema_id,
-       '2025-09-01 00:00:00'::timestamp AS validfrom,
+       '2025-09-01 00:00:00'::timestamp AS validfrom, -- adapt per project
        NULL                             AS proccreate,
        NULL::numeric                    AS m_pricelist_version_base_id,
        'N'                              AS processed,
@@ -194,7 +224,7 @@ SELECT pl.ad_client_id                  AS ad_client_id,
 FROM m_pricelist pl
          JOIN m_pricingsystem ps ON pl.m_pricingsystem_id = ps.m_pricingsystem_id
          JOIN "migration_data"."Navision$Customer Price Group" AS t_cpg_source
-              ON ps.migration_key = ('001 - ' || t_cpg_source."Code")
+              ON ps.migration_key = ('001 - ' || t_cpg_source."Code") -- adapt per project
 ;
 
 
@@ -261,12 +291,12 @@ SELECT 1000000                                                                  
        NULL::numeric                                                               AS c_country_id,
        ps_customer.value                                                           AS internalname,
        'N'                                                                         AS isroundnetamounttocurrencyprecision,
-       (SELECT c_taxcategory_id FROM c_taxcategory WHERE internalname = 'Reduced') AS default_taxcategory_id
+       (SELECT c_taxcategory_id FROM c_taxcategory WHERE internalname = 'Reduced') AS default_taxcategory_id -- ADAPT
 FROM m_pricingsystem AS ps_customer
          JOIN "migration_data"."Navision$Customer" AS c
-              ON ps_customer.migration_key = ('001 - ' || c."No_")
+              ON ps_customer.migration_key = ('001 - ' || c."No_") -- adapt per project
          JOIN LATERAL (
-    SELECT DISTINCT COALESCE(NULLIF(TRIM(LEFT(pp."Currency Code", 3)), ''), 'EUR') AS "CurrencyCode"
+    SELECT DISTINCT COALESCE(NULLIF(TRIM(LEFT(pp."Currency Code", 3)), ''), 'EUR') AS "CurrencyCode" -- adapt per project
 --             COALESCE(NULLIF(TRIM(LEFT(C."Country_Region Code", 2)), ''), 'DE') AS "CountryCode"
     FROM "migration_data"."Navision$Sales Price" AS pp
     WHERE pp."Sales Code" = c."No_"
@@ -274,27 +304,6 @@ FROM m_pricingsystem AS ps_customer
     ) AS PriceData ON TRUE
          JOIN
      c_currency AS cur ON PriceData."CurrencyCode" = cur.iso_code
-/*
- * #%L
- * work-metas
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 --         JOIN
 --     c_country AS country ON PriceData."CountryCode" = country.countrycode
@@ -365,7 +374,7 @@ SELECT pl_customer.ad_client_id         AS ad_client_id,
        NULL                             AS description,
        pl_customer.m_pricelist_id       AS m_pricelist_id,
        NULL::numeric                    AS m_discountschema_id,
-       '2025-09-01 00:00:00'::timestamp AS validfrom,
+       '2025-09-01 00:00:00'::timestamp AS validfrom, -- adapt per project
        NULL                             AS proccreate,
        plv_cpg.m_pricelist_version_id   AS m_pricelist_version_base_id,
        'N'                              AS processed,
@@ -373,14 +382,14 @@ SELECT pl_customer.ad_client_id         AS ad_client_id,
 FROM m_pricelist pl_customer
          JOIN m_pricingsystem ps_customer ON pl_customer.m_pricingsystem_id = ps_customer.m_pricingsystem_id
          JOIN "migration_data"."Navision$Customer" AS c
-              ON ps_customer.migration_key = ('001 - ' || c."No_")
+              ON ps_customer.migration_key = ('001 - ' || c."No_") -- adapt per project
          LEFT JOIN "migration_data"."Navision$Customer Price Group" AS cpg
                    ON c."Customer Price Group" = cpg."Code"
-         LEFT JOIN m_pricingsystem ps_cpg ON ('001 - ' || c."Customer Price Group" = ps_cpg.migration_key)
+         LEFT JOIN m_pricingsystem ps_cpg ON ('001 - ' || c."Customer Price Group" = ps_cpg.migration_key) -- adapt per project
          LEFT JOIN m_pricelist pl_cpg
                    ON ps_cpg.m_pricingsystem_id = pl_cpg.m_pricingsystem_id --AND pl_cpg.c_country_id = pl_customer.c_country_id
          LEFT JOIN m_pricelist_version plv_cpg
-                   ON pl_cpg.m_pricelist_id = plv_cpg.m_pricelist_id AND plv_cpg.validfrom = '2025-09-01 00:00:00'::timestamp
+                   ON pl_cpg.m_pricelist_id = plv_cpg.m_pricelist_id AND plv_cpg.validfrom = '2025-09-01 00:00:00'::timestamp -- adapt per project
 ;
 
 
@@ -428,7 +437,7 @@ SET basepricelist_id = (SELECT plvb.m_pricelist_id
                         WHERE plvb.m_pricelist_version_id = plv.m_pricelist_version_base_id)
 FROM m_pricelist_version AS plv
 WHERE p.m_pricelist_id = plv.m_pricelist_id
-  AND p.ad_org_id = 1000000
-  AND plv.ValidFrom = '2025-09-01 00:00:00'::timestamp
+  AND p.ad_org_id = 1000000 -- adapt per project
+  AND plv.ValidFrom = '2025-09-01 00:00:00'::timestamp -- adapt per project
   AND plv.m_pricelist_version_base_id > 0
 ;

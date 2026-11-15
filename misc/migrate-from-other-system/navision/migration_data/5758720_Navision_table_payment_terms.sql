@@ -30,25 +30,25 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
         -- "Due Date Calculation" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE(REPLACE([Due Date Calculation], '''', ''''''), '\', '\\'), CHAR(2), '') + '''' + ', ' +
+    '''' + REPLACE(REPLACE([Due Date Calculation], '''', ''''''), CHAR(2), '') + '''' + ', ' +
 
         -- "Discount Date Calculation" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE(REPLACE([Discount Date Calculation], '''', ''''''), '\', '\\'), CHAR(2), '') + '''' + ', ' +
+    '''' + REPLACE(REPLACE([Discount Date Calculation], '''', ''''''), CHAR(2), '') + '''' + ', ' +
 
         -- "Discount _" NUMERIC(38, 20) NOT NULL
     CAST([Discount _] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Description" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Description, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Description, '''', '''''') + '''' + ', ' +
 
         -- "Calc_ Pmt_ Disc_ on Cr_ Memos" BOOLEAN NOT NULL
     CASE WHEN [Calc_ Pmt_ Disc_ on Cr_ Memos] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Description 2" VARCHAR(100) NOT NULL
-    '''' + REPLACE(REPLACE([Description 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Description 2], '''', '''''') + '''' + ', ' +
 
         -- "Immediate Annuity Credit Disc_" BOOLEAN NOT NULL (LAST COLUMN, no comma after)
     CASE WHEN [Immediate Annuity Credit Disc_] = 1 THEN 'TRUE' ELSE 'FALSE' END +

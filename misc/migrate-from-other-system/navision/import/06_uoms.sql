@@ -20,11 +20,31 @@
  * #L%
  */
 
-
-
+-- One UOM per Navision "Unit of Measure"; key: C_UOM.X12DE355 = the Navision code (max. 4 characters in metasfresh).
+-- A unit whose X12DE355 or name already exists in metasfresh (e.g. a standard UOM) is skipped; the existing UOM is used.
+--
+-- ADAPT PER PROJECT: the mapping below, for
+--  * Navision codes that mean an existing metasfresh UOM under another code ('KG' -> 'KGM', 'STCK' -> 'PCE');
+--    keep it in sync with the "Base Unit of Measure" mapping in 07, 08, 09 and 11,
+--  * Navision codes longer than 4 characters (they do not fit into X12DE355 and are skipped if unmapped);
+--    the mapping 'TOLONG' -> 'LONG' only shows the syntax.
+-- Within the source, only the first unit per X12DE355 (the key) and per name (unique per client in metasfresh) is taken.
 
 DROP TABLE IF EXISTS migration_data.c_uom;
 CREATE TABLE migration_data.c_uom AS
+WITH source AS (SELECT source_uom.*,
+                       CASE source_uom."Code" -- ADAPT: per-project mapping of Navision codes to X12DE355
+                           WHEN 'KG' THEN 'KGM'
+                           WHEN 'STCK' THEN 'PCE'
+                           WHEN 'TOLONG' THEN 'LONG'
+                           ELSE source_uom."Code"
+                       END AS x12de355
+                FROM migration_data."Navision$Unit of Measure" source_uom),
+     candidates AS (SELECT s.*,
+                           ROW_NUMBER() OVER (PARTITION BY s.x12de355 ORDER BY s."Code")     AS rn_code,
+                           ROW_NUMBER() OVER (PARTITION BY s."Description" ORDER BY s."Code") AS rn_name
+                    FROM source s
+                    WHERE LENGTH(s.x12de355) <= 4)
 SELECT 1000000                  AS ad_client_id,
        0                        AS ad_org_id,
        'Y'                      AS isactive,
@@ -32,10 +52,7 @@ SELECT 1000000                  AS ad_client_id,
        now()                    AS updated,
        99                       AS createdby,
        99                       AS updatedby,
-       CASE source_uom."Code"
-           WHEN 'TOLONG' THEN 'LONG' --shorten to metasfresh max length 4
-           ELSE source_uom."Code"
-           END AS x12de355,
+       source_uom.x12de355      AS x12de355,
        source_uom."Code"        AS uomsymbol,
        source_uom."Description" AS name,
        source_uom."Description" AS description,
@@ -43,8 +60,13 @@ SELECT 1000000                  AS ad_client_id,
        0                        AS costingprecision,
        'N'                      AS isdefault,
        NULL                     AS uomtype
-FROM migration_data."Navision$Unit of Measure" source_uom
-WHERE NOT EXISTS (SELECT 1 FROM c_uom u WHERE source_uom."Code" = u.x12de355)
+FROM candidates source_uom
+WHERE source_uom.rn_code = 1
+  AND source_uom.rn_name = 1
+  AND NOT EXISTS (SELECT 1
+                  FROM c_uom u
+                  WHERE u.x12de355 = source_uom.x12de355
+                     OR u.name = source_uom."Description")
 ;
 
 INSERT INTO public.c_uom (c_uom_id, ad_client_id, ad_org_id, isactive, created, updated, createdby, updatedby, x12de355,

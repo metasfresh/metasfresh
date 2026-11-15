@@ -30,16 +30,16 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
         -- "Description" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Description, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Description, '''', '''''') + '''' + ', ' +
 
         -- "Bal_ Account Type" INTEGER NOT NULL
     CAST([Bal_ Account Type] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Bal_ Account No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Bal_ Account No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Bal_ Account No_], '''', '''''') + '''' + ', ' +
 
         -- "Payment Processor" INTEGER NOT NULL
     CAST([Payment Processor] AS NVARCHAR(MAX)) + ', ' +
@@ -48,46 +48,46 @@ SELECT
     CASE WHEN [Direct Debit] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Direct Debit Pmt_ Terms Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Direct Debit Pmt_ Terms Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Direct Debit Pmt_ Terms Code], '''', '''''') + '''' + ', ' +
 
         -- "Pmt_ Export Line Definition" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Pmt_ Export Line Definition], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Pmt_ Export Line Definition], '''', '''''') + '''' + ', ' +
 
         -- "Bank Data Conversion Pmt_ Type" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Bank Data Conversion Pmt_ Type], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Bank Data Conversion Pmt_ Type], '''', '''''') + '''' + ', ' +
 
         -- "Default Payment Type Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Default Payment Type Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Default Payment Type Code], '''', '''''') + '''' + ', ' +
 
         -- "Single Payment" BOOLEAN NOT NULL
     CASE WHEN [Single Payment] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Default Pmt_ Bank Account No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Default Pmt_ Bank Account No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Default Pmt_ Bank Account No_], '''', '''''') + '''' + ', ' +
 
         -- "Separate Pmt_ Proposal Head" BOOLEAN NOT NULL
     CASE WHEN [Separate Pmt_ Proposal Head] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Vendor Purpose Text" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Vendor Purpose Text], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Vendor Purpose Text], '''', '''''') + '''' + ', ' +
 
         -- "Customer Purpose Text" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Customer Purpose Text], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Customer Purpose Text], '''', '''''') + '''' + ', ' +
 
         -- "Payment Note Purpose Text" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Payment Note Purpose Text], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Payment Note Purpose Text], '''', '''''') + '''' + ', ' +
 
         -- "Vendor Purpose Text Header" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Vendor Purpose Text Header], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Vendor Purpose Text Header], '''', '''''') + '''' + ', ' +
 
         -- "Purpose Text Footer" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Purpose Text Footer], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Purpose Text Footer], '''', '''''') + '''' + ', ' +
 
         -- "Limit Payment Amount (LCY)" NUMERIC(38, 20) NOT NULL
     CAST([Limit Payment Amount (LCY)] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Customer Purpose Text Header" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Customer Purpose Text Header], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Customer Purpose Text Header], '''', '''''') + '''' + ', ' +
 
         -- "Limit Lines per Head" INTEGER NOT NULL
     CAST([Limit Lines per Head] AS NVARCHAR(MAX)) + ', ' +

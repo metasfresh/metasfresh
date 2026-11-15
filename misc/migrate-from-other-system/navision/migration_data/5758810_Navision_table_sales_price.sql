@@ -30,25 +30,25 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Item No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Item No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Item No_], '''', '''''') + '''' + ', ' +
 
         -- "Sales Type" INTEGER NOT NULL
     CAST([Sales Type] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Sales Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Sales Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Sales Code], '''', '''''') + '''' + ', ' +
 
         -- "Starting Date" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Starting Date], 120) + '''' + ', ' +
 
         -- "Currency Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Currency Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Currency Code], '''', '''''') + '''' + ', ' +
 
         -- "Variant Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Variant Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Variant Code], '''', '''''') + '''' + ', ' +
 
         -- "Unit of Measure Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Unit of Measure Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Unit of Measure Code], '''', '''''') + '''' + ', ' +
 
         -- "Minimum Quantity" NUMERIC(38, 20) NOT NULL
     CAST([Minimum Quantity] AS NVARCHAR(MAX)) + ', ' +
@@ -63,7 +63,7 @@ SELECT
     CASE WHEN [Allow Invoice Disc_] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "VAT Bus_ Posting Gr_ (Price)" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Bus_ Posting Gr_ (Price)], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Bus_ Posting Gr_ (Price)], '''', '''''') + '''' + ', ' +
 
         -- "Ending Date" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Ending Date], 120) + '''' + ', ' +

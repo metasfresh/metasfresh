@@ -30,136 +30,136 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE(No_, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(No_, '''', '''''') + '''' + ', ' +
 
         -- "Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Name, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Name, '''', '''''') + '''' + ', ' +
 
         -- "Search Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Search Name], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Search Name], '''', '''''') + '''' + ', ' +
 
         -- "Name 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Name 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Name 2], '''', '''''') + '''' + ', ' +
 
         -- "Address" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Address, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Address, '''', '''''') + '''' + ', ' +
 
         -- "Address 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Address 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Address 2], '''', '''''') + '''' + ', ' +
 
         -- "City" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(City, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(City, '''', '''''') + '''' + ', ' +
 
         -- "Phone No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Phone No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Phone No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Telex No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex No_], '''', '''''') + '''' + ', ' +
 
         -- "Territory Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Territory Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Territory Code], '''', '''''') + '''' + ', ' +
 
         -- "Currency Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Currency Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Currency Code], '''', '''''') + '''' + ', ' +
 
         -- "Language Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Language Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Language Code], '''', '''''') + '''' + ', ' +
 
         -- "Salesperson Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Salesperson Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Salesperson Code], '''', '''''') + '''' + ', ' +
 
         -- "Country_Region Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Country_Region Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Country_Region Code], '''', '''''') + '''' + ', ' +
 
         -- "Last Date Modified" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Last Date Modified], 120) + '''' + ', ' +
 
         -- "Fax No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Fax No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Fax No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex Answer Back" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Telex Answer Back], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex Answer Back], '''', '''''') + '''' + ', ' +
 
         -- "VAT Registration No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Registration No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Registration No_], '''', '''''') + '''' + ', ' +
 
         -- "Picture" BYTEA
     CASE WHEN Picture IS NULL THEN 'NULL' ELSE 'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(Picture), 3, DATALENGTH(Picture) * 2) + '''' END + ', ' +
 
         -- "Post Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Post Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Post Code], '''', '''''') + '''' + ', ' +
 
         -- "County" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(County, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(County, '''', '''''') + '''' + ', ' +
 
         -- "E-Mail" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([E-Mail], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([E-Mail], '''', '''''') + '''' + ', ' +
 
         -- "Home Page" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([Home Page], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Home Page], '''', '''''') + '''' + ', ' +
 
         -- "No_ Series" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([No_ Series], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([No_ Series], '''', '''''') + '''' + ', ' +
 
         -- "Type" INTEGER NOT NULL
     CAST(Type AS NVARCHAR(MAX)) + ', ' +
 
         -- "Company No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Company No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Company No_], '''', '''''') + '''' + ', ' +
 
         -- "Company Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Company Name], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Company Name], '''', '''''') + '''' + ', ' +
 
         -- "Lookup Contact No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Lookup Contact No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Lookup Contact No_], '''', '''''') + '''' + ', ' +
 
         -- "First Name" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([First Name], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([First Name], '''', '''''') + '''' + ', ' +
 
         -- "Middle Name" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Middle Name], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Middle Name], '''', '''''') + '''' + ', ' +
 
         -- "Surname" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(Surname, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Surname, '''', '''''') + '''' + ', ' +
 
         -- "Job Title" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Job Title], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Job Title], '''', '''''') + '''' + ', ' +
 
         -- "Initials" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(Initials, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Initials, '''', '''''') + '''' + ', ' +
 
         -- "Extension No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Extension No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Extension No_], '''', '''''') + '''' + ', ' +
 
         -- "Mobile Phone No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Mobile Phone No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Mobile Phone No_], '''', '''''') + '''' + ', ' +
 
         -- "Pager" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(Pager, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Pager, '''', '''''') + '''' + ', ' +
 
         -- "Organizational Level Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Organizational Level Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Organizational Level Code], '''', '''''') + '''' + ', ' +
 
         -- "Exclude from Segment" BOOLEAN NOT NULL
     CASE WHEN [Exclude from Segment] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "External ID" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([External ID], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([External ID], '''', '''''') + '''' + ', ' +
 
         -- "Correspondence Type" INTEGER NOT NULL
     CAST([Correspondence Type] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Salutation Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Salutation Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Salutation Code], '''', '''''') + '''' + ', ' +
 
         -- "Search E-Mail" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([Search E-Mail], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Search E-Mail], '''', '''''') + '''' + ', ' +
 
         -- "Last Time Modified" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Last Time Modified], 120) + '''' + ', ' +
 
         -- "E-Mail 2" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([E-Mail 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([E-Mail 2], '''', '''''') + '''' + ', ' +
 
         -- "Importiert" BOOLEAN NOT NULL
     CASE WHEN Importiert = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
@@ -168,13 +168,13 @@ SELECT
     CASE WHEN Duplicated = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Person Information" VARCHAR(70) NOT NULL
-    '''' + REPLACE(REPLACE([Person Information], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Person Information], '''', '''''') + '''' + ', ' +
 
         -- "Display Level" INTEGER NOT NULL
     CAST([Display Level] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Dialing Code" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Dialing Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Dialing Code], '''', '''''') + '''' + ', ' +
 
         -- "Travel Time _ h" NUMERIC(38, 20) NOT NULL
     CAST([Travel Time _ h] AS NVARCHAR(MAX)) + ', ' +
@@ -189,61 +189,61 @@ SELECT
     '''' + CONVERT(NVARCHAR(MAX), [Date of First Contact], 120) + '''' + ', ' +
 
         -- "Name 3" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Name 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Name 3], '''', '''''') + '''' + ', ' +
 
         -- "Contact Information 1" VARCHAR(70) NOT NULL
-    '''' + REPLACE(REPLACE([Contact Information 1], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Contact Information 1], '''', '''''') + '''' + ', ' +
 
         -- "Contact Information 2" VARCHAR(70) NOT NULL
-    '''' + REPLACE(REPLACE([Contact Information 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Contact Information 2], '''', '''''') + '''' + ', ' +
 
         -- "Contact Information 3" VARCHAR(70) NOT NULL
-    '''' + REPLACE(REPLACE([Contact Information 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Contact Information 3], '''', '''''') + '''' + ', ' +
 
         -- "Contact Information 4" VARCHAR(70) NOT NULL
-    '''' + REPLACE(REPLACE([Contact Information 4], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Contact Information 4], '''', '''''') + '''' + ', ' +
 
         -- "Modified from" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Modified from], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Modified from], '''', '''''') + '''' + ', ' +
 
         -- "Business Condition" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Business Condition], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Business Condition], '''', '''''') + '''' + ', ' +
 
         -- "Nominal 1" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Nominal 1], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Nominal 1], '''', '''''') + '''' + ', ' +
 
         -- "Nominal 2" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Nominal 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Nominal 2], '''', '''''') + '''' + ', ' +
 
         -- "Nominal 3" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Nominal 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Nominal 3], '''', '''''') + '''' + ', ' +
 
         -- "Nominal 4" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Nominal 4], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Nominal 4], '''', '''''') + '''' + ', ' +
 
         -- "Nominal 5" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Nominal 5], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Nominal 5], '''', '''''') + '''' + ', ' +
 
         -- "Actual 1" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Actual 1], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Actual 1], '''', '''''') + '''' + ', ' +
 
         -- "Actual 2" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Actual 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Actual 2], '''', '''''') + '''' + ', ' +
 
         -- "Actual 3" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Actual 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Actual 3], '''', '''''') + '''' + ', ' +
 
         -- "Actual 4" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Actual 4], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Actual 4], '''', '''''') + '''' + ', ' +
 
         -- "Actual 5" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Actual 5], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Actual 5], '''', '''''') + '''' + ', ' +
 
         -- "Actual 6" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Actual 6], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Actual 6], '''', '''''') + '''' + ', ' +
 
         -- "Nominal 6" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Nominal 6], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Nominal 6], '''', '''''') + '''' + ', ' +
 
         -- "Sales Mio_" NUMERIC(38, 20) NOT NULL
     CAST([Sales Mio_] AS NVARCHAR(MAX)) + ', ' +
@@ -264,13 +264,13 @@ SELECT
     CAST([Foundation Year] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Source" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Source, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Source, '''', '''''') + '''' + ', ' +
 
         -- "Agreement Type" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Agreement Type], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Agreement Type], '''', '''''') + '''' + ', ' +
 
         -- "Partner" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Partner, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Partner, '''', '''''') + '''' + ', ' +
 
         -- "Conclusion Criterion 1" NUMERIC(38, 20) NOT NULL
     CAST([Conclusion Criterion 1] AS NVARCHAR(MAX)) + ', ' +
@@ -294,25 +294,25 @@ SELECT
     CAST([Conclusion Criterion 7] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Conclusion Criterion Code 1" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Conclusion Criterion Code 1], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Conclusion Criterion Code 1], '''', '''''') + '''' + ', ' +
 
         -- "Conclusion Criterion Code 2" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Conclusion Criterion Code 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Conclusion Criterion Code 2], '''', '''''') + '''' + ', ' +
 
         -- "Conclusion Criterion Code 3" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Conclusion Criterion Code 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Conclusion Criterion Code 3], '''', '''''') + '''' + ', ' +
 
         -- "Conclusion Criterion Code 4" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Conclusion Criterion Code 4], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Conclusion Criterion Code 4], '''', '''''') + '''' + ', ' +
 
         -- "Conclusion Criterion Code 5" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Conclusion Criterion Code 5], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Conclusion Criterion Code 5], '''', '''''') + '''' + ', ' +
 
         -- "Conclusion Criterion Code 6" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Conclusion Criterion Code 6], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Conclusion Criterion Code 6], '''', '''''') + '''' + ', ' +
 
         -- "Conclusion Criterion Code 7" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Conclusion Criterion Code 7], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Conclusion Criterion Code 7], '''', '''''') + '''' + ', ' +
 
         -- "amount of quotes" INTEGER NOT NULL
     CAST([amount of quotes] AS NVARCHAR(MAX)) + ', ' +
@@ -321,40 +321,40 @@ SELECT
     CAST([amount of orders] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Competitor 1" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Competitor 1], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Competitor 1], '''', '''''') + '''' + ', ' +
 
         -- "Competitor 2" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Competitor 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Competitor 2], '''', '''''') + '''' + ', ' +
 
         -- "Competitor 3" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Competitor 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Competitor 3], '''', '''''') + '''' + ', ' +
 
         -- "Order Date as per Customer" VARCHAR(5) NOT NULL
-    '''' + REPLACE(REPLACE([Order Date as per  Customer], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Order Date as per  Customer], '''', '''''') + '''' + ', ' +
 
         -- "Date of Birth" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Date of Birth], 120) + '''' + ', ' +
 
         -- "Privat Phone No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Privat Phone No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Privat Phone No_], '''', '''''') + '''' + ', ' +
 
         -- "Privat E-Mail" VARCHAR(100) NOT NULL
-    '''' + REPLACE(REPLACE([Privat E-Mail], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Privat E-Mail], '''', '''''') + '''' + ', ' +
 
         -- "Privat Fax No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Privat Fax No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Privat Fax No_], '''', '''''') + '''' + ', ' +
 
         -- "Old Sales No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Old Sales No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Old Sales No_], '''', '''''') + '''' + ', ' +
 
         -- "Old Kontaktperson No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Old Kontaktperson No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Old Kontaktperson No_], '''', '''''') + '''' + ', ' +
 
         -- "Canceled" BOOLEAN NOT NULL
     CASE WHEN Canceled = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Complete Phone No_" VARCHAR(90) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE([Complete Phone No_], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Complete Phone No_], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Contact];
