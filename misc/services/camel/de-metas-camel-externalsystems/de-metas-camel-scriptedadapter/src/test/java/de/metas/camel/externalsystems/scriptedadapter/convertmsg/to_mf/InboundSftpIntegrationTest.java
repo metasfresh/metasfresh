@@ -330,8 +330,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertRemoteFileConsumed(inboundFile);
 		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 
-		// The locally-archived file content should match what we placed
-		assertThat(Files.readString(localDoneFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+		// The locally-archived file content should match what we placed (awaited: the archive file exists before its bytes are written)
+		assertThat(LocalArchiveAwait.awaitSingleFileWithContent(localProcessedDir, TEST_FILE_CONTENT.getBytes(StandardCharsets.UTF_8))).isEqualTo(localDoneFile);
 
 		// Nothing should have landed in the local error folder
 		try (var files = Files.list(localErrorDir))
@@ -430,7 +430,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(archivedLocally)
 				.as("Malformed payload should be archived to the LOCAL error folder within 10 seconds")
 				.isTrue();
-		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(MALFORMED_TEST_FILE_CONTENT);
+		assertThat(LocalArchiveAwait.awaitSingleFileWithContent(localErrorDir, MALFORMED_TEST_FILE_CONTENT.getBytes(StandardCharsets.UTF_8))).isEqualTo(localErrorFile);
 
 		// The remote file must still be CONSUMED (deleted) — never left in place, never moved remotely
 		assertRemoteFileConsumed(inboundFile);
@@ -483,7 +483,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(archivedLocally)
 				.as("A run with one rejected item should be archived to the LOCAL error folder within 10 seconds")
 				.isTrue();
-		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+		assertThat(LocalArchiveAwait.awaitSingleFileWithContent(localErrorDir, TEST_FILE_CONTENT.getBytes(StandardCharsets.UTF_8))).isEqualTo(localErrorFile);
 
 		// The surviving item must still have been dispatched — one rejection may not cancel the rest
 		olCandMockEndpoint.assertIsSatisfied(2_000);
@@ -550,7 +550,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		final boolean archived = waitForCondition(() -> Files.exists(localErrorFile) || Files.exists(localDoneFile), 10_000, 250);
 		assertThat(archived).as("Payload should be archived locally within 10 seconds").isTrue();
 		assertThat(localDoneFile).doesNotExist();
-		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+		assertThat(LocalArchiveAwait.awaitSingleFileWithContent(localErrorDir, TEST_FILE_CONTENT.getBytes(StandardCharsets.UTF_8))).isEqualTo(localErrorFile);
 
 		// the remote file is still consumed
 		assertRemoteFileConsumed(inboundFile);

@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import {
   waitForSpinnersToDisappear,
 } from '../utils/DocumentReferences';
@@ -192,7 +192,7 @@ window is read-only.
     // === ASSERT: row identity works — first row is selectable ===
     await test.step('Verify row identity (select a row, no error)', async () => {
       const firstRow = weekPage.locator('table tbody tr').first();
-      await firstRow.click();
+      await selectRows([firstRow]);
       await weekPage.waitForTimeout(500);
       // selecting must not raise an error toast
       const errorToast = weekPage.locator('.notification-error, .toast-error');

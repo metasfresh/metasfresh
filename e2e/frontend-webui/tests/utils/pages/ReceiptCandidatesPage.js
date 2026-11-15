@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
-import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { getPage, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { PdfDownloader } from '../PdfDownloader';
 import { serverErrorMessage } from '../RestResponse';
 
@@ -254,31 +254,7 @@ export class ReceiptCandidatesPage {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
-      // Scroll row into view and click
-      await firstRow.scrollIntoViewIfNeeded();
-      await firstRow.click();
-
-      // Wait for selection to be processed
-      await page.waitForTimeout(500);
-
-      // Try to verify row is selected, but don't fail if class isn't added
-      // (some modal views might use different selection mechanism)
-      const hasSelectedClass = await firstRow.evaluate(el => el.classList.contains('row-selected'));
-      if (!hasSelectedClass) {
-        // Try clicking again with force option
-        await firstRow.click({ force: true });
-        await page.waitForTimeout(500);
-      }
-
-      // Verify selection by checking if Quick Actions button is visible
-      // (actions appear when rows are selected)
-      const modalQuickAction = page.locator('.panel-modal [data-testid="quick-action-button"], .modal-content [data-testid="quick-action-button"]');
-      const quickActionVisible = await modalQuickAction.isVisible().catch(() => false);
-
-      if (!quickActionVisible) {
-        // If no quick action visible, maybe selection failed - throw error
-        console.log('Warning: Quick Action not visible after row click - selection may have failed');
-      }
+      await selectRows([firstRow]);
     });
   }
 
@@ -888,10 +864,8 @@ export class ReceiptCandidatesPage {
             has: page.locator('.meta-icon-share'),
           }).first();
 
-          // Select the row first and require the selection to register (row gains
-          // 'row-selected'): the Zoom Into action works on the selected row.
-          await tabTableRow.click();
-          await expect(tabTableRow).toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT });
+          // Select the row first: the Zoom Into action works on the selected row.
+          await selectRows([tabTableRow]);
 
           await zoomCell.scrollIntoViewIfNeeded().catch(() => {});
           await zoomCell.click({ button: 'right' });
@@ -1143,6 +1117,83 @@ export class ReceiptCandidatesPage {
       return await rows.evaluateAll((trs) =>
         trs.map((tr) => Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.trim()))
       );
+    });
+  }
+
+  /**
+   * Presses the mouse on the VERTICAL SCROLLBAR of the HU editor modal's list wrapper (`.document-list-wrapper`):
+   * a real `mouse.down()`/`mouse.up()` at a point inside the scrollbar, like a user. With `isDrag`, the thumb is grabbed
+   * and dragged down instead of pressing the track. The target of such a mousedown is the wrapper itself, which is
+   * what the table's click-outside handling sees.
+   *
+   * The browser must draw classic scrollbars (the spec removes `--hide-scrollbars`) and the modal content must
+   * overflow (small viewport); both are asserted here, so a missing scrollbar fails loudly instead of passing vacuously.
+   *
+   * @param {{isDrag?: boolean}} [options]
+   * @returns {Promise<{scrollbarWidth: number, scrollTopBefore: number, scrollTopAfter: number}>}
+   */
+  static async pressVerticalScrollbarOfModal({ isDrag = false } = {}) {
+    return await test.step(`ReceiptCandidatesPage - ${isDrag ? 'Drag' : 'Press'} the modal's vertical scrollbar`, async () => {
+      const page = getPage();
+      const wrapper = page.locator('.panel-modal .document-list-wrapper').first();
+      await wrapper.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      const geometry = () =>
+        wrapper.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            left: r.left,
+            top: r.top,
+            clientLeft: el.clientLeft,
+            clientTop: el.clientTop,
+            clientWidth: el.clientWidth,
+            clientHeight: el.clientHeight,
+            scrollHeight: el.scrollHeight,
+            scrollTop: el.scrollTop,
+            scrollbarWidth: r.width - el.clientWidth - 2 * el.clientLeft,
+          };
+        });
+
+      // the content only overflows once the Merkmale panel has rendered: wait for the precondition, do not snapshot it
+      await expect
+        .poll(async () => {
+          const g = await geometry();
+          return g.scrollbarWidth > 0 && g.scrollHeight > g.clientHeight;
+        }, { timeout: SLOW_ACTION_TIMEOUT })
+        .toBe(true)
+        .catch(() => {}); // the asserts below name the failing precondition
+      const before = await geometry();
+      expect(before.scrollbarWidth, 'the modal list wrapper has no classic vertical scrollbar').toBeGreaterThan(0);
+      expect(before.scrollHeight, 'the modal list wrapper does not overflow vertically').toBeGreaterThan(before.clientHeight);
+
+      const x = before.left + before.clientLeft + before.clientWidth + before.scrollbarWidth / 2;
+      let y;
+      let dragToY;
+      if (isDrag) {
+        const thumbHeight = (before.clientHeight * before.clientHeight) / before.scrollHeight;
+        y = before.top + before.clientTop + thumbHeight / 2; // thumb sits at the top at scrollTop 0
+        dragToY = y + 60;
+      } else {
+        y = before.top + before.clientTop + before.clientHeight - 20; // track below the thumb
+      }
+
+      const target = await page.evaluate(([px, py]) => {
+        const e = document.elementFromPoint(px, py);
+        return e && e.className;
+      }, [x, y]);
+      expect(String(target), 'the scrollbar point does not hit the modal list wrapper').toContain('document-list-wrapper');
+
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      if (isDrag) {
+        await page.mouse.move(x, dragToY, { steps: 5 });
+      }
+      await page.mouse.up();
+      // wait until the scroll position moved (the caller asserts that it did); a press that does not scroll just times out here
+      await expect.poll(async () => (await geometry()).scrollTop, { timeout: 5000 }).not.toBe(before.scrollTop).catch(() => {});
+
+      const after = await geometry();
+      return { scrollbarWidth: before.scrollbarWidth, scrollTopBefore: before.scrollTop, scrollTopAfter: after.scrollTop };
     });
   }
 }

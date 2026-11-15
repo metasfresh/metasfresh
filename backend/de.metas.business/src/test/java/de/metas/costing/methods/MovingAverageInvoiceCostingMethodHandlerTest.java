@@ -34,7 +34,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,7 +47,9 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
@@ -446,5 +450,136 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("50");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("75");
 		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("-25");
+	}
+
+	// ---- M_CostDetail.Prev_* must hold the cost state BEFORE the inbound movement ----
+
+	private void seedStock10At5()
+	{
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+						.amt(CostAmount.of(0, euroCurrencyId))
+						.explicitCostPrice(CostAmount.of(5, euroCurrencyId))
+						.qty(Quantity.of(10, eachUOM))
+						.build());
+	}
+
+	private int createInOutLineId()
+	{
+		final I_M_InOutLine line = newInstanceOutOfTrx(I_M_InOutLine.class);
+		saveRecord(line);
+		return line.getM_InOutLine_ID();
+	}
+
+	private I_M_CostDetail retrieveCostDetailByInOutLine(final int inoutLineId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_CostDetail.class)
+				.addEqualsFilter(I_M_CostDetail.COLUMN_M_InOutLine_ID, inoutLineId)
+				.create()
+				.firstOnlyNotNull(I_M_CostDetail.class);
+	}
+
+	private static void assertPrev(final I_M_CostDetail cd, final String price, final String qty, final String cumAmt, final String cumQty)
+	{
+		assertThat(cd.getPrev_CurrentCostPrice()).isEqualByComparingTo(price);
+		assertThat(cd.getPrev_CurrentQty()).isEqualByComparingTo(qty);
+		assertThat(cd.getPrev_CumulatedAmt()).isEqualByComparingTo(cumAmt);
+		assertThat(cd.getPrev_CumulatedQty()).isEqualByComparingTo(cumQty);
+	}
+
+	@Test
+	public void materialReceipt_prevAmountsAreStateBeforeReceipt()
+	{
+		seedStock10At5();
+		final int lineId = createInOutLineId();
+
+		// receipt without order line => valued at current cost price 5 => 10 @ 5 = 50
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.documentRef(CostingDocumentRef.ofReceiptLineId(lineId))
+						.amt(CostAmount.of(0, euroCurrencyId))
+						.qty(Quantity.of(10, eachUOM))
+						.build());
+
+		assertThat(getCurrentCost(orgId1).getCurrentQty().toBigDecimal()).isEqualByComparingTo("20");
+		assertPrev(retrieveCostDetailByInOutLine(lineId), "5", "10", "50", "10");
+	}
+
+	@Test
+	public void materialReceiptReversal_prevAmountsAreStateBeforeReversal()
+	{
+		seedStock10At5();
+		final int originalLineId = createInOutLineId();
+		final int reversalLineId = createInOutLineId();
+
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.documentRef(CostingDocumentRef.ofReceiptLineId(reversalLineId))
+						.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(originalLineId))
+						.amt(CostAmount.of(0, euroCurrencyId))
+						.qty(Quantity.of(-4, eachUOM))
+						.build());
+
+		assertThat(getCurrentCost(orgId1).getCurrentQty().toBigDecimal()).isEqualByComparingTo("6");
+		assertPrev(retrieveCostDetailByInOutLine(reversalLineId), "5", "10", "50", "10");
+	}
+
+	@Test
+	public void customerReturn_inboundShipmentLine_prevAmountsAreStateBeforeReturn()
+	{
+		seedStock10At5();
+		final int lineId = createInOutLineId();
+
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.documentRef(CostingDocumentRef.ofShipmentLineId(lineId))
+						.amt(CostAmount.of(0, euroCurrencyId))
+						.qty(Quantity.of(4, eachUOM))
+						.build());
+
+		assertThat(getCurrentCost(orgId1).getCurrentQty().toBigDecimal()).isEqualByComparingTo("14");
+		assertPrev(retrieveCostDetailByInOutLine(lineId), "5", "10", "50", "10");
+	}
+
+	@Test
+	public void receiptNonMaterialCosts_prevAmountsAreStateBeforeAddOn()
+	{
+		final CostElement addOnElement = createCostElement(CostElementType.Overhead);
+		final int line1 = createInOutLineId();
+		final int line2 = createInOutLineId();
+
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.costElement(addOnElement)
+						.documentRef(CostingDocumentRef.ofReceiptLineId(line1))
+						.amt(CostAmount.of(20, euroCurrencyId))
+						.qty(Quantity.of(10, eachUOM))
+						.build());
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.costElement(addOnElement)
+						.documentRef(CostingDocumentRef.ofReceiptLineId(line2))
+						.amt(CostAmount.of(30, euroCurrencyId))
+						.qty(Quantity.of(10, eachUOM))
+						.build());
+
+		// first add-on: nothing before
+		assertPrev(retrieveCostDetailByInOutLine(line1), "0", "0", "0", "0");
+		// second add-on: state after the first (10 @ 2, cumulated 20)
+		assertPrev(retrieveCostDetailByInOutLine(line2), "2", "10", "20", "10");
+	}
+
+	private CostElement createCostElement(final CostElementType type)
+	{
+		final I_M_CostElement record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setName(type.name());
+		record.setCostElementType(type.getCode());
+		record.setCostingMethod(CostingMethod.MovingAverageInvoice.getCode());
+		record.setIsCalculated(false);
+		InterfaceWrapperHelper.saveRecord(record);
+		return costElementRepo.getById(CostElementId.ofRepoId(record.getM_CostElement_ID()));
 	}
 }

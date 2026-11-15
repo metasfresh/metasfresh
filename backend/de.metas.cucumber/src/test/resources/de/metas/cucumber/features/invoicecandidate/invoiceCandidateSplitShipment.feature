@@ -97,17 +97,17 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: one workpackage creates two shipments (batch lost on lines 2 and 3), all lines are invoiced
+  Scenario: two shipment workpackages (the order lines of lines 2 and 3 have another shipper), all lines are invoiced
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
     And metasfresh contains C_OrderLines:
-      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
-      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
-      | SO                    | L3         | product3                | 6          | TUx1_P3                                |
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |                             |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                | shipperB                    |
     And the order identified by SO is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -135,12 +135,12 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
 
     And complete picking job
-    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
     And the shipment-schedule recompute work queue drains to zero pending workpackages
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule2 is set to null by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule3 is set to null by direct update
-    When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -256,17 +256,17 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: reversing the second shipment of a one-workpackage split restores the processed state of its lines
+  Scenario: reversing the second shipment of a two-workpackage split restores the processed state of its lines
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
     And metasfresh contains C_OrderLines:
-      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
-      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
-      | SO                    | L3         | product3                | 6          | TUx1_P3                                |
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |                             |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                | shipperB                    |
     And the order identified by SO is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -294,12 +294,12 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
 
     And complete picking job
-    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
     And the shipment-schedule recompute work queue drains to zero pending workpackages
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule2 is set to null by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule3 is set to null by direct update
-    When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -335,17 +335,17 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: reactivating the second shipment of a one-workpackage split restores the processed state of its lines
+  Scenario: reactivating the second shipment of a two-workpackage split restores the processed state of its lines
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
     And metasfresh contains C_OrderLines:
-      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
-      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
-      | SO                    | L3         | product3                | 6          | TUx1_P3                                |
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |                             |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                | shipperB                    |
     And the order identified by SO is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -373,12 +373,12 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
 
     And complete picking job
-    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
     And the shipment-schedule recompute work queue drains to zero pending workpackages
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule2 is set to null by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule3 is set to null by direct update
-    When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -414,17 +414,17 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: reversing the second shipment of a one-workpackage split after invoicing leaves its lines processed, without a credit
+  Scenario: reversing the second shipment of a two-workpackage split after invoicing leaves its lines processed, without a credit
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
     And metasfresh contains C_OrderLines:
-      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
-      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
-      | SO                    | L3         | product3                | 6          | TUx1_P3                                |
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |                             |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                | shipperB                    |
     And the order identified by SO is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -452,12 +452,12 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
 
     And complete picking job
-    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
     And the shipment-schedule recompute work queue drains to zero pending workpackages
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule2 is set to null by direct update
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule3 is set to null by direct update
-    When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |

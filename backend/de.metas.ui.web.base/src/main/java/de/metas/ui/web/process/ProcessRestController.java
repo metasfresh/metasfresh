@@ -158,7 +158,10 @@ public class ProcessRestController
 
 	private JSONDocumentOptions newJsonDocumentOptions()
 	{
-		return JSONDocumentOptions.of(userSession);
+		return JSONDocumentOptions.builder()
+				.userSession(userSession)
+				.isUnboxPasswordFields(true) // process parameters: "show password" needs the clear value
+				.build();
 	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final WebuiPreconditionsContext preconditionsContext)

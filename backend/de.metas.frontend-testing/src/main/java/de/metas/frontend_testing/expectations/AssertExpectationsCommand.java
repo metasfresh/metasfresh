@@ -106,6 +106,33 @@ public class AssertExpectationsCommand
 						.build()
 						.execute();
 			}
+			if (expectations.getInventoryCandidates() != null)
+			{
+				AssertInventoryCandidateExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getInventoryCandidates())
+						.build()
+						.execute();
+			}
+			if (expectations.getProducts() != null)
+			{
+				AssertProductExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getProducts())
+						.build()
+						.execute();
+			}
+			if (expectations.getRecords() != null)
+			{
+				AssertRecordColumnExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getRecords())
+						.build()
+						.execute();
+			}
 			if (expectations.getMovements() != null)
 			{
 				AssertMovementExpectationsCommand.builder()

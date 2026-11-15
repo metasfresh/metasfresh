@@ -125,10 +125,15 @@ FROM edi_cctop_invoic_v invoic_v
                                             'Product_DepositType', v.Product_DepositType,
                                             'Packaging', CASE WHEN v.IsPackagingMaterial = 'Y'
                                                                   THEN JSON_BUILD_OBJECT('IsPackagingMaterial', TRUE)
+                                                         END,
+                                            'Line_Type', CASE WHEN ol_t.isgroupcompensationline = 'Y' AND ol_t.groupcompensationtype = 'S' THEN 'Charge'
+                                                              WHEN ol_t.isgroupcompensationline = 'Y' THEN 'Allowance'
+                                                              ELSE 'Item'
                                                          END
                                         ) ORDER BY v.line) AS json_data
                     FROM edi_cctop_invoic_500_incl_packaging_v v
                              LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
+                             LEFT JOIN c_orderline ol_t ON ol_t.c_orderline_id = v.c_orderline_id AND ol_t.isactive = 'Y'
                     GROUP BY c_invoice_id) edi_500_v ON edi_500_v.c_invoice_id = invoic_v.c_invoice_id
          LEFT JOIN (SELECT c_invoice_id,
                            JSON_AGG(JSON_BUILD_OBJECT(

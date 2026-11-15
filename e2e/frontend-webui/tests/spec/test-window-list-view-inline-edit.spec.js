@@ -9,6 +9,7 @@ import {
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
   flushPendingUiTasks,
+  selectRows,
   waitForWebFonts,
 } from '../utils/common';
 import { WEBAPI_BASE_URL, assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
@@ -85,7 +86,7 @@ async function measure(row, cell) {
 
 /** right-click the cell and pick "edit field" (the context-menu entry with the edit icon) */
 async function openEditorFromContextMenu(page, cell) {
-  await cell.click();
+  await selectRows([cell.locator('xpath=ancestor::tr[1]')]);
   await cell.click({ button: 'right' });
   await page.locator('.context-menu-item').filter({ has: page.locator('i.meta-icon-edit') }).click();
   const input = cell.locator('.form-group input').first();

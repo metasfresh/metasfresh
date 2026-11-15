@@ -5,6 +5,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderId;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -227,6 +229,10 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 					.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, query.getPayAmt().toBigDecimal())
 					.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, query.getPayAmt().getCurrencyId());
 		}
+		if (query.getOrderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Order_ID, query.getOrderId());
+		}
 		if (!query.getExcludePaymentIds().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, query.getExcludePaymentIds());
@@ -303,4 +309,38 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull final Collection<OrderId> orderIds)
+	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryCompletedOrClosedPaymentsByOrderIds(orderIds)
+				.create()
+				.listDistinct(I_C_Payment.COLUMNNAME_C_Order_ID, Integer.class)
+				.stream()
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	@NonNull
+	public Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryCompletedOrClosedPaymentsByOrderIds(ImmutableSet.of(orderId))
+				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
+				.create()
+				.firstIdOnlyOptional(PaymentId::ofRepoIdOrNull);
+	}
+
+	private IQueryBuilder<I_C_Payment> queryCompletedOrClosedPaymentsByOrderIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_C_Order_ID, orderIds)
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
+	}
 }

@@ -1,0 +1,36 @@
+.pos-card-release-controls {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4em;
+
+  .status-note {
+    font-style: italic;
+  }
+
+  // a long caption (e.g. "Kartenzahlung prüfen / freigeben") wraps instead of running out of a handheld-wide dialog
+  .release-button {
+    white-space: normal;
+    height: auto;
+  }
+
+  .release-confirmation {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.4em;
+
+    .release-confirmation-text {
+      font-weight: bold;
+    }
+
+    .buttons {
+      display: flex;
+      flex-flow: row nowrap;
+      margin-bottom: 0;
+
+      .button {
+        flex: 1 1 0;
+        margin-bottom: 0;
+      }
+    }
+  }
+}

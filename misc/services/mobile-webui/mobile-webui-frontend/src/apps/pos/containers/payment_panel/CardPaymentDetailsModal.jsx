@@ -5,11 +5,22 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import Spinner from '../../../../components/Spinner';
 import { NumericKeyboard, recomputeAmount, toEditingAmount } from '../NumericKeyboard';
 import cx from 'classnames';
-import { PAYMENT_STATUS_FAILED, PAYMENT_STATUS_NEW, PAYMENT_STATUS_PENDING } from '../../constants/paymentStatus';
+import {
+  PAYMENT_STATUS_FAILED,
+  PAYMENT_STATUS_NEW,
+  PAYMENT_STATUS_PENDING,
+  PAYMENT_STATUS_UNKNOWN,
+} from '../../constants/paymentStatus';
 import { trl } from '../../../../utils/translations';
+import CardReleaseControls from '../card_release/CardReleaseControls';
 
 const _ = (key) => trl(`pos.payment.modal.card.${key}`);
 
+/**
+ * A card payment of a till sale. A payment whose result is unknown can be neither cancelled nor retried: it shows the
+ * unknown text and, enabled from its {@code releasableAt}, the cashier's check / release, with the "not charged"
+ * confirmation; a refusal is shown instead of releasing.
+ */
 const CardPaymentDetailsModal = ({
   currency,
   precision,
@@ -19,6 +30,14 @@ const CardPaymentDetailsModal = ({
   status,
   onDelete,
   onCheckout,
+  isReleaseEnabled,
+  onRelease,
+  isReleaseConfirmationShown,
+  onConfirmRelease,
+  onCancelReleaseConfirmation,
+  releaseMessage,
+  isCheckFailed,
+  isSubmitting,
 }) => {
   const [editingPayAmount, setEditingPayAmount] = useState(() => toEditingAmount({ value: payAmountParam, precision }));
 
@@ -30,6 +49,7 @@ const CardPaymentDetailsModal = ({
 
   const isAllowEditing = status === PAYMENT_STATUS_NEW || status === PAYMENT_STATUS_FAILED;
   const isPending = status === PAYMENT_STATUS_PENDING;
+  const isUnknown = status === PAYMENT_STATUS_UNKNOWN;
   const isAllowCancel = isAllowEditing;
   const isAllowCheckout = isAllowEditing && isPayAmountValid;
 
@@ -78,26 +98,57 @@ const CardPaymentDetailsModal = ({
               <NumericKeyboard onKey={handleNumKeyPressed} />
             </div>
           )}
+          {isUnknown && (
+            <div className="card-payment-unknown">
+              <div className="card-payment-unknown-message" data-testid="pos-card-payment-unknown-message">
+                {trl('pos.cardRelease.unknown')}
+              </div>
+              <CardReleaseControls
+                testIdPrefix="pos-card-payment"
+                isCheckFailed={isCheckFailed}
+                releaseMessage={releaseMessage}
+                isReleaseShown={true}
+                isReleaseEnabled={isReleaseEnabled}
+                onRelease={onRelease}
+                isConfirmationShown={isReleaseConfirmationShown}
+                onConfirmRelease={onConfirmRelease}
+                onCancelConfirmation={onCancelReleaseConfirmation}
+                isDisabled={isSubmitting}
+              />
+            </div>
+          )}
           {isPending && (
             <div className="detail-line-spinner">
               <Spinner />
             </div>
           )}
         </section>
-        <footer className="modal-card-foot">
-          <div className="buttons">
-            {isAllowCheckout && (
-              <button className="button is-large" disabled={!isAllowCheckout} onClick={handleCheckoutClicked}>
-                {_('actions.checkout')}
-              </button>
-            )}
-            {isAllowCancel && (
-              <button className="button is-large" disabled={!isAllowCancel} onClick={handleCancelClicked}>
-                {_('actions.cancel')}
-              </button>
-            )}
-          </div>
-        </footer>
+        {(isAllowCheckout || isAllowCancel) && (
+          <footer className="modal-card-foot">
+            <div className="buttons">
+              {isAllowCheckout && (
+                <button
+                  className="button is-large"
+                  data-testid="pos-card-payment-checkout-button"
+                  disabled={!isAllowCheckout}
+                  onClick={handleCheckoutClicked}
+                >
+                  {_('actions.checkout')}
+                </button>
+              )}
+              {isAllowCancel && (
+                <button
+                  className="button is-large"
+                  data-testid="pos-card-payment-cancel-button"
+                  disabled={!isAllowCancel}
+                  onClick={handleCancelClicked}
+                >
+                  {_('actions.cancel')}
+                </button>
+              )}
+            </div>
+          </footer>
+        )}
       </div>
     </div>
   );
@@ -111,6 +162,14 @@ CardPaymentDetailsModal.propTypes = {
   status: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
   onCheckout: PropTypes.func.isRequired,
+  isReleaseEnabled: PropTypes.bool,
+  onRelease: PropTypes.func,
+  isReleaseConfirmationShown: PropTypes.bool,
+  onConfirmRelease: PropTypes.func,
+  onCancelReleaseConfirmation: PropTypes.func,
+  releaseMessage: PropTypes.string,
+  isCheckFailed: PropTypes.bool,
+  isSubmitting: PropTypes.bool,
 };
 
 export default CardPaymentDetailsModal;

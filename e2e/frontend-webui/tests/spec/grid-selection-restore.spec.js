@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows, SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * Grid Selection Restore test suite for metasfresh web UI.
@@ -77,16 +77,10 @@ test.describe('Grid Selection Restore on Browser Back', () => {
 
       firstRowText = (await gridRows.first().innerText()).trim();
 
-      // Click the <tr> of the second row (index 1) to select it. Clicking a
-      // <td> would enter cell edit mode instead (CLAUDE.md "Click <tr>, Not <td>").
+      // Select the second row (index 1) by its <tr>; selectRows asserts it carries `row-selected`.
       const secondRow = gridRows.nth(1);
       selectedRowText = (await secondRow.innerText()).trim();
-      await secondRow.click();
-
-      // Auto-waits for Redux to register the selection — no fixed delay needed.
-      await expect(secondRow).toHaveClass(/row-selected/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
+      await selectRows([secondRow]);
       expect(selectedRowText).not.toBe(firstRowText);
       console.log(`[INFO] Selected non-first row: ${selectedRowText}`);
     });

@@ -176,7 +176,7 @@ Tests inline editing in the grid:
       const hasQtyCell = await qtyCell.isVisible().catch(() => false);
 
       if (hasQtyCell) {
-        await qtyCell.click();
+        await qtyCell.click(); // focuses the cell to edit it, not a row selection
         await page.waitForTimeout(500);
         console.log('Clicked quantity cell');
 

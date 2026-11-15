@@ -21,6 +21,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2026-07-01T09:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     And set project type Sales/Purchase Order to inactive
 
     And metasfresh contains M_PricingSystems
@@ -847,7 +848,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@evelinaValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "Line_Type": "Item"
         },
         {
           "Invoice_Line": 20,
@@ -876,7 +878,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@bonusValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "Line_Type": "Allowance"
         },
         {
           "Invoice_Line": 30,
@@ -907,7 +910,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_DepositType": null,
           "Packaging": {
             "IsPackagingMaterial": true
-          }
+          },
+          "Line_Type": "Item"
         }
       ],
       "Sums": [
@@ -942,6 +946,122 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | 10           |
       | 20           |
       | 30           |
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S33455_LT_A
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00359_EDI_INVOICE_JSON
+  @F00359
+  Scenario: order with a surcharge line and a hand-typed negative line: the INVOIC JSON marks the surcharge as Charge and the negative line as Item
+    # Line_Type: Item | Allowance | Charge. A surcharge line of a compensation group (GroupCompensationType S) is a Charge;
+    # a negative line typed by hand (no group) stays an Item.
+    Given metasfresh contains M_Product_Categories:
+      | Identifier     |
+      | goods_category |
+    And metasfresh contains M_Products:
+      | Identifier     | M_Product_Category_ID | IsStocked | GroupCompensationType | GroupCompensationAmtType | REST.Context.Value |
+      | goodsItem      | goods_category        | false     |                       |                          | goodsValue         |
+      | surchargeWare  | goods_category        | false     | S                     | P                        | surchargeValue     |
+      | negativeWare   | goods_category        | false     |                       |                          | negativeValue      |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_sales              | goodsItem     | 10.00    | PCE      | tax7Category     |
+      | plv_sales              | surchargeWare | 1.00     | PCE      | tax7Category     |
+      | plv_sales              | negativeWare  | -5.00    | PCE      | tax7Category     |
+    And metasfresh contains M_Warehouse:
+      | Identifier    | C_BPartner_ID | C_BPartner_Location_ID |
+      | mainWarehouse | depotOwner    | depotLoc               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | OPT.Bill_Location_ID.Identifier | DeliveryRule | DateOrdered | PreparationDate      | M_Warehouse_ID | POReference |
+      | salesOrder | true    | store         | storeLoc               | centralLoc                      | F            | 2026-07-01  | 2026-06-30T22:00:00Z | mainWarehouse  | ED04711C    |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_goods    | salesOrder | goodsItem    | 100        |
+      | ol_negative | salesOrder | negativeWare | 1          |
+    # the surcharge group is made on the goods line only: 3 % of 100 x 10,00
+    And create compensation group from order lines:
+      | C_OrderLine_ID | M_Product_ID  | Name           | CompensationLine | OPT.GroupCompensationPercentage |
+      | ol_goods       | surchargeWare | Surcharge 3 %  | ol_surcharge     | 3                               |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | GroupCompensationPercentage | GroupCompensationBaseAmt | price |
+      | ol_surcharge   | 3                           | 1000                     | 30    |
+    When the order identified by salesOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier  | C_OrderLine_ID | IsToRecompute |
+      | ss_goods    | ol_goods       | N             |
+      | ss_surcharge| ol_surcharge   | N             |
+      | ss_negative | ol_negative    | N             |
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_goods              |
+      | ss_surcharge          |
+      | ss_negative           |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_goods              | shipment   |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_goods       | ic_goods               |
+      | ol_surcharge   | ic_surcharge           |
+      | ol_negative    | ic_negative            |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID | IgnoreInvoiceSchedule |
+      | ic_goods               | Y                     |
+      | ic_surcharge           | Y                     |
+      | ic_negative            | Y                     |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID | C_Invoice_Candidate_ID | REST.Context |
+      | invoice      | ic_goods               | invoice_ID   |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    # - goods: Item; surcharge line of the group: Charge; hand-typed negative line (flag N): Item.
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Lines": [
+        {
+          "Order_Line": 10,
+          "NetAmt": 1000,
+          "Product_Supplier_ProductNo": "@goodsValue@",
+          "Line_Type": "Item"
+        },
+        {
+          "NetAmt": 30,
+          "Product_Supplier_ProductNo": "@surchargeValue@",
+          "Line_Type": "Charge"
+        },
+        {
+          "NetAmt": -5,
+          "Product_Supplier_ProductNo": "@negativeValue@",
+          "Line_Type": "Item"
+        }
+      ]
+    }
+  ]
+}
+    """
 
   # ################################################################################################
   # ################################################################################################

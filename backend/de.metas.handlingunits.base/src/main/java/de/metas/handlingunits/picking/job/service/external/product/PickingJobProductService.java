@@ -28,6 +28,7 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -68,6 +69,11 @@ public class PickingJobProductService
 	public ProductId getProductIdByGTINStrictlyNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
 		return productBL.getProductIdByGTINStrictlyNotNull(gtin, clientId);
+	}
+
+	public Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return productBL.getProductIdByGTINStrictly(gtin, clientId);
 	}
 
 	public String getProductValue(@NonNull final ProductId productId)

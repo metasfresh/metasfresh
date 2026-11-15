@@ -3,6 +3,7 @@ package de.metas.pos;
 import com.google.common.collect.ImmutableList;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -15,6 +16,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @EqualsAndHashCode
 @ToString
@@ -84,12 +86,7 @@ public class POSCashJournal
 
 	public void addCashInOut(@NonNull final Money signedAmount, @NonNull final UserId cashierId, @NonNull final String description)
 	{
-		signedAmount.assertCurrencyId(currencyId);
-
-		if (isClosed)
-		{
-			throw new AdempiereException("Already closed");
-		}
+		assertOpenAndCurrency(signedAmount);
 
 		add(POSCashJournalLine.builder()
 				.type(POSCashJournalLineType.CASH_IN_OUT)
@@ -97,6 +94,37 @@ public class POSCashJournal
 				.cashierId(cashierId)
 				.description(description)
 				.build()); // zero amount rejected by POSCashJournalLine
+	}
+
+	public void addCardSettlementPayment(
+			@NonNull final Money amount,
+			@NonNull final UserId cashierId,
+			@NonNull final POSInvoiceCardSettlementId posInvoiceCardSettlementId,
+			@Nullable final String description)
+	{
+		assertOpenAndCurrency(amount);
+		if (amount.signum() <= 0)
+		{
+			throw new AdempiereException("amount must be positive: " + amount);
+		}
+
+		add(POSCashJournalLine.builder()
+				.type(POSCashJournalLineType.CARD_PAYMENT)
+				.amount(amount)
+				.cashierId(cashierId)
+				.description(description)
+				.posInvoiceCardSettlementId(posInvoiceCardSettlementId)
+				.build());
+	}
+
+	private void assertOpenAndCurrency(@NonNull final Money amount)
+	{
+		amount.assertCurrencyId(currencyId);
+
+		if (isClosed)
+		{
+			throw new AdempiereException("Already closed");
+		}
 	}
 
 	private void addClosingDifference(@NonNull final Money closingDifferenceAmt, @NonNull final UserId cashierId, @Nullable final String description)
@@ -129,12 +157,21 @@ public class POSCashJournal
 		this.cashEndingBalance = cashEndingBalance;
 	}
 
-	public void addPayments(final POSOrder posOrder)
+	/**
+	 * Adds a line for each successful payment of the order that is not journaled yet. It is called on every attempt to complete
+	 * the order, also on attempts that leave the order waiting for another payment, so a payment already journaled by an earlier
+	 * attempt, on any journal (this one or an earlier, since closed, one), must not be journaled again.
+	 *
+	 * @param alreadyJournaledPaymentIds the order's payments that have a line on any journal, see
+	 *                                   {@link POSCashJournalService#addOrderPayments}
+	 */
+	public void addPayments(@NonNull final POSOrder posOrder, @NonNull final Set<POSPaymentId> alreadyJournaledPaymentIds)
 	{
 		final POSOrderId posOrderId = posOrder.getLocalIdNotNull();
 		final UserId cashierId = posOrder.getCashierId();
 		posOrder.streamPaymentsNotDeleted()
 				.filter(POSPayment::isSuccessful)
+				.filter(posPayment -> !alreadyJournaledPaymentIds.contains(posPayment.getLocalIdNotNull()))
 				.forEach(posPayment -> addPayment(posPayment, posOrderId, cashierId));
 	}
 

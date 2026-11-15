@@ -12,7 +12,6 @@ import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
@@ -64,7 +63,7 @@ public class PPOrderIssueScheduleService
 				PPOrderIssueScheduleService.class,
 				() -> new PPOrderIssueScheduleService(
 						new PPOrderIssueScheduleRepository(),
-						new HUQtyService(InventoryService.newInstanceForUnitTesting())
+						HUQtyService.newInstanceForUnitTesting()
 				)
 		);
 	}

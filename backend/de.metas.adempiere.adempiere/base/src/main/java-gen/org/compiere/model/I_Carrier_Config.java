@@ -162,7 +162,7 @@ public interface I_Carrier_Config
 	/**
 	 * Set Secret access key.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -171,7 +171,7 @@ public interface I_Carrier_Config
 	/**
 	 * Get Secret access key.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -204,6 +204,69 @@ public interface I_Carrier_Config
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Custom Text 1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCustomValueString1 (@Nullable java.lang.String CustomValueString1);
+
+	/**
+	 * Get Custom Text 1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCustomValueString1();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_CustomValueString1 = new ModelColumn<>(I_Carrier_Config.class, "CustomValueString1", null);
+	String COLUMNNAME_CustomValueString1 = "CustomValueString1";
+
+	/**
+	 * Set Custom Text 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCustomValueString2 (@Nullable java.lang.String CustomValueString2);
+
+	/**
+	 * Get Custom Text 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCustomValueString2();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_CustomValueString2 = new ModelColumn<>(I_Carrier_Config.class, "CustomValueString2", null);
+	String COLUMNNAME_CustomValueString2 = "CustomValueString2";
+
+	/**
+	 * Set Custom Text 3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCustomValueString3 (@Nullable java.lang.String CustomValueString3);
+
+	/**
+	 * Get Custom Text 3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCustomValueString3();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_CustomValueString3 = new ModelColumn<>(I_Carrier_Config.class, "CustomValueString3", null);
+	String COLUMNNAME_CustomValueString3 = "CustomValueString3";
 
 	/**
 	 * Set Active.
@@ -271,6 +334,29 @@ public interface I_Carrier_Config
 
 	ModelColumn<I_Carrier_Config, Object> COLUMN_IsSelectionRules = new ModelColumn<>(I_Carrier_Config.class, "IsSelectionRules", null);
 	String COLUMNNAME_IsSelectionRules = "IsSelectionRules";
+
+	/**
+	 * Set Test Mode.
+	 * Test mode for the nShift interface. While it is on, the text in the "Test Mode Attention" field is sent to nShift as the Attention.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsTestMode (boolean IsTestMode);
+
+	/**
+	 * Get Test Mode.
+	 * Test mode for the nShift interface. While it is on, the text in the "Test Mode Attention" field is sent to nShift as the Attention.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isTestMode();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_IsTestMode = new ModelColumn<>(I_Carrier_Config.class, "IsTestMode", null);
+	String COLUMNNAME_IsTestMode = "IsTestMode";
 
 	/**
 	 * Set Shipper.
@@ -361,6 +447,29 @@ public interface I_Carrier_Config
 
 	ModelColumn<I_Carrier_Config, Object> COLUMN_ShipType = new ModelColumn<>(I_Carrier_Config.class, "ShipType", null);
 	String COLUMNNAME_ShipType = "ShipType";
+
+	/**
+	 * Set Test Mode Attention.
+	 * Text sent to nShift as the Attention while test mode is on.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTestMode_Attention (@Nullable java.lang.String TestMode_Attention);
+
+	/**
+	 * Get Test Mode Attention.
+	 * Text sent to nShift as the Attention while test mode is on.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTestMode_Attention();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_TestMode_Attention = new ModelColumn<>(I_Carrier_Config.class, "TestMode_Attention", null);
+	String COLUMNNAME_TestMode_Attention = "TestMode_Attention";
 
 	/**
 	 * Get Updated.

@@ -120,6 +120,9 @@ BEGIN
                  JOIN pg_attribute a ON a.attrelid = k.conrelid AND a.attnum = k.conkey[1]
         WHERE k.contype = 'f'
           AND k.confrelid = 'ad_process'::regclass
+          -- AD_Process_Access is handled explicitly at the end (its rows are backed up and deleted), not via c_policy,
+          -- so a database that carries an FK from it to AD_Process must not make the process undeletable
+          AND k.conrelid::regclass::text <> 'ad_process_access'
           AND NOT EXISTS (SELECT 1
                           FROM UNNEST(c_policy) e
                           WHERE split_part(e, '.', 1) = k.conrelid::regclass::text

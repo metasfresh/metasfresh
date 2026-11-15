@@ -1,6 +1,7 @@
 package de.metas.pos;
 
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.error.IErrorManager;
 import de.metas.money.MoneyService;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.pos.async.C_POSOrder_CreateInvoiceAndShipment;
@@ -9,6 +10,7 @@ import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
 import de.metas.pos.payment_gateway.POSRefundRequest;
 import de.metas.pos.repository.model.I_C_POS_Order;
+import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -26,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class POSOrderProcessingServices
 {
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final POSTerminalService posTerminalService;
@@ -46,8 +49,11 @@ public class POSOrderProcessingServices
 				return posPaymentToProcess;
 			}
 
-			final POSPayment posPayment = posPaymentToProcess.isNew()
-					? processPOSPayment(posPaymentToProcess, posOrder)
+			// A card payment's charge is sent only by the till's card checkout, outside any transaction
+			// (POSOrdersService.checkoutPayment); never from here, which runs inside the order's transaction.
+			// A NEW card payment therefore stays NEW, and the order stays waiting for payment.
+			final POSPayment posPayment = posPaymentToProcess.isNew() && posPaymentToProcess.getPaymentMethod().isCash()
+					? processPOSPayment(posPaymentToProcess)
 					: posPaymentToProcess;
 
 			if (posPayment.isPending())
@@ -58,35 +64,18 @@ public class POSOrderProcessingServices
 			return posPayment;
 		});
 
-		posCashJournalService.changeJournalById(cashJournalId, journal -> journal.addPayments(posOrder));
+		posCashJournalService.addOrderPayments(cashJournalId, posOrder);
 	}
 
-	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull final POSOrder posOrder)
+	/**
+	 * Checks out a cash payment. A card payment is checked out by {@code POSOrdersService.checkoutPayment} only, which sends its
+	 * charge outside any transaction (see {@link #sendCardPayment}).
+	 */
+	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess)
 	{
+		posPaymentToProcess.getPaymentMethod().assertCash();
 		posPaymentToProcess.assertAllowCheckout();
-
-		//
-		// Process payment 
-		POSPayment posPayment = posPaymentToProcess;
-		switch (posPayment.getPaymentMethod())
-		{
-			case CASH:
-			{
-				posPayment = processPOSPayment_CASH(posPayment);
-				break;
-			}
-			case CARD:
-			{
-				posPayment = processPOSPayment_CARD(posPayment, posOrder);
-				break;
-			}
-			default:
-			{
-				throw new AdempiereException("Unexpected payment method: " + posPayment.getPaymentMethod());
-			}
-		}
-
-		return posPayment;
+		return processPOSPayment_CASH(posPaymentToProcess);
 	}
 
 	private POSPayment processPOSPayment_CASH(@NonNull final POSPayment posPayment)
@@ -111,23 +100,54 @@ public class POSOrderProcessingServices
 		}
 	}
 
-	private POSPayment processPOSPayment_CARD(
-			@NonNull final POSPayment posPayment,
-			@NonNull final POSOrder posOrder)
+	/**
+	 * Fails unless a card payment of the order can be sent, i.e. its terminal has a payment processor configured. The card
+	 * checkout checks this before it saves the payment as pending, so that a missing configuration refuses the checkout.
+	 */
+	public void assertCardPaymentCanBeSent(@NonNull final POSOrder posOrder)
+	{
+		posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId()).getPaymentProcessorConfigNotNull();
+	}
+
+	/**
+	 * Sends the card payment's charge to the terminal's payment processor and returns its answer; changes nothing.
+	 * The call can take long (the cashier presents the card), so a card checkout runs it outside any transaction.
+	 * <p>
+	 * A failure of the checks before the call (no payment processor registered for the configured type) is answered as a
+	 * definite failure, recorded as an AD_Issue on the payment: nothing was sent. Once the processor is called, it reports its own
+	 * failures in the answer; an exception it throws nevertheless (e.g. its own error handling failed after SumUp timed out) leaves
+	 * the outcome unknown, so it is propagated, never answered as a definite failure: the payment stays as saved before the send.
+	 */
+	public POSPaymentProcessResponse sendCardPayment(@NonNull final POSPayment posPayment, @NonNull final POSOrder posOrder)
 	{
 		posPayment.getPaymentMethod().assertCard();
 
 		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId());
 		final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminal.getPaymentProcessorConfigNotNull();
+		final POSOrderAndPaymentId posOrderAndPaymentId = POSOrderAndPaymentId.of(posOrder.getLocalIdNotNull(), posPayment.getLocalIdNotNull());
 
-		final POSPaymentProcessResponse processResponse = posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
+		// before the call: nothing sent yet, so a failure is definite
+		try
+		{
+			posPaymentProcessorService.assertProcessorRegistered(paymentProcessorConfig.getType());
+		}
+		catch (final Exception ex)
+		{
+			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex)
+					.setRecord(TableRecordReference.of(I_C_POS_Payment.Table_Name, posOrderAndPaymentId.getPaymentId()));
+			return POSPaymentProcessResponse.error(
+					paymentProcessorConfig,
+					AdempiereException.extractMessage(metasfreshException),
+					errorManager.createIssue(metasfreshException));
+		}
+
+		// the call: whatever escapes it may have happened after the card reader got the charge
+		return posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
 				.paymentProcessorConfig(paymentProcessorConfig)
 				.clientAndOrgId(posOrder.getClientAndOrgId())
-				.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrder.getLocalIdNotNull(), posPayment.getLocalIdNotNull()))
+				.posOrderAndPaymentId(posOrderAndPaymentId)
 				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.build());
-
-		return posPayment.changingStatusFromRemote(processResponse);
 	}
 
 	public POSPayment refundPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrderId posOrderId, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
@@ -152,9 +172,10 @@ public class POSOrderProcessingServices
 				POSRefundRequest.builder()
 						.paymentProcessorConfig(paymentProcessorConfig)
 						.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull()))
+						.sumUpClientTransactionId(posPayment.getSumUpClientTransactionId())
 						.build()
 		);
-		posPayment = posPayment.changingStatusFromRemote(refundResponse);
+		posPayment = posPayment.changingStatusFromRemote(refundResponse).getPayment();
 
 		return posPayment;
 	}

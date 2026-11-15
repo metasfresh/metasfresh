@@ -57,7 +57,7 @@ public class AppTestingRestController
 
 	/* when adding additional parameters, please also update https://github.com/metasfresh/metasfresh/issues/1577#issue-229774302 */
 	@GetMapping("/ping/notifications")
-	public String pingNotifications(@RequestParam(value = "noEmail", defaultValue = "false") final String noEmail)
+	public ResponseEntity<String> pingNotifications(@RequestParam(value = "noEmail", defaultValue = "false") final String noEmail)
 	{
 		final long id = nextNotificationId.getAndIncrement();
 
@@ -71,7 +71,9 @@ public class AppTestingRestController
 
 		final String message = "sent: " + request;
 		logger.info("pingNotifications: {}", message);
-		return message;
+		return ResponseEntity.ok()
+				.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
+				.body(message);
 	}
 
 	@PutMapping(produces = "application/json")

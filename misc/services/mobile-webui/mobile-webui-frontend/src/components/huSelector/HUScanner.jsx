@@ -3,10 +3,10 @@ import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { trl } from '../../utils/translations';
 import SelectHUIntermediateList from '../../apps/huManager/containers/SelectHUIntermediateList';
 import React, { useState } from 'react';
-import { extractErrorResponseFromAxiosError, toastError } from '../../utils/toast';
+import { extractErrorResponseFromAxiosError, is404, toastError } from '../../utils/toast';
 import * as api from '../../apps/huManager/api';
 
-const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
+const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode, onHUNotFound }) => {
   const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
   const [locatingQrCodeScannerInfo, setLocatingQrCodeScannerInfo] = useState(undefined);
 
@@ -29,6 +29,10 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
       const errorResponse = extractErrorResponseFromAxiosError(axiosError);
       if (errorResponse && errorResponse.multipleHUsFound) {
         return { targetQrCode: scannedBarcode };
+      } else if (onHUNotFound && is404(axiosError)) {
+        // the callback handles a code that is no HU itself, or throws to show an error; without a callback the not-found error is kept
+        await onHUNotFound({ scannedBarcode });
+        return { isNotFoundHandled: true };
       } else {
         throw axiosError;
       }
@@ -58,6 +62,10 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
 
   const onResolvedHUScannedResult = (result) => {
     console.log('onResolvedResult', { result });
+
+    if (result.isNotFoundHandled) {
+      return;
+    }
 
     if (result.huListByQRCode) {
       setLocatingQrCodeScannerInfo(undefined);
@@ -115,6 +123,8 @@ HUScanner.propTypes = {
   onResolvedBarcode: PropTypes.func.isRequired,
   locatorQrCode: PropTypes.string,
   eligibleBarcode: PropTypes.string,
+  /** optional async callback for a scanned code that is no HU (not found): handle it, or throw to show an error. Without it, not-found is an error. */
+  onHUNotFound: PropTypes.func,
 };
 
 export default HUScanner;

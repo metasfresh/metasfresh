@@ -510,19 +510,26 @@ public class ExternalSystem_Config_StepDef
 			return;
 		}
 
-		createdTriggerOnCompleteConfigIds.forEach(configId -> setScriptedExportConversionConfigActive(configId, false));
-		takenOverTriggerOnCompleteConfigIds.forEach(configId -> setScriptedExportConversionConfigActive(configId, true));
-
-		createdTriggerOnCompleteConfigIds.clear();
-		takenOverTriggerOnCompleteConfigIds.clear();
+		try
+		{
+			createdTriggerOnCompleteConfigIds.forEach(configId -> setScriptedExportConversionConfigActive(configId, false));
+			takenOverTriggerOnCompleteConfigIds.stream()
+					.filter(configId -> !createdTriggerOnCompleteConfigIds.contains(configId))
+					.forEach(configId -> setScriptedExportConversionConfigActive(configId, true));
+		}
+		finally
+		{
+			createdTriggerOnCompleteConfigIds.clear();
+			takenOverTriggerOnCompleteConfigIds.clear();
+		}
 	}
 
 	private static void setScriptedExportConversionConfigActive(@NonNull final ExternalSystemScriptedExportConversionConfigId configId, final boolean active)
 	{
 		final I_ExternalSystem_Config_ScriptedExportConversion record = InterfaceWrapperHelper.load(configId, I_ExternalSystem_Config_ScriptedExportConversion.class);
-		if (record.isActive() == active)
+		if (record == null || record.isActive() == active)
 		{
-			return;
+			return; // deleted during the scenario, or nothing to change
 		}
 		record.setIsActive(active);
 		InterfaceWrapperHelper.save(record);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import * as api from '../api';
-import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
+import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded, newHUPreviewLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
   huManagerBulkActionsLocation,
@@ -10,6 +10,7 @@ import {
   huManagerGraiLocation,
   huManagerHuLabelsLocation,
   huManagerMoveLocation,
+  huManagerNewHUPreviewLocation,
 } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
@@ -43,6 +44,16 @@ const HUManagerScreen = () => {
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
+
+  // A scanned code that is no HU: show what a label would create, or its rejection as the one error message.
+  const proposeNewHU = async ({ scannedBarcode }) => {
+    const proposal = await api.proposeHUFromScannedCode({ scannedCode: scannedBarcode });
+    if (proposal.rejection) {
+      throw proposal.rejection.message;
+    }
+    dispatch(newHUPreviewLoaded({ scannedCode: scannedBarcode, proposal }));
+    history.push(huManagerNewHUPreviewLocation());
+  };
 
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
@@ -206,7 +217,12 @@ const HUManagerScreen = () => {
       </>
     );
   } else {
-    return <HUScanner onResolvedBarcode={(handlingUnitInfo) => setHandlingUnitInfo(handlingUnitInfo)} />;
+    return (
+      <HUScanner
+        onResolvedBarcode={(handlingUnitInfo) => setHandlingUnitInfo(handlingUnitInfo)}
+        onHUNotFound={actions.includes('createHU') ? proposeNewHU : undefined}
+      />
+    );
   }
 };
 

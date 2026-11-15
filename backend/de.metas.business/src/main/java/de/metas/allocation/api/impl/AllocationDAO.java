@@ -426,6 +426,21 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public boolean hasActiveAllocationBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId paymentId)
 	{
+		return queryActiveAllocationLinesBetween(invoiceId, paymentId)
+				.anyMatch();
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal retrieveAllocatedAmtBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId paymentId)
+	{
+		final BigDecimal allocatedAmt = queryActiveAllocationLinesBetween(invoiceId, paymentId)
+				.aggregate(I_C_AllocationLine.COLUMNNAME_Amount, IQuery.Aggregate.SUM, BigDecimal.class);
+		return allocatedAmt != null ? allocatedAmt : BigDecimal.ZERO;
+	}
+
+	private IQuery<I_C_AllocationLine> queryActiveAllocationLinesBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId paymentId)
+	{
 		final IQuery<I_C_AllocationHdr> activeHdrs = queryBL.createQueryBuilder(I_C_AllocationHdr.class)
 				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.addOnlyActiveRecordsFilter()
@@ -436,8 +451,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID, I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, activeHdrs)
-				.create()
-				.anyMatch();
+				.create();
 	}
 
 }

@@ -65,7 +65,7 @@ let sysconfigsToRestore = [];
 
 const isSameRow = (a, b) => a.name === b.name && a.clientId === b.clientId && a.orgId === b.orgId;
 
-/** @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number}>}} response as returned by the backend */
+/** @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number, active: boolean}>}} response as returned by the backend */
 export const rememberSysconfigsToRestore = ({ previousSysconfigs }) => {
     (previousSysconfigs ?? [])
         .filter((previous) => !sysconfigsToRestore.some((remembered) => isSameRow(remembered, previous)))

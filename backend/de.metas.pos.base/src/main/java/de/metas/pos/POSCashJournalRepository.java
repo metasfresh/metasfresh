@@ -1,8 +1,10 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.repository.model.I_C_POS_Journal;
 import de.metas.pos.repository.model.I_C_POS_JournalLine;
 import de.metas.user.UserId;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Repository
@@ -70,6 +73,25 @@ public class POSCashJournalRepository
 				.list();
 	}
 
+	/**
+	 * @return those of the given payments that have an (active) line on any journal
+	 */
+	public ImmutableSet<POSPaymentId> retrieveJournaledPaymentIds(@NonNull final Set<POSPaymentId> paymentIds)
+	{
+		if (paymentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_POS_JournalLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_POS_JournalLine.COLUMNNAME_C_POS_Payment_ID, paymentIds)
+				.create()
+				.stream()
+				.map(lineRecord -> POSPaymentId.ofRepoId(lineRecord.getC_POS_Payment_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public POSCashJournal newJournal(final POSCashJournalCreateRequest request)
 	{
 		final I_C_POS_Journal record = InterfaceWrapperHelper.newInstance(I_C_POS_Journal.class);
@@ -113,6 +135,7 @@ public class POSCashJournalRepository
 				.cashierId(UserId.ofRepoId(record.getCashier_ID()))
 				.description(record.getDescription())
 				.posOrderAndPaymentId(POSOrderAndPaymentId.ofRepoIdsOrNull(record.getC_POS_Order_ID(), record.getC_POS_Payment_ID()))
+				.posInvoiceCardSettlementId(POSInvoiceCardSettlementId.ofRepoIdOrNull(record.getC_POS_InvoiceCardSettlement_ID()))
 				.build();
 	}
 
@@ -136,6 +159,7 @@ public class POSCashJournalRepository
 		record.setDescription(from.getDescription());
 		record.setC_POS_Order_ID(from.getPosOrderAndPaymentId() != null ? from.getPosOrderAndPaymentId().getOrderId().getRepoId() : -1);
 		record.setC_POS_Payment_ID(from.getPosOrderAndPaymentId() != null ? from.getPosOrderAndPaymentId().getPaymentId().getRepoId() : -1);
+		record.setC_POS_InvoiceCardSettlement_ID(from.getPosInvoiceCardSettlementId() != null ? from.getPosInvoiceCardSettlementId().getRepoId() : -1);
 	}
 
 	public POSCashJournal changeJournalById(@NonNull final POSCashJournalId cashJournalId, @NonNull final Consumer<POSCashJournal> updater)

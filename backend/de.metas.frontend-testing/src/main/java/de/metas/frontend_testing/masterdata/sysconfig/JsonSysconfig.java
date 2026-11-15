@@ -30,11 +30,23 @@ public class JsonSysconfig
 	int clientId;
 	int orgId;
 
+	/**
+	 * The row's {@code IsActive}; an inactive row is ignored by reads like a missing one, but restoring keeps it (inactive) instead of deleting it.
+	 * Missing in the JSON = active.
+	 */
+	@Builder.Default boolean active = true;
+
 	public static JsonSysconfig of(@NonNull final String name, @Nullable final String value, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return ofRow(name, value, true, clientAndOrgId);
+	}
+
+	public static JsonSysconfig ofRow(@NonNull final String name, @Nullable final String value, final boolean active, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return builder()
 				.name(name)
 				.value(value)
+				.active(active)
 				.clientId(clientAndOrgId.getClientId().getRepoId())
 				.orgId(clientAndOrgId.getOrgId().getRepoId())
 				.build();

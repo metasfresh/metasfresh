@@ -4,9 +4,8 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { SALES_ORDER_WINDOW_ID, PURCHASE_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { FRONTEND_BASE_URL, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
  * List View Actions E2E test suite.
@@ -132,14 +131,8 @@ Tests the Sales Order list view:
         return;
       }
 
-      // Click first row to select
       const firstRow = gridRows.first();
-      await firstRow.click();
-      await page.waitForTimeout(300);
-
-      // Check if row is highlighted/selected
-      const firstRowClasses = await firstRow.getAttribute('class').catch(() => '');
-      console.log(`First row classes after click: ${firstRowClasses}`);
+      await selectRows([firstRow]);
 
       // Check if selection count indicator appears
       const selectionIndicator = page.locator(
@@ -149,13 +142,8 @@ Tests the Sales Order list view:
       console.log(`Selection indicator: ${hasSelectionIndicator}`);
 
       if (rowCount > 1) {
-        // Ctrl+click second row for multi-select
-        const secondRow = gridRows.nth(1);
-        await secondRow.click({ modifiers: ['Control'] });
-        await page.waitForTimeout(300);
-
-        const secondRowClasses = await secondRow.getAttribute('class').catch(() => '');
-        console.log(`Second row classes after Ctrl+click: ${secondRowClasses}`);
+        // multi-select: the second row is ctrl-clicked onto the first; selectRows asserts both are selected
+        await selectRows([firstRow, gridRows.nth(1)]);
       }
 
       // Click elsewhere to deselect
@@ -177,8 +165,7 @@ Tests the Sales Order list view:
 
       // Select first row
       const firstRow = gridRows.first();
-      await firstRow.click();
-      await page.waitForTimeout(300);
+      await selectRows([firstRow]);
 
       // Set up new tab listener
       const popupPromise = page.context().waitForEvent('page', { timeout: 10000 });

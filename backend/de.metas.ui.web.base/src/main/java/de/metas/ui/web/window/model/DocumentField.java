@@ -8,6 +8,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -211,6 +212,13 @@ class DocumentField implements IDocumentField
 	{
 		final Object valueNew = convertToValueClassAndCorrect(value);
 		final Object valueOld = _value;
+
+		// The frontend shows a stored password as ******** ; getting it back unchanged means "keep the stored password"
+		if (valueNew instanceof Password && valueOld != null && Password.OBFUSCATE_STRING.equals(((Password)valueNew).getAsString()))
+		{
+			return;
+		}
+
 		_value = valueNew;
 
 		if (logger.isTraceEnabled() && !DataTypes.equals(valueNew, valueOld))

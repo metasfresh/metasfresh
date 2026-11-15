@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -43,6 +44,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -125,4 +127,10 @@ public interface IPaymentDAO extends ISingletonService
 
 	@NonNull
 	Optional<PaymentId> findCompletedOrClosedPaymentIdByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
+
+	@NonNull
+	ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull Collection<OrderId> orderIds);
+
+	@NonNull
+	Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull OrderId orderId);
 }

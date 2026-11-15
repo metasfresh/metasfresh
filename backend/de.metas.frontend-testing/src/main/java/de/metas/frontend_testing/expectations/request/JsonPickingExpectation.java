@@ -12,5 +12,8 @@ import java.util.Map;
 @Jacksonized
 public class JsonPickingExpectation
 {
+	/** Expected {@code PickingJobDocStatus} constant name (e.g. {@code Drafted}), matched case-insensitively. */
+	@Nullable String docStatus;
+
 	@Nullable Map<String, JsonShipmentScheduleExpectation> shipmentSchedules;
 }

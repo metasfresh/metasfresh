@@ -24,6 +24,7 @@ package org.adempiere.service;
 
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
+import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -59,6 +60,21 @@ public interface ISysConfigDAO extends ISingletonService
 
 	/** Deletes exactly the given row, if it exists; reads then fall back to the next less specific row. */
 	void deleteExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
+
+	/**
+	 * Intended for test tooling that restores exactly the row it changed (value and {@code IsActive}).
+	 *
+	 * @return {@code IsActive} of exactly the given row; {@link OptionalBoolean#UNKNOWN} if there is no such row. Reads ignore an inactive
+	 * row, so a value written to it with {@link #setValue(String, String, ClientAndOrgId)} does not take effect until the row is activated.
+	 */
+	OptionalBoolean isActiveExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
+
+	/**
+	 * Sets {@code IsActive} of exactly the given row, if it exists.
+	 * <p>
+	 * Intended for test tooling that restores exactly the row it changed (value and {@code IsActive}).
+	 */
+	void setActiveExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId, boolean active);
 
 	/** @return the ConfigurationLevel ('S'/'C'/'O') declared on the System-level (client=0,org=0) record, or empty if none. */
 	Optional<String> getConfigurationLevel(@NonNull String name);

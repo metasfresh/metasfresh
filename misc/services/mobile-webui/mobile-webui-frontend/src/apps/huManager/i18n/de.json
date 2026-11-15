@@ -68,5 +68,16 @@
         "buttonCaption": "Rückgängig"
       }
     }
+  },
+  "newHU": {
+    "title": "Neue HU",
+    "product": "Produkt",
+    "qty": "Menge",
+    "locator": "Lagerplatz",
+    "noLocator": "Kein Lagerplatz - bitte \"Lagerplatz ändern\" tippen",
+    "changeLocator": "Lagerplatz ändern",
+    "weight": "Gewicht",
+    "ok": "OK",
+    "created": "HU %(huValue)s erstellt: %(qty)s"
   }
 }

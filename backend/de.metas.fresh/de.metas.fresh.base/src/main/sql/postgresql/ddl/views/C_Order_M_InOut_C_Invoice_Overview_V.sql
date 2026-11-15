@@ -27,6 +27,7 @@ DROP VIEW IF EXISTS C_Order_M_InOut_C_Invoice_Overview_V
 -- 1. UNION ALL instead of UNION (branches are disjoint by ad_table_id, no duplicates possible)
 -- 2. Deterministic arithmetic IDs instead of ROW_NUMBER() (avoids window function sort)
 -- 3. LEFT JOIN m_product (enables PostgreSQL join removal for queries not referencing m_product)
+-- gh#33319: added m_product_category_id (from the already joined m_product)
 -- ID ceiling: c_invoiceline_id must be <= 147,483,647 to avoid Java int overflow
 CREATE OR REPLACE VIEW C_Order_M_InOut_C_Invoice_Overview_V AS
 SELECT doc.line_id                                                AS C_Order_M_InOut_C_Invoice_Overview_V_ID,
@@ -42,6 +43,7 @@ SELECT doc.line_id                                                AS C_Order_M_I
        doc.c_bpartner_id,
        doc.c_bpartner_location_id,
        doc.m_product_id,
+       p.m_product_category_id,
        p.c_uom_id,
        doc.qty,
        doc.linenetamt,

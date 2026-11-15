@@ -42,6 +42,7 @@ public class SumUpLogRepository
 
 			record.setC_POS_Order_ID(request.getPosRef() != null ? request.getPosRef().getPosOrderId() : -1);
 			record.setC_POS_Payment_ID(request.getPosRef() != null ? request.getPosRef().getPosPaymentId() : -1);
+			record.setC_POS_InvoiceCardSettlement_ID(request.getPosRef() != null ? request.getPosRef().getPosInvoiceCardSettlementId() : -1);
 
 			InterfaceWrapperHelper.save(record);
 		}

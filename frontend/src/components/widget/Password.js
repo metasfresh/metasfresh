@@ -3,6 +3,19 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 export default class Password extends PureComponent {
+  /**
+   * @method handleFocus
+   * @summary Runs the widget's own focus handler first (it marks the widget focused, so the
+   * first keystroke is not lost), then selects the content: typing then replaces the shown
+   * mask `********` instead of appending to it.
+   */
+  handleFocus = (e) => {
+    const { widgetProperties } = this.props;
+
+    widgetProperties.onFocus && widgetProperties.onFocus(e);
+    e.target.select();
+  };
+
   render() {
     const {
       getClassNames,
@@ -21,7 +34,11 @@ export default class Password extends PureComponent {
             })
           )}
         >
-          <input {...widgetProperties} type="password" />
+          <input
+            {...widgetProperties}
+            type="password"
+            onFocus={this.handleFocus}
+          />
           {icon && <i className="meta-icon-edit input-icon-right" />}
         </div>
         {allowShowPassword && (

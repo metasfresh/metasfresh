@@ -346,6 +346,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		sql += buildSelectSQL_InvoiceMatchRequirement();
+
+		// a fixed order, so that the pay selection lines (and everything exported from them) are in invoice order
+		sql += " ORDER BY i.C_Invoice_ID";
 		return sql;
 	}
 

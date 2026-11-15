@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.pos.repository.model.X_C_POS_Payment;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -19,7 +20,11 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 	PENDING(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_PENDING),
 	NEW(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_NEW),
 	DELETED(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_DELETED),
+	/** Card payment whose result is not known: the cashier started it, but neither a result nor a failure reached the till. */
+	UNKNOWN(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_UNKNOWN),
 	;
+
+	public static final AdMessageKey MSG_CardPaymentResultUnknown = AdMessageKey.of("de.metas.pos.POSPayment.CardPaymentResultUnknown");
 
 	@NonNull private final String code;
 
@@ -41,6 +46,8 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 
 	public boolean isDeleted() {return this == POSPaymentProcessingStatus.DELETED;}
 
+	public boolean isUnknown() {return this == POSPaymentProcessingStatus.UNKNOWN;}
+
 	public boolean isAllowCheckout()
 	{
 		return isNew() || isCanceled() || isFailed();
@@ -48,6 +55,10 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 
 	public void assertAllowCheckout()
 	{
+		if (isUnknown())
+		{
+			throw new AdempiereException(MSG_CardPaymentResultUnknown);
+		}
 		if (!isAllowCheckout())
 		{
 			throw new AdempiereException("Payments with status " + this + " cannot be checked out");
@@ -61,7 +72,11 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 
 	public BooleanWithReason checkAllowDelete(final POSPaymentMethod paymentMethod)
 	{
-		if (checkAllowDeleteFromDB().isTrue())
+		if (isUnknown())
+		{
+			return BooleanWithReason.falseBecause(MSG_CardPaymentResultUnknown);
+		}
+		else if (checkAllowDeleteFromDB().isTrue())
 		{
 			return BooleanWithReason.TRUE;
 		}

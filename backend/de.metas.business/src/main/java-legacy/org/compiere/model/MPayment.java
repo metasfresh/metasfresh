@@ -248,6 +248,21 @@ public final class MPayment extends X_C_Payment
 		return paymentBL.isCashTrx(this);
 	}    // isCashTrx
 
+	/**
+	 * The tender type follows the org bank account (cash bank → Cash, otherwise DirectDeposit), except that an
+	 * explicitly set credit-card tender type is kept: a card payment stays a card payment, also when it is booked on a
+	 * cash bank (e.g. a POS till's cashbook).
+	 */
+	@VisibleForTesting
+	static String computeTenderTypeForOrgBankAccount(@Nullable final String currentTenderType, final boolean isCashBank)
+	{
+		if (TenderType.CreditCard.getCode().equals(currentTenderType))
+		{
+			return currentTenderType;
+		}
+		return isCashBank ? TenderType.Cash.getCode() : TenderType.DirectDeposit.getCode();
+	}
+
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
@@ -256,14 +271,7 @@ public final class MPayment extends X_C_Payment
 		if (orgBankAccountId != null)
 		{
 			final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
-			if (bankAccountService.isCashBank(orgBankAccountId))
-			{
-				setTenderType(TenderType.Cash.getCode());
-			}
-			else
-			{
-				setTenderType(TenderType.DirectDeposit.getCode());
-			}
+			setTenderType(computeTenderTypeForOrgBankAccount(getTenderType(), bankAccountService.isCashBank(orgBankAccountId)));
 		}
 
 		// We have a charge

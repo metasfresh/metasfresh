@@ -25,6 +25,7 @@ MODULES=(
     "backend/de.metas.payment.esr"
     "backend/de.metas.payment.sepa/schema-pain_001_01_03_ch_02"
     "backend/de.metas.payment.sepa/schema-pain_001_001_09_ch_03"
+    "backend/de.metas.payment.sepa/schema-pain_008_001_08"
     "backend/de.metas.payment.sepa/schema-pain_008_003_02"
     "backend/de.metas.printing.common/de.metas.printing.esb.base"
     "backend/de.metas.shipper.gateway.dpd"

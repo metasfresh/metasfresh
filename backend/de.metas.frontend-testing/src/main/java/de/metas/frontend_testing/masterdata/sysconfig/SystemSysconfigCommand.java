@@ -1,10 +1,8 @@
 package de.metas.frontend_testing.masterdata.sysconfig;
 
 import de.metas.organization.ClientAndOrgId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.service.ISysConfigDAO;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -20,7 +18,7 @@ import java.util.Map;
 @Builder
 public class SystemSysconfigCommand
 {
-	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
+	@NonNull private final SysconfigRows sysconfigRows = new SysconfigRows();
 
 	@Nullable private final Map<String, String> systemSysconfigs;
 	/** Receives the previous SYSTEM row of each sysconfig, all before the first write, so that the caller can restore them even if a write fails. */
@@ -33,9 +31,8 @@ public class SystemSysconfigCommand
 			return;
 		}
 
-		systemSysconfigs.keySet().forEach(name -> previousSysconfigsCollector.add(
-				JsonSysconfig.of(name, sysConfigDAO.getValueOfExactRow(name, ClientAndOrgId.SYSTEM).orElse(null), ClientAndOrgId.SYSTEM)));
+		systemSysconfigs.keySet().forEach(name -> previousSysconfigsCollector.add(sysconfigRows.getState(name, ClientAndOrgId.SYSTEM)));
 
-		systemSysconfigs.forEach((name, value) -> sysConfigDAO.setValue(name, value, ClientAndOrgId.SYSTEM));
+		systemSysconfigs.forEach((name, value) -> sysconfigRows.setActiveValue(name, value, ClientAndOrgId.SYSTEM));
 	}
 }

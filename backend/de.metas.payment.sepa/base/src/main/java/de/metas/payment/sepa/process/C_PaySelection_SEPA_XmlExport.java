@@ -4,15 +4,17 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.payment.sepa.api.CreatedSEPAExports;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
-import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.api.SepaUtils;
-import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -22,11 +24,11 @@ import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +41,7 @@ import java.util.Optional;
  */
 public class C_PaySelection_SEPA_XmlExport
 		extends JavaProcess
-		implements IProcessPrecondition
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private static final AdMessageKey MSG_NO_SELECTION = AdMessageKey.of("de.metas.payment.sepa.noPaySelection");
 
@@ -87,6 +89,38 @@ public class C_PaySelection_SEPA_XmlExport
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	/**
+	 * The protocol's default depends on the pay selection's transaction type, so it is provided here and not by the parameter's DefaultValue.
+	 */
+	@Override
+	@Nullable
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		if (!PARAM_SEPA_PROTOCOL.equals(parameter.getColumnName()))
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+
+		final PaySelectionId paySelectionId = PaySelectionId.ofRepoIdOrNull(getRecord_ID());
+		final PaySelectionTrxType paySelectionTrxType = paySelectionId != null
+				? paySelectionDAO.getById(paySelectionId).map(paySelection -> PaySelectionTrxType.ofNullableCode(paySelection.getPaySelectionTrxType())).orElse(null)
+				: null;
+		final String defaultSepaProtocolCode = getDefaultSepaProtocolCode(paySelectionTrxType);
+		return defaultSepaProtocolCode != null ? defaultSepaProtocolCode : DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
+	/**
+	 * @return the code of {@link SEPAProtocol#getDefault} for the given type; {@code null} if the transaction type is not set
+	 */
+	@VisibleForTesting
+	@Nullable
+	static String getDefaultSepaProtocolCode(@Nullable final PaySelectionTrxType paySelectionTrxType)
+	{
+		return paySelectionTrxType != null
+				? SEPAProtocol.getDefault(paySelectionTrxType).getCode()
+				: null;
+	}
+
 	@Override
 	protected String doIt()
 	{
@@ -100,19 +134,16 @@ public class C_PaySelection_SEPA_XmlExport
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_PaySelection_ID@ (ID=" + recordId + ")"));
 
 		//
-		// First, generate the SEPA export as an intermediary step, to use the old framework.
-		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, isGroupTransactions, SEPAProtocol.ofNullableCode(sepaProtocolCode));
+		// First, generate the SEPA exports as an intermediary step, to use the old framework.
+		final CreatedSEPAExports createdExports = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, isGroupTransactions, SEPAProtocol.ofNullableCode(sepaProtocolCode));
 
-		final SEPAExportContext exportContext = SEPAExportContext.builder()
-				.referenceAsEndToEndId(referenceAsEndToEndId)
-				.build();
 		//
-		// After the export header and lines have been created, marshal the document.
-		final SEPACreditTransferXML xml = sepaDocumentBL.exportCreditTransferXML(sepaExport, exportContext);
+		// After the export headers and lines have been created, marshal each export into its own file.
+		final SEPACreditTransferXML xml = sepaDocumentBL.exportXML(createdExports, referenceAsEndToEndId, paySelection.getName());
 
 		paySelection.setLastSepaExport(SystemTime.asTimestamp());
 		paySelection.setLastSepaExportBy_ID(getAD_User_ID());
-		InterfaceWrapperHelper.saveRecord(paySelection);
+		paySelectionDAO.save(paySelection);
 
 		getResult().setReportData(ReportResultData.builder()
 				.reportFilename(xml.getFilename())

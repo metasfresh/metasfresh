@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.pair.IPair;
@@ -35,6 +36,7 @@ import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -117,7 +119,8 @@ public final class DeliveryOrderUtil
 	@NonNull
 	public ContactPerson getContactPerson(@NonNull final I_C_BPartner bPartner,
 										  @NonNull final I_C_BPartner_Location bPLocation,
-										  @Nullable final User contact)
+										  @Nullable final User contact,
+										  @NonNull final UserRepository userRepository)
 	{
 		final String contactPersonName = contact != null ? contact.getName() : null;
 		final String name = CoalesceUtil.firstNotEmptyTrimmedNotNull(contactPersonName, bPartner.getName());
@@ -126,8 +129,7 @@ public final class DeliveryOrderUtil
 		final String rawPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
 		final String phoneNumber = rawPhoneNumber != null ? PhoneNumber.normalize(rawPhoneNumber) : null;
 
-		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
-		final String emailAddress = CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail(), bPartner.getEMail());
+		final String emailAddress = getEmailAddress(contact, bPLocation, userRepository);
 
 		final Language bpLanguage = Language.asLanguage(bPartner.getAD_Language());
 		return ContactPerson.builder()
@@ -137,6 +139,29 @@ public final class DeliveryOrderUtil
 				.simplePhoneNumber(phoneNumber)
 				.languageCode(bpLanguage != null ? bpLanguage.getLanguageCode() : null)
 				.build();
+	}
+
+	/**
+	 * @return the first non-empty e-mail of: the given contact, the given partner location, the partner's default contact; {@code null} if all are empty
+	 */
+	@Nullable
+	public String getEmailAddress(
+			@Nullable final User contact,
+			@NonNull final I_C_BPartner_Location bPLocation,
+			@NonNull final UserRepository userRepository)
+	{
+		return CoalesceUtil.firstNotBlank(
+				() -> contact != null ? contact.getEmailAddress() : null,
+				bPLocation::getEMail,
+				() -> getDefaultContactEmailOrNull(BPartnerId.ofRepoId(bPLocation.getC_BPartner_ID()), userRepository));
+	}
+
+	@Nullable
+	private String getDefaultContactEmailOrNull(@NonNull final BPartnerId bpartnerId, @NonNull final UserRepository userRepository)
+	{
+		return userRepository.getDefaultContact(bpartnerId)
+				.map(User::getEmailAddress)
+				.orElse(null);
 	}
 
 }

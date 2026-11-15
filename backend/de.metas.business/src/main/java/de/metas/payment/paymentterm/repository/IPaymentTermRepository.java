@@ -22,6 +22,7 @@
 
 package de.metas.payment.paymentterm.repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -64,6 +65,16 @@ public interface IPaymentTermRepository extends ISingletonService
 	 */
 	@NonNull
 	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
+
+	/**
+	 * Creates an active, plain (non-installment, no discount) payment term with the given value and name.
+	 * <p>
+	 * Only for test masterdata: its sole caller is the E2E masterdata API ({@code PaymentTermGetOrCreateCommand} in
+	 * {@code de.metas.frontend-testing}); business code never creates payment terms this way.
+	 */
+	@VisibleForTesting
+	@NonNull
+	PaymentTermId createPaymentTerm(@NonNull OrgId orgId, @NonNull String value, @NonNull String name);
 
 	PaymentTermLoaderAndSaver newLoaderAndSaver();
 

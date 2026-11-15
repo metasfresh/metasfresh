@@ -1,12 +1,17 @@
 package de.metas.pos.rest_api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.pos.POSCardPaymentCheckResult;
+import de.metas.pos.POSCardPaymentReleaseRequest;
+import de.metas.pos.POSCardPaymentReleaseResult;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
@@ -22,24 +27,40 @@ import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
 import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
 import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementCheckResult;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementReleaseRequest;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementReleaseResult;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementService;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementStartRequest;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalCategory;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
 import de.metas.pos.rest_api.json.JsonContext;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentCheckResponse;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSCardPaymentReleaseResponse;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlement;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementReleaseResponse;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceCardSettlementStartRequest;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
 import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
 import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
+import de.metas.pos.rest_api.json.JsonPOSOrderMapper;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSPaymentCheckoutRequest;
 import de.metas.pos.rest_api.json.JsonPOSPaymentRefundRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
-import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
-import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
 import de.metas.pos.returns.POSReturnRequestedLine;
@@ -84,6 +105,8 @@ public class POSRestController
 	@NonNull private final POSCashWithdrawalService posCashWithdrawalService;
 	@NonNull private final POSReturnService posReturnService;
 	@NonNull private final POSInvoiceSettlementService posInvoiceSettlementService;
+	@NonNull private final POSInvoiceCardSettlementService posInvoiceCardSettlementService;
+	@NonNull private final JsonPOSOrderMapper jsonPOSOrderMapper;
 
 	private String getADLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
@@ -113,7 +136,7 @@ public class POSRestController
 
 		return JsonPOSTerminal.builderFrom(posTerminal, adLanguage)
 				.products(JsonProduct.fromList(products.toList(), adLanguage))
-				.openOrders(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol))
+				.openOrders(jsonPOSOrderMapper.toJsonList(orders, jsonContext::getCurrencySymbol))
 				.build();
 	}
 
@@ -251,7 +274,8 @@ public class POSRestController
 			missingIds = ImmutableSet.of();
 		}
 
-		return JsonPOSOrdersList.from(orders, newJsonContext())
+		return JsonPOSOrdersList.builder()
+				.list(jsonPOSOrderMapper.toJsonList(orders, newJsonContext()::getCurrencySymbol))
 				.missingIds(missingIds)
 				.build();
 	}
@@ -292,14 +316,14 @@ public class POSRestController
 		final POSOrderExternalId externalId = request.getOrder_uuid();
 		final UserId loggedUserId = getLoggedUserId();
 		final POSOrder order = posService.changeStatusTo(posTerminalId, externalId, nextStatus, loggedUserId);
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
 	}
 
 	@PostMapping("/orders")
 	public JsonPOSOrder updateOrder(@RequestBody @NonNull final JsonPOSOrder remoteOrder)
 	{
 		final POSOrder order = posService.updateOrderFromRemote(remoteOrder.toRemotePOSOrder(), getLoggedUserId());
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
 	}
 
 	@PostMapping("/orders/checkoutPayment")
@@ -313,14 +337,62 @@ public class POSRestController
 				.cardPayAmount(request.getCardPayAmount())
 				.cashTenderedAmount(request.getCashTenderedAmount())
 				.build());
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
+	}
+
+	/**
+	 * Checks a card payment whose result is unknown against SumUp; any other payment is left as it is.
+	 * Failure to ask SumUp is not an error here: the till sees the order as it is, with {@code checkFailed} set.
+	 */
+	@PostMapping("/orders/checkPayment")
+	public JsonPOSCardPaymentCheckResponse checkPayment(@RequestBody final JsonPOSCardPaymentCheckRequest request)
+	{
+		final POSCardPaymentCheckResult result = posService.checkCardPayment(
+				request.getPosTerminalId(),
+				request.getOrder_uuid(),
+				request.getPayment_uuid(),
+				getLoggedUserId());
+		return JsonPOSCardPaymentCheckResponse.builder()
+				.order(toJson(result.getOrder(), newJsonContext()))
+				.checkFailed(result.isCheckFailed())
+				.build();
+	}
+
+	/**
+	 * Releases a card payment whose result is unknown, in two requests (see {@link JsonPOSCardPaymentReleaseRequest}).
+	 * A refusal is reported in {@code refusedMessage}, translated for the logged-in user.
+	 */
+	@PostMapping("/orders/releasePayment")
+	public JsonPOSCardPaymentReleaseResponse releasePayment(@RequestBody final JsonPOSCardPaymentReleaseRequest request)
+	{
+		final POSCardPaymentReleaseResult result = posService.releaseCardPayment(POSCardPaymentReleaseRequest.builder()
+				.posTerminalId(request.getPosTerminalId())
+				.posOrderExternalId(request.getOrder_uuid())
+				.posPaymentExternalId(request.getPayment_uuid())
+				.cashierId(getLoggedUserId())
+				.confirmNotCharged(request.isConfirmNotCharged())
+				.expectedStatus(request.getExpectedStatus() != null ? request.getExpectedStatus().toPOSPaymentProcessingStatus() : null)
+				.build());
+
+		final JsonContext jsonContext = newJsonContext();
+		return JsonPOSCardPaymentReleaseResponse.builder()
+				.order(toJson(result.getOrder(), jsonContext))
+				.confirmationRequired(result.isConfirmationRequired())
+				.checkFailed(result.isCheckFailed())
+				.refusedMessage(result.getRefusedMessage() != null ? result.getRefusedMessage().translate(jsonContext.getAdLanguage()) : null)
+				.build();
+	}
+
+	private JsonPOSOrder toJson(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
+	{
+		return jsonPOSOrderMapper.toJson(order, jsonContext::getCurrencySymbol);
 	}
 
 	@PostMapping("/orders/refundPayment")
 	public JsonPOSOrder refundPayment(@RequestBody JsonPOSPaymentRefundRequest request)
 	{
 		final POSOrder order = posService.refundPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
-		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+		return toJson(order, newJsonContext());
 	}
 
 	@GetMapping("/orders/receipt/{filename:.*}")
@@ -354,11 +426,22 @@ public class POSRestController
 
 		if (documentNo == null || documentNo.trim().isEmpty())
 		{
-			return JsonPOSOpenInvoicesList.of(ImmutableList.of());
+			return JsonPOSOpenInvoicesList.of(ImmutableList.of(), ImmutableMap.of());
 		}
 
 		final List<POSOpenInvoice> invoices = posInvoiceSettlementService.findOpenInvoices(posTerminalId, documentNo);
-		return JsonPOSOpenInvoicesList.of(invoices);
+		final JsonContext jsonContext = newJsonContext();
+
+		final ImmutableMap.Builder<InvoiceId, JsonPOSInvoiceCardSettlement> blockingCardSettlements = ImmutableMap.builder();
+		for (final POSOpenInvoice invoice : invoices)
+		{
+			if (invoice.getBlockingCardSettlement() != null)
+			{
+				blockingCardSettlements.put(invoice.getInvoiceId(), toJson(invoice.getBlockingCardSettlement(), invoice.getDocumentNo(), false, jsonContext));
+			}
+		}
+
+		return JsonPOSOpenInvoicesList.of(invoices, blockingCardSettlements.build());
 	}
 
 	/**
@@ -384,5 +467,83 @@ public class POSRestController
 
 		final JsonContext jsonContext = newJsonContext();
 		return JsonPOSInvoiceSettleResponse.of(result, request.getCashTenderedAmount(), jsonContext);
+	}
+
+	@PostMapping("/invoices/cardSettlements")
+	public JsonPOSInvoiceCardSettlement startInvoiceCardSettlement(@RequestBody final JsonPOSInvoiceCardSettlementStartRequest request)
+	{
+		final POSInvoiceCardSettlement settlement = posInvoiceCardSettlementService.start(POSInvoiceCardSettlementStartRequest.builder()
+				.posTerminalId(request.getPosTerminalId())
+				.cashierId(getLoggedUserId())
+				.invoiceId(request.getInvoiceId())
+				.build());
+
+		return toJson(settlement, false, newJsonContext());
+	}
+
+	/**
+	 * Settlements are addressed by id alone, deliberately not scoped to the terminal or cashier that started them:
+	 * invoices are cross-terminal, so a blocking settlement must be visible and releasable from any till, else a broken
+	 * till's settlement would block its invoice for good.
+	 * <p>
+	 * Local state only, no SumUp call.
+	 */
+	@GetMapping("/invoices/cardSettlements/{id}")
+	public JsonPOSInvoiceCardSettlement getInvoiceCardSettlement(@PathVariable("id") final String idStr)
+	{
+		final POSInvoiceCardSettlement settlement = posInvoiceCardSettlementService.getById(POSInvoiceCardSettlementId.ofString(idStr));
+		return toJson(settlement, false, newJsonContext());
+	}
+
+	/** Not scoped to a terminal or cashier, by design: see {@link #getInvoiceCardSettlement}. */
+	@PostMapping("/invoices/cardSettlements/{id}/check")
+	public JsonPOSInvoiceCardSettlement checkInvoiceCardSettlement(@PathVariable("id") final String idStr)
+	{
+		final POSInvoiceCardSettlementCheckResult result = posInvoiceCardSettlementService.check(POSInvoiceCardSettlementId.ofString(idStr));
+		return toJson(result.getSettlement(), result.isCheckFailed(), newJsonContext());
+	}
+
+	/** Not scoped to a terminal or cashier, by design: see {@link #getInvoiceCardSettlement}. */
+	@PostMapping("/invoices/cardSettlements/{id}/release")
+	public JsonPOSInvoiceCardSettlementReleaseResponse releaseInvoiceCardSettlement(
+			@PathVariable("id") final String idStr,
+			@RequestBody final JsonPOSInvoiceCardSettlementReleaseRequest request)
+	{
+		final POSInvoiceCardSettlementReleaseResult result = posInvoiceCardSettlementService.release(POSInvoiceCardSettlementReleaseRequest.builder()
+				.id(POSInvoiceCardSettlementId.ofString(idStr))
+				.cashierId(getLoggedUserId())
+				.confirmNotCharged(request.isConfirmNotCharged())
+				.expectedStatus(request.getExpectedStatus())
+				.build());
+
+		final JsonContext jsonContext = newJsonContext();
+		return JsonPOSInvoiceCardSettlementReleaseResponse.builder()
+				.settlement(toJson(result.getSettlement(), result.isCheckFailed(), jsonContext))
+				.confirmationRequired(result.isConfirmationRequired())
+				.refusedMessage(result.getRefusedMessage() != null ? result.getRefusedMessage().translate(jsonContext.getAdLanguage()) : null)
+				.build();
+	}
+
+	private JsonPOSInvoiceCardSettlement toJson(
+			@NonNull final POSInvoiceCardSettlement settlement,
+			final boolean checkFailed,
+			@NonNull final JsonContext jsonContext)
+	{
+		return toJson(settlement, posInvoiceCardSettlementService.getInvoiceDocumentNo(settlement), checkFailed, jsonContext);
+	}
+
+	private JsonPOSInvoiceCardSettlement toJson(
+			@NonNull final POSInvoiceCardSettlement settlement,
+			@NonNull final String documentNo,
+			final boolean checkFailed,
+			@NonNull final JsonContext jsonContext)
+	{
+		return JsonPOSInvoiceCardSettlement.of(
+				settlement,
+				documentNo,
+				posInvoiceCardSettlementService.getAllocatedAmount(settlement).toBigDecimal(),
+				jsonContext.getCurrencyCode(settlement.getAmount().getCurrencyId()),
+				posInvoiceCardSettlementService.getReleasableAt(settlement),
+				checkFailed);
 	}
 }

@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, getPage, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { getFieldData, getTabRows, getWindowLayout, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { openRelatedDocument } from '../utils/DocumentReferences';
@@ -777,7 +777,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: masterdata.products.DISCOUNT_A.productCode }) });
       const groupCell = discountRow.locator('[data-cy="cell-C_Order_CompensationGroup_ID"]');
       await groupCell.scrollIntoViewIfNeeded();
-      await groupCell.click();
+      await selectRows([discountRow]);
       await groupCell.click({ button: 'right' });
       const contextMenu = page.locator('.context-menu');
       await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });

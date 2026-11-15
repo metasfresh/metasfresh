@@ -1,10 +1,19 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, newUnique, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { assertRecordIsValid, getRecordData, getValidationStatus } from '../utils/WebAPIValidation';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
+import { loginWithMasterdataUser } from '../utils/LoginHelper';
+import { columnTextsByFieldName, exportRecordsToExcel, fetchViewGridFieldNames, readXlsx } from '../utils/ExcelParser';
+import {
+  commitWindowField,
+  expectStoredColumnValue,
+  openNewWindowDocument,
+  savedWindowRecordId,
+  typeIntoWindowField,
+} from '../utils/WindowFieldEntry';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -38,24 +47,6 @@ const OAUTH_V1 = 'OAuth';
 
 
 /**
- * The response to the PATCH the WebUI issues for `fieldName` on this window's document.
- *
- * The listener has to be armed BEFORE the action that commits the field, or a fast response is
- * missed and the wait runs into its timeout. The payload filter (`"path":"<ColumnName>"`) keeps it
- * from settling on a different field's PATCH, and skips the empty-payload PATCH .../NEW that only
- * creates the draft.
- */
-function endpointFieldPatch(page, fieldName) {
-  return page.waitForResponse(
-    (response) =>
-      response.request().method() === 'PATCH' &&
-      response.url().includes(`/rest/api/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) &&
-      (response.request().postData() || '').includes(`"path":"${fieldName}"`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-}
-
-/**
  * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return once the
  * server has answered it.
  *
@@ -73,29 +64,20 @@ function endpointFieldPatch(page, fieldName) {
  * back — is closed by clicking into each field before typing (see {@link fillFieldLocator}).
  */
 async function commitField(page, fieldName, commit) {
-  const patched = endpointFieldPatch(page, fieldName);
-  await commit();
-  const response = await patched;
-  expect(response.ok(), `the WebUI's PATCH of ${fieldName} was rejected: HTTP ${response.status()}`).toBe(true);
+  await commitWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, fieldName, commit);
 }
 
-/**
- * Open the window on a brand-new record and wait until its draft document exists.
- *
- * Opening `/NEW` makes the WebUI PATCH `.../NEW` with an empty payload; that response is what carries
- * the draft's id and its field data. Typing before it lands would patch a document the form does not
- * have yet.
- */
+/** Open the window on a brand-new record and wait until its draft document exists. */
 async function openNewEndpoint(page) {
-  const draftCreated = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'PATCH' &&
-      response.url().includes(`/rest/api/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-  await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-  await draftCreated;
-  await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await openNewWindowDocument(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID);
+}
+
+/** What the WebUI shows for a stored password instead of its value. */
+const MASKED_PASSWORD = '********';
+
+/** server-side stored-value expectation: the stored Password column holds the typed value (pass/fail only, the value is never read back). */
+async function expectStoredPassword(title, recordId, expectedValue) {
+  await expectStoredColumnValue(title, { tableName: 'ExternalSystem_Endpoint', recordId, columnName: 'Password', expectedValue });
 }
 
 /**
@@ -104,14 +86,7 @@ async function openNewEndpoint(page) {
  * WebAPI.
  */
 async function savedRecordId(page) {
-  await page.waitForURL(
-    (url) => {
-      const urlStr = url.toString();
-      return urlStr.includes(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) && !urlStr.includes('/NEW');
-    },
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-  return page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+  return savedWindowRecordId(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID);
 }
 
 /**
@@ -521,6 +496,8 @@ OAuthTokenUrl is accepted and the record persists).
     allure.epic('E0292: EDI');
     allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
     allure.tag('F00380');
+    allure.tag('F9111: Reference Type Password');
+    allure.tag('F9111');
     allure.story('AuthType OAuth display logic');
     allure.severity('critical');
 
@@ -567,7 +544,9 @@ a blank credential rather than failing.
     // A password typed into that field does reach the record — the field is editable, not just drawn.
     await fillPasswordField(page, 'oauth-secret');
     const withPassword = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), oauthV1RecordId);
-    expect(withPassword.fieldsByName.Password.value, 'the password an OAuth endpoint types must be stored').toBe('oauth-secret');
+    // The WebUI never shows a stored password: it shows ********. What was stored is checked server-side.
+    expect(withPassword.fieldsByName.Password.value, 'the WebUI must show a stored password as ********').toBe(MASKED_PASSWORD);
+    await expectStoredPassword('the password an OAuth endpoint types must be stored', oauthV1RecordId, 'oauth-secret');
   });
 
   test('TransportType=LOCAL_FILE reveals root location, polling interval and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
@@ -803,6 +782,8 @@ stale configuration on the record.
     allure.epic('E0292: EDI');
     allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
     allure.tag('F00380');
+    allure.tag('F9111: Reference Type Password');
+    allure.tag('F9111');
     allure.story('A field the new configuration still shows keeps its value');
     allure.severity('critical');
 
@@ -835,7 +816,9 @@ they cannot see is the only thing the clearing exists to prevent.
 
     const recordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the HTTP + Basic endpoint');
-    expect((await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId)).fieldsByName.Password.value).toBe('shared-secret');
+    // The WebUI shows ********; the stored value is checked server-side.
+    expect((await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId)).fieldsByName.Password.value).toBe(MASKED_PASSWORD);
+    await expectStoredPassword('the HTTP + Basic endpoint stores the typed password', recordId, 'shared-secret');
 
     await test.step('Switch the saved endpoint to SFTP with password authentication', async () => {
       await selectListValue(page, 'TransportType', 'SFTP');
@@ -852,7 +835,9 @@ they cannot see is the only thing the clearing exists to prevent.
     // ... so the value must still be there. Nobody re-typed it in this step.
     const sftpRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
     expect(sftpRecord.fieldsByName.TransportType.value.key).toBe('SFTP');
-    expect(sftpRecord.fieldsByName.Password.value, 'the password must survive a switch into a configuration that still shows it').toBe('shared-secret');
+    // The WebUI shows ********; the stored value must still be the typed one.
+    expect(sftpRecord.fieldsByName.Password.value, 'the WebUI must show the kept password as ********').toBe(MASKED_PASSWORD);
+    await expectStoredPassword('the password must survive a switch into a configuration that still shows it', recordId, 'shared-secret');
     // ... and with it the endpoint is complete, not left invalid pending a re-typed password
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint to SFTP + PASSWORD');
     // the HTTP-only settings are gone, though
@@ -946,6 +931,91 @@ translation is caught instead of being eyeballed on a screenshot.
       }
 
       await saveStill(page, `endpoint-window-transport-LOCAL_FILE-${language}.png`);
+    });
+  });
+});
+
+test.describe('ExternalSystem Endpoint — password in the grid and the Excel export', () => {
+  test('Password is not in the endpoint grid and nowhere in its Excel export', async ({ page }) => {
+    allure.epic('E0182: System Configuration');
+    allure.tag('F9111: Reference Type Password');
+    allure.tag('F9111');
+    allure.story('A password appears in no grid cell and no Excel cell');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — the password stays out of the grid and the Excel export
+
+The endpoint window's grid has no Password column, so its Excel export ("Download selected"),
+which writes exactly the grid's columns, has none either. This guards that the typed password
+appears in no grid cell and in no cell of the export, while it is stored as typed.
+
+1. Create a SFTP endpoint with PASSWORD authentication, typing the password
+2. Record view: the WebUI shows the password masked; the stored value is the typed one
+3. List view of that endpoint: no Password column, no cell holds the typed password
+4. Excel export of that endpoint: no Password column, no cell holds the typed password
+    `);
+
+    test.setTimeout(240000);
+
+    const typedPassword = `pw-${newUnique()}`;
+
+    const masterdata = await Backend.createMasterdata({
+      request: { login: { user: { language: 'en_US' } } },
+    });
+    await loginWithMasterdataUser(page, masterdata.login.user);
+
+    await test.step('Create a SFTP endpoint with a typed password', async () => {
+      await openNewEndpoint(page);
+      await selectListValue(page, 'TransportType', 'SFTP');
+      await typeIntoWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, 'SftpHost', page.locator('.form-field-SftpHost input[type="text"]'), 'sftp.example.com');
+      await typeIntoWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, 'SftpUsername', page.locator('.form-field-SftpUsername input[type="text"]'), 'gridexcel');
+      await selectListValue(page, 'SftpAuthType', 'PASSWORD');
+      await typeIntoWindowField(
+        page,
+        EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID,
+        'Password',
+        page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]'),
+        typedPassword
+      );
+      await typeIntoWindowField(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, 'SftpRemotePath', page.locator('.form-field-SftpRemotePath input[type="text"]'), '/outbound/edi');
+    });
+
+    const recordId = await savedRecordId(page);
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the SFTP endpoint');
+
+    let endpointValue;
+    await test.step('Record view shows the password masked; it is stored as typed', async () => {
+      await page.reload();
+      const passwordInput = page.locator('.form-field-Password input');
+      await passwordInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await expect(passwordInput, 'the record view must not show the typed password').not.toHaveValue(typedPassword);
+      const record = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+      expect(record.fieldsByName.Password.value, 'the WebUI must get the password as ********').toBe(MASKED_PASSWORD);
+      endpointValue = record.fieldsByName.Value.value;
+      expect(endpointValue, 'the endpoint must have a search key').toBeTruthy();
+      await expectStoredPassword('the endpoint stores the typed password', recordId, typedPassword);
+    });
+
+    let filePath;
+    await test.step('Grid: no Password column, no cell with the typed password; export it', async () => {
+      filePath = await exportRecordsToExcel(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, [Number(recordId)]);
+      const row = page.locator(`tr[data-testid="table-row-${recordId}"]`);
+      // positive control: the grid rendered the endpoint's search key column
+      await expect(row.locator('td[data-cy="cell-Value"]'), 'the grid shows the endpoint').toHaveText(endpointValue);
+      await expect(page.locator('th[data-testid="column-Password"]'), 'the endpoint grid has no Password column').toHaveCount(0);
+      const gridHtml = await page.locator('table').first().evaluate((table) => table.outerHTML);
+      expect(gridHtml.includes(typedPassword), 'the grid (cell texts and titles) must not contain the typed password').toBe(false);
+    });
+
+    await test.step('Excel: no Password column, no cell with the typed password', async () => {
+      const workbook = await readXlsx(filePath);
+      const gridFieldNames = await fetchViewGridFieldNames(page, EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID);
+      allure.attachment('Excel export', JSON.stringify({ gridFieldNames, sheets: workbook.sheets }), 'application/json');
+      expect(gridFieldNames, 'the grid layout has no Password column').not.toContain('Password');
+      // positive control: the export holds the endpoint, in the grid layout's columns
+      expect(columnTextsByFieldName(workbook.sheets[0], gridFieldNames, 'Value'), 'Value column of the export').toEqual([endpointValue]);
+      expect(workbook.allTexts.some((text) => text.includes(typedPassword)), 'no cell of the export may contain the typed password').toBe(false);
     });
   });
 });

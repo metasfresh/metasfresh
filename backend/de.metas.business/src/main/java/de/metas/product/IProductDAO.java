@@ -115,6 +115,18 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
+	/**
+	 * @return all active products of the given client whose {@link I_M_Product#COLUMNNAME_GTIN} equals the given GTIN exactly, ordered by M_Product_ID.
+	 * Unlike {@link #getProductIdByGTINStrictly(GTIN, ClientId)} it never picks one of several products sharing the GTIN.
+	 */
+	ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
+	/**
+	 * @return all active products of the given client whose {@code M_Product.Value} equals the given value exactly, ordered by M_Product_ID.
+	 * {@code M_Product.Value} is unique only per organisation, so there can be several (one per organisation); it never picks one of them.
+	 */
+	ImmutableSet<ProductId> getProductIdsByValue(@NonNull String value, @NonNull ClientId clientId);
+
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull ClientId clientId);

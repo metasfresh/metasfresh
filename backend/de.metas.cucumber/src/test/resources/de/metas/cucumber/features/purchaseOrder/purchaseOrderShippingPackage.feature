@@ -159,6 +159,10 @@ Feature: Purchase order to transportation order
     And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO_Dropship and transportation order: dropshipTransportOrder
 
     And metasfresh contains exactly 1 M_ShippingPackages for transportation order: dropshipTransportOrder
+    # the transport order print still finds its header data (report root function of "Speditionsauftrag Beleg")
+    And the DB function de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root for M_ShipperTransportation dropshipTransportOrder and language de_DE returns exactly:
+      | docstatus |
+      | DR        |
 
   @from:cucumber
   @allure.label.epic:E0140_Purchasing

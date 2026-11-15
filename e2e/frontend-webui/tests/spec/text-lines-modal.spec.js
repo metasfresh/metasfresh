@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { selectRows, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { WEBAPI_BASE_URL, getTabRows } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
@@ -115,12 +115,14 @@ async function getRenderedRowIds(page) {
   return testids.filter((testid) => /^table-row-[AT]\d+$/.test(testid)).map((testid) => testid.replace('table-row-', ''));
 }
 
-/** Selects a row in the modal by its view row id, tolerating a row that is already selected. */
+/**
+ * Selects a row in the modal by its view row id and waits for the quickActions POST that selection
+ * fires, so the caller's next quick action runs against the actions of exactly this row.
+ */
 async function selectRow(page, rowId) {
   const row = page.getByTestId(`table-row-${rowId}`);
-  // a click toggles selection, so a row that already carries the CSS class from an earlier step
-  // must be deselected first -- otherwise this call's own click would be the one that clears it,
-  // and the caller would go on to invoke a quick action against no selection at all
+  // selectRows does not click a row that is already selected, so that click would fire no
+  // quickActions POST to wait for: deselect such a row first, so the selecting click below is a real one
   const alreadySelected = ((await row.getAttribute('class')) ?? '').includes('row-selected');
   if (alreadySelected) {
     await row.click();
@@ -130,9 +132,8 @@ async function selectRow(page, rowId) {
     page.waitForResponse((r) => r.url().includes('/quickActions') && r.request().method() === 'POST', {
       timeout: SLOW_ACTION_TIMEOUT,
     }),
-    row.click(),
+    selectRows([row]),
   ]);
-  await expect(row).toHaveClass(/row-selected/);
 }
 
 /**

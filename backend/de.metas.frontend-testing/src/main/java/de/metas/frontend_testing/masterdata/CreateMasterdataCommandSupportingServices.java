@@ -21,7 +21,12 @@ import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.mobile.MobileConfigService;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.pos.POSTerminalRepository;
+import de.metas.pos.POSService;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementBooking;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
+import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.ProductRepository;
@@ -67,7 +72,12 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final ProductPriceRepository productPriceRepository;
 	@NonNull public final MobileApplicationInfoRepository mobileApplicationInfoRepository;
 	@NonNull public final POSTerminalRepository posTerminalRepository;
+	@NonNull public final POSInvoiceCardSettlementRepository posInvoiceCardSettlementRepository;
+	@NonNull public final POSInvoiceCardSettlementBooking posInvoiceCardSettlementBooking;
+	@NonNull public final POSService posService;
+	@NonNull public final SumUpTransactionRepository sumUpTransactionRepository;
 	@NonNull public final PriceListVersionRepository priceListVersionRepository;
 	@NonNull public final ChargeRepository chargeRepository;
 	@NonNull public final BankRepository bankRepository;
+	@NonNull public final SumUpConfigRepository sumUpConfigRepository;
 }

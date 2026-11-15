@@ -112,6 +112,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	IHUQueryBuilder createHUQueryBuilder();
 
+	/** @see IHandlingUnitsDAO#countActiveHUsByProductId(ProductId) */
+	int countActiveHUsByProductId(@NonNull ProductId productId);
+
 	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
 	boolean existsById(@NonNull HuId huId);

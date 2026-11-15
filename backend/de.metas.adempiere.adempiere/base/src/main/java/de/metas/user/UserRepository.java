@@ -113,6 +113,18 @@ public class UserRepository
 	}
 
 	@NonNull
+	public Optional<User> getDefaultContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.create()
+				.firstOnlyOptional(I_AD_User.class)
+				.map(this::ofRecord);
+	}
+
+	@NonNull
 	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
 	{
 		return queryBL.createQueryBuilder(I_AD_User.class)

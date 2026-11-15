@@ -157,7 +157,7 @@ test.describe('Sales order-line grid — an empty text cell left without typing 
         const patchesBefore = descriptionPatches.length;
 
         if (open === 'Enter') {
-          await cell.click();
+          await cell.click(); // focuses the cell so Enter opens its editor, not a row selection
           await page.keyboard.press('Enter');
         } else {
           await cell.dblclick();

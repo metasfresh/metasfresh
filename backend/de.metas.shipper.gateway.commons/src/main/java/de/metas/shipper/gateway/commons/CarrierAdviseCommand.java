@@ -488,7 +488,7 @@ public class CarrierAdviseCommand
 									   @NonNull final I_C_BPartner_Location bpLocation,
 									   @Nullable final User contact)
 	{
-		return JsonShipperConverter.toJsonContactOrNull(DeliveryOrderUtil.getContactPerson(bPartner, bpLocation, contact));
+		return JsonShipperConverter.toJsonContactOrNull(DeliveryOrderUtil.getContactPerson(bPartner, bpLocation, contact, userRepository));
 	}
 
 	private void updateShipmentFromResponse(@NonNull final ShipmentSchedule shipmentSchedule, @NonNull final JsonDeliveryAdvisorResponse response)

@@ -166,7 +166,7 @@ public interface IOrderDAO extends ISingletonService
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
 
-	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
+	Optional<I_C_Order> retrieveByOrderCriteria(OrderCriteria query);
 
 	Set<OrderId> retrieveIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
@@ -186,6 +186,11 @@ public interface IOrderDAO extends ISingletonService
 	boolean hasDeliveredItems(@NonNull OrderId orderId);
 
 	boolean isCalibrationRuleUsed(@NonNull CalibrationRuleId calibrationRuleId);
+
+	/**
+	 * @return the ids of the active orders that match the given query; only the criteria that are set are applied. No organization filter.
+	 */
+	List<OrderId> getOrderIds(@NonNull OrderQuery query);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 	List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);

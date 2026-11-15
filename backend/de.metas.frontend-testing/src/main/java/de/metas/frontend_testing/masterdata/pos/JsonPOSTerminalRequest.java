@@ -63,8 +63,10 @@ public class JsonPOSTerminalRequest
 	@NonNull Map<String, ProductPrice> walkInProducts = ImmutableMap.of();
 
 	/**
-	 * Payment methods offered at this terminal. Only {@code CASH} is provisioned by
-	 * {@link CreatePOSTerminalCommand} so far; defaults to {@code ["CASH"]}.
+	 * Payment methods offered at this terminal; defaults to {@code ["CASH"]}. {@code CARD} makes
+	 * {@link CreatePOSTerminalCommand} create a SumUp config (merchant code {@code M-TEST}) with one active default
+	 * card reader ({@code R-TEST}) and set the terminal's payment processor to SumUp; the codes are returned in
+	 * {@link JsonPOSTerminalResponse}.
 	 */
 	@Builder.Default
 	@NonNull List<POSPaymentMethod> paymentMethods = ImmutableList.of(POSPaymentMethod.CASH);

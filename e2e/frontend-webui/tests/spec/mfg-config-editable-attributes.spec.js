@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -120,8 +120,7 @@ async function addAttributeRow(page, { attrValue, seqNo }) {
 async function deactivateRowInGrid(page, attrValue) {
   const row = page.locator('tbody tr').filter({ hasText: attrValue }).first();
   await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await row.click(); // select the row
-  await page.waitForTimeout(300);
+  await selectRows([row]);
 
   const activeCell = row.locator('[data-cy="cell-IsActive"]');
   await activeCell.dblclick(); // enter edit mode → interactive checkbox renders

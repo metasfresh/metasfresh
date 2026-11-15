@@ -49,7 +49,81 @@
         .invoice-row-openAmt {
           font-weight: bold;
         }
+
+        .invoice-row-cardSettlement {
+          font-weight: bold;
+          color: #b86e00;
+        }
       }
+    }
+  }
+
+  // the selected invoice, its payment choice and, once a card payment exists, its state. The till's base font is
+  // large (2rem), so this stage is set smaller and compact: every state, with its buttons and messages, must fit the
+  // dialog body of a handheld without scrolling.
+  .payment-choice {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.6em;
+    font-size: 0.55em;
+
+    .selected-invoice {
+      // one row per field: caption left, value right; a long value is truncated, never wrapped
+      .selected-invoice-line {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: baseline;
+        gap: 0.5em;
+        line-height: 1.4;
+
+        .summary-caption {
+          flex: 0 0 auto;
+        }
+
+        .summary-value {
+          flex: 1 1 auto;
+          min-width: 0;
+          text-align: right;
+          font-weight: bold;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    .payment-methods {
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 0.4em;
+
+      .cash-refused-message {
+        font-style: italic;
+      }
+    }
+
+    .pos-card-settlement-status {
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 0.4em;
+      padding: 0.5em 0.75em;
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
+
+      .status-message {
+        font-size: 1.2em;
+        font-weight: bold;
+
+        &.is-warning {
+          color: #cc0f35;
+        }
+
+        .status-icon {
+          margin-right: 0.5em;
+        }
+      }
+
+      // the check / release controls are styled by CardReleaseControls.scss
     }
   }
 

@@ -65,6 +65,25 @@ export const ErrorToast = {
         await expect(successToasts).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
     },
 
+    // Assert a success toast (`.Toastify__toast--success`) is shown whose text contains every given fragment (e.g. the HU number and the quantity).
+    expectSuccessToast: async ({ hasText }) => {
+        let toasts = page.locator('.Toastify__toast--success');
+        for (const text of [].concat(hasText)) {
+            toasts = toasts.filter({ hasText: text });
+        }
+        await expect(toasts.first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    },
+
+    // Assert no toast of any type but success is shown (neither error nor info/warning).
+    expectNoToastOtherThanSuccess: async () => {
+        await expect(page.locator('.Toastify__toast:not(.Toastify__toast--success)')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    },
+
+    // Assert no success toast without the given text is shown (e.g. only an earlier message is left).
+    expectNoSuccessToastWithoutText: async (text) => {
+        await expect(page.locator('.Toastify__toast--success').filter({ hasNotText: text })).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    },
+
     // Assert no blocking (red) error toast is shown.
     expectNoErrorToast: async () => {
         await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });

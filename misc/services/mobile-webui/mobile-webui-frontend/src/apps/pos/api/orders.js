@@ -93,6 +93,40 @@ export const refundPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+/**
+ * POSTs {@code /api/v2/pos/orders/checkPayment}: asks SumUp once for the current result of a card payment whose result is
+ * unknown and reconciles the payment with it. Returns {@code { order, checkFailed }}; {@code checkFailed} is set if SumUp
+ * could not be asked.
+ */
+export const checkPaymentAPI = ({ posTerminalId, order_uuid, payment_uuid }) => {
+  return axios
+    .post(`${posApiBase}/orders/checkPayment`, { posTerminalId, order_uuid, payment_uuid })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+/**
+ * POSTs {@code /api/v2/pos/orders/releasePayment}: first without confirmation; if the response says
+ * {@code confirmationRequired}, again with {@code confirmNotCharged} and the status the confirmation prompt showed.
+ * Returns {@code { order, confirmationRequired, checkFailed, refusedMessage }}.
+ */
+export const releasePaymentAPI = ({
+  posTerminalId,
+  order_uuid,
+  payment_uuid,
+  confirmNotCharged = false,
+  expectedStatus = null,
+}) => {
+  return axios
+    .post(`${posApiBase}/orders/releasePayment`, {
+      posTerminalId,
+      order_uuid,
+      payment_uuid,
+      confirmNotCharged,
+      expectedStatus,
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const getReceiptPdf = ({ order_uuid }) => {
   return axios.get(toUrl(`${posApiBase}/orders/receipt/receipt.pdf`, { id: order_uuid }), {
     responseType: 'arraybuffer',

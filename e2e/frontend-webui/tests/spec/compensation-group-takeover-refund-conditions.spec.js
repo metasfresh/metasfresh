@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { selectRows, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { getIncludedRecordData, getTabRows, waitForRecordSaved } from '../utils/WebAPIValidation';
 import {
   closeModal,
@@ -305,7 +305,7 @@ async function openTakeOverForm(page, takeOver) {
   const row = takeOverRow(page, takeOver);
   await expect(row).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
   await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await row.locator('td[data-cy^="cell-"]').first().click();
+  await selectRows([row]);
   await row.locator('td[data-cy^="cell-"]').first().click({ button: 'right' });
   const contextMenu = page.locator('.context-menu.context-menu-open');
   await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });

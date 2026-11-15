@@ -28,6 +28,7 @@
  "spec/edit-mode-toggle.spec.js": 17.2,
  "spec/email-letter-dialog.spec.js": 51.5,
  "spec/epcis-sscc-transmissions-window.spec.js": 9.7,
+ "spec/externalsystem-endpoint-sftp.spec.js": 66.2,
  "spec/externalsystem-endpoint.spec.js": 63.2,
  "spec/externalsystem-scripted-import-create-config.spec.js": 70,
  "spec/forecast-generator.spec.js": 50.3,

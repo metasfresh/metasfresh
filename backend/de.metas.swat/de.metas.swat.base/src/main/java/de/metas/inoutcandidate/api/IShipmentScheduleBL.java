@@ -99,6 +99,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	ShipmentScheduleHeaderAggregationKeyBuilder mkShipmentHeaderAggregationKeyBuilder();
 
+	/**
+	 * Like {@link #mkShipmentHeaderAggregationKeyBuilder()}, but the key leaves out the schedule's {@code C_Async_Batch_ID}.
+	 */
+	ShipmentScheduleHeaderAggregationKeyBuilder mkShipmentHeaderAggregationKeyBuilderWithoutAsyncBatch();
+
 	void updateHeaderAggregationKey(I_M_ShipmentSchedule sched);
 
 	/**

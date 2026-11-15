@@ -6,6 +6,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Value
 @Builder
@@ -28,4 +29,9 @@ public class JsonInventoryExpectation
 	@Nullable BigDecimal qtyBook;
 	/** Expected {@code QtyCount}, same scoping and comparison as {@link #qtyBook}. */
 	@Nullable BigDecimal qtyCount;
+	/**
+	 * Expected attributes of the attribute set instance (ASI) of the asserted inventory document's lines for the HU, e.g.
+	 * {@code {"Lot-Nummer": "L2311"}}; every such line must carry them. Same value syntax as the HU {@code attributes}.
+	 */
+	@Nullable Map<String, String> lineAttributes;
 }

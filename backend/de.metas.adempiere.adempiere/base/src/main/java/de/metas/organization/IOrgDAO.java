@@ -94,6 +94,9 @@ public interface IOrgDAO extends ISingletonService
 
 	WarehouseId getOrgWarehouseId(OrgId orgId);
 
+	/** Like {@link #getOrgWarehouseId(OrgId)}, but empty (instead of an exception) for an organisation without an {@code AD_OrgInfo} row, for org {@code *} and for an organisation without a warehouse. */
+	Optional<WarehouseId> getOrgWarehouseIdIfExists(OrgId orgId);
+
 	WarehouseId getOrgPOWarehouseId(OrgId orgId);
 
 	WarehouseId getOrgDropshipWarehouseId(OrgId orgId);

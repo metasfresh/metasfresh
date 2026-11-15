@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.payment;
 import com.google.common.base.Throwables;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
@@ -45,6 +46,7 @@ import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
 import de.metas.cucumber.stepdefs.charge.C_Charge_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -53,6 +55,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -76,6 +79,7 @@ import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -106,6 +110,7 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 public class C_Payment_StepDef
 {
 	private static final String COLUMNNAME_PostingError = "PostingError";
+	private static final String COLUMNNAME_IsOnBankStatement = "IsOnBankStatement";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -114,6 +119,7 @@ public class C_Payment_StepDef
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -125,6 +131,7 @@ public class C_Payment_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final C_Charge_StepDefData chargeTable;
+	private final C_Order_StepDefData orderTable;
 
 	/**
 	 * Creates one or more {@link I_C_Payment} records in Draft status.
@@ -145,6 +152,7 @@ public class C_Payment_StepDef
 	 *                                {@code C_Prepayment_Acct} (AR) or {@code V_Prepayment_Acct} (AP).
 	 *                                {@code PayAmt} must equal the proforma's {@code GrandTotal}.<br>
 	 *   <b>C_Invoice_ID</b> — (optional, identifier-ref) pre-linked invoice<br>
+	 *   <b>C_Order_ID</b> — (optional, identifier-ref) the order the payment is entered for, as in window {@code Zahlung} field {@code Auftrag}<br>
 	 * @cucumber.depends {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData},
 	 *                   {@link de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData},
 	 *                   {@link de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData}
@@ -164,12 +172,12 @@ public class C_Payment_StepDef
 	}
 
 	/**
-	 * Completes, reverses or voids the payment referenced by {@code paymentIdentifier}.
+	 * Completes, closes, reverses or voids the payment referenced by {@code paymentIdentifier}.
 	 * For {@code reversed}, the reversal is stored under {@code <identifier>^}.
 	 *
 	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
 	 */
-	@And("^the payment identified by (.*) is (completed|reversed|voided)$")
+	@And("^the payment identified by (.*) is (completed|closed|reversed|voided)$")
 	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action) throws InterruptedException
 	{
 		switch (StepDefDocAction.valueOf(action))
@@ -191,6 +199,13 @@ public class C_Payment_StepDef
 				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
 				payment.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			}
+			case closed:
+			{
+				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+				payment.setDocAction(IDocument.ACTION_Close);
+				documentBL.processEx(payment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			}
 			default:
@@ -411,8 +426,9 @@ public class C_Payment_StepDef
 	 *   <b>C_Charge_ID</b> — (optional, identifier-ref) expected charge<br>
 	 *   <b>Posted</b> — (optional) expected posting status code (e.g. {@code Y} posted, {@code E} posting error)<br>
 	 *   <b>PostingError</b> — (optional) the payment must carry a {@code PostingError_Issue_ID} whose issue summary contains this text<br>
-	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, C_Invoice_ID, DateTrx, C_BPartner_ID,
+	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, OverUnderAmt, IsOverUnderPayment, C_Invoice_ID, DateTrx, C_BPartner_ID,
 	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, TenderType, IsPrepayment, Proforma_Invoice_ID, PaymentBonusAmt)<br>
+	 *   <b>IsOnBankStatement</b> — (optional) whether a bank statement line (e.g. the cash statement line of a cash bank) references the payment<br>
 	 *   <b>PaymentBonus_CreditMemo_ID</b> — (optional, identifier) registers the payment's payment bonus credit memo under the given invoice identifier; {@code null} expects none
 	 * @cucumber.depends StepDefData: C_Payment_StepDefData, C_Charge_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData,
 	 * C_BP_BankAccount_StepDefData, C_DocType_StepDefData
@@ -454,6 +470,8 @@ public class C_Payment_StepDef
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
 		row.getAsOptionalBigDecimal(I_C_Payment.COLUMNNAME_OverUnderAmt)
 				.ifPresent(overUnderAmt -> softly.assertThat(payment.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(overUnderAmt));
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment)
+				.ifPresent(isOverUnderPayment -> softly.assertThat(payment.isOverUnderPayment()).as("IsOverUnderPayment").isEqualTo(isOverUnderPayment));
 		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt)
 				.ifPresent(paymentBonusAmt -> softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo(paymentBonusAmt));
 
@@ -519,6 +537,37 @@ public class C_Payment_StepDef
 		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
 				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));
 
+		row.getAsOptionalBoolean(COLUMNNAME_IsOnBankStatement)
+				.ifPresent(isOnBankStatement -> softly.assertThat(bankStatementBL.isPaymentOnBankStatement(PaymentId.ofRepoId(payment.getC_Payment_ID())))
+						.as("IsOnBankStatement")
+						.isEqualTo(isOnBankStatement));
+
+		// "null" expects the payment to be linked to no bank statement line
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID)
+				.ifPresent(lineIdentifier -> {
+					if (lineIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(payment.getC_BankStatementLine_ID()).as("C_BankStatementLine_ID should not be set").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(payment.getC_BankStatementLine_ID()).as("C_BankStatementLine_ID").isEqualTo(lineIdentifier.lookupNotNullIn(bankStatementLineTable).getC_BankStatementLine_ID());
+					}
+				});
+
+		// "null" expects the payment to carry no order
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> {
+					if (orderIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(payment.getC_Order_ID()).as("C_Order_ID should not be set").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(payment.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderIdentifier.lookupNotNullIn(orderTable).getC_Order_ID());
+					}
+				});
+
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
 				.map(invoiceTable::getId)
 				.ifPresent(expectedProformaInvoiceId -> softly.assertThat(payment.getProforma_Invoice_ID()).as("Proforma_Invoice_ID").isEqualTo(expectedProformaInvoiceId.getRepoId()));
@@ -543,6 +592,46 @@ public class C_Payment_StepDef
 				});
 
 		softly.assertAll();
+	}
+
+	/**
+	 * Asserts the number of active payments that carry the given order ({@code C_Payment.C_Order_ID}), whatever their status.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then exactly 0 payments carry the order identified by order_1
+	 * </pre>
+	 */
+	@And("^exactly (\\d+) payments? carr(?:y|ies) the order identified by (.*)$")
+	public void assertPaymentCountOfOrder(final int expectedCount, @NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final int actualCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of C_Payment with C_Order_ID of %s", orderIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts the number of active payments that belong to the given bank statement line ({@code C_Payment.C_BankStatementLine_ID}), whatever their status.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then exactly 0 payments belong to the bank statement line identified by bsl_1
+	 * </pre>
+	 */
+	@And("^exactly (\\d+) payments? belong(?:s)? to the bank statement line identified by (.*)$")
+	public void assertPaymentCountOfBankStatementLine(final int expectedCount, @NonNull final String lineIdentifier)
+	{
+		final I_C_BankStatementLine line = bankStatementLineTable.get(lineIdentifier);
+		final int actualCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID, line.getC_BankStatementLine_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of C_Payment with C_BankStatementLine_ID of %s", lineIdentifier).isEqualTo(expectedCount);
 	}
 
 	@And("^after not more than (.*)s, C_Payment is found")
@@ -634,6 +723,10 @@ public class C_Payment_StepDef
 				.map(invoiceTable::getId)
 				.orElse(null);
 
+		final OrderId orderId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Order_ID)
+				.map(orderIdentifier -> OrderId.ofRepoId(orderIdentifier.lookupNotNullIn(orderTable).getC_Order_ID()))
+				.orElse(null);
+
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
@@ -645,6 +738,7 @@ public class C_Payment_StepDef
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
 				.proformaInvoiceId(proformaInvoiceId)
+				.orderId(orderId)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 

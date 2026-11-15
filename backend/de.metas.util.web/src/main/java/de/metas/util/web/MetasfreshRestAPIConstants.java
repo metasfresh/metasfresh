@@ -2,6 +2,9 @@ package de.metas.util.web;
 
 import lombok.experimental.UtilityClass;
 import org.compiere.Adempiere;
+import org.springframework.http.MediaType;
+
+import java.nio.charset.StandardCharsets;
 
 /*
  * #%L
@@ -48,4 +51,10 @@ public class MetasfreshRestAPIConstants
 	public static final String ENDPOINT_API_V2 = Adempiere.ENDPOINT_API_V2;
 
 	public static final String WEBSOCKET_ENDPOINT_V2 = "/v2";
+
+	/**
+	 * Use this instead of {@link MediaType#TEXT_PLAIN} for plain-text responses.
+	 * Without an explicit charset, Spring's {@code StringHttpMessageConverter} writes the body as ISO-8859-1, so e.g. {@code €} becomes {@code ?}.
+	 */
+	public static final MediaType TEXT_PLAIN_UTF8 = new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8);
 }

@@ -1,0 +1,227 @@
+package de.metas.handlingunits.impl;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.UpdateHUQtyRequest;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import de.metas.document.DocTypeId;
+import de.metas.handlingunits.CreateHUFromInventoryRequest;
+import de.metas.handlingunits.CreatedHU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.inventory.InventoryTestHelper;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inventory.AggregationType;
+import de.metas.inventory.HUAggregationType;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributesTestHelper;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_AD_OrgInfo;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+
+@ExtendWith(AdempiereTestWatcher.class)
+class HUQtyServiceTest
+{
+	private static final ZonedDateTime MOVEMENT_DATE = ZonedDateTime.of(2026, 1, 15, 10, 30, 0, 0, ZoneId.of("Europe/Berlin"));
+
+	private InventoryService inventoryService;
+	private HUQtyService huQtyService;
+
+	private I_C_UOM uomRecord;
+	private LocatorId locatorId;
+	private DocTypeId singleHUDocTypeId;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		// the doc type of HU Manager's own stock changes (single-HU inventory); completion needs a real HU, so it is simulated below
+		singleHUDocTypeId = InventoryTestHelper.createDocType(AggregationType.SINGLE_HU.getDocBaseAndSubType());
+
+		inventoryService = Mockito.spy(InventoryService.newInstanceForUnitTesting());
+		huQtyService = new HUQtyService(inventoryService, HUQRCodesService.newInstanceForUnitTesting());
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
+
+		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
+		saveRecord(warehouseRecord);
+		final I_M_Locator locatorRecord = newInstance(I_M_Locator.class);
+		locatorRecord.setM_Warehouse_ID(warehouseRecord.getM_Warehouse_ID());
+		saveRecord(locatorRecord);
+		locatorId = LocatorId.ofRecord(locatorRecord);
+	}
+
+	/**
+	 * Regression of the HU Manager "create from label" OK click: a new HU of a product has neither an HU id nor an HU QR code,
+	 * so the line must not need one (it was rejected with "At least huId or huQRCode must be set").
+	 * <p>
+	 * Completing the inventory is what creates the HU (SyncInventoryQtyToHUsCommand, needs the full HU stack - module CLAUDE.md: JUnit is no proof of HU
+	 * materialisation, the real path is covered by the Playwright E2E). So only the persistence of the completed line is simulated, exactly as
+	 * InventoryLoaderAndSaver#saveInventoryLine does it: a SINGLE_HU line keeps the HU in M_InventoryLine.M_HU_ID, any other line in M_InventoryLine_HU.
+	 */
+	@Test
+	void createHUFromInventory_newHUOfProduct_booksOneCountedSingleHULineWithAttributesAndReturnsTheCreatedHU()
+	{
+		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
+		final I_M_Attribute lotAttribute = attributesTestHelper.createM_Attribute("Lot", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		lotAttribute.setIsStorageRelevant(true);
+		saveRecord(lotAttribute);
+		final AttributeListValue lotValue = attributesTestHelper.createM_AttributeValue(lotAttribute, "L-4711");
+
+		final I_M_HU createdHU = newInstance(I_M_HU.class);
+		createdHU.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
+		createdHU.setHUStatus(X_M_HU.HUSTATUS_Active);
+		saveRecord(createdHU);
+		final HuId createdHUId = HuId.ofRepoId(createdHU.getM_HU_ID());
+		doAnswer(invocation -> {
+			final I_M_InventoryLine line = Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class).create().firstOnlyNotNull(I_M_InventoryLine.class);
+			if (HUAggregationType.SINGLE_HU.getCode().equals(line.getHUAggregationType()))
+			{
+				line.setM_HU_ID(createdHUId.getRepoId());
+				saveRecord(line);
+			}
+			else
+			{
+				final I_M_InventoryLine_HU lineHU = newInstance(I_M_InventoryLine_HU.class);
+				lineHU.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
+				lineHU.setM_Inventory_ID(line.getM_Inventory_ID());
+				lineHU.setM_HU_ID(createdHUId.getRepoId());
+				lineHU.setQtyCount(line.getQtyCount());
+				lineHU.setC_UOM_ID(line.getC_UOM_ID());
+				saveRecord(lineHU);
+			}
+			return null;
+		}).when(inventoryService).completeDocument(any());
+
+		// the new HU's QR code (generating one needs packing instructions, which this test does not set up)
+		final HUQRCode createdHUQRCode = HUQRCode.builder()
+				.id(HUQRCodeUniqueId.random())
+				.packingInfo(HUQRCodePackingInfo.builder().huUnitType(HUQRCodeUnitType.VHU).packingInstructionsId(HuPackingInstructionsId.VIRTUAL).caption("CU").build())
+				.attributes(ImmutableList.of())
+				.build();
+		new HUQRCodesRepository().createNew(createdHUQRCode, createdHUId);
+
+		final CreatedHU created = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
+				.date(MOVEMENT_DATE)
+				.productId(ProductId.ofRepoId(12345))
+				.qty(Quantity.of("12.345", uomRecord))
+				.locatorId(locatorId)
+				.attributes(ImmutableAttributeSet.builder().attributeValue(lotValue).build())
+				.description("created from label")
+				.build());
+
+		assertThat(created.getHuId()).isEqualTo(createdHUId);
+		assertThat(created.getQrCode()).isEqualTo(createdHUQRCode);
+
+		final I_M_InventoryLine line = Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class).create().firstOnlyNotNull(I_M_InventoryLine.class);
+		assertThat(line.getM_Product_ID()).isEqualTo(12345);
+		assertThat(line.getQtyCount()).isEqualByComparingTo("12.345");
+		assertThat(line.getQtyBook()).isEqualByComparingTo("0");
+		assertThat(line.isCounted()).isTrue();
+		// same shape as the "Change Qty" path: a single-HU inventory line (M_HU_ID set, no M_InventoryLine_HU divergence)
+		assertThat(line.getHUAggregationType()).isEqualTo(HUAggregationType.SINGLE_HU.getCode());
+		assertThat(line.getM_HU_ID()).isEqualTo(createdHUId.getRepoId());
+		// the attributes (lot) are carried on the line's ASI
+		assertThat(AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(line.getM_AttributeSetInstance_ID())))
+				.isPresent().get().isEqualTo(AttributesKey.ofAttributeValueIds(lotValue.getId()));
+		// the document is the single-HU inventory doc type
+		final I_M_Inventory header = Services.get(IQueryBL.class).createQueryBuilder(I_M_Inventory.class).create().firstOnlyNotNull(I_M_Inventory.class);
+		assertThat(header.getC_DocType_ID()).isEqualTo(singleHUDocTypeId.getRepoId());
+		// the movement date is the date the caller set
+		assertThat(header.getMovementDate()).isEqualTo(TimeUtil.asTimestamp(MOVEMENT_DATE));
+		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine_HU.class).create().count()).isZero();
+	}
+
+	/**
+	 * Pins the inventory header shared by "Change Qty" ({@code updateQty}) and "create from label": the header's org comes from the locator's
+	 * client/org, its warehouse from the locator, its date and description from the request, its doc type is the single-HU inventory.
+	 * An HU is identified by its QR code here, so no HU stack is needed; completing is not part of this check.
+	 */
+	@Test
+	void updateQty_forAnHUQRCode_createsTheInventoryHeaderOfTheLocatorWithDateAndDescription()
+	{
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(1000002);
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_NichtSpeichern);
+		saveRecord(orgInfo);
+		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
+		warehouseRecord.setAD_Org_ID(1000002);
+		saveRecord(warehouseRecord);
+		final I_M_Locator locatorRecord = newInstance(I_M_Locator.class);
+		locatorRecord.setAD_Org_ID(1000002);
+		locatorRecord.setM_Warehouse_ID(warehouseRecord.getM_Warehouse_ID());
+		saveRecord(locatorRecord);
+		final HUQRCode huQRCode = HUQRCode.builder()
+				.id(HUQRCodeUniqueId.random())
+				.packingInfo(HUQRCodePackingInfo.builder()
+						.huUnitType(HUQRCodeUnitType.TU)
+						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(540))
+						.caption("test")
+						.build())
+				.product(HUQRCodeProductInfo.builder().id(ProductId.ofRepoId(12345)).code("P").name("P").build())
+				.attributes(ImmutableList.of())
+				.build();
+		doNothing().when(inventoryService).completeDocument(any());
+
+		huQtyService.updateQty(UpdateHUQtyRequest.builder()
+				.date(MOVEMENT_DATE)
+				.huQRCode(huQRCode)
+				.locatorId(LocatorId.ofRecord(locatorRecord))
+				.qty(Quantity.of("7", uomRecord))
+				.description("changed qty")
+				.build());
+
+		final I_M_Inventory header = Services.get(IQueryBL.class).createQueryBuilder(I_M_Inventory.class).create().firstOnlyNotNull(I_M_Inventory.class);
+		assertThat(header.getAD_Org_ID()).isEqualTo(1000002);
+		assertThat(header.getM_Warehouse_ID()).isEqualTo(warehouseRecord.getM_Warehouse_ID());
+		assertThat(header.getC_DocType_ID()).isEqualTo(singleHUDocTypeId.getRepoId());
+		assertThat(header.getMovementDate()).isEqualTo(TimeUtil.asTimestamp(MOVEMENT_DATE));
+		assertThat(header.getDescription()).isEqualTo("changed qty");
+		final I_M_InventoryLine line = Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class).create().firstOnlyNotNull(I_M_InventoryLine.class);
+		assertThat(line.getM_Product_ID()).isEqualTo(12345);
+		assertThat(line.getQtyCount()).isEqualByComparingTo("7");
+	}
+}

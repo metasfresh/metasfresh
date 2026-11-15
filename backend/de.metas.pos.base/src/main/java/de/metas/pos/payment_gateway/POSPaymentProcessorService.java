@@ -34,6 +34,14 @@ public class POSPaymentProcessorService
 		return paymentProcessor.process(request);
 	}
 
+	/**
+	 * Fails if no payment processor is registered for the given type, i.e. {@link #processPayment} would fail before sending anything.
+	 */
+	public void assertProcessorRegistered(@NonNull final POSPaymentProcessorType type)
+	{
+		getPaymentProcessor(type);
+	}
+
 	public POSPaymentProcessResponse refund(@NonNull final POSRefundRequest request)
 	{
 		final POSPaymentProcessor paymentProcessor = getPaymentProcessor(request.getPaymentProcessorConfig().getType());

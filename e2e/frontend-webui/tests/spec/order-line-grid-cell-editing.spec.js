@@ -180,7 +180,7 @@ test.describe('Sales order-line grid — leaving a Lookup cell; numpad-0 (de_DE)
 
     await test.step('Numpad-0 activates a grid cell editor', async () => {
       const qtyCell = page.locator('[data-cy="cell-QtyEntered"]').first();
-      await qtyCell.click();
+      await qtyCell.click(); // focuses the cell for the key below, not a row selection (no selectRows)
 
       // Playwright's press('Numpad0') sends NumLock-off "Insert"; dispatch a NumLock-on numpad-0
       // (key '0', keyCode 96) instead
@@ -267,7 +267,7 @@ literal "undefined".
         if (leaveBy === 'Tab') {
           await page.keyboard.press('Tab');
         } else {
-          await page.locator('[data-cy="cell-QtyEntered"]').first().click();
+          await page.locator('[data-cy="cell-QtyEntered"]').first().click(); // leaves the editor, not a row selection
         }
 
         await productCell

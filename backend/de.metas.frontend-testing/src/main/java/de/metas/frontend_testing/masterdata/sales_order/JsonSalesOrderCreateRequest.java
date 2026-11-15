@@ -22,6 +22,12 @@ public class JsonSalesOrderCreateRequest
 	@Nullable Identifier shipper;
 	@NonNull ZonedDateTime datePromised;
 	@Nullable String poReference;
+
+	/**
+	 * {@code C_PaymentTerm.Value} of the order's payment term, which the invoice created from the order inherits.
+	 * Looked up; created when the database has no such term. When {@code null}, the business partner's term applies.
+	 */
+	@Nullable String paymentTerm;
 	@NonNull List<Line> lines;
 
 	//

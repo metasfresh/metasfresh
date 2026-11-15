@@ -84,6 +84,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -180,6 +181,7 @@ public class C_Invoice_Candidate_StepDef
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
@@ -1221,13 +1223,19 @@ public class C_Invoice_Candidate_StepDef
 
 	/**
 	 * Closes the one invoice candidate by hand, like the user's "close" action does for it (the WebUI process calls the plural {@code closeInvoiceCandidates}).
+	 * <p>
+	 * Runs in one transaction, like that process does: the recompute marker written by the close becomes visible only together with {@code Processed_Override=Y}.
+	 * Without a transaction the async recompute could load the candidate between the two commits and later save its stale {@code Processed=N} over the close.
 	 */
 	@And("^the C_Invoice_Candidate identified by (.*) is closed by hand$")
 	public void closeInvoiceCandidateByHand(@NonNull final String invoiceCandIdentifier)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
-		InterfaceWrapperHelper.refresh(invoiceCandidate);
-		invoiceCandBL.closeInvoiceCandidate(invoiceCandidate);
+		trxManager.runInNewTrx(() -> {
+			InterfaceWrapperHelper.setThreadInheritedTrxName(invoiceCandidate);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+			invoiceCandBL.closeInvoiceCandidate(invoiceCandidate);
+		});
 	}
 
 	/**

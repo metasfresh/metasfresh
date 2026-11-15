@@ -141,6 +141,20 @@ public class POSService
 		return ordersService.checkoutPayment(request);
 	}
 
+	public POSCardPaymentCheckResult checkCardPayment(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
+	{
+		return ordersService.checkCardPayment(posTerminalId, posOrderExternalId, posPaymentExternalId, userId);
+	}
+
+	public POSCardPaymentReleaseResult releaseCardPayment(@NonNull final POSCardPaymentReleaseRequest request)
+	{
+		return ordersService.releaseCardPayment(request);
+	}
+
 	public POSOrder refundPayment(
 			@NonNull final POSTerminalId posTerminalId,
 			@NonNull final POSOrderExternalId posOrderExternalId,

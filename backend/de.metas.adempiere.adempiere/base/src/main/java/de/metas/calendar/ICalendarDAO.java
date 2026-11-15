@@ -75,4 +75,7 @@ public interface ICalendarDAO extends ISingletonService
 	 * @throws AdempiereException if no default calendar is found
 	 */
 	@NonNull I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId);
+
+	/** Like {@link #getDefaultCalendar(OrgId)} but returns {@code null} instead of throwing when no default calendar is configured. */
+	@Nullable I_C_Calendar getDefaultCalendarOrNull(@NonNull final OrgId orgId);
 }

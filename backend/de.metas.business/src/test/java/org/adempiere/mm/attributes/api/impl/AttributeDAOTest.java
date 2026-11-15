@@ -24,9 +24,11 @@ package org.adempiere.mm.attributes.api.impl;
 
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.junit.jupiter.api.Assertions;
@@ -78,6 +80,19 @@ public class AttributeDAOTest
 		test_retrieveAttributeValueSubstitutes(attribute, "D");
 		test_retrieveAttributeValueSubstitutes(attribute, "E");
 		test_retrieveAttributeValueSubstitutes(attribute, "F");
+	}
+
+	@Test
+	public void isActive_trueOnlyForAnExistingActiveAttribute()
+	{
+		helper.createM_Attribute_TypeList("activeAttribute");
+		final I_M_Attribute inactiveAttribute = helper.createM_Attribute_TypeList("inactiveAttribute");
+		inactiveAttribute.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(inactiveAttribute);
+
+		Assertions.assertTrue(attributeDAO.isActive(AttributeCode.ofString("activeAttribute")));
+		Assertions.assertFalse(attributeDAO.isActive(AttributeCode.ofString("inactiveAttribute")));
+		Assertions.assertFalse(attributeDAO.isActive(AttributeCode.ofString("noSuchAttribute")));
 	}
 
 	/**

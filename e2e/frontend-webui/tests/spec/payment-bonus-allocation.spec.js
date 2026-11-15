@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { getPage, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PAYMENT_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 import { DOCTYPE_AR_RECEIPT } from '../utils/DocTypeIds';
 import { getFieldData, getTabRows, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
@@ -317,11 +317,7 @@ async function cellCents(row, columnName) {
 
 /** Select the invoice row and run "Auswahl für Zuordnung" (InvoicesView_MarkPreparedForAllocation). */
 async function markInvoiceForAllocation(page, row) {
-  // the first click into a grid may only focus it, so the click is repeated until the row is selected
-  await expect(async () => {
-    await row.locator('td[data-cy="cell-currencyCodeString"]').click();
-    await expect(row).toHaveClass(/row-selected/, { timeout: 2000 });
-  }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+  await selectRows([row]);
   await expectQuickAction(page, 'InvoicesView_MarkPreparedForAllocation', { disabled: false });
   await clickQuickAction(page, 'InvoicesView_MarkPreparedForAllocation');
   // once marked, the row offers to undo the mark instead

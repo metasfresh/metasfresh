@@ -117,6 +117,27 @@ public interface I_SUMUP_Transaction
 	String COLUMNNAME_CardType = "CardType";
 
 	/**
+	 * Set POS Invoice Card Settlement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_POS_InvoiceCardSettlement_ID (int C_POS_InvoiceCardSettlement_ID);
+
+	/**
+	 * Get POS Invoice Card Settlement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_POS_InvoiceCardSettlement_ID();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_C_POS_InvoiceCardSettlement_ID = new ModelColumn<>(I_SUMUP_Transaction.class, "C_POS_InvoiceCardSettlement_ID", null);
+	String COLUMNNAME_C_POS_InvoiceCardSettlement_ID = "C_POS_InvoiceCardSettlement_ID";
+
+	/**
 	 * Set POS Order.
 	 *
 	 * <br>Type: Search
@@ -270,7 +291,7 @@ public interface I_SUMUP_Transaction
 	String COLUMNNAME_JsonResponse = "JsonResponse";
 
 	/**
-	 * Set Refund amount.
+	 * Set Refund Amount.
 	 * Refund amount per product unit
 	 *
 	 * <br>Type: Amount
@@ -280,7 +301,7 @@ public interface I_SUMUP_Transaction
 	void setRefundAmt (BigDecimal RefundAmt);
 
 	/**
-	 * Get Refund amount.
+	 * Get Refund Amount.
 	 * Refund amount per product unit
 	 *
 	 * <br>Type: Amount
@@ -335,7 +356,7 @@ public interface I_SUMUP_Transaction
 	String COLUMNNAME_SUMUP_CardReader_ExternalId = "SUMUP_CardReader_ExternalId";
 
 	/**
-	 * Set Card Reader.
+	 * Set Kartenleser.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -344,7 +365,7 @@ public interface I_SUMUP_Transaction
 	void setSUMUP_CardReader_ID (int SUMUP_CardReader_ID);
 
 	/**
-	 * Get Card Reader.
+	 * Get Kartenleser.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -352,15 +373,11 @@ public interface I_SUMUP_Transaction
 	 */
 	int getSUMUP_CardReader_ID();
 
-	@Nullable de.metas.payment.sumup.repository.model.I_SUMUP_CardReader getSUMUP_CardReader();
-
-	void setSUMUP_CardReader(@Nullable de.metas.payment.sumup.repository.model.I_SUMUP_CardReader SUMUP_CardReader);
-
 	ModelColumn<I_SUMUP_Transaction, de.metas.payment.sumup.repository.model.I_SUMUP_CardReader> COLUMN_SUMUP_CardReader_ID = new ModelColumn<>(I_SUMUP_Transaction.class, "SUMUP_CardReader_ID", de.metas.payment.sumup.repository.model.I_SUMUP_CardReader.class);
 	String COLUMNNAME_SUMUP_CardReader_ID = "SUMUP_CardReader_ID";
 
 	/**
-	 * Set Card Reader Name.
+	 * Set Kartenleser Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -369,7 +386,7 @@ public interface I_SUMUP_Transaction
 	void setSUMUP_CardReader_Name (@Nullable java.lang.String SUMUP_CardReader_Name);
 
 	/**
-	 * Get Card Reader Name.
+	 * Get Kartenleser Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -418,10 +435,6 @@ public interface I_SUMUP_Transaction
 	 * <br>Virtual Column: false
 	 */
 	int getSUMUP_Config_ID();
-
-	de.metas.payment.sumup.repository.model.I_SUMUP_Config getSUMUP_Config();
-
-	void setSUMUP_Config(de.metas.payment.sumup.repository.model.I_SUMUP_Config SUMUP_Config);
 
 	ModelColumn<I_SUMUP_Transaction, de.metas.payment.sumup.repository.model.I_SUMUP_Config> COLUMN_SUMUP_Config_ID = new ModelColumn<>(I_SUMUP_Transaction.class, "SUMUP_Config_ID", de.metas.payment.sumup.repository.model.I_SUMUP_Config.class);
 	String COLUMNNAME_SUMUP_Config_ID = "SUMUP_Config_ID";

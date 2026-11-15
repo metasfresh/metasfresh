@@ -71,6 +71,27 @@ public interface I_SUMUP_API_Log
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set POS Invoice Card Settlement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_POS_InvoiceCardSettlement_ID (int C_POS_InvoiceCardSettlement_ID);
+
+	/**
+	 * Get POS Invoice Card Settlement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_POS_InvoiceCardSettlement_ID();
+
+	ModelColumn<I_SUMUP_API_Log, Object> COLUMN_C_POS_InvoiceCardSettlement_ID = new ModelColumn<>(I_SUMUP_API_Log.class, "C_POS_InvoiceCardSettlement_ID", null);
+	String COLUMNNAME_C_POS_InvoiceCardSettlement_ID = "C_POS_InvoiceCardSettlement_ID";
+
+	/**
 	 * Set POS Order.
 	 *
 	 * <br>Type: Search
@@ -305,10 +326,6 @@ public interface I_SUMUP_API_Log
 	 * <br>Virtual Column: false
 	 */
 	int getSUMUP_Config_ID();
-
-	@Nullable de.metas.payment.sumup.repository.model.I_SUMUP_Config getSUMUP_Config();
-
-	void setSUMUP_Config(@Nullable de.metas.payment.sumup.repository.model.I_SUMUP_Config SUMUP_Config);
 
 	ModelColumn<I_SUMUP_API_Log, de.metas.payment.sumup.repository.model.I_SUMUP_Config> COLUMN_SUMUP_Config_ID = new ModelColumn<>(I_SUMUP_API_Log.class, "SUMUP_Config_ID", de.metas.payment.sumup.repository.model.I_SUMUP_Config.class);
 	String COLUMNNAME_SUMUP_Config_ID = "SUMUP_Config_ID";

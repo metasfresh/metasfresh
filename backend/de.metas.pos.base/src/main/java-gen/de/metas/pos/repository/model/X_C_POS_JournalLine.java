@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_JournalLine extends org.compiere.model.PO implements I_C_POS_JournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 372286947L;
+	private static final long serialVersionUID = 490132615L;
 
     /** Standard Constructor */
     public X_C_POS_JournalLine (final Properties ctx, final int C_POS_JournalLine_ID, @Nullable final String trxName)
@@ -64,15 +64,18 @@ public class X_C_POS_JournalLine extends org.compiere.model.PO implements I_C_PO
 	}
 
 	@Override
-	public de.metas.pos.repository.model.I_C_POS_Journal getC_POS_Journal()
+	public void setC_POS_InvoiceCardSettlement_ID (final int C_POS_InvoiceCardSettlement_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_POS_Journal_ID, de.metas.pos.repository.model.I_C_POS_Journal.class);
+		if (C_POS_InvoiceCardSettlement_ID < 1) 
+			set_Value (COLUMNNAME_C_POS_InvoiceCardSettlement_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_POS_InvoiceCardSettlement_ID, C_POS_InvoiceCardSettlement_ID);
 	}
 
 	@Override
-	public void setC_POS_Journal(final de.metas.pos.repository.model.I_C_POS_Journal C_POS_Journal)
+	public int getC_POS_InvoiceCardSettlement_ID() 
 	{
-		set_ValueFromPO(COLUMNNAME_C_POS_Journal_ID, de.metas.pos.repository.model.I_C_POS_Journal.class, C_POS_Journal);
+		return get_ValueAsInt(COLUMNNAME_C_POS_InvoiceCardSettlement_ID);
 	}
 
 	@Override
@@ -106,18 +109,6 @@ public class X_C_POS_JournalLine extends org.compiere.model.PO implements I_C_PO
 	}
 
 	@Override
-	public de.metas.pos.repository.model.I_C_POS_Order getC_POS_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_POS_Order_ID, de.metas.pos.repository.model.I_C_POS_Order.class);
-	}
-
-	@Override
-	public void setC_POS_Order(final de.metas.pos.repository.model.I_C_POS_Order C_POS_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_POS_Order_ID, de.metas.pos.repository.model.I_C_POS_Order.class, C_POS_Order);
-	}
-
-	@Override
 	public void setC_POS_Order_ID (final int C_POS_Order_ID)
 	{
 		if (C_POS_Order_ID < 1) 
@@ -130,18 +121,6 @@ public class X_C_POS_JournalLine extends org.compiere.model.PO implements I_C_PO
 	public int getC_POS_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_POS_Order_ID);
-	}
-
-	@Override
-	public de.metas.pos.repository.model.I_C_POS_Payment getC_POS_Payment()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_POS_Payment_ID, de.metas.pos.repository.model.I_C_POS_Payment.class);
-	}
-
-	@Override
-	public void setC_POS_Payment(final de.metas.pos.repository.model.I_C_POS_Payment C_POS_Payment)
-	{
-		set_ValueFromPO(COLUMNNAME_C_POS_Payment_ID, de.metas.pos.repository.model.I_C_POS_Payment.class, C_POS_Payment);
 	}
 
 	@Override

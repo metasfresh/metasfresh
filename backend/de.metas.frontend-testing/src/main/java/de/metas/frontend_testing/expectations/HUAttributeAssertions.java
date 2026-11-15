@@ -54,12 +54,17 @@ final class HUAttributeAssertions
 			@NonNull final Map<String, String> expectations,
 			@NonNull final I_M_HU hu)
 	{
+		assertAttributes(expectations, services.getAttributes(hu));
+	}
+
+	public static void assertAttributes(
+			@NonNull final Map<String, String> expectations,
+			@NonNull final ImmutableAttributeSet actualAttributes)
+	{
 		if (expectations.isEmpty())
 		{
 			return;
 		}
-
-		final ImmutableAttributeSet actualAttributes = services.getAttributes(hu);
 
 		softly(() -> {
 			softlyPutContext("expectedAttributes", expectations);

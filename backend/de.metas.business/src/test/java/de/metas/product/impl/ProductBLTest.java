@@ -1,5 +1,6 @@
 package de.metas.product.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.gs1.GTIN;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -146,6 +147,52 @@ class ProductBLTest
 			// pinned by EAN13Test.StandardProductCodes.happyCase2 for this exact barcode.
 			final ProductId p = product("F2", null, "702766721");
 			assertThat(productBL.getProductIdByGTIN(GTIN.ofString("7617027667210"))).contains(p);
+		}
+	}
+
+	@Nested
+	class getProductIdsByGTIN
+	{
+		@Test
+		void labelGtin_noExactMatch_fallsBackToClientAwareLookup()
+		{
+			// no M_Product.GTIN match; found only through its EAN-13 product code (same value as fixedPrefix_fallsBackToEAN13ProductCode_whenNoGTINMatch)
+			final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			p.setValue("F3");
+			p.setEAN13_ProductCode("702766721");
+			InterfaceWrapperHelper.saveRecord(p);
+
+			assertThat(productBL.getProductIdsByGTIN(GTIN.ofString("7617027667210"), ClientId.METASFRESH))
+					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
+		}
+
+		/** failure scenario: a variable-weight EAN-13 (prefix 28) is a per-item price/weight code, never a product identity: even a product holding it verbatim in M_Product.GTIN is not matched */
+		@Test
+		void variableWeightEan13_heldVerbatimOnProductGtin_isNotMatchedExactly()
+		{
+			final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			p.setValue("V1");
+			p.setGTIN("2859414004825");
+			InterfaceWrapperHelper.saveRecord(p);
+
+			assertThat(productBL.getProductIdsByGTIN(GTIN.ofString("2859414004825"), ClientId.METASFRESH)).isEmpty();
+		}
+
+		@Test
+		void labelGtin_sharedByTwoProducts_exactMatchesWinOverStrictFallback()
+		{
+			final I_M_Product a = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			a.setValue("S1");
+			a.setGTIN("02001234567893");
+			InterfaceWrapperHelper.saveRecord(a);
+			final I_M_Product b = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			b.setValue("S2");
+			b.setGTIN("02001234567893");
+			InterfaceWrapperHelper.saveRecord(b);
+
+			assertThat(productBL.getProductIdsByGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
+					.isInstanceOf(ImmutableSet.class)
+					.containsExactly(ProductId.ofRepoId(a.getM_Product_ID()), ProductId.ofRepoId(b.getM_Product_ID()));
 		}
 	}
 }

@@ -22,9 +22,11 @@
 
 package de.metas.payment.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -54,6 +56,12 @@ public interface IPaymentBL extends ISingletonService
 	void save(I_C_Payment payment);
 
 	Set<PaymentId> getPaymentIds(@NonNull PaymentQuery query);
+
+	@NonNull
+	ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull Collection<OrderId> orderIds);
+
+	@NonNull
+	Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull OrderId orderId);
 
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 
