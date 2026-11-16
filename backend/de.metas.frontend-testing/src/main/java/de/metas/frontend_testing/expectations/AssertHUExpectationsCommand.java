@@ -141,6 +141,13 @@ class AssertHUExpectationsCommand
 					.isEqualTo(expectation.getQtyTUs());
 		}
 
+		if (expectation.getParentPIItemQtyTUs() != null)
+		{
+			assertThat(services.getParentPIItemQtyTUs(huId))
+					.as("ParentPIItemQtyTUs")
+					.isEqualTo(expectation.getParentPIItemQtyTUs());
+		}
+
 		if (expectation.getStorages() != null)
 		{
 			assertHUStorages(expectation.getStorages(), huId);

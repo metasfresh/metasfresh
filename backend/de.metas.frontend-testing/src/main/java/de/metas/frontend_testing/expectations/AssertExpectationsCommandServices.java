@@ -5,6 +5,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -115,6 +116,15 @@ public class AssertExpectationsCommandServices
 	public List<I_M_HU> getIncludedHUs(@NonNull final HuId huId)
 	{
 		return handlingUnitsDAO.retrieveIncludedHUs(huId);
+	}
+
+	/** @return the TU count of the packing instruction item (of the parent LU) via which the given HU is attached to its LU */
+	public int getParentPIItemQtyTUs(@NonNull final HuId huId)
+	{
+		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(handlingUnitsBL.getById(huId));
+		return parentItem != null && parentItem.getM_HU_PI_Item_ID() > 0
+				? parentItem.getM_HU_PI_Item().getQty().intValueExact()
+				: -1;
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
