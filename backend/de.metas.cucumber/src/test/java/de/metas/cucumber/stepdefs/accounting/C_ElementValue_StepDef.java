@@ -86,6 +86,18 @@ public class C_ElementValue_StepDef
 		setPostActualAndStatistical(accountDAO.getElementValueIdByAccountId(incomeSummaryAccountId));
 	}
 
+	/**
+	 * Registers the income summary account of the primary accounting schema under the given identifier, so {@code Fact_Acct records are matching} can match it by {@code Account_ID}.
+	 */
+	@Given("the income summary account of the primary accounting schema is registered as {string}")
+	public void registerIncomeSummaryAccount(@NonNull final String identifier)
+	{
+		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(Env.getCtx());
+		final AccountId incomeSummaryAccountId = acctSchema.getGeneralLedger().getIncomeSummaryAcct().getAccountId();
+		final ElementValueId elementValueId = accountDAO.getElementValueIdByAccountId(incomeSummaryAccountId);
+		elementValueTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), InterfaceWrapperHelper.load(elementValueId.getRepoId(), I_C_ElementValue.class));
+	}
+
 	private void setPostActualAndStatistical(@NonNull final ElementValueId elementValueId)
 	{
 		final I_C_ElementValue elementValue = InterfaceWrapperHelper.load(elementValueId.getRepoId(), I_C_ElementValue.class);

@@ -21,6 +21,7 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
     And C_ElementValue "gjDebit" allows posting of actual and statistical amounts
     And C_ElementValue "gjCredit" allows posting of actual and statistical amounts
     And the income summary account of the primary accounting schema allows posting of actual and statistical amounts
+    And the income summary account of the primary accounting schema is registered as "gjIncomeSummary"
 
   @Id:S33766_01
   Scenario: a year-end closing journal is posted again after its posting type was changed from Statistical to Actual
@@ -36,10 +37,28 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
     And the GL_Journal_GenerateYearEnding process is invoked for DateAcct "2018-12-31" and the created GL journal is registered as "gj"
     And the GL journal "gj" is completed
     And the GL journal "gj" is eventually posted with PostingType "S" and 4 Fact_Acct lines
+    # the year-end journal closes gjDebit (balance 100 Dr) and gjCredit (balance 100 Cr) against the income summary account
+    # (GL_Journal_GenerateYearEnding.createFacts_ProfitAndLoss_ThisYear); the net of both is 0, so there is no retained-earnings line
+    # Fact_Acct records are matching checks ALL Fact_Acct rows of the journal, whatever their PostingType: an unexpected row fails it
+    And Fact_Acct records are matching
+      | AccountConceptualName | Account_ID      | AmtAcctDr | AmtAcctCr | Record_ID |
+      | *                     | gjIncomeSummary | 100       |           | gj        |
+      | *                     | gjDebit         |           | 100       | gj        |
+      | *                     | gjCredit        | 100       |           | gj        |
+      | *                     | gjIncomeSummary |           | 100       | gj        |
+    And the posting requests of documents gj are remembered
 
     When the GL_Journal_ChangePostingType process is invoked for GL journal "gj" with PostingType "A"
 
     Then the GL journal "gj" is eventually posted with PostingType "A" and 4 Fact_Acct lines
+    And documents gj got a new posting request
+    # same accounts and amounts as before; since all rows of the journal are matched, no PostingType=S row may be left
+    And Fact_Acct records are matching
+      | AccountConceptualName | Account_ID      | AmtAcctDr | AmtAcctCr | Record_ID |
+      | *                     | gjIncomeSummary | 100       |           | gj        |
+      | *                     | gjDebit         |           | 100       | gj        |
+      | *                     | gjCredit        | 100       |           | gj        |
+      | *                     | gjIncomeSummary |           | 100       | gj        |
 
   @Id:S33766_03
   Scenario: reactivating a posted GL journal does not post it again
