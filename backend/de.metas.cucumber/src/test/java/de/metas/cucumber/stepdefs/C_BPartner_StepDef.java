@@ -445,6 +445,13 @@ public class C_BPartner_StepDef
 					.value(paymentTermValue)
 					.build()).getRepoId());
 		}
+		else
+		{
+			// identifier of a payment term created by "metasfresh contains C_PaymentTerm"; unknown identifiers fail
+			row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID)
+					.map(paymentTermTable::getId)
+					.ifPresent(paymentTermId -> bPartnerRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+		}
 
 		final String paymentTermPOValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermPOValue))
