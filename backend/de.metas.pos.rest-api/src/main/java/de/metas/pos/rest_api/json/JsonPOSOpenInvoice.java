@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.invoice.InvoiceId;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
@@ -24,7 +25,8 @@ public class JsonPOSOpenInvoice
 	@NonNull InvoiceId invoiceId;
 	@NonNull String documentNo;
 	@NonNull String bpartnerName;
-	@NonNull LocalDate dateInvoiced;
+	/** Written as an ISO date string ({@code yyyy-MM-dd}) whatever the object mapper's timestamp setting is, so the till can parse it. */
+	@JsonFormat(shape = JsonFormat.Shape.STRING) @NonNull LocalDate dateInvoiced;
 
 	/** Grand total of the invoice, in the invoice's currency. */
 	@NonNull BigDecimal grandTotal;

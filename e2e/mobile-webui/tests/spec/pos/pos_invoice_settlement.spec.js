@@ -76,12 +76,21 @@ test('Settling an open sales invoice in cash at the till', async ({ page }) => {
     if (results.length !== 1) {
         throw new Error(`Expected exactly one open invoice for documentNo ${invoice.documentNo}, got:\n` + JSON.stringify(results, null, 2));
     }
+    // The wire format of the date is an ISO date string; the till shows it as a date in the cashier's language
+    // (a de_DE login: dd.MM.yyyy). Expected is derived from the server's own date, not from today's date.
+    const dateInvoicedIso = results[0].dateInvoiced;
+    if (typeof dateInvoicedIso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateInvoicedIso)) {
+        throw new Error(`Expected dateInvoiced as an ISO date string, got: ${JSON.stringify(dateInvoicedIso)}`);
+    }
+    const [invoiceYear, invoiceMonth, invoiceDay] = dateInvoicedIso.split('-');
+    const dateInvoicedStr = `${invoiceDay}.${invoiceMonth}.${invoiceYear}`;
     const openAmt = Number(results[0].openAmt);
     const openAmtStr = openAmt.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     await POSInvoiceSettlementModal.expectResult({
         documentNo: invoice.documentNo,
         bpartnerName,
+        dateInvoiced: dateInvoicedStr,
         openAmt: `${openAmtStr} €`,
     });
 
