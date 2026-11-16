@@ -187,7 +187,7 @@ public class PickingRestController
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
 		final List<HuId> luIds = pickingMobileApplication.getClosedLUs(wfProcessId, lineId, getLoggedUserId());
-		return handlingUnitsService.getFullHUsList(luIds, Env.getADLanguageOrBaseLanguage());
+		return handlingUnitsService.getHUsListOfAnyStatus(luIds, Env.getADLanguageOrBaseLanguage());
 	}
 
 	@PostMapping("/job/{wfProcessId}/target/close")

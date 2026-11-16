@@ -4,6 +4,7 @@ import { getClosedLUs, setLUPickingTarget, hasClosedLUs } from '../../../api/pic
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useQuery } from '../../../hooks/useQuery';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { toastError } from '../../../utils/toast';
 
 export const useClosedHUs = ({ wfProcessId, lineId }) => {
   const dispatch = useDispatch();
@@ -12,6 +13,7 @@ export const useClosedHUs = ({ wfProcessId, lineId }) => {
   const { isPending: isLoading, data: closedLUs } = useQuery({
     queryKey: [wfProcessId, lineId],
     queryFn: () => getClosedLUs({ wfProcessId, lineId }).then(({ hus }) => hus),
+    onError: (axiosError) => toastError({ axiosError }),
   });
 
   const reopenLU = (hu) => {
