@@ -958,6 +958,8 @@ public class HUTransformService
 		@NonNull @Builder.Default TargetLU targetLU = TargetLU.NONE;
 		@Nullable HashSet<HuId> alreadyExtractedTUIds;
 		@Nullable ProductId expectedProductId;
+		/** product moved onto the new LU(s); only relevant if {@link #targetLU} is a new LU. See {@link #tuToNewLU(I_M_HU, QtyTU, HuPackingInstructionsId, ProductId)} */
+		@Nullable ProductId newLUProductId;
 	}
 
 	/**
@@ -1027,9 +1029,11 @@ public class HUTransformService
 				}
 				else if (targetLU.isNewLU())
 				{
-					extractedTUs = tuToNewLU(tu.toHU(), qtyTUsToExtract, targetLU.getNewLUIdNotNull());
+					extractedTUs = tuToNewLU(tu.toHU(), qtyTUsToExtract, targetLU.getNewLUIdNotNull(), request.getNewLUProductId());
 					extractedTUs.assertNoTopLevelTUs();
-					targetLU = TargetLU.ofExistingLU(extractedTUs.getSingleLURecord());
+					// the TUs might not fit on one LU; any further TUs go to the last one that was created
+					final List<I_M_HU> newLUs = extractedTUs.getLURecords();
+					targetLU = TargetLU.ofExistingLU(newLUs.get(newLUs.size() - 1));
 				}
 				else if (targetLU.isNone())
 				{

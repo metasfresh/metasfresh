@@ -1065,6 +1065,7 @@ public class PickingJobPickCommand
 					.sourceLU(pickFromHU)
 					.qtyTU(qtyToPickTUs)
 					.targetLU(targetLU)
+					.newLUProductId(productId) // picked product: lets a new LU use its product-specific LU->TU packing item
 					.build());
 			InterfaceWrapperHelper.setThreadInheritedTrxName(result.getAllTURecords()); // workaround because the returned HUs have trxName=null
 		}
@@ -1092,7 +1093,7 @@ public class PickingJobPickCommand
 			}
 			else if (pickingTarget.isNewLU())
 			{
-				result = huTransformService.tuToNewLU(pickFromHU, qtyToPickTUs, pickingTarget.getLuPIIdNotNull());
+				result = huTransformService.tuToNewLU(pickFromHU, qtyToPickTUs, pickingTarget.getLuPIIdNotNull(), productId);
 			}
 			else
 			{
