@@ -252,6 +252,7 @@ public class GL_Journal_StepDef
 		return accountId.getRepoId();
 	}
 
+	/** Completes the GL journal and waits for status CO. */
 	@And("the GL journal {string} is completed")
 	public void completeGLJournal(@NonNull final String identifier)
 	{
@@ -261,6 +262,7 @@ public class GL_Journal_StepDef
 		InterfaceWrapperHelper.refresh(record);
 	}
 
+	/** Reactivates the (completed) GL journal. */
 	@When("the GL journal {string} is reactivated")
 	public void reactivateGLJournal(@NonNull final String identifier)
 	{
@@ -301,6 +303,7 @@ public class GL_Journal_StepDef
 		assertThat(factAcctCount).as("Fact_Acct lines of %s", identifier).isZero();
 	}
 
+	/** Asserts the current {@code GL_Journal.PostingType} of the journal. */
 	@Then("the GL journal {string} has GL_Journal.PostingType {string}")
 	public void assertPostingType(@NonNull final String identifier, @NonNull final String postingType)
 	{
@@ -309,6 +312,7 @@ public class GL_Journal_StepDef
 		assertThat(record.getPostingType()).as("GL_Journal.PostingType of %s", identifier).isEqualTo(postingType);
 	}
 
+	/** Asserts the current {@code GL_JournalBatch.PostingType} of the batch. */
 	@Then("the GL journal batch {string} has GL_JournalBatch.PostingType {string}")
 	public void assertBatchPostingType(@NonNull final String identifier, @NonNull final String postingType)
 	{
@@ -317,6 +321,7 @@ public class GL_Journal_StepDef
 		assertThat(record.getPostingType()).as("GL_JournalBatch.PostingType of %s", identifier).isEqualTo(postingType);
 	}
 
+	/** Runs process {@code GL_Journal_ChangePostingType} on the batch, as the WebUI role. */
 	@When("the GL_Journal_ChangePostingType process is invoked for GL journal batch {string} with PostingType {string}")
 	public void invokeChangePostingTypeOnBatch(@NonNull final String identifier, @NonNull final String postingType)
 	{

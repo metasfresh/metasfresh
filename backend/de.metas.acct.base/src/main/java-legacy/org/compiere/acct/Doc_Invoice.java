@@ -1102,7 +1102,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	}
 
 	/**
-	 * Un-posts the invoice if it is posted, through {@link IPostingService#unpost(DocumentUnpostRequest)}, which also queues it for posting again when it is completed or closed.
+	 * Un-posts the invoice if it is posted, through {@link IPostingService#unpost(DocumentUnpostRequest)}.
 	 */
 	public static void unpostIfNeeded(final I_C_Invoice invoice)
 	{

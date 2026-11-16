@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01106_Re-Post_Documents
 Feature: A completed invoice whose accounting entries were deleted is posted again
 ##
 ## Several actions delete the accounting entries (Fact_Acct) of an invoice and set C_Invoice.Posted='N' while the invoice stays completed:

@@ -34,8 +34,7 @@ public interface IPostingService extends ISingletonService
 	 * Un-posts the document: checks that the accounting period is open, deletes the document's accounting records ({@code Fact_Acct}), sets {@code Posted=false}
 	 * and, if the document is still completed or closed ({@code DocStatus} CO or CL), schedules it for posting again.
 	 * <p>
-	 * Same meaning as the database function {@code de_metas_acct.fact_acct_unpost}; use this instead of calling {@code IFactAcctDAO} from business code
-	 * whenever the document is meant to stay booked. A document that is not completed or closed (drafted, reversed, voided, in progress) is just un-posted, not queued.
+	 * A document that is not completed or closed (drafted, reversed, voided, in progress) is just un-posted, not queued.
 	 *
 	 * @throws org.adempiere.exceptions.AdempiereException if the period is closed
 	 */

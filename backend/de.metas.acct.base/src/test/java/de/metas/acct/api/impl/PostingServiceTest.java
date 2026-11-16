@@ -6,13 +6,13 @@ import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.DocumentUnpostRequest;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.calendar.IPeriodBL;
-import de.metas.document.DocBaseType;
-import de.metas.document.engine.IDocument;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
+import de.metas.calendar.IPeriodBL;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.IDocument;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.ad.table.ReferencedRecordRepository;
@@ -216,6 +216,7 @@ public class PostingServiceTest
 
 		private I_C_Invoice createInvoice(final String docStatus, final boolean posted)
 		{
+			Env.setLoggedUserId(Env.getCtx(), NOTIFY_USER_ID); // the POJO layer sets UpdatedBy from the logged user, as a persisted record always has it
 			final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 			invoice.setDocStatus(docStatus);
 			invoice.setPosted(posted);
@@ -250,6 +251,7 @@ public class PostingServiceTest
 			final DocumentPostRequest posting = captor.getValue().toSet().iterator().next();
 			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
 			assertThat(posting.getClientId()).isEqualTo(ClientId.ofRepoId(invoice.getAD_Client_ID()));
+			assertThat(posting.getOnErrorNotifyUserId()).isEqualTo(NOTIFY_USER_ID);
 		}
 
 		@Test

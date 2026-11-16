@@ -17,6 +17,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -25,13 +26,13 @@ import org.adempiere.ad.table.ReferencedRecordRepository;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.acct.Doc;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -88,21 +89,24 @@ public class PostingService implements IPostingService
 		final DocBaseType docBaseType = request.getDocBaseType() != null
 				? request.getDocBaseType()
 				: docTypeDAO.getDocBaseTypeById(Check.assumeNotNull(request.getDocTypeId(), "docTypeId"));
-		periodBL.testPeriodOpen(InterfaceWrapperHelper.getCtx(document), request.getDateAcct(), docBaseType, InterfaceWrapperHelper.getValueOrNull(document, "AD_Org_ID"));
+		final OrgId orgId = InterfaceWrapperHelper.getOrgId(document).orElse(OrgId.ANY);
+		periodBL.testPeriodOpen(InterfaceWrapperHelper.getCtx(document), request.getDateAcct(), docBaseType, orgId.getRepoId());
 
 		factAcctDAO.deleteForDocumentModel(document);
 
-		InterfaceWrapperHelper.setValue(document, "Posted", false);
+		// Posted is not updateable on some document tables (e.g. GL_Journal): bypass the read-only check, as the generated setPosted() does via set_ValueNoCheck
+		InterfaceWrapperHelper.disableReadOnlyColumnCheck(document);
+		InterfaceWrapperHelper.setValue(document, I_C_Invoice.COLUMNNAME_Posted, false); // the column has the same name on every postable table
 		InterfaceWrapperHelper.save(document);
 
-		final String docStatus = InterfaceWrapperHelper.getValueOrNull(document, "DocStatus");
+		final String docStatus = InterfaceWrapperHelper.getValueOrNull(document, IDocument.COLUMNNAME_DocStatus);
 		if (IDocument.STATUS_Completed.equals(docStatus) || IDocument.STATUS_Closed.equals(docStatus))
 		{
-			final Integer updatedBy = InterfaceWrapperHelper.getValueOrNull(document, "UpdatedBy");
+			final UserId updatedBy = InterfaceWrapperHelper.getUpdatedBy(document);
 			schedule(DocumentPostRequest.builder()
 					.record(TableRecordReference.of(document))
-					.clientId(ClientId.ofRepoId(InterfaceWrapperHelper.<Integer>getValueOrNull(document, "AD_Client_ID")))
-					.onErrorNotifyUserId(updatedBy != null && updatedBy > 0 ? UserId.ofRepoId(updatedBy) : null)
+					.clientId(InterfaceWrapperHelper.getClientId(document).orElseThrow(() -> new AdempiereException("No AD_Client_ID in " + document)))
+					.onErrorNotifyUserId(updatedBy.isSystemUser() ? null : updatedBy)
 					.build());
 		}
 	}

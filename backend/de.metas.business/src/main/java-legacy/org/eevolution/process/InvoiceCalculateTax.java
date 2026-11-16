@@ -77,11 +77,12 @@ public class InvoiceCalculateTax extends JavaProcess
 	public static void recalculateTax(final MInvoice invoice)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IPostingService postingService = Services.get(IPostingService.class);
 		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 
 		//
 		// Delete accounting /UnPost
-		Services.get(IPostingService.class).unpost(DocumentUnpostRequest.builder()
+		postingService.unpost(DocumentUnpostRequest.builder()
 				.document(invoice)
 				.dateAcct(invoice.getDateAcct())
 				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))

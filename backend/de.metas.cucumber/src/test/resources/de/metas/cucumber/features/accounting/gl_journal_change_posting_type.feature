@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01106_Re-Post_Documents
 Feature: Changing the posting type of a completed GL journal keeps it posted
 ##
 ## "Change posting type" (process GL_Journal_ChangePostingType) deletes the journal's accounting entries (Fact_Acct) and sets
