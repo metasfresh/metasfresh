@@ -102,7 +102,7 @@ public class PostingService implements IPostingService
 			schedule(DocumentPostRequest.builder()
 					.record(TableRecordReference.of(document))
 					.clientId(ClientId.ofRepoId(InterfaceWrapperHelper.<Integer>getValueOrNull(document, "AD_Client_ID")))
-					.onErrorNotifyUserId(updatedBy != null ? UserId.ofRepoId(updatedBy) : null)
+					.onErrorNotifyUserId(updatedBy != null && updatedBy > 0 ? UserId.ofRepoId(updatedBy) : null)
 					.build());
 		}
 	}

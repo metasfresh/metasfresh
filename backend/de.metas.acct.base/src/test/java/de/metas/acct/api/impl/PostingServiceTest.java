@@ -3,7 +3,15 @@ package de.metas.acct.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.DocumentUnpostRequest;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.calendar.IPeriodBL;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.IDocument;
+import de.metas.acct.posting.DocumentPostingBusService;
+import java.sql.Timestamp;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
@@ -46,6 +54,9 @@ public class PostingServiceTest
 	private DocumentPostingUserNotificationService userNotificationService;
 
 	private PostingService postingService;
+	private IFactAcctDAO factAcctDAO;
+	private IPeriodBL periodBL;
+	private DocumentPostingBusService postingBusService;
 
 	@BeforeEach
 	void init()
@@ -70,6 +81,13 @@ public class PostingServiceTest
 		SpringContextHolder.registerJUnitBean(DocumentPostingLogService.class, documentPostingLogService);
 		SpringContextHolder.registerJUnitBean(DocumentPostingUserNotificationService.class, userNotificationService);
 		SpringContextHolder.registerJUnitBean(ReferencedRecordRepository.class, referencedRecordRepositorySupplier.get());
+
+		factAcctDAO = mock(IFactAcctDAO.class);
+		Services.registerService(IFactAcctDAO.class, factAcctDAO);
+		periodBL = mock(IPeriodBL.class);
+		Services.registerService(IPeriodBL.class, periodBL);
+		postingBusService = mock(DocumentPostingBusService.class);
+		SpringContextHolder.registerJUnitBean(DocumentPostingBusService.class, postingBusService);
 
 		postingService = new PostingService();
 	}
@@ -185,6 +203,76 @@ public class PostingServiceTest
 			verify(documentPostingLogService, never()).logPostingOK(any());
 			verify(documentPostingLogService, never()).logPostingError(any(), any());
 			verify(userNotificationService, never()).notifyPostingError(any(UserId.class), any(), any(Exception.class));
+		}
+	}
+
+	@Nested
+	@DisplayName("unpost")
+	class Unpost
+	{
+		private final Timestamp dateAcct = Timestamp.valueOf("2024-01-15 00:00:00");
+
+		private I_C_Invoice createInvoice(final String docStatus, final boolean posted)
+		{
+			final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+			invoice.setDocStatus(docStatus);
+			invoice.setPosted(posted);
+			invoice.setDateAcct(dateAcct);
+			InterfaceWrapperHelper.save(invoice);
+			return invoice;
+		}
+
+		private DocumentUnpostRequest requestFor(final I_C_Invoice invoice)
+		{
+			return DocumentUnpostRequest.builder()
+					.document(invoice)
+					.dateAcct(dateAcct)
+					.docBaseType(DocBaseType.PurchaseInvoice)
+					.build();
+		}
+
+		@Test
+		void completedDocument_factsDeleted_postedReset_andPostingScheduled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(periodBL).testPeriodOpen(any(), eq(dateAcct), eq(DocBaseType.PurchaseInvoice), eq(invoice.getAD_Org_ID()));
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			InterfaceWrapperHelper.refresh(invoice);
+			assertThat(invoice.isPosted()).isFalse();
+			final org.mockito.ArgumentCaptor<DocumentPostMultiRequest> captor = org.mockito.ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
+			verify(postingBusService).sendAfterCommit(captor.capture());
+			assertThat(captor.getValue().toSet()).hasSize(1);
+			final DocumentPostRequest posting = captor.getValue().toSet().iterator().next();
+			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
+			assertThat(posting.getClientId()).isEqualTo(ClientId.ofRepoId(invoice.getAD_Client_ID()));
+		}
+
+		@Test
+		void draftedDocument_isUnposted_butNotScheduled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Drafted, false);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			verify(postingBusService, never()).sendAfterCommit(any());
+		}
+
+		@Test
+		void closedPeriod_nothingIsChanged()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
+			org.mockito.Mockito.doThrow(new AdempiereException("period closed")).when(periodBL).testPeriodOpen(any(), any(), any(), org.mockito.ArgumentMatchers.anyInt());
+
+			assertThatThrownBy(() -> postingService.unpost(requestFor(invoice))).hasMessageContaining("period closed");
+
+			verify(factAcctDAO, never()).deleteForDocumentModel(any());
+			InterfaceWrapperHelper.refresh(invoice);
+			assertThat(invoice.isPosted()).isTrue();
+			verify(postingBusService, never()).sendAfterCommit(any());
 		}
 	}
 }
