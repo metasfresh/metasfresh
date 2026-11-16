@@ -31,11 +31,36 @@ const SUMUP_PATH = '/sumup/v0.1';
 const SUMUP_TRANSACTIONS_API_PATH = '/sumup/v2.1';
 
 let registeredStubIds = [];
+let isUnservedPathStubRegistered = false;
 const transactionStubIdsByClientTransactionId = new Map();
 
 const transactionsPath = ({ merchantCode }) => `${SUMUP_TRANSACTIONS_API_PATH}/merchants/${merchantCode}/transactions`;
 
 const registerStub = async (stub) => {
+    await registerUnservedPathStubIfMissing();
+    return registerMapping(stub);
+};
+
+/**
+ * Answers every SumUp request no other mapping serves with 501, instead of WireMock's default 404: the app server reads a
+ * 404 of the lookup as "SumUp does not know the transaction", so a request to an outdated path would pass as that answer.
+ * Lowest priority (WireMock: higher number = lower priority; default 5), so every specific mapping wins.
+ */
+const registerUnservedPathStubIfMissing = async () => {
+    if (isUnservedPathStubRegistered) return;
+    await registerMapping({
+        priority: 10,
+        request: { urlPathPattern: '/sumup/.*' },
+        response: {
+            status: 501,
+            headers: { 'Content-Type': 'application/json' },
+            jsonBody: { error: 'SumUp stub: no mapping for this request' },
+        },
+    });
+    isUnservedPathStubRegistered = true;
+};
+
+const registerMapping = async (stub) => {
     const response = await page.request.post(`${WIREMOCK_BASE_URL}/__admin/mappings`, {
         data: stub,
         headers: { 'Content-Type': 'application/json' },
@@ -184,6 +209,7 @@ export const SumUpStub = {
     removeAll: async () => {
         const stubIds = [...registeredStubIds];
         transactionStubIdsByClientTransactionId.clear();
+        isUnservedPathStubRegistered = false;
         for (const stubId of stubIds) {
             await removeStub(stubId);
         }
