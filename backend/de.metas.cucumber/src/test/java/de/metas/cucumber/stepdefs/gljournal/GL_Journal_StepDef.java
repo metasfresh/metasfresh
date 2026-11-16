@@ -28,16 +28,17 @@ import de.metas.acct.GLCategoryType;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.process.GL_Journal_ChangePostingType;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
-import de.metas.acct.process.GL_Journal_ChangePostingType;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -66,6 +67,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
@@ -105,7 +108,7 @@ public class GL_Journal_StepDef
 	@NonNull private final GL_Journal_StepDefData glJournalTable;
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
 
-	private final GLCategoryRepository glCategoryRepository = org.compiere.SpringContextHolder.instance.getBean(GLCategoryRepository.class);
+	private final GLCategoryRepository glCategoryRepository = SpringContextHolder.instance.getBean(GLCategoryRepository.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
@@ -199,7 +202,7 @@ public class GL_Journal_StepDef
 	{
 		final AccountId accountId = accountDAO.getOrCreateOutOfTrx(
 				AccountDimension.builder()
-						.setAcctSchemaId(de.metas.acct.api.AcctSchemaId.ofRepoId(journal.getC_AcctSchema_ID()))
+						.setAcctSchemaId(AcctSchemaId.ofRepoId(journal.getC_AcctSchema_ID()))
 						.setC_ElementValue_ID(elementValueId.getRepoId())
 						.setAD_Client_ID(journal.getAD_Client_ID())
 						.setAD_Org_ID(OrgId.ANY.getRepoId())
@@ -214,9 +217,9 @@ public class GL_Journal_StepDef
 	@Given("C_ElementValue {string} allows posting of statistical amounts")
 	public void allowStatisticalPosting(@NonNull final String identifier)
 	{
-		final org.compiere.model.I_C_ElementValue elementValue = InterfaceWrapperHelper.load(
+		final I_C_ElementValue elementValue = InterfaceWrapperHelper.load(
 				elementValueTable.getId(StepDefDataIdentifier.ofString(identifier)).getRepoId(),
-				org.compiere.model.I_C_ElementValue.class);
+				I_C_ElementValue.class);
 		elementValue.setPostStatistical(true);
 		InterfaceWrapperHelper.saveRecord(elementValue);
 	}
@@ -277,7 +280,7 @@ public class GL_Journal_StepDef
 		{
 			StepDefUtil.tryAndWait(20, 500, () -> isPosted(record, postingType, expectedFactAcctCount));
 		}
-		catch (final RuntimeException | AssertionError e)
+		catch (final RuntimeException e)
 		{
 			// fall through to the assertions below, which describe the actual state
 		}
