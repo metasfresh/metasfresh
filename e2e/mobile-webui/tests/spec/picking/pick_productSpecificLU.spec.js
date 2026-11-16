@@ -6,14 +6,15 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 
-// Picking whole TUs (crates) from a source LU into a NEW LU target.
+// Picking whole TUs (crates) into a NEW LU target, from a source LU or from a standalone source TU.
 //
 // LU packing instruction "LU" holds IFCO-like TUs:
 // * generic LU item: 30 TUs per LU
 // * LU item bound to product "XY": 40 TUs per LU
 // Product "OTHER" has no product-specific LU item and uses the same LU and TU packing instructions.
 // Each TU holds 4 pieces.
-// The source HU is one big LU ("SRC_LU", 60 TUs per LU) holding 60 TUs of the picked product; 50 TUs are picked.
+// LU source: one big LU ("SRC_LU", 60 TUs per LU) holding 60 TUs of the picked product; 50 TUs are picked.
+// TU source (sourceIsTU): a standalone TU of the picked product is picked into the new LU.
 const createMasterdata = async ({ pickedProduct, sourceIsTU = false }) => {
     const otherProduct = pickedProduct === 'XY' ? 'OTHER' : 'XY';
     return await Backend.createMasterdata({
