@@ -61,6 +61,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -335,11 +336,7 @@ public class GL_Journal_StepDef
 	public void assertFactAcctCountOfAllPostingTypes(@NonNull final String identifier, final int expectedFactAcctCount)
 	{
 		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		final int count = queryBL.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_GL_Journal.class))
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, record.getGL_Journal_ID())
-				.create()
-				.count();
+		final int count = countFactAcct(record, null);
 		assertThat(count).as("Fact_Acct lines of GL journal %s over all PostingTypes", identifier).isEqualTo(expectedFactAcctCount);
 	}
 
@@ -349,13 +346,18 @@ public class GL_Journal_StepDef
 		return record.isPosted() && countFactAcct(record, postingType) == expectedFactAcctCount;
 	}
 
-	private int countFactAcct(@NonNull final I_GL_Journal record, @NonNull final String postingType)
+	/**
+	 * @param postingType if {@code null}, the {@code Fact_Acct} rows of ALL posting types are counted
+	 */
+	private int countFactAcct(@NonNull final I_GL_Journal record, @Nullable final String postingType)
 	{
-		return queryBL.createQueryBuilder(I_Fact_Acct.class)
+		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_GL_Journal.class))
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, record.getGL_Journal_ID())
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, postingType)
-				.create()
-				.count();
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, record.getGL_Journal_ID());
+		if (postingType != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, postingType);
+		}
+		return queryBuilder.create().count();
 	}
 }
