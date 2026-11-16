@@ -54,7 +54,8 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     And for costing, create completed invoice with one line
       | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
       | invoice      | po_l1          | matchInv      |
-    And Wait until documents invoice are posted
+    # the invoice match is posted asynchronously (it books costs); a user reverses the receipt only after that is done
+    And Wait until documents invoice,matchInv are posted
 
     When the material receipt identified by receipt is reversed as receiptReversal
 
@@ -80,21 +81,29 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     And Wait until documents invoice are posted
     And the invoice identified by invoice is reversed
     And the reversal of invoice invoice is identified by invoiceReversal
-    And Wait until documents invoice,invoiceReversal are posted
+    And validate created invoice lines
+      | C_InvoiceLine_ID    | C_Invoice_ID    | M_Product_ID | QtyInvoiced |
+      | invoiceReversalLine | invoiceReversal | product      | -10         |
+    And M_MatchInv are found
+      | M_MatchInv_ID    | C_InvoiceLine_ID    | M_InOutLine_ID |
+      | matchInvReversal | invoiceReversalLine | receipt_line1  |
+    # the invoice matches are posted asynchronously (they book costs); a user reverses the receipt only after that is done
+    And Wait until documents invoice,invoiceReversal,matchInv,matchInvReversal are posted
     And the posting requests of documents invoice,invoiceReversal are remembered
 
     When the material receipt identified by receipt is reversed as receiptReversal
 
     Then Wait until documents invoice,invoiceReversal are posted
-    # the reversed receipt no longer clears the invoiced goods: the whole amount is booked on the expense account (and booked the other way round by the reversal)
+    # the reversed receipt no longer clears the invoiced goods: the whole amount is booked on the expense account
+    # (the reversal books the same lines with negative amounts on the same side)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID       |
       | V_Liability_Acct      |             | 108.10 CHF  | invoice         |
       | P_Expense_Acct        | 100 CHF     |             | invoice         |
       | T_Credit_Acct         | 8.10 CHF    |             | invoice         |
-      | V_Liability_Acct      | 108.10 CHF  |             | invoiceReversal |
-      | P_Expense_Acct        |             | 100 CHF     | invoiceReversal |
-      | T_Credit_Acct         |             | 8.10 CHF    | invoiceReversal |
+      | V_Liability_Acct      |             | -108.10 CHF | invoiceReversal |
+      | P_Expense_Acct        | -100 CHF    |             | invoiceReversal |
+      | T_Credit_Acct         | -8.10 CHF   |             | invoiceReversal |
 
   @Id:S33766_13
   Scenario: matching the in/out costs adds no posting request for a cost invoice that is not posted yet
