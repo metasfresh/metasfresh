@@ -150,6 +150,11 @@ public class GroupTests
 
 	}
 
+	private static GroupRegularLine regularLineOf(final BigDecimal lineNetAmt, final ProductCategoryId productCategoryId)
+	{
+		return GroupRegularLine.builder().lineNetAmt(lineNetAmt).productCategoryIds(ImmutableSet.of(productCategoryId)).build();
+	}
+
 	private GroupRegularLine.GroupRegularLineBuilder regularLine(int lineNetAmt)
 	{
 		return GroupRegularLine.builder().lineNetAmt(BigDecimal.valueOf(lineNetAmt));
@@ -549,5 +554,38 @@ public class GroupTests
 
 		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
 				.containsExactly(new BigDecimal("-100.00"), new BigDecimal("-90.00"));
+	}
+
+	/** Rounding pair (per-position Bonus): the percentage is taken of the group's summed base, rounded half up to the price precision, whatever the number of regular lines. */
+	@Test
+	void percentageOfBase_threeLinesOf16_50_equalsOneLineOf49_50()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group threeLines = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.additive(true)
+				.regularLine(regularLineOf(new BigDecimal("16.50"), goods))
+				.regularLine(regularLineOf(new BigDecimal("16.50"), goods))
+				.regularLine(regularLineOf(new BigDecimal("16.50"), goods))
+				.build();
+		threeLines.addNewCompensationLine(newPercentageDiscountRequest(3, goods));
+		threeLines.updateAllCompensationLines();
+
+		final Group oneLine = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 2))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.additive(true)
+				.regularLine(regularLineOf(new BigDecimal("49.50"), goods))
+				.build();
+		oneLine.addNewCompensationLine(newPercentageDiscountRequest(3, goods));
+		oneLine.updateAllCompensationLines();
+
+		// 3 % of 49.50 = 1.485, rounded half up
+		assertThat(threeLines.getCompensationLines()).extracting(GroupCompensationLine::getBaseAmt).containsExactly(new BigDecimal("49.50"));
+		assertThat(threeLines.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt).containsExactly(new BigDecimal("-1.49"));
+		assertThat(oneLine.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt).containsExactly(new BigDecimal("-1.49"));
 	}
 }

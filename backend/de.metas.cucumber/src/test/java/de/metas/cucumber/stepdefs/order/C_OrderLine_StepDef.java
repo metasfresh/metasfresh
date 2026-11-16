@@ -460,7 +460,8 @@ public class C_OrderLine_StepDef
 	 * contract-triggered, group that was never registered under its own identifier).
 	 * {@code OPT.GroupCompensation_Product_Category_ID} (identifier of an {@code M_Product_Category}, or {@code null} for none)
 	 * also narrows the lookup, so that two compensation lines with the same product and quantity can be told apart;
-	 * so does {@code OPT.GroupCompensationPercentage} when given, for two such lines that share the category as well.
+	 * so does {@code OPT.GroupCompensationPercentage} when given, for two such lines that share the category as well;
+	 * and {@code C_Project_ID} (identifier of a {@code C_Project}, or {@code null} for no project), for lines that differ only by their position.
 	 * <pre>
 	 * And validate the created order lines
 	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
@@ -493,6 +494,10 @@ public class C_OrderLine_StepDef
 									categoryIdentifier.isNullPlaceholder() ? null : productCategoryTable.getId(categoryIdentifier)));
 					row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
 							.ifPresent(percentage -> orderLineQueryBuilder.addEqualsFilter(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage, percentage));
+					row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Project_ID)
+							.ifPresent(projectIdentifier -> orderLineQueryBuilder.addEqualsFilter(
+									I_C_OrderLine.COLUMNNAME_C_Project_ID,
+									projectIdentifier.isNullPlaceholder() ? null : projectTable.getId(projectIdentifier)));
 					final I_C_OrderLine orderLineRecord = orderLineQueryBuilder
 							.create()
 							.firstOnlyNotNull(I_C_OrderLine.class);

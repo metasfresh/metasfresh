@@ -1078,3 +1078,82 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
     And validate the created orders
       | C_Order_ID   | InvoiceStatus |
       | orderPartial | CI            |
+
+  # ##############################################################################################
+  # One Bonus line per position, on the order and on the invoice. Shape of a customer's real sales order and its invoice:
+  # goods 110,00 on position 1, 220,00 on position 2, 55,00 without position, 3 % Bonus
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC1_referenceCase
+  Scenario: Goods on two positions and without position: one Bonus line per position on the order and on the invoice
+    Given metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderRef   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | ol_ref1    | orderRef              | goods1                  | 1          | 110   | position1    |
+      | ol_ref2    | orderRef              | goods2                  | 1          | 220   | position2    |
+      | ol_ref3    | orderRef              | goods3                  | 1          | 55    |              |
+
+    When the order identified by orderRef is completed
+
+    # 3 % of 110,00 / 220,00 / 55,00, each Bonus line on its own position
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_refBonus1              | orderRef              | discountProduct         | 1          | true                        | -3.30 | mainTerm                          | position1    |
+      | ol_refBonus2              | orderRef              | discountProduct         | 1          | true                        | -6.60 | mainTerm                          | position2    |
+      | ol_refBonus3              | orderRef              | discountProduct         | 1          | true                        | -1.65 | mainTerm                          | null         |
+    And the order identified by orderRef has 6 order lines
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_ref1    | ol_ref1                   | N             |
+      | ss_ref2    | ol_ref2                   | N             |
+      | ss_ref3    | ol_ref3                   | N             |
+      | ss_refB1   | ol_refBonus1              | N             |
+      | ss_refB2   | ol_refBonus2              | N             |
+      | ss_refB3   | ol_refBonus3              | N             |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_ref1               |
+      | ss_ref2               |
+      | ss_ref3               |
+      | ss_refB1              |
+      | ss_refB2              |
+      | ss_refB3              |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_ref1        | ic_ref1                |
+      | ol_ref2        | ic_ref2                |
+      | ol_ref3        | ic_ref3                |
+      | ol_refBonus1   | ic_refB1               |
+      | ol_refBonus2   | ic_refB2               |
+      | ol_refBonus3   | ic_refB3               |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_ref1                           |
+      | ic_ref2                           |
+      | ic_ref3                           |
+      | ic_refB1                          |
+      | ic_refB2                          |
+      | ic_refB3                          |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoiceRef              | ic_ref1                           |
+
+    # one Bonus invoice line per position with the amount of its order line; total Bonus -11,55
+    Then validate invoice lines for invoiceRef:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 1           | position1    | 110        |
+      | goods2          | 1           | position2    | 220        |
+      | goods3          | 1           | null         | 55         |
+      | discountProduct | 1           | position1    | -3.30      |
+      | discountProduct | 1           | position2    | -6.60      |
+      | discountProduct | 1           | null         | -1.65      |
