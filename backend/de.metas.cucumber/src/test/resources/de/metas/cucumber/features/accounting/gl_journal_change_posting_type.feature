@@ -15,20 +15,25 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
       | Identifier |
       | gjDebit    |
       | gjCredit   |
-    And C_ElementValue "gjDebit" allows posting of statistical amounts
-    And C_ElementValue "gjCredit" allows posting of statistical amounts
+    And C_ElementValue "gjDebit" allows posting of actual and statistical amounts
+    And C_ElementValue "gjCredit" allows posting of actual and statistical amounts
+    And the income summary account of the primary accounting schema allows posting of actual and statistical amounts
 
   @Id:S33766_01
-  Scenario: a completed GL journal is posted again after its posting type was changed from Statistical to Actual
+  Scenario: a year-end closing journal is posted again after its posting type was changed from Statistical to Actual
+    # real year-end flow: expense/revenue balances booked as Actual are closed by a Statistical journal created by GL_Journal_GenerateYearEnding
     Given metasfresh contains GL_Journal:
       | Identifier | DateDoc    | PostingType |
-      | gj         | 2024-01-10 | S           |
+      | gjActual   | 2024-01-10 | A           |
     And metasfresh contains GL_JournalLines:
       | GL_Journal_ID | Account_DR_ID | Account_CR_ID | Amount |
-      | gj            | gjDebit       | gjCredit      | 100.00 |
+      | gjActual      | gjDebit       | gjCredit      | 100.00 |
+    And the GL journal "gjActual" is completed
+    And the GL journal "gjActual" is eventually posted with PostingType "A" and 2 Fact_Acct lines
+    And the GL_Journal_GenerateYearEnding process is invoked for DateAcct "2024-12-31" and the created GL journal is registered as "gj"
     And the GL journal "gj" is completed
-    And the GL journal "gj" is eventually posted with PostingType "S" and 2 Fact_Acct lines
+    And the GL journal "gj" is eventually posted with PostingType "S" and 4 Fact_Acct lines
 
     When the GL_Journal_ChangePostingType process is invoked for GL journal "gj" with PostingType "A"
 
-    Then the GL journal "gj" is eventually posted with PostingType "A" and 2 Fact_Acct lines
+    Then the GL journal "gj" is eventually posted with PostingType "A" and 4 Fact_Acct lines

@@ -33,6 +33,7 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.process.GL_Journal_ChangePostingType;
+import de.metas.acct.process.GL_Journal_GenerateYearEnding;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -68,7 +69,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
@@ -78,7 +78,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -210,20 +216,6 @@ public class GL_Journal_StepDef
 		return accountId.getRepoId();
 	}
 
-	/**
-	 * Allows posting with posting type Statistical on the account ({@code C_ElementValue.PostStatistical}), which a journal with
-	 * {@code PostingType=S} requires.
-	 */
-	@Given("C_ElementValue {string} allows posting of statistical amounts")
-	public void allowStatisticalPosting(@NonNull final String identifier)
-	{
-		final I_C_ElementValue elementValue = InterfaceWrapperHelper.load(
-				elementValueTable.getId(StepDefDataIdentifier.ofString(identifier)).getRepoId(),
-				I_C_ElementValue.class);
-		elementValue.setPostStatistical(true);
-		InterfaceWrapperHelper.saveRecord(elementValue);
-	}
-
 	@And("the GL journal {string} is completed")
 	public void completeGLJournal(@NonNull final String identifier)
 	{
@@ -234,13 +226,58 @@ public class GL_Journal_StepDef
 	}
 
 	/**
+	 * Runs the year-end process ({@link GL_Journal_GenerateYearEnding}) for the primary accounting schema and the standard org, as the WebUI role.
+	 * It creates one drafted GL journal with {@code PostingType=S} that moves the balances of all expense/revenue accounts
+	 * (booked as {@code PostingType=A} within the year of the given date) to the income summary account. The journal is registered under the given identifier.
+	 */
+	@When("the GL_Journal_GenerateYearEnding process is invoked for DateAcct {string} and the created GL journal is registered as {string}")
+	public void invokeGenerateYearEnding(@NonNull final String dateAcct, @NonNull final String identifier)
+	{
+		final AcctSchema acctSchema = acctSchemaBL.getPrimaryAcctSchema(StepDefConstants.CLIENT_ID);
+		final Timestamp dateAcctTs = Timestamp.valueOf(LocalDate.parse(dateAcct).atStartOfDay());
+
+		final Set<Integer> idsBefore = retrieveYearEndingJournalIds(dateAcctTs);
+
+		runProcessAsWebUIRole(GL_Journal_GenerateYearEnding.class, StepDefConstants.CLIENT_ID, null, builder -> builder
+				.addParameter(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, acctSchema.getId().getRepoId())
+				.addParameter(I_GL_Journal.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID.getRepoId())
+				.addParameter(I_GL_Journal.COLUMNNAME_DateAcct, dateAcctTs));
+
+		final Set<Integer> newIds = new HashSet<>(retrieveYearEndingJournalIds(dateAcctTs));
+		newIds.removeAll(idsBefore);
+		assertThat(newIds).as("GL_Journal records (PostingType=S, DateAcct=%s) created by GL_Journal_GenerateYearEnding", dateAcct).hasSize(1);
+
+		glJournalTable.putOrReplace(StepDefDataIdentifier.ofString(identifier),
+				InterfaceWrapperHelper.load(newIds.iterator().next(), I_GL_Journal.class));
+	}
+
+	private Set<Integer> retrieveYearEndingJournalIds(@NonNull final Timestamp dateAcct)
+	{
+		return queryBL.createQueryBuilder(I_GL_Journal.class)
+				.addEqualsFilter(I_GL_Journal.COLUMNNAME_PostingType, X_GL_Journal.POSTINGTYPE_Statistical)
+				.addEqualsFilter(I_GL_Journal.COLUMNNAME_DateAcct, dateAcct)
+				.create()
+				.listIds()
+				.stream().collect(Collectors.toSet());
+	}
+
+	/**
 	 * Runs the "Change posting type" process (class {@link GL_Journal_ChangePostingType}) on the journal, as the WebUI role of the journal's client.
 	 */
 	@When("the GL_Journal_ChangePostingType process is invoked for GL journal {string} with PostingType {string}")
 	public void invokeChangePostingType(@NonNull final String identifier, @NonNull final String postingType)
 	{
 		final I_GL_Journal journal = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(GL_Journal_ChangePostingType.class);
+		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, ClientId.ofRepoId(journal.getAD_Client_ID()), journal, builder -> builder.addParameter("PostingType", postingType));
+	}
+
+	private void runProcessAsWebUIRole(
+			@NonNull final Class<?> processClass,
+			@NonNull final ClientId clientId,
+			@Nullable final I_GL_Journal record,
+			@NonNull final Consumer<ProcessInfo.ProcessInfoBuilder> parameterSetter)
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
 
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
@@ -250,14 +287,18 @@ public class GL_Journal_StepDef
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
 
-		ProcessInfo.builder()
+		final ProcessInfo.ProcessInfoBuilder builder = ProcessInfo.builder()
 				.setAD_Process_ID(processId.getRepoId())
-				.setClientId(ClientId.ofRepoId(journal.getAD_Client_ID()))
+				.setClientId(clientId)
 				.setRoleId(roleId)
-				.setCreateTemporaryCtx()
-				.setRecord(I_GL_Journal.Table_Name, journal.getGL_Journal_ID())
-				.addParameter("PostingType", postingType)
-				.buildAndPrepareExecution()
+				.setCreateTemporaryCtx();
+		if (record != null)
+		{
+			builder.setRecord(I_GL_Journal.Table_Name, record.getGL_Journal_ID());
+		}
+		parameterSetter.accept(builder);
+
+		builder.buildAndPrepareExecution()
 				.switchContextWhenRunning()
 				.executeSync()
 				.getResult()
@@ -280,9 +321,9 @@ public class GL_Journal_StepDef
 		{
 			StepDefUtil.tryAndWait(20, 500, () -> isPosted(record, postingType, expectedFactAcctCount));
 		}
-		catch (final RuntimeException e)
+		catch (final AssertionError | RuntimeException e)
 		{
-			// fall through to the assertions below, which describe the actual state
+			// the wait timed out (StepDefUtil.tryAndWait throws AssertionFailedError) - fall through to the assertions below, which describe the actual state
 		}
 
 		InterfaceWrapperHelper.refresh(record);

@@ -1,11 +1,14 @@
 package de.metas.cucumber.stepdefs.accounting;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueCreateOrUpdateRequest;
 import de.metas.elementvalue.ElementValueService;
@@ -13,6 +16,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -27,6 +31,7 @@ import org.compiere.util.Env;
 public class C_ElementValue_StepDef
 {
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
 
 	private final C_ElementValue_StepDefData elementValueTable;
@@ -58,6 +63,35 @@ public class C_ElementValue_StepDef
 			row.getAsOptionalIdentifier()
 					.ifPresent(identifier -> elementValueTable.putOrReplace(identifier, record));
 		});
+	}
+
+	/**
+	 * Allows posting with posting types Actual and Statistical on the account ({@code C_ElementValue.PostActual} /
+	 * {@code C_ElementValue.PostStatistical}), which a GL journal with {@code PostingType=A} / {@code S} requires for every account it books.
+	 */
+	@Given("C_ElementValue {string} allows posting of actual and statistical amounts")
+	public void allowStatisticalPosting(@NonNull final String identifier)
+	{
+		setPostActualAndStatistical(elementValueTable.getId(StepDefDataIdentifier.ofString(identifier)));
+	}
+
+	/**
+	 * Same as above, for the income summary account of the primary accounting schema (the account the year-end process books to).
+	 */
+	@Given("the income summary account of the primary accounting schema allows posting of actual and statistical amounts")
+	public void allowStatisticalPostingOnIncomeSummaryAccount()
+	{
+		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(Env.getCtx());
+		final AccountId incomeSummaryAccountId = acctSchema.getGeneralLedger().getIncomeSummaryAcct().getAccountId();
+		setPostActualAndStatistical(accountDAO.getElementValueIdByAccountId(incomeSummaryAccountId));
+	}
+
+	private void setPostActualAndStatistical(@NonNull final ElementValueId elementValueId)
+	{
+		final I_C_ElementValue elementValue = InterfaceWrapperHelper.load(elementValueId.getRepoId(), I_C_ElementValue.class);
+		elementValue.setPostActual(true);
+		elementValue.setPostStatistical(true);
+		InterfaceWrapperHelper.saveRecord(elementValue);
 	}
 
 	private I_C_ElementValue createOrLoad(@NonNull final DataTableRow row)
