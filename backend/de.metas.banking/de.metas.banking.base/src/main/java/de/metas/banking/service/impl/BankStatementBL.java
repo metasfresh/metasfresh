@@ -22,10 +22,10 @@
 
 package de.metas.banking.service.impl;
 
+import de.metas.acct.api.DocumentUnpostRequest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.DocumentPostRequest;
-import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.banking.BankAccountId;
@@ -58,14 +58,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MPeriod;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 @Service
@@ -74,7 +72,6 @@ public class BankStatementBL implements IBankStatementBL
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final BankAccountService bankAccountService;
 	private final MoneyService moneyService;
@@ -130,19 +127,18 @@ public class BankStatementBL implements IBankStatementBL
 	@Override
 	public void unpost(final I_C_BankStatement bankStatement)
 	{
-		// Make sure the period is open
 		if (bankStatement.isPosted())
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
-			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
-
-			factAcctDAO.deleteForDocumentModel(bankStatement);
-
-			bankStatement.setPosted(false);
-			InterfaceWrapperHelper.save(bankStatement);
+			postingService.unpost(DocumentUnpostRequest.builder()
+					.document(bankStatement)
+					.dateAcct(bankStatement.getStatementDate())
+					.docBaseType(DocBaseType.BankStatement)
+					.build());
 		}
-
-		postIt(bankStatement);
+		else
+		{
+			postIt(bankStatement);
+		}
 	}
 
 	private void postIt(final I_C_BankStatement bankStatement)
