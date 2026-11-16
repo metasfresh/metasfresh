@@ -57,7 +57,12 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_P
 /**
  * Step definitions that create costing-relevant documents (orders, receipts, invoices, match-invoices) from a single table.
  *
- * <p><b>Gherkin usage example</b>: see the features under {@code costing/}, e.g. {@code costing/moving_average_invoice/}.
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * Given for costing, create completed order with one line
+ *   | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+ *   | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+ * }</pre>
  */
 @RequiredArgsConstructor
 public class CostingDocuments_StepDef

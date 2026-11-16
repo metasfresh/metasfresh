@@ -4,7 +4,7 @@
 Feature: Changing the posting type of a completed GL journal keeps it posted
 ##
 ## "Change posting type" (process GL_Journal_ChangePostingType) deletes the journal's accounting entries (Fact_Acct) and sets
-## GL_Journal.Posted='N'. A completed journal must then be posted again with the new posting type; today nothing queues the re-posting.
+## GL_Journal.Posted='N'. A completed journal must then be posted again with the new posting type, so changing the posting type queues the re-posting.
 ##
 
   Background:

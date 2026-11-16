@@ -2,6 +2,7 @@ package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.acct.posting.log.DocumentPostingLogRequestType;
 import de.metas.acct.model.I_Document_Acct_Log;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,11 +42,18 @@ public class PostingQueueChecks
 		int notes;
 	}
 
+	/** Remembers the current posting-log and note counts of the document; later asserts compare against them. */
 	public void remember(@NonNull final TableRecordReference documentRef)
 	{
 		remembered.put(documentRef, currentCounts(documentRef));
 	}
 
+	/**
+	 * Waits until the counts of the document stayed unchanged for {@link #STABLE_MILLIS} (at most {@link #MAX_WAIT_MILLIS}),
+	 * then asserts that no {@link I_Document_Acct_Log} entry and no {@link I_AD_Note} was added since {@link #remember}.
+	 *
+	 * @throws AssertionError if {@link #remember} was not called for the document before, or something was added
+	 */
 	public void assertNothingNewSinceRemembered(@NonNull final TableRecordReference documentRef) throws InterruptedException
 	{
 		final Counts before = remembered.get(documentRef);
@@ -56,19 +64,21 @@ public class PostingQueueChecks
 		assertThat(now.getNotes()).as("AD_Note entries of %s since remembered", documentRef).isEqualTo(before.getNotes());
 	}
 
-	/** Polls (at most {@link #MAX_WAIT_MILLIS}) until a posting request ({@link I_Document_Acct_Log}) was added since remembered, then asserts it. */
+	/**
+	 * Polls (at most {@link #MAX_WAIT_MILLIS}) until a posting request ({@link I_Document_Acct_Log} of type Enqueued) was added since {@link #remember}, then asserts it.
+	 *
+	 * @throws AssertionError if {@link #remember} was not called for the document before, or no new request appeared in time
+	 */
 	public void assertNewPostingRequestSinceRemembered(@NonNull final TableRecordReference documentRef) throws InterruptedException
 	{
 		final Counts before = remembered.get(documentRef);
 		assertThat(before).as("counts remembered for %s", documentRef).isNotNull();
 
-		final long start = System.currentTimeMillis();
-		Counts current = currentCounts(documentRef);
-		while (current.getEnqueuedLogs() <= before.getEnqueuedLogs() && System.currentTimeMillis() - start < MAX_WAIT_MILLIS)
-		{
-			Thread.sleep(POLL_MILLIS);
-			current = currentCounts(documentRef);
-		}
+		StepDefUtil.tryAndWait(
+				MAX_WAIT_MILLIS / 1000,
+				POLL_MILLIS,
+				() -> currentCounts(documentRef).getEnqueuedLogs() > before.getEnqueuedLogs());
+		final Counts current = currentCounts(documentRef);
 		assertThat(current.getEnqueuedLogs()).as("Document_Acct_Log entries of type Enqueued of %s since remembered (a new posting request is expected)", documentRef).isGreaterThan(before.getEnqueuedLogs());
 	}
 

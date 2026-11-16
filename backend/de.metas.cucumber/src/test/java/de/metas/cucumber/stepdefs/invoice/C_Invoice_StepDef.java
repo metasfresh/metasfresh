@@ -168,7 +168,11 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 /**
  * Step definitions for invoices ({@code C_Invoice}): creating, completing, reversing, loading and asserting them.
  *
- * <p><b>Gherkin usage example</b>: see {@code accounting/invoice_unpost_requeue.feature}.
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * And the invoice identified by invoice is reversed
+ * And the reversal of invoice invoice is identified by invoiceReversal
+ * }</pre>
  */
 @RequiredArgsConstructor
 public class C_Invoice_StepDef

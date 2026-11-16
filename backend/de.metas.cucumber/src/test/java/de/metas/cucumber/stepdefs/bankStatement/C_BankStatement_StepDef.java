@@ -63,8 +63,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p><b>Gherkin usage example</b>:
  * <pre>{@code
  * And metasfresh contains C_BankStatement:
- *   | Identifier | ... |
- *   | bs         | ... |
+ *   | Identifier | C_BP_BankAccount_ID | StatementDate |
+ *   | bs         | bankAccount         | 2026-07-20    |
  * And the C_BankStatement identified by bs is completed
  * }</pre>
  */

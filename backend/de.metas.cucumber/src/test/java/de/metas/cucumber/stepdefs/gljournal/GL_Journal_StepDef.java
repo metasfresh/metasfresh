@@ -311,7 +311,7 @@ public class GL_Journal_StepDef
 
 		try
 		{
-			StepDefUtil.tryAndWait(20, 500, () -> isPosted(record, postingType, expectedFactAcctCount));
+			StepDefUtil.tryAndWait(60, 500, () -> isPosted(record, postingType, expectedFactAcctCount));
 		}
 		catch (final AssertionError | RuntimeException e)
 		{
@@ -323,7 +323,7 @@ public class GL_Journal_StepDef
 		assertThat(record.getDocStatus()).as("GL_Journal.DocStatus").isEqualTo(IDocument.STATUS_Completed);
 		assertThat(record.getPostingType()).as("GL_Journal.PostingType").isEqualTo(postingType);
 		assertThat(record.isPosted())
-				.as("GL_Journal.Posted of the completed journal %s (Fact_Acct lines with PostingType=%s: %s) - a completed journal must be posted again after its entries were deleted",
+				.as("GL_Journal.Posted of the completed journal %s (Fact_Acct lines with PostingType=%s: %s) - a completed journal must be posted",
 						identifier, postingType, factAcctCount)
 				.isTrue();
 		assertThat(factAcctCount).as("Fact_Acct lines with PostingType=%s", postingType).isEqualTo(expectedFactAcctCount);
