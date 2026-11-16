@@ -545,7 +545,7 @@ test('Close LU / Reopen LU', async ({ page }) => {
     await expect(page.getByTestId('targetLU-button')).toContainText(':'); // "Current: <LU>" instead of "New"
 });
 
-// me03 #32732: "LU wieder öffnen" showed an empty list when another closed LU of the job was already shipped
+// "LU wieder öffnen" showed an empty list when another closed LU of the job was already shipped
 // (the server threw "Not a physical HU" for the whole list). A shipped LU stays listed, greyed out, with a status label.
 // noinspection JSUnusedLocalSymbols
 test('Reopen LU: a shipped LU is listed greyed out, the other closed LU can be reopened', async ({ page }) => {
@@ -590,7 +590,7 @@ test('Reopen LU: a shipped LU is listed greyed out, the other closed LU can be r
     await PickingJobScreen.waitForScreen();
 });
 
-// me03 #32732: whatever makes the closed-LU list fail, the screen must tell the operator (never a blank list).
+// whatever makes the closed-LU list fail, the screen must tell the operator (never a blank list).
 // noinspection JSUnusedLocalSymbols
 test('Reopen LU: an error message is shown when the closed LU list cannot be loaded', async ({ page }) => {
     // === ALLURE METADATA ===

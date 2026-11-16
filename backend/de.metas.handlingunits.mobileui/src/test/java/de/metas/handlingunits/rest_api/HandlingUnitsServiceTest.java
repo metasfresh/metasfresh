@@ -3,8 +3,12 @@ package de.metas.handlingunits.rest_api;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
-import de.metas.inventory.InventoryCandidateService;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.inventory.InventoryCandidateService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -12,14 +16,14 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.labels.HULabelService;
-import de.metas.handlingunits.grai.HUGraiService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.groups.Tuple;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import java.util.Optional;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,17 +35,15 @@ class HandlingUnitsServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		org.compiere.SpringContextHolder.registerJUnitBean(de.metas.ad_reference.ADReferenceService.newMocked());
-
-		final HUQRCodesService huQRCodesService = Mockito.mock(HUQRCodesService.class);
-		Mockito.when(huQRCodesService.getSingleQRCodeByHuIdOrEmpty(Mockito.any())).thenReturn(Optional.empty());
+		final ADReferenceService adReferenceService = ADReferenceService.newMocked();
+		SpringContextHolder.registerJUnitBean(adReferenceService);
 
 		service = new HandlingUnitsService(
-				huQRCodesService,
-				Mockito.mock(HUQtyService.class),
-				Mockito.mock(HULabelService.class),
-				Mockito.mock(InventoryCandidateService.class),
-				Mockito.mock(HUGraiService.class));
+				HUQRCodesService.newInstanceForUnitTesting(),
+				new HUQtyService(InventoryService.newInstanceForUnitTesting()),
+				HULabelService.newInstanceForUnitTesting(),
+				new InventoryCandidateService(adReferenceService),
+				new HUGraiService(new HUPIGraiRepository()));
 	}
 
 	private int createLUPIVersionId()
@@ -74,13 +76,14 @@ class HandlingUnitsServiceTest
 		final HuId shipped = createHU(X_M_HU.HUSTATUS_Shipped);
 		final HuId destroyed = createHU(X_M_HU.HUSTATUS_Destroyed);
 
-		final JsonHUList result = service.getHUsListOfAnyStatus(java.util.Arrays.asList(active, shipped, destroyed), "en_US");
+		final JsonHUList result = service.getHUsListOfAnyStatus(Arrays.asList(active, shipped, destroyed), "en_US");
 
+		assertThat(result.getHus()).hasSize(3); // hasClosedLUs = !getClosedLUs().isEmpty() on this same list
 		assertThat(result.getHus())
 				.extracting(JsonHU::getId, JsonHU::getHuStatus)
 				.containsExactly(
-						org.assertj.core.groups.Tuple.tuple(String.valueOf(active.getRepoId()), X_M_HU.HUSTATUS_Active),
-						org.assertj.core.groups.Tuple.tuple(String.valueOf(shipped.getRepoId()), X_M_HU.HUSTATUS_Shipped),
-						org.assertj.core.groups.Tuple.tuple(String.valueOf(destroyed.getRepoId()), X_M_HU.HUSTATUS_Destroyed));
+						Tuple.tuple(String.valueOf(active.getRepoId()), X_M_HU.HUSTATUS_Active),
+						Tuple.tuple(String.valueOf(shipped.getRepoId()), X_M_HU.HUSTATUS_Shipped),
+						Tuple.tuple(String.valueOf(destroyed.getRepoId()), X_M_HU.HUSTATUS_Destroyed));
 	}
 }

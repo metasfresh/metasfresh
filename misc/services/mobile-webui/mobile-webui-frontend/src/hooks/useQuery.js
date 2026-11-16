@@ -24,6 +24,7 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess, on
     // Load data
     if (doLog) console.log(`useQuery(${queryId}) - started`, { queryKey, queryFn });
     setIsPending(true);
+    setError(undefined);
     queryFn()
       .then((data) => {
         if (interrupted) {
