@@ -48,6 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -226,6 +227,27 @@ class JsonSerializeDeserializeTest
 				.build());
 
 		assertThat(json).contains("\"date\":\"2026-09-24T10:15:30Z\"");
+	}
+
+	/**
+	 * The app server's REST converter is built from {@link Jackson2ObjectMapperBuilder#json()}, which writes a {@link LocalDate} as an array
+	 * ({@code [2026,11,4]}); the till renders the value as-is, so it has to be an ISO date string.
+	 */
+	@Test
+	void test_JsonPOSOpenInvoice_dateInvoiced_isISO8601_withTheRestConvertersMapper() throws JsonProcessingException
+	{
+		final ObjectMapper restConverterObjectMapper = Jackson2ObjectMapperBuilder.json().build();
+
+		final String json = restConverterObjectMapper.writeValueAsString(JsonPOSOpenInvoice.builder()
+				.invoiceId(InvoiceId.ofRepoId(1))
+				.documentNo("INV-001")
+				.bpartnerName("Customer")
+				.dateInvoiced(LocalDate.of(2026, 11, 4))
+				.grandTotal(new BigDecimal("119.00"))
+				.openAmt(new BigDecimal("119.00"))
+				.build());
+
+		assertThat(json).contains("\"dateInvoiced\":\"2026-11-04\"");
 	}
 
 	@Test
