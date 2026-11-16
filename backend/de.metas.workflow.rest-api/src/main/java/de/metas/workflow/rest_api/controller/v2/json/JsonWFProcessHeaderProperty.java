@@ -36,6 +36,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonWFProcessHeaderProperty
 {
+	String id;
 	String caption;
 	String value;
 
@@ -45,6 +46,7 @@ public class JsonWFProcessHeaderProperty
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 		return builder()
+				.id(entry.getId())
 				.caption(entry.getCaption().translate(adLanguage))
 				.value(entry.getValue().translate(adLanguage))
 				.build();

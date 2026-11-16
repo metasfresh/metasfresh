@@ -26,8 +26,11 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestion;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
+import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
@@ -47,10 +50,12 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetScannedBarcodeSupport
@@ -104,7 +109,29 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	@Override
 	public WFProcess setScannedBarcode(@NonNull final SetScannedBarcodeRequest request)
 	{
-		final PickingSlotQRCode pickingSlotQRCode = PickingSlotQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode());
+		final ScannedCode scannedCode = ScannedCode.ofString(request.getScannedBarcode());
+
+		final GlobalQRCode globalQRCode;
+		try
+		{
+			globalQRCode = GlobalQRCode.ofString(request.getScannedBarcode());
+		}
+		catch (final Exception ex)
+		{
+			log.debug("QR parse failed for scanned code '{}', showing user-friendly error", scannedCode, ex);
+			throw MobileQRCodeMessages.newNotRecognizedException(scannedCode);
+		}
+
+		final PickingSlotQRCode pickingSlotQRCode;
+		try
+		{
+			pickingSlotQRCode = PickingSlotQRCode.ofGlobalQRCode(globalQRCode);
+		}
+		catch (final Exception ex)
+		{
+			log.debug("QR type check failed for globalQRCode '{}', showing user-friendly error", globalQRCode, ex);
+			throw MobileQRCodeMessages.newWrongGlobalQRTypeException(globalQRCode);
+		}
 
 		return PickingMobileApplication.mapPickingJob(
 				request.getWfProcess(),
@@ -113,7 +140,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	}
 
 	@Override
-	public JsonScannedBarcodeSuggestions getScannedBarcodeSuggestions(@NonNull GetScannedBarcodeSuggestionsRequest request)
+	public JsonScannedBarcodeSuggestions getScannedBarcodeSuggestions(@NonNull final GetScannedBarcodeSuggestionsRequest request)
 	{
 		final PickingJob pickingJob = getPickingJob(request.getWfProcess());
 

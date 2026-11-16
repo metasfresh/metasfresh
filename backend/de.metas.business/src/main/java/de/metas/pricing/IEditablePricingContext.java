@@ -23,6 +23,7 @@ package de.metas.pricing;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -112,4 +113,9 @@ public interface IEditablePricingContext extends IPricingContext
 	IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
 
 	IEditablePricingContext setManualPrice(@Nullable final BigDecimal manualPrice);
+
+	/**
+	 * @see IPricingContext#getExplicitM_HU_PI_Item_Product_ID()
+	 */
+	IEditablePricingContext setExplicitM_HU_PI_Item_Product_ID(@Nullable HUPIItemProductId huPiItemProductId);
 }

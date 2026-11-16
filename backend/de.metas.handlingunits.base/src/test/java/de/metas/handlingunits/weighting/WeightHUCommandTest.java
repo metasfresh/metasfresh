@@ -97,7 +97,7 @@ public class WeightHUCommandTest
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
-		this.huQtyService = new HUQtyService(inventoryService);
+		this.huQtyService = HUQtyService.newInstanceForUnitTesting();
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}

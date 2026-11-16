@@ -31,10 +31,10 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "VAT Bus_ Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Bus_ Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Bus_ Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "VAT Prod_ Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Prod_ Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Prod_ Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "VAT Calculation Type" INTEGER NOT NULL
     CAST([VAT Calculation Type] AS NVARCHAR(MAX)) + ', ' +
@@ -49,49 +49,49 @@ SELECT
     CASE WHEN [Adjust for Payment Discount] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Sales VAT Account" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Sales VAT Account], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Sales VAT Account], '''', '''''') + '''' + ', ' +
 
         -- "Sales VAT Unreal_ Account" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Sales VAT Unreal_ Account], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Sales VAT Unreal_ Account], '''', '''''') + '''' + ', ' +
 
         -- "Purchase VAT Account" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Purchase VAT Account], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Purchase VAT Account], '''', '''''') + '''' + ', ' +
 
         -- "Purch_ VAT Unreal_ Account" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Purch_ VAT Unreal_ Account], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Purch_ VAT Unreal_ Account], '''', '''''') + '''' + ', ' +
 
         -- "Reverse Chrg_ VAT Acc_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Reverse Chrg_ VAT Acc_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Reverse Chrg_ VAT Acc_], '''', '''''') + '''' + ', ' +
 
         -- "Reverse Chrg_ VAT Unreal_ Acc_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Reverse Chrg_ VAT Unreal_ Acc_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Reverse Chrg_ VAT Unreal_ Acc_], '''', '''''') + '''' + ', ' +
 
         -- "VAT Identifier" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Identifier], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Identifier], '''', '''''') + '''' + ', ' +
 
         -- "EU Service" BOOLEAN NOT NULL
     CASE WHEN [EU Service] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Income Date VAT Post_ Grp_" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Income Date VAT Post_ Grp_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Income Date VAT Post_ Grp_], '''', '''''') + '''' + ', ' +
 
         -- "VAT Clause Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Clause Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Clause Code], '''', '''''') + '''' + ', ' +
 
         -- "Certificate of Supply Required" BOOLEAN NOT NULL
     CASE WHEN [Certificate of Supply Required] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Datev VAT Key" VARCHAR(2) NOT NULL
-    '''' + REPLACE(REPLACE([Datev VAT Key], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Datev VAT Key], '''', '''''') + '''' + ', ' +
 
         -- "Datev VAT Case Fact" VARCHAR(2) NOT NULL
-    '''' + REPLACE(REPLACE([Datev VAT Case Fact], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Datev VAT Case Fact], '''', '''''') + '''' + ', ' +
 
         -- "Datev Acc_ receiv_ Prepayments" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Datev Acc_ receiv_ Prepayments], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Datev Acc_ receiv_ Prepayments], '''', '''''') + '''' + ', ' +
 
         -- "Datev Acc_ payed Prepayments" VARCHAR(20) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE([Datev Acc_ payed Prepayments], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Datev Acc_ payed Prepayments], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$VAT Posting Setup];

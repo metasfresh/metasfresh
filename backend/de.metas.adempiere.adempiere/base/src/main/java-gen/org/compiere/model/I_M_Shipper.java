@@ -1,8 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Shipper
  *  @author metasfresh (generated) 
@@ -98,6 +98,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -107,6 +108,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -116,6 +118,29 @@ public interface I_M_Shipper
 
 	ModelColumn<I_M_Shipper, Object> COLUMN_Description = new ModelColumn<>(I_M_Shipper.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Document Copies.
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentCopies (@Nullable BigDecimal DocumentCopies);
+
+	/**
+	 * Get Document Copies.
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDocumentCopies();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_DocumentCopies = new ModelColumn<>(I_M_Shipper.class, "DocumentCopies", null);
+	String COLUMNNAME_DocumentCopies = "DocumentCopies";
 
 	/**
 	 * Set Internal Name.
@@ -164,6 +189,52 @@ public interface I_M_Shipper
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set API Carrier Advise.
+	 * Determines whether the carrier advise is requested via the nShift API;
+ this drives the Advise-Carrier button in mobile picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsApiCarrierAdvise (boolean IsApiCarrierAdvise);
+
+	/**
+	 * Get API Carrier Advise.
+	 * Determines whether the carrier advise is requested via the nShift API;
+ this drives the Advise-Carrier button in mobile picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	boolean isApiCarrierAdvise();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_IsApiCarrierAdvise = new ModelColumn<>(I_M_Shipper.class, "IsApiCarrierAdvise", null);
+	String COLUMNNAME_IsApiCarrierAdvise = "IsApiCarrierAdvise";
+
+	/**
+	 * Set Create Delivery Planning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateDeliveryPlanning (boolean IsCreateDeliveryPlanning);
+
+	/**
+	 * Get Create Delivery Planning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateDeliveryPlanning();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_IsCreateDeliveryPlanning = new ModelColumn<>(I_M_Shipper.class, "IsCreateDeliveryPlanning", null);
+	String COLUMNNAME_IsCreateDeliveryPlanning = "IsCreateDeliveryPlanning";
+
+	/**
 	 * Set Default.
 	 * Default value
 	 *
@@ -185,6 +256,27 @@ public interface I_M_Shipper
 
 	ModelColumn<I_M_Shipper, Object> COLUMN_IsDefault = new ModelColumn<>(I_M_Shipper.class, "IsDefault", null);
 	String COLUMNNAME_IsDefault = "IsDefault";
+
+	/**
+	 * Set Lead time (days).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLeadTimeDays (int LeadTimeDays);
+
+	/**
+	 * Get Lead time (days).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLeadTimeDays();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_LeadTimeDays = new ModelColumn<>(I_M_Shipper.class, "LeadTimeDays", null);
+	String COLUMNNAME_LeadTimeDays = "LeadTimeDays";
 
 	/**
 	 * Set Shipper.
@@ -211,6 +303,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -220,6 +313,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -252,7 +346,8 @@ public interface I_M_Shipper
 	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
 
 	/**
-	 * Set Abholung Uhrzeit bis.
+	 * Set Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -261,7 +356,8 @@ public interface I_M_Shipper
 	void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
 
 	/**
-	 * Get Abholung Uhrzeit bis.
+	 * Get Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -271,6 +367,29 @@ public interface I_M_Shipper
 
 	ModelColumn<I_M_Shipper, Object> COLUMN_PickupTimeTo = new ModelColumn<>(I_M_Shipper.class, "PickupTimeTo", null);
 	String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
+
+	/**
+	 * Set Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriorityRule (@Nullable java.lang.String PriorityRule);
+
+	/**
+	 * Get Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPriorityRule();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_PriorityRule = new ModelColumn<>(I_M_Shipper.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
 	 * Set Shipper Gateway.

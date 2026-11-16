@@ -1,13 +1,18 @@
 package de.metas.tourplanning.api;
 
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /**
  * Handles the relation between {@link I_C_Order} and Tour Planning module.
- * 
+ *
  * @author tsa
  *
  */
@@ -15,14 +20,95 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 {
 	/**
 	 * Set Preparation Date from matching {@link I_M_DeliveryDay} if possible.
-	 * 
+	 *
 	 * Preparation Date won't be set if the value of fields on which depends are not set or if the order is already processed.
-	 * 
+	 *
 	 * @param order
 	 * @param fallbackToDatePromised if the computed preparationDate is already in the past, then let this parameter decide if the PreparationDate remains empty or is filled with the given
 	 *            <code>order</code>'s <code>DatePromised</code> value (task 08931).
 	 * @return true if preparation date was set
 	 */
 	boolean setPreparationDateAndTour(I_C_Order order, boolean fallbackToDatePromised);
+
+	/**
+	 * Forward direction of the shipper lead time: sets {@code DatePromised = workday(DateOrdered, +LeadTimeDays)}
+	 * (Mon-Fri business days).
+	 * <p>
+	 * Only fires for a non-processed sales order, when the forward opt-in sysconfig
+	 * {@code de.metas.tourplanning.LeadTimeForwardCalc.Enabled} is on for the order's client+org, the order's shipper
+	 * has a lead time, {@code DateOrdered} is set and {@code IsFixedDatePromised} is not set. Otherwise leaves the
+	 * order untouched. Does NOT save the order and does NOT touch PreparationDate.
+	 *
+	 * @return true if DatePromised was set.
+	 */
+	boolean setDatePromisedFromLeadTime(@NonNull I_C_Order order);
+
+	/**
+	 * Whether the order's {@code DatePromised} was supplied by the creator rather than left at the {@code MOrder}
+	 * constructor's "today" seed. Used by the create-time interceptor to decide whether to derive DatePromised from
+	 * the shipper lead time (derive only when NOT supplied, so an explicit value from webui / REST / OLCand-EDI /
+	 * a copied order is preserved).
+	 *
+	 * @return true if DatePromised is non-null and differs from today's day-truncated seed.
+	 */
+	boolean isDatePromisedSuppliedAtCreation(@NonNull I_C_Order order);
+
+	/**
+	 * Whether the shipper lead-time path applies to this order, i.e. it is a sales order whose shipper carries a
+	 * {@code LeadTimeDays} (0 counts; only a NULL lead time is "no lead time"). Used by the interceptor to decide
+	 * whether a DateOrdered / M_Shipper_ID change must re-derive PreparationDate from the lead time even when
+	 * DatePromised itself did not move (e.g. IsFixedDatePromised='Y').
+	 */
+	boolean hasLeadTime(@NonNull I_C_Order order);
+
+	/**
+	 * Whether the per-shipper forward lead-time calc GOVERNS this order's DatePromised: a sales order whose shipper has
+	 * a {@code LeadTimeDays} and whose client+org has the forward opt-in sysconfig
+	 * {@code de.metas.tourplanning.LeadTimeForwardCalc.Enabled} on. True even when {@code IsFixedDatePromised='Y'} (the
+	 * promised date is pinned but still owned by the lead-time feature). Callers use it to keep the legacy flat
+	 * {@code de.metas.order.DatePromisedOffsetDays} from overwriting a lead-time order's DatePromised.
+	 */
+	boolean isLeadTimeForwardCalcActive(@NonNull I_C_Order order);
+
+	/**
+	 * Resolves the per-line preparation date for the shipment-schedule provider: if
+	 * {@code C_OrderLine.PreparationDate} is set (normally the derived value written back by
+	 * {@link #setLinePreparationDate}) it is returned as-is; otherwise it is derived fresh from the given
+	 * {@code deliveryDate} using the same tour / no-tour-fallback / offset / sysconfig logic the order header uses.
+	 * Does NOT mutate the line. Preparation-date overrides live on {@code M_ShipmentSchedule.PreparationDate_Override},
+	 * not on the line.
+	 *
+	 * @return the stored per-line preparation date (if set), else the derived preparation date (which may be
+	 *         {@code null} when there is no usable tour and the fallback is disabled).
+	 */
+	@Nullable
+	ZonedDateTime computePreparationDate(@NonNull I_C_Order order, @NonNull I_C_OrderLine orderLine, @NonNull ZonedDateTime deliveryDate);
+
+	/**
+	 * The effective per-line delivery date: an explicit {@code C_OrderLine.PresetDateShipped} wins, then the line's
+	 * own {@code DatePromised}, finally the order header's {@code DatePromised}. This is the single source of truth for
+	 * the delivery date used both to build the shipment schedule and to (re)derive the line's {@code PreparationDate}.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if no delivery date can be determined.
+	 */
+	ZonedDateTime computeDeliveryDate(@NonNull I_C_Order order, @NonNull I_C_OrderLine orderLine);
+
+	/**
+	 * Sales side: (re)derive and store this order line's {@code PreparationDate} from its own delivery date
+	 * ({@link #computeDeliveryDate}), so the line always reflects the value the shipment schedule will receive
+	 * initially. User overrides live on {@code M_ShipmentSchedule.PreparationDate_Override}, never on the line — hence
+	 * the line is always derived, never preserved. No-op for purchase or processed orders. Does NOT save the line.
+	 *
+	 * @return true if a preparation date was set on the line.
+	 */
+	boolean setLinePreparationDate(@NonNull I_C_OrderLine orderLine);
+
+	/**
+	 * Purchase side: a line's product change can change the order's tour, so recompute the order header's
+	 * preparation date + tour from the given line and save the order. No-op for sales orders.
+	 *
+	 * @return true if a preparation date was set on the order header.
+	 */
+	boolean updatePurchaseHeaderPreparationDate(@NonNull I_C_OrderLine orderLine);
 
 }

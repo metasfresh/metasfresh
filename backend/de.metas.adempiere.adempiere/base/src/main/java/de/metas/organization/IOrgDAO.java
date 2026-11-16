@@ -94,6 +94,9 @@ public interface IOrgDAO extends ISingletonService
 
 	WarehouseId getOrgWarehouseId(OrgId orgId);
 
+	/** Like {@link #getOrgWarehouseId(OrgId)}, but empty (instead of an exception) for an organisation without an {@code AD_OrgInfo} row, for org {@code *} and for an organisation without a warehouse. */
+	Optional<WarehouseId> getOrgWarehouseIdIfExists(OrgId orgId);
+
 	WarehouseId getOrgPOWarehouseId(OrgId orgId);
 
 	WarehouseId getOrgDropshipWarehouseId(OrgId orgId);
@@ -112,7 +115,14 @@ public interface IOrgDAO extends ISingletonService
 		return retrieveClientOrgs(Env.getCtx(), adClientId);
 	}
 
-	/** @return organization's time zone or system time zone; never returns null */
+	default List<I_AD_Org> retrieveClientOrgs(final ClientId adClientId)
+	{
+		return retrieveClientOrgs(Env.getCtx(), adClientId.getRepoId());
+	}
+
+	/**
+	 * @return organization's time zone or system time zone; never returns null
+	 */
 	ZoneId getTimeZone(OrgId orgId);
 
 	/**

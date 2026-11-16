@@ -1,0 +1,2 @@
+Method <de.metas.material.dispo.service.candidatechange.StockCandidateService.updateQtyAndDate(de.metas.material.dispo.commons.candidate.Candidate)> calls method <org.adempiere.model.InterfaceWrapperHelper.load(int, java.lang.Class)> in (StockCandidateService.java:160)
+Method <de.metas.material.dispo.service.candidatechange.StockCandidateService.updateQtyAndDate(de.metas.material.dispo.commons.candidate.Candidate)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (StockCandidateService.java:167)

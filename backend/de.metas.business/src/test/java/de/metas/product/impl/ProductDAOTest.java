@@ -22,10 +22,13 @@
 
 package de.metas.product.impl;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -192,4 +195,91 @@ public class ProductDAOTest
 		}
 	}
 
+	@Nested
+	class labelGtinLookup
+	{
+		private I_M_Product productWithGtin(final String value, final String gtin)
+		{
+			final I_M_Product p = newInstance(I_M_Product.class);
+			p.setIsActive(true);
+			p.setValue(value);
+			p.setName(value);
+			p.setGTIN(gtin);
+			save(p);
+			return p;
+		}
+
+		@Test
+		void labelGtin_14digit_exactMatch()
+		{
+			final I_M_Product p = productWithGtin("L1", "02001234567893");
+			productWithGtin("L2", "02001234567909");
+
+			assertThat(productDAO.getProductIdsByGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
+					.isInstanceOf(ImmutableSet.class)
+					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
+		}
+
+		@Test
+		void labelGtin_twoArticles_bothReturnedOrderedById()
+		{
+			final I_M_Product lowerId = productWithGtin("L3", "02001234567893");
+			final I_M_Product higherId = productWithGtin("L4", "02001234567893");
+
+			final ImmutableSet<ProductId> result = productDAO.getProductIdsByGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH);
+
+			assertThat(result).containsExactly(ProductId.ofRepoId(lowerId.getM_Product_ID()), ProductId.ofRepoId(higherId.getM_Product_ID()));
+			assertThat(lowerId.getM_Product_ID()).isLessThan(higherId.getM_Product_ID());
+		}
+
+		@Test
+		void strictLookup_unchangedForSharedAndUniqueGtin()
+		{
+			final I_M_Product unique = productWithGtin("L5", "02001234567893");
+			assertThat(productDAO.getProductIdByGTINStrictly(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
+					.contains(ProductId.ofRepoId(unique.getM_Product_ID()));
+
+			productWithGtin("L6", "02001234567909");
+			productWithGtin("L7", "02001234567909");
+			assertThatThrownBy(() -> productDAO.getProductIdByGTINStrictly(GTIN.ofString("02001234567909"), ClientId.METASFRESH))
+					.isInstanceOf(DBException.class);
+		}
+	}
+
+	@Nested
+	class getProductIdsByValue
+	{
+		@Test
+		void exactValueOfTheGivenClient_isFound_otherClientAndInactiveAreNot()
+		{
+			final I_M_Product p = newInstance(I_M_Product.class);
+			p.setValue("V1");
+			save(p);
+			final I_M_Product inactive = newInstance(I_M_Product.class);
+			inactive.setValue("V2");
+			inactive.setIsActive(false);
+			save(inactive);
+
+			assertThat(productDAO.getProductIdsByValue("V1", ClientId.METASFRESH)).containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
+			assertThat(productDAO.getProductIdsByValue("V1", ClientId.ofRepoId(ClientId.METASFRESH.getRepoId() + 1))).isEmpty();
+			assertThat(productDAO.getProductIdsByValue("V", ClientId.METASFRESH)).isEmpty();
+			assertThat(productDAO.getProductIdsByValue("V2", ClientId.METASFRESH)).isEmpty();
+		}
+
+		@Test
+		void sameValueInTwoOrganisationsOfTheClient_bothAreReturned_neverOneOfThem()
+		{
+			final I_M_Product inOrg1 = newInstance(I_M_Product.class);
+			inOrg1.setAD_Org_ID(1);
+			inOrg1.setValue("V1");
+			save(inOrg1);
+			final I_M_Product inOrg2 = newInstance(I_M_Product.class);
+			inOrg2.setAD_Org_ID(2);
+			inOrg2.setValue("V1");
+			save(inOrg2);
+
+			assertThat(productDAO.getProductIdsByValue("V1", ClientId.METASFRESH))
+					.containsExactly(ProductId.ofRepoId(inOrg1.getM_Product_ID()), ProductId.ofRepoId(inOrg2.getM_Product_ID()));
+		}
+	}
 }

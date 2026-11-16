@@ -13,7 +13,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-@Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
@@ -50,8 +49,7 @@ public class C_OrderLine
 
 	private void setQtuCUFromQtyTU(final IHUPackingAware packingAware)
 	{
-		final int qtyPacks = packingAware.getQtyTU().intValue();
-		packingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks);
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyLU })

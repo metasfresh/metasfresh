@@ -164,6 +164,14 @@ public class ManufacturingRestService
 		}
 	}
 
+	public ManufacturingJob createOnTheFlyIssueSchedule(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCode)
+	{
+		return manufacturingJobService.createOnTheFlyIssueSchedule(ppOrderId, callerId, huQRCode);
+	}
+
 	public QueryLimit getLaunchersLimit()
 	{
 		return manufacturingJobService.getLaunchersLimit();

@@ -49,9 +49,10 @@ FROM ad_org org
 
 WHERE org.ad_org_id = p_Org_ID
 
-ORDER BY (bpb.bankaccounttype = 'C') DESC, -- Prefer 'C' accounts over others (including NULL)
-         (bpb.IsDefault = 'Y') DESC,       -- Prefer default accounts
-         bpb.C_BP_BankAccount_ID DESC      -- Prefer newest / highest ID
+ORDER BY NULLIF(TRIM(bpb.iban), '') IS NULL,          -- prefer records that do have an IBAN (note that false < true),
+         (bpb.bankaccounttype = 'C') DESC NULLS LAST, -- Prefer 'C' accounts over others
+         (bpb.IsDefault = 'Y') DESC,                  -- Prefer default accounts
+         bpb.C_BP_BankAccount_ID DESC                 -- Prefer newest / highest ID
 LIMIT 1
 $$
 ;

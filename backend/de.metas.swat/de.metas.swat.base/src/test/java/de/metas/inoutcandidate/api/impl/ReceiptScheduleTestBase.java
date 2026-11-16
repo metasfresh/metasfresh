@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.api.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
+package de.metas.inoutcandidate.api.impl;
+
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
@@ -38,7 +38,9 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
+import de.metas.inout.InOutLineId;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.logging.LogManager;
@@ -56,6 +58,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -70,7 +73,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -103,10 +108,7 @@ public abstract class ReceiptScheduleTestBase
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
-		//
-		// Mimic ModelValidator behaviour
-		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
-		InOutCandidateValidator.registerSSAggregationKeyDependencies();
+		SpringContextHolder.registerJUnitBean(new ReceiptScheduleDeliveryStopGuard());
 	}
 
 	protected IReceiptScheduleBL receiptScheduleBL;
@@ -206,11 +208,13 @@ public abstract class ReceiptScheduleTestBase
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
+		SpringContextHolder.registerJUnitBean(new ReceiptScheduleDeliveryStopGuard());
+		
 		//
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
@@ -242,6 +246,16 @@ public abstract class ReceiptScheduleTestBase
 		return ctx;
 	}
 
+	/**
+	 * {@link IAggregationKeyRegistry} keeps its handlers in static state that {@link AdempiereTestHelper#init()} does not reset,
+	 * so the handlers registered in {@link #init()} would otherwise leak into every later test class of the same JVM.
+	 */
+	@AfterEach
+	public final void clearAggregationKeyHandlers()
+	{
+		Services.get(IAggregationKeyRegistry.class).clearHandlers(ReceiptScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
+	}
+
 	public BPartnerLocationId createBPartner(final String name)
 	{
 		final I_C_BPartner bpartner = BusinessTestHelper.createBPartner(name);
@@ -264,6 +278,7 @@ public abstract class ReceiptScheduleTestBase
 		}
 
 		product.setC_UOM_ID(stockUOMId.getRepoId());
+		product.setProductType(X_M_Product.PRODUCTTYPE_Item);
 
 		saveRecord(product);
 		return product;
@@ -393,6 +408,39 @@ public abstract class ReceiptScheduleTestBase
 		// Save & return
 		saveRecord(orderLine);
 		return orderLine;
+	}
+
+	protected I_M_ReceiptSchedule createReceiptScheduleForOrderLine(
+			final BPartnerLocationId bpartnerLocationId,
+			final I_M_Warehouse warehouse,
+			final Timestamp date,
+			final I_M_Product product,
+			final int qty,
+			final OrderLineId orderLineId)
+	{
+		final I_M_ReceiptSchedule rs = createReceiptSchedule(bpartnerLocationId, warehouse, date, product, qty);
+		rs.setC_OrderLine_ID(orderLineId.getRepoId());
+		saveRecord(rs);
+		return rs;
+	}
+
+	/**
+	 * Creates an {@link I_M_ReceiptSchedule_Alloc} for the given receipt schedule.
+	 *
+	 * @param inOutLineId non-null to simulate a received alloc (goods were received); null means not yet received
+	 */
+	protected I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(
+			final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final InOutLineId inOutLineId)
+	{
+		final I_M_ReceiptSchedule_Alloc alloc = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class);
+		alloc.setM_ReceiptSchedule_ID(receiptSchedule.getM_ReceiptSchedule_ID());
+		if (inOutLineId != null)
+		{
+			alloc.setM_InOutLine_ID(inOutLineId.getRepoId());
+		}
+		saveRecord(alloc);
+		return alloc;
 	}
 
 	public I_M_Attribute createM_Attribute(final String name,

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_BankAccount_DirectDebitMandate extends org.compiere.model.PO implements I_C_BP_BankAccount_DirectDebitMandate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1976974232L;
+	private static final long serialVersionUID = -1625426239L;
 
     /** Standard Constructor */
     public X_C_BP_BankAccount_DirectDebitMandate (final Properties ctx, final int C_BP_BankAccount_DirectDebitMandate_ID, @Nullable final String trxName)
@@ -148,5 +148,26 @@ public class X_C_BP_BankAccount_DirectDebitMandate extends org.compiere.model.PO
 	public java.lang.String getMandateStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_MandateStatus);
+	}
+
+	/** 
+	 * MandateType AD_Reference_ID=542151
+	 * Reference name: DirectDebitMandateType
+	 */
+	public static final int MANDATETYPE_AD_Reference_ID=542151;
+	/** CORE = CORE */
+	public static final String MANDATETYPE_CORE = "CORE";
+	/** B2B = B2B */
+	public static final String MANDATETYPE_B2B = "B2B";
+	@Override
+	public void setMandateType (final java.lang.String MandateType)
+	{
+		set_Value (COLUMNNAME_MandateType, MandateType);
+	}
+
+	@Override
+	public java.lang.String getMandateType() 
+	{
+		return get_ValueAsString(COLUMNNAME_MandateType);
 	}
 }

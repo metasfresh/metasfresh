@@ -52,7 +52,7 @@ class PrintingDataTest
 	private Helper helper;
 
 	@BeforeEach
-	final void beforeEach(TestInfo testInfo)
+	final void beforeEach(final TestInfo testInfo)
 	{
 		AdempiereTestHelper.get().init();
 
@@ -62,7 +62,7 @@ class PrintingDataTest
 		final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
 						new HardwarePrinterRepository(),
-						new ArchiveFileNameService()));
+						ArchiveFileNameService.newInstanceForUnitTesting()));
 		Services.registerService(IPrintPackageBL.class, printPackageBL);
 	}
 

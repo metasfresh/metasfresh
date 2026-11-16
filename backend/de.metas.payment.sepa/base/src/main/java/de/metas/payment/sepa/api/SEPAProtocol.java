@@ -10,6 +10,8 @@ import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.payment.sepa.base
@@ -35,7 +37,12 @@ import lombok.NonNull;
 public enum SEPAProtocol implements ReferenceListAwareEnum
 {
 	CREDIT_TRANSFER_PAIN_001_001_03_CH_02(X_SEPA_Export.SEPA_PROTOCOL_CreditTransferPain00100103Ch02), //
-	DIRECT_DEBIT_PAIN_008_003_02(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800302) //
+	CREDIT_TRANSFER_PAIN_001_001_09_CH_03(X_SEPA_Export.SEPA_PROTOCOL_CreditTransferPain00100109Ch03), //
+	/**
+	 * Old direct debit format; refused for new exports (see {@link #ofPaySelectionTrxType}), kept for exports created with it.
+	 */
+	DIRECT_DEBIT_PAIN_008_003_02(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800302), //
+	DIRECT_DEBIT_PAIN_008_001_08(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800108) //
 	;
 
 	private static final ValuesIndex<SEPAProtocol> index = ReferenceListAwareEnums.index(values());
@@ -53,15 +60,74 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
-	public static SEPAProtocol ofPaySelectionTrxType(@NonNull final PaySelectionTrxType paySelectionTrxType)
+	@Nullable
+	public static SEPAProtocol ofNullableCode(@Nullable final String code)
 	{
-		if (PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
+		return code != null && !code.trim().isEmpty() ? ofCode(code) : null;
+	}
+
+	public boolean isCreditTransfer()
+	{
+		return this == CREDIT_TRANSFER_PAIN_001_001_03_CH_02 || this == CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
+	}
+
+	public boolean isDirectDebit()
+	{
+		return this == DIRECT_DEBIT_PAIN_008_003_02 || this == DIRECT_DEBIT_PAIN_008_001_08;
+	}
+
+	/**
+	 * @return the protocol used for a new export of the given type if none is chosen:
+	 * {@link #CREDIT_TRANSFER_PAIN_001_001_09_CH_03} for credit transfer, {@link #DIRECT_DEBIT_PAIN_008_001_08} for direct debit
+	 */
+	public static SEPAProtocol getDefault(@NonNull final PaySelectionTrxType paySelectionTrxType)
+	{
+		if (paySelectionTrxType.isCreditTransfer())
 		{
-			return CREDIT_TRANSFER_PAIN_001_001_03_CH_02;
+			return CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
 		}
-		else if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
+		else if (paySelectionTrxType.isDirectDebit())
 		{
-			return DIRECT_DEBIT_PAIN_008_003_02;
+			return DIRECT_DEBIT_PAIN_008_001_08;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + PaySelectionTrxType.class.getSimpleName() + ": " + paySelectionTrxType);
+		}
+	}
+
+	/**
+	 * @param chosenProtocol the protocol chosen by the user; if {@code null}, {@link #getDefault} of the given type is used
+	 * @throws AdempiereException if the chosen protocol does not match the type, or is {@link #DIRECT_DEBIT_PAIN_008_003_02}, which can no longer be used for new exports
+	 */
+	public static SEPAProtocol ofPaySelectionTrxType(
+			@NonNull final PaySelectionTrxType paySelectionTrxType,
+			@Nullable final SEPAProtocol chosenProtocol)
+	{
+		if (chosenProtocol == null)
+		{
+			return getDefault(paySelectionTrxType);
+		}
+
+		if (paySelectionTrxType.isCreditTransfer())
+		{
+			if (!chosenProtocol.isCreditTransfer())
+			{
+				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " is not a credit transfer protocol");
+			}
+			return chosenProtocol;
+		}
+		else if (paySelectionTrxType.isDirectDebit())
+		{
+			if (!chosenProtocol.isDirectDebit())
+			{
+				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " is not a direct debit protocol");
+			}
+			if (chosenProtocol == DIRECT_DEBIT_PAIN_008_003_02)
+			{
+				throw new AdempiereException("SEPA protocol " + chosenProtocol.getCode() + " can no longer be used for new direct debit exports");
+			}
+			return chosenProtocol;
 		}
 		else
 		{

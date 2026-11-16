@@ -15,6 +15,15 @@
 
   .message {
     width: 90%;
+    // The dialog card itself never scrolled - only its inner qty/catch-weight table
+    // (.table-container, get-qty-dialog.scss) has its own fixed-height (70vh) scroll region.
+    // With `html{overflow:hidden}` (app-shell pattern, no page-level scroll) that left NO escape
+    // once optional content pushed the total past 100vh - e.g. 2+ configured editable attributes
+    // (EditableAttributesSection) rendered below the qty table pushed the Done/Cancel buttons
+    // fully off-screen and unreachable. Letting the whole card scroll when it overflows is a
+    // strict improvement: a dialog that already fits shows no scrollbar and is unaffected.
+    max-height: 100vh;
+    overflow-y: auto;
 
     .message-body {
       border-width: 0 !important;
@@ -36,4 +45,12 @@
       }
     }
   }
+}
+
+// A Yes/No confirmation requires the operator to act, so it must sit above everything —
+// including the processing spinner (z-index 99999) the quantity dialog shows while a pick
+// is in flight. Without this, a confirmation raised mid-pick (e.g. the shelf-life warning)
+// renders behind the spinner and its buttons cannot be tapped.
+.prompt-dialog.yes-no-dialog {
+  z-index: 100000;
 }

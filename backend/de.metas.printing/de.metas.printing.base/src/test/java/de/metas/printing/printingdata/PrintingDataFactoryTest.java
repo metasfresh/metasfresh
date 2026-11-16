@@ -68,7 +68,7 @@ class PrintingDataFactoryTest
 
 		helper = new Helper(testInfo);
 		helper.setup();
-		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService());
+		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), ArchiveFileNameService.newInstanceForUnitTesting());
 		archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	}
 

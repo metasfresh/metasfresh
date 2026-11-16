@@ -25,8 +25,6 @@ package de.metas.rest_api.v2.externlasystem;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.RestUtils;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
@@ -42,14 +40,15 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemErrorContext;
-import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
+import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -74,7 +73,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -100,13 +102,14 @@ public class ExternalSystemService
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 
-	@NonNull private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	@NonNull private final ExternalSystemConfigRepository externalSystemConfigRepository;
 	@NonNull private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
 	@NonNull private final RuntimeParametersRepository runtimeParametersRepository;
 	@NonNull private final ExternalServices externalServices;
 	@NonNull private final JsonExternalSystemRetriever jsonRetriever;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final List<IExternalSystemInvocationErrorListener> externalSystemInvocationErrorListeners;
+	@NonNull private final List<IExternalSystemInvocationSuccessListener> externalSystemInvocationSuccessListeners;
 
 	@VisibleForTesting
 	public static ExternalSystemService newInstanceForUnitTesting()
@@ -114,12 +117,13 @@ public class ExternalSystemService
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(ExternalSystemService.class, () -> new ExternalSystemService(
-				ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemConfigRepository.newInstanceForUnitTesting(),
 				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
 				new RuntimeParametersRepository(),
 				ExternalServices.newInstanceForUnitTesting(),
 				new JsonExternalSystemRetriever(),
 				new ExternalSystemRepository(),
+				Collections.emptyList(),
 				Collections.emptyList()));
 	}
 
@@ -127,7 +131,7 @@ public class ExternalSystemService
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
 	{
 		final ExternalSystemParentConfig externalSystemParentConfig =
-				externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
+				externalSystemConfigRepository.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
 								invokeExternalSystemProcessRequest.getChildSystemConfigValue())
 						.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
 								.appendParametersToMessage()
@@ -181,7 +185,7 @@ public class ExternalSystemService
 				.findFirst()
 				.ifPresent(error -> {
 					final String errorMessage = buildAggregatedErrorMessage(jsonError);
-					final ExternalSystemErrorContext errorContext = ExternalSystemErrorContext.ofCodeOrUnknown(error.getErrorContext());
+					final ExternalSystemInvocationContext errorContext = ExternalSystemInvocationContext.ofCodeOrUnknown(error.getErrorContext());
 					notifyExternalSystemErrorListeners(pInstanceId, errorContext, errorMessage);
 				});
 
@@ -220,7 +224,7 @@ public class ExternalSystemService
 
 	private void notifyExternalSystemErrorListeners(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final ExternalSystemErrorContext errorContext,
+			@NonNull final ExternalSystemInvocationContext errorContext,
 			@NonNull final String errorMessage)
 	{
 		try
@@ -238,7 +242,7 @@ public class ExternalSystemService
 				}
 				catch (final Exception e)
 				{
-					logger.error("Error listener {} threw exception while handling error for PInstance {}",
+					logger.warn("Error listener {} threw exception while handling error for PInstance {}",
 							listener.getClass().getSimpleName(), pInstanceId, e);
 				}
 			}
@@ -246,6 +250,42 @@ public class ExternalSystemService
 		catch (final Exception e)
 		{
 			logger.error("Failed to notify error listeners for PInstance {}", pInstanceId, e);
+		}
+	}
+
+	public void handleExportSuccess(@NonNull final PInstanceId pInstanceId, final int httpResponseCode)
+	{
+		notifyExternalSystemSuccessListeners(pInstanceId, ExternalSystemInvocationContext.UNKNOWN, HttpStatus.valueOf(httpResponseCode));
+	}
+
+	private void notifyExternalSystemSuccessListeners(
+			@NonNull final PInstanceId pInstanceId,
+			@NonNull final ExternalSystemInvocationContext context,
+			@NonNull final HttpStatus httpStatus)
+	{
+		try
+		{
+			for (final IExternalSystemInvocationSuccessListener listener : externalSystemInvocationSuccessListeners)
+			{
+				if (!listener.applies(context))
+				{
+					continue;
+				}
+
+				try
+				{
+					listener.onInvocationSuccess(pInstanceId, context, httpStatus);
+				}
+				catch (final Exception e)
+				{
+					logger.warn("Success listener {} threw exception while handling success for PInstance {}",
+							listener.getClass().getSimpleName(), pInstanceId, e);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			logger.error("Failed to notify success listeners for PInstance {}", pInstanceId, e);
 		}
 	}
 
@@ -284,7 +324,7 @@ public class ExternalSystemService
 	@NonNull
 	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String childConfigValue)
 	{
-		return externalSystemConfigRepo.getByTypeAndValue(type, childConfigValue);
+		return externalSystemConfigRepository.getByTypeAndValue(type, childConfigValue);
 	}
 
 	@NonNull
@@ -303,7 +343,7 @@ public class ExternalSystemService
 
 	public void storeExternalSystemStatus(@NonNull final StoreExternalSystemStatusRequest request)
 	{
-		final ExternalSystemParentConfig externalSystemParentConfig = externalSystemConfigRepo
+		final ExternalSystemParentConfig externalSystemParentConfig = externalSystemConfigRepository
 				.getByTypeAndValue(request.getSystemType(), request.getChildSystemConfigValue())
 				.orElseThrow(() -> new AdempiereException("No external system found by given type and value!")
 						.appendParametersToMessage()

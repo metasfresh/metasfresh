@@ -2,6 +2,7 @@ package de.metas.contracts.refund;
 
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,10 +20,13 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.product.ProductId;
+import de.metas.product.ProductCategoryId;
 import lombok.NonNull;
 
 /*
@@ -130,6 +134,97 @@ public class RefundConfigRepositoryTest
 		assertThat(result.isEmpty());
 	}
 
+	@Test
+	public void ofRecord_mapsCategoryAndBonusProduct()
+	{
+		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditionsRecord);
+
+		final I_C_Flatrate_RefundConfig configRecord = createThreeRefundConfigRecords(ConditionsId.ofRepoId(conditionsRecord.getC_Flatrate_Conditions_ID())).get(0);
+		configRecord.setM_Product_ID(0);
+		configRecord.setM_Product_Category_ID(40);
+		configRecord.setBonus_Product_ID(41);
+		saveRecord(configRecord);
+
+		// invoke the method under test
+		final RefundConfig result = refundConfigRepository.ofRecord(configRecord);
+
+		assertThat(result.getProductId()).isNull();
+		assertThat(result.getProductCategoryId()).isEqualTo(ProductCategoryId.ofRepoId(40));
+		assertThat(result.getBonusProductId()).isEqualTo(ProductId.ofRepoId(41));
+	}
+
+	/**
+	 * Conditions that mix a product-specific config with a category-only config:
+	 * for the product of the specific config, only the specific config is returned (the category-only one is dropped);
+	 * for any other product, the category-only config is returned.
+	 */
+	@Test
+	public void getByQuery_productSpecificConfigWinsOverCategoryOnlyConfig()
+	{
+		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditionsRecord);
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditionsRecord.getC_Flatrate_Conditions_ID());
+
+		final List<I_C_Flatrate_RefundConfig> configRecords = createThreeRefundConfigRecords(conditionsId);
+		final I_C_Flatrate_RefundConfig productConfig = configRecords.get(0);
+		productConfig.setM_Product_ID(5);
+		productConfig.setM_Product_Category_ID(40); // the lines of a condition share its category
+		saveRecord(productConfig);
+		final I_C_Flatrate_RefundConfig categoryConfig = configRecords.get(1);
+		categoryConfig.setM_Product_Category_ID(40);
+		saveRecord(categoryConfig);
+		final I_C_Flatrate_RefundConfig thirdConfig = configRecords.get(2);
+		thirdConfig.setIsActive(false);
+		saveRecord(thirdConfig);
+
+		final List<RefundConfig> forProduct5 = refundConfigRepository.getByQuery(RefundConfigQuery.builder().conditionsId(conditionsId).productId(ProductId.ofRepoId(5)).build());
+		assertThat(forProduct5).extracting(config -> config.getId().getRepoId()).containsExactly(productConfig.getC_Flatrate_RefundConfig_ID());
+
+		final List<RefundConfig> forProduct6 = refundConfigRepository.getByQuery(RefundConfigQuery.builder().conditionsId(conditionsId).productId(ProductId.ofRepoId(6)).build());
+		assertThat(forProduct6).extracting(config -> config.getId().getRepoId()).containsExactly(categoryConfig.getC_Flatrate_RefundConfig_ID());
+	}
+
+	/**
+	 * A refund config that is deducted at payment carries no invoice schedule: the bonus is booked at the payment allocation,
+	 * so it is never invoiced by the refund engine and needs no schedule. Such a record must load and save without a schedule.
+	 */
+	@Test
+	public void ofRecordAndSave_deductedAtPayment_withoutInvoiceSchedule()
+	{
+		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditionsRecord);
+		final ConditionsId deductedConditionsId = ConditionsId.ofRepoId(conditionsRecord.getC_Flatrate_Conditions_ID());
+
+		final I_C_Flatrate_RefundConfig configRecord = newInstance(I_C_Flatrate_RefundConfig.class);
+		configRecord.setC_Flatrate_Conditions_ID(deductedConditionsId.getRepoId());
+		configRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
+		configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+		configRecord.setRefundPercent(TEN);
+		configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+		configRecord.setMinQty(ZERO);
+		configRecord.setBonus_Product_ID(41);
+		configRecord.setIsDeductedAtPayment(true);
+		// deliberately no C_InvoiceSchedule
+		saveRecord(configRecord);
+
+		// load: must not NPE, and the domain object has no invoice schedule
+		final RefundConfig loaded = refundConfigRepository.ofRecord(configRecord);
+		assertThat(loaded.isDeductedAtPayment()).isTrue();
+		assertThat(loaded.getInvoiceSchedule()).isNull();
+
+		// save: round-trips without an invoice schedule
+		final RefundConfig saved = refundConfigRepository.save(loaded);
+		assertThat(saved.getId()).isNotNull();
+
+		final I_C_Flatrate_RefundConfig reloaded = load(saved.getId(), I_C_Flatrate_RefundConfig.class);
+		assertThat(reloaded.getC_InvoiceSchedule_ID()).isLessThanOrEqualTo(0);
+		assertThat(reloaded.isDeductedAtPayment()).isTrue();
+	}
+
 	public static List<I_C_Flatrate_RefundConfig> createThreeRefundConfigRecords(@NonNull final ConditionsId conditionsId)
 	{
 		final I_C_InvoiceSchedule invoiceScheduleRecord = createInvoiceSchedule();
@@ -172,7 +267,7 @@ public class RefundConfigRepositoryTest
 		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
 		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
 		invoiceScheduleRecord.setInvoiceDay(1);
-		invoiceScheduleRecord.setInvoiceDistance(5);
+		invoiceScheduleRecord.setInvoiceDistance(3); // quarterly: refund periods are calendar periods, so a monthly distance has to divide the year
 		saveRecord(invoiceScheduleRecord);
 		return invoiceScheduleRecord;
 	}

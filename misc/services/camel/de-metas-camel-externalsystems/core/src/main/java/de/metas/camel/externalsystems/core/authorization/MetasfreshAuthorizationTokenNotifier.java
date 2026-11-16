@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.core.authorization;
 
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.camel.externalsystems.core.CustomRouteController;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
@@ -37,6 +38,7 @@ import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.spi.CamelEvent;
 import org.apache.camel.support.EventNotifierSupport;
 
+import javax.annotation.Nullable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,7 +102,8 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 			return;
 		}
 
-		final String authToken = metasfreshAuthProvider.getAuthToken();
+		final String explicitAuthToken = getExplicitAuthToken(event.getExchange());
+		final String authToken = explicitAuthToken != null ? explicitAuthToken : metasfreshAuthProvider.getAuthToken();
 
 		if (Check.isBlank(authToken))
 		{
@@ -135,6 +138,15 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 
 			final String usedAuthToken = String.valueOf(sentEvent.getExchange().getIn().getHeader(CoreConstants.AUTHORIZATION));
 
+			if (getExplicitAuthToken(sentEvent.getExchange()) != null)
+			{
+				// the exchange's own token was rejected (e.g. a scripted import's Importeur token): only that exchange fails;
+				// the global service token is not involved, so neither stop the routes nor re-request it
+				logger.warning("MF-API responded with 401 from: " + endpoint.getEndpointUri() + " to the exchange's explicit auth token " + StringUtils.maskString(usedAuthToken)
+									   + "; routes keep running and the global token is not re-requested");
+				return;
+			}
+
 			logger.info("MF-API responded with 401, stopping all routes; "
 								+ " Request sent had the following auth token:" + StringUtils.maskString(usedAuthToken)
 								+ "; metasfreshAuthProvider has: " + StringUtils.maskString(metasfreshAuthProvider.getAuthToken()));
@@ -142,5 +154,12 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 			this.customRouteController.stopAllRoutes();
 			producerTemplate.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "Trigger external system authentication for metasfresh!");
 		}
+	}
+
+	@Nullable
+	private static String getExplicitAuthToken(@NonNull final Exchange exchange)
+	{
+		final String explicitAuthToken = exchange.getProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN, String.class);
+		return Check.isBlank(explicitAuthToken) ? null : explicitAuthToken;
 	}
 }

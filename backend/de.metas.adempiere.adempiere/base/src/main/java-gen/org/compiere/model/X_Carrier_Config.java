@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -725373864L;
+	private static final long serialVersionUID = -1470195178L;
 
     /** Standard Constructor */
     public X_Carrier_Config (final Properties ctx, final int Carrier_Config_ID, @Nullable final String trxName)
@@ -44,6 +44,27 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	public java.lang.String getActorId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ActorId);
+	}
+
+	/** 
+	 * AdviseType AD_Reference_ID=542106
+	 * Reference name: AdviseType
+	 */
+	public static final int ADVISETYPE_AD_Reference_ID=542106;
+	/** Ship = S */
+	public static final String ADVISETYPE_Ship = "S";
+	/** Order = O */
+	public static final String ADVISETYPE_Order = "O";
+	@Override
+	public void setAdviseType (final java.lang.String AdviseType)
+	{
+		set_Value (COLUMNNAME_AdviseType, AdviseType);
+	}
+
+	@Override
+	public java.lang.String getAdviseType() 
+	{
+		return get_ValueAsString(COLUMNNAME_AdviseType);
 	}
 
 	@Override
@@ -98,6 +119,78 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	}
 
 	@Override
+	public void setCustomValueString1 (final @Nullable java.lang.String CustomValueString1)
+	{
+		set_Value (COLUMNNAME_CustomValueString1, CustomValueString1);
+	}
+
+	@Override
+	public java.lang.String getCustomValueString1() 
+	{
+		return get_ValueAsString(COLUMNNAME_CustomValueString1);
+	}
+
+	@Override
+	public void setCustomValueString2 (final @Nullable java.lang.String CustomValueString2)
+	{
+		set_Value (COLUMNNAME_CustomValueString2, CustomValueString2);
+	}
+
+	@Override
+	public java.lang.String getCustomValueString2() 
+	{
+		return get_ValueAsString(COLUMNNAME_CustomValueString2);
+	}
+
+	@Override
+	public void setCustomValueString3 (final @Nullable java.lang.String CustomValueString3)
+	{
+		set_Value (COLUMNNAME_CustomValueString3, CustomValueString3);
+	}
+
+	@Override
+	public java.lang.String getCustomValueString3() 
+	{
+		return get_ValueAsString(COLUMNNAME_CustomValueString3);
+	}
+
+	@Override
+	public void setIsCreateDraftShipmentOnly (final boolean IsCreateDraftShipmentOnly)
+	{
+		set_Value (COLUMNNAME_IsCreateDraftShipmentOnly, IsCreateDraftShipmentOnly);
+	}
+
+	@Override
+	public boolean isCreateDraftShipmentOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateDraftShipmentOnly);
+	}
+
+	@Override
+	public void setIsSelectionRules (final boolean IsSelectionRules)
+	{
+		set_Value (COLUMNNAME_IsSelectionRules, IsSelectionRules);
+	}
+
+	@Override
+	public boolean isSelectionRules() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSelectionRules);
+	}
+
+	@Override
+	public void setIsTestMode (final boolean IsTestMode)
+	{
+		set_Value (COLUMNNAME_IsTestMode, IsTestMode);
+	}
+
+	@Override
+	public boolean isTestMode() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsTestMode);
+	}
+
+	@Override
 	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 
@@ -134,6 +227,39 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	public java.lang.String getServiceLevel() 
 	{
 		return get_ValueAsString(COLUMNNAME_ServiceLevel);
+	}
+
+	/** 
+	 * ShipType AD_Reference_ID=542106
+	 * Reference name: AdviseType
+	 */
+	public static final int SHIPTYPE_AD_Reference_ID=542106;
+	/** Ship = S */
+	public static final String SHIPTYPE_Ship = "S";
+	/** Order = O */
+	public static final String SHIPTYPE_Order = "O";
+	@Override
+	public void setShipType (final java.lang.String ShipType)
+	{
+		set_Value (COLUMNNAME_ShipType, ShipType);
+	}
+
+	@Override
+	public java.lang.String getShipType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ShipType);
+	}
+
+	@Override
+	public void setTestMode_Attention (final @Nullable java.lang.String TestMode_Attention)
+	{
+		set_Value (COLUMNNAME_TestMode_Attention, TestMode_Attention);
+	}
+
+	@Override
+	public java.lang.String getTestMode_Attention() 
+	{
+		return get_ValueAsString(COLUMNNAME_TestMode_Attention);
 	}
 
 	@Override

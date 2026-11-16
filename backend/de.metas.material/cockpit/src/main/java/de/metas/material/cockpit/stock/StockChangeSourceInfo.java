@@ -44,6 +44,17 @@ public class StockChangeSourceInfo
 				Check.assumeGreaterThanZero(transactionId, "transactionId"));
 	}
 
+	/**
+	 * Source info for an MD_Stock qty re-key triggered by an HU attribute change.
+	 * transactionId is -1 (no M_Transaction involved), resetStockPInstanceId is null.
+	 */
+	public static StockChangeSourceInfo ofHuAttributeChange()
+	{
+		return new StockChangeSourceInfo(
+				(ResetStockPInstanceId)null,
+				-1);
+	}
+
 	ResetStockPInstanceId resetStockAdPinstanceId;
 	int transactionId;
 

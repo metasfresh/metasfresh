@@ -119,6 +119,22 @@ public class CostDetailToTabularStringConverter
 			{
 				return record.isChangingCosts();
 			}
+			case "Prev_CurrentCostPrice":
+			{
+				return record.getPreviousAmounts() != null ? record.getPreviousAmounts().getCostPrice().toCostAmount() : null;
+			}
+			case "Prev_CurrentQty":
+			{
+				return record.getPreviousAmounts() != null ? record.getPreviousAmounts().getQty() : null;
+			}
+			case "Prev_CumulatedAmt":
+			{
+				return record.getPreviousAmounts() != null ? record.getPreviousAmounts().getCumulatedAmt() : null;
+			}
+			case "Prev_CumulatedQty":
+			{
+				return record.getPreviousAmounts() != null ? record.getPreviousAmounts().getCumulatedQty() : null;
+			}
 			case "AmtType":
 			{
 				return record.getAmtType();

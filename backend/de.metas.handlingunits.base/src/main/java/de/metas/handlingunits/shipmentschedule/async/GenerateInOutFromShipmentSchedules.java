@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -41,9 +42,9 @@ import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
@@ -107,12 +108,25 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
 
+		// null for every caller but the delivery-planning generate-shipment process; see
+		// GenerateShipmentsRequest#getDeliveryPlanningId() for why it travels with the request. The workpackage
+		// parameter map is int-typed, so this is where the id regains its type.
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(
+				parameters.getParameterAsInt(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, 0));
+
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatePackingLines)
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
+				.setDeliveryPlanningId(deliveryPlanningId)
+				// The enqueuer already split the workpackages by the schedules' header key, async batch included.
+				// A schedule recompute that ran since then may have cleared the batch of only some schedules; that must not split this run.
+				.setIgnoreScheduleAsyncBatch(true)
+				// The shipments belong to this workpackage's batch (the run's batch the enqueuer set), even if their schedules lost it.
+				// A workpackage without a batch (e.g. enqueued from a selection) leaves the schedules' batch in place.
+				.setAsyncBatchId(AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID()))
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs that are linked to multiple shipments: you will not see them in Aggregation POS because they are already assigned, but you're not able to create a shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
@@ -177,7 +191,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean onTheFlyPickToPackingInstructions = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
 		final boolean isCloseShipmentSchedules = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
-		final boolean isFailIfNoPickedHUs = !isCloseShipmentSchedules;
+		final boolean failOnSingleScheduleWithNoPickedHUs = !isCloseShipmentSchedules;
 
 		return shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
@@ -186,7 +200,12 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 						.quantityTypeToUse(quantityTypeToUse)
 						.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
 						.qtyToDeliverOverrides(scheduleId2QtyToDeliverOverride)
-						.isFailIfNoPickedHUs(isFailIfNoPickedHUs)
+						.failOnSingleScheduleWithNoPickedHUs(failOnSingleScheduleWithNoPickedHUs)
+						// an earlier shipment's completion may have closed some of our schedules and a recompute processed them since we were enqueued;
+						// still ship those for which we carry picks or an entered quantity
+						.includeProcessedClosedSchedulesWithQty(true)
+						// C_Queue_WorkPackage.Created: an entered quantity is not kept if a shipment for the schedule was completed since this moment
+						.enqueuedAt(getC_Queue_WorkPackage().getCreated().toInstant())
 						.build()
 		);
 	}

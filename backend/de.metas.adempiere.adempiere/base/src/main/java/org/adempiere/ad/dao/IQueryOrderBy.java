@@ -22,7 +22,11 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.function.UnaryOperator;
 
 public interface IQueryOrderBy
 {
@@ -40,10 +44,16 @@ public interface IQueryOrderBy
 	enum Nulls
 	{First, Last}
 
+	@Nullable
 	String getSql();
 
+	@Nullable
+	String getSql(@NonNull UnaryOperator<String> columnNameMapper);
+
+	@NonNull
 	Comparator<Object> getComparator();
 
+	@NonNull
 	default <T> Comparator<T> getComparator(@SuppressWarnings("unused") Class<T> modelClass)
 	{
 		//noinspection unchecked

@@ -42,7 +42,7 @@ SELECT  COALESCE(org.name, '')
 
 	pt.NetDays,
 	pt.DiscountDays,
-	PaymentTermDueDate( i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ) AS DueDate,
+	i.DueDate::timestamp with time zone AS DueDate,
 	PaymentTermDueDays( i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone, ps.PayDate) AS DaysDue,
 	AddDays( i.DateInvoiced::timestamp with time zone, pt.DiscountDays ) AS DiscountDate,
 	Round( i.GrandTotal * pt.Discount / 100::numeric, 2 ) AS DiscountAmt,

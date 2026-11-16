@@ -1,5 +1,16 @@
 @import './variables.scss';
 
+// Draws the FontAwesome icon from its SVG file, scaled to fit the content box (like the former SVG+JS build),
+// instead of as a font glyph, which is sized by font-size and snaps to whole pixels.
+@mixin indicator-icon($name) {
+  background: currentColor content-box;
+  mask: url('~@fortawesome/fontawesome-free/svgs/solid/#{$name}.svg') center / contain no-repeat content-box;
+
+  &::before {
+    content: none;
+  }
+}
+
 .button {
   height: 2.5em;
 
@@ -98,12 +109,26 @@
       padding-bottom: 0.2em;
 
       .indicator-box {
-        flex: 0;
+        flex: none;
 
         display: block;
         width: 0.7em;
         height: 0.7em;
         padding: 0.1em;
+        box-sizing: content-box;
+
+        &.fa-lock {
+          @include indicator-icon('lock');
+        }
+        &.fa-warehouse {
+          @include indicator-icon('warehouse');
+        }
+        &.fa-circle {
+          @include indicator-icon('circle');
+        }
+        &.fa-circle-half-stroke {
+          @include indicator-icon('circle-half-stroke');
+        }
       }
 
       .indicator-color-red {
@@ -125,6 +150,30 @@
   height: 4em !important;
 }
 
+// Carrier caption + disabled-reason live in one info row (like .picking-row-info), stacked as
+// centered lines that ellipsis-clip so a long carrier/product name truncates instead of breaking
+// the outlined border. When the reason line is present the two-line info row does not fit the fixed
+// 2.5em button, so grow it — mirrors the per-line qtyAvailable grow-rule for .picking-row-available
+// in pick-products.scss.
+.carrier-advise-info {
+  width: 100%;
+}
+
+.carrier-advise-line {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.advise-carrier-disabled-reason {
+  font-style: italic;
+}
+
+.button:has(.advise-carrier-disabled-reason),
+.full-size-btn:has(.advise-carrier-disabled-reason) {
+  height: 4.5em !important;
+}
 
 .warning-sign {
   color: $indicator-yellow;

@@ -13,10 +13,15 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import UnpickDialog from './UnpickDialog';
+import UnpickTargetScanDialog from './unpick/UnpickTargetScanDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
+
+const STAGE = {
+  NONE: 'NONE',
+  SCAN_TARGET: 'SCAN_TARGET',
+};
 
 const PickStepScreen = () => {
   const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = useMobileLocation();
@@ -47,7 +52,7 @@ const PickStepScreen = () => {
 
   const dispatch = useDispatch();
 
-  const [showTargetHUScanner, setShowTargetHUScanner] = useState(false);
+  const [stage, setStage] = useState(STAGE.NONE);
 
   const unpick = ({ unpickToTargetQRCode }) => {
     postStepUnPicked({
@@ -103,7 +108,9 @@ const PickStepScreen = () => {
 
   return (
     <div className="section pt-2">
-      {showTargetHUScanner && <UnpickDialog onSubmit={unpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
+      {stage === STAGE.SCAN_TARGET && (
+        <UnpickTargetScanDialog onSubmit={unpick} onCloseDialog={() => setStage(STAGE.NONE)} />
+      )}
       <div className="buttons">
         <ButtonWithIndicator
           caption={scanButtonCaption}
@@ -115,7 +122,7 @@ const PickStepScreen = () => {
           id="unpick-button"
           captionKey="activities.picking.unPickBtn"
           disabled={nothingPicked}
-          onClick={() => setShowTargetHUScanner(true)}
+          onClick={() => setStage(STAGE.SCAN_TARGET)}
         />
         {nothingPicked && (
           <ConfirmButton

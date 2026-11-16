@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductCategoryId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -24,6 +26,8 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
@@ -33,6 +37,7 @@ import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -78,6 +83,44 @@ public class RefundInvoiceCandidateRepositoryTest
 				refundInvoiceCandidateFactory);
 	}
 
+	/**
+	 * The refund line is booked on the bonus product of the refund config, not on the sold product.
+	 */
+	@Test
+	public void save_booksOnBonusProduct()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final RefundConfig config = refundCandidate.getRefundConfigs().get(0).toBuilder()
+				.productId(null)
+				.productCategoryId(ProductCategoryId.ofRepoId(40))
+				.bonusProductId(ProductId.ofRepoId(41))
+				.build();
+
+		// invoke the method under test
+		final RefundInvoiceCandidate saved = refundInvoiceCandidateRepository.save(refundCandidate.toBuilder().clearRefundConfigs().refundConfig(config).build());
+
+		assertThat(RefundTestTools.retrieveRecord(saved.getId()).getM_Product_ID()).isEqualTo(41);
+	}
+
+	/**
+	 * A refund config with a category base has no product; saving the candidate must not fail and keeps the candidate's product.
+	 */
+	@Test
+	public void save_categoryBaseWithoutProductAndBonusProduct()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final int productId = RefundTestTools.retrieveRecord(refundCandidate.getId()).getM_Product_ID();
+		final RefundConfig config = refundCandidate.getRefundConfigs().get(0).toBuilder()
+				.productId(null)
+				.productCategoryId(ProductCategoryId.ofRepoId(40))
+				.build();
+
+		// invoke the method under test
+		final RefundInvoiceCandidate saved = refundInvoiceCandidateRepository.save(refundCandidate.toBuilder().clearRefundConfigs().refundConfig(config).build());
+
+		assertThat(RefundTestTools.retrieveRecord(saved.getId()).getM_Product_ID()).isEqualTo(productId);
+	}
+
 	@Test
 	public void getRefundInvoiceCandidate_same_invoicableFrom()
 	{
@@ -86,12 +129,52 @@ public class RefundInvoiceCandidateRepositoryTest
 		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(refundCandidate.getInvoiceableFrom())
+				.soTrx(SOTrx.SALES)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
 				.build();
 
 		// invoke the method under test
 		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(query);
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isEqualTo(refundCandidate);
+	}
+
+	/**
+	 * The refund candidate of a sale is not the one of a purchase: the amounts of both sides must never be merged.
+	 */
+	@Test
+	public void getRefundInvoiceCandidates_respectsSOTrx()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final I_C_Invoice_Candidate refundRecord = RefundTestTools.retrieveRecord(refundCandidate.getId());
+		refundRecord.setIsSOTrx(true);
+		saveRecord(refundRecord);
+
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.SALES))).hasSize(1);
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.PURCHASE))).isEmpty();
+	}
+
+	/**
+	 * A refund candidate keeps the currency of its sales: the refund of sales in another currency is another candidate.
+	 */
+	@Test
+	public void getRefundInvoiceCandidates_respectsCurrency()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.SALES))).hasSize(1);
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.SALES).toBuilder().currencyId(chf).build())).isEmpty();
+	}
+
+	private static RefundInvoiceCandidateQuery queryOf(final RefundInvoiceCandidate refundCandidate, @NonNull final SOTrx soTrx)
+	{
+		return RefundInvoiceCandidateQuery.builder()
+				.refundContract(refundCandidate.getRefundContract())
+				.invoicableFrom(refundCandidate.getInvoiceableFrom())
+				.soTrx(soTrx)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
+				.build();
 	}
 
 	@Test
@@ -106,6 +189,8 @@ public class RefundInvoiceCandidateRepositoryTest
 		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(earlierInvoiceableFrom)
+				.soTrx(SOTrx.SALES)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
 				.build();
 
 		// invoke the method under test
@@ -127,6 +212,8 @@ public class RefundInvoiceCandidateRepositoryTest
 		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(earlierInvoiceableFrom)
+				.soTrx(SOTrx.SALES)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
 				.build();
 
 		// invoke the method under test

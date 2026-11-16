@@ -35,6 +35,10 @@
 	<field name="displayhu" class="java.lang.String"/>
 	<background>
 		<band height="842" splitType="Stretch">
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="reportBackgroundImage" x="0" y="0" width="595" height="842" uuid="818b28e8-5ff5-4d74-bc7e-7308facc86a0"/>
+				<imageExpression><![CDATA["de/metas/org/images/ReportBackground_Image_ID.png"]]></imageExpression>
+			</image>
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
 				<reportElement key="textField-61" x="34" y="209" width="518" height="63" forecolor="#CCCCCC" uuid="ba0f9483-eb81-4ca3-b105-a5bf8adedf2d"/>
 				<box>

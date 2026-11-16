@@ -18,7 +18,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 
 
 	/**
-	 * Set activityname.
+	 * Set Activity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -27,7 +27,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	void setActivityName (@Nullable java.lang.String ActivityName);
 
 	/**
-	 * Get activityname.
+	 * Get Activity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -49,6 +49,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdditionalDescription (@Nullable java.lang.String AdditionalDescription);
+
+	/**
+	 * Get Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAdditionalDescription();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_AdditionalDescription = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "AdditionalDescription", null);
+	String COLUMNNAME_AdditionalDescription = "AdditionalDescription";
 
 	/**
 	 * Set Organisation.
@@ -117,6 +138,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 
 	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_AmtSource = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "AmtSource", null);
 	String COLUMNNAME_AmtSource = "AmtSource";
+
+	/**
+	 * Set Debit/Credit indicator.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBP_Account_Place (@Nullable java.lang.String BP_Account_Place);
+
+	/**
+	 * Get Debit/Credit indicator.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBP_Account_Place();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_BP_Account_Place = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "BP_Account_Place", null);
+	String COLUMNNAME_BP_Account_Place = "BP_Account_Place";
 
 	/**
 	 * Set Name.
@@ -387,6 +429,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	String COLUMNNAME_Currency = "Currency";
 
 	/**
+	 * Set Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrencyRate (@Nullable BigDecimal CurrencyRate);
+
+	/**
+	 * Get Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCurrencyRate();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "CurrencyRate", null);
+	String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/**
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *
@@ -524,7 +587,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	 * Set Due Date.
 	 * Date when the payment is due
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -534,7 +597,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	 * Get Due Date.
 	 * Date when the payment is due
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -542,6 +605,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 
 	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_DueDate = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "DueDate", null);
 	String COLUMNNAME_DueDate = "DueDate";
+
+	/**
+	 * Set Zeilenbrutto.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrossAmt (BigDecimal GrossAmt);
+
+	/**
+	 * Get Zeilenbrutto.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrossAmt();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_GrossAmt = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "GrossAmt", null);
+	String COLUMNNAME_GrossAmt = "GrossAmt";
 
 	/**
 	 * Set Sales Transaction.

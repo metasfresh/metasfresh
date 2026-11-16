@@ -7,6 +7,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderEventListener;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
+import de.metas.pos.rest_api.json.JsonPOSOrderMapper;
 import de.metas.pos.websocket.json.JsonPOSOrderChangedWebSocketEvent;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.sender.WebsocketSender;
@@ -24,13 +25,16 @@ public class POSOrderWebsocketEventsDispatcher implements POSOrderEventListener
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(POSOrderWebsocketEventsDispatcher.class);
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final JsonPOSOrderMapper jsonPOSOrderMapper;
 	@Nullable private final WebsocketSender websocketSender;
 
 	public POSOrderWebsocketEventsDispatcher(
 			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final JsonPOSOrderMapper jsonPOSOrderMapper,
 			@NonNull final Optional<WebsocketSender> websocketSenderOptional)
 	{
 		this.currencyRepository = currencyRepository;
+		this.jsonPOSOrderMapper = jsonPOSOrderMapper;
 		this.websocketSender = websocketSenderOptional.orElse(null);
 		if (this.websocketSender == null)
 		{
@@ -51,7 +55,7 @@ public class POSOrderWebsocketEventsDispatcher implements POSOrderEventListener
 
 	private JsonPOSOrder toJson(final POSOrder posOrder)
 	{
-		return JsonPOSOrder.from(posOrder, this::getCurrencySymbolById);
+		return jsonPOSOrderMapper.toJson(posOrder, this::getCurrencySymbolById);
 	}
 
 	private String getCurrencySymbolById(final CurrencyId currencyId)

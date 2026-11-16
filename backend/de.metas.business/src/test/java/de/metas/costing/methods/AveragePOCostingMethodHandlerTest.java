@@ -8,6 +8,7 @@ import de.metas.acct.api.TaxCorrectionType;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateRequest.CostDetailCreateRequestBuilder;
 import de.metas.costing.CostDetailCreateResult;
@@ -26,6 +27,8 @@ import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
 import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.costrevaluation.CostRevaluationId;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -39,6 +42,7 @@ import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,7 +53,9 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
@@ -69,6 +75,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -97,6 +104,7 @@ public class AveragePOCostingMethodHandlerTest
 {
 	private CostElementRepository costElementRepo;
 	private CurrentCostsRepository currentCostsRepo;
+	private CostDetailRepository costDetailsRepo;
 	private AveragePOCostingMethodHandler handler;
 
 	private OrgId orgId1;
@@ -123,7 +131,7 @@ public class AveragePOCostingMethodHandlerTest
 
 		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
-		final CostDetailRepository costDetailsRepo = new CostDetailRepository();
+		costDetailsRepo = new CostDetailRepository();
 		final CostDetailService costDetailsService = new CostDetailService(costDetailsRepo, costElementRepo);
 		final CostingMethodHandlerUtils handlerUtils = new CostingMethodHandlerUtils(
 				new CurrencyRepository(),
@@ -166,8 +174,13 @@ public class AveragePOCostingMethodHandlerTest
 
 	private AcctSchemaId createAcctSchema()
 	{
+		return createAcctSchema("Test AcctSchema");
+	}
+
+	private AcctSchemaId createAcctSchema(@NonNull final String name)
+	{
 		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
-		acctSchemaRecord.setName("Test AcctSchema");
+		acctSchemaRecord.setName(name);
 		acctSchemaRecord.setC_Currency_ID(euroCurrencyId.getRepoId());
 		acctSchemaRecord.setM_CostType_ID(costTypeId.getRepoId());
 		acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
@@ -268,6 +281,11 @@ public class AveragePOCostingMethodHandlerTest
 
 	private CostSegment costSegment(final OrgId orgId)
 	{
+		return costSegment(orgId, acctSchemaId);
+	}
+
+	private CostSegment costSegment(final OrgId orgId, final AcctSchemaId acctSchemaId)
+	{
 		return CostSegment.builder()
 				.costingLevel(CostingLevel.Client)
 				.acctSchemaId(acctSchemaId)
@@ -277,6 +295,36 @@ public class AveragePOCostingMethodHandlerTest
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.build();
+	}
+
+	@Test
+	public void recalculate_refusesACostRevaluationCostDetail()
+	{
+		handler.createOrUpdateCost(costDetailCreateRequest()
+				.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+				.amt(CostAmount.of(100, euroCurrencyId))
+				.qty(Quantity.of(10, eachUOM))
+				.build());
+		final CurrentCost currentCost = getCurrentCost(orgId1);
+
+		final CostDetail revaluationCostDetail = CostDetail.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(orgId1)
+				.acctSchemaId(acctSchemaId)
+				.costElementId(costElement.getId())
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of(0, euroCurrencyId))
+				.qty(Quantity.of(0, eachUOM))
+				.changingCosts(true)
+				.documentRef(CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(CostRevaluationId.ofRepoId(1), 1)))
+				.dateAcct(Instant.parse("2024-03-05T23:30:00Z"))
+				.build();
+
+		assertThatThrownBy(() -> handler.recalculateCostDetailAmountAndUpdateCurrentCost(revaluationCostDetail, currentCost))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
 	}
 
 	@Test
@@ -839,5 +887,219 @@ public class AveragePOCostingMethodHandlerTest
 
 		}
 
+	}
+
+	/**
+	 * Posting a cost revaluation line books the stock on hand at posting × (new − current cost price), read from {@code M_Cost}
+	 * under the same lock that saves the new price; the amount of the request (the value difference shown at Complete) is not booked.
+	 */
+	@Nested
+	public class createCostRevaluationLine
+	{
+		private final CostingDocumentRef revaluationLineRef = CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(1, 1));
+
+		private void seedStock(@NonNull final AcctSchemaId schemaId, final int qty, final int costPrice)
+		{
+			handler.createOrUpdateCost(costDetailCreateRequest()
+					.acctSchemaId(schemaId)
+					.documentRef(CostingDocumentRef.ofInventoryLineId(schemaId.getRepoId() * 100 + qty))
+					.amt(CostAmount.of(qty * costPrice, euroCurrencyId))
+					.explicitCostPrice(CostAmount.of(costPrice, euroCurrencyId))
+					.qty(Quantity.of(qty, eachUOM))
+					.build());
+
+			final CurrentCost currentCost = getCurrentCost(schemaId);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo(String.valueOf(qty));
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualByComparingTo(String.valueOf(costPrice));
+		}
+
+		private void issueStock(final int qty)
+		{
+			handler.createOrUpdateCost(costDetailCreateRequest()
+					.documentRef(CostingDocumentRef.ofInventoryLineId(9000 + qty))
+					.amt(CostAmount.zero(euroCurrencyId))
+					.qty(Quantity.of(-qty, eachUOM))
+					.build());
+		}
+
+		private CostDetailCreateResult postRevaluationLine(@NonNull final AcctSchemaId schemaId, final String requestAmt, final String newCostPrice)
+		{
+			return handler.createOrUpdateCost(costDetailCreateRequest()
+							.acctSchemaId(schemaId)
+							.documentRef(revaluationLineRef)
+							.qty(Quantity.of(0, eachUOM))
+							.amt(CostAmount.of(new BigDecimal(requestAmt), euroCurrencyId))
+							.explicitCostPrice(CostAmount.of(new BigDecimal(newCostPrice), euroCurrencyId))
+							.build())
+					.getSingleResult();
+		}
+
+		private CurrentCost getCurrentCost(@NonNull final AcctSchemaId schemaId)
+		{
+			final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment(orgId1, schemaId), CostingMethod.AveragePO);
+			assertThat(currentCosts).hasSize(1);
+			return currentCosts.get(0);
+		}
+
+		private ImmutableList<CostDetail> revaluationCostDetails(@NonNull final AcctSchemaId schemaId)
+		{
+			return costDetailsRepo.listByDocumentRefAndAcctSchemaId(revaluationLineRef, schemaId);
+		}
+
+		@Test
+		public void revaluationLine_booksQtyAtPostingTimesDelta_whenStockChangedSinceComplete()
+		{
+			seedStock(acctSchemaId, 80, 10);
+			final CostAmount cumulatedAmtBefore = getCurrentCost(acctSchemaId).getCumulatedAmt();
+
+			// request amount 500 = the value difference at Complete (100 × 5); 20 pcs were issued since
+			final CostDetailCreateResult result = postRevaluationLine(acctSchemaId, "500", "15");
+
+			assertThat(result.getAmtAndQty()).isEqualTo(mainAmtAndQty("400", "0"));
+			final CurrentCost currentCost = getCurrentCost(acctSchemaId);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("80");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualByComparingTo("15");
+			assertThat(currentCost.getCumulatedAmt().subtract(cumulatedAmtBefore).toBigDecimal()).isEqualByComparingTo("400");
+		}
+
+		@Test
+		public void revaluationLine_booksZero_whenNoStock()
+		{
+			seedStock(acctSchemaId, 0, 10);
+
+			final CostDetailCreateResult result = postRevaluationLine(acctSchemaId, "500", "15");
+
+			assertThat(result.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
+			assertThat(getCurrentCost(acctSchemaId).getCostPrice().toBigDecimal()).isEqualByComparingTo("15");
+		}
+
+		@Test
+		public void revaluationLine_booksDecrease()
+		{
+			seedStock(acctSchemaId, 80, 12);
+
+			// request amount -200 = the value difference at Complete (100 × -2)
+			final CostDetailCreateResult result = postRevaluationLine(acctSchemaId, "-200", "10");
+
+			assertThat(result.getAmtAndQty()).isEqualTo(mainAmtAndQty("-160", "0"));
+			final CurrentCost currentCost = getCurrentCost(acctSchemaId);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("80");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualByComparingTo("10");
+		}
+
+		@Test
+		public void revaluationLine_repostReusesTheCostDetail()
+		{
+			seedStock(acctSchemaId, 80, 10);
+			postRevaluationLine(acctSchemaId, "500", "15");
+			final CurrentCost currentCostAfterFirstPosting = getCurrentCost(acctSchemaId);
+
+			// stock moves after the first posting; a repost must not book again
+			issueStock(10);
+			final CurrentCost currentCostBeforeRepost = getCurrentCost(acctSchemaId);
+			final CostDetailCreateResult repostResult = postRevaluationLine(acctSchemaId, "500", "15");
+
+			assertThat(repostResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("400", "0"));
+			assertThat(revaluationCostDetails(acctSchemaId)).hasSize(1);
+			final CurrentCost currentCostAfterRepost = getCurrentCost(acctSchemaId);
+			assertThat(currentCostAfterRepost.getCurrentQty()).isEqualTo(currentCostBeforeRepost.getCurrentQty());
+			assertThat(currentCostAfterRepost.getCostPrice()).isEqualTo(currentCostBeforeRepost.getCostPrice());
+			assertThat(currentCostAfterRepost.getCumulatedAmt()).isEqualTo(currentCostBeforeRepost.getCumulatedAmt());
+			assertThat(currentCostAfterFirstPosting.getCostPrice().toBigDecimal()).isEqualByComparingTo("15");
+		}
+
+		@Test
+		public void posting_readsOnlyTheDocumentsAcctSchema()
+		{
+			final AcctSchemaId otherAcctSchemaId = createAcctSchema("Other AcctSchema");
+			final I_M_Product_Category_Acct otherProductCategoryAcct = newInstanceOutOfTrx(I_M_Product_Category_Acct.class);
+			otherProductCategoryAcct.setM_Product_Category_ID(InterfaceWrapperHelper.load(productId, I_M_Product.class).getM_Product_Category_ID());
+			otherProductCategoryAcct.setC_AcctSchema_ID(otherAcctSchemaId.getRepoId());
+			saveRecord(otherProductCategoryAcct);
+
+			seedStock(acctSchemaId, 100, 10);
+			seedStock(otherAcctSchemaId, 100, 20);
+			final CurrentCost otherCurrentCostBefore = getCurrentCost(otherAcctSchemaId);
+
+			final CostDetailCreateResult result = postRevaluationLine(acctSchemaId, "500", "15");
+
+			assertThat(result.getAmtAndQty()).isEqualTo(mainAmtAndQty("500", "0"));
+			final CurrentCost currentCost = getCurrentCost(acctSchemaId);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualByComparingTo("15");
+			assertThat(revaluationCostDetails(acctSchemaId)).hasSize(1);
+
+			final CurrentCost otherCurrentCost = getCurrentCost(otherAcctSchemaId);
+			assertThat(otherCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(otherCurrentCost.getCostPrice().toBigDecimal()).isEqualByComparingTo("20");
+			assertThat(otherCurrentCost.getCumulatedAmt()).isEqualTo(otherCurrentCostBefore.getCumulatedAmt());
+			assertThat(revaluationCostDetails(otherAcctSchemaId)).isEmpty();
+		}
+	}
+
+	// ---- M_CostDetail.Prev_* must hold the cost state BEFORE the add-on is applied ----
+
+	@Test
+	public void receiptNonMaterialCosts_prevAmountsAreStateBeforeAddOn()
+	{
+		final CostElement addOnElement = createCostElement(CostElementType.Overhead);
+		final int line1 = createInOutLineId();
+		final int line2 = createInOutLineId();
+
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.costElement(addOnElement)
+						.documentRef(CostingDocumentRef.ofReceiptLineId(line1))
+						.amt(CostAmount.of(20, euroCurrencyId))
+						.qty(Quantity.of(10, eachUOM))
+						.build());
+		handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.costElement(addOnElement)
+						.documentRef(CostingDocumentRef.ofReceiptLineId(line2))
+						.amt(CostAmount.of(30, euroCurrencyId))
+						.qty(Quantity.of(10, eachUOM))
+						.build());
+
+		// first add-on: nothing before
+		assertPrev(retrieveCostDetailByInOutLine(line1), "0", "0", "0", "0");
+		// second add-on: state after the first (10 @ 2, cumulated 20)
+		assertPrev(retrieveCostDetailByInOutLine(line2), "2", "10", "20", "10");
+	}
+
+	private CostElement createCostElement(final CostElementType type)
+	{
+		final I_M_CostElement record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setName(type.name());
+		record.setCostElementType(type.getCode());
+		record.setCostingMethod(CostingMethod.AveragePO.getCode());
+		record.setIsCalculated(false);
+		InterfaceWrapperHelper.saveRecord(record);
+		return costElementRepo.getById(CostElementId.ofRepoId(record.getM_CostElement_ID()));
+	}
+
+	private int createInOutLineId()
+	{
+		final I_M_InOutLine line = newInstanceOutOfTrx(I_M_InOutLine.class);
+		saveRecord(line);
+		return line.getM_InOutLine_ID();
+	}
+
+	private I_M_CostDetail retrieveCostDetailByInOutLine(final int inoutLineId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_CostDetail.class)
+				.addEqualsFilter(I_M_CostDetail.COLUMN_M_InOutLine_ID, inoutLineId)
+				.create()
+				.firstOnlyNotNull(I_M_CostDetail.class);
+	}
+
+	private static void assertPrev(final I_M_CostDetail cd, final String price, final String qty, final String cumAmt, final String cumQty)
+	{
+		assertThat(cd.getPrev_CurrentCostPrice()).isEqualByComparingTo(price);
+		assertThat(cd.getPrev_CurrentQty()).isEqualByComparingTo(qty);
+		assertThat(cd.getPrev_CumulatedAmt()).isEqualByComparingTo(cumAmt);
+		assertThat(cd.getPrev_CumulatedQty()).isEqualByComparingTo(cumQty);
 	}
 }

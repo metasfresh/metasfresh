@@ -1,0 +1,3 @@
+Field <de.metas.purchasecandidate.command.CreatePurchaseOrderFromRequisitionCommand$CreatePurchaseOrderFromRequisitionCommandBuilder.newOrderDateOrdered> has raw type java.sql.Timestamp in (CreatePurchaseOrderFromRequisitionCommand.java:0)
+Field <de.metas.purchasecandidate.command.CreatePurchaseOrderFromRequisitionCommand.newOrderDateOrdered> has raw type java.sql.Timestamp in (CreatePurchaseOrderFromRequisitionCommand.java:0)
+Field <de.metas.purchasecandidate.process.C_Order_CreatePOFromRequisition.newOrderDateOrdered> has raw type java.sql.Timestamp in (C_Order_CreatePOFromRequisition.java:0)

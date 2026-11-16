@@ -1,16 +1,43 @@
 package de.metas.frontend_testing.masterdata.product;
 
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostingLevel;
+import de.metas.product.ProductCategoryId;
+import de.metas.uom.UomId;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.util.Env;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,14 +65,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateProductCommandTest
 {
+	private IQueryBL queryBL;
 	private ProductRepository productRepository;
+	private ICurrentCostsRepository currentCostsRepository;
 	private MasterdataContext context;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		productRepository = new ProductRepository();
+		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		context = new MasterdataContext();
 	}
 
@@ -60,6 +91,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product1"))
@@ -95,6 +127,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product2"))
@@ -119,6 +152,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product3"))
@@ -144,6 +178,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("productDefault"))
@@ -173,6 +208,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("contextProduct"))
@@ -193,6 +229,7 @@ public class CreateProductCommandTest
 		// given & when
 		final JsonCreateProductResponse response1 = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(JsonCreateProductRequest.builder()
 						.value("UNIQUE_PROD_001")
@@ -204,6 +241,7 @@ public class CreateProductCommandTest
 
 		final JsonCreateProductResponse response2 = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(JsonCreateProductRequest.builder()
 						.value("UNIQUE_PROD_002")
@@ -233,6 +271,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("autoValueProduct"))
@@ -264,6 +303,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("gtinProduct"))
@@ -292,6 +332,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("ean13Product"))
@@ -319,6 +360,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("pricesProduct"))
@@ -336,6 +378,76 @@ public class CreateProductCommandTest
 		assertThat(product.getValue()).isEqualTo("PROD_WITH_PRICES");
 	}
 
+	private I_M_ProductPrice createProductWithPrice(final String value, final JsonCreateProductRequest.Price price)
+	{
+		final de.metas.pricing.PriceListVersionId priceListVersionId = de.metas.pricing.PriceListVersionId.ofRepoId(1);
+		context.putIdentifier(Identifier.unique("PLV"), priceListVersionId);
+
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder().value(value).prices(java.util.Collections.singletonList(price)).build())
+				.identifier(Identifier.ofString(value))
+				.build()
+				.execute();
+
+		return queryBL
+				.createQueryBuilder(I_M_ProductPrice.class)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, response.getId())
+				.create()
+				.firstOnlyNotNull(I_M_ProductPrice.class);
+	}
+
+	private static int createTaxCategory(final String internalName)
+	{
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
+		taxCategory.setName(internalName);
+		taxCategory.setInternalName(internalName);
+		InterfaceWrapperHelper.saveRecord(taxCategory);
+		return taxCategory.getC_TaxCategory_ID();
+	}
+
+	@Test
+	public void price_withTaxCategory_usesThatExistingCategory()
+	{
+		createTaxCategory(MasterdataContext.DEFAULT_TaxCategory_InternalName);
+		final int reducedId = createTaxCategory("Reduced");
+
+		final I_M_ProductPrice productPrice = createProductWithPrice("P_REDUCED", JsonCreateProductRequest.Price.builder()
+				.price(new BigDecimal("10.00"))
+				.taxCategory("Reduced")
+				.build());
+
+		assertThat(productPrice.getPriceStd()).isEqualByComparingTo("10.00");
+		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(reducedId);
+	}
+
+	@Test
+	public void price_withoutTaxCategory_usesNormal()
+	{
+		final int normalId = createTaxCategory(MasterdataContext.DEFAULT_TaxCategory_InternalName);
+		createTaxCategory("Reduced");
+
+		final I_M_ProductPrice productPrice = createProductWithPrice("P_NORMAL", JsonCreateProductRequest.Price.builder()
+				.price(new BigDecimal("10.00"))
+				.build());
+
+		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(normalId);
+	}
+
+	@Test
+	public void price_withUnknownTaxCategory_fails()
+	{
+		createTaxCategory(MasterdataContext.DEFAULT_TaxCategory_InternalName);
+
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> createProductWithPrice("P_UNKNOWN", JsonCreateProductRequest.Price.builder()
+				.price(new BigDecimal("10.00"))
+				.taxCategory("NoSuchCategory")
+				.build()))
+				.hasMessageContaining("NoSuchCategory");
+	}
+
 	@Test
 	public void execute_withMinimalRequest_shouldSucceed()
 	{
@@ -344,6 +456,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("minimalProduct"))
@@ -359,5 +472,132 @@ public class CreateProductCommandTest
 
 		final I_M_Product product = InterfaceWrapperHelper.load(response.getId(), I_M_Product.class);
 		assertThat(product).isNotNull();
+	}
+
+	@Test
+	public void execute_withSkipDefaultCosts_shouldDeleteTheProductCosts()
+	{
+		final RecordingCurrentCostsRepository costsRepository = new RecordingCurrentCostsRepository();
+
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(costsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_NO_COSTS")
+						.isSkipDefaultCosts(true)
+						.build())
+				.identifier(Identifier.ofString("noCostsProduct"))
+				.build()
+				.execute();
+
+		assertThat(costsRepository.deletedForProductIds).containsExactly(response.getId().getRepoId());
+	}
+
+	@Test
+	public void execute_withoutSkipDefaultCosts_shouldKeepTheProductCosts()
+	{
+		final RecordingCurrentCostsRepository costsRepository = new RecordingCurrentCostsRepository();
+
+		CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(costsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_WITH_COSTS")
+						.build())
+				.identifier(Identifier.ofString("withCostsProduct"))
+				.build()
+				.execute();
+
+		assertThat(costsRepository.deletedForProductIds).isEmpty();
+	}
+
+	@Test
+	public void currentCostPrice_isSet()
+	{
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema()
+				.costingLevel(CostingLevel.Client)
+				.costingMethod(CostingMethod.StandardCosting)
+				.build();
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class);
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(clientInfo);
+		final I_C_UOM each = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_UOM.class);
+		each.setC_UOM_ID(UomId.EACH.getRepoId()); // UomId.EACH is a fixed constant that the costing code loads by id
+		each.setName("Each");
+		each.setX12DE355("EA");
+		each.setStdPrecision(0);
+		InterfaceWrapperHelper.saveRecord(each);
+		final I_M_Product_Category category = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
+		category.setName("cat");
+		InterfaceWrapperHelper.saveRecord(category);
+		final I_M_Product_Category_Acct categoryAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Category_Acct.class);
+		categoryAcct.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		categoryAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(categoryAcct);
+		context.putIdentifier(Identifier.ofString("cat"), ProductCategoryId.ofRepoId(category.getM_Product_Category_ID()));
+		final CostElementRepository costElementRepository = new CostElementRepository(ADReferenceService.newMocked());
+		final CostElement costElement = costElementRepository.getOrCreateMaterialCostElement(ClientId.METASFRESH, CostingMethod.StandardCosting);
+
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_COST")
+						.productCategory(Identifier.ofString("cat"))
+						.currentCostPrice(new BigDecimal("16.93"))
+						.build())
+				.identifier(Identifier.ofString("costProduct"))
+				.build()
+				.execute();
+
+		final I_M_Cost costRecord = POJOLookupMap.get().getRecords(I_M_Cost.class, record -> record.getM_Product_ID() == response.getId().getRepoId()
+				&& record.getC_AcctSchema_ID() == acctSchemaId.getRepoId()
+				&& record.getM_CostElement_ID() == costElement.getId().getRepoId())
+				.stream().findFirst().orElse(null);
+		assertThat(costRecord).as("M_Cost of the schema's costing-method element").isNotNull();
+		assertThat(costRecord.getCurrentCostPrice()).isEqualByComparingTo("16.93");
+	}
+
+	@Test
+	public void coProductCostDistributionPercent_isSet()
+	{
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_COPRODUCT")
+						.coProductCostDistributionPercent(new BigDecimal("20"))
+						.build())
+				.identifier(Identifier.ofString("coProduct"))
+				.build()
+				.execute();
+
+		final I_M_Product product = InterfaceWrapperHelper.load(response.getId(), I_M_Product.class);
+		assertThat(product.getCoProductCostDistributionPercent()).isEqualByComparingTo("20");
+	}
+
+	/**
+	 * Records for which products the command asked to delete the cost rows.
+	 */
+	private static class RecordingCurrentCostsRepository extends CurrentCostsRepository
+	{
+		private final List<Integer> deletedForProductIds = new ArrayList<>();
+
+		RecordingCurrentCostsRepository()
+		{
+			super(new CostElementRepository(ADReferenceService.newMocked()));
+		}
+
+		@Override
+		public void deleteForProduct(final I_M_Product product)
+		{
+			deletedForProductIds.add(product.getM_Product_ID());
+		}
 	}
 }

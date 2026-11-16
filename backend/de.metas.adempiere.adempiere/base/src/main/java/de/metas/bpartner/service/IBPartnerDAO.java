@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
@@ -83,6 +84,10 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
+	Optional<Integer> getPurchaseTransportDays(BPartnerId bpartnerId);
+
+	Optional<Integer> getPurchaseTransportDays(I_C_BPartner bpartner);
+
 	List<I_C_BPartner> getByIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	/**
@@ -136,6 +141,9 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
 
+	@NonNull
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactiveNotNull(@NonNull BPartnerLocationId bpartnerLocationId);
+
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
@@ -165,7 +173,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
 
-	List<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
+	ImmutableList<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getByIdInTrx(@NonNull BPartnerId bpartnerId, @NonNull Class<T> modelClass);
 
@@ -236,12 +244,24 @@ public interface IBPartnerDAO extends ISingletonService
 	boolean hasMoreLocations(Properties ctx, int bpartnerId, int excludeBPLocationId, @Nullable String trxName);
 
 	/**
-	 * Search the {@link I_C_BP_Relation}s for matching partner and location (note that the link without location is acceptable too)
-	 *
-	 * @return {@link I_C_BP_Relation} first encountered which is used for billing
+	 * Retrieves the active bill-to {@link I_C_BP_Relation} (the relation that redirects billing to another partner) of the given partner location,
+	 * i.e. the relation whose {@code C_BPartner_Location_ID} is that location.
+	 * <p>
+	 * A partner may have one active bill-to relation <b>per partner location</b>, plus at most one partner-wide relation
+	 * ({@code C_BPartner_Location_ID IS NULL}, see {@link #retrievePartnerWideBillToRelationOrNull(BPartnerId)});
+	 * this is enforced by the unique index {@code C_BP_Relation_UC_IsBillTo}
+	 * on {@code (C_BPartner_ID, COALESCE(C_BPartner_Location_ID,0), IsBillTo) WHERE IsActive='Y' AND IsBillTo='Y'}.
+	 * There is no fallback to the partner-wide relation here; that precedence is decided by the caller.
 	 */
-	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(Object contextProvider, I_C_BPartner partner, I_C_BPartner_Location location);
+	@Nullable
+	I_C_BP_Relation retrieveBillToRelationForLocationOrNull(@NonNull BPartnerLocationId bPartnerLocationId);
 
+	/**
+	 * Retrieves the partner's active partner-wide bill-to {@link I_C_BP_Relation} ({@code C_BPartner_Location_ID IS NULL}),
+	 * ignoring relations that are bound to one of the partner's locations.
+	 */
+	@Nullable
+	I_C_BP_Relation retrievePartnerWideBillToRelationOrNull(@NonNull BPartnerId bPartnerId);
 
 	/**
 	 * Retrieve default/first ship to location.
@@ -282,7 +302,10 @@ public interface IBPartnerDAO extends ISingletonService
 	 * Retrieve default/first bill to location.
 	 *
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
-	 *                              that relation's bPartner location.
+	 *                              that relation's bPartner location. Since there is no partner-location context here, the partner-wide relation
+	 *                              (see {@link #retrievePartnerWideBillToRelationOrNull(BPartnerId)}) is used first;
+	 *                              if there is none, any active bill-to relation of the partner is used (partner-only lookup with {@code firstOnly},
+	 *                              i.e. it fails if the partner has several location-bound bill-to relations).
 	 * @return bill to location or null
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
@@ -341,7 +364,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@NonNull
 	List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
 
-	Optional<ShipperId> getShipperIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
+	@Nullable
+	ShipperId getShipperIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Value
 	@Builder
@@ -412,4 +436,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@NonNull
 	Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull GLNQuery query);
+
+	/**
+	 * Retrieves all active-and-inactive factorer BPartners ({@code IsFactorer='Y'}) in the given organisation.
+	 * Callers use the returned list size to distinguish "no factorer configured" vs "ambiguous multiple factorers"
+	 * — the DB partial unique index only enforces uniqueness among active rows.
+	 *
+	 * @param orgId organisation scope
+	 * @return factorer BPs in this org (typically 0 or 1; more is an ambiguity the caller must handle)
+	 */
+	@NonNull
+	java.util.List<I_C_BPartner> retrieveFactorerBPartnersForOrg(@NonNull OrgId orgId);
 }

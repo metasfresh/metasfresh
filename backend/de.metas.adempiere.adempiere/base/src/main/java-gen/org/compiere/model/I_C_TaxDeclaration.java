@@ -1,367 +1,444 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_TaxDeclaration
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_TaxDeclaration 
 {
 
-    /** TableName=C_TaxDeclaration */
-    public static final String Table_Name = "C_TaxDeclaration";
+	String Table_Name = "C_TaxDeclaration";
 
-    /** AD_Table_ID=818 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=818 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org 
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_Client>(I_C_TaxDeclaration.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Accounting Schema.
+	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setC_AcctSchema_ID (int C_AcctSchema_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Accounting Schema.
+	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getC_AcctSchema_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
+	org.compiere.model.I_C_AcctSchema getC_AcctSchema();
 
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+	void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_Org>(I_C_TaxDeclaration.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_C_TaxDeclaration.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
-	 * Set Steuererklärung.
-	 * Define the declaration to the tax authorities
+	 * Set Document Type.
+	 * Document type or rules
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_TaxDeclaration_ID (int C_TaxDeclaration_ID);
+	void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Steuererklärung.
-	 * Define the declaration to the tax authorities
+	 * Get Document Type.
+	 * Document type or rules
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_TaxDeclaration_ID();
+	int getC_DocType_ID();
 
-    /** Column definition for C_TaxDeclaration_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_C_TaxDeclaration_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "C_TaxDeclaration_ID", null);
-    /** Column name C_TaxDeclaration_ID */
-    public static final String COLUMNNAME_C_TaxDeclaration_ID = "C_TaxDeclaration_ID";
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Set Period.
+	 * Period of the Calendar
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Period_ID (int C_Period_ID);
+
+	/**
+	 * Get Period.
+	 * Period of the Calendar
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Period_ID();
+
+	org.compiere.model.I_C_Period getC_Period();
+
+	void setC_Period(org.compiere.model.I_C_Period C_Period);
+
+	ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_C_TaxDeclaration.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+	String COLUMNNAME_C_Period_ID = "C_Period_ID";
+
+	/**
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Created = new ModelColumn<>(I_C_TaxDeclaration.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_User>(I_C_TaxDeclaration.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Datum von.
-	 * Starting date for a range
+	 * Set Tax Declaration.
+	 * Define the declaration to the tax authorities
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxDeclaration_ID (int C_TaxDeclaration_ID);
+
+	/**
+	 * Get Tax Declaration.
+	 * Define the declaration to the tax authorities
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxDeclaration_ID();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_C_TaxDeclaration_ID = new ModelColumn<>(I_C_TaxDeclaration.class, "C_TaxDeclaration_ID", null);
+	String COLUMNNAME_C_TaxDeclaration_ID = "C_TaxDeclaration_ID";
+
+	/**
+	 * Set Original Tax Declaration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxDeclaration_Original_ID (int C_TaxDeclaration_Original_ID);
+
+	/**
+	 * Get Original Tax Declaration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxDeclaration_Original_ID();
+
+	@Nullable org.compiere.model.I_C_TaxDeclaration getC_TaxDeclaration_Original();
+
+	void setC_TaxDeclaration_Original(@Nullable org.compiere.model.I_C_TaxDeclaration C_TaxDeclaration_Original);
+
+	ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_TaxDeclaration> COLUMN_C_TaxDeclaration_Original_ID = new ModelColumn<>(I_C_TaxDeclaration.class, "C_TaxDeclaration_Original_ID", org.compiere.model.I_C_TaxDeclaration.class);
+	String COLUMNNAME_C_TaxDeclaration_Original_ID = "C_TaxDeclaration_Original_ID";
+
+	/**
+	 * Set Accounting Date.
+	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateFrom (java.sql.Timestamp DateFrom);
+	void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
-	 * Get Datum von.
-	 * Starting date for a range
+	 * Get Accounting Date.
+	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateFrom();
+	java.sql.Timestamp getDateAcct();
 
-    /** Column definition for DateFrom */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateFrom = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateFrom", null);
-    /** Column name DateFrom */
-    public static final String COLUMNNAME_DateFrom = "DateFrom";
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateAcct = new ModelColumn<>(I_C_TaxDeclaration.class, "DateAcct", null);
+	String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
-	 * Set Datum bis.
-	 * End date of a date range
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateTo (java.sql.Timestamp DateTo);
-
-	/**
-	 * Get Datum bis.
-	 * End date of a date range
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateTo();
-
-    /** Column definition for DateTo */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateTo = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateTo", null);
-    /** Column name DateTo */
-    public static final String COLUMNNAME_DateTo = "DateTo";
-
-	/**
-	 * Set Vorgangsdatum.
-	 * Transaction Date
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateTrx (java.sql.Timestamp DateTrx);
-
-	/**
-	 * Get Vorgangsdatum.
-	 * Transaction Date
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateTrx();
-
-    /** Column definition for DateTrx */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateTrx", null);
-    /** Column name DateTrx */
-    public static final String COLUMNNAME_DateTrx = "DateTrx";
-
-	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Description = new ModelColumn<>(I_C_TaxDeclaration.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Aktiv.
+	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocAction();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DocAction = new ModelColumn<>(I_C_TaxDeclaration.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocStatus();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_TaxDeclaration.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+
+	/**
+	 * Get Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocumentNo();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_TaxDeclaration.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsActive = new ModelColumn<>(I_C_TaxDeclaration.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setName (java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getName();
-
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Correction?.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setIsCorrection (boolean IsCorrection);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Correction?.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isCorrection();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsCorrection = new ModelColumn<>(I_C_TaxDeclaration.class, "IsCorrection", null);
+	String COLUMNNAME_IsCorrection = "IsCorrection";
 
 	/**
-	 * Set Verarbeiten.
+	 * Set Correction needed?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCorrectionNeeded (boolean IsCorrectionNeeded);
+
+	/**
+	 * Get Correction needed?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCorrectionNeeded();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsCorrectionNeeded = new ModelColumn<>(I_C_TaxDeclaration.class, "IsCorrectionNeeded", null);
+	String COLUMNNAME_IsCorrectionNeeded = "IsCorrectionNeeded";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Processed = new ModelColumn<>(I_C_TaxDeclaration.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
-	 * Get Verarbeiten.
+	 * Get Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Processing = new ModelColumn<>(I_C_TaxDeclaration.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Updated = new ModelColumn<>(I_C_TaxDeclaration.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_AD_User>(I_C_TaxDeclaration.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

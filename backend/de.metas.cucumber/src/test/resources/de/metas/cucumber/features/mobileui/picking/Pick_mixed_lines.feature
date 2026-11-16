@@ -250,9 +250,9 @@ Feature: mobileUI Picking - Pick mixed lines
     And validate the created shipment lines by id
       | Identifier    | M_Product_ID       | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
       | shipmentLine1 | catchWeightProduct | 1           | 0.101             | 1            | TUx4_CatchWeightProduct | asi1                      |
-      | shipmentLine2 | catchWeightProduct | 1           | 0.102             | 0            | TUx4_CatchWeightProduct | asi2                      |
-      | shipmentLine3 | catchWeightProduct | 1           | 0.103             | 0            | TUx4_CatchWeightProduct | asi3                      |
-      | shipmentLine4 | catchWeightProduct | 1           | 0.104             | 0            | TUx4_CatchWeightProduct | asi4                      |
+      | shipmentLine2 | catchWeightProduct | 1           | 0.102             | 1            | TUx4_CatchWeightProduct | asi2                      |
+      | shipmentLine3 | catchWeightProduct | 1           | 0.103             | 1            | TUx4_CatchWeightProduct | asi3                      |
+      | shipmentLine4 | catchWeightProduct | 1           | 0.104             | 1            | TUx4_CatchWeightProduct | asi4                      |
       | shipmentLine5 | catchWeightProduct | 4           | 0.426             | 1            | TUx4_CatchWeightProduct | asi5                      |
       | shipmentLine6 | regularTUProduct   | 36          |                   | 9            | TUx4_RegularTUProduct   | asi6                      |
       | shipmentLine7 | regularCUProduct   | 9           |                   | 0            |                         | asi7                      |

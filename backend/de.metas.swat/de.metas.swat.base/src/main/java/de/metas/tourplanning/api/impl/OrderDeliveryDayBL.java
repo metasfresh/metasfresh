@@ -2,6 +2,7 @@ package de.metas.tourplanning.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.calendar.ICalendarBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
@@ -9,19 +10,33 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
+import de.metas.tourplanning.api.WorkdayCalculator;
 import de.metas.tourplanning.model.TourId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -29,6 +44,9 @@ import java.time.temporal.TemporalUnit;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
+	/** Forward opt-in: if Y, DatePromised is derived from DateOrdered + the shipper lead time. Default N. */
+	private static final String SYSCONFIG_LeadTimeForwardCalc_Enabled = "de.metas.tourplanning.LeadTimeForwardCalc.Enabled";
+
 	private static final String SYSCONFIG_Fallback_PreparationDate = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate";
 
 	private static final String SYSCONFIG_Fallback_PreparationDate_Offset_Hours = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours";
@@ -36,6 +54,18 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private static final Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+
+	/**
+	 * The business-day matcher governing the lead-time date math for this order: Mon-Fri, plus any holidays
+	 * configured on the order org's {@code C_Calendar}. Degrades to weekends-only when the org has no calendar.
+	 */
+	private IBusinessDayMatcher getBusinessDayMatcher(@NonNull final I_C_Order order)
+	{
+		return calendarBL.getBusinessDayMatcher(OrgId.ofRepoId(order.getAD_Org_ID()));
+	}
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
@@ -55,6 +85,17 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
+		final ZoneId timeZone = orderBL.getTimeZone(order);
+
+		// Shipper lead time (field presence = opt-in): PreparationDate is derived backward from DatePromised.
+		// Sales orders only: purchase orders keep their existing transport-days / offset path.
+		// Placed before the location guard: it needs neither tour nor C_BPartner_Location_ID.
+		final Integer leadTimeDays = order.isSOTrx() ? getLeadTimeDaysOrNull(order) : null;
+		if (leadTimeDays != null)
+		{
+			return setPreparationDateFromLeadTime(order, leadTimeDays, timeZone);
+		}
+
 		//
 		// Extract parameters from order
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
@@ -63,12 +104,295 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
-		final ZoneId timeZone = Services.get(IOrderBL.class).getTimeZone(order);
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
 		if (datePromised == null)
 		{
 			return false;
 		}
+
+		// Compute the header's preparation date + tour from the header's DatePromised.
+		final PreparationDateAndTour preparationDateAndTour = computePreparationDateAndTour0(order, datePromised, fallbackToDatePromised, timeZone);
+
+		order.setPreparationDate(TimeUtil.asTimestamp(preparationDateAndTour.getPreparationDate()));
+		order.setM_Tour_ID(TourId.toRepoId(preparationDateAndTour.getTourId()));
+
+		return true;
+	}
+
+	@Override
+	public boolean setDatePromisedFromLeadTime(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx() || order.isFixedDatePromised() || order.isProcessed())
+		{
+			return false;
+		}
+
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_LeadTimeForwardCalc_Enabled, false, order.getAD_Client_ID(), order.getAD_Org_ID()))
+		{
+			return false;
+		}
+
+		final Integer leadTimeDays = getLeadTimeDaysOrNull(order);
+		if (leadTimeDays == null)
+		{
+			return false;
+		}
+
+		final ZoneId timeZone = orderBL.getTimeZone(order);
+		final ZonedDateTime dateOrdered = TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone);
+		if (dateOrdered == null)
+		{
+			return false;
+		}
+
+		// Clamp the forward step to >= 0 so a (mis-configured) negative lead time never places DatePromised before
+		// DateOrdered; a negative lead time then behaves like 0. The backward step is clamped symmetrically to <= 0.
+		final LocalDate datePromised = WorkdayCalculator.addBusinessDays(dateOrdered.toLocalDate(), Math.max(leadTimeDays, 0), getBusinessDayMatcher(order));
+		order.setDatePromised(TimeUtil.asTimestamp(datePromised.atStartOfDay(timeZone)));
+		return true;
+	}
+
+	@Override
+	public boolean isDatePromisedSuppliedAtCreation(@NonNull final I_C_Order order)
+	{
+		// The MOrder constructor seeds DatePromised with SystemTime.asDayTimestamp() ("today" at 00:00, task 06269),
+		// so a brand-new order always reports DatePromised as changed and is_ValueChanged cannot tell. A value counts
+		// as "supplied by the creator" (webui callout / REST / OLCand-EDI import / copied order) only when it is
+		// non-null AND differs from that today-seed; the seed equals asDayTimestamp() exactly (both are today
+		// truncated to the day). Edge (accepted): a delivery date equal to the creation day is treated as the seed.
+		final Timestamp datePromised = order.getDatePromised();
+		return datePromised != null && !datePromised.equals(SystemTime.asDayTimestamp());
+	}
+
+	@Override
+	public boolean hasLeadTime(@NonNull final I_C_Order order)
+	{
+		return order.isSOTrx() && getLeadTimeDaysOrNull(order) != null;
+	}
+
+	@Override
+	public boolean isLeadTimeForwardCalcActive(@NonNull final I_C_Order order)
+	{
+		// The per-shipper forward lead time GOVERNS this sales order's DatePromised when the forward opt-in sysconfig
+		// is on for its client+org and its shipper carries a lead time. True even when the forward calc does not
+		// currently re-set DatePromised (e.g. IsFixedDatePromised='Y'): callers use this to know the lead time owns
+		// the promised date, so the legacy flat DatePromisedOffsetDays must not overwrite it.
+		return hasLeadTime(order)
+				&& sysConfigBL.getBooleanValue(SYSCONFIG_LeadTimeForwardCalc_Enabled, false, order.getAD_Client_ID(), order.getAD_Org_ID());
+	}
+
+	/**
+	 * Sets {@code PreparationDate = workday(DatePromised, min(-leadTimeDays + 1, 0))} (Mon-Fri business days).
+	 * The backward step is clamped to {@code <= 0} so a 0 or negative lead time never pushes PreparationDate
+	 * <i>after</i> DatePromised (invariant: PreparationDate &lt;= DatePromised, always); D=0 and D=1 both yield
+	 * PreparationDate = DatePromised. An order with {@code IsFixedPreparationDate='Y'} keeps its manually set value.
+	 */
+	private boolean setPreparationDateFromLeadTime(@NonNull final I_C_Order order, final int leadTimeDays, @NonNull final ZoneId timeZone)
+	{
+		if (order.isFixedPreparationDate())
+		{
+			return false;
+		}
+
+		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
+		if (datePromised == null)
+		{
+			return false;
+		}
+
+		final LocalDate preparationDate = computeLeadTimePreparationDate(datePromised.toLocalDate(), leadTimeDays, getBusinessDayMatcher(order));
+		order.setPreparationDate(TimeUtil.asTimestamp(preparationDate.atStartOfDay(timeZone)));
+		return true;
+	}
+
+	/**
+	 * The lead-time provisioning date: {@code workday(deliveryDate, min(-leadTimeDays + 1, 0))} (Mon-Fri business days).
+	 * The backward step is clamped to {@code <= 0} so a 0 or negative lead time never pushes the result <i>after</i> the
+	 * delivery date (invariant: PreparationDate &lt;= DatePromised, always). Shared by the order-header path
+	 * ({@link #setPreparationDateFromLeadTime}) and the per-line / shipment-schedule path ({@link #computePreparationDate})
+	 * so both derive exactly the same date.
+	 */
+	@VisibleForTesting
+	static LocalDate computeLeadTimePreparationDate(@NonNull final LocalDate deliveryDate, final int leadTimeDays, @NonNull final IBusinessDayMatcher businessDayMatcher)
+	{
+		final int backwardStep = Math.min(-leadTimeDays + 1, 0);
+		return WorkdayCalculator.addBusinessDays(deliveryDate, backwardStep, businessDayMatcher);
+	}
+
+	/**
+	 * @return the order's shipper's {@code LeadTimeDays}, or {@code null} when the order has no shipper or the shipper's
+	 * lead time is NULL. NULL (opt-out) must stay distinguishable from 0, which {@code I_M_Shipper#getLeadTimeDays()} cannot do.
+	 */
+	@Nullable
+	private Integer getLeadTimeDaysOrNull(@NonNull final I_C_Order order)
+	{
+		final int shipperId = order.getM_Shipper_ID();
+		if (shipperId <= 0)
+		{
+			return null;
+		}
+
+		final I_M_Shipper shipper = shipperDAO.getById(ShipperId.ofRepoId(shipperId));
+		return InterfaceWrapperHelper.getValueOrNull(shipper, I_M_Shipper.COLUMNNAME_LeadTimeDays);
+	}
+
+	// Derive the preparation date from a (per-line) deliveryDate using the same tour / no-tour-fallback / offset /
+	// sysconfig logic the order header uses; fallbackToDatePromised=true mirrors the system/OLCand path so a non-null
+	// date is returned even without a configured tour. Does NOT mutate the order.
+	@Nullable
+	private ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final ZonedDateTime deliveryDate)
+	{
+		final ZoneId timeZone = orderBL.getTimeZone(order);
+
+		// Shipper lead time (field presence = opt-in), sales orders only: derive the per-line / shipment-schedule
+		// PreparationDate backward from the (per-line) delivery date, exactly as the header does
+		// (setPreparationDateFromLeadTime). This path feeds the shipment schedule's PreparationDate
+		// (ShipmentScheduleOrderReferenceProvider), which in turn dates the material-demand event
+		// (ShipmentScheduleEffectiveBL.getPreparationDate -> MD_Candidate / stock projection). Without it the schedule
+		// would fall back to the delivery date and the downstream stock views would not reflect the lead time (task 28993).
+		final Integer leadTimeDays = order.isSOTrx() ? getLeadTimeDaysOrNull(order) : null;
+		if (leadTimeDays != null)
+		{
+			// IsFixedPreparationDate='Y' pins the prep date: the header keeps its manually set value
+			// (setPreparationDateFromLeadTime returns early), so mirror that value here; fall back to the delivery
+			// date when the header carries none.
+			if (order.isFixedPreparationDate())
+			{
+				final ZonedDateTime headerPreparationDate = TimeUtil.asZonedDateTime(order.getPreparationDate(), timeZone);
+				return headerPreparationDate != null ? headerPreparationDate : deliveryDate;
+			}
+			return computeLeadTimePreparationDate(deliveryDate.toLocalDate(), leadTimeDays, getBusinessDayMatcher(order)).atStartOfDay(timeZone);
+		}
+
+		// the tour calculation needs a bpartner location; if absent, fall back to the order's stored preparation date
+		if (BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
+		{
+			return TimeUtil.asZonedDateTime(order.getPreparationDate(), timeZone);
+		}
+		return computePreparationDateAndTour0(order, deliveryDate, true, timeZone).getPreparationDate();
+	}
+
+	@Override
+	@Nullable
+	public ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine, @NonNull final ZonedDateTime deliveryDate)
+	{
+		// A lead-time order's preparation date is DERIVED from the route, so it is always recomputed here and the
+		// stored C_OrderLine.PreparationDate is NOT consulted as an override. That column is itself a derived value
+		// (written by setLinePreparationDate) that goes stale when the route or promised date changes on the header
+		// after the line exists — the C_OrderLine interceptor watches only line columns, so a header M_Shipper /
+		// DatePromised change (e.g. a route change on an IsFixedDatePromised order) never re-derives it. For a
+		// route-driven order a per-line manual preparation-date override does not apply. task 28993.
+		//
+		// A non-lead order keeps the original rule: an explicit per-line C_OrderLine.PreparationDate override wins
+		// verbatim; otherwise derive from the (per-line) delivery date.
+		if (!hasLeadTime(order))
+		{
+			final Timestamp lineOverride = orderLine.getPreparationDate();
+			if (lineOverride != null)
+			{
+				return TimeUtil.asZonedDateTime(lineOverride, orderBL.getTimeZone(order));
+			}
+		}
+		return computePreparationDate(order, deliveryDate);
+	}
+
+	@Override
+	public ZonedDateTime computeDeliveryDate(@NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine)
+	{
+		final ZonedDateTime deliveryDate = computeDeliveryDateOrNull(order, orderLine, orderBL.getTimeZone(order));
+		if (deliveryDate == null)
+		{
+			throw new AdempiereException("@NotFound@ @DeliveryDate@")
+					.appendParametersToMessage()
+					.setParameter("orderLine", orderLine)
+					.setParameter("order", order);
+		}
+		return deliveryDate;
+	}
+
+	/**
+	 * The per-line delivery date: an explicit {@code C_OrderLine.PresetDateShipped} wins, then the line's own
+	 * {@code DatePromised}, finally the order header's {@code DatePromised}. Returns {@code null} when none is set.
+	 */
+	@VisibleForTesting
+	@Nullable
+	static ZonedDateTime computeDeliveryDateOrNull(@NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine, @NonNull final ZoneId timeZone)
+	{
+		final ZonedDateTime presetDateShipped = TimeUtil.asZonedDateTime(orderLine.getPresetDateShipped(), timeZone);
+		if (presetDateShipped != null)
+		{
+			return presetDateShipped;
+		}
+		final ZonedDateTime lineDatePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised(), timeZone);
+		if (lineDatePromised != null)
+		{
+			return lineDatePromised;
+		}
+		return TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
+	}
+
+	@Override
+	public boolean setLinePreparationDate(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		// The per-line preparation date is a sales concept; purchase orders recompute the header (updatePurchaseHeaderPreparationDate).
+		if (!order.isSOTrx() || order.isProcessed())
+		{
+			return false;
+		}
+
+		final ZonedDateTime deliveryDate = computeDeliveryDateOrNull(order, orderLine, orderBL.getTimeZone(order));
+		if (deliveryDate == null)
+		{
+			return false;
+		}
+
+		// Reuse the exact derive path the shipment-schedule provider uses, so the line's PreparationDate always equals
+		// the schedule's initial PreparationDate. Overrides live on M_ShipmentSchedule.PreparationDate_Override.
+		final ZonedDateTime preparationDate = computePreparationDate(order, deliveryDate);
+		if (preparationDate == null)
+		{
+			// Reachable only when the order has no C_BPartner_Location_ID and no stored header PreparationDate; leaving
+			// the line's PreparationDate empty lets the shipment-schedule provider re-derive it the same way later.
+			logger.debug("No preparation date derived for C_OrderLine {} (deliveryDate={}); leaving it empty", orderLine, deliveryDate);
+		}
+		orderLine.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
+		return preparationDate != null;
+	}
+
+	@Override
+	public boolean updatePurchaseHeaderPreparationDate(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		if (order.isSOTrx())
+		{
+			return false;
+		}
+		final boolean set = setPreparationDateAndTour(order, /* fallbackToDatePromised= */ true);
+		orderBL.save(order);
+		return set;
+	}
+
+	/**
+	 * Core preparation-date computation, shared by the header path ({@link #setPreparationDateAndTour0}) and the
+	 * per-line path ({@link #computePreparationDate}).
+	 * <p>
+	 * The given {@code deliveryDate} is used both as the {@code datePromised} argument to
+	 * {@link IDeliveryDayBL#calculateTourAndPreparationDate} AND as the base of the no-tour fallback. All other inputs
+	 * (calculationTime, soTrx, bpartnerLocationId, sysconfig reads, offset) are unchanged from the original inline logic.
+	 *
+	 * @return the computed preparation date (may be {@code null} when there is no usable tour and the fallback is
+	 *         disabled) together with the tour to assign ({@code null} when no tour was used).
+	 */
+	private PreparationDateAndTour computePreparationDateAndTour0(
+			@NonNull final I_C_Order order,
+			@NonNull final ZonedDateTime deliveryDate,
+			final boolean fallbackToDatePromised,
+			@NonNull final ZoneId timeZone)
+	{
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		// both callers reach this only with a bpartner location set; calculateTourAndPreparationDate below requires it
+		Check.assumeNotNull(bpartnerLocationId, "C_BPartner_Location_ID is set for {}", order);
 
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
@@ -91,47 +415,61 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 				context,
 				soTrx,
 				calculationTime,
-				datePromised,
+				deliveryDate,
 				bpartnerLocationId);
 		final ZonedDateTime preparationDate = tourAndDate.getRight();
 
-		final ZonedDateTime systemTime = de.metas.common.util.time.SystemTime.asZonedDateTime(timeZone);
+		final ZonedDateTime systemTime = SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
 			final int offset = isUseFallback ? getFallbackPreparationDateOffsetInHours() : 0;
 
-			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(preparationDate, offset)));
+			final TourId tourId = tourAndDate.getLeft();
 
 			logger.debug("Setting Tour {} for C_Order {}. Old Tour was {} (fallbackToDatePromised={}, systemTime={})",
-					tourAndDate.getLeft().getRepoId(),
+					tourId.getRepoId(),
 					order,
 					order.getM_Tour_ID(),
 					isUseFallback,
 					systemTime);
 
-			order.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
-
 			logger.debug("Setting PreparationDate={}, for C_Order {} (fallbackToDatePromised={}, systemTime={})",
 					preparationDate, order, isUseFallback, systemTime);
+
+			return new PreparationDateAndTour(computePreparationTime(preparationDate, offset), tourId);
 		}
 		else if (isUseFallback)
 		{
-			int offset = getFallbackPreparationDateOffsetInHours();
-			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(datePromised, offset)));
-			order.setM_Tour_ID(-1);
+			final int offset = getFallbackPreparationDateOffsetInHours();
+			final ZonedDateTime fallbackBase;
+			if (soTrx.isPurchase())
+			{
+				final int maxTransportDays = orderBL.getMaxPurchaseTransportDays(order);
+				fallbackBase = deliveryDate.minusDays(maxTransportDays);
+			}
+			else
+			{
+				fallbackBase = deliveryDate;
+			}
+			final ZonedDateTime fallbackPreparationDate = computePreparationTime(fallbackBase, offset);
 			logger.debug(
-					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",
-					order.getDatePromised(), order, preparationDate, isUseFallback, systemTime);
+					"Setting PreparationDate={} for C_Order {} (soTrx={}, fallbackToDatePromised={}, systemTime={}).",
+					fallbackPreparationDate, order, soTrx, isUseFallback, systemTime);
+			return new PreparationDateAndTour(fallbackPreparationDate, null);
 		}
 		else
 		{
-			order.setPreparationDate(null);
-			order.setM_Tour_ID(-1);
 			logger.info("Setting PreparationDate={} for C_Order {}, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}). Leaving it to the user to set a date manually.",
 					preparationDate, order, preparationDate, isUseFallback, systemTime);
+			return new PreparationDateAndTour(null, null);
 		}
+	}
 
-		return true; // value set
+	@Value
+	private static class PreparationDateAndTour
+	{
+		@Nullable ZonedDateTime preparationDate;
+		@Nullable TourId tourId;
 	}
 
 	private int getFallbackPreparationDateOffsetInHours() {return sysConfigBL.getIntValue(SYSCONFIG_Fallback_PreparationDate_Offset_Hours, 0);}

@@ -21,6 +21,7 @@ public enum ScannableCodeFormatPartType implements ReferenceListAwareEnum
 	LotNo(X_C_ScannableCode_Format_Part.DATATYPE_LotNo, ScannableCodeFormatPartDataType.String),
 	BestBeforeDate(X_C_ScannableCode_Format_Part.DATATYPE_BestBeforeDate, ScannableCodeFormatPartDataType.Date),
 	ProductionDate(X_C_ScannableCode_Format_Part.DATATYPE_ProductionDate, ScannableCodeFormatPartDataType.Date),
+	GTIN(X_C_ScannableCode_Format_Part.DATATYPE_GTIN, ScannableCodeFormatPartDataType.String),
 	;
 
 	@NonNull private static final ValuesIndex<ScannableCodeFormatPartType> index = ReferenceListAwareEnums.index(values());

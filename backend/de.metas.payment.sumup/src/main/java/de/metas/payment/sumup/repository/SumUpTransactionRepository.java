@@ -17,14 +17,17 @@ import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
+import de.metas.payment.sumup.SumUpTransactionId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,6 +51,10 @@ import java.util.stream.Stream;
 public class SumUpTransactionRepository
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpTransactionRepository.class);
+	/**
+	 * Attempts of {@link #updateUnlessChangedMeanwhile} while the transaction is changed concurrently.
+	 */
+	private static final int MAX_UPDATE_ATTEMPTS = 3;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final SumUpEventsDispatcher eventsDispatcher;
@@ -66,6 +74,54 @@ public class SumUpTransactionRepository
 	public List<SumUpTransaction> list(@NonNull final SumUpTransactionQuery query)
 	{
 		return stream(query).collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0): an empty reference would match any transaction
+	 * @return the record id of the (single) transaction that carries the given POS reference, or null if there is none
+	 */
+	@Nullable
+	public SumUpTransactionId findIdByPOSRef(@NonNull final SumUpPOSRef posRef)
+	{
+		assumeReferencesSomething(posRef);
+		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).build())
+				.create()
+				.firstIdOnly(SumUpTransactionId::ofRepoIdOrNull);
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0): an empty reference would match any transaction
+	 * @return whether a transaction carrying the given POS reference was created at or after the given time
+	 */
+	public boolean existsByPOSRefCreatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant createdSince)
+	{
+		assumeReferencesSomething(posRef);
+		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).build())
+				.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Timestamp.from(createdSince))
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @param posRef must reference something (at least one id &gt; 0)
+	 * @return the SUCCESSFUL transactions (refunded ones included) carrying the given POS reference that metasfresh changed at or
+	 * after the given time (by its own clock), oldest first
+	 */
+	public List<SumUpTransaction> listSuccessfulByPOSRefUpdatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant updatedSince)
+	{
+		assumeReferencesSomething(posRef);
+		return toSqlQuery(SumUpTransactionQuery.builder().posRef(posRef).status(SumUpTransactionStatus.SUCCESSFUL).build())
+				.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Updated, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Timestamp.from(updatedSince))
+				.create()
+				.stream()
+				.map(SumUpTransactionRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static void assumeReferencesSomething(@NonNull final SumUpPOSRef posRef)
+	{
+		Check.assume(posRef.getPosOrderId() > 0 || posRef.getPosPaymentId() > 0 || posRef.getPosInvoiceCardSettlementId() > 0,
+				"posRef references something: {}", posRef);
 	}
 
 	public Stream<SumUpTransaction> stream(@NonNull final SumUpTransactionQuery query)
@@ -113,13 +169,15 @@ public class SumUpTransactionRepository
 		updateRecord(record, trx);
 		InterfaceWrapperHelper.save(record);
 
+		// the event's transaction tells when metasfresh first saved it (e.g. to tell an earlier card checkout's result from the current one's)
+		final SumUpTransaction trxSaved = trx.toBuilder().recordedAt(extractRecordedAt(record)).build();
 		if (isNew)
 		{
-			eventsDispatcher.fireNewTransaction(trx);
+			eventsDispatcher.fireNewTransaction(trxSaved);
 		}
 		else
 		{
-			eventsDispatcher.fireStatusChangedIfNeeded(trx, trxPrev);
+			eventsDispatcher.fireStatusChangedIfNeeded(trxSaved, trxPrev);
 		}
 
 	}
@@ -142,6 +200,7 @@ public class SumUpTransactionRepository
 		record.setJsonResponse(from.getJson());
 		record.setC_POS_Order_ID(from.getPosRef() != null ? from.getPosRef().getPosOrderId() : -1);
 		record.setC_POS_Payment_ID(from.getPosRef() != null ? from.getPosRef().getPosPaymentId() : -1);
+		record.setC_POS_InvoiceCardSettlement_ID(from.getPosRef() != null ? from.getPosRef().getPosInvoiceCardSettlementId() : -1);
 		updateRecord(record, from.getLastSync());
 	}
 
@@ -183,7 +242,14 @@ public class SumUpTransactionRepository
 				.json(record.getJsonResponse())
 				.posRef(extractPOSRef(record))
 				.lastSync(extractLastSync(record))
+				.recordedAt(extractRecordedAt(record))
 				.build();
+	}
+
+	@Nullable
+	private static Instant extractRecordedAt(final I_SUMUP_Transaction record)
+	{
+		return record.getCreated() != null ? record.getCreated().toInstant() : null;
 	}
 
 	@Nullable
@@ -226,7 +292,8 @@ public class SumUpTransactionRepository
 	{
 		final int posOrderId = record.getC_POS_Order_ID();
 		final int posPaymentId = record.getC_POS_Payment_ID();
-		if (posOrderId <= 0 && posPaymentId <= 0)
+		final int posInvoiceCardSettlementId = record.getC_POS_InvoiceCardSettlement_ID();
+		if (posOrderId <= 0 && posPaymentId <= 0 && posInvoiceCardSettlementId <= 0)
 		{
 			return null;
 		}
@@ -234,6 +301,7 @@ public class SumUpTransactionRepository
 		return SumUpPOSRef.builder()
 				.posOrderId(posOrderId)
 				.posPaymentId(posPaymentId)
+				.posInvoiceCardSettlementId(posInvoiceCardSettlementId)
 				.build();
 	}
 
@@ -300,21 +368,81 @@ public class SumUpTransactionRepository
 			{
 				sqlQueryBuilder.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_C_POS_Payment_ID, posRef.getPosPaymentId());
 			}
+			if (posRef.getPosInvoiceCardSettlementId() > 0)
+			{
+				sqlQueryBuilder.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_C_POS_InvoiceCardSettlement_ID, posRef.getPosInvoiceCardSettlementId());
+			}
 		}
 
 		return sqlQueryBuilder;
 	}
 
+	/**
+	 * Updates the transaction from a SumUp lookup ({@code updater}), safe against a concurrent update of the same
+	 * transaction, see {@link #updateUnlessChangedMeanwhile}.
+	 *
+	 * @param updater a SumUp lookup: it may take long, and it must be safe to repeat (it may run more than once)
+	 */
 	public void updateById(@NonNull final SumUpClientTransactionId id, @NonNull final UnaryOperator<SumUpTransaction> updater)
 	{
-		final I_SUMUP_Transaction record = retrieveSingleRecordNotNull(SumUpTransactionQuery.ofClientTransactionId(id));
-		updateRecord(record, updater);
+		updateUnlessChangedMeanwhile(SumUpTransactionQuery.ofClientTransactionId(id), updater);
 	}
 
+	/**
+	 * Updates the transaction by an updater that runs exactly once (e.g. a refund: it must not be repeated), so a concurrent
+	 * update is not checked for, unlike {@link #updateById(SumUpClientTransactionId, UnaryOperator)}: the updater's result
+	 * is stored as it is.
+	 */
 	public SumUpTransaction updateById(@NonNull final SumUpTransactionExternalId id, @NonNull final UnaryOperator<SumUpTransaction> updater)
 	{
 		final I_SUMUP_Transaction record = retrieveSingleRecordNotNull(SumUpTransactionQuery.ofExternalId(id));
 		return updateRecord(record, updater);
+	}
+
+	/**
+	 * Runs the updater (a SumUp lookup) on the transaction as stored, without a lock and outside any transaction, and
+	 * stores its result only if the stored transaction did not change meanwhile (checked under the row lock): otherwise a
+	 * concurrent update (e.g. the SumUp callback storing a refund while this lookup ran) would be overwritten by this
+	 * lookup's older result. If it changed, the updater runs again on the transaction as changed, so its result is at
+	 * least as recent as the concurrent one; after {@value #MAX_UPDATE_ATTEMPTS} attempts it gives up and throws,
+	 * leaving the stored transaction as it is.
+	 */
+	private void updateUnlessChangedMeanwhile(@NonNull final SumUpTransactionQuery query, @NonNull final UnaryOperator<SumUpTransaction> updater)
+	{
+		for (int attempt = 1; ; attempt++)
+		{
+			final SumUpTransaction trxBeforeChange = fromRecord(retrieveSingleRecordNotNull(query));
+			final SumUpTransaction trx = updater.apply(trxBeforeChange);
+			if (Objects.equals(trxBeforeChange, trx))
+			{
+				return;
+			}
+
+			final boolean isStored = trxManager.callInThreadInheritedTrx(() -> {
+				final I_SUMUP_Transaction record = toSqlQuery(query)
+						.create()
+						.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+						.firstOnlyNotNull(I_SUMUP_Transaction.class);
+				if (!Objects.equals(fromRecord(record), trxBeforeChange))
+				{
+					return false;
+				}
+				updateRecordAndSave(record, trx);
+				return true;
+			});
+			if (isStored)
+			{
+				return;
+			}
+
+			if (attempt >= MAX_UPDATE_ATTEMPTS)
+			{
+				throw new AdempiereException("SumUp transaction was changed concurrently on every update attempt; not updated")
+						.setParameter("query", query)
+						.setParameter("attempts", attempt);
+			}
+			logger.info("SumUp transaction {} was changed concurrently while it was being updated (attempt {} of {}); updating it again", query, attempt, MAX_UPDATE_ATTEMPTS);
+		}
 	}
 
 	private SumUpTransaction updateRecord(@NonNull final I_SUMUP_Transaction record, @NonNull final UnaryOperator<SumUpTransaction> updater)
@@ -351,7 +479,7 @@ public class SumUpTransactionRepository
 					.forEach(record -> {
 						try
 						{
-							trxManager.runInThreadInheritedTrx(() -> updateRecord(record, updater));
+							updateUnlessChangedMeanwhile(SumUpTransactionQuery.ofLocalId(SumUpTransactionId.ofRepoId(record.getSUMUP_Transaction_ID())), updater);
 							countOK.incrementAndGet();
 						}
 						catch (final Exception ex)

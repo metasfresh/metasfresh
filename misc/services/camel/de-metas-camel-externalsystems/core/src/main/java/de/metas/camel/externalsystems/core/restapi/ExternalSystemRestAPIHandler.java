@@ -94,6 +94,14 @@ public class ExternalSystemRestAPIHandler extends RouteBuilder
 	{
 		final JsonExternalStatusResponse externalStatusInfoResponse = exchange.getIn().getBody(JsonExternalStatusResponse.class);
 
+		// e.g. a JsonApiResponse without endpointResponse; nothing to enable, but make it visible
+		if (externalStatusInfoResponse == null)
+		{
+			log.warn("*** Service-status response is empty; no external-system service was enabled! ExchangeId = {}", exchange.getExchangeId());
+			exchange.getIn().setBody(ImmutableList.of());
+			return;
+		}
+
 		exchange.getIn().setBody(externalStatusInfoResponse.getExternalStatusResponses()
 										 .stream()
 										 .filter(response -> response.getExpectedStatus().equals(JsonExternalStatus.Active))

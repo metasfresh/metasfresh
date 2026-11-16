@@ -22,9 +22,11 @@
 
 package de.metas.payment.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -37,6 +39,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,6 +56,12 @@ public interface IPaymentBL extends ISingletonService
 	void save(I_C_Payment payment);
 
 	Set<PaymentId> getPaymentIds(@NonNull PaymentQuery query);
+
+	@NonNull
+	ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull Collection<OrderId> orderIds);
+
+	@NonNull
+	Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull OrderId orderId);
 
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 
@@ -86,6 +95,21 @@ public interface IPaymentBL extends ISingletonService
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
+
+	/**
+	 * Updates the write-off / over-under amount after only {@code PaymentBonusAmt} changed.
+	 * Never changes PayAmt or the payment bonus itself: the bonus the user entered stays.
+	 */
+	void onPaymentBonusAmtChange(final I_C_Payment payment);
+
+	/**
+	 * Books what the payment leaves open of its invoice as write-off, or as over/under amount if the payment is an over/under payment:
+	 * {@code invoiceOpenAmt - PayAmt - DiscountAmt - PaymentBonusAmt - (OverUnderAmt or WriteOffAmt)}. PayAmt is not changed.
+	 * Unlike {@link #onPaymentBonusAmtChange(I_C_Payment)}, it also works on a payment that is being completed; the caller provides the open amount.
+	 *
+	 * @param invoiceOpenAmt the open amount of the payment's invoice, in the payment's currency
+	 */
+	void updateWriteOffOrOverUnderAmt(I_C_Payment payment, BigDecimal invoiceOpenAmt);
 
 	/**
 	 * check if the invoice is allocated with the specified payment

@@ -23,6 +23,8 @@ package de.metas.materialtracking.spi;
  */
 
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_Invoice_Detail;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
@@ -39,7 +41,10 @@ public interface IHandlingUnitsInfoFactory extends ISingletonService
 {
 	/**
 	 * Gets the handling units information from given model.
+	 *
+	 * @return the handling units info, or {@code null} if the model type is not supported or required data (e.g. TU PI) is missing
 	 */
+	@Nullable
 	IHandlingUnitsInfo createFromModel(Object model);
 
 	/**

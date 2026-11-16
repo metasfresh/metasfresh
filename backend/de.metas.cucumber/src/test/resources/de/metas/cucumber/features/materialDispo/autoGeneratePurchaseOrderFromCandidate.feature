@@ -85,7 +85,7 @@ Feature: Auto-generate Purchase Order from Purchase Candidate when IsDocComplete
 
     # No manual enqueue step -- PO generation should be auto-triggered because IsDocComplete=Y
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID | C_PurchaseCandidate_Alloc_ID |

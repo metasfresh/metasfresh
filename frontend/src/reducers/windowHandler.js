@@ -350,6 +350,21 @@ const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
   });
 };
 
+/**
+ * A "relevant" save error is a server-side rejection of a save that was actually attempted
+ * on a complete, individually-valid document — a business rule / unique-index collision. Those
+ * carry a real save exception flagged userFriendlyError, and their reason must be surfaced.
+ *
+ * It deliberately does NOT fire for a merely incomplete/invalid document (mandatory field not yet
+ * filled, individually-invalid value): those also set saveStatus.error, but as a pure validation
+ * state with NO exception, and are already communicated by the field-level cues. validStatus.valid
+ * is intentionally not consulted — it is non-deterministic across the save round-trip for the
+ * business-rejection case.
+ */
+export const isRelevantSaveError = (saveStatus) =>
+  saveStatus?.error === true &&
+  saveStatus?.exception?.userFriendlyError === true;
+
 export const computeSaveStatusFlags = ({
   state,
   modal: modalParam,
@@ -412,7 +427,19 @@ export const computeSaveStatusFlags = ({
   const isDocumentSaved = saved != null ? saved : false;
   const isDocumentNotSaved = saved != null ? !saved : false;
 
+  // A "window" surface is either the main window (non-modal) or a window modal — NOT a process
+  // modal, whose Start button is disabled on ERROR (see Modal.renderPanel) and must stay enabled.
+  const isWindowContext = !modal?.visible || modal.modalType === 'window';
+
   if (isDocumentNotSaved && presentInDatabase) {
+    indicator = IndicatorState.ERROR;
+  } else if (isWindowContext && isRelevantSaveError(saveStatus)) {
+    // A relevant server-side save rejection (a complete, individually-valid document refused by a
+    // business rule / unique index) on a NOT-yet-persisted (new) record: presentInDatabase is
+    // false, so the gate above stays quiet and the reason would be swallowed. Surface it here so
+    // BOTH the main-window and window-modal paths raise the error. Incomplete/mandatory-missing
+    // input carries error but no userFriendly exception -> isRelevantSaveError is false -> stays
+    // quiet (field-level cues already signal it).
     indicator = IndicatorState.ERROR;
   }
 
@@ -455,6 +482,44 @@ export const getMasterDocumentStandardActions = ({
   }
 
   return state.windowHandler?.master?.standardActions ?? [];
+};
+
+/**
+ * @summary the standard actions of the master document which are transmitted but shall be rendered
+ *          disabled, each with the reason why (see the backend's `JSONDisabledStandardAction`).
+ *          Absent from the payload when nothing is disabled.
+ * @return {Array} entries of `{ action, reason, reasonKey }`
+ */
+export const getMasterDocumentDisabledStandardActions = ({
+  state,
+  windowId,
+  documentId,
+}) => {
+  if (!windowId || !documentId) {
+    return [];
+  }
+
+  return state.windowHandler?.master?.disabledStandardActions ?? [];
+};
+
+/**
+ * @summary the reason why an included tab refuses creating a new record, but only where that reason
+ *          is meant for the user. The backend sets `allowCreateNewReasonKey` (the stable AD_Message
+ *          key, which tests assert on instead of the rendered wording) exactly then; without it
+ *          `allowCreateNewReason` carries an internal technical name (`ParentDocumentProcessed`,
+ *          `Unsaved row found`, ...) which must never be shown.
+ * @param {object} [tabInfo] - one entry of the `includedTabsInfo` payload
+ * @return {{reason: string, reasonKey: string}|null} `null` when nothing shall be rendered
+ */
+export const getIncludedTabCreateNewDisabledReason = (tabInfo) => {
+  if (!tabInfo || tabInfo.allowCreateNew || !tabInfo.allowCreateNewReasonKey) {
+    return null;
+  }
+
+  return {
+    reason: tabInfo.allowCreateNewReason,
+    reasonKey: tabInfo.allowCreateNewReasonKey,
+  };
 };
 
 //
@@ -645,6 +710,7 @@ export default function windowHandler(state = initialState, action) {
           layout,
           saveStatus: action.saveStatus,
           standardActions: action.standardActions,
+          disabledStandardActions: action.disabledStandardActions,
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,

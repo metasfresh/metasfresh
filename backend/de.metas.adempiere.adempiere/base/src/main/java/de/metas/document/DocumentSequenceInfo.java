@@ -2,6 +2,7 @@ package de.metas.document;
 
 import de.metas.document.impl.SequenceRestartFrequencyEnum;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -27,6 +28,10 @@ public class DocumentSequenceInfo
 	boolean autoSequence;
 	SequenceRestartFrequencyEnum restartFrequency;
 	String dateColumn;
+	/**
+	 * The sequence's own date format for a date-based {@link #customSequenceNoProvider}; {@code null} if not set.
+	 */
+	@Nullable String dateFormat;
 
 	CustomSequenceNoProvider customSequenceNoProvider;
 
@@ -41,6 +46,7 @@ public class DocumentSequenceInfo
 			final boolean autoSequence,
 			@Nullable final SequenceRestartFrequencyEnum restartFrequency,
 			final String dateColumn,
+			@Nullable final String dateFormat,
 			final CustomSequenceNoProvider customSequenceNoProvider)
 	{
 		this.adSequenceId = adSequenceId;
@@ -52,6 +58,7 @@ public class DocumentSequenceInfo
 		this.autoSequence = autoSequence;
 		this.restartFrequency = restartFrequency;
 		this.dateColumn = dateColumn;
+		this.dateFormat = StringUtils.trimBlankToNull(dateFormat);
 		this.customSequenceNoProvider = customSequenceNoProvider;
 	}
 

@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.invalidation.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
@@ -11,6 +12,7 @@ import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
@@ -24,13 +26,17 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
@@ -47,6 +53,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
@@ -85,15 +92,40 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	/**
 	 * Invalidate by M_Product_ID
 	 */
-	private static final String SQL_RECOMPUTE_BY_PRODUCT = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
-			+ " SELECT "
-			+ " s." + COLUMNNAME_M_ShipmentSchedule_ID + ", ? , s." + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + ", ?"
-			+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-			+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
-			+ " WHERE true "
-			+ "   AND s.IsActive='Y' AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
-			+ "   AND NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=s." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
-			+ "   AND ol.M_Product_ID=? ";
+	private String sqlRecomputeByProduct()
+	{
+		return "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+				+ " SELECT "
+				+ " s." + COLUMNNAME_M_ShipmentSchedule_ID + ", ? , s." + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + ", ?"
+				+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
+				+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
+				+ " WHERE true "
+				+ "   AND s.IsActive='Y' AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
+				+ "   AND " + sqlNoPendingFlagOfOwnTrx("s." + COLUMNNAME_M_ShipmentSchedule_ID)
+				+ "   AND ol.M_Product_ID=? ";
+	}
+
+	/**
+	 * SQL predicate that is true if the given schedule has no pending (not yet picked up) recompute flag that would make a new flag of ours redundant.
+	 * <p>
+	 * While the thread-inherited transaction is open for writes (active, or not yet started: it starts lazily on its first DB access, and the
+	 * business change follows in it; see {@link ThreadInheritedTrxState}), we dedup only against a pending flag written by this very DB transaction
+	 * ({@code pg_current_xact_id_if_assigned()} is NULL until it wrote something, so nothing matches then).
+	 * A flag of another transaction must not suppress ours: the recompute may process that other flag before our change is committed
+	 * and thus never see our change.
+	 * <p>
+	 * In an after-commit callback the committed transaction is inactive until a DB access restarts it; from then on it is a new transaction that
+	 * may write business data before flagging, so the rule above applies. Before the restart nothing is uncommitted, so the legacy
+	 * "any pending flag" dedup, which we also keep when there is no transaction at all, is safe.
+	 */
+	private String sqlNoPendingFlagOfOwnTrx(@NonNull final String scheduleIdColumnSql)
+	{
+		final boolean ownTrx = ThreadInheritedTrxState.isThreadInheritedTrxOpenForWrites();
+
+		return "NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + scheduleIdColumnSql
+				+ (ownTrx ? " and e.DBTransactionNo = pg_current_xact_id_if_assigned()::text::numeric" : "")
+				+ ")";
+	}
 
 	private static final String SQL_RECOMPUTE_ALL =               //
 			"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
@@ -132,7 +164,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	{
 		final String chunkUUID = UUID.randomUUID().toString();
 		final String description = truncInvalidateDescription("" + productId);
-		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sqlRecomputeByProduct(), new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} entries for productId={} ", count, productId);
 
 		if (count > 0)
@@ -206,8 +238,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				// Only those which are not processed
 				+ "   AND " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "=? "
 				// Only those which were not already added
-				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
+				+ "   AND " + sqlNoPendingFlagOfOwnTrx(I_M_ShipmentSchedule.Table_Name + "." + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 		sqlParams.addAll(headerAggregationKeysParams);
 		sqlParams.add(false); // Processed=false
 
@@ -220,6 +251,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		}
 	}
 
+	// PostgreSQL's driver rejects a single "IN (?,?,...)" statement once the parameter count exceeds ~32,765
+	// (DB-08006, "out-of-range integer as a 2-byte value"); chunk well under that cap.
+	private static final int MAX_IDS_PER_CHUNK = 10_000;
+
 	@Override
 	public void invalidateShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
@@ -231,22 +266,25 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final String description = truncInvalidateDescription("" + shipmentScheduleIds.size() + " shipment schedules: " + shipmentScheduleIds);
 		final String chunkUUID = UUID.randomUUID().toString();
 
-		final List<Object> sqlParams = new ArrayList<>();
-		sqlParams.add(description);
-		sqlParams.add(chunkUUID);
-		final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIds, sqlParams); // creates the string and fills the sqlParams list
+		int count = 0;
+		for (final List<ShipmentScheduleId> shipmentScheduleIdsChunk : Iterables.partition(shipmentScheduleIds, MAX_IDS_PER_CHUNK))
+		{
+			final List<Object> sqlParams = new ArrayList<>();
+			sqlParams.add(description);
+			sqlParams.add(chunkUUID);
+			final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIdsChunk, sqlParams); // creates the string and fills the sqlParams list
 
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
-				+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
-				+ " FROM " + I_M_ShipmentSchedule.Table_Name
-				+ " WHERE "
-				// Only our shipment schedule Ids
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + " IN " + sqlInWhereClause
-				// Only those which were not already added (technically not necessary, but shall reduce unnecessary bloat)
-				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
+			final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+					+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
+					+ " FROM " + I_M_ShipmentSchedule.Table_Name
+					+ " WHERE "
+					// Only our shipment schedule Ids
+					+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + " IN " + sqlInWhereClause
+					// Only those not already flagged by this transaction (a flag of another transaction must not suppress ours, see sqlNoPendingFlagOfOwnTrx)
+					+ "   AND " + sqlNoPendingFlagOfOwnTrx(I_M_ShipmentSchedule.Table_Name + "." + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 
-		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			count += DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		}
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
 
 		if (count > 0)
@@ -277,82 +315,294 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
+	public void invalidateStorageSegmentsInThreadInheritedTrx(@Nullable final Collection<IShipmentScheduleSegment> storageSegments)
+	{
+		invalidateStorageSegments(
+				storageSegments,
+				null, // no selection
+				ITrx.TRXNAME_ThreadInherited,
+				sqlNoPendingFlagOfOwnTrx(I_M_ShipmentSchedule.Table_Name + "." + COLUMNNAME_M_ShipmentSchedule_ID));
+	}
+
+	@Override
 	public void invalidateStorageSegments(
 			@Nullable final Collection<IShipmentScheduleSegment> storageSegments,
 			@Nullable final PInstanceId addToSelectionId)
+	{
+		invalidateStorageSegments(
+				storageSegments,
+				addToSelectionId,
+				ITrx.TRXNAME_None,
+				// legacy dedup: any pending flag suppresses ours
+				"NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e "
+						+ " where "
+						+ " e.AD_PInstance_ID is NULL"
+						+ " and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "." + COLUMNNAME_M_ShipmentSchedule_ID + ")");
+	}
+
+	/**
+	 * @param trxName     transaction the flag rows are inserted and enqueued in; {@link ITrx#TRXNAME_None} (null) = separate, immediately committed transaction
+	 * @param sqlNotExistsPendingFlag predicate (on the {@code M_ShipmentSchedule} table alias) that is true if no pending flag makes ours redundant
+	 */
+	private void invalidateStorageSegments(
+			@Nullable final Collection<IShipmentScheduleSegment> storageSegments,
+			@Nullable final PInstanceId addToSelectionId,
+			@Nullable final String trxName,
+			@NonNull final String sqlNotExistsPendingFlag)
 	{
 		if (storageSegments == null || storageSegments.isEmpty())
 		{
 			return;
 		}
 
-		final String ssAlias = I_M_ShipmentSchedule.Table_Name + ".";
-		final StringBuilder sqlWhereClause = new StringBuilder();
-		final List<Object> sqlParams = new ArrayList<>();
-
-		// SELECT part: Description and AD_PInstance_ID
-		final String description = truncInvalidateDescription("" + storageSegments.size() + " storage segments: " + storageSegments);
-		sqlParams.add(description);
-		sqlParams.add(addToSelectionId);
-
+		// One chunkUUID for all statements of this call: the recompute is enqueued once, after the last statement.
+		// In a transaction (trxName set) all statements run in it (and a failure rolls them all back to the caller's savepoint),
+		// so the own-trx dedup predicate sees the earlier statements and nothing needs enqueuing on failure.
+		// Out of trx every statement autocommits: if a later one fails, the earlier committed flags still need their workpackage.
 		final String chunkUUID = UUID.randomUUID().toString();
-		sqlParams.add(chunkUUID);
+		int count = 0;
+		RuntimeException failure = null;
+		try
+		{
+			for (final StorageSegmentsInsert insert : buildStorageSegmentsInserts(storageSegments, addToSelectionId, chunkUUID, sqlNotExistsPendingFlag))
+			{
+				count += executeStorageSegmentsInsert(insert, trxName);
+			}
+		}
+		catch (final RuntimeException ex)
+		{
+			failure = ex;
+		}
+		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 
-		// Not Processed
-		sqlWhereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=?");
-		sqlParams.add(false);
+		if (count > 0 && (failure == null || trxName == null))
+		{
+			try
+			{
+				enqueueShipmentScheduleRecompute(Env.getCtx(), trxName, chunkUUID);
+			}
+			catch (final RuntimeException ex)
+			{
+				if (failure == null)
+				{
+					throw ex;
+				}
+				failure.addSuppressed(ex);
+			}
+		}
+		if (failure != null)
+		{
+			throw failure;
+		}
+	}
 
-		//
-		// Filter shipment schedules by segments
-		final StringBuilder sqlWhereClause_AllSegments = new StringBuilder();
+	int executeStorageSegmentsInsert(@NonNull final StorageSegmentsInsert insert, @Nullable final String trxName)
+	{
+		return DB.executeUpdateAndThrowExceptionOnFail(insert.getSql(), insert.getSqlParams().toArray(), trxName);
+	}
+
+	/**
+	 * pgjdbc rejects a statement with more than 32,767 bind parameters (the failure can break the connection, so a savepoint does not help);
+	 * stay safely below.
+	 */
+	static final int MAX_SQL_PARAMS_PER_STATEMENT = 30_000;
+	/** Bind parameters of one statement that do not depend on the segments: description, AD_PInstance_ID, ChunkUUID, Processed. */
+	private static final int SQL_PARAMS_PER_STATEMENT_OVERHEAD = 4;
+
+	@lombok.Value
+	static class StorageSegmentsInsert
+	{
+		String sql;
+		List<Object> sqlParams;
+		int segmentsCount;
+	}
+
+	/**
+	 * Builds the INSERT statements that flag the schedules matching the given segments, split so that each statement stays below
+	 * {@link #MAX_SQL_PARAMS_PER_STATEMENT} bind parameters. A single segment that exceeds the budget on its own is widened to a superset that fits (see {@link #widenToFitBudget}), with a warning.
+	 * The where clause of every segment is built exactly once (building it may query the DB for ASI attributes).
+	 */
+	List<StorageSegmentsInsert> buildStorageSegmentsInserts(
+			@NonNull final Collection<IShipmentScheduleSegment> storageSegments,
+			@Nullable final PInstanceId addToSelectionId,
+			@NonNull final String chunkUUID,
+			@NonNull final String sqlNotExistsPendingFlag)
+	{
+		final List<StorageSegmentsInsert> result = new ArrayList<>();
+
+		final List<IShipmentScheduleSegment> chunkSegments = new ArrayList<>();
+		final StringBuilder chunkSqlAllSegments = new StringBuilder();
+		final List<Object> chunkSegmentParams = new ArrayList<>();
+
 		for (final IShipmentScheduleSegment storageSegment : storageSegments)
 		{
-			final String sqlWhereClause_Segment = buildShipmentScheduleWhereClause(ssAlias, storageSegment, sqlParams);
-			if (sqlWhereClause_Segment == null)
+			final BuiltSegment built = buildSegment(storageSegment);
+			if (built.sqlWhereClause == null)
 			{
-				continue;
+				continue; // invalid segment, nothing to flag
 			}
+			final List<BuiltSegment> builtSegmentsToAdd = built.fitsBudget() ? ImmutableList.of(built) : widenToFitBudget(built);
 
-			if (sqlWhereClause_AllSegments.length() > 0)
+			for (final BuiltSegment segmentToAdd : builtSegmentsToAdd)
 			{
-				sqlWhereClause_AllSegments.append("\n OR ");
+				final String sqlWhereClause_Segment = segmentToAdd.sqlWhereClause;
+				final List<Object> segmentParams = segmentToAdd.sqlParams;
+				if (sqlWhereClause_Segment == null)
+				{
+					continue;
+				}
+
+				final boolean overBudget = SQL_PARAMS_PER_STATEMENT_OVERHEAD + chunkSegmentParams.size() + segmentParams.size() > MAX_SQL_PARAMS_PER_STATEMENT;
+				if (overBudget && !chunkSegments.isEmpty())
+				{
+					result.add(buildStorageSegmentsInsert(chunkSegments, chunkSqlAllSegments, chunkSegmentParams, addToSelectionId, chunkUUID, sqlNotExistsPendingFlag));
+					chunkSegments.clear();
+					chunkSqlAllSegments.setLength(0);
+					chunkSegmentParams.clear();
+				}
+
+				if (chunkSqlAllSegments.length() > 0)
+				{
+					chunkSqlAllSegments.append("\n OR ");
+				}
+				chunkSqlAllSegments.append("(").append(sqlWhereClause_Segment).append(")");
+				chunkSegmentParams.addAll(segmentParams);
+				chunkSegments.add(segmentToAdd.segment);
 			}
-			sqlWhereClause_AllSegments.append("(").append(sqlWhereClause_Segment).append(")");
 		}
-		// If there are no segments filters there is no point to proceed
-		if (sqlWhereClause_AllSegments.length() <= 0)
+
+		if (!chunkSegments.isEmpty())
 		{
-			return;
+			result.add(buildStorageSegmentsInsert(chunkSegments, chunkSqlAllSegments, chunkSegmentParams, addToSelectionId, chunkUUID, sqlNotExistsPendingFlag));
 		}
-		// Add to main sql where clause
-		sqlWhereClause.append("\n AND (\n").append(sqlWhereClause_AllSegments).append("\n)");
+		return result;
+	}
 
-		// Not already exists
-		sqlWhereClause.append("\n AND ");
-		sqlWhereClause.append(" NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e "
-				+ " where "
-				+ " e.AD_PInstance_ID is NULL"
-				+ " and e.M_ShipmentSchedule_ID=" + ssAlias + "" + COLUMNNAME_M_ShipmentSchedule_ID + ")");
+	private static final String SS_ALIAS = I_M_ShipmentSchedule.Table_Name + ".";
 
-		//
-		// Build INSERT SQL
+	/** A segment with its where clause and bind parameters, built once. */
+	private static final class BuiltSegment
+	{
+		final IShipmentScheduleSegment segment;
+		@Nullable final String sqlWhereClause; // null = invalid segment
+		final List<Object> sqlParams;
+
+		BuiltSegment(final IShipmentScheduleSegment segment, @Nullable final String sqlWhereClause, final List<Object> sqlParams)
+		{
+			this.segment = segment;
+			this.sqlWhereClause = sqlWhereClause;
+			this.sqlParams = sqlParams;
+		}
+
+		boolean fitsBudget()
+		{
+			return SQL_PARAMS_PER_STATEMENT_OVERHEAD + sqlParams.size() <= MAX_SQL_PARAMS_PER_STATEMENT;
+		}
+	}
+
+	private BuiltSegment buildSegment(@NonNull final IShipmentScheduleSegment segment)
+	{
+		final List<Object> params = new ArrayList<>();
+		final String sqlWhereClause = buildShipmentScheduleWhereClause(SS_ALIAS, segment, params);
+		return new BuiltSegment(segment, sqlWhereClause, params);
+	}
+
+	/**
+	 * A segment that needs more bind parameters than one statement may carry would kill the connection, so it is replaced by
+	 * wider segments that fit (over-invalidation is safe, a lost flag is not; a widened piece is never dropped):
+	 * <ol>
+	 * <li>Step 1: drop the locator and attribute restriction.
+	 * <li>Step 2 (if step 1 is still too big, or has no restriction left): keep the smaller of the restricting product / bpartner dimension,
+	 * partitioned into pieces that fit; the other dimensions become "any".
+	 * <li>Step 3 (no restricting product or bpartner dimension): fall back to a {@code true} clause that matches every unprocessed schedule, and log a warning.
+	 * </ol>
+	 */
+	private List<BuiltSegment> widenToFitBudget(@NonNull final BuiltSegment oversized)
+	{
+		final IShipmentScheduleSegment segment = oversized.segment;
+		logger.warn("Segment needs {} bind parameters, more than the budget of {}; widening it (dropping restrictions, i.e. over-invalidating) instead."
+						+ " products={}, bpartners={}, billBPartners={}, locators={}, warehouses={}, attributes={}",
+				oversized.sqlParams.size(), MAX_SQL_PARAMS_PER_STATEMENT,
+				segment.getProductIds().size(), segment.getBpartnerIds().size(), segment.getBillBPartnerIds().size(),
+				segment.getLocatorIds().size(), segment.getWarehouseIds().size(), segment.getAttributes().size());
+
+		final ImmutableShipmentScheduleSegment.ImmutableShipmentScheduleSegmentBuilder withoutLocatorsAndAttributes = ImmutableShipmentScheduleSegment.builder()
+				.productIds(segment.getProductIds())
+				.bpartnerIds(segment.getBpartnerIds())
+				.billBPartnerIds(segment.getBillBPartnerIds());
+		if (!segment.isNoWarehouses())
+		{
+			withoutLocatorsAndAttributes.warehouseIds(segment.getWarehouseIds());
+		}
+		else
+		{
+			withoutLocatorsAndAttributes.anyLocator();
+		}
+		final BuiltSegment widened = buildSegment(withoutLocatorsAndAttributes.build());
+		if (widened.sqlWhereClause != null && widened.fitsBudget())
+		{
+			return ImmutableList.of(widened);
+		}
+
+		// Keep the restriction of the smaller of the product / bpartner dimension (if it is a real restriction, not "any"), partitioned to fit.
+		// The other dimensions become "any" (a superset).
+		final boolean productRestricts = !segment.isAnyProduct() && !segment.isNoProducts();
+		final boolean bpartnerRestricts = !segment.isAnyBPartner() && !segment.isNoBPartners();
+		final boolean keepProducts = productRestricts && (!bpartnerRestricts || segment.getProductIds().size() <= segment.getBpartnerIds().size());
+		final boolean keepBPartners = !keepProducts && bpartnerRestricts;
+		if (keepProducts || keepBPartners)
+		{
+			final ImmutableList.Builder<BuiltSegment> pieces = ImmutableList.builder();
+			final Set<Integer> keptIds = keepProducts ? segment.getProductIds() : segment.getBpartnerIds();
+			for (final List<Integer> idsChunk : Iterables.partition(keptIds, MAX_SQL_PARAMS_PER_STATEMENT / 2))
+			{
+				final ImmutableShipmentScheduleSegment.ImmutableShipmentScheduleSegmentBuilder piece = ImmutableShipmentScheduleSegment.builder().anyLocator();
+				if (keepProducts)
+				{
+					piece.productIds(idsChunk).anyBPartner();
+				}
+				else
+				{
+					piece.anyProduct().bpartnerIds(idsChunk);
+				}
+				pieces.add(buildSegment(piece.build()));
+			}
+			return pieces.build();
+		}
+
+		// Nothing restricts the segment in a dimension that can be kept: flag every unprocessed schedule. Over-invalidating is safe, dropping the segment is not.
+		logger.warn("Segment cannot be narrowed below the bind-parameter budget; flagging all unprocessed shipment schedules instead");
+		return ImmutableList.of(new BuiltSegment(segment, "true", ImmutableList.of()));
+	}
+
+	private StorageSegmentsInsert buildStorageSegmentsInsert(
+			final List<IShipmentScheduleSegment> segments,
+			final CharSequence sqlAllSegments,
+			final List<Object> segmentParams,
+			@Nullable final PInstanceId addToSelectionId,
+			final String chunkUUID,
+			final String sqlNotExistsPendingFlag)
+	{
+		final String ssAlias = I_M_ShipmentSchedule.Table_Name + ".";
+
+		final List<Object> sqlParams = new ArrayList<>();
+		// SELECT part: Description, AD_PInstance_ID and ChunkUUID
+		sqlParams.add(truncInvalidateDescription("" + segments.size() + " storage segments: " + segments));
+		sqlParams.add(addToSelectionId);
+		sqlParams.add(chunkUUID);
+		// Not Processed
+		sqlParams.add(false);
+		sqlParams.addAll(segmentParams);
+
 		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, AD_PInstance_ID, C_Async_Batch_ID, ChunkUUID) "
 				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
 				+ " FROM " + I_M_ShipmentSchedule.Table_Name
 				+ " WHERE "
-				+ "\n" + sqlWhereClause;
+				+ "\n" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed + "=?"
+				+ "\n AND (\n" + sqlAllSegments + "\n)"
+				+ "\n AND " + sqlNotExistsPendingFlag;
 
-		//
-		// Execute
-		final String trxName = ITrx.TRXNAME_None;
-		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
-		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
-
-		//
-		if (count > 0)
-		{
-			enqueueShipmentScheduleRecompute(Env.getCtx(), trxName, chunkUUID);
-		}
+		return new StorageSegmentsInsert(sql, sqlParams, segments.size());
 	}
 
 	/**
@@ -363,7 +613,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildShipmentScheduleWhereClause(
+	String buildShipmentScheduleWhereClause(
 			final String ssAlias,
 			final IShipmentScheduleSegment segment,
 			final List<Object> sqlParams)
@@ -414,7 +664,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Locators
 		// NOTE: same as for bPartners if no particular locator is specified, it means "all of them"
-		if (!segment.isAnyLocator())
+		// NOTE: guard with !isNoLocators() because a warehouse-derived segment now has an EMPTY locatorIds set
+		// (isAnyLocator() returns false for an empty set); without this guard the branch would fire with an empty
+		// list and DB.buildSqlList would produce a never-true predicate -> the segment would match NO schedule.
+		if (!segment.isNoLocators() && !segment.isAnyLocator())
 		{
 			final Set<Integer> locatorIds = segment.getLocatorIds();
 
@@ -425,6 +678,20 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 					+ "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
 					+ " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
 					+ ")");
+		}
+
+		//
+		// Warehouses
+		// A warehouse-derived segment carries the warehouse identity directly (instead of enumerating all its
+		// locators). Matching by the schedule's effective warehouse column is equivalent to the old
+		// EXISTS(M_Locator WHERE M_Warehouse_ID = <sched wh> AND M_Locator_ID IN (all locators of wh)).
+		if (!segment.isAnyWarehouse())
+		{
+			final Set<Integer> warehouseIds = segment.getWarehouseIds();
+
+			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
+			whereClause.append("\n\t AND ");
+			whereClause.append("(").append(DB.buildSqlList(warehouseColumnName, warehouseIds, sqlParams)).append(")");
 		}
 
 		//
@@ -561,30 +828,102 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return whereClause.toString();
 	}
 
+	// ::int: the DB functions RETURN bigint; getSQLValueEx reads via ResultSet.getInt. The explicit narrowing
+	// documents that dedup/reap counts stay within int range (bounded by the recompute-table size).
+	private static final String SQL_DEDUP_RECOMPUTE = "SELECT m_shipmentschedule_recompute_dedup()::int";
+	private static final String SQL_REAP_ORPHANED_RECOMPUTE = "SELECT m_shipmentschedule_recompute_reap_orphans()::int";
+	private static final String SQL_TAG_TO_RECOMPUTE = "SELECT M_ShipmentSchedule_TagToRecompute(p_selection_id => ?, p_batchsize => ?)";
+
 	@Override
-	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId)
+	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
+		// Reap the orphaned untagged markers: there is no FK from M_ShipmentSchedule_Recompute to
+		// M_ShipmentSchedule, so a marker can outlive its schedule, and M_ShipmentSchedule_TagToRecompute can never
+		// tag such a marker -- it would sit in this high-churn queue table forever. Same best-effort contract as the
+		// dedup below (see there): out-of-trx, 5s lock_timeout in the DB function, warn and fall through on failure.
+		try
+		{
+			final int countReaped = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_REAP_ORPHANED_RECOMPUTE);
+			logger.debug("Reaped {} orphaned untagged recompute marker(s) before tagging for {}", countReaped, pinstanceId);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed to reap orphaned untagged recompute markers before tagging for {}; proceeding with tagging anyway", pinstanceId, ex);
+		}
+
+		// Dedup the untagged (unclaimed) recompute markers next: multiple untagged rows for the same
+		// M_ShipmentSchedule_ID would skew the distinct-schedule batch counting in the whole-product batching
+		// performed by M_ShipmentSchedule_TagToRecompute below. m_shipmentschedule_recompute_dedup keeps one
+		// unclaimed marker per schedule; it is idempotent and a no-op when there are no duplicates. Runs out-of-trx
+		// (TRXNAME_None), matching the tag call.
+		//
+		// Dedup is a best-effort optimization only: the DB function sets a 5s lock_timeout and is designed to
+		// fail fast rather than block behind a concurrent recompute batch's bulk UPDATE. Such a failure (e.g. a
+		// lock timeout under load) must NOT abort the mandatory tagging below -- duplicates merely skew the batch
+		// counting, they never break correctness -- so on any error we warn and fall through to the tag call.
+		try
+		{
+			final int countDeduped = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_DEDUP_RECOMPUTE);
+			logger.debug("Deduped {} duplicate untagged recompute marker(s) before tagging for {}", countDeduped, pinstanceId);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed to dedup untagged recompute markers before tagging for {}; proceeding with tagging anyway", pinstanceId, ex);
+		}
+
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
-				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
-				" FROM (" +
-				"	SELECT s.M_ShipmentSchedule_ID " +
-				"	FROM M_ShipmentSchedule s " +
-				// task 08959: also retrieve locked records. The async processor is expected to wait until they are updated.
-				// " LEFT JOIN T_Lock l ON l.Record_ID=s.M_ShipmentSchedule_ID AND l.AD_Table_ID=get_table_id('M_ShipmentSchedule') " +
-				// " WHERE l.Record_ID Is NULL " +
-				") data " +
-				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
-				+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
-				;
-		final int countTagged = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdate, ITrx.TRXNAME_None);
+		//
+		// The tagging itself (incl. the whole-product batching logic, see M_ShipmentSchedule_TagToRecompute's
+		// comment) lives in the DB function so it can also be invoked directly from support/ops SQL.
+		final int batchSize = maxToProcess.isLimited() ? maxToProcess.toInt() : 0;
+		final int countTagged = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_TAG_TO_RECOMPUTE, pinstanceId, batchSize);
 		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 	}
 
 	@Override
-	public void deleteRecomputeMarkersOutOfTrx(@NonNull final PInstanceId pinstanceId)
+	public boolean existsUntaggedRecomputeMarkers()
+	{
+		// The EXISTS is the taggability condition of M_ShipmentSchedule_TagToRecompute (both of its branches
+		// require the M_ShipmentSchedule row to still exist). M_ShipmentSchedule_Recompute has no FK to
+		// M_ShipmentSchedule, so an ORPHANED untagged marker -- one whose schedule was deleted -- can exist and can
+		// never be tagged. Counting it here would answer a looser question than the tagging can deliver on: the
+		// pass tags nothing, still reports limit-reached, and enqueues a follow-up pass, forever.
+		final String sql = "SELECT 1"
+				+ " FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr"
+				+ " WHERE sr.AD_PInstance_ID IS NULL"
+				+ "   AND EXISTS (SELECT 1 FROM " + I_M_ShipmentSchedule.Table_Name + " s"
+				+ "               WHERE s." + COLUMNNAME_M_ShipmentSchedule_ID + "=sr." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
+				+ " LIMIT 1";
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql) == 1;
+	}
+
+	@Override
+	public int resetStaleRecomputeMarkers()
+	{
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute()");
+	}
+
+	@Override
+	public void deleteRecomputeMarkers(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
+		// queue table, so the PO-by-PO delete() builds an empty WHERE and fails.
+		//
+		// Deliberately NOT restricted to untagged markers: with no FK between the two tables, a marker outliving
+		// its schedule is an ORPHAN that M_ShipmentSchedule_TagToRecompute can never tag (both branches require
+		// the schedule row), so existsUntaggedRecomputeMarkers() reports work remaining forever and every bounded
+		// pass re-enqueues a follow-up. m_shipmentschedule_recompute_reap_orphans() backstops orphans already in
+		// the database and any deletion path bypassing the model layer.
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.deleteDirectly();
+	}
+
+	@Override
+	public void deleteRecomputeMarkersInThreadInheritedTrx(@NonNull final PInstanceId pinstanceId)
 	{
 		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=? RETURNING M_ShipmentSchedule_ID";
 
@@ -593,7 +932,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				param,
-				ITrx.TRXNAME_None,
+				ITrx.TRXNAME_ThreadInherited,
 				-1 /* timeout */,
 				rs -> shipmentScheduleIds.getValue().add(rs.getInt("M_ShipmentSchedule_ID")) /* updateReturnProcessor */
 		);
@@ -616,13 +955,89 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
-	public void releaseRecomputeMarkerOutOfTrx(final PInstanceId pinstanceId)
+	public int releaseRecomputeMarkerOutOfTrx(final PInstanceId pinstanceId)
 	{
 		final Object[] sqlParams = new Object[] { pinstanceId };
 		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=?";
 
 		final int result = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
 		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
+		return result;
+	}
+
+	@Override
+	public void releaseRecomputeMarkersAfterTrxEnd(@NonNull final PInstanceId pinstanceId, final int retryGeneration)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (!ThreadInheritedTrxState.isThreadTrxOpenForWrites(threadTrx))
+		{
+			releaseAndRetry(pinstanceId, retryGeneration);
+			return;
+		}
+
+		// not trxManager.getTrxListenerManagerOrAutoCommit(): it treats a not yet started (inactive) trx as "no trx"; AbstractTrx.commit/rollback fire the listeners of such a trx too.
+		// AFTER_CLOSE is the backstop for a trx that ends without AFTER_COMMIT/AFTER_ROLLBACK: a failed commit (JavaProcess.endTrx never rolls back) or a failed rollback.
+		// close() returns the connection to the pool, which resets it (rollback); once that is done no row lock is held (a brief wait is possible, a deadlock is not).
+		// The guard is set only after a successful release: a release that failed after the commit/rollback is retried at close, a successful one is not repeated.
+		// The retry pass is enqueued after the guard is set, so a failing enqueue does not repeat the release.
+		final AtomicBoolean released = new AtomicBoolean(false);
+		final ITrxListenerManager listenerManager = threadTrx.getTrxListenerManager();
+		for (final TrxEventTiming timing : new TrxEventTiming[] { TrxEventTiming.AFTER_COMMIT, TrxEventTiming.AFTER_ROLLBACK, TrxEventTiming.AFTER_CLOSE })
+		{
+			listenerManager.newEventListener(timing)
+					.invokeMethodJustOnce(true)
+					.registerHandlingMethod(trx -> {
+						if (!released.get())
+						{
+							final int releasedCount = releaseRecomputeMarkerOutOfTrx(pinstanceId);
+							released.set(true);
+							enqueueRetryPassIfBelowCap(releasedCount, retryGeneration);
+						}
+					});
+		}
+	}
+
+	private void releaseAndRetry(@NonNull final PInstanceId pinstanceId, final int retryGeneration)
+	{
+		final int releasedCount = releaseRecomputeMarkerOutOfTrx(pinstanceId);
+		enqueueRetryPassIfBelowCap(releasedCount, retryGeneration);
+	}
+
+	/**
+	 * Flags are left over only by a batch that did not commit (a successful batch deletes its flags in its trx), and a failed
+	 * recompute workpackage is not retried by the async framework. So, if flags were released, enqueue a retry pass of the next
+	 * generation -- unless the failed batch's generation already reached the cap: a schedule that fails every batch would
+	 * otherwise enqueue a new pass after each failure, forever. At the cap the released flags wait for the next normal pass.
+	 * <p>
+	 * Goes through the regular scheduler, out of trx, so the "enough workpackages queued" check applies right away.
+	 */
+	private void enqueueRetryPassIfBelowCap(final int releasedCount, final int failedBatchRetryGeneration)
+	{
+		if (releasedCount <= 0)
+		{
+			return;
+		}
+
+		final int maxRetryGeneration = Services.get(ISysConfigBL.class).getIntValue(
+				UpdateInvalidShipmentSchedulesWorkpackageProcessor.SYSCONFIG_MaxRetriesAfterFailedBatch,
+				UpdateInvalidShipmentSchedulesWorkpackageProcessor.DEFAULT_MaxRetriesAfterFailedBatch);
+		if (failedBatchRetryGeneration >= maxRetryGeneration)
+		{
+			logger.warn("A recompute batch of retry generation {} failed and released {} {} records; the cap of {} retries is reached,"
+								+ " so no retry pass is enqueued and the records wait for the next recompute pass",
+						failedBatchRetryGeneration, releasedCount, M_SHIPMENT_SCHEDULE_RECOMPUTE, maxRetryGeneration);
+			return;
+		}
+
+		final int retryGeneration = failedBatchRetryGeneration + 1;
+		logger.info("A recompute batch of retry generation {} failed and released {} {} records; enqueueing retry pass of generation {} (cap {})",
+					failedBatchRetryGeneration, releasedCount, M_SHIPMENT_SCHEDULE_RECOMPUTE, retryGeneration, maxRetryGeneration);
+		UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ShipmentSchedulesUpdateSchedulerRequest.builder()
+				.ctx(Env.getCtx())
+				.trxName(ITrx.TRXNAME_None)
+				.retryGeneration(retryGeneration)
+				.build());
 	}
 
 	@Override
@@ -671,13 +1086,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * dev-note: we need this one workpackage per async batch separation to be sure that any enqueued workpackage within the same certain async batch
 	 * will also wait for the {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor} to finish work.
 	 */
-	private void enqueueShipmentScheduleRecompute(
+	void enqueueShipmentScheduleRecompute(
 			@NonNull final Properties context,
 			@Nullable final String trxName,
 			@NonNull final String chunkUUID)
 	{
+		// query in the given trx: on the out-of-trx path a thread-inherited query would restart a committed thread trx
 		final List<Integer> asyncBatchIds = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class, context, trxName)
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_ChunkUUID, chunkUUID)
 				.create()
 				.listDistinct(I_M_ShipmentSchedule_Recompute.COLUMNNAME_C_Async_Batch_ID, Integer.class);

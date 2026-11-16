@@ -25,7 +25,7 @@
 	doc.GrandTotal - doc.PaidAmt AS openamt,
 	dl.amt AS FeeAmt,
 	invoiceopen(dc.Record_ID, 0::numeric) + dl.amt as totalamt,
-	paymenttermduedate(doc.C_PaymentTerm_ID, doc.DocumentDate::timestamp with time zone) AS DueDate,
+	COALESCE(doc.InvoiceDueDate::timestamp with time zone, paymenttermduedate(doc.C_PaymentTerm_ID, doc.DocumentDate::timestamp with time zone)) AS DueDate,
 	dc.DaysDue
 FROM
 	C_DunningDoc dd
@@ -41,7 +41,8 @@ FROM
 			COALESCE(i.DateInvoiced, o.DateOrdered) AS DocumentDate,
 			COALESCE(i.C_Doctype_ID, o.C_Doctype_ID) AS C_Doctype_ID,
 			COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID) AS C_PaymentTerm_ID,
-			COALESCE(i.GrandTotal, o.GrandTotal) AS GrandTotal
+			COALESCE(i.GrandTotal, o.GrandTotal) AS GrandTotal,
+			i.DueDate AS InvoiceDueDate
 		FROM	C_Dunning_Candidate sub_dc
 			LEFT JOIN C_Invoice_v i ON sub_dc.Record_ID = i.C_Invoice_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice')
 			LEFT JOIN C_Order o ON sub_dc.Record_ID = o.C_Order_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Order')

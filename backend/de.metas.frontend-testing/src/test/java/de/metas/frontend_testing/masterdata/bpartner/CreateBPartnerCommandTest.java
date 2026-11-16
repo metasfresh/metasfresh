@@ -1,14 +1,20 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -62,6 +68,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("customer1")
@@ -99,6 +106,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("vendor1")
@@ -134,6 +142,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("both1")
@@ -163,6 +172,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bp2")
@@ -190,6 +200,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bp3")
@@ -218,6 +229,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bpLoc1")
@@ -252,6 +264,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("contextBP")
@@ -279,6 +292,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bpPS1")
@@ -311,6 +325,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier(null)
@@ -350,6 +365,7 @@ public class CreateBPartnerCommandTest
 		// when
 		final JsonCreateBPartnerResponse response1 = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request1)
 				.identifier("unique1")
@@ -358,6 +374,7 @@ public class CreateBPartnerCommandTest
 
 		final JsonCreateBPartnerResponse response2 = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request2)
 				.identifier("unique2")
@@ -372,5 +389,99 @@ public class CreateBPartnerCommandTest
 		final I_C_BPartner bp2 = InterfaceWrapperHelper.load(response2.getId(), I_C_BPartner.class);
 		assertThat(bp1.getValue()).isEqualTo("UNIQUE_001");
 		assertThat(bp2.getValue()).isEqualTo("UNIQUE_002");
+	}
+
+	@Test
+	public void execute_withBpGroup_shouldAssignThatGroup()
+	{
+		// given: a BP group registered in the context under an identifier
+		final BPGroupId groupId = BPGroupId.ofRepoId(1000007);
+		context.putIdentifier(Identifier.ofString("grpA"), groupId);
+
+		final JsonCreateBPartnerRequest request = JsonCreateBPartnerRequest.builder()
+				.bpartnerCode("BP_GRP_001")
+				.isCustomer(true)
+				.bpGroup(Identifier.ofString("grpA"))
+				.build();
+
+		// when
+		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
+				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
+				.context(context)
+				.request(request)
+				.identifier("bpGrp1")
+				.build()
+				.execute();
+
+		// then
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
+		assertThat(bpartner.getC_BP_Group_ID()).isEqualTo(groupId.getRepoId());
+	}
+
+	@Test
+	public void execute_withoutBpGroup_shouldKeepTheStandardGroup()
+	{
+		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
+				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
+				.context(context)
+				.request(JsonCreateBPartnerRequest.builder().bpartnerCode("BP_GRP_002").isCustomer(true).build())
+				.identifier("bpGrp2")
+				.build()
+				.execute();
+
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
+		assertThat(bpartner.getC_BP_Group_ID()).isEqualTo(BPGroupId.STANDARD.getRepoId());
+	}
+
+	@Test
+	public void execute_withOrderDocSubType_shouldSetPartnerOrderType()
+	{
+		// given: a sales order doc type of sub-type "PR" (prepay order), org '*'
+		final I_C_DocType prepayType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		InterfaceWrapperHelper.setValue(prepayType, I_C_DocType.COLUMNNAME_AD_Client_ID, MasterdataContext.CLIENT_ID.getRepoId());
+		prepayType.setAD_Org_ID(0);
+		prepayType.setName("Prepay order");
+		prepayType.setDocBaseType(X_C_DocType.DOCBASETYPE_SalesOrder);
+		prepayType.setDocSubType(X_C_DocType.DOCSUBTYPE_PrepayOrder);
+		prepayType.setIsSOTrx(true);
+		InterfaceWrapperHelper.saveRecord(prepayType);
+
+		final JsonCreateBPartnerRequest request = JsonCreateBPartnerRequest.builder()
+				.bpartnerCode("BP_DT_001")
+				.isCustomer(true)
+				.orderDocSubType(DocSubType.PrepayOrder)
+				.build();
+
+		// when
+		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
+				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
+				.context(context)
+				.request(request)
+				.identifier("bpDt1")
+				.build()
+				.execute();
+
+		// then
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
+		assertThat(DocTypeId.ofRepoIdOrNull(bpartner.getSO_DocTypeTarget_ID())).isEqualTo(DocTypeId.ofRepoId(prepayType.getC_DocType_ID()));
+	}
+
+	@Test
+	public void execute_withoutOrderDocSubType_shouldLeavePartnerOrderTypeEmpty()
+	{
+		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
+				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
+				.context(context)
+				.request(JsonCreateBPartnerRequest.builder().bpartnerCode("BP_DT_002").isCustomer(true).build())
+				.identifier("bpDt2")
+				.build()
+				.execute();
+
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
+		assertThat(DocTypeId.ofRepoIdOrNull(bpartner.getSO_DocTypeTarget_ID())).isNull();
 	}
 }

@@ -1,0 +1,1 @@
+Method <de.metas.payment.revolut.RevolutExportRepo.saveRevolutPaymentExport(de.metas.payment.revolut.model.RevolutPaymentExport)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (RevolutExportRepo.java:65)

@@ -1,0 +1,3 @@
+Method <de.metas.aggregation.model.C_AggregationItem_Builder.build()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (C_AggregationItem_Builder.java:52)
+Method <de.metas.aggregation.model.C_Aggregation_Attribute_Builder.build()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (C_Aggregation_Attribute_Builder.java:25)
+Method <de.metas.aggregation.model.C_Aggregation_Builder.build()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (C_Aggregation_Builder.java:70)

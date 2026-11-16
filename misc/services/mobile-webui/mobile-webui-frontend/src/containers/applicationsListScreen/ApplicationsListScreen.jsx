@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { getAvailableApplicationsArray } from '../../reducers/applications';
 
-import ScreenToaster from '../../components/ScreenToaster';
 import ApplicationButton from './ApplicationButton';
 import LogoHeader from '../../components/LogoHeader';
 import { startApplicationById, startApplicationByScannedCode } from '../../apps';
@@ -58,9 +57,7 @@ const ApplicationsListScreen = () => {
       <LogoHeader />
       <div className="section">
         {isLoading && <Spinner />}
-        {!isLoading && (
-          <BarcodeScannerComponent isShowInputText={false} isShowVideo={false} onResolvedResult={onBarcodeScanned} />
-        )}
+        {!isLoading && <BarcodeScannerComponent invisible onResolvedResult={onBarcodeScanned} />}
         {applicationsDisplayed.map((app) => (
           <ApplicationButton
             key={app.id}
@@ -79,7 +76,6 @@ const ApplicationsListScreen = () => {
           onClick={() => handleLogout()}
         />
       </div>
-      <ScreenToaster />
     </div>
   );
 };

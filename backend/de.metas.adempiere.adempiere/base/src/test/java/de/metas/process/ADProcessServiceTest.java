@@ -152,6 +152,24 @@ class ADProcessServiceTest
 									   .build());
 		}
 
+		/**
+		 * Characterizes the lookup rule that main-tab processes depend on: a main-tab document and a grid view
+		 * look up related processes without a tab, so a process bound to a tab is not offered there; one bound
+		 * only to the window is. This pins the core rule; it does not check any particular window's AD data.
+		 */
+		@Test
+		void noTabSelected_onlyProcessesWithoutTabAreOffered()
+		{
+			customizedWindowInfoMapRepository.set(CustomizedWindowInfoMap.empty());
+
+			relatedProcess().processId(AdProcessId.ofRepoId(1)).adWindowId(AdWindowId.ofRepoId(1)).adTabId(AdTabId.ofRepoId(11)).build();
+			relatedProcess().processId(AdProcessId.ofRepoId(2)).adWindowId(AdWindowId.ofRepoId(1)).build();
+
+			Assertions.assertThat(adProcessService.getRelatedProcessDescriptors(adTableId, AdWindowId.ofRepoId(1), null))
+					.extracting(RelatedProcessDescriptor::getProcessId)
+					.containsExactly(AdProcessId.ofRepoId(2));
+		}
+
 		@Test
 		void inheritForBaseWindow()
 		{

@@ -33,13 +33,10 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_OrderPaySchedule_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
-import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.process.IADProcessDAO;
@@ -72,11 +69,27 @@ public class C_PaySelection_StepDef
 	private final @NonNull C_PaySelection_StepDefData paySelectionTable;
 	private final @NonNull C_BP_BankAccount_StepDefData bankAccountTable;
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
-	private final @NonNull C_Order_StepDefData orderTable;
-	private final @NonNull C_OrderPaySchedule_StepDefData orderPayScheduleTable;
 	private final @NonNull C_Invoice_StepDefData invoiceTable;
 	private final @NonNull C_Payment_StepDefData paymentTable;
+	private final @NonNull AD_Org_StepDefData orgTable;
 
+	/**
+	 * Creates draft pay selections.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> - (required) identifier under which the pay selection is registered<br>
+	 *   <b>C_BP_BankAccount_ID</b> - (optional, identifier-ref) the organization bank account<br>
+	 *   <b>PaySelectionTrxType</b> - (optional) e.g. CT (credit transfer) or DD (direct debit)<br>
+	 *   <b>PayDate</b> - (optional) the pay date<br>
+	 *   <b>AD_Org_ID</b> - (optional, identifier-ref) the organization; default is the login organization
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains Pay Selection
+	 *   | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | AD_Org_ID |
+	 *   | paySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg |
+	 * </pre>
+	 */
 	@And("metasfresh contains Pay Selection")
 	public void addPaySelections(@NonNull final DataTable dataTable)
 	{
@@ -95,6 +108,11 @@ public class C_PaySelection_StepDef
 		row.getAsOptionalIdentifier(I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bankAccountTable::getId)
 				.ifPresent(id -> paySelectionRecord.setC_BP_BankAccount_ID(id.getRepoId()));
+
+		// optional: the organization of the pay selection; default is the login organization
+		row.getAsOptionalIdentifier(I_C_PaySelection.COLUMNNAME_AD_Org_ID)
+				.map(orgTable::getIdAsInt)
+				.ifPresent(paySelectionRecord::setAD_Org_ID);
 
 		row.getAsOptionalInstantTimestamp(I_C_PaySelection.COLUMNNAME_PayDate)
 				.ifPresent(paySelectionRecord::setPayDate);
@@ -153,6 +171,24 @@ public class C_PaySelection_StepDef
 		documentBL.processEx(paySelection, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
+	/**
+	 * Asserts the lines of the pay selection: the table must have exactly as many rows as the pay selection has lines,
+	 * and row N is compared with line N (ordered by Line, then C_PaySelectionLine_ID). Only the columns present in the table are compared.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> - (optional, identifier-ref) the invoice of the line; the null placeholder = the line has no invoice<br>
+	 *   <b>C_BP_BankAccount_ID</b> - (optional, identifier-ref) the bank account of the line<br>
+	 *   <b>C_Payment_ID</b> - (optional, identifier-ref) the payment of the line; the null placeholder = no payment; an unknown identifier is registered with the line's payment<br>
+	 *   <b>PayAmt</b>, <b>OpenAmt</b> - (optional) amounts of the line
+	 * @cucumber.example
+	 * <pre>
+	 * And the Pay selection identified by paySelection has exactly the following lines
+	 *   | C_Invoice_ID | OpenAmt | PayAmt | C_BP_BankAccount_ID |
+	 *   | invoice1     | 100.00  | 100.00 | debtorAcct          |
+	 *   | invoice2     | 50.00   | 50.00  | debtorAcct          |
+	 * </pre>
+	 */
 	@And("^the Pay selection identified by (.*) has exactly the following lines$")
 	public void verifyPaySelectionLines(@NonNull final String paySelectionIdentifier, @NonNull final DataTable dataTable)
 	{
@@ -171,21 +207,13 @@ public class C_PaySelection_StepDef
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Order_ID)
-				.ifPresent(orderIdentifier -> {
-					final OrderId expectedOrderId = orderIdentifier.isNullPlaceholder() ? null : orderTable.getId(orderIdentifier);
-					softly.assertThat(OrderId.ofRepoIdOrNull(line.getC_Order_ID())).as("C_Order_ID").isEqualTo(expectedOrderId);
-				});
-		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_OrderPaySchedule_ID)
-				.ifPresent(orderPayScheduleIdentifier -> {
-					final OrderPayScheduleId expectedOrderPayScheduleId = orderPayScheduleIdentifier.isNullPlaceholder() ? null : orderPayScheduleTable.getId(orderPayScheduleIdentifier);
-					softly.assertThat(OrderPayScheduleId.ofRepoIdOrNull(line.getC_OrderPaySchedule_ID())).as("C_OrderPaySchedule_ID").isEqualTo(expectedOrderPayScheduleId);
-				});
 		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
 				.ifPresent(invoiceIdentifier -> {
 					final InvoiceId expectedInvoiceId = invoiceIdentifier.isNullPlaceholder() ? null : invoiceTable.getId(invoiceIdentifier);
 					softly.assertThat(InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID())).as("C_Invoice_ID").isEqualTo(expectedInvoiceId);
 				});
+		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_BP_BankAccount_ID)
+				.ifPresent(bankAccountIdentifier -> softly.assertThat(line.getC_BP_BankAccount_ID()).as("C_BP_BankAccount_ID").isEqualTo(bankAccountTable.getId(bankAccountIdentifier).getRepoId()));
 		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID)
 				.ifPresent(paymentIdentifier -> validatePaymentId(softly, paymentIdentifier, PaymentId.ofRepoIdOrNull(line.getC_Payment_ID())));
 		expectation.getAsOptionalBigDecimal(I_C_PaySelectionLine.COLUMNNAME_PayAmt)

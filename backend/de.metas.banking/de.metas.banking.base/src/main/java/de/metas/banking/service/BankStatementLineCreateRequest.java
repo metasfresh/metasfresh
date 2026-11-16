@@ -6,6 +6,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -84,8 +85,11 @@ public class BankStatementLineCreateRequest
 	@Nullable
 	BigDecimal currencyRate;
 	
-	@Nullable 
+	@Nullable
 	InvoiceId invoiceId;
+
+	@Nullable
+	OrderId orderId;
 
 	@Builder
 	private BankStatementLineCreateRequest(
@@ -114,6 +118,7 @@ public class BankStatementLineCreateRequest
 			final int debtorOrCreditorId,
 			@Nullable final BigDecimal currencyRate,
 			@Nullable final InvoiceId invoiceId,
+			@Nullable final OrderId orderId,
 			@Nullable final Boolean updateAmountsFromInvoice,
 			@Nullable final Boolean multiPayment,
 
@@ -145,7 +150,8 @@ public class BankStatementLineCreateRequest
 		Money.getCommonCurrencyIdOfAll(this.statementAmt, this.trxAmt, this.chargeAmt, this.interestAmt);
 		this.currencyRate = currencyRate;
 		this.invoiceId = invoiceId;
-		
+		this.orderId = orderId;
+
 		this.updateAmountsFromInvoice = CoalesceUtil.coalesceNotNull(updateAmountsFromInvoice, true); // true for backwards compatibility
 		this.multiPayment = CoalesceUtil.coalesceNotNull(multiPayment, false); // false for backwards compatibility
 

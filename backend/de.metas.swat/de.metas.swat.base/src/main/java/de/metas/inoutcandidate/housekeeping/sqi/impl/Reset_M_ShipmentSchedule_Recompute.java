@@ -1,11 +1,14 @@
 package de.metas.inoutcandidate.housekeeping.sqi.impl;
 
+import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
+import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
-
-import de.metas.util.Loggables;
 
 /*
  * #%L
@@ -42,7 +45,18 @@ public class Reset_M_ShipmentSchedule_Recompute implements IStartupHouseKeepingT
 	@Override
 	public void executeTask()
 	{
-		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "SELECT de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute();");
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+
+		final int no = invalidSchedulesRepo.resetStaleRecomputeMarkers();
 		Loggables.addLog("Cleaned up " + no + " stale M_ShipmentSchedule_Recompute records");
+
+		// the reset only un-tags the markers; without a recompute pass they would sit untagged until something else flags a schedule
+		if (invalidSchedulesRepo.existsUntaggedRecomputeMarkers())
+		{
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ShipmentSchedulesUpdateSchedulerRequest.builder()
+					.ctx(Env.getCtx())
+					.trxName(ITrx.TRXNAME_None)
+					.build());
+		}
 	}
 }

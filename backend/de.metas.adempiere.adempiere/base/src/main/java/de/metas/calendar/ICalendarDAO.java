@@ -47,9 +47,9 @@ public interface ICalendarDAO extends ISingletonService
 
 	List<I_C_Year> retrieveYearsOfCalendar(I_C_Calendar calendar);
 
-	I_C_Period retrieveFirstPeriodOfTheYear(I_C_Year year);
+	I_C_Period retrieveFirstPeriodOfTheYear(@NonNull final YearId yearId);
 
-	I_C_Period retrieveLastPeriodOfTheYear(I_C_Year year);
+	I_C_Period retrieveLastPeriodOfTheYear(@NonNull final YearId yearId);
 
 	I_C_Period findByCalendar(Timestamp date, @NonNull CalendarId calendarId);
 
@@ -75,4 +75,7 @@ public interface ICalendarDAO extends ISingletonService
 	 * @throws AdempiereException if no default calendar is found
 	 */
 	@NonNull I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId);
+
+	/** Like {@link #getDefaultCalendar(OrgId)} but returns {@code null} instead of throwing when no default calendar is configured. */
+	@Nullable I_C_Calendar getDefaultCalendarOrNull(@NonNull final OrgId orgId);
 }

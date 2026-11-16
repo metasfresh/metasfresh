@@ -27,17 +27,37 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_PaySelection;
 
+import javax.annotation.Nullable;
 import java.util.Date;
+import java.util.List;
 
 public interface ISEPADocumentBL extends ISingletonService
 {
-	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from, boolean isGroupTransactions);
+	/**
+	 * Creates the SEPA exports of the given pay selection: one for a credit transfer, one per mandate type (scheme) for a direct debit.
+	 *
+	 * @param chosenProtocol the protocol to use; {@code null} means the default of the pay selection's transaction type. Must match that type, see {@link SEPAProtocol#ofPaySelectionTrxType}.
+	 */
+	CreatedSEPAExports createSEPAExportFromPaySelection(I_C_PaySelection from, boolean isGroupTransactions, @Nullable SEPAProtocol chosenProtocol);
 
 	Date getDueDate(I_SEPA_Export_Line line);
+
+	/**
+	 * @return the lines of the given export that are to be exported (active and without error)
+	 */
+	List<I_SEPA_Export_Line> retrieveLines(I_SEPA_Export sepaExport);
 
 	/**
 	 * Generates the SEPA Credit Transfer xml from the given export header.
 	 */
 	SEPACreditTransferXML exportCreditTransferXML(I_SEPA_Export sepaExport, SEPAExportContext exportContext);
+
+	/**
+	 * Marshals each of the given exports into its own XML file.
+	 *
+	 * @return the file of a single export as it is; for several exports one ZIP named {@code <zipBaseName>.zip},
+	 * with one entry {@code <DocumentNo>_<scheme>.xml} per export and the warnings of all files
+	 */
+	SEPACreditTransferXML exportXML(CreatedSEPAExports createdExports, boolean referenceAsEndToEndId, String zipBaseName);
 
 }

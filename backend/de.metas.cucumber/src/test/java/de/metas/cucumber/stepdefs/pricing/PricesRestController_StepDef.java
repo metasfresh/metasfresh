@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDef;
 import de.metas.tax.api.TaxCategoryId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;

@@ -33,7 +33,7 @@ permissions:
 
 jobs:
   gate:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     steps:
       - name: Set Merge Gate commit status
         env:

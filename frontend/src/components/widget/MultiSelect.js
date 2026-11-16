@@ -75,7 +75,11 @@ class MultiSelect extends Component {
         {loading && <Spinner iconSize={25} />}
         <div>
           {dataSource.map((item) => (
-            <div className="form-group" key={item.key}>
+            <div
+              className="form-group"
+              key={item.key}
+              data-testid={`filter-option-${item.key}`}
+            >
               <div key={item.key} className="row">
                 <div className=" col-sm-11 float-left col-label">
                   <label
@@ -90,6 +94,7 @@ class MultiSelect extends Component {
                   <label className="input-checkbox">
                     <input
                       id={'chk_' + item.key}
+                      data-testid={`filter-checkbox-${item.key}`}
                       type="checkbox"
                       onChange={() => this.selectItem(item.key, item.caption)}
                       checked={

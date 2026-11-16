@@ -120,7 +120,7 @@ Tests inline editing in the grid:
           await dropdownOption.click();
           await page.waitForTimeout(1000);
 
-          const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
+          const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
           await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
           await quantityInput.click();
           await quantityInput.fill('5');
@@ -176,7 +176,7 @@ Tests inline editing in the grid:
       const hasQtyCell = await qtyCell.isVisible().catch(() => false);
 
       if (hasQtyCell) {
-        await qtyCell.click();
+        await qtyCell.click(); // focuses the cell to edit it, not a row selection
         await page.waitForTimeout(500);
         console.log('Clicked quantity cell');
 

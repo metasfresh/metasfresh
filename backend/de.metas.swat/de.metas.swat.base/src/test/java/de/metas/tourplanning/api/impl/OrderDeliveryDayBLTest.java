@@ -22,14 +22,72 @@
 
 package de.metas.tourplanning.api.impl;
 
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
+import de.metas.util.calendar.IBusinessDayMatcher;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class OrderDeliveryDayBLTest
 {
+	@Nested
+	class computeLeadTimePreparationDate
+	{
+		private final IBusinessDayMatcher weekend = ExcludeWeekendBusinessDayMatcher.DEFAULT;
+
+		// 2026-08-19 is a Wednesday; stepping back 6 working days (lead 7 -> step -6) skips the weekend to 2026-08-11.
+		@Test
+		void leadTime7_sixWorkingDaysBack_skipsWeekend()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 7, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 11));
+		}
+
+		@Test
+		void leadTime0_and_1_yieldSameDay()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 1, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 0, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+		}
+
+		@Test
+		void negativeLeadTime_clampedToSameDay()
+		{
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), -3, weekend))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 19));
+		}
+
+		@Test
+		void holidayOnTheBackwardPath_isSkipped()
+		{
+			// delivery Wed 2026-08-19, lead 7 -> step back 6 working days. Weekend-only lands 2026-08-11 (Tue).
+			// Make Tue 2026-08-11 a holiday: the prep date is pushed one more business day back to Mon 2026-08-10.
+			final LocalDate holiday = LocalDate.of(2026, Month.AUGUST, 11);
+			final IBusinessDayMatcher weekendAndHoliday = date -> weekend.isBusinessDay(date) && !date.equals(holiday);
+
+			assertThat(OrderDeliveryDayBL.computeLeadTimePreparationDate(LocalDate.of(2026, Month.AUGUST, 19), 7, weekendAndHoliday))
+					.isEqualTo(LocalDate.of(2026, Month.AUGUST, 10));
+		}
+	}
+
 	@Nested
 	class computePreparationTime
 	{
@@ -41,6 +99,84 @@ class OrderDeliveryDayBLTest
 
 			Assertions.assertThat(OrderDeliveryDayBL.computePreparationTime(ZonedDateTime.parse("2023-03-26T23:59:59+02:00[Europe/Berlin]"), -24))
 					.isEqualTo(ZonedDateTime.parse("2023-03-25T23:59:59+01:00[Europe/Berlin]"));
+		}
+	}
+
+	@Nested
+	class computeDeliveryDateOrNull
+	{
+		private final ZoneId timeZone = ZoneId.systemDefault();
+
+		@BeforeEach
+		void init()
+		{
+			AdempiereTestHelper.get().init();
+		}
+
+		@Test
+		void fallsBackToOrderDatePromised()
+		{
+			final I_C_Order order = createOrder(LocalDate.of(2019, Month.SEPTEMBER, 1));
+			final I_C_OrderLine orderLine = prepareOrderLine().build();
+
+			final ZonedDateTime deliveryDate = OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone);
+			assertThat(deliveryDate).isNotNull();
+			assertThat(deliveryDate.toLocalDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		}
+
+		@Test
+		void prefersOrderLineDatePromisedOverHeader()
+		{
+			final I_C_Order order = createOrder(LocalDate.of(2019, Month.SEPTEMBER, 1));
+			final I_C_OrderLine orderLine = prepareOrderLine()
+					.datePromised(LocalDate.of(2019, Month.SEPTEMBER, 2))
+					.build();
+
+			final ZonedDateTime deliveryDate = OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone);
+			assertThat(deliveryDate).isNotNull();
+			assertThat(deliveryDate.toLocalDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
+		}
+
+		@Test
+		void prefersPresetDateShippedOverDatePromised()
+		{
+			final I_C_Order order = createOrder(LocalDate.of(2019, Month.SEPTEMBER, 1));
+			final I_C_OrderLine orderLine = prepareOrderLine()
+					.datePromised(LocalDate.of(2019, Month.SEPTEMBER, 2))
+					.presetDateShipped(LocalDate.of(2019, Month.SEPTEMBER, 3))
+					.build();
+
+			final ZonedDateTime deliveryDate = OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone);
+			assertThat(deliveryDate).isNotNull();
+			assertThat(deliveryDate.toLocalDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 3));
+		}
+
+		@Test
+		void returnsNullWhenNoDateAtAll()
+		{
+			final I_C_Order order = newInstance(I_C_Order.class);
+			saveRecord(order);
+			final I_C_OrderLine orderLine = prepareOrderLine().build();
+
+			assertThat(OrderDeliveryDayBL.computeDeliveryDateOrNull(order, orderLine, timeZone)).isNull();
+		}
+
+		private I_C_Order createOrder(@NonNull final LocalDate datePromised)
+		{
+			final I_C_Order order = newInstance(I_C_Order.class);
+			order.setDatePromised(TimeUtil.asTimestamp(datePromised));
+			saveRecord(order);
+			return order;
+		}
+
+		@Builder(builderMethodName = "prepareOrderLine", builderClassName = "_OrderLineBuilder")
+		private I_C_OrderLine createOrderLine(final LocalDate datePromised, final LocalDate presetDateShipped)
+		{
+			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+			orderLine.setDatePromised(TimeUtil.asTimestamp(datePromised));
+			orderLine.setPresetDateShipped(TimeUtil.asTimestamp(presetDateShipped));
+			saveRecord(orderLine);
+			return orderLine;
 		}
 	}
 }

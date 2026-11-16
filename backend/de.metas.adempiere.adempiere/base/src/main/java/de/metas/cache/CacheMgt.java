@@ -269,7 +269,7 @@ public final class CacheMgt
 	}
 
 	/**
-	 * Reset cache for TableName/Record_ID when given transaction is committed.
+	 * Reset the local cache for TableName/Record_ID now and again when given transaction is committed; broadcast the reset when it is committed.
 	 * <p>
 	 * If no transaction was given or given transaction was not found, the cache is reset right away.
 	 */
@@ -285,7 +285,8 @@ public final class CacheMgt
 		else
 		{
 			reset(request, ResetMode.LOCAL);
-			RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request, ResetMode.JUST_BROADCAST);
+			// Reset locally again after commit: another thread might have loaded the pre-commit state in the meantime.
+			RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request, ResetMode.LOCAL_AND_BROADCAST);
 		}
 	}
 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>metasfresh test report permalink</title>
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:40px}code{background:#f0f0f0;padding:2px 4px;border-radius:3px}</style>
+<script src="permalink.js"></script></head>
+<body>
+<div id="msg">Resolving…</div>
+<script>
+(function () {
+  var p = new URLSearchParams(location.search);
+  var kind = p.has('spec') ? 'spec' : 'feature';
+  var key = p.get(kind);
+  var suite = p.get('suite');
+  var msg = document.getElementById('msg');
+  if (!key) {
+    msg.innerHTML = 'Provide <code>?feature=Fxxxx</code> or <code>?spec=path/to/file.spec.js</code>.';
+    return;
+  }
+  // All user-reflected text is set via textContent / a <code> node — never innerHTML — so the
+  // reflected key cannot inject markup (XSS-safe).
+  function notFound() {
+    msg.textContent = 'No tests found for ' + kind + ' ';
+    var codeEl = document.createElement('code');
+    codeEl.textContent = key;
+    msg.appendChild(codeEl);
+    msg.appendChild(document.createTextNode(' on this branch’s newest build.'));
+  }
+  // Individual test links, for the two cases where the Behaviours node cannot
+  // stand in for them: there is no node at all, or the node covers fewer tests
+  // than carry the F-code. Without this the page could only say "no linkable
+  // node" — 83 feature/suite pairs on new-dawn-release, covering 339 tests.
+  function testList(version, s) {
+    if (!s.tests || !s.tests.length) { return null; }
+    var wrap = document.createElement('div');
+    var cap = document.createElement('div');
+    cap.style.cssText = 'margin:4px 0 2px;font-size:90%;color:#555';
+    var total = s.attributed || s.tests.length;
+    cap.textContent = s.tests.length < total
+      ? 'showing ' + s.tests.length + ' of ' + total + ' tests:'
+      : (s.tests.length === 1 ? 'the test:' : 'all ' + s.tests.length + ' tests:');
+    wrap.appendChild(cap);
+    var ul = document.createElement('ul');
+    ul.style.cssText = 'margin:0 0 8px';
+    s.tests.forEach(function (t) {
+      var href = Permalink.buildTestUrl(version, s.suite, t.uid);
+      if (!href) { return; }   // nothing to link at -> no entry, never href="null"
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = href;
+      a.textContent = t.name || t.uid;
+      li.appendChild(a);
+      if (t.status) {
+        var st = document.createElement('span');
+        st.style.cssText = 'margin-left:6px;font-size:85%;color:'
+          + (t.status === 'passed' ? '#2e7d32' : (t.status === 'failed' || t.status === 'broken' ? '#c62828' : '#777'));
+        st.textContent = t.status;
+        li.appendChild(st);
+      }
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+    return wrap;
+  }
+  function chooser(version, entry, suites) {
+    msg.textContent = '';
+    var h = document.createElement('p');
+    h.appendChild(document.createTextNode((kind === 'spec' ? 'Spec ' : 'Feature ')));
+    var codeEl = document.createElement('code');
+    codeEl.textContent = key;
+    h.appendChild(codeEl);
+    h.appendChild(document.createTextNode(suites.length === 1
+      ? ' — tests in 1 suite:'
+      : ' has tests in ' + suites.length + ' suites — pick one:'));
+    msg.appendChild(h);
+    var ul = document.createElement('ul');
+    // "(most)" marks the suite with the most tests CARRYING the feature -- it
+    // used to mark whichever sorted first, which ranks on the node's leaf count.
+    var most = Permalink.mostCovered(suites);
+    suites.forEach(function (s, i) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      var label = Permalink.suiteLabel(s);
+      if (s.uid) {
+        a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
+        a.textContent = label + (s.suite === most ? ' (most)' : '');
+        li.appendChild(a);
+      } else {
+        li.appendChild(document.createTextNode(label + (s.suite === most ? ' (most)' : '')));
+      }
+      var tl = testList(version, s);
+      if (tl) { li.appendChild(tl); }
+      ul.appendChild(li);
+    });
+    msg.appendChild(ul);
+  }
+  fetch('permalinks.json', { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('permalinks.json not found for this branch'); return r.json(); })
+    .then(function (data) {
+      var entry = Permalink.lookup(data, kind, key);
+      if (!entry) { notFound(); return; }
+      var route = Permalink.decideRoute(data.version, kind, entry, suite);
+      if (route.action === 'notFound') { notFound(); return; }
+      if (route.action === 'redirect') { location.replace(route.url); return; }
+      chooser(data.version, entry, route.suites);
+    })
+    .catch(function (e) { msg.textContent = 'Could not resolve permalink: ' + e.message; });
+})();
+</script>
+</body></html>

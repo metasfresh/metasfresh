@@ -51,6 +51,33 @@
       "windowName": "Etiketten drucken",
       "print": "Drucken",
       "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
+    },
+    "scanGRAI": {
+      "buttonCaption": "GRAI scannen",
+      "windowName": "GRAI scannen",
+      "count": "%(scanned)s / %(total)s GRAIs gescannt",
+      "countExtra": "(%(extra)s extra)",
+      "clearAll": {
+        "buttonCaption": "Alle löschen",
+        "confirmQuestion": "Alle %(count)s GRAIs entfernen?"
+      },
+      "send": {
+        "buttonCaption": "Speichern"
+      },
+      "undo": {
+        "buttonCaption": "Rückgängig"
+      }
     }
+  },
+  "newHU": {
+    "title": "Neue HU",
+    "product": "Produkt",
+    "qty": "Menge",
+    "locator": "Lagerplatz",
+    "noLocator": "Kein Lagerplatz - bitte \"Lagerplatz ändern\" tippen",
+    "changeLocator": "Lagerplatz ändern",
+    "weight": "Gewicht",
+    "ok": "OK",
+    "created": "HU %(huValue)s erstellt: %(qty)s"
   }
 }

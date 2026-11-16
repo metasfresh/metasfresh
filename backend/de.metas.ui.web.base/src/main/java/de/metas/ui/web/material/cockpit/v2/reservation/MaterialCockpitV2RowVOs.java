@@ -2,6 +2,7 @@ package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.QtyTU;
+import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;

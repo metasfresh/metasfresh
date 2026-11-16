@@ -58,9 +58,9 @@ public interface ICalendarBL extends ISingletonService
 
 	boolean isCalendarNoGaps(I_C_Calendar calendar);
 
-	Timestamp getLastDayOfYear(I_C_Year year);
+	Timestamp getLastDayOfYear(@NonNull final YearId yearId);
 
-	Timestamp getFirstDayOfYear(I_C_Year year);
+	Timestamp getFirstDayOfYear(@NonNull final YearId yearId);
 
 	/**
 	 * Make all the validation for a calendar so it can be properly used in transactions: <br>
@@ -78,6 +78,14 @@ public interface ICalendarBL extends ISingletonService
 	boolean isStandardPeriod(I_C_Period period);
 
 	IBusinessDayMatcher createBusinessDayMatcherExcluding(Set<DayOfWeek> excludeWeekendDays);
+
+	/**
+	 * @return a business-day matcher for the given org: Mon-Fri weekends excluded, composed with the non-business
+	 * days (holidays) of the org's {@code C_Calendar} (org calendar, else default calendar). When no calendar is
+	 * configured for the org it degrades to weekends-only (never throws), so callers that only need "skip weekends,
+	 * and holidays when configured" are safe regardless of calendar setup.
+	 */
+	@NonNull IBusinessDayMatcher getBusinessDayMatcher(@NonNull OrgId orgId);
 
 	/**
 	 * Get Calender from AD_OrgInfo.

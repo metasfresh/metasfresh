@@ -23,9 +23,13 @@
 package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -36,7 +40,9 @@ import lombok.Builder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,8 +52,6 @@ import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BPartnerEffectiveBLTest
 {
@@ -57,7 +61,7 @@ public class BPartnerEffectiveBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-        bpartnerEffectiveBL = BPartnerEffectiveBL.newInstanceForUnitTesting();
+		bpartnerEffectiveBL = BPartnerEffectiveBL.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -98,18 +102,18 @@ public class BPartnerEffectiveBLTest
 		assertThat(PaymentTermId.equals(bPartnerEffectiveAfterDefaultSetup.getPaymentTermId(SOTrx.PURCHASE), paymentTermId)).isTrue();
 
 		final Incoterms incoterms = bPartnerEffectiveAfterDefaultSetup.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), incotermsId)).isTrue();
-		assertEquals("TestIncoterms", incoterms.getName());
-		assertEquals("TestIncotermsValue", incoterms.getValue());
-		assertEquals("TestIncotermsDefaultLocation", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsDefaultLocation");
 
 		final Incoterms poIncoterms = bPartnerEffectiveAfterDefaultSetup.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), incotermsId)).isTrue();
-		assertEquals("TestIncoterms", poIncoterms.getName());
-		assertEquals("TestIncotermsValue", poIncoterms.getValue());
-		assertEquals("TestIncotermsDefaultLocation", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestIncoterms");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestIncotermsValue");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestIncotermsDefaultLocation");
 	}
 
 	@Test
@@ -153,18 +157,18 @@ public class BPartnerEffectiveBLTest
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE)).isFalse();
 
 		final Incoterms incoterms = bPartnerEffective.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), IncotermsId.ofRepoId(5))).isTrue();
-		assertEquals("TestIncoterms", incoterms.getName());
-		assertEquals("TestIncotermsValue", incoterms.getValue());
-		assertEquals("TestIncotermsLocation", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsLocation");
 
 		final Incoterms poIncoterms = bPartnerEffective.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), IncotermsId.ofRepoId(6))).isTrue();
-		assertEquals("TestPoIncoterms", poIncoterms.getName());
-		assertEquals("TestPoIncotermsValue", poIncoterms.getValue());
-		assertEquals("TestPoIncotermsLocation", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestPoIncoterms");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestPoIncotermsValue");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestPoIncotermsLocation");
 	}
 
 	@Test
@@ -230,18 +234,18 @@ public class BPartnerEffectiveBLTest
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE)).isFalse();
 
 		final Incoterms incoterms = bPartnerEffective.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), IncotermsId.ofRepoId(11))).isTrue();
-		assertEquals("TestIncoterms2", incoterms.getName());
-		assertEquals("TestIncotermsValue2", incoterms.getValue());
-		assertEquals("TestIncotermsLocation2", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms2");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue2");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsLocation2");
 
 		final Incoterms poIncoterms = bPartnerEffective.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), IncotermsId.ofRepoId(12))).isTrue();
-		assertEquals("TestPoIncoterms2", poIncoterms.getName());
-		assertEquals("TestPoIncotermsValue2", poIncoterms.getValue());
-		assertEquals("TestPoIncotermsLocation2", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestPoIncoterms2");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestPoIncotermsValue2");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestPoIncotermsLocation2");
 	}
 
 	@Test
@@ -330,18 +334,238 @@ public class BPartnerEffectiveBLTest
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE)).isFalse();
 
 		final Incoterms incoterms = bPartnerEffective.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), IncotermsId.ofRepoId(17))).isTrue();
-		assertEquals("TestIncoterms3", incoterms.getName());
-		assertEquals("TestIncotermsValue3", incoterms.getValue());
-		assertEquals("TestIncotermsLocation3", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms3");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue3");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsLocation3");
 
 		final Incoterms poIncoterms = bPartnerEffective.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), IncotermsId.ofRepoId(18))).isTrue();
-		assertEquals("TestPoIncoterms3", poIncoterms.getName());
-		assertEquals("TestPoIncotermsValue3", poIncoterms.getValue());
-		assertEquals("TestPoIncotermsLocation3", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestPoIncoterms3");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestPoIncotermsValue3");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestPoIncotermsLocation3");
+	}
+
+	/**
+	 * Regression guard: a BP-Group-level InvoiceRule+IsAutoInvoice default must reach
+	 * the partner's effective resolution for a sales order when the partner has no own value set.
+	 *
+	 * Scenario: C_BPartner with null InvoiceRule + null IsAutoInvoice,
+	 * assigned to a C_BP_Group that has InvoiceRule=AfterDelivery and IsAutoInvoice='Y'.
+	 */
+	@Test
+	public void getEffectiveValue_bpGroupInvoiceRuleAndIsAutoInvoice_reachesEffectiveForSales()
+	{
+		final BPartnerId bPartnerId = setup()
+				.bpGroup_InvoiceRule(InvoiceRule.AfterDelivery)
+				.bpGroup_isAutoInvoice(true)
+				.build();
+
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.SALES).isAfterDelivery())
+				.as("BP-Group InvoiceRule=AfterDelivery must reach effective sales invoice rule")
+				.isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.SALES))
+				.as("BP-Group IsAutoInvoice=Y must reach effective sales auto-invoice flag")
+				.isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE))
+				.as("group IsAutoInvoice=Y must NOT propagate to the purchase side")
+				.isFalse();
+	}
+
+	@Test
+	public void getPurchaseTransportDays_noValueOnBPartner_returns0()
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(0);
+	}
+
+	@Test
+	public void getPurchaseTransportDays_valueSetOnBPartner_returnsValue()
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		partner.setPO_TransportDays(5);
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(5);
+	}
+
+	// ------- getEffectiveBillBPartner tests -------
+
+	@Test
+	public void getEffectiveBillBPartner_partnerWideRelationWinsOverAssociationGroup()
+	{
+		final I_C_BPartner centralBillingBP = createBPartner(null);
+		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		assocGroup.setIsDeviatingBillBPartner(true);
+		assocGroup.setBill_BPartner_ID(centralBillingBP.getC_BPartner_ID());
+		saveRecord(assocGroup);
+
+		final I_C_BPartner memberBP = createBPartner(assocGroup);
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		createBillToRelation(memberBP, null, billLocX1);
+
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), billLocX1);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_associationGroupUsedWhenNoRelation()
+	{
+		final I_C_BPartner centralBillingBP = createBPartner(null);
+		final BPartnerLocationId centralLoc = createLocation(centralBillingBP);
+
+		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		assocGroup.setIsDeviatingBillBPartner(true);
+		assocGroup.setBill_BPartner_ID(centralBillingBP.getC_BPartner_ID());
+		assocGroup.setBill_Location_ID(centralLoc.getRepoId());
+		saveRecord(assocGroup);
+
+		final I_C_BPartner memberBP = createBPartner(assocGroup);
+
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), centralLoc);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_parentAssociationGroupUsedWhenMemberGroupIsNotAssociation()
+	{
+		final I_C_BPartner centralBillingBP = createBPartner(null);
+		final BPartnerLocationId centralLoc = createLocation(centralBillingBP);
+
+		// parent group is the association
+		final I_C_BP_Group parentAssocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		parentAssocGroup.setIsDeviatingBillBPartner(true);
+		parentAssocGroup.setBill_BPartner_ID(centralBillingBP.getC_BPartner_ID());
+		parentAssocGroup.setBill_Location_ID(centralLoc.getRepoId());
+		saveRecord(parentAssocGroup);
+
+		// member's direct group is NOT an association
+		final I_C_BP_Group childGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		childGroup.setIsDeviatingBillBPartner(false);
+		childGroup.setParent_BP_Group_ID(parentAssocGroup.getC_BP_Group_ID());
+		saveRecord(childGroup);
+
+		final I_C_BPartner memberBP = createBPartner(childGroup);
+
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), centralLoc);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_neitherRelationNorAssociationGroup_returnsNull()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+
+		assertThat(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID()))).isNull();
+	}
+
+	/**
+	 * Without a location, only the partner-wide relation ({@code C_BPartner_Location_ID IS NULL}) counts.
+	 */
+	@Test
+	public void getEffectiveBillBPartner_ignoresLocationBoundRelation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		createBillToRelation(memberBP, memberLocA, createLocation(createBPartner(null)));
+
+		assertThat(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID()))).isNull();
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_usesPartnerWideRelationNextToLocationBoundOne()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocZ1 = createLocation(createBPartner(null));
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, null, billLocZ1);
+
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), billLocZ1);
+	}
+
+	static I_C_BP_Group createPlainBPGroup()
+	{
+		final I_C_BP_Group plainGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		plainGroup.setIsDeviatingBillBPartner(false);
+		saveRecord(plainGroup);
+		return plainGroup;
+	}
+
+	static I_C_BPartner createBPartner(@Nullable final I_C_BP_Group bpGroup)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		if (bpGroup != null)
+		{
+			bpartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		}
+		saveRecord(bpartner);
+		return bpartner;
+	}
+
+	static BPartnerLocationId createLocation(final I_C_BPartner bpartner)
+	{
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		saveRecord(location);
+		return BPartnerLocationId.ofRepoId(bpartner.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
+	}
+
+	static void createBillToRelation(
+			final I_C_BPartner bpartner,
+			@Nullable final BPartnerLocationId bpartnerLocationId,
+			final BPartnerLocationId billLocationId)
+	{
+		final I_C_BP_Relation relation = InterfaceWrapperHelper.newInstance(I_C_BP_Relation.class);
+		relation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		relation.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+		relation.setC_BPartnerRelation_ID(billLocationId.getBpartnerId().getRepoId());
+		relation.setC_BPartnerRelation_Location_ID(billLocationId.getRepoId());
+		relation.setIsBillTo(true);
+		relation.setIsActive(true);
+		saveRecord(relation);
+	}
+
+	static void assertBillTo(@Nullable final BillBPartnerResolution resolution, final BPartnerLocationId expectedBillLocationId)
+	{
+		assertThat(resolution).isNotNull();
+		assertThat(resolution.getBillBPartnerId()).isEqualTo(expectedBillLocationId.getBpartnerId());
+		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocationId);
+	}
+
+	@Test
+	public void getEffectiveValue_deliveryAndFreight()
+	{
+		final BPartnerId bPartnerId = setup()
+				.bpartner_DeliveryRule(DeliveryRule.MANUAL)
+				.bpartner_DeliveryViaRule(DeliveryViaRule.Shipper)
+				.bpartner_poDeliveryViaRule(DeliveryViaRule.NormalPost)
+				.bpartner_FreightCostRule(FreightCostRule.Line)
+				.build();
+
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+
+		// DeliveryRule is sales-only: the getter returns null for purchase so no caller can leak the sales value
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.SALES)).isEqualTo(DeliveryRule.MANUAL);
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.PURCHASE)).isNull();
+
+		// DeliveryViaRule has an SO/PO split (DeliveryViaRule vs PO_DeliveryViaRule)
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.SALES)).isEqualTo(DeliveryViaRule.Shipper);
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.PURCHASE)).isEqualTo(DeliveryViaRule.NormalPost);
+
+		// FreightCostRule is not SOTrx-split
+		assertThat(bPartnerEffective.getFreightCostRule()).isEqualTo(FreightCostRule.Line);
 	}
 
 	@Builder(builderMethodName = "setup", builderClassName = "$SetupBuilder")
@@ -357,6 +581,10 @@ public class BPartnerEffectiveBLTest
 			@Nullable final Boolean bpartner_isAutoInvoice,
 			@Nullable final Incoterms bpartner_incoterms,
 			@Nullable final Incoterms bpartner_poIncoterms,
+			@Nullable final DeliveryRule bpartner_DeliveryRule,
+			@Nullable final DeliveryViaRule bpartner_DeliveryViaRule,
+			@Nullable final DeliveryViaRule bpartner_poDeliveryViaRule,
+			@Nullable final FreightCostRule bpartner_FreightCostRule,
 			@Nullable final PricingSystemId bpGroup_PricingSystemId,
 			@Nullable final PricingSystemId bpGroup_poPricingSystemId,
 			@Nullable final PaymentTermId bpGroup_PaymentTermId,
@@ -395,7 +623,6 @@ public class BPartnerEffectiveBLTest
 		saveRecord(bpGroupParent);
 
 		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		bpGroup.setC_BP_Group_ID(3);
 		bpGroup.setParent_BP_Group_ID(bpGroupParent.getC_BP_Group_ID());
 		bpGroup.setM_PricingSystem_ID(PricingSystemId.toRepoId(bpGroup_PricingSystemId));
 		bpGroup.setPO_PricingSystem_ID(PricingSystemId.toRepoId(bpGroup_poPricingSystemId));
@@ -426,6 +653,10 @@ public class BPartnerEffectiveBLTest
 		partner.setIncotermLocation(extractIncotermsLocation(bpartner_incoterms));
 		partner.setC_Incoterms_Vendor_ID(createIncoterms(bpartner_poIncoterms));
 		partner.setPO_IncotermLocation(extractIncotermsLocation(bpartner_poIncoterms));
+		partner.setDeliveryRule(DeliveryRule.toCodeOrNull(bpartner_DeliveryRule));
+		partner.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_DeliveryViaRule));
+		partner.setPO_DeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_poDeliveryViaRule));
+		partner.setFreightCostRule(FreightCostRule.toCodeOrNull(bpartner_FreightCostRule));
 		saveRecord(partner);
 
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());
@@ -444,6 +675,50 @@ public class BPartnerEffectiveBLTest
 		saveRecord(incotermsRecord);
 
 		return incotermsRecord.getC_Incoterms_ID();
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSet_returnsValue()
+	{
+		final BPartnerId vendorId = createVendor(5);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(5);
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnNotSet_returnsEmpty()
+	{
+		final BPartnerId vendorId = createVendor(null);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).isEmpty();
+	}
+
+	/**
+	 * Guards the zero-boundary at the BL layer: an explicit {@code PO_TransportDays = 0} on
+	 * the vendor must surface as {@code Optional.of(0)}, not collapse to {@code Optional.empty()}.
+	 * If the DAO's {@code InterfaceWrapperHelper.isNull} check regresses (e.g. POJOWrapper starts
+	 * treating int-zero as null), the candidate handler's three-tier chain would silently
+	 * fall through to {@code PP_Product_Planning.DeliveryTime_Promised} instead of using the
+	 * explicitly-configured 0 — a behavioural regression.
+	 */
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSetToZero_returnsZero()
+	{
+		final BPartnerId vendorId = createVendor(0);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(0);
+	}
+
+	private BPartnerId createVendor(final Integer poTransportDays)
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		vendor.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		if (poTransportDays != null)
+		{
+			vendor.setPO_TransportDays(poTransportDays);
+		}
+		saveRecord(vendor);
+		return BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
 	}
 
 	@Nullable

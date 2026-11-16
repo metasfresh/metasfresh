@@ -13,6 +13,7 @@ import org.compiere.model.X_MobileUI_UserProfile_DD_Sort;
 public enum DistributionJobSortingField implements ReferenceListAwareEnum
 {
 	Priority(X_MobileUI_UserProfile_DD_Sort.FIELDNAME_Priority, DDOrderQuery.OrderByField.PriorityRule),
+	LocatorPriority(X_MobileUI_UserProfile_DD_Sort.FIELDNAME_LocatorPriority, DDOrderQuery.OrderByField.LocatorPriority),
 	DatePromised(X_MobileUI_UserProfile_DD_Sort.FIELDNAME_DatePromised, DDOrderQuery.OrderByField.DatePromised),
 	SeqNo(X_MobileUI_UserProfile_DD_Sort.FIELDNAME_SeqNo, DDOrderQuery.OrderByField.SeqNo),
 	;
@@ -22,7 +23,7 @@ public enum DistributionJobSortingField implements ReferenceListAwareEnum
 	@NonNull private final String code;
 	@NonNull private final DDOrderQuery.OrderByField ddOrderQueryOrderByField;
 
-	public static DistributionJobSortingField ofCode(final String code) {return index.ofCode(code);}
+	public static DistributionJobSortingField ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	public static DistributionJobSortingField ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 }

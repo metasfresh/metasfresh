@@ -144,6 +144,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
+	@Nullable
 	public final I_C_Doc_Outbound_Log retrieveLog(@NonNull final ArchiveId archiveId)
 	{
 		final I_AD_Archive archiveRecord = archiveDAO.retrieveArchive(archiveId);

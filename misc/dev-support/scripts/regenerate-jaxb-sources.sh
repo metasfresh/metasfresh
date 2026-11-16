@@ -24,6 +24,8 @@ MODULES=(
     "backend/de.metas.banking/de.metas.banking.camt53"
     "backend/de.metas.payment.esr"
     "backend/de.metas.payment.sepa/schema-pain_001_01_03_ch_02"
+    "backend/de.metas.payment.sepa/schema-pain_001_001_09_ch_03"
+    "backend/de.metas.payment.sepa/schema-pain_008_001_08"
     "backend/de.metas.payment.sepa/schema-pain_008_003_02"
     "backend/de.metas.printing.common/de.metas.printing.esb.base"
     "backend/de.metas.shipper.gateway.dpd"
@@ -34,6 +36,7 @@ MODULES=(
     "backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response"
     "backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_450_request"
     "backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_450_response"
+    "backend/de.metas.einvoice.base"
     "misc/services/camel/de-metas-camel-edi"
 )
 

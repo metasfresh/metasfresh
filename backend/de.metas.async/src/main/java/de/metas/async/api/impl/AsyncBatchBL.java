@@ -121,8 +121,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return;
 		}
 
-		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
-		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatch).orElse(null);
+		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchId).orElse(null);
 		if (asyncBatchType != null && X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
@@ -152,6 +151,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		try
 		{
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+			if (asyncBatch == null)
+			{
+				// record no longer exists out-of-trx -> nothing to increment
+				return;
+			}
 			final Timestamp processed = SystemTime.asTimestamp();
 			asyncBatch.setLastProcessed(processed);
 			asyncBatch.setLastProcessed_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
@@ -168,6 +172,13 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public void enqueueAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
+		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchId).orElse(null);
+		if (asyncBatchType != null && !asyncBatchType.isCheckProcessedNeeded())
+		{
+			// the batch's type has no consumer of the Processed flag (no IsCheckProcessed and no boilerplate) -> skip enqueuing the CheckProcessed WP
+			return;
+		}
+
 		final Properties ctx = Env.getCtx();
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
 
@@ -193,6 +204,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public boolean updateProcessedOutOfTrx(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+		if (asyncBatchRecord == null)
+		{
+			// record no longer exists out-of-trx -> nothing left to wait for; treat as processed so the
+			// CheckProcessed work-package completes instead of re-checking a vanished batch forever.
+			return true;
+		}
 		if (asyncBatchRecord.isProcessed())
 		{
 			return true;
@@ -278,6 +295,10 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public boolean keepAliveTimeExpired(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+		if (asyncBatchRecord == null)
+		{
+			return false;
+		}
 
 		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchRecord).orElse(null);
 		if (asyncBatchType == null)
@@ -453,6 +474,17 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
+	public Optional<AsyncBatchType> getAsyncBatchType(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+		if (asyncBatch == null)
+		{
+			return Optional.empty();
+		}
+		return getAsyncBatchType(asyncBatch);
+	}
+
+	@Override
 	public AsyncBatchType getAsyncBatchTypeById(@NonNull final AsyncBatchTypeId asyncBatchTypeId)
 	{
 		return asyncBatchTypesById.getOrLoad(asyncBatchTypeId, this::retrieveAsyncBatchTypeById);
@@ -468,6 +500,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				.keepAlive(extractKeepAlive(record))
 				.skipTimeout(extractSkipTimeout(record))
 				.adBoilderPlateId(record.getAD_BoilerPlate_ID())
+				.checkProcessed(record.isCheckProcessed())
 				.build();
 	}
 
@@ -542,6 +575,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		try
 		{
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+			if (asyncBatch == null)
+			{
+				// record no longer exists out-of-trx -> nothing to count
+				return 0;
+			}
+
 			final Timestamp enqueued = SystemTime.asTimestamp();
 			if (asyncBatch.getFirstEnqueued() == null)
 			{

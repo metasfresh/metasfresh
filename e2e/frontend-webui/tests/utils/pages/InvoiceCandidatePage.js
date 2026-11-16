@@ -469,6 +469,25 @@ export class InvoiceCandidatePage {
     return await test.step('InvoiceCandidatePage - Create invoice for sales order', async () => {
       const page = getPage();
 
+      // Step 0: Select ALL rows on the (already filtered-by-order) IC list.
+      // C_Invoice_Candidate_EnqueueSelectionForInvoicing processes only the selected ICs;
+      // compensation-group ICs (IsAllowSeparateInvoicing='N') refuse to invoice if any sibling
+      // IC of the same C_Order_CompensationGroup_ID is missing from the selection
+      // ("Cannot invoice incomplete compensation groups"). Pattern mirrors the
+      // ShipmentSchedulePage fix — click the `Alt+A` title-anchored Select-all button,
+      // with an Alt+A keyboard fallback. Safe in the single-IC case (1-of-1).
+      try {
+        const selectAllBtn = page.locator('[title="Alt+A"]').first();
+        if (await selectAllBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await selectAllBtn.click();
+        } else {
+          await page.keyboard.press('Alt+a');
+        }
+        await page.waitForTimeout(300);
+      } catch (e) {
+        // Best-effort; if Select-all fails the action's default behaviour applies.
+      }
+
       // Step 1: Open the quick actions dropdown
       const dropdownToggle = page.getByTestId('quick-action-dropdown-toggle');
       await dropdownToggle.waitFor({

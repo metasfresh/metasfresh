@@ -116,6 +116,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.einvoice</groupId>
+			<artifactId>de.metas.einvoice.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.externalreference</groupId>
 			<artifactId>de.metas.externalreference</artifactId>
 			<version>${metasfresh.version}</version>
@@ -183,6 +189,18 @@
 		<dependency>
 			<groupId>de.metas.vertical.creditscore</groupId>
 			<artifactId>metasfresh-creditscore-creditpass</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vatid</groupId>
+			<artifactId>metasfresh-vatid-base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vatid</groupId>
+			<artifactId>metasfresh-vatid-vies</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -358,6 +376,12 @@
 		<dependency>
 			<groupId>de.metas.servicerepair</groupId>
 			<artifactId>de.metas.servicerepair.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.deliveryplanning</groupId>
+			<artifactId>de.metas.deliveryplanning.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

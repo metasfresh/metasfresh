@@ -53,6 +53,30 @@ public class M_Locator_StepDef
 	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final TestContext restTestContext;
 
+	/**
+	 * Loads existing {@code M_Locator} records by warehouse + Value and stores them in the StepDefData table
+	 * so they can be referenced by later steps.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code Value} — the locator's unique value within the warehouse; used as the lookup key.</li>
+	 *   <li>{@code M_Warehouse_ID} — identifier of a previously created warehouse.</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code Identifier} — name under which to store the record in StepDefData for later reference.</li>
+	 *   <li>{@code REST.Context.QRCode} — variable name under which to store the locator's QR-code JSON string
+	 *       in the REST test context (used by REST API scenarios that pass QR codes in request headers).</li>
+	 * </ul>
+	 *
+	 * <p>Gherkin usage:
+	 * <pre>
+	 * And load M_Locator:
+	 *   | Value    | M_Warehouse_ID | Identifier  |
+	 *   | Standard | stockWH        | stockLocator |
+	 * </pre>
+	 */
 	@And("load M_Locator:")
 	public void loadLocators(@NonNull final DataTable dataTable)
 	{
@@ -84,6 +108,27 @@ public class M_Locator_StepDef
 				});
 	}
 
+	/**
+	 * Creates (or updates) {@code M_Locator} records. Existing locators are matched by
+	 * ({@code M_Warehouse_ID}, {@code Value}); a new one is created when none matches.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Warehouse_ID</b> — (required, identifier-ref) the warehouse the locator belongs to<br>
+	 *   <b>Value</b> — (optional) locator Value; auto-suggested when omitted<br>
+	 *   <b>IsDefault</b> — (optional, Y/N) defaults to {@code Y} on create<br>
+	 *   <b>IsGroundLocator</b> — (optional, Y/N) marks the locator as a ground-floor picking locator (sourced by {@code DDOrderPickingReplenishmentService} and the mobile "Lagerort leer" resolver); defaults to {@code N} on create<br>
+	 *   <b>PriorityNo</b> — (optional) order key for ground locators, ascending; defaults to {@code 50} on create<br>
+	 *   <b>X</b> / <b>X1</b> / <b>Y</b> / <b>Z</b> — (optional) warehouse coordinates; each defaults to {@code "0"} on create<br>
+	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData, M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_Locator:
+	 *   | Identifier | M_Warehouse_ID | Value | IsGroundLocator | PriorityNo |
+	 *   | locatorA   | stockWH        | loc-A | Y               | 10         |
+	 *   | locatorB   | stockWH        | loc-B | Y               | 20         |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator_Simple(@NonNull final DataTable dataTable)
 	{
@@ -111,6 +156,12 @@ public class M_Locator_StepDef
 						locatorRecord.setIsDefault(isDefault.orElse(true));
 					}
 
+					final OptionalBoolean isGroundLocator = row.getAsOptionalBoolean(I_M_Locator.COLUMNNAME_IsGroundLocator);
+					if (isNew || isGroundLocator.isPresent())
+					{
+						locatorRecord.setIsGroundLocator(isGroundLocator.orElse(false));
+					}
+
 					final Optional<Integer> priorityNo = row.getAsOptionalInt(I_M_Locator.COLUMNNAME_PriorityNo);
 					if (isNew || priorityNo.isPresent())
 					{
@@ -122,7 +173,12 @@ public class M_Locator_StepDef
 					{
 						locatorRecord.setX(x.orElse("0"));
 					}
-					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
+					final Optional<String> x1 = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X1);
+					if (isNew || x1.isPresent())
+					{
+						locatorRecord.setX1(x1.orElse("0"));
+					}
+					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_Y);
 					if (isNew || y.isPresent())
 					{
 						locatorRecord.setY(y.orElse("0"));

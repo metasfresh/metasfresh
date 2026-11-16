@@ -21,7 +21,9 @@ test.describe('Email & Letter Dialogs', () => {
   test('Email and Letter dialogs on Sales Order', async ({ page }) => {
     allure.epic('E0193: User Interface');
     allure.tag('F14010: Navigation');
+    allure.tag('F14010');
     allure.tag('F14100: Email & Letter');
+    allure.tag('F14100');
     allure.story('Email and Letter Composition');
     allure.severity('normal');
 
@@ -262,5 +264,159 @@ Tests the email and letter composition panels:
     allure.attachment('Final State', screenshotBuffer, 'image/png');
 
     console.log('Email & Letter dialog test completed');
+  });
+
+  test('Email template picker opens on the first click', async ({ page }) => {
+    allure.epic('E0193: User Interface');
+    allure.tag('F00580: Outbound Emails');
+    allure.tag('F00580');
+    allure.story('Email template picker');
+    allure.severity('normal');
+
+    allure.description(`
+## Email template picker — first-click open
+
+Reproduces and guards the defect where the email-template dropdown in the Email
+dialog opened only after the third click.
+
+1. Open the Email dialog on a Sales Order.
+2. Single-click the template picker.
+3. Assert the template list is visible after ONE click (RED before fix, GREEN after).
+4. Re-open and assert the applied template is highlighted.
+    `);
+
+    test.setTimeout(180000); // 3 minutes
+
+    // === CREATE TEST DATA ===
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: {
+          user: { language: 'en_US', firstname: 'first', lastname: 'last' },
+        },
+        // Seed a tenant mailbox so the Email dialog can open (createEmail asserts a
+        // resolvable mailbox via MailService.findMailbox). Get-or-create, so it never
+        // accumulates duplicates in the shared e2e DB.
+        mailboxes: {
+          MB1: {},
+        },
+        bpartners: {
+          CUSTOMER1: {
+            isVendor: false,
+            isCustomer: true,
+            isSoPriceList: true,
+            name: 'Customer',
+          },
+        },
+        products: {
+          Product1: {
+            name: 'PROD',
+            type: 'Item',
+            prices: [{ price: 15.0, currencyCode: 'EUR' }],
+          },
+        },
+      },
+    });
+
+    // === LOGIN ===
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    // === CREATE SALES ORDER WITH CUSTOMER ===
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+    await page.waitForTimeout(2000);
+
+    // === OPEN EMAIL DIALOG (Alt+K, SubHeader fallback) ===
+    await test.step('Open Email dialog', async () => {
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Alt+K');
+      await page.waitForTimeout(1500);
+
+      let emailVisible = await page
+        .locator('.panel-email')
+        .first()
+        .waitFor({ state: 'visible', timeout: 5000 })
+        .then(() => true)
+        .catch(() => false);
+
+      if (!emailVisible) {
+        // Fallback: open via SubHeader mail icon
+        await page.keyboard.press('Alt+1');
+        await page.waitForTimeout(500);
+        const emailIcon = page.locator('.subheader-container .meta-icon-mail').first();
+        if (await emailIcon.isVisible().catch(() => false)) {
+          await emailIcon.click();
+          await page.waitForTimeout(1500);
+          emailVisible = await page
+            .locator('.panel-email')
+            .first()
+            .waitFor({ state: 'visible', timeout: 5000 })
+            .then(() => true)
+            .catch(() => false);
+        }
+      }
+      // The seeded tenant mailbox (masterdata `mailboxes`) makes createEmail resolve a
+      // mailbox via MailService.findMailbox, so the Email dialog opens.
+      expect(emailVisible, 'Email dialog must open (tenant mailbox is seeded)').toBe(true);
+    });
+
+    // === PRECONDITION: template picker rendered (>=1 template available) ===
+    // The picker only renders when GET /mail/templates returns >=1 AD_BoilerPlate.
+    // The standard preloaded DB ships a readable boilerplate for the WEBUI role,
+    // so the picker is present.
+    const picker = page.locator('.email-templates .input-dropdown-container').first();
+    await picker.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // === AC1: single click opens the dropdown list ===
+    await test.step('Single click opens the template dropdown', async () => {
+      const dropdownList = page.locator('.input-dropdown-list');
+      // sanity: closed before the click
+      expect(await dropdownList.isVisible().catch(() => false)).toBe(false);
+
+      await picker.click(); // exactly ONE click
+
+      // RED before fix: the list does not open on the first click (needed 3 clicks).
+      // GREEN after fix: the list is visible after a single click.
+      await expect(dropdownList).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      // Stability re-check: the reported defect is a *transient* open (flash-then-
+      // ghost-close). A single retrying toBeVisible() can false-green on a millisecond
+      // flash, so re-assert after a settle delay that the dropdown STAYS open.
+      await page.waitForTimeout(600);
+      await expect(dropdownList).toBeVisible();
+      await expect(
+        page.locator('.input-dropdown-list .input-dropdown-list-option').first()
+      ).toBeVisible();
+
+      const screenshot = await page.screenshot();
+      allure.attachment('Template dropdown after single click', screenshot, 'image/png');
+    });
+
+    // === AC2: applied template is highlighted on re-open (where feasible) ===
+    await test.step('Applied template is highlighted on re-open', async () => {
+      const firstOption = page
+        .locator('.input-dropdown-list .input-dropdown-list-option')
+        .first();
+      await firstOption.click();
+      await page.waitForTimeout(1000);
+
+      // re-open on the first click
+      await picker.click();
+      const dropdownList = page.locator('.input-dropdown-list');
+      await expect(dropdownList).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      // stays open on re-open too (AC3)
+      await page.waitForTimeout(600);
+      await expect(dropdownList).toBeVisible();
+
+      // the applied template carries the selected marker class
+      await expect(
+        page.locator('.input-dropdown-list .input-dropdown-list-option-key-on')
+      ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    });
+
+    console.log('Email template picker first-click test completed');
   });
 });

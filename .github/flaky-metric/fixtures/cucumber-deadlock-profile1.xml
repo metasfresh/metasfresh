@@ -1,0 +1,1296 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuite name="Cucumber" time="793.231" tests="30" skipped="0" failures="1" errors="0" timestamp="2026-05-26T17:12:26.806Z">
+<testcase classname="Manual delivery / order stop on C_BPartner" name="TC-1 — Setting IsDeliveryStop=Y on a customer blocks sales-order completion; clearing it lets the order complete" time="35.217">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2026-05-19T13:30:13+02:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+Given metasfresh contains C_BPartners:......................................passed
+And the following c_bpartner is changed.....................................passed
+Then validate M_Shipment_Constraint:........................................passed
+Given metasfresh contains C_Orders:.........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+Then the order identified by order_so cannot be completed...................passed
+When the following c_bpartner is changed....................................passed
+Then there is no active manual M_Shipment_Constraint:.......................passed
+And the order identified by order_so is completed...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Manual delivery / order stop on C_BPartner" name="TC-2 — Shipment schedules for a blocked partner carry IsDeliveryStop=Y" time="3.468">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2026-05-19T13:30:13+02:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+Given metasfresh contains C_BPartners:......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by order_so is completed..........................passed
+Then after not more than 60s, M_ShipmentSchedules are found:................passed
+When the following c_bpartner is changed....................................passed
+And recompute shipment schedules............................................passed
+And after not more than 60s, shipment schedule is recomputed................passed
+Then after not more than 60s, validate shipment schedules:..................passed
+When the following c_bpartner is changed....................................passed
+And recompute shipment schedules............................................passed
+And after not more than 60s, shipment schedule is recomputed................passed
+Then after not more than 60s, validate shipment schedules:..................passed
+]]></system-out>
+</testcase>
+<testcase classname="Manual delivery / order stop on C_BPartner" name="TC-3 — Setting IsDeliveryStop=Y on a vendor blocks purchase-order completion; clearing it lets the PO complete" time="0.593">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2026-05-19T13:30:13+02:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+Given metasfresh contains C_BPartners:......................................passed
+And the following c_bpartner is changed.....................................passed
+Then validate M_Shipment_Constraint:........................................passed
+Given metasfresh contains C_Orders:.........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+Then the order identified by order_po cannot be completed...................passed
+When the following c_bpartner is changed....................................passed
+Then there is no active manual M_Shipment_Constraint:.......................passed
+And the order identified by order_po is completed...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Manual delivery / order stop on C_BPartner" name="TC-4 — Receipt schedules for a blocked vendor carry IsDeliveryStop=Y (gating both HU and non-HU receipt generation)" time="1.986">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2026-05-19T13:30:13+02:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+Given metasfresh contains C_BPartners:......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by order_po is completed..........................passed
+Then after not more than 30s, M_ReceiptSchedule are found:..................passed
+When the following c_bpartner is changed....................................passed
+Then after not more than 30s, M_ReceiptSchedule are found:..................passed
+When the following c_bpartner is changed....................................passed
+Then after not more than 30s, M_ReceiptSchedule are found:..................passed
+]]></system-out>
+</testcase>
+<testcase classname="Manual delivery / order stop on C_BPartner" name="TC-6 — A dunning-sourced constraint keeps the partner blocked after the manual constraint is cleared" time="0.512">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2026-05-19T13:30:13+02:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+Given metasfresh contains C_BPartners:......................................passed
+And the following c_bpartner is changed.....................................passed
+And metasfresh contains M_Shipment_Constraint sourced from dunning:.........passed
+Then validate M_Shipment_Constraint:........................................passed
+When the following c_bpartner is changed....................................passed
+Then there is no active manual M_Shipment_Constraint:.......................passed
+And validate M_Shipment_Constraint:.........................................passed
+Given metasfresh contains C_Orders:.........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+Then the order identified by order_so cannot be completed...................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Order 10 TU, receive with no packing item, receipt automatically completed" time="8.41">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains M_HU_PI:...........................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And validate the material receipt lines do not exist........................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate C_Invoice_Candidates does not exist............................passed
+And validate M_In_Out status................................................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Reactivate receipt similar with case 140" time="128.417">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains M_HU_PI:...........................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And validate the material receipt lines do not exist........................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate C_Invoice_Candidates does not exist............................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is reactivated...passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Complete receipt similar with case 200" time="14.125">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+Then metasfresh contains M_HU_PI:...........................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+Then validate the created order lines.......................................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And validate the material receipt lines do not exist........................passed
+And wait until all rabbitMQ queues are empty or throw exception after 5 minutes.passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate C_Invoice_Candidates does not exist............................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is reactivated...passed
+And wait until all rabbitMQ queues are empty or throw exception after 5 minutes.passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+When the material receipt identified by material_receipt_1 is completed.....passed
+And wait until all rabbitMQ queues are empty or throw exception after 5 minutes.passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Complete receipt similar with case 210" time="129.941">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains M_HU_PI:...........................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And validate the material receipt lines do not exist........................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate C_Invoice_Candidates does not exist............................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is reactivated...passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+When the material receipt identified by material_receipt_1 is completed.....passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Close receipt similar with case 280" time="6.91">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains M_HU_PI:...........................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And validate the material receipt lines do not exist........................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate C_Invoice_Candidates does not exist............................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is closed........passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Revert receipt similar with case 140" time="8.558">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains M_HU_PI:...........................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And validate the material receipt lines do not exist........................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate C_Invoice_Candidates does not exist............................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is reversed......passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Void receipt similar with case 140" time="127.555">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains M_HU_PI:...........................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And validate the material receipt lines do not exist........................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate C_Invoice_Candidates does not exist............................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is reactivated...passed
+And the material receipt identified by material_receipt_1 is voided.........passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Void receipt similar with case 150" time="4.161">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains C_Orders:..........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+Then validate the created order lines.......................................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is reactivated...passed
+And the material receipt identified by material_receipt_1 is voided.........passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Packing material invoice candidates: receipts" name="Void receipt similar with case 160" time="252.575">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE.passed
+And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned.passed
+And load M_Warehouse:.......................................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains M_HU_PI:............................................passed
+And metasfresh contains M_HU_PI_Version:....................................passed
+And metasfresh contains M_HU_PackingMaterial:...............................passed
+And metasfresh contains M_HU_PI_Item:.......................................passed
+And metasfresh contains M_HU_PI_Item_Product:...............................passed
+When metasfresh contains C_Orders:..........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+Then validate the created order lines.......................................passed
+And after not more than 60s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule:...................passed
+Then validate M_HU_LUTU_Configuration:......................................passed
+And receive HUs with M_HU_LUTU_Configuration:...............................passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate M_In_Out status................................................passed
+When the material receipt identified by material_receipt_1 is reactivated...passed
+And the material receipt identified by material_receipt_1 is voided.........passed
+Then validate M_In_Out status...............................................passed
+And after not more than 120s, C_Invoice_Candidate are found:................passed
+And validate created C_InvoiceCandidate_InOutLine...........................passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — LC payment completes AFTER financial invoice arrived (retro-allocation)" name="LC payment completes after financial invoice — retro-allocation kicks in FIFO" time="6.43">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And after not more than 60s, C_Invoice_Candidate are found:.................passed
+When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed.passed
+And after not more than 60s, C_Invoice are found:...........................passed
+And validate created invoices...............................................passed
+And update C_Invoice:.......................................................passed
+Then there are no allocation lines for invoice..............................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+Then validate C_AllocationLines for invoice inv1............................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+Then validate payments......................................................passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — mismarked Partial-as-Final cap (AC #12)" name="INV2 mismarked Partial: MIN cap clamps allocation at remaining_prepay (AC #12)" time="10.897">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And after not more than 60s, C_Invoice_Candidate are found:.................passed
+When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed.passed
+And after not more than 60s, C_Invoice are found:...........................passed
+And validate created invoices...............................................passed
+And update C_Invoice:.......................................................passed
+Then validate C_AllocationLines for invoice inv1............................passed
+Then validate payments......................................................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And after not more than 60s, C_Invoice_Candidate are found:.................passed
+When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed.passed
+And load C_Invoice:.........................................................passed
+And validate created invoices...............................................passed
+And update C_Invoice:.......................................................passed
+Then validate C_AllocationLines for invoice inv2............................passed
+Then validate payments......................................................passed
+Then validate created invoices..............................................passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — mixed-tax order (per-order-line tax, AC #21)" name="Mixed-tax order: R1.BaseAmt uses productA's 20% rate, not the order-average rate (AC #21)" time="2.763">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains C_TaxCategory.......................................passed
+And metasfresh contains C_Tax...............................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+Then the order identified by lcOrder has following pay schedules............passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv1 is completed.............................passed
+Then validate C_AllocationLines for invoice inv1............................passed
+Then validate payments......................................................passed
+Then the order identified by lcOrder has following pay schedules............passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+Then the order identified by lcOrder has following pay schedules............passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv2 is completed.............................passed
+Then validate C_AllocationLines for invoice inv2............................passed
+Then validate payments......................................................passed
+Then validate created invoices..............................................passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — non-proforma order regression (split-payment dormant)" name="No proforma allocation → split-payment dormant; delivery schedule unchanged by receipt + invoice" time="10.081">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+And after not more than 60s, C_Invoice_Candidate are found:.................passed
+When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed.passed
+And after not more than 60s, C_Invoice are found:...........................passed
+And validate created invoices...............................................passed
+Then there are no allocation lines for invoice..............................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — non-proforma order regression (split-payment dormant)" name="Non-proforma payment with IsAutoAllocateAvailableAmt='Y' triggers standard greedy allocation (AC #23 regression guard)" time="0.543">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by ac23_order is completed.........................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by ac23_inv is completed.........................passed
+And metasfresh contains C_Payment...........................................passed
+And the payment identified by ac23_pmt is completed.........................passed
+And allocate payments to invoices...........................................passed
+Then validate C_AllocationLines for invoice ac23_inv........................passed
+And validate created invoices...............................................passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — pure under-delivery (Final invoice consumes remaining prepay)" name="Pure under-delivery: Final invoice consumes remaining prepay (AC #10)" time="11.485">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And after not more than 60s, C_Invoice_Candidate are found:.................passed
+When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed.passed
+And after not more than 60s, C_Invoice are found:...........................passed
+And validate created invoices...............................................passed
+And update C_Invoice:.......................................................passed
+Then validate C_AllocationLines for invoice inv1............................passed
+Then validate payments......................................................passed
+Then validate created invoices..............................................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And after not more than 60s, C_Invoice_Candidate are found:.................passed
+When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed.passed
+And load C_Invoice:.........................................................passed
+And validate created invoices...............................................passed
+And update C_Invoice:.......................................................passed
+Then validate C_AllocationLines for invoice inv2............................passed
+Then validate payments......................................................passed
+Then validate created invoices..............................................passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — reversal cascade (AC #16/#17/#18/#25)" name="Reverse INV1 (Partial): alloc auto-reverses; R1 sub-row Status → Pending (AC #16)" time="3.346">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv1 is completed.............................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv2 is completed.............................passed
+Then validate payments......................................................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+And validate C_AllocationLines for invoice inv2.............................passed
+And validate created invoices...............................................passed
+And the invoice identified by inv1 is reversed..............................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+Then validate created invoices..............................................passed
+Then validate payments......................................................passed
+Then the order identified by lcOrder has following pay schedules............passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — reversal cascade (AC #16/#17/#18/#25)" name="Reverse R1 after first reversing INV1 (recommended sequence): R1 sub-row dropped (AC #17)" time="3.47">
+<failure type="org.adempiere.exceptions.DBDeadLockDetectedException" message="Own Backend/Process ID =&lt;caught org.postgresql.util.PSQLException: ERROR: current transaction is aborted, commands ignored until end of transaction block with message ERROR: current transaction is aborted, commands ignored until end of transaction block when trying to get backend PID>; ExceptionMessage: ERROR: deadlock detected&#xa;  Detail: Process 1263 waits for ShareLock on transaction 48745; blocked by process 86.&#xa;Process 86 waits for ShareLock on transaction 48748; blocked by process 1263.&#xa;  Hinweis: See server log for query details.&#xa;  Wobei: while updating tuple (2,47) in relation &quot;m_cost&quot;">
+<![CDATA[org.adempiere.exceptions.DBDeadLockDetectedException: Own Backend/Process ID =<caught org.postgresql.util.PSQLException: ERROR: current transaction is aborted, commands ignored until end of transaction block with message ERROR: current transaction is aborted, commands ignored until end of transaction block when trying to get backend PID>; ExceptionMessage: ERROR: deadlock detected
+  Detail: Process 1263 waits for ShareLock on transaction 48745; blocked by process 86.
+Process 86 waits for ShareLock on transaction 48748; blocked by process 1263.
+  Hinweis: See server log for query details.
+  Wobei: while updating tuple (2,47) in relation "m_cost"
+	at org.compiere.util.DB.executeUpdate(DB.java:858)
+	at org.compiere.util.DB.executeUpdateAndThrowExceptionOnFail(DB.java:962)
+	at org.compiere.model.PO.saveUpdate(PO.java:3088)
+	at org.compiere.model.PO.save0(PO.java:2670)
+	at org.compiere.model.PO.access$100(PO.java:146)
+	at org.compiere.model.PO$1.run(PO.java:2549)
+	at org.adempiere.ad.trx.api.impl.TrxCallableWrappers$3.call(TrxCallableWrappers.java:147)
+	at org.adempiere.ad.trx.api.impl.TrxCallableWrappers$3.call(TrxCallableWrappers.java:137)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call0(AbstractTrxManager.java:753)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call(AbstractTrxManager.java:666)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call(AbstractTrxManager.java:567)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call(AbstractTrxManager.java:498)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.run(AbstractTrxManager.java:484)
+	at org.compiere.model.PO.saveEx0(PO.java:2543)
+	at org.compiere.model.PO.saveEx(PO.java:2521)
+	at org.adempiere.model.POWrapper.save(POWrapper.java:793)
+	at org.adempiere.model.InterfaceWrapperHelper.save(InterfaceWrapperHelper.java:599)
+	at de.metas.costing.impl.CurrentCostsRepository.save(CurrentCostsRepository.java:300)
+	at de.metas.costing.methods.CostingMethodHandlerUtils.saveCurrentCost(CostingMethodHandlerUtils.java:208)
+	at de.metas.costing.methods.StandardCostingMethodHandler.voidCosts(StandardCostingMethodHandler.java:115)
+	at de.metas.costing.impl.CostingService.lambda$voidAndDelete$2(CostingService.java:202)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at de.metas.costing.impl.CostingService.voidAndDelete(CostingService.java:202)
+	at de.metas.costing.impl.CostingService.lambda$voidAndDeleteForDocument$1(CostingService.java:189)
+	at com.google.common.collect.ImmutableList.forEach(ImmutableList.java:406)
+	at de.metas.costing.impl.CostingService.voidAndDeleteForDocument(CostingService.java:189)
+	at de.metas.acct.interceptor.AcctMatchInvListener.unpostInvoiceIfNeeded(AcctMatchInvListener.java:97)
+	at de.metas.acct.interceptor.AcctMatchInvListener.onAfterDeleted(AcctMatchInvListener.java:54)
+	at de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry.lambda$fireAfterDeleted$1(MatchInvListenersRegistry.java:39)
+	at com.google.common.collect.ImmutableList.forEach(ImmutableList.java:406)
+	at de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry.fireAfterDeleted(MatchInvListenersRegistry.java:39)
+	at de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry$$FastClassBySpringCGLIB$$1ef946ad.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:688)
+	at de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry$$EnhancerBySpringCGLIB$$cc729dd8.fireAfterDeleted(<generated>)
+	at de.metas.invoice.matchinv.service.MatchInvoiceService.deleteByInOutId(MatchInvoiceService.java:131)
+	at de.metas.inout.model.validator.M_InOut.deleteMatchInvs(M_InOut.java:84)
+	at de.metas.inout.model.validator.M_InOut.forbidVoidingWhenInvoiceExists(M_InOut.java:165)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.adempiere.ad.modelvalidator.AnnotatedModelInterceptor.executeNow0(AnnotatedModelInterceptor.java:315)
+	at org.adempiere.ad.modelvalidator.AnnotatedModelInterceptor.executeNow(AnnotatedModelInterceptor.java:270)
+	at org.adempiere.ad.modelvalidator.AnnotatedModelInterceptor.execute(AnnotatedModelInterceptor.java:228)
+	at org.adempiere.ad.modelvalidator.AnnotatedModelInterceptor.execute(AnnotatedModelInterceptor.java:171)
+	at org.adempiere.ad.modelvalidator.AnnotatedModelInterceptor.onDocValidate(AnnotatedModelInterceptor.java:156)
+	at org.adempiere.ad.modelvalidator.ModelInterceptor2ModelValidatorWrapper.docValidate(ModelInterceptor2ModelValidatorWrapper.java:108)
+	at org.compiere.model.ModelValidationEngine.invokeDocValidateMethod(ModelValidationEngine.java:1229)
+	at org.compiere.model.ModelValidationEngine.fireDocValidate(ModelValidationEngine.java:1211)
+	at org.compiere.model.ModelValidationEngine.fireDocValidate0(ModelValidationEngine.java:1184)
+	at org.compiere.model.ModelValidationEngine.lambda$fireDocValidate0$5(ModelValidationEngine.java:1168)
+	at org.compiere.model.ModelValidationEngine.lambda$executeInTrx$3(ModelValidationEngine.java:825)
+	at org.adempiere.ad.trx.api.impl.TrxCallableWrappers$2.call(TrxCallableWrappers.java:105)
+	at org.adempiere.ad.trx.api.impl.TrxCallableWrappers$2.call(TrxCallableWrappers.java:95)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call0(AbstractTrxManager.java:753)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call(AbstractTrxManager.java:666)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.run(AbstractTrxManager.java:574)
+	at org.compiere.model.ModelValidationEngine.executeInTrx(ModelValidationEngine.java:825)
+	at org.compiere.model.ModelValidationEngine.fireDocValidate0(ModelValidationEngine.java:1168)
+	at org.compiere.model.ModelValidationEngine.fireDocValidate(ModelValidationEngine.java:1081)
+	at org.compiere.model.ModelValidationEngine.fireDocValidate(ModelValidationEngine.java:1071)
+	at org.compiere.model.MInOut.reverseCorrectIt(MInOut.java:2173)
+	at de.metas.document.engine.impl.DocumentEngine.reverseCorrectIt(DocumentEngine.java:590)
+	at de.metas.document.engine.impl.DocumentEngine.processIt0(DocumentEngine.java:306)
+	at de.metas.document.engine.impl.DocumentEngine.processIt(DocumentEngine.java:244)
+	at de.metas.document.engine.impl.DocumentEngine.processIt(DocumentEngine.java:215)
+	at de.metas.document.engine.impl.AbstractDocumentBL.processIt(AbstractDocumentBL.java:90)
+	at org.compiere.model.MInOut.processIt(MInOut.java:1147)
+	at de.metas.document.engine.impl.AbstractDocumentBL.processIt0(AbstractDocumentBL.java:169)
+	at de.metas.document.engine.impl.AbstractDocumentBL$1.call(AbstractDocumentBL.java:128)
+	at de.metas.document.engine.impl.AbstractDocumentBL$1.call(AbstractDocumentBL.java:123)
+	at org.adempiere.ad.trx.api.impl.TrxCallableWrappers$5.call(TrxCallableWrappers.java:224)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call0(AbstractTrxManager.java:753)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call(AbstractTrxManager.java:666)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call(AbstractTrxManager.java:567)
+	at org.adempiere.ad.trx.api.impl.AbstractTrxManager.call(AbstractTrxManager.java:498)
+	at de.metas.document.engine.impl.AbstractDocumentBL.processIt0(AbstractDocumentBL.java:122)
+	at de.metas.document.engine.impl.AbstractDocumentBL.lambda$processIt$0(AbstractDocumentBL.java:110)
+	at io.micrometer.core.instrument.AbstractTimer.recordCallable(AbstractTimer.java:138)
+	at de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService.monitor(MicrometerPerformanceMonitoringService.java:75)
+	at de.metas.document.engine.impl.AbstractDocumentBL.processIt(AbstractDocumentBL.java:109)
+	at de.metas.document.engine.impl.AbstractDocumentBL.processEx(AbstractDocumentBL.java:177)
+	at de.metas.cucumber.stepdefs.shipment.M_InOut_StepDef.processInOut(M_InOut_StepDef.java:577)
+	at ✽.the material receipt identified by r1 is reversed(classpath:de/metas/cucumber/features/order/splitPaymentReversalCascade.feature:240)
+Caused by: org.postgresql.util.PSQLException: ERROR: deadlock detected
+  Detail: Process 1263 waits for ShareLock on transaction 48745; blocked by process 86.
+Process 86 waits for ShareLock on transaction 48748; blocked by process 1263.
+  Hinweis: See server log for query details.
+  Wobei: while updating tuple (2,47) in relation "m_cost"
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2675)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2365)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:355)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:490)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:408)
+	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:166)
+	at org.postgresql.jdbc.PgPreparedStatement.executeUpdate(PgPreparedStatement.java:134)
+	at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:1502)
+	at org.adempiere.sql.impl.CPreparedStatementProxy.executeUpdate(CPreparedStatementProxy.java:179)
+	at org.compiere.util.DB.executeUpdate(DB.java:824)
+	... 84 more
+]]>
+</failure>
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv1 is completed.............................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv2 is completed.............................passed
+Then validate payments......................................................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+And validate C_AllocationLines for invoice inv2.............................passed
+And validate created invoices...............................................passed
+And the invoice identified by inv1 is reversed..............................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+Then validate payments......................................................passed
+And the material receipt identified by r1 is reversed.......................failed
+Then the order identified by lcOrder has following pay schedules............skipped
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — reversal cascade (AC #16/#17/#18/#25)" name="Reverse the prepayment payment: cascade reverses ALL allocs; LC → Awaiting_Pay (AC #18)" time="3.183">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv1 is completed.............................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv2 is completed.............................passed
+Then validate payments......................................................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+And validate C_AllocationLines for invoice inv2.............................passed
+And validate created invoices...............................................passed
+And the payment identified by lcPayment is reversed.........................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+And validate C_AllocationLines for invoice inv2.............................passed
+Then validate created invoices..............................................passed
+Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType.passed
+Then the order identified by lcOrder has following pay schedules............passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — reversal cascade (AC #16/#17/#18/#25)" name="Reverse INV1 (Partial) AFTER INV2 (Final) has completed: stranded prepay (AC #25)" time="2.682">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv1 is completed.............................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And load M_InOut:...........................................................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv2 is completed.............................passed
+Then validate payments......................................................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+And validate C_AllocationLines for invoice inv2.............................passed
+And validate created invoices...............................................passed
+And the invoice identified by inv1 is reversed..............................passed
+And validate C_AllocationLines for invoice inv1.............................passed
+Then validate created invoices..............................................passed
+And validate C_AllocationLines for invoice inv2.............................passed
+Then validate payments......................................................passed
+Then the order identified by lcOrder has following pay schedules............passed
+]]></system-out>
+</testcase>
+<testcase classname="Split-payment — three partial invoices, Final consumes remainder (AC #24)" name="Three partial invoices: each consumes proportional share; Final consumes remainder (AC #24)" time="2.938">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2026-04-24T10:00:00+02:00[Europe/Berlin]...passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains organization bank accounts..........................passed
+And metasfresh contains C_BP_BankAccount....................................passed
+And metasfresh contains C_PaymentTerm.......................................passed
+And metasfresh contains C_PaymentTerm_Break.................................passed
+And validate C_PaymentTerm:.................................................passed
+And metasfresh contains M_Warehouse:........................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by lcOrder is completed............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by lcInvoice is completed........................passed
+And I allocate proforma 'lcInvoice' to order 'lcOrder'......................passed
+And metasfresh contains Pay Selection.......................................passed
+And "Create from..." is invoked for pay selection paySelection, using following parameters:.passed
+And the pay selection identified by paySelection is completed...............passed
+Then "Create Payments" is invoked for pay selection paySelection............passed
+And the Pay selection identified by paySelection has exactly the following lines.passed
+And after not more than 30s, M_ReceiptSchedule are found:...................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv1 is completed.............................passed
+Then validate C_AllocationLines for invoice inv1............................passed
+Then validate payments......................................................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv2 is completed.............................passed
+Then validate C_AllocationLines for invoice inv2............................passed
+Then validate payments......................................................passed
+And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs.passed
+And create material receipt.................................................passed
+And validate the created material receipt lines.............................passed
+And metasfresh contains C_Invoice:..........................................passed
+And metasfresh contains C_InvoiceLines......................................passed
+And the invoice identified by inv3 is completed.............................passed
+Then validate C_AllocationLines for invoice inv3............................passed
+Then validate payments......................................................passed
+Then validate created invoices..............................................passed
+]]></system-out>
+</testcase>
+<testcase classname="Purchase order project is automatically created when PO is completed" name="SO with purchased product. Project auto-populated on resulting PO &amp; lines and pushed to SO lines." time="5.1">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]...passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled.passed
+And set project type Sales/Purchase Order to active.........................passed
+Given metasfresh contains M_Products:.......................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains M_DiscountSchemas:..................................passed
+And metasfresh contains M_DiscountSchemaBreaks:.............................passed
+And metasfresh contains PP_Product_Plannings................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains C_BPartner_Product..................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by so_1 is completed..............................passed
+And after not more than 60s, C_PurchaseCandidates are found.................passed
+And C_PurchaseCandidates are validated......................................passed
+And wait until all rabbitMQ queues are empty or throw exception after 5 minutes.passed
+And after not more than 60s, C_PurchaseCandidate_Alloc are found............passed
+And load C_OrderLines from C_PurchaseCandidate_Alloc........................passed
+And load C_Order from C_OrderLine...........................................passed
+And wait until all rabbitMQ queues are empty or throw exception after 5 minutes.passed
+Then validate the created orders............................................passed
+And validate C_OrderLine:...................................................passed
+And validate C_OrderLine:...................................................passed
+And set project type Sales/Purchase Order to inactive.......................passed
+]]></system-out>
+</testcase>
+<testcase classname="Document Print Option defaults resolve @SQL= expressions" name="AD_Process_Para with static default Y resolves to true" time="0.071">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+Given metasfresh contains AD_Processes:.....................................passed
+And metasfresh contains AD_Process_Paras:...................................passed
+Then the print option descriptors for AD_Process "process" include:.........passed
+]]></system-out>
+</testcase>
+<testcase classname="Document Print Option defaults resolve @SQL= expressions" name="AD_Process_Para with @SQL= default resolves correctly" time="0.056">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+Given metasfresh contains AD_Processes:.....................................passed
+And metasfresh contains AD_Process_Paras:...................................passed
+Then the print option descriptors for AD_Process "process" include:.........passed
+]]></system-out>
+</testcase>
+<testcase classname="create purchase simulation" name="create purchase simulation, delete order line and validate there is no purchase candidate for deleted line" time="0.607">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]...passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains M_DiscountSchema....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains C_BPartner_Product..................................passed
+And metasfresh contains PP_Product_Plannings................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When create and process 'simulated demand' for:.............................passed
+Then after not more than 30s, the MD_Candidate table has only the following records.passed
+And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1...passed
+And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table.passed
+And no C_PurchaseCandidate found for orderLine ol_1.........................passed
+]]></system-out>
+</testcase>
+<testcase classname="create purchase simulation" name="Create Sales Order. Create C_PurchaseCandidate. Create C_Order for it. Reactivate and reduce qty. C_PurchaseCandidate is not adjusted." time="5.319">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]...passed
+And metasfresh contains M_Products:.........................................passed
+And metasfresh contains M_PricingSystems....................................passed
+And metasfresh contains M_PriceLists........................................passed
+And metasfresh contains M_PriceList_Versions................................passed
+And metasfresh contains M_ProductPrices.....................................passed
+And metasfresh contains M_DiscountSchema....................................passed
+And metasfresh contains C_BPartners without locations:......................passed
+And metasfresh contains C_BPartner_Locations:...............................passed
+And metasfresh contains C_BPartner_Product..................................passed
+And metasfresh contains PP_Product_Plannings................................passed
+When update existing PP_Product_Plannings...................................passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+And the order identified by o_1 is completed................................passed
+And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1...passed
+Then after not more than 30s, the MD_Candidate table has only the following records.passed
+And after not more than 60s, C_PurchaseCandidate_Alloc are found............passed
+And load C_OrderLines from C_PurchaseCandidate_Alloc........................passed
+And load C_Order from C_OrderLine...........................................passed
+Then validate the created orders............................................passed
+And validate C_OrderLine:...................................................passed
+Then after not more than 30s, the MD_Candidate table has only the following records.passed
+And validate that there are no M_ShipmentSchedule_Recompute records after no more than 60 seconds for order 'o_1'.passed
+And the order identified by o_1 is reactivated..............................passed
+And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1...passed
+And after not more than 30s, the MD_Candidate table has only the following records.passed
+And update C_OrderLine:.....................................................passed
+And wait until all rabbitMQ queues are empty or throw exception after 5 minutes.passed
+And the order identified by o_1 is completed................................passed
+And validate that there are no M_ShipmentSchedule_Recompute records after no more than 60 seconds for order 'o_1'.passed
+And after not more than 30s, the MD_Candidate table has only the following records.passed
+]]></system-out>
+</testcase>
+</testsuite>

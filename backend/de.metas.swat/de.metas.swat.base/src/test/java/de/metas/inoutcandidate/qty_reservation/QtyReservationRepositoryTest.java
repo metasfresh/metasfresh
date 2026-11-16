@@ -130,6 +130,27 @@ class QtyReservationRepositoryTest
 			// OH (qty=60) should be processed before PS (qty=40), regardless of insertion order
 			assertThat(supplyTypeOrder).containsExactly("60", "40");
 		}
+
+		@Test
+		void update_persistsShrunkQty()
+		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(105);
+
+			final I_M_QtyReservation rec = createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("100"));
+			rec.setQtyTU(new BigDecimal("100"));
+			InterfaceWrapperHelper.save(rec);
+
+			repo.updateByOrderLineIds(
+					Collections.singleton(orderLineId),
+					r -> r.withQty(
+							Quantity.of(75, uom),
+							de.metas.handlingunits.QtyTU.ofInt(75)));
+
+			final List<I_M_QtyReservation> records = loadRecords(orderLineId);
+			assertThat(records).hasSize(1);
+			assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("75"));
+			assertThat(records.get(0).getQtyTU()).isEqualByComparingTo(new BigDecimal("75"));
+		}
 	}
 
 	// --- helpers ---

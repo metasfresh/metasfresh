@@ -78,7 +78,7 @@ public final class JSONDocument extends JSONDocumentBase
 			throw new AdempiereException("`hasComments`=" + hasComments + " passed for non-RootDocument. `hasComments` is only supported for RootDocuments.");
 		}
 
-		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
+		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath(), options);
 
 		// fieldsBy
 		// Fields
@@ -124,7 +124,7 @@ public final class JSONDocument extends JSONDocumentBase
 
 		//
 		// Available standard actions
-		jsonDocument.setStandardActions(options.getDocumentPermissions().getStandardActions(document));
+		jsonDocument.setStandardActions(options.getDocumentPermissions().getStandardActions(document, options.getAdLanguage()));
 
 		//
 		// Set debugging info
@@ -159,7 +159,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final LogicExpressionResult allowCreateNew = includedDocumentsCollection.getAllowCreateNewDocument();
 		if (allowCreateNew != null)
 		{
-			tabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+			options.getDocumentPermissions().setAllowCreateNew(tabInfo, allowCreateNew, options.getAdLanguage());
 		}
 
 		final LogicExpressionResult allowDelete = includedDocumentsCollection.getAllowDeleteDocument();
@@ -226,7 +226,7 @@ public final class JSONDocument extends JSONDocumentBase
 		}
 
 		final DocumentPath documentPath = documentChangedEvents.getDocumentPath();
-		final JSONDocument jsonDocument = new JSONDocument(documentPath);
+		final JSONDocument jsonDocument = new JSONDocument(documentPath, options);
 
 		// If the document was deleted, we just need to export that flag. All the other changes are not relevant.
 		if (documentChangedEvents.isDeleted())
@@ -277,14 +277,16 @@ public final class JSONDocument extends JSONDocumentBase
 		// Included tabs info
 		documentChangedEvents.getIncludedDetailInfos()
 				.stream()
-				.map(JSONDocument::createIncludedTabInfo)
+				.map(includedDetailInfo -> createIncludedTabInfo(includedDetailInfo, options))
 				.peek(jsonIncludedTabInfo -> options.getDocumentPermissions().apply(documentPath, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
 
 		return jsonDocument;
 	}
 
-	private static JSONIncludedTabInfo createIncludedTabInfo(final DocumentChanges.IncludedDetailInfo includedDetailInfo)
+	private static JSONIncludedTabInfo createIncludedTabInfo(
+			@NonNull final DocumentChanges.IncludedDetailInfo includedDetailInfo,
+			@NonNull final JSONDocumentOptions options)
 	{
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDetailInfo.getDetailId());
 		if (includedDetailInfo.isStale())
@@ -295,7 +297,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final LogicExpressionResult allowCreateNew = includedDetailInfo.getAllowNew();
 		if (allowCreateNew != null)
 		{
-			tabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+			options.getDocumentPermissions().setAllowCreateNew(tabInfo, allowCreateNew, options.getAdLanguage());
 		}
 
 		final LogicExpressionResult allowDelete = includedDetailInfo.getAllowDelete();
@@ -328,6 +330,14 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Set<DocumentStandardAction> standardActions;
 
+	/**
+	 * The actions from {@link #standardActions} which shall be rendered disabled, each with its reason.
+	 * Absent when nothing is disabled, so every other action keeps working off the plain string list above.
+	 */
+	@JsonProperty("disabledStandardActions")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private List<JSONDisabledStandardAction> disabledStandardActions;
+
 	@JsonProperty("websocketEndpoint")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String websocketEndpoint;
@@ -337,10 +347,13 @@ public final class JSONDocument extends JSONDocumentBase
 	@Nullable
 	private Boolean hasComments;
 
-	private JSONDocument(final DocumentPath documentPath)
+	private JSONDocument(final DocumentPath documentPath, @NonNull final JSONDocumentOptions options)
 	{
 		super(documentPath);
-		setUnboxPasswordFields();
+		if (options.isUnboxPasswordFields())
+		{
+			setUnboxPasswordFields();
+		}
 		this.websocketEndpoint = buildWebsocketEndpointOrNull(getWindowId(), getId());
 	}
 
@@ -387,8 +400,9 @@ public final class JSONDocument extends JSONDocumentBase
 		return includedTabsInfo.values();
 	}
 
-	private void setStandardActions(final Set<DocumentStandardAction> standardActions)
+	private void setStandardActions(@NonNull final JSONStandardActions standardActions)
 	{
-		this.standardActions = standardActions;
+		this.standardActions = standardActions.getActions();
+		this.disabledStandardActions = standardActions.getDisabledActions();
 	}
 }

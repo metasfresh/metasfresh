@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
+import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;

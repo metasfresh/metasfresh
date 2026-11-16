@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.time.SystemTime;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 
@@ -36,10 +37,38 @@ public class SystemTime_StepDef
 		SystemTime.setFixedTimeSource(zonedDateTime);
 	}
 
+	/**
+	 * Moves the frozen clock forward by the given number of seconds, relative to the time it shows now. A clock that is
+	 * still running (not frozen) is frozen at "now + n seconds" by this step. Relies on the feature's Background having
+	 * frozen the clock with {@code metasfresh has date and time ...}; the {@link #resetTimeSourceAfterScenario() @After}
+	 * hook resets it, so the advance does not leak into the next scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh's clock advances by 1 seconds
+	 * </pre>
+	 */
+	@And("^metasfresh's clock advances by (\\d+) seconds$")
+	public void metasfresh_clock_advances_by(final int seconds)
+	{
+		SystemTime.setFixedTimeSource(SystemTime.asZonedDateTime().plusSeconds(seconds));
+	}
+
 	@Given("metasfresh has current date and time")
 	public void metasfresh_has_current_date_and_time()
 	{
 		SystemTime.setFixedTimeSource(ZonedDateTime.now());
+	}
+
+	/**
+	 * A scenario that froze the time must not leave it frozen for the next scenarios, also not when one of its steps failed
+	 * (Cucumber skips the remaining steps then). A scenario that needs a frozen time sets it itself, or in its feature's Background.
+	 */
+	@After
+	public void resetTimeSourceAfterScenario()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	@And("we wait for {int} ms")

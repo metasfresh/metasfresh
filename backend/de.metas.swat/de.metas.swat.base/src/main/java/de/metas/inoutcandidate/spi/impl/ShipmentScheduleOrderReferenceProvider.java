@@ -2,15 +2,12 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.time.ZonedDateTime;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -21,6 +18,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
+import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,6 +49,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 {
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	private final IOrderDeliveryDayBL orderDeliveryDayBL = Services.get(IOrderDeliveryDayBL.class);
 
 	/**
 	 * @return {@link I_C_OrderLine#Table_Name}
@@ -75,10 +74,24 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		final I_C_Order order = ordersRepo.getById(orderId);
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
 
+		// Derive the delivery date per order line (presetDateShipped / line DatePromised / header DatePromised),
+		// then derive the preparation date FROM that per-line delivery date using the same tour/fallback/offset logic
+		// the order header uses. For a single-date order the per-line delivery date equals the header DatePromised,
+		// so the preparation date equals today's header value (no regression); for multi-date orders each line gets
+		// its own preparation date.
+		//
+		// The shipment schedule is per order line. The header flag C_Order.IsFixedDatePromised ("ship after the
+		// promised date") applies to ALL lines uniformly; what is per-line is the DATE it enforces — this delivery
+		// date (the line's DatePromised, overriding the header) becomes the schedule's DeliveryDate. So with the flag
+		// on, every line is held until its OWN delivery date (not the whole order until the header date). Same shape
+		// for IsFixedPreparationDate (header flag, all lines) + the per-line preparation date. Enforced in
+		// de.metas.handlingunits...ShipmentService's enqueue filter.
+		final ZonedDateTime deliveryDate = orderDeliveryDayBL.computeDeliveryDate(order, orderLine);
+
 		return ShipmentScheduleReferencedLine.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
-				.preparationDate(TimeUtil.asZonedDateTime(order.getPreparationDate()))
-				.deliveryDate(computeOrderLineDeliveryDate(orderLine, order))
+				.preparationDate(orderDeliveryDayBL.computePreparationDate(order, orderLine, deliveryDate))
+				.deliveryDate(deliveryDate)
 				.warehouseId(warehouseAdvisor.evaluateWarehouse(orderLine))
 				.shipperId(ShipperId.optionalOfRepoId(orderLine.getM_Shipper_ID()))
 				.documentLineDescriptor(createDocumentLineDescriptor(orderAndLineId, order))
@@ -88,38 +101,6 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
-	}
-
-	@VisibleForTesting
-	static ZonedDateTime computeOrderLineDeliveryDate(
-			@NonNull final I_C_OrderLine orderLine,
-			@NonNull final I_C_Order order)
-	{
-		final ZonedDateTime presetDateShipped = TimeUtil.asZonedDateTime(orderLine.getPresetDateShipped());
-		if (presetDateShipped != null)
-		{
-			return presetDateShipped;
-		}
-
-		// Fetch it from order line if possible
-		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
-		if (datePromised != null)
-		{
-			return datePromised;
-		}
-
-		// Fetch it from order header if possible
-		final ZonedDateTime datePromisedFromOrder = TimeUtil.asZonedDateTime(order.getDatePromised());
-		if (datePromisedFromOrder != null)
-		{
-			return datePromisedFromOrder;
-		}
-
-		// Fail miserably...
-		throw new AdempiereException("@NotFound@ @DeliveryDate@")
-				.appendParametersToMessage()
-				.setParameter("oderLine", orderLine)
-				.setParameter("order", order);
 	}
 
 	private static DocumentLineDescriptor createDocumentLineDescriptor(

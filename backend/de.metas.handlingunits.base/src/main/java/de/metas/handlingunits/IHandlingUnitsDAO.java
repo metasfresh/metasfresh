@@ -38,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -202,6 +203,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
 	/**
+	 * @return the packing materials referenced by the given packing instructions' PI items; empty if none
+	 */
+	ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull HuPackingInstructionsId huPIId, @Nullable BPartnerId bpartnerId);
+
+	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
 	 *
 	 * @param version    mandatory. Only return items that reference this version.
@@ -250,15 +256,36 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final LocatorId locatorId);
 
 	/**
-	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
+	 * @param huUnitType optional. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
-	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(@NonNull I_M_HU_PI huPI, @Nullable HuUnitType huUnitType, @Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(I_M_HU_PI, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(@NonNull final I_M_HU_PI huPI, @Nullable final String huUnitType, @Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull HuPackingInstructionsId packingInstructionsId,
-			@Nullable String huUnitType,
+			@Nullable HuUnitType huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(HuPackingInstructionsId, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(packingInstructionsId, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
@@ -283,6 +310,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	@Nullable
 	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
 
+	void save(@NonNull I_M_HU huPi);
+
 	/**
 	 * @return packing material or null
 	 */
@@ -294,6 +323,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
 	IHUQueryBuilder createHUQueryBuilder();
+
+	/**
+	 * @return the number of distinct active HUs, on every level (LUs and their included TUs/VHUs), that have an active {@code M_HU_Storage}
+	 * of the given product (whatever its qty). Only HUs of the context client are counted (the {@link #createHUQueryBuilder()} default).
+	 */
+	int countActiveHUsByProductId(@NonNull ProductId productId);
 
 	List<I_M_HU_Item> retrieveAllItemsNoCache(Collection<HuId> huIds);
 
@@ -361,6 +396,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 
 	void save(@NonNull I_M_HU_PI huPi);
+
+	void save(@NonNull I_M_HU_PI_Item piItem);
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 

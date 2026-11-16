@@ -14,6 +14,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
@@ -130,6 +131,7 @@ public class AllocationBLTest
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
@@ -188,6 +190,7 @@ public class AllocationBLTest
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
@@ -280,6 +283,7 @@ public class AllocationBLTest
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
@@ -353,7 +357,7 @@ public class AllocationBLTest
 	@Nested
 	class applyBankAccountInvoiceAutoAllocRules
 	{
-		private I_C_Payment payment(@NonNull BankAccountId bankAccountId)
+		private I_C_Payment payment(@NonNull final BankAccountId bankAccountId)
 		{
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
 			payment.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
@@ -362,8 +366,8 @@ public class AllocationBLTest
 		}
 
 		private void bankAccountAndInvoiceDocTypeId(
-				@NonNull BankAccountId bankAccountId,
-				@NonNull DocTypeId invoiceDocTypeId)
+				@NonNull final BankAccountId bankAccountId,
+				@NonNull final DocTypeId invoiceDocTypeId)
 		{
 			final I_C_BP_BankAccount_InvoiceAutoAllocateRule record = newInstance(I_C_BP_BankAccount_InvoiceAutoAllocateRule.class);
 			record.setC_BP_BankAccount_ID(bankAccountId.getRepoId());

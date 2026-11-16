@@ -12,6 +12,7 @@ public enum PickAttribute
 {
 	BestBeforeDate("BestBeforeDate"),
 	LotNo("LotNo"),
+	SerialNo("SerialNo"),
 	;
 
 	@NonNull private final String json;

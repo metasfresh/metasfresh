@@ -1,53 +1,54 @@
-import { parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQRCode';
+import { parseCustomQRCode, parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQRCode';
+import { ATTR_GTIN, ATTR_lotNo } from '../../../utils/qrCode/common';
 
 describe('parseNumber', () => {
   test('should return the number as is if decimalPoint is 0', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 0 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 0 });
     expect(result).toBe(123456);
   });
 
   test('should apply the decimal point starting from the right', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 2 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 2 });
     expect(result).toBe(1234.56);
   });
 
   test('should handle a decimalPoint equal to the string length', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 6 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 6 });
     expect(result).toBe(0.123456);
   });
 
   test('should handle a decimalPoint greater than the string length', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 8 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 8 });
     expect(result).toBe(0.00123456);
   });
 
   test('should handle input with leading zeros', () => {
-    const result = parseNumber({ string: '00123456', decimalPoint: 3 });
+    const result = parseNumber({ string: '00123456', decimalPointPosition: 3 });
     expect(result).toBe(123.456);
   });
 
   test('should throw an error for invalid string input', () => {
-    expect(() => parseNumber({ string: 'abc', decimalPoint: 2 })).toThrow('Invalid number format: "abc"');
+    expect(() => parseNumber({ string: 'abc', decimalPointPosition: 2 })).toThrow('Invalid number format: "abc"');
   });
 
   test('should throw an error for invalid decimalPoint', () => {
-    expect(() => parseNumber({ string: '123456', decimalPoint: -1 })).toThrow('Invalid decimalPoint: "-1"');
-    expect(() => parseNumber({ string: '123456', decimalPoint: 1.5 })).toThrow('Invalid decimalPoint: "1.5"');
-    expect(() => parseNumber({ string: '123456', decimalPoint: '2' })).toThrow('Invalid decimalPoint: "2"');
+    expect(() => parseNumber({ string: '123456', decimalPointPosition: -1 })).toThrow('Invalid decimalPoint: "-1"');
+    expect(() => parseNumber({ string: '123456', decimalPointPosition: 1.5 })).toThrow('Invalid decimalPoint: "1.5"');
+    expect(() => parseNumber({ string: '123456', decimalPointPosition: '2' })).toThrow('Invalid decimalPoint: "2"');
   });
 
   test('should handle large numbers correctly', () => {
-    const result = parseNumber({ string: '12345678901234567890', decimalPoint: 10 });
+    const result = parseNumber({ string: '12345678901234567890', decimalPointPosition: 10 });
     expect(result).toBe(1234567890.123456789);
   });
 
   test('should return 0 if the input is "0"', () => {
-    const result = parseNumber({ string: '0', decimalPoint: 5 });
+    const result = parseNumber({ string: '0', decimalPointPosition: 5 });
     expect(result).toBe(0);
   });
 
   test('should return a valid output for input with decimalPoint less than string length', () => {
-    const result = parseNumber({ string: '123', decimalPoint: 1 });
+    const result = parseNumber({ string: '123', decimalPointPosition: 1 });
     expect(result).toBe(12.3);
   });
 });
@@ -96,5 +97,56 @@ describe('parseLocalDate', () => {
   test('should parse if the input string is in the same format as the output', () => {
     const result = parseLocalDate({ string: '2025-06-11', dateFormat: 'yyyy-MM-dd' });
     expect(result).toBe('2025-06-11');
+  });
+});
+
+describe('parseCustomQRCode', () => {
+  test('GTIN part sets ATTR_GTIN', () => {
+    const result = parseCustomQRCode({
+      string: '02001234567893',
+      format: { name: 'Test', parts: [{ type: 'GTIN', startPosition: 1, endPosition: 14 }] },
+    });
+    expect(result.error).toBeUndefined();
+    expect(result[ATTR_GTIN]).toBe('02001234567893');
+  });
+});
+
+describe('parseCustomQRCode - part with an open end (reads to the end of the code)', () => {
+  // 1..4 "(10)", lot from 5 to the end; the backend sends endPosition 0 for an open end
+  const formatWithOpenEnd = (endPosition) => ({
+    name: 'Test',
+    parts: [
+      { type: 'CONSTANT', startPosition: 1, endPosition: 4, constantValue: '(10)' },
+      { type: 'LOT', startPosition: 5, endPosition },
+    ],
+  });
+
+  test.each([0, null, undefined])('endPosition %p: lots of any length are read', (endPosition) => {
+    ['7', '123456', '1234567', 'AB12CD34EF56GH78IJ90'].forEach((lot) => {
+      const result = parseCustomQRCode({ string: `(10)${lot}`, format: formatWithOpenEnd(endPosition) });
+      expect(result.error).toBeUndefined();
+      expect(result[ATTR_lotNo]).toBe(lot);
+    });
+  });
+
+  test('leading zeros are stripped and a trailing blank is trimmed, like in the backend', () => {
+    const result = parseCustomQRCode({ string: '(10)012345 ', format: formatWithOpenEnd(0) });
+    expect(result[ATTR_lotNo]).toBe('12345');
+  });
+
+  test('a filled end: a lot padded with trailing blanks is trimmed, like in the backend', () => {
+    const result = parseCustomQRCode({ string: '(10)AB12  ', format: formatWithOpenEnd(10) });
+    expect(result.error).toBeUndefined();
+    expect(result[ATTR_lotNo]).toBe('AB12');
+  });
+
+  test('no character at the start position: not recognized', () => {
+    expect(parseCustomQRCode({ string: '(10)', format: formatWithOpenEnd(0) }).error).toBeDefined();
+  });
+
+  test('a filled end is still exact', () => {
+    const result = parseCustomQRCode({ string: '(10)1234567', format: formatWithOpenEnd(10) });
+    expect(result[ATTR_lotNo]).toBe('123456');
+    expect(parseCustomQRCode({ string: '(10)12345', format: formatWithOpenEnd(10) }).error).toBeDefined();
   });
 });

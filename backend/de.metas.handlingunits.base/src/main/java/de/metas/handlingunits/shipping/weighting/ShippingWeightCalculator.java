@@ -29,6 +29,8 @@ import java.util.Optional;
 @Builder
 public class ShippingWeightCalculator
 {
+	public static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
+
 	//
 	// Services
 	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);

@@ -102,7 +102,7 @@ FROM (SELECT i.AD_Org_ID,
                       AND psl.isActive = 'Y')                                                                                  AS IsInPaySelection,
              COALESCE(p.NetDays, DaysBetween(ips.DueDate::timestamp WITH TIME ZONE, i.DateInvoiced::timestamp WITH TIME ZONE)) AS NetDays,
              p.DiscountDays,
-             COALESCE(PaymentTermDueDate(p.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE), ips.DueDate)           AS DueDate,
+             COALESCE(i.DueDate, ips.DueDate)                                                                                 AS DueDate,
              COALESCE(
                      PaymentTermDueDays(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE, p_Reference_Date),
                      DaysBetween(p_Reference_Date, ips.DueDate::timestamp WITH TIME ZONE)
@@ -138,4 +138,7 @@ WHERE TRUE
   AND oi.OpenAmt <> 0
 $$
     LANGUAGE sql STABLE
+;
+
+COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(date, character varying, numeric) IS 'Used by de.metas.bpartner.service.impl.BPartnerStatsDAO.retrieveOpenItems (C_BPartner_Stats.OpenItems). Do not drop it without changing that caller.'
 ;

@@ -1,0 +1,38 @@
+-- View MD_Stock_PerWeek_V (me03 25618 / F19100 — "Stock per week").
+--
+-- Derives, per product x warehouse x ISO calendar week (Monday-anchored), the material
+-- outlook straight from the dispo engine's MD_Candidate timeline:
+--   QtyATPBegin          : projected stock as-of the START of the week (the Monday) —
+--                          latest STOCK candidate with DateProjected < WeekStartDate,
+--                          summed across attribute/customer subgroups. By construction,
+--                          QtyATPBegin(W) == QtyATP(W-1): the ATP at a week's start equals
+--                          the ATP at the prior week's end (same Monday boundary).
+--   QtyExpectedShipments : reserved demand   (DEMAND / SHIPMENT,  ABS(Qty))
+--   QtyExpectedReceipts  : purchased supply  (SUPPLY / PURCHASE,  Qty)
+--   QtyATP               : projected stock as-of the END of the week — latest STOCK
+--                          candidate at/before week-end (DateProjected < WeekStartDate + 7),
+--                          summed across attribute/customer subgroups — the authoritative
+--                          available-to-promise number; it reflects ALL streams (shipment,
+--                          purchase, production, distribution, forecast, inventory), so its
+--                          row-to-row delta need NOT equal receipts - shipments.
+--
+-- Horizon: current week .. current+N, where N = SysConfig
+--   'de.metas.material.stockperweek.HorizonWeeks' (default 12 => 13 rows).
+-- Overdue activity (dated before the current week) is NOT rolled into the current week's movement
+-- columns; it is already reflected in QtyATPBegin (the projected running balance), so backlog is
+-- shown once, not twice. Only active, non-'simulated' candidates are considered.
+--
+-- Aggregation defaults (DESIGN.md §7 — confirm with customer at UAT):
+--   * attributes : summed across StorageAttributesKey (latest STOCK per key, then SUM)
+--   * customer   : the customer dimension (C_BPartner_Customer_ID) is summed in too, i.e.
+--                  the overall projected stock is shown — no per-customer reserve carve-out.
+--
+-- Thin wrapper over the parameterized function:
+--   The view no longer owns the ATP algebra, the single-scan CTE rewrite, or the
+--   push-down-friendly synthetic primary key — those now live in MD_Stock_PerWeek_fn's DDL
+--   (see MD_Stock_PerWeek_fn.sql for the full query-mechanics documentation).
+--   fn(NULL, NULL) degrades to "no filter on either dimension", i.e. exactly this view's
+--   full, unfiltered result set. Any future algebra change belongs in the function's DDL.
+CREATE OR REPLACE VIEW MD_Stock_PerWeek_V AS
+SELECT * FROM MD_Stock_PerWeek_fn(NULL::numeric, NULL::numeric);
+

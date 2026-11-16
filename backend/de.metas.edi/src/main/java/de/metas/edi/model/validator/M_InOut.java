@@ -1,17 +1,23 @@
 package de.metas.edi.model.validator;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.EDIDesadvInOutRepository;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.api.impl.DesadvBL;
+import de.metas.edi.api.impl.EpcisReverseGuardService;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.inout.InOutId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +28,10 @@ public class M_InOut
 {
 	@NonNull private final EDIDocumentBL ediDocumentBL;
 	@NonNull private final DesadvBL desadvBL;
+	@NonNull private final EDIDesadvInOutRepository ediDesadvInOutRepository;
+	@NonNull private final EpcisReverseGuardService epcisReverseGuardService;
+
+	private static final AdMessageKey MSG_EPCIS_ReverseBlocked = AdMessageKey.of("EPCIS_ReverseBlocked_SSCCTransmitted");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_BPartner_ID, I_M_InOut.COLUMNNAME_C_Order_ID, I_M_InOut.COLUMNNAME_POReference })
@@ -83,22 +93,62 @@ public class M_InOut
 	}
 
 	/**
+	 * Rejects reversing/reactivating/voiding a shipment whose EPCIS SSCCs were transmitted — or are
+	 * in-flight (an {@code Enqueued}/{@code SendingStarted} scripted-export status row) — to the
+	 * receiver, since recreating the document would re-transmit and duplicate them. Deactivate the
+	 * shipment's transmitted-SSCC ledger row (or a stuck in-flight status row) to unblock.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_VOID })
+	public void forbidReverseWhenEpcisTransmitted(final I_M_InOut inOut)
+	{
+		final InOutId inOutId = InOutId.ofRepoId(inOut.getM_InOut_ID());
+		if (!epcisReverseGuardService.isEpcisTransmittedOrInFlight(inOutId))
+		{
+			return;
+		}
+
+		throw new AdempiereException(MSG_EPCIS_ReverseBlocked)
+				.markAsUserValidationError()
+				.appendParametersToMessage()
+				.setParameter("M_InOut_ID", inOut.getM_InOut_ID());
+	}
+
+	/**
 	 * Triggers DESADV status recomputation when an InOut's EDI_ExportStatus changes.
 	 * <p>
 	 * When {@link DesadvBL#isOneDesadvPerShipment(de.metas.esb.edi.model.I_EDI_Desadv)} is true,
 	 * the DESADV status is derived from all linked InOut statuses
 	 * via {@link DesadvBL#recomputeDesadvStatusFromInOuts(EDIDesadvId)}.
+	 * <p>
+	 * A consolidated shipment may link to N DESADVs via the {@code EDI_Desadv_M_InOut}
+	 * junction. Enumerating the junction ensures all linked source DESADVs are recomputed
+	 * when the shipment status flips — relying on the single-FK {@code EDI_Desadv_ID} alone
+	 * would miss the non-winner DESADVs.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
 			ifColumnsChanged = I_M_InOut.COLUMNNAME_EDI_ExportStatus)
 	public void recomputeDesadvStatusOnInOutStatusChange(final I_M_InOut inOut)
 	{
-		final EDIDesadvId desadvId = EDIDesadvId.ofRepoIdOrNull(inOut.getEDI_Desadv_ID());
-		if (desadvId == null)
+		final ImmutableList<EDIDesadvId> desadvIds = ediDesadvInOutRepository.listDesadvsForInOut(InOutId.ofRepoId(inOut.getM_InOut_ID()));
+		if (!desadvIds.isEmpty())
+		{
+			for (final EDIDesadvId desadvId : desadvIds)
+			{
+				desadvBL.recomputeDesadvStatusFromInOuts(desadvId);
+			}
+			return;
+		}
+
+		// Fallback to the single-FK reference for shipments that pre-date the junction backfill.
+		final EDIDesadvId fkDesadvId = EDIDesadvId.ofRepoIdOrNull(inOut.getEDI_Desadv_ID());
+		if (fkDesadvId == null)
 		{
 			return;
 		}
 
-		desadvBL.recomputeDesadvStatusFromInOuts(desadvId);
+		desadvBL.recomputeDesadvStatusFromInOuts(fkDesadvId);
 	}
 }

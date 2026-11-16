@@ -23,10 +23,14 @@ package de.metas.inoutcandidate.async;
  */
 
 import ch.qos.logback.classic.Level;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -36,16 +40,32 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import java.util.Properties;
+
 /**
  * Workpackage used to update all invalid {@link I_M_ShipmentSchedule}s.
+ * <p>
+ * <b>Bounded retry after a failed batch:</b> a recompute batch that fails (rollback, failed commit) leaves its flags behind; they are
+ * released after the batch trx ended, and since the async framework does not retry a failed workpackage (it is marked IsError), the
+ * release enqueues a <i>retry pass</i>. Each pass has a retry generation, carried as workpackage parameter
+ * {@link #PARAM_RecomputeRetryGeneration}: 0 for a normal pass (every business change, and every caller outside this processor,
+ * e.g. the manual {@code M_ShipmentSchedule_Update} process), {@code n+1} for the retry pass after a failed batch of generation {@code n}.
+ * A retry pass is enqueued only while the failed batch's generation is below the cap ({@link #SYSCONFIG_MaxRetriesAfterFailedBatch},
+ * default {@value #DEFAULT_MaxRetriesAfterFailedBatch}), so a schedule that fails every batch causes at most that many retry passes per
+ * normal pass, instead of an endless chain. The follow-up workpackage of a pass that reached its limit keeps the pass's generation,
+ * so a chain counts its failures across its follow-ups. At the cap, the released flags wait for the next normal pass.
  *
  * @author tsa
+ * @see de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository#releaseRecomputeMarkersAfterTrxEnd(PInstanceId, int)
  */
 public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -70,18 +90,40 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 
 	private static void _schedule(@NonNull final ShipmentSchedulesUpdateSchedulerRequest request)
 	{
+		// the "already enough workpackages queued" check is done by the scheduler when the workpackage would be created (for a request bound to a trx: after its commit)
 		SCHEDULER.schedule(request);
 	}
 
 	private static final UpdateInvalidShipmentSchedulesScheduler //
 			SCHEDULER = new UpdateInvalidShipmentSchedulesScheduler(true /*createOneWorkpackagePerAsyncBatch*/);
 
+	private static final String SYSCONFIG_MaxToProcess = "de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor.MaxToProcess";
+	private static final int DEFAULT_MaxToProcess = 500;
+
+	/** Workpackage parameter: the retry generation of a retry pass (absent, i.e. 0, for a normal pass). */
+	public static final String PARAM_RecomputeRetryGeneration = "RecomputeRetryGeneration";
+
+	/** The highest retry generation that is enqueued after failed batches, i.e. how many retry passes follow a failed batch at most. */
+	public static final String SYSCONFIG_MaxRetriesAfterFailedBatch = "de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor.MaxRetriesAfterFailedBatch";
+	public static final int DEFAULT_MaxRetriesAfterFailedBatch = 3;
+
 	// services
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
+	@Override
+	public final boolean isRunInTransaction()
+	{
+		return false; // run out of transaction; we bound our own batch to an explicit, short-lived trx below instead
+	}
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		final PInstanceId selectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
@@ -89,18 +131,72 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putRevalidationId(selectionId))
 		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
+
 			final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
-					.ctx(InterfaceWrapperHelper.getCtx(workpackage))
+					.ctx(ctx)
 					.selectionId(selectionId)
 					.createMissingShipmentSchedules(false) // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
+					.maxToProcess(getMaxToProcess())
+					.recomputeRetryGeneration(getRetryGeneration())
 					.build();
 			loggable.addLog("Starting revalidation for {}", request);
 
-			final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedules(request);
+			// Recompute one bounded batch in its own transaction.
+			// Why callInThreadInheritedTrx here: this processor runs out-of-transaction (isRunInTransaction()==false), so
+			// there is NO ambient trx; callInThreadInheritedTrx then starts a new trx (and commits/closes it) -- giving us
+			// ONE short, bounded transaction per batch instead of a single unbounded transaction for the whole backlog
+			// (which OOMs on a large backlog). Mirrors CreateMissingShipmentSchedulesWorkpackageProcessor.
+			final ShipmentScheduleUpdateInvalidResult result = trxManager.callInThreadInheritedTrx(() -> shipmentScheduleUpdater.updateShipmentSchedules(request));
 
-			loggable.addLog("Updated {} shipment schedule entries for {}", updatedCount, request);
+			loggable.addLog("Updated {} shipment schedule entries for {}", result.getUpdatedCount(), request);
+
+			if (result.isLimitReached())
+			{
+				enqueueFollowUpWorkpackage(ctx, workpackage);
+			}
 
 			return Result.SUCCESS;
 		}
+	}
+
+	private int getRetryGeneration()
+	{
+		return getParameters().getParameterAsInt(PARAM_RecomputeRetryGeneration, 0);
+	}
+
+	private QueryLimit getMaxToProcess()
+	{
+		return QueryLimit.ofInt(sysConfigBL.getIntValue(SYSCONFIG_MaxToProcess, DEFAULT_MaxToProcess));
+	}
+
+	/**
+	 * Enqueues a fresh workpackage (carrying over the current one's async batch) to recompute the shipment
+	 * schedules that remained after this run's bounded batch. Enqueues it directly instead of going through
+	 * {@link #schedule(ShipmentSchedulesUpdateSchedulerRequest)}, because that method's dedup guard (skip if
+	 * &gt;1 processable workpackage already queued) does not apply here: we KNOW there is more work left for
+	 * this exact run and must not skip it.
+	 * <p>
+	 * The follow-up keeps this pass's retry generation, so a failure later in the chain does not restart the retry count.
+	 */
+	private void enqueueFollowUpWorkpackage(@NonNull final Properties ctx, @NonNull final I_C_Queue_WorkPackage workpackage)
+	{
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID());
+
+		// Deliberately NOT bound to any trx (unlike _schedule, which does bindToTrxName via ShipmentSchedulesUpdateSchedulerRequest):
+		// this run's batch already committed inside the callInThreadInheritedTrx above, so there is nothing left to
+		// defer the follow-up's readiness to -- it must become ready-for-processing immediately.
+		final IWorkPackageBuilder followUp = workPackageQueueFactory
+				.getQueueForEnqueuing(ctx, UpdateInvalidShipmentSchedulesWorkpackageProcessor.class)
+				.newWorkPackage()
+				.setAsyncBatchId(asyncBatchId);
+		final int retryGeneration = getRetryGeneration();
+		if (retryGeneration > 0)
+		{
+			followUp.parameter(PARAM_RecomputeRetryGeneration, retryGeneration);
+		}
+		followUp.buildAndEnqueue();
+
+		Loggables.addLog("Limit reached; enqueued a follow-up workpackage to revalidate the remaining flagged shipment schedules");
 	}
 }

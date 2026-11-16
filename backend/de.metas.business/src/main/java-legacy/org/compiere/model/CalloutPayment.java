@@ -19,12 +19,17 @@ package org.compiere.model;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
+
+import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -45,6 +50,8 @@ import java.sql.Timestamp;
 public class CalloutPayment extends CalloutEngine
 {
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	// looked up when needed, because CalloutPayment is not a Spring bean and can be used before the application context is complete
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	/**
 	 * Payment_Invoice. when Invoice selected - set C_Currency_ID -
@@ -73,12 +80,8 @@ public class CalloutPayment extends CalloutEngine
 		payment.setWriteOffAmt(BigDecimal.ZERO);
 		payment.setIsOverUnderPayment(false);
 		payment.setOverUnderAmt(BigDecimal.ZERO);
-		int C_InvoicePaySchedule_ID = 0;
-		if (calloutField.getTabInfoContextAsInt("C_Invoice_ID") == invoice.getC_Invoice_ID()
-				&& calloutField.getTabInfoContextAsInt("C_InvoicePaySchedule_ID") > 0)
-		{
-			C_InvoicePaySchedule_ID = calloutField.getTabInfoContextAsInt("C_InvoicePaySchedule_ID");
-		}
+		payment.setPaymentBonusAmt(BigDecimal.ZERO);
+		final int C_InvoicePaySchedule_ID = getInvoicePayScheduleId(calloutField, invoice.getC_Invoice_ID());
 		// Payment Date
 		Timestamp ts = payment.getDateTrx();
 		if (ts == null)
@@ -140,6 +143,11 @@ public class CalloutPayment extends CalloutEngine
 				//
 				payment.setPayAmt(payAmt);
 				payment.setDiscountAmt(DiscountAmt);
+				// a PayAmt taken from a payment schedule is not the whole invoice's open amount, which the pre-fill would set; so no bonus there, as before
+				if (C_InvoicePaySchedule_ID <= 0)
+				{
+					paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+				}
 			}
 		}
 		catch (SQLException e)
@@ -225,8 +233,62 @@ public class CalloutPayment extends CalloutEngine
 		}
 
 		paymentBL.validateDocTypeIsInSync(payment);
+		updateIsReceiptFromDocType(calloutField, payment, docType);
 		return NO_ERROR;
 	} // docType
+
+	/**
+	 * Lets „Eingang“ ({@code IsReceipt}) follow the document type as soon as „Belegart“ changes, like {@link MPayment#beforeSave(boolean)} does on save.
+	 * Until then a new payment keeps {@code IsReceipt=N}, so the payment bonus would not be pre-filled when „Rechnung“ is picked before the payment is saved.
+	 * <ul>
+	 * <li>A payment that was never saved and becomes a receipt only now (because „Rechnung“ was picked first) gets the payment bonus pre-filled, as picking „Rechnung“ would have done.
+	 * A saved draft keeps the amounts the user entered.</li>
+	 * <li>A payment that is no longer a receipt loses its payment bonus, which goes back into {@code PayAmt}: only a receipt can book a payment bonus.</li>
+	 * </ul>
+	 */
+	private void updateIsReceiptFromDocType(
+			@NonNull final ICalloutField calloutField,
+			@NonNull final I_C_Payment payment,
+			@Nullable final I_C_DocType docType)
+	{
+		// C_DocType_ID=0 loads the placeholder document type of a new record, which says nothing about the payment;
+		// docType is null when C_DocType_ID points to a record that cannot be loaded
+		if (payment.getC_DocType_ID() <= 0 || docType == null)
+		{
+			return;
+		}
+
+		final boolean isReceipt = docType.isSOTrx();
+		if (payment.isReceipt() == isReceipt)
+		{
+			return;
+		}
+		payment.setIsReceipt(isReceipt);
+
+		if (isReceipt)
+		{
+			if (InterfaceWrapperHelper.isNew(payment) && getInvoicePayScheduleId(calloutField, payment.getC_Invoice_ID()) <= 0)
+			{
+				paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+			}
+		}
+		else
+		{
+			paymentBonusOnPaymentService.get().dropPaymentBonus(payment);
+		}
+	}
+
+	/**
+	 * @return the invoice payment schedule the payment is entered for (the payment window opened from it), or 0
+	 */
+	private static int getInvoicePayScheduleId(@NonNull final ICalloutField calloutField, final int invoiceId)
+	{
+		if (invoiceId > 0 && calloutField.getTabInfoContextAsInt("C_Invoice_ID") == invoiceId)
+		{
+			return Math.max(calloutField.getTabInfoContextAsInt("C_InvoicePaySchedule_ID"), 0);
+		}
+		return 0;
+	}
 
 	/**
 	 * Payment_Amounts. Change of: - IsOverUnderPayment -> set OverUnderAmt to 0 -

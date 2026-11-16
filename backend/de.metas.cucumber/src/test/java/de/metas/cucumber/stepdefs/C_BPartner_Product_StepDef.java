@@ -64,6 +64,7 @@ import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsExcludedFromS
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ProductNo;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_SeqNo;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_DeliveryTime_Promised;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_UPC;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_UsedForVendor;
 
@@ -203,6 +204,7 @@ public class C_BPartner_Product_StepDef
 		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(record::setGTIN);
 		tableRow.getAsOptionalString(COLUMNNAME_EAN_CU).ifPresent(record::setEAN_CU);
 		tableRow.getAsOptionalString(COLUMNNAME_UPC).ifPresent(record::setUPC);
+		tableRow.getAsOptionalInt(COLUMNNAME_DeliveryTime_Promised).ifPresent(record::setDeliveryTime_Promised);
 
 		saveRecord(record);
 

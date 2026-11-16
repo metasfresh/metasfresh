@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -323807653L;
+	private static final long serialVersionUID = 782782670L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -70,6 +70,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+	}
+
+	@Override
+	public void setBestBeforeDays (final int BestBeforeDays)
+	{
+		set_Value (COLUMNNAME_BestBeforeDays, BestBeforeDays);
+	}
+
+	@Override
+	public int getBestBeforeDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_BestBeforeDays);
 	}
 
 	@Override

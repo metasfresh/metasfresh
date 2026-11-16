@@ -19,6 +19,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Tax;
@@ -29,6 +30,8 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
@@ -67,20 +70,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		if (taxCategoryId != null)
 		{
-			final CountryId countryFromId = Optional.ofNullable(warehouseId)
-					.map(warehouseBL::getCountryId)
-					.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
-							.orElseGet(countryDAO::getDefaultCountryId));
+			final TaxQuery query = buildTaxQuery(taxCategoryId, shipDate, orgId, warehouseId, shipBPartnerLocationId, soTrx);
 
-			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-					.fromCountryId(countryFromId)
-					.orgId(orgId)
-					.bPartnerLocationId(shipBPartnerLocationId)
-					.dateOfInterest(shipDate)
-					.taxCategoryId(taxCategoryId)
-					.warehouseId(warehouseId)
-					.soTrx(soTrx)
-					.build());
+			final Tax tax = taxDAO.getBy(query);
 
 			if (tax != null)
 			{
@@ -108,6 +100,44 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		return TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND);
 	}
 
+	/**
+	 * Builds the {@link TaxQuery} used by {@link #getTaxNotNull(Object, TaxCategoryId, int, Timestamp, OrgId, WarehouseId, BPartnerLocationAndCaptureId, SOTrx)}
+	 * to resolve the applicable {@code C_Tax}, including the origin-country derivation (warehouse country, falling back to the org's country,
+	 * falling back to the system default country).
+	 */
+	@Override
+	@NonNull
+	public TaxQuery buildTaxQuery(
+			@NonNull final TaxCategoryId taxCategoryId,
+			@NonNull final Timestamp shipDate,
+			@NonNull final OrgId orgId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull final SOTrx soTrx)
+	{
+		final CountryId countryFromId = Optional.ofNullable(warehouseId)
+				.map(warehouseBL::getCountryId)
+				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
+						.orElseGet(countryDAO::getDefaultCountryId));
+
+		return TaxQuery.builder()
+				.fromCountryId(countryFromId)
+				.orgId(orgId)
+				.bPartnerLocationId(shipBPartnerLocationId)
+				.dateOfInterest(shipDate)
+				.taxCategoryId(taxCategoryId)
+				.warehouseId(warehouseId)
+				.soTrx(soTrx)
+				.build();
+	}
+
+	@Override
+	@NonNull
+	public Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return taxDAO.getByIfPresent(taxQuery);
+	}
+
 	public CalculateTaxResult calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
 		return TaxUtils.from(tax).calculateTax(amount, taxIncluded, scale);
@@ -126,17 +156,47 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}
 
 	@Override
-	public void setupIfIsWholeTax(final I_C_Tax tax)
+	public void enforceExclusiveFlags(@NonNull final I_C_Tax tax)
 	{
-		if (!tax.isWholeTax())
+		final List<String> ySet = new ArrayList<>(3);
+		if (tax.isTaxExempt())     { ySet.add(I_C_Tax.COLUMNNAME_IsTaxExempt); }
+		if (tax.isReverseCharge()) { ySet.add(I_C_Tax.COLUMNNAME_IsReverseCharge); }
+		if (tax.isWholeTax())      { ySet.add(I_C_Tax.COLUMNNAME_IsWholeTax); }
+
+		if (ySet.size() > 1)
 		{
-			return;
+			final List<String> changed = new ArrayList<>(ySet.size());
+			for (final String col : ySet)
+			{
+				if (InterfaceWrapperHelper.isValueChanged(tax, col))
+				{
+					changed.add(col);
+				}
+			}
+
+			final String winner = (changed.size() == 1)
+					? changed.get(0)
+					: pickByStaticPriority(ySet);
+
+			if (!I_C_Tax.COLUMNNAME_IsTaxExempt.equals(winner))     { tax.setIsTaxExempt(false); }
+			if (!I_C_Tax.COLUMNNAME_IsReverseCharge.equals(winner)) { tax.setIsReverseCharge(false); }
+			if (!I_C_Tax.COLUMNNAME_IsWholeTax.equals(winner))      { tax.setIsWholeTax(false); }
 		}
 
-		tax.setRate(BigDecimal.valueOf(100));
-		tax.setIsTaxExempt(false);
-		tax.setIsDocumentLevel(true);
-		// tax.setIsSalesTax(false); // does not matter
+		if (tax.isWholeTax())
+		{
+			tax.setRate(BigDecimal.valueOf(100));
+			tax.setIsTaxExempt(false);
+			tax.setIsReverseCharge(false);
+			tax.setIsDocumentLevel(true);
+		}
+	}
+
+	private static String pickByStaticPriority(@NonNull final List<String> ySet)
+	{
+		if (ySet.contains(I_C_Tax.COLUMNNAME_IsWholeTax))      { return I_C_Tax.COLUMNNAME_IsWholeTax; }
+		if (ySet.contains(I_C_Tax.COLUMNNAME_IsReverseCharge)) { return I_C_Tax.COLUMNNAME_IsReverseCharge; }
+		return I_C_Tax.COLUMNNAME_IsTaxExempt;
 	}
 
 	@Override
@@ -162,14 +222,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@NonNull
 	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxCategory.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
-				.create()
-				.firstOnlyOptional(I_C_TaxCategory.class)
-				.map(I_C_TaxCategory::getC_TaxCategory_ID)
-				.map(TaxCategoryId::ofRepoId);
+		return taxDAO.getTaxCategoryIdByInternalName(internalName);
+	}
+
+	@Override
+	@NonNull
+	public Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getActiveTaxCategoryIdById(taxCategoryId);
 	}
 
 	@Override

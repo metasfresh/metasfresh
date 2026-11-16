@@ -23,7 +23,6 @@ package org.adempiere.ad.persistence.cache;
  */
 
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,6 +40,9 @@ import de.metas.util.Check;
 
 /**
  * Abstract list of models which expires when parent model's context or transaction was changed.
+ * <p>
+ * The parent model is referenced strongly on purpose: implementations keep an instance only as a dynamic attribute of its parent model (or in a running call on it),
+ * so parent and cache form a closed cycle which the GC collects together. A weak reference could be cleared while a method of this class is running.
  *
  * @author tsa
  *
@@ -52,7 +54,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 	// Services
 	// private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final WeakReference<PT> parentModelRef;
+	private final PT parentModel;
 	private int parentModelLoadCount;
 	private final Comparator<T> itemsComparator;
 
@@ -75,7 +77,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 	{
 		super();
 		Check.assumeNotNull(parentModel, "parentModel not null");
-		this.parentModelRef = new WeakReference<PT>(parentModel);
+		this.parentModel = parentModel;
 		this.parentModelLoadCount = InterfaceWrapperHelper.getLoadCount(parentModel);
 		this.ctx = null;
 		this.items = null;
@@ -364,15 +366,9 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 	 * Gets parent model.
 	 *
 	 * @return parent model
-	 * @throws IllegalStateException if parent's weak reference expired
 	 */
-	private final PT getParentModel()
+	private PT getParentModel()
 	{
-		final PT parentModel = parentModelRef.get();
-		if (parentModel == null)
-		{
-			throw new IllegalStateException("Model list cache expired for good");
-		}
 		return parentModel;
 	}
 
@@ -451,7 +447,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 				final int itemsCount = this.items == null ? 0 : this.items.size();
 				final int itemsRetrievedNowCount = itemsRetrievedNow.size();
 				throw new AdempiereException("Loaded items and cached items does not match."
-						+ "\n Parent: " + parentModelRef.get()
+						+ "\n Parent: " + parentModel
 						+ "\n Cached items(" + itemsCount + "): " + this.items
 						+ "\n Fresh items(" + itemsRetrievedNowCount + "): " + itemsRetrievedNow
 						+ "\n debugEmptyNotStaledSet=" + debugEmptyNotStaledSet //

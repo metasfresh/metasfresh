@@ -7,12 +7,14 @@ import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
 import { getTableId } from '../../reducers/tables';
+import { getIncludedTabCreateNewDisabledReason } from '../../reducers/windowHandler';
 
 import Prompt from '../app/Prompt';
 import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import Table from './Table';
 import TablePagination from './TablePagination';
+import { isMouseDownOnScrollbar } from '../../utils/scrollbarPress';
 
 class TableWrapper extends PureComponent {
   constructor(props) {
@@ -205,6 +207,11 @@ class TableWrapper extends PureComponent {
       deselectTableRows,
     } = this.props;
 
+    // a press on the list's own scrollbar targets the wrapper itself; it is not a click outside the table
+    if (limitOnClickOutside && isMouseDownOnScrollbar(event)) {
+      return;
+    }
+
     const parentNode = event.target.parentNode;
     const closeIncluded =
       // is modal
@@ -394,6 +401,7 @@ class TableWrapper extends PureComponent {
               tabId={tabId}
               handleBatchEntryToggle={this.handleBatchEntryToggle}
               allowCreateNew={tabInfo && tabInfo.allowCreateNew}
+              createNewDisabled={getIncludedTabCreateNewDisabledReason(tabInfo)}
               wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
             />
           )}

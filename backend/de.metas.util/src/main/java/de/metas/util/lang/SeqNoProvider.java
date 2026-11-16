@@ -13,6 +13,11 @@ public final class SeqNoProvider
 		return new SeqNoProvider(SeqNo.ofInt(value));
 	}
 
+	public static SeqNoProvider start()
+	{
+		return new SeqNoProvider(SeqNo.first());
+	}
+
 	public SeqNo getAndIncrement()
 	{
 		final SeqNo valueToReturn = value;

@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.base.Preconditions;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -16,18 +17,28 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	private IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}
+
+	@Override
+	public void saveQtyPicked(@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked)
+	{
+		save(qtyPicked);
+	}
 
 	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(@NonNull final I_M_HU hu)
@@ -95,7 +106,8 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		return queryBuilder;
 	}
 
-	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedNotDeliveredForTopLevelHU(@NonNull final I_M_HU topLevelHU)
+	@Override
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedNotDeliveredForTopLevelHU(@NonNull final I_M_HU topLevelHU)
 	{
 		return queryByTopLevelHU(topLevelHU)
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null) // Not delivered
@@ -131,6 +143,12 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
+	public boolean hasActiveQtyPickedForTopLevelHU(@NonNull final I_M_HU topLevelHU)
+	{
+		return queryByTopLevelHU(topLevelHU).create().anyMatch();
+	}
+
+	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHU(final I_M_HU vhu)
 	{
 		return retrieveSchedsQtyPickedForVHUQuery(vhu)
@@ -145,6 +163,50 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())
 				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
+	}
+
+	@Override
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveMergeableListenerQtyPickedForVHU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId vhuId)
+	{
+		// Run in the thread-inherited transaction. This method is called from
+		// ShipmentScheduleHUTrxListener#trxLineProcessed during an aggregate-HU snapshot replay
+		// (e.g. shipment reversal): the sibling QtyPicked rows we need to merge into are created
+		// earlier in the SAME, not-yet-committed transaction. A context-less query would run
+		// out-of-trx (committed data only) and never see them, defeating the merge.
+		final Properties ctx = Env.getCtx();
+		final String trxName = trxManager.getThreadInheritedTrxName();
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_Picking_Job_Schedule_ID, null)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_IsAnonymousHuPickedOnTheFly, false)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
+				.create()
+				.list();
+	}
+
+	@Override
+	public boolean existsActiveUnshippedQtyPickedForVHU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId vhuId)
+	{
+		// Thread-inherited trx (same reasoning as retrieveMergeableListenerQtyPickedForVHU): the row may have
+		// been (re)created earlier in the SAME, not-yet-committed reversal transaction (e.g. by the picking-job
+		// reopen). Broad existence check — any active, not-yet-shipped row for the (schedule, VHU); intentionally
+		// NOT filtered by picking-job / anonymous, so a row restored via any path counts.
+		final Properties ctx = Env.getCtx();
+		final String trxName = trxManager.getThreadInheritedTrxName();
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
+				.create()
+				.anyMatch();
 	}
 
 	@Override

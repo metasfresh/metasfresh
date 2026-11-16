@@ -4,6 +4,7 @@ import { pickingLineScanScreenLocation } from '../../routes/picking';
 import { COMPONENTTYPE_PickProducts } from '../../containers/activities/picking/PickProductsActivity';
 import { NEXT_NextPickingLine } from '../../containers/activities/picking/PickLineScanScreen';
 import { isCurrentTargetEligibleForActivityAndLine } from '../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
+import { pickingUiReducer } from './redux/pickingUiSlice';
 
 export const APPLICATION_ID_Picking = 'picking';
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
@@ -11,6 +12,7 @@ export const ACTIVITY_ID_PickLines = 'pickLines'; // keep in sync with PickingMo
 
 export const applicationDescriptor = {
   applicationId: APPLICATION_ID_Picking,
+  reduxReducer: pickingUiReducer,
 
   onWFActivityCompleted: ({ applicationId, wfProcessId, activityId, history, getState }) => {
     // console.log('onWFActivityCompleted', { applicationId, wfProcessId, activityId, dispatch });

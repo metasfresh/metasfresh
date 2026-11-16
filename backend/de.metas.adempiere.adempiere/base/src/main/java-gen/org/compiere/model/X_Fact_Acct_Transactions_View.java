@@ -1,28 +1,28 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for Fact_Acct_Transactions_View
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Transactions_View, I_Persistent
+public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO implements I_Fact_Acct_Transactions_View, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1098006545L;
+	private static final long serialVersionUID = 303683977L;
 
     /** Standard Constructor */
-    public X_Fact_Acct_Transactions_View(final Properties ctx, final int Fact_Acct_Transactions_View_ID, @Nullable final String trxName)
+    public X_Fact_Acct_Transactions_View (final Properties ctx, final int Fact_Acct_Transactions_View_ID, @Nullable final String trxName)
     {
       super (ctx, Fact_Acct_Transactions_View_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_Fact_Acct_Transactions_View(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_Fact_Acct_Transactions_View (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -30,21 +30,21 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 
 	/** Load Meta Data */
 	@Override
-	protected POInfo initPO(final Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return POInfo.getPOInfo(Table_Name);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public I_A_Asset getA_Asset()
+	public org.compiere.model.I_A_Asset getA_Asset()
 	{
-		return get_ValueAsPO(COLUMNNAME_A_Asset_ID, I_A_Asset.class);
+		return get_ValueAsPO(COLUMNNAME_A_Asset_ID, org.compiere.model.I_A_Asset.class);
 	}
 
 	@Override
-	public void setA_Asset(final I_A_Asset A_Asset)
+	public void setA_Asset(final org.compiere.model.I_A_Asset A_Asset)
 	{
-		set_ValueFromPO(COLUMNNAME_A_Asset_ID, I_A_Asset.class, A_Asset);
+		set_ValueFromPO(COLUMNNAME_A_Asset_ID, org.compiere.model.I_A_Asset.class, A_Asset);
 	}
 
 	@Override
@@ -60,6 +60,30 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	public int getA_Asset_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_A_Asset_ID);
+	}
+
+	@Override
+	public void setAccountConceptualName (final @Nullable java.lang.String AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ElementValue getAccount()
+	{
+		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
+	}
+
+	@Override
+	public void setAccount(final org.compiere.model.I_C_ElementValue Account)
+	{
+		set_ValueFromPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class, Account);
 	}
 
 	@Override
@@ -173,15 +197,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_AcctSchema getC_AcctSchema()
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, I_C_AcctSchema.class);
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
 
 	@Override
-	public void setC_AcctSchema(final I_C_AcctSchema C_AcctSchema)
+	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
 	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, I_C_AcctSchema.class, C_AcctSchema);
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
 	}
 
 	@Override
@@ -245,15 +269,30 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_Campaign getC_Campaign()
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, I_C_Campaign.class);
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
 	@Override
-	public void setC_Campaign(final I_C_Campaign C_Campaign)
+	public int getC_BPartner_Location_ID() 
 	{
-		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, I_C_Campaign.class, C_Campaign);
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
+
+	@Override
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
 	}
 
 	@Override
@@ -269,6 +308,60 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	public int getC_Campaign_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_CostClassification_Category getC_CostClassification_Category()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class);
+	}
+
+	@Override
+	public void setC_CostClassification_Category(final org.compiere.model.I_C_CostClassification_Category C_CostClassification_Category)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class, C_CostClassification_Category);
+	}
+
+	@Override
+	public void setC_CostClassification_Category_ID (final int C_CostClassification_Category_ID)
+	{
+		if (C_CostClassification_Category_ID < 1) 
+			set_Value (COLUMNNAME_C_CostClassification_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CostClassification_Category_ID, C_CostClassification_Category_ID);
+	}
+
+	@Override
+	public int getC_CostClassification_Category_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CostClassification_Category_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_CostClassification getC_CostClassification()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class);
+	}
+
+	@Override
+	public void setC_CostClassification(final org.compiere.model.I_C_CostClassification C_CostClassification)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class, C_CostClassification);
+	}
+
+	@Override
+	public void setC_CostClassification_ID (final int C_CostClassification_ID)
+	{
+		if (C_CostClassification_ID < 1) 
+			set_Value (COLUMNNAME_C_CostClassification_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CostClassification_ID, C_CostClassification_ID);
+	}
+
+	@Override
+	public int getC_CostClassification_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CostClassification_ID);
 	}
 
 	@Override
@@ -302,15 +395,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_Location getC_LocFrom()
+	public org.compiere.model.I_C_Location getC_LocFrom()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_LocFrom_ID, I_C_Location.class);
+		return get_ValueAsPO(COLUMNNAME_C_LocFrom_ID, org.compiere.model.I_C_Location.class);
 	}
 
 	@Override
-	public void setC_LocFrom(final I_C_Location C_LocFrom)
+	public void setC_LocFrom(final org.compiere.model.I_C_Location C_LocFrom)
 	{
-		set_ValueFromPO(COLUMNNAME_C_LocFrom_ID, I_C_Location.class, C_LocFrom);
+		set_ValueFromPO(COLUMNNAME_C_LocFrom_ID, org.compiere.model.I_C_Location.class, C_LocFrom);
 	}
 
 	@Override
@@ -329,15 +422,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_Location getC_LocTo()
+	public org.compiere.model.I_C_Location getC_LocTo()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_LocTo_ID, I_C_Location.class);
+		return get_ValueAsPO(COLUMNNAME_C_LocTo_ID, org.compiere.model.I_C_Location.class);
 	}
 
 	@Override
-	public void setC_LocTo(final I_C_Location C_LocTo)
+	public void setC_LocTo(final org.compiere.model.I_C_Location C_LocTo)
 	{
-		set_ValueFromPO(COLUMNNAME_C_LocTo_ID, I_C_Location.class, C_LocTo);
+		set_ValueFromPO(COLUMNNAME_C_LocTo_ID, org.compiere.model.I_C_Location.class, C_LocTo);
 	}
 
 	@Override
@@ -356,15 +449,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_Order getC_OrderSO()
+	public org.compiere.model.I_C_Order getC_OrderSO()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, I_C_Order.class);
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
 	}
 
 	@Override
-	public void setC_OrderSO(final I_C_Order C_OrderSO)
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
 	{
-		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, I_C_Order.class, C_OrderSO);
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
 	}
 
 	@Override
@@ -383,15 +476,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_Fact_Acct_Transactions_View getCounterpart_Fact_Acct()
+	public org.compiere.model.I_Fact_Acct_Transactions_View getCounterpart_Fact_Acct()
 	{
-		return get_ValueAsPO(COLUMNNAME_Counterpart_Fact_Acct_ID, I_Fact_Acct_Transactions_View.class);
+		return get_ValueAsPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct_Transactions_View.class);
 	}
 
 	@Override
-	public void setCounterpart_Fact_Acct(final I_Fact_Acct_Transactions_View Counterpart_Fact_Acct)
+	public void setCounterpart_Fact_Acct(final org.compiere.model.I_Fact_Acct_Transactions_View Counterpart_Fact_Acct)
 	{
-		set_ValueFromPO(COLUMNNAME_Counterpart_Fact_Acct_ID, I_Fact_Acct_Transactions_View.class, Counterpart_Fact_Acct);
+		set_ValueFromPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct_Transactions_View.class, Counterpart_Fact_Acct);
 	}
 
 	@Override
@@ -410,15 +503,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_Period getC_Period()
+	public org.compiere.model.I_C_Period getC_Period()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Period_ID, I_C_Period.class);
+		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
 	}
 
 	@Override
-	public void setC_Period(final I_C_Period C_Period)
+	public void setC_Period(final org.compiere.model.I_C_Period C_Period)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Period_ID, I_C_Period.class, C_Period);
+		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
 	}
 
 	@Override
@@ -452,15 +545,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_ProjectPhase getC_ProjectPhase()
+	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_ProjectPhase_ID, I_C_ProjectPhase.class);
+		return get_ValueAsPO(COLUMNNAME_C_ProjectPhase_ID, org.compiere.model.I_C_ProjectPhase.class);
 	}
 
 	@Override
-	public void setC_ProjectPhase(final I_C_ProjectPhase C_ProjectPhase)
+	public void setC_ProjectPhase(final org.compiere.model.I_C_ProjectPhase C_ProjectPhase)
 	{
-		set_ValueFromPO(COLUMNNAME_C_ProjectPhase_ID, I_C_ProjectPhase.class, C_ProjectPhase);
+		set_ValueFromPO(COLUMNNAME_C_ProjectPhase_ID, org.compiere.model.I_C_ProjectPhase.class, C_ProjectPhase);
 	}
 
 	@Override
@@ -479,15 +572,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_ProjectTask getC_ProjectTask()
+	public org.compiere.model.I_C_ProjectTask getC_ProjectTask()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_ProjectTask_ID, I_C_ProjectTask.class);
+		return get_ValueAsPO(COLUMNNAME_C_ProjectTask_ID, org.compiere.model.I_C_ProjectTask.class);
 	}
 
 	@Override
-	public void setC_ProjectTask(final I_C_ProjectTask C_ProjectTask)
+	public void setC_ProjectTask(final org.compiere.model.I_C_ProjectTask C_ProjectTask)
 	{
-		set_ValueFromPO(COLUMNNAME_C_ProjectTask_ID, I_C_ProjectTask.class, C_ProjectTask);
+		set_ValueFromPO(COLUMNNAME_C_ProjectTask_ID, org.compiere.model.I_C_ProjectTask.class, C_ProjectTask);
 	}
 
 	@Override
@@ -506,15 +599,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_SalesRegion getC_SalesRegion()
+	public org.compiere.model.I_C_SalesRegion getC_SalesRegion()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, I_C_SalesRegion.class);
+		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class);
 	}
 
 	@Override
-	public void setC_SalesRegion(final I_C_SalesRegion C_SalesRegion)
+	public void setC_SalesRegion(final org.compiere.model.I_C_SalesRegion C_SalesRegion)
 	{
-		set_ValueFromPO(COLUMNNAME_C_SalesRegion_ID, I_C_SalesRegion.class, C_SalesRegion);
+		set_ValueFromPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class, C_SalesRegion);
 	}
 
 	@Override
@@ -533,15 +626,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_C_SubAcct getC_SubAcct()
+	public org.compiere.model.I_C_SubAcct getC_SubAcct()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_SubAcct_ID, I_C_SubAcct.class);
+		return get_ValueAsPO(COLUMNNAME_C_SubAcct_ID, org.compiere.model.I_C_SubAcct.class);
 	}
 
 	@Override
-	public void setC_SubAcct(final I_C_SubAcct C_SubAcct)
+	public void setC_SubAcct(final org.compiere.model.I_C_SubAcct C_SubAcct)
 	{
-		set_ValueFromPO(COLUMNNAME_C_SubAcct_ID, I_C_SubAcct.class, C_SubAcct);
+		set_ValueFromPO(COLUMNNAME_C_SubAcct_ID, org.compiere.model.I_C_SubAcct.class, C_SubAcct);
 	}
 
 	@Override
@@ -627,13 +720,13 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public void setDescription (final @Nullable String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -723,14 +816,20 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** AnalysisReport = QMA */
+	public static final String DOCBASETYPE_AnalysisReport = "QMA";
+	/** APProFormaInvoice = APF */
+	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
+	/** Tax Declaration = TXD */
+	public static final String DOCBASETYPE_TaxDeclaration = "TXD";
 	@Override
-	public void setDocBaseType (final @Nullable String DocBaseType)
+	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
 	@Override
-	public String getDocBaseType()
+	public java.lang.String getDocBaseType() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocBaseType);
 	}
@@ -765,25 +864,25 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDocStatus (final @Nullable String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
 	@Override
-	public String getDocStatus()
+	public java.lang.String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
-	public void setDocumentNo (final @Nullable String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
 	@Override
-	public String getDocumentNo()
+	public java.lang.String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
@@ -804,15 +903,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_GL_Budget getGL_Budget()
+	public org.compiere.model.I_GL_Budget getGL_Budget()
 	{
-		return get_ValueAsPO(COLUMNNAME_GL_Budget_ID, I_GL_Budget.class);
+		return get_ValueAsPO(COLUMNNAME_GL_Budget_ID, org.compiere.model.I_GL_Budget.class);
 	}
 
 	@Override
-	public void setGL_Budget(final I_GL_Budget GL_Budget)
+	public void setGL_Budget(final org.compiere.model.I_GL_Budget GL_Budget)
 	{
-		set_ValueFromPO(COLUMNNAME_GL_Budget_ID, I_GL_Budget.class, GL_Budget);
+		set_ValueFromPO(COLUMNNAME_GL_Budget_ID, org.compiere.model.I_GL_Budget.class, GL_Budget);
 	}
 
 	@Override
@@ -831,21 +930,21 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_GL_Category getGL_Category()
+	public org.compiere.model.I_GL_Category getGL_Category()
 	{
-		return get_ValueAsPO(COLUMNNAME_GL_Category_ID, I_GL_Category.class);
+		return get_ValueAsPO(COLUMNNAME_GL_Category_ID, org.compiere.model.I_GL_Category.class);
 	}
 
 	@Override
-	public void setGL_Category(final I_GL_Category GL_Category)
+	public void setGL_Category(final org.compiere.model.I_GL_Category GL_Category)
 	{
-		set_ValueFromPO(COLUMNNAME_GL_Category_ID, I_GL_Category.class, GL_Category);
+		set_ValueFromPO(COLUMNNAME_GL_Category_ID, org.compiere.model.I_GL_Category.class, GL_Category);
 	}
 
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 1) 
+		if (GL_Category_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_GL_Category_ID, null);
 		else 
 			set_ValueNoCheck (COLUMNNAME_GL_Category_ID, GL_Category_ID);
@@ -855,6 +954,30 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	public int getGL_Category_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_GL_Category_ID);
+	}
+
+	@Override
+	public void setIsAccountOverridden (final boolean IsAccountOverridden)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsAccountOverridden, IsAccountOverridden);
+	}
+
+	@Override
+	public boolean isAccountOverridden() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAccountOverridden);
+	}
+
+	@Override
+	public void setIsOpenItemsReconciled (final boolean IsOpenItemsReconciled)
+	{
+		set_Value (COLUMNNAME_IsOpenItemsReconciled, IsOpenItemsReconciled);
+	}
+
+	@Override
+	public boolean isOpenItemsReconciled() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItemsReconciled);
 	}
 
 	@Override
@@ -873,15 +996,15 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public I_M_CostElement getM_CostElement()
+	public org.compiere.model.I_M_CostElement getM_CostElement()
 	{
-		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, I_M_CostElement.class);
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
 	}
 
 	@Override
-	public void setM_CostElement(final I_M_CostElement M_CostElement)
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
 	{
-		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, I_M_CostElement.class, M_CostElement);
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
 	}
 
 	@Override
@@ -929,6 +1052,77 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
+	@Override
+	public void setOI_OpenAmount (final @Nullable BigDecimal OI_OpenAmount)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmount, OI_OpenAmount);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setOI_OpenAmountSource (final @Nullable BigDecimal OI_OpenAmountSource)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmountSource, OI_OpenAmountSource);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmountSource() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmountSource);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * OI_TrxType AD_Reference_ID=541800
+	 * Reference name: OI_TrxType
+	 */
+	public static final int OI_TRXTYPE_AD_Reference_ID=541800;
+	/** OpenItem = O */
+	public static final String OI_TRXTYPE_OpenItem = "O";
+	/** Clearing = C */
+	public static final String OI_TRXTYPE_Clearing = "C";
+	@Override
+	public void setOI_TrxType (final @Nullable java.lang.String OI_TrxType)
+	{
+		set_Value (COLUMNNAME_OI_TrxType, OI_TrxType);
+	}
+
+	@Override
+	public java.lang.String getOI_TrxType() 
+	{
+		return get_ValueAsString(COLUMNNAME_OI_TrxType);
+	}
+
+	@Override
+	public void setOpenItemKey (final @Nullable java.lang.String OpenItemKey)
+	{
+		set_Value (COLUMNNAME_OpenItemKey, OpenItemKey);
+	}
+
+	@Override
+	public java.lang.String getOpenItemKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_OpenItemKey);
+	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference() 
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
 	/** 
 	 * PostingType AD_Reference_ID=125
 	 * Reference name: _Posting Type
@@ -947,13 +1141,13 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	/** Actual Year End = Y */
 	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	@Override
-	public void setPostingType (final String PostingType)
+	public void setPostingType (final java.lang.String PostingType)
 	{
 		set_ValueNoCheck (COLUMNNAME_PostingType, PostingType);
 	}
 
 	@Override
-	public String getPostingType()
+	public java.lang.String getPostingType() 
 	{
 		return get_ValueAsString(COLUMNNAME_PostingType);
 	}
@@ -1002,6 +1196,18 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
+	public org.compiere.model.I_C_ElementValue getUser1()
+	{
+		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
+	}
+
+	@Override
+	public void setUser1(final org.compiere.model.I_C_ElementValue User1)
+	{
+		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
+	}
+
+	@Override
 	public void setUser1_ID (final int User1_ID)
 	{
 		if (User1_ID < 1) 
@@ -1014,6 +1220,18 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	public int getUser1_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User1_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ElementValue getUser2()
+	{
+		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
+	}
+
+	@Override
+	public void setUser2(final org.compiere.model.I_C_ElementValue User2)
+	{
+		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
 	@Override
@@ -1062,152 +1280,98 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	}
 
 	@Override
-	public void setUserElementString1 (final @Nullable String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
 
 	@Override
-	public String getUserElementString1()
+	public java.lang.String getUserElementString1() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString1);
 	}
 
 	@Override
-	public void setUserElementString2 (final @Nullable String UserElementString2)
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
 
 	@Override
-	public String getUserElementString2()
+	public java.lang.String getUserElementString2() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString2);
 	}
 
 	@Override
-	public void setUserElementString3 (final @Nullable String UserElementString3)
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
 
 	@Override
-	public String getUserElementString3()
+	public java.lang.String getUserElementString3() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString3);
 	}
 
 	@Override
-	public void setUserElementString4 (final @Nullable String UserElementString4)
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
 
 	@Override
-	public String getUserElementString4()
+	public java.lang.String getUserElementString4() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString4);
 	}
 
 	@Override
-	public void setUserElementString5 (final @Nullable String UserElementString5)
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
 
 	@Override
-	public String getUserElementString5()
+	public java.lang.String getUserElementString5() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString5);
 	}
 
 	@Override
-	public void setUserElementString6 (final @Nullable String UserElementString6)
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
 
 	@Override
-	public String getUserElementString6()
+	public java.lang.String getUserElementString6() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString6);
 	}
 
 	@Override
-	public void setUserElementString7 (final @Nullable String UserElementString7)
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}
 
 	@Override
-	public String getUserElementString7()
+	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
 
 	@Override
-	public void setVATCode (final @Nullable String VATCode)
+	public void setVATCode (final @Nullable java.lang.String VATCode)
 	{
 		set_Value (COLUMNNAME_VATCode, VATCode);
 	}
 
 	@Override
-	public String getVATCode()
+	public java.lang.String getVATCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_VATCode);
-	}
-
-	@Override
-	public org.compiere.model.I_C_CostClassification_Category getC_CostClassification_Category()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class);
-	}
-
-	@Override
-	public void setC_CostClassification_Category(final org.compiere.model.I_C_CostClassification_Category C_CostClassification_Category)
-	{
-		set_ValueFromPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class, C_CostClassification_Category);
-	}
-
-	@Override
-	public void setC_CostClassification_Category_ID (final int C_CostClassification_Category_ID)
-	{
-		if (C_CostClassification_Category_ID < 1)
-			set_Value (COLUMNNAME_C_CostClassification_Category_ID, null);
-		else
-			set_Value (COLUMNNAME_C_CostClassification_Category_ID, C_CostClassification_Category_ID);
-	}
-
-	@Override
-	public int getC_CostClassification_Category_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_CostClassification_Category_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_CostClassification getC_CostClassification()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class);
-	}
-
-	@Override
-	public void setC_CostClassification(final org.compiere.model.I_C_CostClassification C_CostClassification)
-	{
-		set_ValueFromPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class, C_CostClassification);
-	}
-
-	@Override
-	public void setC_CostClassification_ID (final int C_CostClassification_ID)
-	{
-		if (C_CostClassification_ID < 1)
-			set_Value (COLUMNNAME_C_CostClassification_ID, null);
-		else
-			set_Value (COLUMNNAME_C_CostClassification_ID, C_CostClassification_ID);
-	}
-
-	@Override
-	public int getC_CostClassification_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_CostClassification_ID);
 	}
 }

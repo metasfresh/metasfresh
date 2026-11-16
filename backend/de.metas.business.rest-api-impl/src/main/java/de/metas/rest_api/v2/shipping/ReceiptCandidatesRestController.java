@@ -81,7 +81,9 @@ public class ReceiptCandidatesRestController
 			receiptCandidateAPIService.updateStatus(status);
 			Loggables.withLogger(logger, Level.DEBUG).addLog("ReceiptCandidates status updated");
 			
-			return ResponseEntity.accepted().body("ReceiptCandidates updated");
+			return ResponseEntity.accepted()
+					.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
+					.body("ReceiptCandidates updated");
 		}
 	}
 }

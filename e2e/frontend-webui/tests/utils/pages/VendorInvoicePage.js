@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FRONTEND_BASE_URL, getPage, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { VENDOR_INVOICE_WINDOW_ID } from '../WindowIds';
 import { PdfDownloader } from '../PdfDownloader';
 
@@ -103,10 +103,8 @@ export class VendorInvoicePage {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
-      // Single click to select the first row
       const firstRow = page.locator('tbody tr').first();
-      await firstRow.click();
-      await page.waitForTimeout(500);
+      await selectRows([firstRow]);
 
       // Double click to open detail view
       await firstRow.dblclick();
@@ -209,8 +207,7 @@ export class VendorInvoicePage {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
-      await firstRow.click();
-      await page.waitForTimeout(500);
+      await selectRows([firstRow]);
 
       // Double click to open detail view
       await firstRow.dblclick();

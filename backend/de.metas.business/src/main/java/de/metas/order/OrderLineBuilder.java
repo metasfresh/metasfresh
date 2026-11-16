@@ -296,12 +296,6 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
-	{
-		return ProductId.equals(getProductId(), productId)
-				&& UomId.equals(getUomId(), uomId);
-	}
-
 	public OrderLineBuilder description(@Nullable final String description)
 	{
 		this.description = description;

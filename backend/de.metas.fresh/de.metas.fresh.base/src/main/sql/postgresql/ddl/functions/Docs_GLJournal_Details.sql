@@ -41,7 +41,7 @@ SELECT gll.Line,
        c.cursymbol
 FROM gl_journalline AS gll
          LEFT OUTER JOIN c_validcombination vcd ON vcd.c_validcombination_id = gll.account_dr_id
-         LEFT OUTER JOIN c_validcombination vcc ON vcc.c_validcombination_id = gll.account_dr_id
+         LEFT OUTER JOIN c_validcombination vcc ON vcc.c_validcombination_id = gll.account_cr_id
 
     -- taxes
          LEFT OUTER JOIN c_tax td ON td.c_tax_id = gll.dr_tax_id

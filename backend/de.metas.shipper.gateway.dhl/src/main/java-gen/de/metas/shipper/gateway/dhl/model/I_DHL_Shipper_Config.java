@@ -1,8 +1,7 @@
 package de.metas.shipper.gateway.dhl.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DHL_Shipper_Config
  *  @author metasfresh (generated) 
@@ -37,6 +36,29 @@ public interface I_DHL_Shipper_Config
 
 	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_AccountNumber = new ModelColumn<>(I_DHL_Shipper_Config.class, "AccountNumber", null);
 	String COLUMNNAME_AccountNumber = "AccountNumber";
+
+	/**
+	 * Set Account number international.
+	 * International billing number (DHL Paket International, product V53WPAK)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAccountNumber_International (@Nullable java.lang.String AccountNumber_International);
+
+	/**
+	 * Get Account number international.
+	 * International billing number (DHL Paket International, product V53WPAK)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAccountNumber_International();
+
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_AccountNumber_International = new ModelColumn<>(I_DHL_Shipper_Config.class, "AccountNumber_International", null);
+	String COLUMNNAME_AccountNumber_International = "AccountNumber_International";
 
 	/**
 	 * Get Client.
@@ -96,7 +118,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Set Application Token.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -105,7 +127,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Get Application Token.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -254,7 +276,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Set Signature.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -263,7 +285,7 @@ public interface I_DHL_Shipper_Config
 	/**
 	 * Get Signature.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Password
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

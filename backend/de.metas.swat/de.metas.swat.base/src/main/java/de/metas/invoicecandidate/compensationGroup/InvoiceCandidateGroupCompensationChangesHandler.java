@@ -47,13 +47,19 @@ public class InvoiceCandidateGroupCompensationChangesHandler
 			return;
 		}
 
-		// Don't touch processed lines
+		final boolean groupCompensationLine = invoiceCandidate.isGroupCompensationLine();
+
+		// Don't touch processed lines;
+		// but a processed regular line still reprices its group's percent discount candidate, which stays open until all its goods are processed (see PercentCompensationLineInvoicing)
 		if (invoiceCandidate.isProcessed())
 		{
+			if (!groupCompensationLine)
+			{
+				groupsRepo.invalidatePercentCompensationInvoiceCandidatesOfGroup(groupsRepo.extractGroupId(invoiceCandidate));
+			}
 			return;
 		}
 
-		final boolean groupCompensationLine = invoiceCandidate.isGroupCompensationLine();
 		final String amtType = invoiceCandidate.getGroupCompensationAmtType();
 		if (!groupCompensationLine)
 		{

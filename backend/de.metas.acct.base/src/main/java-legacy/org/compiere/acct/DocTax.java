@@ -42,7 +42,6 @@ final class DocTax
 	@NonNull @Getter @Setter private BigDecimal reverseChargeTaxAmt;
 	@NonNull private BigDecimal includedTaxAmt = BigDecimal.ZERO;
 
-	private final boolean salesTax;
 	@Getter private final boolean taxIncluded;
 	@Getter private final boolean isReverseCharge;
 
@@ -54,7 +53,6 @@ final class DocTax
 			@NonNull final BigDecimal taxBaseAmt,
 			@NonNull final BigDecimal taxAmt,
 			@NonNull final BigDecimal reverseChargeTaxAmt,
-			final boolean salesTax,
 			final boolean taxIncluded,
 			final boolean isReverseCharge)
 	{
@@ -63,7 +61,6 @@ final class DocTax
 		this.taxName = taxName;
 		this.taxBaseAmt = taxBaseAmt;
 		this.taxAmt = taxAmt;
-		this.salesTax = salesTax;
 		this.taxIncluded = taxIncluded;
 		this.isReverseCharge = isReverseCharge;
 		this.reverseChargeTaxAmt = reverseChargeTaxAmt;
@@ -74,7 +71,6 @@ final class DocTax
 		return DocTax.builder()
 				.taxId(tax.getTaxId())
 				.taxName(tax.getName())
-				.salesTax(tax.isSalesTax())
 				.isReverseCharge(tax.isReverseCharge());
 	}
 
@@ -85,9 +81,9 @@ final class DocTax
 	}
 
 	@NonNull
-	public Account getTaxCreditOrExpense(@NonNull final AcctSchema as)
+	public Account getTaxCreditAcct(@NonNull final AcctSchema as)
 	{
-		return accountProvider.getTaxAccount(as.getId(), taxId, TaxAcctType.getAPTaxType(salesTax));
+		return accountProvider.getTaxAccount(as.getId(), taxId, TaxAcctType.TaxCredit);
 	}
 
 	@NonNull

@@ -35,6 +35,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 
+/**
+ * Repository Tables: Carrier_Product
+ * Repository Cluster: CarrierProductRepository
+ */
 @Repository
 public class CarrierProductRepository
 {
@@ -47,6 +51,7 @@ public class CarrierProductRepository
 	{
 		return CarrierProduct.builder()
 				.id(CarrierProductId.ofRepoId(product.getCarrier_Product_ID()))
+				.shipperId(ShipperId.ofRepoId(product.getM_Shipper_ID()))
 				.code(product.getExternalId())
 				.name(product.getName())
 				.build();
@@ -74,7 +79,7 @@ public class CarrierProductRepository
 				queryBL.createQueryBuilder(I_Carrier_Product.class)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_M_Shipper_ID, shipperId)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_ExternalId, code)
-						.firstOptional()
+						.firstOnlyOptional()
 						.map(CarrierProductRepository::fromProductRecord)
 						.orElse(null));
 	}

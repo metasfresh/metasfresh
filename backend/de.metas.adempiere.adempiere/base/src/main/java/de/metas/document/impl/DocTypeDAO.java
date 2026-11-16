@@ -11,6 +11,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -121,6 +122,15 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	@NonNull
+	public ITranslatableString getDocTypeNameTrl(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docType = getById(docTypeId);
+		return InterfaceWrapperHelper.getModelTranslationMap(docType)
+				.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
+	}
+
+	@Override
 	@Nullable
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery query)
 	{
@@ -133,6 +143,17 @@ public class DocTypeDAO implements IDocTypeDAO
 	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
 		return docTypeIdsByInvoicingPoolId.getOrLoad(docTypeInvoicingPoolId, this::retrieveDocTypeIdsByInvoicingPoolId);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<DocTypeId> getDocTypeIdsByDocBaseAndSubType(@NonNull final DocBaseAndSubType docBaseAndSubType)
+	{
+		final IQueryBuilder<I_C_DocType> queryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseAndSubType.getDocBaseType());
+		addDocSubTypeFilter(queryBuilder.getCompositeFilter(), docBaseAndSubType.getDocSubType());
+
+		return queryBuilder.create().idsAsSet(DocTypeId::ofRepoId);
 	}
 
 	private Optional<DocTypeId> retrieveDocTypeIdByQuery(@NonNull final DocTypeQuery query)
@@ -186,15 +207,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, query.getAdOrgId());
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, query.getDocBaseType());
 
-		final DocSubType docSubType = query.getDocSubType();
-		if (docSubType.isNone())
-		{
-			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
-		}
-		else if (!docSubType.isAny())
-		{
-			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
-		}
+		addDocSubTypeFilter(filters, query.getDocSubType());
 
 		if (query.getIsSOTrx() != null)
 		{
@@ -204,6 +217,11 @@ public class DocTypeDAO implements IDocTypeDAO
 		if (query.getDefaultDocType() != null)
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsDefault, query.getDefaultDocType());
+		}
+
+		if (query.getIsPartialInvoice() != null)
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsPartialInvoice, query.getIsPartialInvoice());
 		}
 
 		if (!Check.isEmpty(query.getName(), true))
@@ -217,6 +235,18 @@ public class DocTypeDAO implements IDocTypeDAO
 				.addColumn(I_C_DocType.COLUMNNAME_DocSubType, Direction.Ascending, Nulls.First);
 
 		return queryBuilder;
+	}
+
+	private static void addDocSubTypeFilter(@NonNull final ICompositeQueryFilter<I_C_DocType> filters, @NonNull final DocSubType docSubType)
+	{
+		if (docSubType.isNone())
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
+		}
 	}
 
 	@Override

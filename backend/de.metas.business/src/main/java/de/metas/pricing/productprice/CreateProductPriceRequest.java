@@ -23,6 +23,7 @@
 package de.metas.pricing.productprice;
 
 import de.metas.organization.OrgId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -69,4 +70,7 @@ public class CreateProductPriceRequest
 
 	@Nullable
 	Integer seqNo;
+
+	@Nullable
+	InvoicableQtyBasedOn invoicableQtyBasedOn;
 }

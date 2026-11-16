@@ -48,7 +48,6 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		// engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initialized by spring
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
-		engine.addModelValidator(new M_Shipment_Constraint(), client);
 		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
 		//engine.addModelValidator(new M_InOut_Shipment(), client); // converted to spring bean
@@ -94,6 +93,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		//
 		// Register Handlers
 		keyRegistry.registerAggregationKeyValueHandler(registrationKey, new ShipmentScheduleKeyValueHandler());
+		keyRegistry.registerAggregationKeyValueHandler(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY_WITHOUT_ASYNC_BATCH, new ShipmentScheduleKeyValueHandler(false));
 
 		//
 		// Register ShipmentScheduleHeaderAggregationKeyBuilder

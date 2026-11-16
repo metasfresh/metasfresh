@@ -24,6 +24,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.gs1.GTIN;
@@ -43,6 +44,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -54,11 +56,26 @@ import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
+	/** SysConfig name that gates all IsPurchased/IsSold enforcement. Default 'N' (off). */
+	String SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS = "M_Product_EnforcePurchaseSalesFlags";
+
+	/**
+	 * Returns {@code true} when the {@value #SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS} SysConfig is set to 'Y'
+	 * for the given client/org, meaning IsPurchased/IsSold enforcement is active.
+	 */
+	boolean isPurchaseSalesEnforcementEnabled(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
 	I_M_Product getById(ProductId productId);
+
+	/** @return the IDs of the client's stocked products */
+	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull ClientId clientId);
 
 	I_M_Product getByIdInTrx(ProductId productId);
 
 	ProductId getProductIdByValue(OrgId orgId, String productValue);
+
+	/** @return the active products of the given client with this search key (any organisation; the key is unique only per organisation, so several are possible) */
+	ImmutableSet<ProductId> getProductIdsByValue(@NonNull String productValue, @NonNull ClientId clientId);
 
 	UOMPrecision getUOMPrecision(I_M_Product product);
 
@@ -83,6 +100,44 @@ public interface IProductBL extends ISingletonService
 	boolean isStocked(I_M_Product product);
 
 	boolean isStocked(@Nullable ProductId productId);
+
+	boolean isPurchased(@NonNull ProductId productId);
+
+	boolean isSold(@NonNull ProductId productId);
+
+	/** @throws org.adempiere.exceptions.AdempiereException (user validation error) if the product is not flagged IsPurchased. */
+	void assertPurchasable(@NonNull ProductId productId);
+
+	/** @throws org.adempiere.exceptions.AdempiereException (user validation error) if the product is not flagged IsSold. */
+	void assertSellable(@NonNull ProductId productId);
+
+	/**
+	 * @return {@code true} if the given {@link de.metas.product.ProductLifeCycleAction} is allowed for the product's current
+	 * {@link de.metas.product.BBSStatus} ({@code M_Product.ProductLifeCycleStatus}); {@code null}/{@code OK} status is fully permissive.
+	 * Non-throwing companion to {@link #assertAllowed(ProductId, ProductLifeCycleAction)} — used where a boolean is needed
+	 * (e.g. the purchase-demand matcher) instead of catching an exception.
+	 */
+	boolean isAllowed(@NonNull ProductId productId, @NonNull ProductLifeCycleAction action);
+
+	/**
+	 * Delegates to {@link #isAllowed(ProductId, ProductLifeCycleAction)}.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) if the action is blocked by the product's
+	 * current {@link de.metas.product.BBSStatus}.
+	 */
+	void assertAllowed(@NonNull ProductId productId, @NonNull ProductLifeCycleAction action);
+
+	/**
+	 * Batch variant of {@link #assertAllowed(ProductId, ProductLifeCycleAction)} for callers that check a whole
+	 * document's lines: loads the products in one go instead of one {@code getById} per line.
+	 *
+	 * The products are checked in ascending {@code M_Product_ID} order, so a document carrying several blocked
+	 * products always reports the same one.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) on the lowest-id product whose
+	 * current {@link de.metas.product.BBSStatus} blocks the action.
+	 */
+	void assertAllowed(@NonNull Set<ProductId> productIds, @NonNull ProductLifeCycleAction action);
 
 	boolean isItemType(@Nullable ProductId productId);
 
@@ -189,6 +244,9 @@ public interface IProductBL extends ISingletonService
 
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
+	@Nullable
+	I_M_Product_Category getProductCategoryByProductId(@NonNull ProductId productId);
+
 	String getProductValueAndName(@Nullable ProductId productId);
 
 	@Deprecated
@@ -248,6 +306,17 @@ public interface IProductBL extends ISingletonService
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin);
 
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
+
+	/**
+	 * Plural counterpart of {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)} (no partner): returns every match
+	 * and never picks one of several products sharing the GTIN.
+	 * <ol>
+	 * <li>All active products of the client whose {@code M_Product.GTIN} equals the given GTIN exactly (ordered by {@code M_Product_ID}).</li>
+	 * <li>Only if step 1 finds none: the single product found by {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)}, if any.</li>
+	 * </ol>
+	 * Unlike the single-result methods (which return one product by contract), this one may return several.
+	 */
+	ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
 

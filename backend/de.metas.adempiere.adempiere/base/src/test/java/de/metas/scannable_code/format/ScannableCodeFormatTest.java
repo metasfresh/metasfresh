@@ -1,6 +1,7 @@
 package de.metas.scannable_code.format;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.gs1.GTIN;
 import de.metas.scannable_code.ScannedCode;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,5 +94,168 @@ class ScannableCodeFormatTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Invalid constant marker, expected `E` but was `X`");
 		}
+	}
+
+	@Nested
+	class gtin_part
+	{
+		@Test
+		void gtinPart_extractsGtin()
+		{
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("02001234567893"));
+		}
+
+		@Test
+		void gtinPart_nonNumericText_isKeptAsIs_noExceptionAtParseTime()
+		{
+			// GTIN.ofString accepts any non-blank text (GTIN.java), so an invalid GTIN is not rejected at parse time;
+			// the product lookup simply finds nothing for it.
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("ABCDEFGHIJKLMN")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("ABCDEFGHIJKLMN"));
+		}
+
+		@Test
+		void gtinPart_blankSegment_parsesWithoutGtin()
+		{
+			// a label whose GTIN area is blank must still be recognised (lot etc. kept), just without a GTIN
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(6).endPosition(19).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(5).type(ScannableCodeFormatPartType.LotNo).build(),
+							ScannableCodeFormatPart.builder().startPosition(20).endPosition(22).type(ScannableCodeFormatPartType.ProductCode).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("L2311              ABC")).orElseThrow();
+			assertThat(parsed.getGtin()).isNull();
+			assertThat(parsed.getLotNo()).isEqualTo("L2311");
+			assertThat(parsed.getProductNo()).isEqualTo("ABC");
+		}
+
+		@Test
+		void gtinPart_withLotAndBestBefore()
+		{
+			// [1..14] GTIN, [15..19] LOT, [20..25] BEST_BEFORE_DATE (yyMMdd)
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(15).endPosition(19).type(ScannableCodeFormatPartType.LotNo).build(),
+							ScannableCodeFormatPart.builder().startPosition(20).endPosition(25).type(ScannableCodeFormatPartType.BestBeforeDate).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893L2311271231")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("02001234567893"));
+			assertThat(parsed.getLotNo()).isEqualTo("L2311");
+			assertThat(parsed.getBestBeforeDate()).isEqualTo("2027-12-31");
+		}
+
+		@Test
+		void allPartTypes_constantMismatch_notRecognized()
+		{
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(1).type(ScannableCodeFormatPartType.Constant).constantValue("A").build(),
+							ScannableCodeFormatPart.builder().startPosition(2).endPosition(15).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			assertThatThrownBy(() -> format.parse(ScannedCode.ofString("X02001234567893")).orElseThrow())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Invalid constant marker, expected `A` but was `X`");
+		}
+	}
+
+	@Nested
+	class open_end_last_part
+	{
+		// (01)          GTIN(14)        (11)         yyMMdd   (10)       lot (open end)
+		// 1..4          5..18           19..22       23..28   29..32     33..to the end
+		private ScannableCodeFormat format()
+		{
+			return ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(4).type(ScannableCodeFormatPartType.Constant).constantValue("(01)").build(),
+							ScannableCodeFormatPart.builder().startPosition(5).endPosition(18).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(19).endPosition(22).type(ScannableCodeFormatPartType.Constant).constantValue("(11)").build(),
+							ScannableCodeFormatPart.builder().startPosition(23).endPosition(28).type(ScannableCodeFormatPartType.ProductionDate).build(),
+							ScannableCodeFormatPart.builder().startPosition(29).endPosition(32).type(ScannableCodeFormatPartType.Constant).constantValue("(10)").build(),
+							ScannableCodeFormatPart.builder().startPosition(33).endPosition(0).type(ScannableCodeFormatPartType.LotNo).build()
+					))
+					.build();
+		}
+
+		private String label(final String lot)
+		{
+			return "(01)04012345678901(11)250101(10)" + lot;
+		}
+
+		@Test
+		void lotOf6Characters()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("123456"))).orElseThrow().getLotNo()).isEqualTo("123456");
+		}
+
+		@Test
+		void lotOf7Characters()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("1234567"))).orElseThrow().getLotNo()).isEqualTo("1234567");
+		}
+
+		@Test
+		void lotOf1Character()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("7"))).orElseThrow().getLotNo()).isEqualTo("7");
+		}
+
+		@Test
+		void lotOf20AlphanumericCharacters()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("AB12CD34EF56GH78IJ90"))).orElseThrow().getLotNo()).isEqualTo("AB12CD34EF56GH78IJ90");
+		}
+
+		@Test
+		void noLotCharacter_notRecognized()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label(""))).isPresent()).isFalse();
+		}
+
+		@Test
+		void leadingZerosStillStripped()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("012345"))).orElseThrow().getLotNo()).isEqualTo("12345");
+		}
+	}
+
+	@Test
+	void negativeEndPosition_isInvalid()
+	{
+		assertThatThrownBy(() -> ScannableCodeFormatPart.builder().startPosition(5).endPosition(-1).type(ScannableCodeFormatPartType.LotNo).build())
+				.isInstanceOf(RuntimeException.class);
 	}
 }

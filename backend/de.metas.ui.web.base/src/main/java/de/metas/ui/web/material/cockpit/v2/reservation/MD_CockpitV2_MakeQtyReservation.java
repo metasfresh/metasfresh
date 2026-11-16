@@ -1,14 +1,20 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.handlingunits.QtyTU;
-import de.metas.inoutcandidate.qty_reservation.CreateQtyReservationRequest;
+import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.inoutcandidate.qty_reservation.MakeQtyReservationCommand;
+import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.ui.web.order.sales.hu.reservation.process.MaterialCockpitSalesOrderLine;
 import lombok.NonNull;
@@ -23,6 +29,9 @@ public class MD_CockpitV2_MakeQtyReservation
 		extends MaterialCockpitV2BasedProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	@Autowired private QtyReservationService qtyReservationService;
 	@Autowired private ProjectRepository projectRepository;
 
@@ -91,29 +100,24 @@ public class MD_CockpitV2_MakeQtyReservation
 		final QtyTU qtyToReserveTU = getAndValidateQtyToReserveTUParam();
 		final MaterialCockpitV2RowVO rowVO = getSingleSelectedMaterialCockpitRow();
 
-		qtyReservationService.makeReservation(
-				CreateQtyReservationRequest.builder()
-						.orderAndLineId(getSalesOrderAndLineId())
-						.productId(rowVO.getProductId())
-						.warehouseId(rowVO.getWarehouseId())
-						.supplyType(rowVO.getSupplyType())
-						.datePromised(rowVO.getDatePromised())
-						.vendorBPartnerId(rowVO.getVendorBPartnerId())
-						.attributesKey(rowVO.getAttributesKey())
-						.projectId(extractProjectId(rowVO))
-						.qtyTU(qtyToReserveTU)
-						.qty(rowVO.computeQtyCUToReserve(qtyToReserveTU))
-						.build()
-		);
+		final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
+
+		// fallback: the PI's CU-per-TU capacity, used when the order line has no positive QtyItemCapacity
+		final Quantity capacityPerTUFallback = huOrderBL.getCapacityPerTUInStockUOMFallback(salesOrderAndLineId, rowVO.getProductId());
+
+		MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.productBL(productBL)
+				.qtyReservationService(qtyReservationService)
+				.projectRepository(projectRepository)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(qtyToReserveTU)
+				.capacityPerTUFallback(capacityPerTUFallback)
+				.build()
+				.execute();
 
 		return MSG_OK;
-	}
-
-	private ProjectId extractProjectId(final MaterialCockpitV2RowVO rowVO)
-	{
-		return rowVO.getProjectValue() != null
-				? projectRepository.getIdByValueOrNull(rowVO.getProjectValue())
-				: null;
 	}
 
 	@Override

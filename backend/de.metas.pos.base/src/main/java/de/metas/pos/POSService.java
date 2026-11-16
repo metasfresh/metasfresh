@@ -1,7 +1,15 @@
 package de.metas.pos;
 
 import de.metas.money.Money;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
+import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
+import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.remote.RemotePOSOrder;
+import de.metas.pos.withdrawal.POSCashWithdrawalCategory;
+import de.metas.pos.withdrawal.POSCashWithdrawalRequest;
+import de.metas.pos.withdrawal.POSCashWithdrawalResult;
+import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +32,8 @@ public class POSService
 	@NonNull private final POSCashJournalService posJournalService;
 	@NonNull private final POSProductsService productsService;
 	@NonNull private final POSOrdersService ordersService;
+	@NonNull private final POSCashWithdrawalService cashWithdrawalService;
+	@NonNull private final POSInvoiceSettlementService invoiceSettlementService;
 
 	@NonNull
 	public POSTerminal getPOSTerminalById(final POSTerminalId posTerminalId) {return posTerminalService.getPOSTerminalById(posTerminalId);}
@@ -79,6 +89,16 @@ public class POSService
 				: Optional.empty();
 	}
 
+	public List<POSCashWithdrawalCategory> getCashWithdrawalCategories(@NonNull final POSTerminalId posTerminalId)
+	{
+		return cashWithdrawalService.getCategories(posTerminalId);
+	}
+
+	public POSCashWithdrawalResult withdrawCash(@NonNull final POSCashWithdrawalRequest request)
+	{
+		return cashWithdrawalService.withdraw(request);
+	}
+
 	public POSProductsSearchResult getProducts(
 			@NonNull final POSTerminalId posTerminalId,
 			@NonNull final Instant evalDate,
@@ -121,6 +141,20 @@ public class POSService
 		return ordersService.checkoutPayment(request);
 	}
 
+	public POSCardPaymentCheckResult checkCardPayment(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
+	{
+		return ordersService.checkCardPayment(posTerminalId, posOrderExternalId, posPaymentExternalId, userId);
+	}
+
+	public POSCardPaymentReleaseResult releaseCardPayment(@NonNull final POSCardPaymentReleaseRequest request)
+	{
+		return ordersService.releaseCardPayment(request);
+	}
+
 	public POSOrder refundPayment(
 			@NonNull final POSTerminalId posTerminalId,
 			@NonNull final POSOrderExternalId posOrderExternalId,
@@ -133,6 +167,18 @@ public class POSService
 	public Optional<Resource> getReceiptPdf(@NonNull final POSOrderExternalId externalId)
 	{
 		return ordersService.getReceiptPdf(externalId);
+	}
+
+	@NonNull
+	public List<POSOpenInvoice> findOpenInvoices(@NonNull final POSTerminalId posTerminalId, @NonNull final String documentNo)
+	{
+		return invoiceSettlementService.findOpenInvoices(posTerminalId, documentNo);
+	}
+
+	@NonNull
+	public POSInvoiceSettleResult settleInvoiceInCash(@NonNull final POSInvoiceSettleRequest request)
+	{
+		return invoiceSettlementService.settleInCash(request);
 	}
 }
 

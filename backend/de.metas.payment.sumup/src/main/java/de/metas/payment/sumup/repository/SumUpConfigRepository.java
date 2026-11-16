@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
 import de.metas.payment.sumup.SumUpCardReader;
 import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpConfig;
@@ -109,6 +110,23 @@ public class SumUpConfigRepository
 				.orderBy(I_SUMUP_CardReader.COLUMNNAME_SUMUP_CardReader_ID)
 				.create()
 				.stream();
+	}
+
+	/**
+	 * Creates an active config without card readers; add them via {@link #updateById}.
+	 */
+	public SumUpConfigId createConfig(
+			@NonNull final OrgId orgId,
+			@NonNull final String apiKey,
+			@NonNull final SumUpMerchantCode merchantCode)
+	{
+		final I_SUMUP_Config configRecord = InterfaceWrapperHelper.newInstance(I_SUMUP_Config.class);
+		configRecord.setAD_Org_ID(orgId.getRepoId());
+		configRecord.setIsActive(true);
+		configRecord.setApiKey(apiKey);
+		configRecord.setSUMUP_merchant_code(merchantCode.getAsString());
+		InterfaceWrapperHelper.save(configRecord);
+		return extractConfigId(configRecord);
 	}
 
 	public void save(final SumUpConfig config)

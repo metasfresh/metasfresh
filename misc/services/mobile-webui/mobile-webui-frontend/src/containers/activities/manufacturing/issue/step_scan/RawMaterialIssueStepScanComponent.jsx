@@ -1,11 +1,15 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback } from 'react';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import { toastError } from '../../../../../utils/toast';
 import { postManufacturingIssueEventThunk } from '../../../../../actions/ManufacturingActions';
+import { updateWFProcess } from '../../../../../actions/WorkflowActions';
+import { createIssueScheduleOnTheFly } from '../../../../../api/manufacturing';
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../../utils/qrCode/hu';
+import { computeIssueRequest } from './computeIssueRequest';
+import { computeEmptyingConfirmationPrompt } from './computeEmptyingConfirmationPrompt';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
@@ -26,16 +30,62 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
+  const isConfirmEmptyingHU = activity?.dataStored?.isConfirmEmptyingHU;
+
+  const store = useStore();
+  const dispatch = useDispatch();
+  const history = useMobileNavigation();
 
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
 
-  const resolveScannedBarcode = (scannedBarcode, huId) => {
+  const resolveScannedBarcode = async (scannedBarcode, huId) => {
     let step;
     if (huId) {
       step = getNonIssuedStepByHuIdFromActivity({ activity, lineId, huId });
     } else {
       step = getNonIssuedStepByQRCodeFromActivity({ activity, lineId, qrCode: scannedBarcode });
+    }
+
+    // If no local step found, try on-the-fly schedule creation via backend
+    let freshActivity = activity;
+    if (!step) {
+      try {
+        const wfProcess = await createIssueScheduleOnTheFly({
+          wfProcessId,
+          huQRCode: scannedBarcode,
+        });
+
+        // Update Redux state with the returned WFProcess
+        dispatch(updateWFProcess({ wfProcess }));
+
+        // Read fresh activity from the updated Redux store
+        freshActivity = getActivityById(store.getState(), wfProcessId, activityId);
+
+        // Re-lookup the step — first try current line, then all lines
+        if (huId) {
+          step = getNonIssuedStepByHuIdFromActivity({ activity: freshActivity, lineId, huId });
+        } else {
+          step = getNonIssuedStepByQRCodeFromActivity({ activity: freshActivity, lineId, qrCode: scannedBarcode });
+        }
+
+        // If still not found in current line, search all lines
+        if (!step) {
+          const allLineIds = Object.keys(freshActivity?.dataStored?.lines ?? {});
+          for (const lid of allLineIds) {
+            const found = huId
+              ? getNonIssuedStepByHuIdFromActivity({ activity: freshActivity, lineId: lid, huId })
+              : getNonIssuedStepByQRCodeFromActivity({ activity: freshActivity, lineId: lid, qrCode: scannedBarcode });
+            if (found) {
+              step = found;
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('On-the-fly issue schedule creation failed:', e);
+        // fall through to throw original error
+      }
     }
 
     if (!step) {
@@ -44,6 +94,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
     const {
       uom,
+      lineUom,
       qtyToIssueTarget,
       qtyToIssueMax,
       lineQtyToIssue,
@@ -56,13 +107,18 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       scaleTolerance,
       qtyHUCapacity,
       qtyAlreadyOnScale,
-    } = computeStepScanPropsFromActivity({ activity, lineId, stepId: step.id, isProcessedQtyStillOnScale });
+    } = computeStepScanPropsFromActivity({
+      activity: freshActivity,
+      lineId,
+      stepId: step.id,
+      isProcessedQtyStillOnScale,
+    });
 
     return {
       //
       // Props needed for ScanHUAndGetQtyComponent:
       userInfo: computeStepScanUserInfoQtys({
-        uom,
+        lineUom,
         lineQtyToIssue,
         lineQtyToIssueTolerance,
         lineQtyToIssueRemaining,
@@ -84,29 +140,28 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     };
   };
 
-  const dispatch = useDispatch();
-  const history = useMobileNavigation();
+  // "Empty (auto. inventory)" write-off: on `isConfirmEmptyingHU`, confirm before booking, naming the
+  // quantity that will actually be written off. Declining leaves the operator on this dialog and posts
+  // nothing. See computeEmptyingConfirmationPrompt.js for why that quantity is NOT the dialog's own
+  // `qtyRejected`.
+  const getEmptyingConfirmationPrompt = useCallback(
+    (qtyInput, { qtyRejected, rejectedReason, resolvedBarcodeData } = {}) =>
+      computeEmptyingConfirmationPrompt({ qty: qtyInput, qtyRejected, rejectedReason, resolvedBarcodeData }),
+    []
+  );
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
     console.log('onResult', { qty, qtyRejected, reason, resolvedBarcodeData });
-
-    const stepId = resolvedBarcodeData.stepId;
-    const isWeightable = !!resolvedBarcodeData.isWeightable;
-    const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
 
     return dispatch(
       postManufacturingIssueEventThunk({
         wfProcessId,
         activityId,
         lineId,
-        stepId,
-        huWeightGrossBeforeIssue: isWeightable && isIssueWholeHU ? qty : null,
-        qtyIssued: qty,
-        qtyRejected: isIssueWholeHU ? qtyRejected : 0,
-        qtyRejectedReasonCode: isIssueWholeHU ? reason : null,
+        ...computeIssueRequest({ qty, qtyRejected, reason, resolvedBarcodeData }),
       })
     )
-      .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => history.goBack());
+      .then(() => history.goBack())
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   return (
@@ -123,6 +178,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // scaleDevice={scaleDevice}
       //
       // Callbacks:
+      getConfirmationPromptForQty={isConfirmEmptyingHU ? getEmptyingConfirmationPrompt : undefined}
       onResult={onResult}
     />
   );

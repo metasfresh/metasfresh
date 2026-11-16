@@ -30,94 +30,94 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE(No_, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(No_, '''', '''''') + '''' + ', ' +
 
         -- "Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Name, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Name, '''', '''''') + '''' + ', ' +
 
         -- "Search Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Search Name], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Search Name], '''', '''''') + '''' + ', ' +
 
         -- "Name 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Name 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Name 2], '''', '''''') + '''' + ', ' +
 
         -- "Address" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Address, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Address, '''', '''''') + '''' + ', ' +
 
         -- "Address 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Address 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Address 2], '''', '''''') + '''' + ', ' +
 
         -- "City" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(City, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(City, '''', '''''') + '''' + ', ' +
 
         -- "Contact" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Contact, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Contact, '''', '''''') + '''' + ', ' +
 
         -- "Phone No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Phone No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Phone No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Telex No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex No_], '''', '''''') + '''' + ', ' +
 
         -- "Our Account No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Our Account No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Our Account No_], '''', '''''') + '''' + ', ' +
 
         -- "Territory Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Territory Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Territory Code], '''', '''''') + '''' + ', ' +
 
         -- "Global Dimension 1 Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Global Dimension 1 Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Global Dimension 1 Code], '''', '''''') + '''' + ', ' +
 
         -- "Global Dimension 2 Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Global Dimension 2 Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Global Dimension 2 Code], '''', '''''') + '''' + ', ' +
 
         -- "Budgeted Amount" NUMERIC(38, 20) NOT NULL
     CAST([Budgeted Amount] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Vendor Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Vendor Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Vendor Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "Currency Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Currency Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Currency Code], '''', '''''') + '''' + ', ' +
 
         -- "Language Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Language Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Language Code], '''', '''''') + '''' + ', ' +
 
         -- "Statistics Group" INTEGER NOT NULL
     CAST([Statistics Group] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Payment Terms Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Payment Terms Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Payment Terms Code], '''', '''''') + '''' + ', ' +
 
         -- "Fin_ Charge Terms Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Fin_ Charge Terms Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Fin_ Charge Terms Code], '''', '''''') + '''' + ', ' +
 
         -- "Purchaser Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Purchaser Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Purchaser Code], '''', '''''') + '''' + ', ' +
 
         -- "Shipment Method Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Shipment Method Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Shipment Method Code], '''', '''''') + '''' + ', ' +
 
         -- "Shipping Agent Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Shipping Agent Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Shipping Agent Code], '''', '''''') + '''' + ', ' +
 
         -- "Invoice Disc_ Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Invoice Disc_ Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Invoice Disc_ Code], '''', '''''') + '''' + ', ' +
 
         -- "Country_Region Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Country_Region Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Country_Region Code], '''', '''''') + '''' + ', ' +
 
         -- "Blocked" INTEGER NOT NULL
     CAST(Blocked AS NVARCHAR(MAX)) + ', ' +
 
         -- "Pay-to Vendor No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Pay-to Vendor No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Pay-to Vendor No_], '''', '''''') + '''' + ', ' +
 
         -- "Priority" INTEGER NOT NULL
     CAST(Priority AS NVARCHAR(MAX)) + ', ' +
 
         -- "Payment Method Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Payment Method Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Payment Method Code], '''', '''''') + '''' + ', ' +
 
         -- "Last Date Modified" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Last Date Modified], 120) + '''' + ', ' +
@@ -129,85 +129,85 @@ SELECT
     CASE WHEN [Prices Including VAT] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Fax No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Fax No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Fax No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex Answer Back" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Telex Answer Back], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex Answer Back], '''', '''''') + '''' + ', ' +
 
         -- "VAT Registration No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Registration No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Registration No_], '''', '''''') + '''' + ', ' +
 
         -- "Gen_ Bus_ Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Gen_ Bus_ Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Gen_ Bus_ Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "Picture" BYTEA
     CASE WHEN Picture IS NULL THEN 'NULL' ELSE 'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(Picture), 3, DATALENGTH(Picture) * 2) + '''' END + ', ' +
 
         -- "Post Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Post Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Post Code], '''', '''''') + '''' + ', ' +
 
         -- "County" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(County, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(County, '''', '''''') + '''' + ', ' +
 
         -- "E-Mail" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([E-Mail], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([E-Mail], '''', '''''') + '''' + ', ' +
 
         -- "Home Page" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([Home Page], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Home Page], '''', '''''') + '''' + ', ' +
 
         -- "No_ Series" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([No_ Series], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([No_ Series], '''', '''''') + '''' + ', ' +
 
         -- "Tax Area Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Tax Area Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Tax Area Code], '''', '''''') + '''' + ', ' +
 
         -- "Tax Liable" BOOLEAN NOT NULL
     CASE WHEN [Tax Liable] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "VAT Bus_ Posting Group" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([VAT Bus_ Posting Group], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([VAT Bus_ Posting Group], '''', '''''') + '''' + ', ' +
 
         -- "Block Payment Tolerance" BOOLEAN NOT NULL
     CASE WHEN [Block Payment Tolerance] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "IC Partner Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([IC Partner Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([IC Partner Code], '''', '''''') + '''' + ', ' +
 
         -- "Prepayment _" NUMERIC(38, 20) NOT NULL
     CAST([Prepayment _] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Primary Contact No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Primary Contact No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Primary Contact No_], '''', '''''') + '''' + ', ' +
 
         -- "Responsibility Center" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Responsibility Center], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Responsibility Center], '''', '''''') + '''' + ', ' +
 
         -- "Location Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Location Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Location Code], '''', '''''') + '''' + ', ' +
 
         -- "Lead Time Calculation" VARCHAR(32) NOT NULL
-    '''' + REPLACE(REPLACE([Lead Time Calculation], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Lead Time Calculation], '''', '''''') + '''' + ', ' +
 
         -- "Base Calendar Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Base Calendar Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Base Calendar Code], '''', '''''') + '''' + ', ' +
 
         -- "Registration No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Registration No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Registration No_], '''', '''''') + '''' + ', ' +
 
         -- "Dialing Code" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Dialing Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Dialing Code], '''', '''''') + '''' + ', ' +
 
         -- "Name 3" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Name 3], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Name 3], '''', '''''') + '''' + ', ' +
 
         -- "Complete Phone No_" VARCHAR(90) NOT NULL
-    '''' + REPLACE(REPLACE([Complete Phone No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Complete Phone No_], '''', '''''') + '''' + ', ' +
 
         -- "Delivery Reminder Terms" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Delivery Reminder Terms], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Delivery Reminder Terms], '''', '''''') + '''' + ', ' +
 
         -- "Datev Account No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Datev Account No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Datev Account No_], '''', '''''') + '''' + ', ' +
 
         -- "Don_t Export Bank Account" BOOLEAN NOT NULL
     CASE WHEN [Don_t Export Bank Account] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
@@ -219,16 +219,16 @@ SELECT
     CASE WHEN [Disable Auto Application] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Association No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Association No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Association No_], '''', '''''') + '''' + ', ' +
 
         -- "Association Sort Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Association Sort Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Association Sort Code], '''', '''''') + '''' + ', ' +
 
         -- "SearchCity" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(SearchCity, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(SearchCity, '''', '''''') + '''' + ', ' +
 
         -- "Balance Acknowledgement Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Balance Acknowledgement Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Balance Acknowledgement Code], '''', '''''') + '''' + ', ' +
 
         -- "Min_ Pos_ Payment Note" INTEGER NOT NULL
     CAST([Min_ Pos_ Payment Note] AS NVARCHAR(MAX)) + ', ' +
@@ -243,19 +243,19 @@ SELECT
     CAST([Trading Type] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Service No_" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Service No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Service No_], '''', '''''') + '''' + ', ' +
 
         -- "Partner Type" INTEGER NOT NULL
     CAST([Partner Type] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Creditor No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Creditor No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Creditor No_], '''', '''''') + '''' + ', ' +
 
         -- "Preferred Bank Account" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Preferred Bank Account], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Preferred Bank Account], '''', '''''') + '''' + ', ' +
 
         -- "Cash Flow Payment Terms Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Cash Flow Payment Terms Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Cash Flow Payment Terms Code], '''', '''''') + '''' + ', ' +
 
         -- "Datev Export Date" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Datev Export Date], 120) + '''' + ', ' +

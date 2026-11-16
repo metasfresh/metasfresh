@@ -117,3 +117,24 @@ export const getHUsByDisplayableQRCode = (displayableQRCode) => {
 export const listHUsByQRCode = ({ qrCode, upperLevelLocatingQrCode }) => {
   return axios.post(`${huAPIBasePath}/list/byQRCode`, { qrCode, upperLevelLocatingQrCode }).then(unboxAxiosResponse);
 };
+
+export const getGRAIs = (huId) => {
+  return axios.get(`${huManagerAPIBasePath}/${huId}/grai`).then(unboxAxiosResponse);
+};
+
+export const setGRAIs = (huId, graiCodes) => {
+  return axios.put(`${huManagerAPIBasePath}/${huId}/grai`, { graiCodes }).then(unboxAxiosResponse);
+};
+
+/** What would the scanned product label create? (writes nothing) @returns {Promise<Object>} JsonHUProposal: proposal or `rejection` */
+export const proposeHUFromScannedCode = ({ scannedCode }) => {
+  return axios.post(`${huManagerAPIBasePath}/proposeFromScannedCode`, { scannedCode }).then(unboxAxiosResponse);
+};
+
+/** OK on the preview: creates the HU. @returns {Promise<Object>} handling unit info (as byQRCode) */
+export const createHUFromScannedCode = ({ scannedCode, qty, locatorQRCode }) => {
+  return axios
+    .post(`${huManagerAPIBasePath}/createFromScannedCode`, { scannedCode, qty, locatorQRCode })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};

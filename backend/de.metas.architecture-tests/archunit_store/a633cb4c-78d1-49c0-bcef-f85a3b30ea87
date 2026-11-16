@@ -1,0 +1,2 @@
+Method <de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository.getByBPGroupId(de.metas.bpartner.BPGroupId)> calls method <org.compiere.util.Env.getAD_Client_ID()> in (CreditPassConfigRepository.java:138)
+Method <de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository.getByBPGroupId(de.metas.bpartner.BPGroupId)> calls method <org.compiere.util.Env.getAD_Org_ID(java.util.Properties)> in (CreditPassConfigRepository.java:139)

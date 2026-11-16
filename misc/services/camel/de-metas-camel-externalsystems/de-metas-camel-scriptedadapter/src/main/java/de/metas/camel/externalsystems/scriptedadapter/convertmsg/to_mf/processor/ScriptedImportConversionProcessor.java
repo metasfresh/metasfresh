@@ -47,7 +47,7 @@ public class ScriptedImportConversionProcessor implements Processor
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	@Override
-	public void process(@NonNull final Exchange exchange) throws JsonProcessingException
+	public void process(@NonNull final Exchange exchange)
 	{
 		final String request = exchange.getIn().getBody(String.class);
 		if (Check.isEmpty(request))
@@ -63,7 +63,17 @@ public class ScriptedImportConversionProcessor implements Processor
 				script,
 				request);
 
-		final List<ScriptedImportedConversionToMfRequest> requests = mapper.readValue(javaScriptResult, new TypeReference<>() {});
+		final List<ScriptedImportedConversionToMfRequest> requests;
+		try
+		{
+			requests = mapper.readValue(javaScriptResult, new TypeReference<>() {});
+		}
+		catch (final JsonProcessingException e)
+		{
+			// most commonly: the script just echoes its input instead of transforming it into
+			// the expected array of {camelServiceRouteID, requestBody} items.
+			throw new ScriptOutputFormatException(scriptIdentifier, javaScriptResult, e);
+		}
 
 		exchange.getIn().setBody(requests);
 	}

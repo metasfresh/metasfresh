@@ -118,6 +118,8 @@ class BPartnerCompositeRepositoryTest
 								.shipTo(true)
 								.billToDefault(true)
 								.billTo(true)
+								.visitorsAddressDefault(true)
+								.visitorsAddress(true)
 								.build())
 						.gln(GLN.ofString("GLN"))
 						.externalId(ExternalId.of("externalId"))

@@ -17,11 +17,13 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -35,6 +37,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
@@ -197,6 +200,43 @@ public class C_OrderLine
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		bPartnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void validateProductIsPurchasedOrSold(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			return;
+		}
+
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		// Product life-cycle status enforcement — self-gating (O/null => no-op), independent of the
+		// M_Product_EnforcePurchaseSalesFlags SysConfig gate below, so it applies in core regardless of that flag.
+		productBL.assertAllowed(productId, order.isSOTrx() ? ProductLifeCycleAction.SELL : ProductLifeCycleAction.PURCHASE);
+
+		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
+		{
+			return;
+		}
+
+		if (order.isSOTrx())
+		{
+			productBL.assertSellable(productId);
+		}
+		else
+		{
+			productBL.assertPurchasable(productId);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -398,6 +438,15 @@ public class C_OrderLine
 			logger.debug("Making sure {} has a M_Shipper_ID", orderLine);
 			orderLineBL.setShipper(orderLine);
 		}
+	}
+
+	/**
+	 * A calibration belongs to the product it was created for.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
+	public void clearCalibrationOnProductChange(@NonNull final I_C_OrderLine orderLine)
+	{
+		OrderGroupRepository.clearCalibration(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //

@@ -22,83 +22,64 @@
 
 package de.metas.material.cockpit.availableforsales;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
-import de.metas.logging.LogManager;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.material.cockpit.availableforsales.event.EnqueueAvailableForSalesPublisher;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.Product;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.async.Debouncer;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_MD_Available_For_Sales;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AvailableForSalesService
 {
-	private static final Logger logger = LogManager.getLogger(AvailableForSalesService.class);
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
-	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
-	private final AvailableForSalesRepository availableForSalesRepository;
+	@NonNull private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
+	@NonNull private final AvailableForSalesRepository availableForSalesRepository;
+	@NonNull private final EnqueueAvailableForSalesPublisher availableForSalesEventPublisher;
 
-	private final Debouncer<EnqueueAvailableForSalesRequest> syncProductDebouncer;
-
-	public AvailableForSalesService(
-			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
-			@NonNull final AvailableForSalesRepository availableForSalesRepository)
+	public static AvailableForSalesService newInstanceForUnitTesting()
 	{
-		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
-		this.availableForSalesRepository = availableForSalesRepository;
-
-		this.syncProductDebouncer = Debouncer.<EnqueueAvailableForSalesRequest>builder()
-				.name("syncAvailableForSalesDebouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.material.cockpit.availableforsales.AvailableForSalesService.debouncer.bufferMaxSize", 100))
-				.delayInMillis(sysConfigBL.getIntValue("de.metas.material.cockpit.availableforsales.AvailableForSalesService.debouncer.delayInMillis", 5000))
-				.distinct(true)
-				.consumer(this::syncAvailableForSales)
-				.build();
+		Adempiere.assertUnitTestMode();
+		return new AvailableForSalesService(
+				new AvailableForSalesConfigRepo(),
+				new AvailableForSalesRepository(),
+				new EnqueueAvailableForSalesPublisher(new PlainEventBusFactory())
+		);
 	}
 
-	public void enqueueAvailableForSalesRequest(@NonNull final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest)
+	public void enqueueAvailableForSalesRequestAfterCommit(@NonNull final EnqueueAvailableForSalesRequest request)
 	{
-		final AvailableForSalesQuery availableForSalesQuery = enqueueAvailableForSalesRequest.getAvailableForSalesQuery();
-
-		Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId: {} and AttributesKey: {} enqueued to be synced.",
-														 availableForSalesQuery.getProductId(),
-														 availableForSalesQuery.getStorageAttributesKeyPattern().getSqlLikeString());
-
-		syncProductDebouncer.add(enqueueAvailableForSalesRequest);
+		availableForSalesEventPublisher.publishAfterCommit(request);
 	}
 
-	public void syncAvailableForSalesForProduct(@NonNull final Product product)
+	public void syncAvailableForSalesForProduct(@NonNull final Product product, @NonNull ClientId clientId)
 	{
-		final ImmutableList<AvailableForSalesQuery> availableForSalesQueries = buildAvailableForSalesQueries(product);
+		final ImmutableList<AvailableForSalesQuery> availableForSalesQueries = buildAvailableForSalesQueries(product, clientId);
 
 		for (final AvailableForSalesQuery availableForSalesQuery : availableForSalesQueries)
 		{
@@ -113,48 +94,29 @@ public class AvailableForSalesService
 	}
 
 	@NonNull
-	private ImmutableList<AvailableForSalesQuery> buildAvailableForSalesQueries(@NonNull final Product product)
+	private ImmutableList<AvailableForSalesQuery> buildAvailableForSalesQueries(@NonNull final Product product, @NonNull ClientId clientId)
 	{
 		final OrgId orgId = product.getOrgId();
-
-		if (OrgId.ANY.equals(orgId))
+		if (orgId.isAny())
 		{
-			return orgDAO.retrieveClientOrgs(Env.getAD_Client_ID())
+			return orgDAO.retrieveClientOrgs(clientId)
 					.stream()
 					.map(I_AD_Org::getAD_Org_ID)
 					.map(OrgId::ofRepoId)
-					.map(currentOrgId -> createAvailableForSalesQuery(product, currentOrgId))
+					.map(currentOrgId -> createAvailableForSalesQuery(product, ClientAndOrgId.ofClientAndOrg(clientId, currentOrgId)))
 					.filter(Optional::isPresent)
 					.map(Optional::get)
 					.collect(ImmutableList.toImmutableList());
 		}
 		else
 		{
-			return createAvailableForSalesQuery(product, orgId)
+			return createAvailableForSalesQuery(product, ClientAndOrgId.ofClientAndOrg(clientId, orgId))
 					.map(ImmutableList::of)
 					.orElseGet(ImmutableList::of);
 		}
 	}
 
-	private void syncAvailableForSales(@NonNull final Collection<EnqueueAvailableForSalesRequest> requests)
-	{
-		if (requests.isEmpty())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("SyncAvailableForSalesRequest list is empty! No action is performed!");
-			return;
-		}
-
-		for (final EnqueueAvailableForSalesRequest request : requests)
-		{
-
-			try (final IAutoCloseable autoCloseable = Env.switchContext(request.getCtx()))
-			{
-				syncAvailableForSalesTable(request.getAvailableForSalesQuery());
-			}
-		}
-	}
-
-	private void syncAvailableForSalesTable(@NonNull final AvailableForSalesQuery availableForSalesQuery)
+	public void syncAvailableForSalesTable(@NonNull final AvailableForSalesQuery availableForSalesQuery)
 	{
 		final ImmutableList<AvailableForSalesResult> availableForSalesComputationResults = computeAvailableForSales(AvailableForSalesMultiQuery.of(availableForSalesQuery))
 				.getAvailableForSalesResults();
@@ -184,23 +146,11 @@ public class AvailableForSalesService
 	}
 
 	@NonNull
-	private AvailableForSalesConfig getAvailableForSalesConfig(
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
-	{
-		return availableForSalesConfigRepo.getConfig(
-				AvailableForSalesConfigRepo.ConfigQuery.builder()
-						.clientId(clientId)
-						.orgId(orgId)
-						.build());
-	}
-
-	@NonNull
 	private Optional<AvailableForSalesQuery> createAvailableForSalesQuery(
 			@NonNull final Product product,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final AvailableForSalesConfig config = getAvailableForSalesConfig(Env.getClientId(), orgId);
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(clientAndOrgId);
 
 		if (!config.isFeatureEnabled())
 		{
@@ -208,14 +158,14 @@ public class AvailableForSalesService
 		}
 
 		return Optional.of(AvailableForSalesQuery
-								   .builder()
-								   .dateOfInterest(SystemTime.asInstant())
-								   .productId(product.getId())
-								   .storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ALL))
-								   .orgId(orgId)
-								   .shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
-								   .salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
-								   .build());
+				.builder()
+				.dateOfInterest(SystemTime.asInstant())
+				.productId(product.getId())
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ALL))
+				.clientAndOrgId(clientAndOrgId)
+				.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
+				.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
+				.build());
 	}
 
 	private void saveResult(@NonNull final AvailableForSalesResult result)
@@ -231,7 +181,7 @@ public class AvailableForSalesService
 		final RetrieveAvailableForSalesQuery retrieveAvailableForSalesQuery = buildRetrieveAvailableForSalesQuery(availableForSalesQuery);
 
 		return Maps.uniqueIndex(availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQuery),
-								record -> AvailableForSalesId.ofRepoId(record.getMD_Available_For_Sales_ID()));
+				record -> AvailableForSalesId.ofRepoId(record.getMD_Available_For_Sales_ID()));
 	}
 
 	@NonNull

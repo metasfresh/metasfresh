@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_C_Doc_Outbound_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1872568143L;
+	private static final long serialVersionUID = 1275971466L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Config (final Properties ctx, final int C_Doc_Outbound_Config_ID, @Nullable final String trxName)
@@ -168,8 +168,8 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
 	/** Interne Rechnung (Lieferant) = AVI */
 	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
-	/** Speditionsauftrag/Ladeliste = MST */
-	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** ShipperTransportation = MST */
+	public static final String DOCBASETYPE_ShipperTransportation = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */
@@ -190,6 +190,10 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	/** AnalysisReport = QMA */
 	public static final String DOCBASETYPE_AnalysisReport = "QMA";
+	/** APProFormaInvoice = APF */
+	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
+	/** Tax Declaration = TXD */
+	public static final String DOCBASETYPE_TaxDeclaration = "TXD";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -200,6 +204,21 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public java.lang.String getDocBaseType() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocBaseType);
+	}
+
+	@Override
+	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
+	{
+		if (ExternalSystem_Config_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public int getExternalSystem_Config_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
 	}
 
 	@Override

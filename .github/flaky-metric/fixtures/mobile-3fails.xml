@@ -1,0 +1,1383 @@
+<testsuites id="" name="" tests="187" failures="3" skipped="0" errors="0" time="1183.884446">
+<testsuite name="spec/picking/close_partially_shipped.spec.js" timestamp="2026-05-25T17:03:22.884Z" hostname="Mobile Chrome" tests="1" failures="1" skipped="0" time="7.079" errors="0">
+<testcase name="Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped schedules are closed" classname="spec/picking/close_partially_shipped.spec.js" time="7.079">
+<failure message="close_partially_shipped.spec.js:72:5 Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped schedules are closed" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › spec/picking/close_partially_shipped.spec.js:72:5 › Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped schedules are closed › Assert shipment schedules: P2 and P3 should be closed › Backend: expect  
+
+    Error: Got error on last backend call:
+    {
+      "failure": {
+        "message": "Expected IsClosed to be <false> but was <true>",
+        "stacktrace": " <~~~ Failure.<init>:37 <- Failure.<init>:18 <- Failure$FailureBuilder.build:28 <- AssertThat.fail:54 <- AssertThat.fail:46 <- AssertThat.isEqualTo:75 <- AssertPickingExpectationsCommand.lambda$null$5:190 <- Assertions.softly:38 <- AssertPickingExpectationsCommand.lambda$assertShipmentSchedule$6:188 <~~~ AssertPickingExpectationsCommand.assertShipmentSchedule:188 <- AssertPickingExpectationsCommand.assertShipmentSchedules:126 <- AssertPickingExpectationsCommand.assertPicking:75 <- AssertPickingExpectationsCommand.execute:60 <- AssertExpectationsCommand.execute:62 <- FrontendTestingRestController.expect:120 <~~~ ApiAuditService.processRequestSync:500 <- ApiAuditService.processRequest:245 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.doFilter:53",
+        "context": {
+          "shipmentSchedule": "X_M_ShipmentSchedule[M_ShipmentSchedule_ID=1000013, trxName=<<ThreadInherited>>]"
+        }
+      },
+      "context": {
+        "de.metas.handlingunits.HUPIItemProductId:TU3_P3": 3010129,
+        "de.metas.handlingunits.HuPackingInstructionsId:TU3": 3001830,
+        "de.metas.handlingunits.HuPackingInstructionsId:TU2": 3001829,
+        "de.metas.handlingunits.HuPackingInstructionsId:TU": 3001827,
+        "de.metas.order.OrderLineId:SO1_line1": 1000013,
+        "de.metas.handlingunits.HUPIItemProductId:TU": 3010127,
+        "de.metas.handlingunits.HuId:vhu1": 1000425,
+        "de.metas.order.OrderLineId:SO1_line3": 1000015,
+        "de.metas.order.OrderLineId:SO1_line2": 1000014,
+        "de.metas.handlingunits.HuPackingInstructionsId:LU": 3001828,
+        "de.metas.handlingunits.HUPIItemProductId:TU_P1": 3010127,
+        "de.metas.bpartner.BPartnerId:BP1": 2156435,
+        "org.adempiere.warehouse.LocatorId:wh": "1000313_1000218",
+        "de.metas.pricing.PricingSystemId:PS_2026-05-25T17:10:56.971Z": 2000848,
+        "de.metas.product.ProductId:P2": 2005821,
+        "de.metas.product.ProductId:P3": 2005822,
+        "de.metas.product.ProductId:P1": 2005820,
+        "de.metas.handlingunits.HuId:HU1": 1000421,
+        "de.metas.handlingunits.HUPIItemProductId:TU2_P2": 3010128,
+        "de.metas.handlingunits.HUPIItemProductId:TU3": 3010129,
+        "de.metas.handlingunits.HuId:lu1": 1000424,
+        "de.metas.handlingunits.HuId:HU3": 1000423,
+        "de.metas.handlingunits.HuId:HU2": 1000422,
+        "de.metas.bpartner.BPartnerLocationId:BP1_singleBPLocationI": "2156435_2205185",
+        "de.metas.handlingunits.HuId:tu1": 1000425,
+        "org.adempiere.warehouse.WarehouseId:wh": 1000313,
+        "de.metas.user.UserId:user": 2188344,
+        "de.metas.handlingunits.HUPIItemProductId:TU2": 3010128,
+        "de.metas.inout.InOutLineId:shipmentLineId1": 1000006,
+        "de.metas.order.OrderId:SO1": 1000007,
+        "de.metas.pricing.PriceListVersionId:PLV_2026-05-25T17:10:56.976Z": 2002151,
+        "de.metas.picking.api.PickingSlotId:slot1": 1000130
+      }
+    }
+
+       at utils/screens/Backend.js:159
+
+      157 |         || responseBody.stackTrace
+      158 |         || responseBody.failure) {
+    > 159 |         throw Error("Got error on last backend call:\n" + JSON.stringify(responseBody, null, 2));
+          |               ^
+      160 |     }
+      161 | };
+      162 |
+        at assertNoErrors (/app/tests/utils/screens/Backend.js:159:15)
+        at /app/tests/utils/screens/Backend.js:54:9
+        at Object.expect (/app/tests/utils/screens/Backend.js:36:37)
+        at /app/tests/spec/picking/close_partially_shipped.spec.js:118:9
+        at /app/tests/spec/picking/close_partially_shipped.spec.js:117:5
+
+    attachment #6: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/spec-picking-close_partial-a27fe-hipped-schedules-are-closed-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/spec-picking-close_partial-a27fe-hipped-schedules-are-closed-Mobile-Chrome/error-context.md
+
+    attachment #8: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/spec-picking-close_partial-a27fe-hipped-schedules-are-closed-Mobile-Chrome/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/spec-picking-close_partial-a27fe-hipped-schedules-are-closed-Mobile-Chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[Created master data (en_US):
+{
+  "context": {
+    "de.metas.handlingunits.HUPIItemProductId:TU3_P3": 3010129,
+    "de.metas.handlingunits.HuPackingInstructionsId:TU3": 3001830,
+    "de.metas.handlingunits.HuPackingInstructionsId:TU2": 3001829,
+    "de.metas.handlingunits.HuPackingInstructionsId:TU": 3001827,
+    "de.metas.order.OrderLineId:SO1_line1": 1000013,
+    "de.metas.handlingunits.HUPIItemProductId:TU": 3010127,
+    "de.metas.order.OrderLineId:SO1_line3": 1000015,
+    "de.metas.order.OrderLineId:SO1_line2": 1000014,
+    "de.metas.handlingunits.HuPackingInstructionsId:LU": 3001828,
+    "de.metas.handlingunits.HUPIItemProductId:TU_P1": 3010127,
+    "de.metas.bpartner.BPartnerId:BP1": 2156435,
+    "org.adempiere.warehouse.LocatorId:wh": "1000313_1000218",
+    "de.metas.pricing.PricingSystemId:PS_2026-05-25T17:10:56.971Z": 2000848,
+    "de.metas.product.ProductId:P2": 2005821,
+    "de.metas.product.ProductId:P3": 2005822,
+    "de.metas.product.ProductId:P1": 2005820,
+    "de.metas.handlingunits.HuId:HU1": 1000421,
+    "de.metas.handlingunits.HUPIItemProductId:TU2_P2": 3010128,
+    "de.metas.handlingunits.HUPIItemProductId:TU3": 3010129,
+    "de.metas.handlingunits.HuId:HU3": 1000423,
+    "de.metas.handlingunits.HuId:HU2": 1000422,
+    "de.metas.bpartner.BPartnerLocationId:BP1_singleBPLocationI": "2156435_2205185",
+    "org.adempiere.warehouse.WarehouseId:wh": 1000313,
+    "de.metas.user.UserId:user": 2188344,
+    "de.metas.handlingunits.HUPIItemProductId:TU2": 3010128,
+    "de.metas.order.OrderId:SO1": 1000007,
+    "de.metas.pricing.PriceListVersionId:PLV_2026-05-25T17:10:56.976Z": 2002151,
+    "de.metas.picking.api.PickingSlotId:slot1": 1000130
+  },
+  "previousSysconfigs": {
+    "M_ShipmentSchedule_Close_PartiallyShipped": "N"
+  },
+  "mobileConfig": {
+    "defaultAuthMethod": "UserPass",
+    "picking": {
+      "aggregationType": "sales_order",
+      "allowPickingAnyCustomer": true,
+      "allowPickingAnyHU": true,
+      "createShipmentPolicy": "CO",
+      "completeJobAutomatically": false,
+      "alwaysSplitHUsEnabled": false,
+      "shipOnCloseLU": false,
+      "pickTo": [
+        "LU_TU"
+      ],
+      "readAttributes": [
+        "BestBeforeDate",
+        "LotNo"
+      ],
+      "filterByQRCode": false,
+      "allowCompletingPartialPickingJob": true,
+      "isAnonymousPickHUsOnTheFly": false,
+      "displayPickingSlotSuggestions": false,
+      "activeWorkplaceRequired": false,
+      "considerOnlyJobScheduledToWorkplace": false,
+      "filters": [
+        "Customer",
+        "DeliveryDate"
+      ]
+    }
+  },
+  "login": {
+    "user": {
+      "username": "user_20260525T191056936",
+      "password": "user_20260525T191056936",
+      "token": "8b38679aa8044734b68e9a8415e166bd"
+    }
+  },
+  "bpartners": {
+    "BP1": {
+      "id": 2156435,
+      "bpartnerCode": "BP1_20260525T191056971",
+      "bpartnerLocationId": 2205185,
+      "gln": null,
+      "locations": null,
+      "contacts": null
+    }
+  },
+  "products": {
+    "P1": {
+      "id": 2005820,
+      "productCode": "P1_20260525T191057002",
+      "productName": "P1_20260525T191057002",
+      "gtin": "7617609178455",
+      "ean13ProductCode": null
+    },
+    "P2": {
+      "id": 2005821,
+      "productCode": "P2_20260525T191057017",
+      "productName": "P2_20260525T191057017",
+      "gtin": "7612674709948",
+      "ean13ProductCode": null
+    },
+    "P3": {
+      "id": 2005822,
+      "productCode": "P3_20260525T191057029",
+      "productName": "P3_20260525T191057029",
+      "gtin": "7616221728789",
+      "ean13ProductCode": null
+    }
+  },
+  "resources": {},
+  "productPlannings": {},
+  "pickingSlots": {
+    "slot1": {
+      "id": 1000130,
+      "code": "slot1_20260525T191057052",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000130,\"caption\":\"slot1_20260525T191057052\"}"
+    }
+  },
+  "warehouses": {
+    "wh": {
+      "warehouseId": 1000313,
+      "warehouseCode": "wh_20260525T191057043",
+      "warehouseName": "wh_20260525T191057043",
+      "inTransit": false,
+      "locatorId": 1000218,
+      "locatorCode": "wh_20260525T191057043_Locator",
+      "locatorQRCode": "LOC#1#{\"warehouseId\":1000313,\"locatorId\":1000218,\"caption\":\"wh_20260525T191057043_Locator\"}",
+      "locators": {}
+    }
+  },
+  "workplaces": {},
+  "packingInstructions": {
+    "PI": {
+      "tuName": "TU_20260525T191057054",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010127",
+      "tuPITestId": "pi-3001827",
+      "luName": "LU_20260525T191057064",
+      "luPIItemTestId": "luPIItem-3008227",
+      "luPITestId": "pi-3001828"
+    },
+    "PI2": {
+      "tuName": "TU2_20260525T191057069",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010128",
+      "tuPITestId": "pi-3001829",
+      "luName": "LU_20260525T191057064",
+      "luPIItemTestId": "luPIItem-3008229",
+      "luPITestId": "pi-3001828"
+    },
+    "PI3": {
+      "tuName": "TU3_20260525T191057080",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010129",
+      "tuPITestId": "pi-3001830",
+      "luName": "LU_20260525T191057064",
+      "luPIItemTestId": "luPIItem-3008231",
+      "luPITestId": "pi-3001828"
+    }
+  },
+  "shippers": {},
+  "handlingUnits": {
+    "HU1": {
+      "huId": "1000421",
+      "qrCode": "HU#1#{\"id\":\"aa8238b34410939a7bc28feb5c41-37868\",\"packingInfo\":{\"huUnitType\":\"V\",\"packingInstructionsId\":101,\"caption\":\"No Packing Item\"},\"product\":{\"id\":2005820,\"code\":\"P1_20260525T191057002\",\"name\":\"P1_20260525T191057002\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005820,
+      "warehouseId": 1000313,
+      "externalBarcode": null
+    },
+    "HU2": {
+      "huId": "1000422",
+      "qrCode": "HU#1#{\"id\":\"683c96f79485b7f88fc3e78fb944-27250\",\"packingInfo\":{\"huUnitType\":\"V\",\"packingInstructionsId\":101,\"caption\":\"No Packing Item\"},\"product\":{\"id\":2005821,\"code\":\"P2_20260525T191057017\",\"name\":\"P2_20260525T191057017\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005821,
+      "warehouseId": 1000313,
+      "externalBarcode": null
+    },
+    "HU3": {
+      "huId": "1000423",
+      "qrCode": "HU#1#{\"id\":\"3db503400463a41072d5976ef0a8-02612\",\"packingInfo\":{\"huUnitType\":\"V\",\"packingInstructionsId\":101,\"caption\":\"No Packing Item\"},\"product\":{\"id\":2005822,\"code\":\"P3_20260525T191057029\",\"name\":\"P3_20260525T191057029\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005822,
+      "warehouseId": 1000313,
+      "externalBarcode": null
+    }
+  },
+  "generatedHUQRCodes": {},
+  "salesOrders": {
+    "SO1": {
+      "id": "1000007",
+      "documentNo": "0008"
+    }
+  },
+  "purchaseOrders": {},
+  "shipments": {},
+  "receipts": {},
+  "invoices": {},
+  "distributionOrders": {},
+  "manufacturingOrders": {},
+  "inventories": {}
+}
+Intercepted authentication token: 8b38679aa8044734b68e9a8415e166bd from login response {
+  token: [32m'8b38679aa8044734b68e9a8415e166bd'[39m,
+  language: [32m'en_US'[39m,
+  userId: [33m2188344[39m,
+  username: [32m'user_20260525T191056936'[39m,
+  userFullname: [32m'user_20260525T191056936 user_20260525T191056936'[39m
+}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000130,"caption":"slot1_20260525T191057052"}
+Scanning scanned code:
+HU#1#{"id":"aa8238b34410939a7bc28feb5c41-37868","packingInfo":{"huUnitType":"V","packingInstructionsId":101,"caption":"No Packing Item"},"product":{"id":2005820,"code":"P1_20260525T191057002","name":"P1_20260525T191057002"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+Scanning scanned code:
+HU#1#{"id":"683c96f79485b7f88fc3e78fb944-27250","packingInfo":{"huUnitType":"V","packingInstructionsId":101,"caption":"No Packing Item"},"product":{"id":2005821,"code":"P2_20260525T191057017","name":"P2_20260525T191057017"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+
+[[ATTACHMENT|../../test-results/spec-picking-close_partial-a27fe-hipped-schedules-are-closed-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|../../test-results/spec-picking-close_partial-a27fe-hipped-schedules-are-closed-Mobile-Chrome/error-context.md]]
+
+[[ATTACHMENT|../../test-results/spec-picking-close_partial-a27fe-hipped-schedules-are-closed-Mobile-Chrome/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="spec/picking/pick_what_was_scheduled_to_workplace.spec.js" timestamp="2026-05-25T17:03:22.884Z" hostname="Mobile Chrome" tests="1" failures="1" skipped="0" time="124.207" errors="0">
+<testcase name="Pick one sales order to different workplaces" classname="spec/picking/pick_what_was_scheduled_to_workplace.spec.js" time="124.207">
+<failure message="pick_what_was_scheduled_to_workplace.spec.js:82:5 Pick one sales order to different workplaces" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › spec/picking/pick_what_was_scheduled_to_workplace.spec.js:82:5 › Pick one sales order to different workplaces › Picking from workplace2 › PickingJobsListScreen - Start job by documentNo 0038 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.tap: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for locator('.wflauncher-button').filter({ hasText: '0038' })
+
+
+       at utils/screens/picking/PickingJobsListScreen.js:54
+
+      52 |         if (documentNo != null) {
+      53 |             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
+    > 54 |                 await locateJobButtons({ documentNo }).tap();
+         |                                                        ^
+      55 |                 await PickingJobScreen.waitForScreen();
+      56 |                 return {
+      57 |                     pickingJobId: await PickingJobScreen.getPickingJobId(),
+        at /app/tests/utils/screens/picking/PickingJobsListScreen.js:54:56
+        at Object.startJob (/app/tests/utils/screens/picking/PickingJobsListScreen.js:53:31)
+        at /app/tests/spec/picking/pick_what_was_scheduled_to_workplace.spec.js:177:62
+        at /app/tests/spec/picking/pick_what_was_scheduled_to_workplace.spec.js:168:5
+
+    attachment #6: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/spec-picking-pick_what_was-364ed-der-to-different-workplaces-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/spec-picking-pick_what_was-364ed-der-to-different-workplaces-Mobile-Chrome/error-context.md
+
+    attachment #8: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/spec-picking-pick_what_was-364ed-der-to-different-workplaces-Mobile-Chrome/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/spec-picking-pick_what_was-364ed-der-to-different-workplaces-Mobile-Chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[Created master data (en_US):
+{
+  "context": {
+    "de.metas.handlingunits.HuPackingInstructionsId:TU": 3001873,
+    "de.metas.order.OrderLineId:SO1_line1": 1000057,
+    "de.metas.handlingunits.HUPIItemProductId:TU": 3010161,
+    "de.metas.order.OrderLineId:SO1_line3": 1000059,
+    "de.metas.order.OrderLineId:SO1_line2": 1000058,
+    "de.metas.pricing.PricingSystemId:PS_2026-05-25T17:14:03.549Z": 2000872,
+    "de.metas.handlingunits.HuPackingInstructionsId:LU": 3001874,
+    "de.metas.handlingunits.HUPIItemProductId:TU_P1": 3010161,
+    "de.metas.handlingunits.HUPIItemProductId:TU_P3": 3010163,
+    "de.metas.handlingunits.HUPIItemProductId:TU_P2": 3010162,
+    "de.metas.bpartner.BPartnerId:BP1": 2156462,
+    "org.adempiere.warehouse.LocatorId:wh": "1000337_1000242",
+    "de.metas.product.ProductId:P2": 2005862,
+    "de.metas.product.ProductId:P3": 2005863,
+    "de.metas.user.UserId:user1": 2188368,
+    "de.metas.product.ProductId:P1": 2005861,
+    "de.metas.user.UserId:user2": 2188369,
+    "de.metas.handlingunits.HuId:HU1": 1000622,
+    "de.metas.pricing.PriceListVersionId:PLV_2026-05-25T17:14:03.554Z": 2002175,
+    "de.metas.handlingunits.HuId:HU3": 1000630,
+    "de.metas.handlingunits.HuId:HU2": 1000626,
+    "de.metas.workplace.WorkplaceId:workplace2": 1000039,
+    "de.metas.bpartner.BPartnerLocationId:BP1_singleBPLocationI": "2156462_2205212",
+    "de.metas.workplace.WorkplaceId:workplace1": 1000038,
+    "org.adempiere.warehouse.WarehouseId:wh": 1000337,
+    "de.metas.order.OrderId:SO1": 1000037,
+    "de.metas.picking.api.PickingSlotId:slot1": 1000154
+  },
+  "mobileConfig": {
+    "defaultAuthMethod": "UserPass",
+    "picking": {
+      "aggregationType": "sales_order",
+      "allowPickingAnyCustomer": true,
+      "allowPickingAnyHU": true,
+      "createShipmentPolicy": "CL",
+      "completeJobAutomatically": false,
+      "alwaysSplitHUsEnabled": false,
+      "shipOnCloseLU": false,
+      "pickTo": [
+        "LU_CU",
+        "LU_TU",
+        "CU",
+        "TU"
+      ],
+      "readAttributes": [
+        "BestBeforeDate",
+        "LotNo"
+      ],
+      "filterByQRCode": false,
+      "allowCompletingPartialPickingJob": true,
+      "isAnonymousPickHUsOnTheFly": false,
+      "displayPickingSlotSuggestions": false,
+      "activeWorkplaceRequired": true,
+      "considerOnlyJobScheduledToWorkplace": true,
+      "filters": [
+        "Customer",
+        "DeliveryDate"
+      ]
+    }
+  },
+  "login": {
+    "user1": {
+      "username": "user1_20260525T191403485",
+      "password": "user1_20260525T191403485",
+      "token": "73f4e1148ecc43d7aef80dfa51c23bf5"
+    },
+    "user2": {
+      "username": "user2_20260525T191403519",
+      "password": "user2_20260525T191403519",
+      "token": "a2938394d817415a8eda181a2b79801e"
+    }
+  },
+  "bpartners": {
+    "BP1": {
+      "id": 2156462,
+      "bpartnerCode": "BP1_20260525T191403549",
+      "bpartnerLocationId": 2205212,
+      "gln": null,
+      "locations": null,
+      "contacts": null
+    }
+  },
+  "products": {
+    "P1": {
+      "id": 2005861,
+      "productCode": "P1_20260525T191403578",
+      "productName": "P1_20260525T191403578",
+      "gtin": null,
+      "ean13ProductCode": null
+    },
+    "P2": {
+      "id": 2005862,
+      "productCode": "P2_20260525T191403595",
+      "productName": "P2_20260525T191403595",
+      "gtin": null,
+      "ean13ProductCode": null
+    },
+    "P3": {
+      "id": 2005863,
+      "productCode": "P3_20260525T191403609",
+      "productName": "P3_20260525T191403609",
+      "gtin": null,
+      "ean13ProductCode": null
+    }
+  },
+  "resources": {},
+  "productPlannings": {},
+  "pickingSlots": {
+    "slot1": {
+      "id": 1000154,
+      "code": "slot1_20260525T191403628",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000154,\"caption\":\"slot1_20260525T191403628\"}"
+    }
+  },
+  "warehouses": {
+    "wh": {
+      "warehouseId": 1000337,
+      "warehouseCode": "wh_20260525T191403620",
+      "warehouseName": "wh_20260525T191403620",
+      "inTransit": false,
+      "locatorId": 1000242,
+      "locatorCode": "wh_20260525T191403620_Locator",
+      "locatorQRCode": "LOC#1#{\"warehouseId\":1000337,\"locatorId\":1000242,\"caption\":\"wh_20260525T191403620_Locator\"}",
+      "locators": {}
+    }
+  },
+  "workplaces": {
+    "workplace1": {
+      "name": "workplace1_20260525T191403630",
+      "qrCode": "WORKPLACE#1#{\"workplaceId\":1000038,\"caption\":\"workplace1_20260525T191403630\"}"
+    },
+    "workplace2": {
+      "name": "workplace2_20260525T191403634",
+      "qrCode": "WORKPLACE#1#{\"workplaceId\":1000039,\"caption\":\"workplace2_20260525T191403634\"}"
+    }
+  },
+  "packingInstructions": {
+    "PI1": {
+      "tuName": "TU_20260525T191403642",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010161",
+      "tuPITestId": "pi-3001873",
+      "luName": "LU_20260525T191403650",
+      "luPIItemTestId": "luPIItem-3008296",
+      "luPITestId": "pi-3001874"
+    },
+    "PI2": {
+      "tuName": "TU_20260525T191403642",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010162",
+      "tuPITestId": "pi-3001873",
+      "luName": null,
+      "luPIItemTestId": null,
+      "luPITestId": null
+    },
+    "PI3": {
+      "tuName": "TU_20260525T191403642",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010163",
+      "tuPITestId": "pi-3001873",
+      "luName": null,
+      "luPIItemTestId": null,
+      "luPITestId": null
+    },
+    "LU_CU": {
+      "tuName": "No Packing Item",
+      "tuPIItemProductTestId": null,
+      "tuPITestId": "pi-101",
+      "luName": "LU_20260525T191403650",
+      "luPIItemTestId": "luPIItem-3008299",
+      "luPITestId": "pi-3001874"
+    }
+  },
+  "shippers": {},
+  "handlingUnits": {
+    "HU1": {
+      "huId": "1000622",
+      "qrCode": "HU#1#{\"id\":\"636a56a26435bb624079ab224540-51978\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001874,\"caption\":\"LU_20260525T191403650\"},\"product\":{\"id\":2005861,\"code\":\"P1_20260525T191403578\",\"name\":\"P1_20260525T191403578\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005861,
+      "warehouseId": 1000337,
+      "externalBarcode": null
+    },
+    "HU2": {
+      "huId": "1000626",
+      "qrCode": "HU#1#{\"id\":\"f762ca8044719ad0f5a15443e3e8-32903\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001874,\"caption\":\"LU_20260525T191403650\"},\"product\":{\"id\":2005862,\"code\":\"P2_20260525T191403595\",\"name\":\"P2_20260525T191403595\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005862,
+      "warehouseId": 1000337,
+      "externalBarcode": null
+    },
+    "HU3": {
+      "huId": "1000630",
+      "qrCode": "HU#1#{\"id\":\"9cd58b4ce4088ac763c0344e0220-16462\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001874,\"caption\":\"LU_20260525T191403650\"},\"product\":{\"id\":2005863,\"code\":\"P3_20260525T191403609\",\"name\":\"P3_20260525T191403609\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005863,
+      "warehouseId": 1000337,
+      "externalBarcode": null
+    }
+  },
+  "generatedHUQRCodes": {},
+  "salesOrders": {
+    "SO1": {
+      "id": "1000037",
+      "documentNo": "0038"
+    }
+  },
+  "purchaseOrders": {},
+  "shipments": {},
+  "receipts": {},
+  "invoices": {},
+  "distributionOrders": {},
+  "manufacturingOrders": {},
+  "inventories": {}
+}
+Intercepted authentication token: 73f4e1148ecc43d7aef80dfa51c23bf5 from login response {
+  token: [32m'73f4e1148ecc43d7aef80dfa51c23bf5'[39m,
+  language: [32m'en_US'[39m,
+  userId: [33m2188368[39m,
+  username: [32m'user1_20260525T191403485'[39m,
+  userFullname: [32m'user1_20260525T191403485 user1_20260525T191403485'[39m
+}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000154,"caption":"slot1_20260525T191403628"}
+Scanning scanned code:
+HU#1#{"id":"636a56a26435bb624079ab224540-51978","packingInfo":{"huUnitType":"LU","packingInstructionsId":3001874,"caption":"LU_20260525T191403650"},"product":{"id":2005861,"code":"P1_20260525T191403578","name":"P1_20260525T191403578"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+Scanning scanned code:
+HU#1#{"id":"f762ca8044719ad0f5a15443e3e8-32903","packingInfo":{"huUnitType":"LU","packingInstructionsId":3001874,"caption":"LU_20260525T191403650"},"product":{"id":2005862,"code":"P2_20260525T191403595","name":"P2_20260525T191403595"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+Scanning scanned code:
+HU#1#{"id":"9cd58b4ce4088ac763c0344e0220-16462","packingInfo":{"huUnitType":"LU","packingInstructionsId":3001874,"caption":"LU_20260525T191403650"},"product":{"id":2005863,"code":"P3_20260525T191403609","name":"P3_20260525T191403609"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+Intercepted authentication token: a2938394d817415a8eda181a2b79801e from login response {
+  token: [32m'a2938394d817415a8eda181a2b79801e'[39m,
+  language: [32m'en_US'[39m,
+  userId: [33m2188369[39m,
+  username: [32m'user2_20260525T191403519'[39m,
+  userFullname: [32m'user2_20260525T191403519 user2_20260525T191403519'[39m
+}
+Intercepted authentication token: a2938394d817415a8eda181a2b79801e from login response {
+  token: [32m'a2938394d817415a8eda181a2b79801e'[39m,
+  language: [32m'en_US'[39m,
+  userId: [33m2188369[39m,
+  username: [32m'user2_20260525T191403519'[39m,
+  userFullname: [32m'user2_20260525T191403519 user2_20260525T191403519'[39m
+}
+
+[[ATTACHMENT|../../test-results/spec-picking-pick_what_was-364ed-der-to-different-workplaces-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|../../test-results/spec-picking-pick_what_was-364ed-der-to-different-workplaces-Mobile-Chrome/error-context.md]]
+
+[[ATTACHMENT|../../test-results/spec-picking-pick_what_was-364ed-der-to-different-workplaces-Mobile-Chrome/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="spec/picking/productBasedPicking/standard.spec.js" timestamp="2026-05-25T17:03:22.884Z" hostname="Mobile Chrome" tests="3" failures="1" skipped="0" time="140.152" errors="0">
+<testcase name="Product based aggregation" classname="spec/picking/productBasedPicking/standard.spec.js" time="124.645">
+<failure message="standard.spec.js:105:5 Product based aggregation" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › spec/picking/productBasedPicking/standard.spec.js:105:5 › Product based aggregation › Picking job for P2 › Line 3 - partial pick the renaming qty from current pick from HU › PickingJobScreen - Click line 3 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.waitFor: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for locator('.Toastify div[role="alert"].Toastify__toast-body')
+
+
+       at utils/dialogs/ErrorToast.js:14
+
+      12 |     waitToPopup: (callback, timeout) => {
+      13 |         const toastLocator = containerElement();
+    > 14 |         return toastLocator.waitFor({ state: 'attached', ...{ timeout } })
+         |                             ^
+      15 |             .then(async () => {
+      16 |                 await callback?.(toastLocator);
+      17 |             });
+        at Object.waitToPopup (/app/tests/utils/dialogs/ErrorToast.js:14:29)
+        at runAndWatchForErrors (/app/tests/utils/common.js:35:24)
+        at /app/tests/utils/common.js:19:85
+        at step (/app/tests/utils/common.js:19:55)
+        at Object.clickLineButton (/app/tests/utils/screens/picking/PickingJobScreen.js:172:53)
+        at /app/tests/spec/picking/productBasedPicking/standard.spec.js:225:36
+        at /app/tests/spec/picking/productBasedPicking/standard.spec.js:223:9
+        at /app/tests/spec/picking/productBasedPicking/standard.spec.js:193:5
+
+    attachment #6: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/spec-picking-productBasedP-a78ae-d-Product-based-aggregation-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/spec-picking-productBasedP-a78ae-d-Product-based-aggregation-Mobile-Chrome/error-context.md
+
+    attachment #8: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/spec-picking-productBasedP-a78ae-d-Product-based-aggregation-Mobile-Chrome/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/spec-picking-productBasedP-a78ae-d-Product-based-aggregation-Mobile-Chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[Created master data (en_US):
+{
+  "context": {
+    "de.metas.order.OrderLineId:SO3_line2": 1000128,
+    "de.metas.handlingunits.HuPackingInstructionsId:P1_4CU": 3001950,
+    "de.metas.order.OrderLineId:SO3_line1": 1000127,
+    "de.metas.handlingunits.HuId:P2_HU_2": 1000900,
+    "de.metas.handlingunits.HuId:P2_HU_3": 1000903,
+    "de.metas.order.OrderLineId:SO1_line1": 1000123,
+    "de.metas.order.OrderLineId:SO1_line2": 1000124,
+    "de.metas.bpartner.BPartnerLocationId:customer2_singleBPLocationI": "2156508_2205260",
+    "de.metas.pricing.PricingSystemId:PS_2026-05-25T17:20:08.685Z": 2000910,
+    "de.metas.handlingunits.HuPackingInstructionsId:LU": 3001951,
+    "de.metas.bpartner.BPartnerLocationId:customer1_singleBPLocationI": "2156507_2205259",
+    "org.adempiere.warehouse.LocatorId:wh": "1000375_1000280",
+    "de.metas.handlingunits.HUPIItemProductId:P1_4CU_P1": 3010203,
+    "de.metas.product.ProductId:P2": 2005914,
+    "de.metas.handlingunits.HuId:P2_HU": 1000897,
+    "de.metas.product.ProductId:P1": 2005913,
+    "de.metas.bpartner.BPartnerLocationId:customer3_singleBPLocationI": "2156509_2205261",
+    "de.metas.pricing.PriceListVersionId:PLV_2026-05-25T17:20:08.691Z": 2002213,
+    "de.metas.order.OrderLineId:SO2_line2": 1000126,
+    "org.adempiere.warehouse.WarehouseId:wh": 1000375,
+    "de.metas.order.OrderLineId:SO2_line1": 1000125,
+    "de.metas.handlingunits.HUPIItemProductId:P1_4CU": 3010203,
+    "de.metas.user.UserId:user": 2188407,
+    "de.metas.handlingunits.HUPIItemProductId:P2_3CU_P2": 3010204,
+    "de.metas.handlingunits.HuPackingInstructionsId:P2_3CU": 3001952,
+    "de.metas.order.OrderId:SO1": 1000083,
+    "de.metas.picking.api.PickingSlotId:slot2": 1000212,
+    "de.metas.picking.api.PickingSlotId:slot3": 1000213,
+    "de.metas.order.OrderId:SO2": 1000084,
+    "de.metas.order.OrderId:SO3": 1000085,
+    "de.metas.picking.api.PickingSlotId:slot1": 1000211,
+    "de.metas.bpartner.BPartnerId:customer1": 2156507,
+    "de.metas.handlingunits.HuId:P1_HU": 1000894,
+    "de.metas.bpartner.BPartnerId:customer3": 2156509,
+    "de.metas.bpartner.BPartnerId:customer2": 2156508,
+    "de.metas.handlingunits.HUPIItemProductId:P2_3CU": 3010204
+  },
+  "mobileConfig": {
+    "defaultAuthMethod": "UserPass",
+    "picking": {
+      "aggregationType": "product",
+      "allowPickingAnyCustomer": false,
+      "allowPickingAnyHU": true,
+      "createShipmentPolicy": "CL",
+      "completeJobAutomatically": false,
+      "alwaysSplitHUsEnabled": false,
+      "shipOnCloseLU": false,
+      "pickTo": [
+        "LU_TU"
+      ],
+      "readAttributes": [
+        "BestBeforeDate",
+        "LotNo"
+      ],
+      "filterByQRCode": false,
+      "allowCompletingPartialPickingJob": true,
+      "isAnonymousPickHUsOnTheFly": false,
+      "displayPickingSlotSuggestions": false,
+      "activeWorkplaceRequired": false,
+      "considerOnlyJobScheduledToWorkplace": false,
+      "filters": [
+        "Customer",
+        "DeliveryDate"
+      ]
+    }
+  },
+  "login": {
+    "user": {
+      "username": "user_20260525T192008647",
+      "password": "user_20260525T192008647",
+      "token": "468b01fc4d1a4962a400bbf7cfc915ed"
+    }
+  },
+  "bpartners": {
+    "customer1": {
+      "id": 2156507,
+      "bpartnerCode": "customer1_20260525T192008685",
+      "bpartnerLocationId": 2205259,
+      "gln": "8221293407969",
+      "locations": null,
+      "contacts": null
+    },
+    "customer2": {
+      "id": 2156508,
+      "bpartnerCode": "customer2_20260525T192008720",
+      "bpartnerLocationId": 2205260,
+      "gln": "1421517500934",
+      "locations": null,
+      "contacts": null
+    },
+    "customer3": {
+      "id": 2156509,
+      "bpartnerCode": "customer3_20260525T192008742",
+      "bpartnerLocationId": 2205261,
+      "gln": "9401223249886",
+      "locations": null,
+      "contacts": null
+    }
+  },
+  "products": {
+    "P1": {
+      "id": 2005913,
+      "productCode": "P1_20260525T192008765",
+      "productName": "P1_20260525T192008765",
+      "gtin": null,
+      "ean13ProductCode": null
+    },
+    "P2": {
+      "id": 2005914,
+      "productCode": "P2_20260525T192008785",
+      "productName": "P2_20260525T192008785",
+      "gtin": null,
+      "ean13ProductCode": null
+    }
+  },
+  "resources": {},
+  "productPlannings": {},
+  "pickingSlots": {
+    "slot1": {
+      "id": 1000211,
+      "code": "slot1_20260525T192008821",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000211,\"caption\":\"slot1_20260525T192008821\"}"
+    },
+    "slot2": {
+      "id": 1000212,
+      "code": "slot2_20260525T192008823",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000212,\"caption\":\"slot2_20260525T192008823\"}"
+    },
+    "slot3": {
+      "id": 1000213,
+      "code": "slot3_20260525T192008825",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000213,\"caption\":\"slot3_20260525T192008825\"}"
+    }
+  },
+  "warehouses": {
+    "wh": {
+      "warehouseId": 1000375,
+      "warehouseCode": "wh_20260525T192008810",
+      "warehouseName": "wh_20260525T192008810",
+      "inTransit": false,
+      "locatorId": 1000280,
+      "locatorCode": "wh_20260525T192008810_Locator",
+      "locatorQRCode": "LOC#1#{\"warehouseId\":1000375,\"locatorId\":1000280,\"caption\":\"wh_20260525T192008810_Locator\"}",
+      "locators": {}
+    }
+  },
+  "workplaces": {},
+  "packingInstructions": {
+    "P1_20x4": {
+      "tuName": "P1_4CU_20260525T192008827",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010203",
+      "tuPITestId": "pi-3001950",
+      "luName": "LU_20260525T192008836",
+      "luPIItemTestId": "luPIItem-3008383",
+      "luPITestId": "pi-3001951"
+    },
+    "P2_7x3": {
+      "tuName": "P2_3CU_20260525T192008841",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010204",
+      "tuPITestId": "pi-3001952",
+      "luName": "LU_20260525T192008836",
+      "luPIItemTestId": "luPIItem-3008385",
+      "luPITestId": "pi-3001951"
+    }
+  },
+  "shippers": {},
+  "handlingUnits": {
+    "P1_HU": {
+      "huId": "1000894",
+      "qrCode": "HU#1#{\"id\":\"c0cc8b1974eda21b26707efdcdcf-29507\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001951,\"caption\":\"LU_20260525T192008836\"},\"product\":{\"id\":2005913,\"code\":\"P1_20260525T192008765\",\"name\":\"P1_20260525T192008765\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005913,
+      "warehouseId": 1000375,
+      "externalBarcode": null
+    },
+    "P2_HU": {
+      "huId": "1000897",
+      "qrCode": "HU#1#{\"id\":\"e5de46196477a7fa29b4c0fb5daf-54013\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001951,\"caption\":\"LU_20260525T192008836\"},\"product\":{\"id\":2005914,\"code\":\"P2_20260525T192008785\",\"name\":\"P2_20260525T192008785\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005914,
+      "warehouseId": 1000375,
+      "externalBarcode": null
+    },
+    "P2_HU_2": {
+      "huId": "1000900",
+      "qrCode": "HU#1#{\"id\":\"e62eb1b494338d3bab0fc792a758-39326\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001951,\"caption\":\"LU_20260525T192008836\"},\"product\":{\"id\":2005914,\"code\":\"P2_20260525T192008785\",\"name\":\"P2_20260525T192008785\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005914,
+      "warehouseId": 1000375,
+      "externalBarcode": null
+    },
+    "P2_HU_3": {
+      "huId": "1000903",
+      "qrCode": "HU#1#{\"id\":\"542e6c6a244daf46d9ad5f38b7d5-19341\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001951,\"caption\":\"LU_20260525T192008836\"},\"product\":{\"id\":2005914,\"code\":\"P2_20260525T192008785\",\"name\":\"P2_20260525T192008785\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005914,
+      "warehouseId": 1000375,
+      "externalBarcode": null
+    }
+  },
+  "generatedHUQRCodes": {},
+  "salesOrders": {
+    "SO1": {
+      "id": "1000083",
+      "documentNo": "0084"
+    },
+    "SO2": {
+      "id": "1000084",
+      "documentNo": "0085"
+    },
+    "SO3": {
+      "id": "1000085",
+      "documentNo": "0086"
+    }
+  },
+  "purchaseOrders": {},
+  "shipments": {},
+  "receipts": {},
+  "invoices": {},
+  "distributionOrders": {},
+  "manufacturingOrders": {},
+  "inventories": {}
+}
+Intercepted authentication token: 468b01fc4d1a4962a400bbf7cfc915ed from login response {
+  token: [32m'468b01fc4d1a4962a400bbf7cfc915ed'[39m,
+  language: [32m'en_US'[39m,
+  userId: [33m2188407[39m,
+  username: [32m'user_20260525T192008647'[39m,
+  userFullname: [32m'user_20260525T192008647 user_20260525T192008647'[39m
+}
+Scanning scanned code:
+HU#1#{"id":"c0cc8b1974eda21b26707efdcdcf-29507","packingInfo":{"huUnitType":"LU","packingInstructionsId":3001951,"caption":"LU_20260525T192008836"},"product":{"id":2005913,"code":"P1_20260525T192008765","name":"P1_20260525T192008765"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000211,"caption":"slot1_20260525T192008821"}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000212,"caption":"slot2_20260525T192008823"}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000213,"caption":"slot3_20260525T192008825"}
+Scanning scanned code:
+HU#1#{"id":"e5de46196477a7fa29b4c0fb5daf-54013","packingInfo":{"huUnitType":"LU","packingInstructionsId":3001951,"caption":"LU_20260525T192008836"},"product":{"id":2005914,"code":"P2_20260525T192008785","name":"P2_20260525T192008785"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000211,"caption":"slot1_20260525T192008821"}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000212,"caption":"slot2_20260525T192008823"}
+[ OK ] Expected error toast detected (watcherId=379): The HU cannot be picked! It could be that it is reserved for another document or has already been picked/shipped.
+Scanning scanned code:
+HU#1#{"id":"e62eb1b494338d3bab0fc792a758-39326","packingInfo":{"huUnitType":"LU","packingInstructionsId":3001951,"caption":"LU_20260525T192008836"},"product":{"id":2005914,"code":"P2_20260525T192008785","name":"P2_20260525T192008785"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000213,"caption":"slot3_20260525T192008825"}
+
+[[ATTACHMENT|../../test-results/spec-picking-productBasedP-a78ae-d-Product-based-aggregation-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|../../test-results/spec-picking-productBasedP-a78ae-d-Product-based-aggregation-Mobile-Chrome/error-context.md]]
+
+[[ATTACHMENT|../../test-results/spec-picking-productBasedP-a78ae-d-Product-based-aggregation-Mobile-Chrome/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Filter by EAN13" classname="spec/picking/productBasedPicking/standard.spec.js" time="6.156">
+<system-out>
+<![CDATA[Backend server base URL:  http://app-test:8282/api/v2
+Created master data (en_US):
+{
+  "context": {
+    "de.metas.order.OrderLineId:SO3_line2": 1000134,
+    "de.metas.handlingunits.HuPackingInstructionsId:P1_4CU": 3001953,
+    "de.metas.order.OrderLineId:SO3_line1": 1000133,
+    "de.metas.handlingunits.HuId:P2_HU_2": 1000920,
+    "de.metas.handlingunits.HuId:P2_HU_3": 1000923,
+    "de.metas.order.OrderLineId:SO1_line1": 1000129,
+    "de.metas.order.OrderLineId:SO1_line2": 1000130,
+    "de.metas.bpartner.BPartnerLocationId:customer2_singleBPLocationI": "2156511_2205263",
+    "de.metas.handlingunits.HuPackingInstructionsId:LU": 3001954,
+    "de.metas.bpartner.BPartnerLocationId:customer1_singleBPLocationI": "2156510_2205262",
+    "org.adempiere.warehouse.LocatorId:wh": "1000376_1000281",
+    "de.metas.pricing.PricingSystemId:PS_2026-05-25T17:22:15.395Z": 2000911,
+    "de.metas.handlingunits.HUPIItemProductId:P1_4CU_P1": 3010205,
+    "de.metas.product.ProductId:P2": 2005916,
+    "de.metas.handlingunits.HuId:P2_HU": 1000917,
+    "de.metas.product.ProductId:P1": 2005915,
+    "de.metas.bpartner.BPartnerLocationId:customer3_singleBPLocationI": "2156512_2205264",
+    "de.metas.order.OrderLineId:SO2_line2": 1000132,
+    "org.adempiere.warehouse.WarehouseId:wh": 1000376,
+    "de.metas.order.OrderLineId:SO2_line1": 1000131,
+    "de.metas.handlingunits.HUPIItemProductId:P1_4CU": 3010205,
+    "de.metas.user.UserId:user": 2188408,
+    "de.metas.handlingunits.HUPIItemProductId:P2_3CU_P2": 3010206,
+    "de.metas.handlingunits.HuPackingInstructionsId:P2_3CU": 3001955,
+    "de.metas.order.OrderId:SO1": 1000086,
+    "de.metas.picking.api.PickingSlotId:slot2": 1000215,
+    "de.metas.picking.api.PickingSlotId:slot3": 1000216,
+    "de.metas.order.OrderId:SO2": 1000087,
+    "de.metas.order.OrderId:SO3": 1000088,
+    "de.metas.picking.api.PickingSlotId:slot1": 1000214,
+    "de.metas.bpartner.BPartnerId:customer1": 2156510,
+    "de.metas.handlingunits.HuId:P1_HU": 1000914,
+    "de.metas.pricing.PriceListVersionId:PLV_2026-05-25T17:22:15.401Z": 2002214,
+    "de.metas.bpartner.BPartnerId:customer3": 2156512,
+    "de.metas.bpartner.BPartnerId:customer2": 2156511,
+    "de.metas.handlingunits.HUPIItemProductId:P2_3CU": 3010206
+  },
+  "mobileConfig": {
+    "defaultAuthMethod": "UserPass",
+    "picking": {
+      "aggregationType": "product",
+      "allowPickingAnyCustomer": false,
+      "allowPickingAnyHU": true,
+      "createShipmentPolicy": "CL",
+      "completeJobAutomatically": false,
+      "alwaysSplitHUsEnabled": false,
+      "shipOnCloseLU": false,
+      "pickTo": [
+        "LU_TU"
+      ],
+      "readAttributes": [
+        "BestBeforeDate",
+        "LotNo"
+      ],
+      "filterByQRCode": true,
+      "allowCompletingPartialPickingJob": true,
+      "isAnonymousPickHUsOnTheFly": false,
+      "displayPickingSlotSuggestions": false,
+      "activeWorkplaceRequired": false,
+      "considerOnlyJobScheduledToWorkplace": false,
+      "filters": [
+        "Customer",
+        "DeliveryDate"
+      ]
+    }
+  },
+  "login": {
+    "user": {
+      "username": "user_20260525T192215363",
+      "password": "user_20260525T192215363",
+      "token": "bca17c2ae44345c89aa76bdca926225b"
+    }
+  },
+  "bpartners": {
+    "customer1": {
+      "id": 2156510,
+      "bpartnerCode": "customer1_20260525T192215395",
+      "bpartnerLocationId": 2205262,
+      "gln": "7511016228768",
+      "locations": null,
+      "contacts": null
+    },
+    "customer2": {
+      "id": 2156511,
+      "bpartnerCode": "customer2_20260525T192215425",
+      "bpartnerLocationId": 2205263,
+      "gln": "9883796148290",
+      "locations": null,
+      "contacts": null
+    },
+    "customer3": {
+      "id": 2156512,
+      "bpartnerCode": "customer3_20260525T192215446",
+      "bpartnerLocationId": 2205264,
+      "gln": "3076731452910",
+      "locations": null,
+      "contacts": null
+    }
+  },
+  "products": {
+    "P1": {
+      "id": 2005915,
+      "productCode": "P1_20260525T192215466",
+      "productName": "P1_20260525T192215466",
+      "gtin": "7617250554448",
+      "ean13ProductCode": null
+    },
+    "P2": {
+      "id": 2005916,
+      "productCode": "P2_20260525T192215479",
+      "productName": "P2_20260525T192215479",
+      "gtin": null,
+      "ean13ProductCode": null
+    }
+  },
+  "resources": {},
+  "productPlannings": {},
+  "pickingSlots": {
+    "slot1": {
+      "id": 1000214,
+      "code": "slot1_20260525T192215505",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000214,\"caption\":\"slot1_20260525T192215505\"}"
+    },
+    "slot2": {
+      "id": 1000215,
+      "code": "slot2_20260525T192215506",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000215,\"caption\":\"slot2_20260525T192215506\"}"
+    },
+    "slot3": {
+      "id": 1000216,
+      "code": "slot3_20260525T192215508",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000216,\"caption\":\"slot3_20260525T192215508\"}"
+    }
+  },
+  "warehouses": {
+    "wh": {
+      "warehouseId": 1000376,
+      "warehouseCode": "wh_20260525T192215497",
+      "warehouseName": "wh_20260525T192215497",
+      "inTransit": false,
+      "locatorId": 1000281,
+      "locatorCode": "wh_20260525T192215497_Locator",
+      "locatorQRCode": "LOC#1#{\"warehouseId\":1000376,\"locatorId\":1000281,\"caption\":\"wh_20260525T192215497_Locator\"}",
+      "locators": {}
+    }
+  },
+  "workplaces": {},
+  "packingInstructions": {
+    "P1_20x4": {
+      "tuName": "P1_4CU_20260525T192215510",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010205",
+      "tuPITestId": "pi-3001953",
+      "luName": "LU_20260525T192215517",
+      "luPIItemTestId": "luPIItem-3008387",
+      "luPITestId": "pi-3001954"
+    },
+    "P2_7x3": {
+      "tuName": "P2_3CU_20260525T192215521",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010206",
+      "tuPITestId": "pi-3001955",
+      "luName": "LU_20260525T192215517",
+      "luPIItemTestId": "luPIItem-3008389",
+      "luPITestId": "pi-3001954"
+    }
+  },
+  "shippers": {},
+  "handlingUnits": {
+    "P1_HU": {
+      "huId": "1000914",
+      "qrCode": "HU#1#{\"id\":\"f2440fb8747b833e68a574f3d383-02890\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001954,\"caption\":\"LU_20260525T192215517\"},\"product\":{\"id\":2005915,\"code\":\"P1_20260525T192215466\",\"name\":\"P1_20260525T192215466\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005915,
+      "warehouseId": 1000376,
+      "externalBarcode": null
+    },
+    "P2_HU": {
+      "huId": "1000917",
+      "qrCode": "HU#1#{\"id\":\"0ab9f237943bbd058ccca3a1f65c-32851\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001954,\"caption\":\"LU_20260525T192215517\"},\"product\":{\"id\":2005916,\"code\":\"P2_20260525T192215479\",\"name\":\"P2_20260525T192215479\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005916,
+      "warehouseId": 1000376,
+      "externalBarcode": null
+    },
+    "P2_HU_2": {
+      "huId": "1000920",
+      "qrCode": "HU#1#{\"id\":\"e55d3e4f1463b171a3752e839de1-54561\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001954,\"caption\":\"LU_20260525T192215517\"},\"product\":{\"id\":2005916,\"code\":\"P2_20260525T192215479\",\"name\":\"P2_20260525T192215479\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005916,
+      "warehouseId": 1000376,
+      "externalBarcode": null
+    },
+    "P2_HU_3": {
+      "huId": "1000923",
+      "qrCode": "HU#1#{\"id\":\"b8a9cbe44481960f066e5807fd1f-17273\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001954,\"caption\":\"LU_20260525T192215517\"},\"product\":{\"id\":2005916,\"code\":\"P2_20260525T192215479\",\"name\":\"P2_20260525T192215479\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005916,
+      "warehouseId": 1000376,
+      "externalBarcode": null
+    }
+  },
+  "generatedHUQRCodes": {},
+  "salesOrders": {
+    "SO1": {
+      "id": "1000086",
+      "documentNo": "0087"
+    },
+    "SO2": {
+      "id": "1000087",
+      "documentNo": "0088"
+    },
+    "SO3": {
+      "id": "1000088",
+      "documentNo": "0089"
+    }
+  },
+  "purchaseOrders": {},
+  "shipments": {},
+  "receipts": {},
+  "invoices": {},
+  "distributionOrders": {},
+  "manufacturingOrders": {},
+  "inventories": {}
+}
+Intercepted authentication token: bca17c2ae44345c89aa76bdca926225b from login response {
+  token: [32m'bca17c2ae44345c89aa76bdca926225b'[39m,
+  language: [32m'en_US'[39m,
+  userId: [33m2188408[39m,
+  username: [32m'user_20260525T192215363'[39m,
+  userFullname: [32m'user_20260525T192215363 user_20260525T192215363'[39m
+}
+Scanning scanned code:
+7611457591862
+Scanning scanned code:
+7612266416759
+Scanning scanned code:
+7617250554448
+
+[[ATTACHMENT|../../test-results/spec-picking-productBasedPicking-standard-Filter-by-EAN13-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|../../test-results/spec-picking-productBasedPicking-standard-Filter-by-EAN13-Mobile-Chrome/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Anonymous pick HUs on the fly" classname="spec/picking/productBasedPicking/standard.spec.js" time="9.351">
+<system-out>
+<![CDATA[Created master data (en_US):
+{
+  "context": {
+    "de.metas.order.OrderLineId:SO3_line2": 1000140,
+    "de.metas.handlingunits.HuPackingInstructionsId:P1_4CU": 3001956,
+    "de.metas.order.OrderLineId:SO3_line1": 1000139,
+    "de.metas.handlingunits.HuId:P2_HU_2": 1000932,
+    "de.metas.handlingunits.HuId:P2_HU_3": 1000935,
+    "de.metas.order.OrderLineId:SO1_line1": 1000135,
+    "de.metas.order.OrderLineId:SO1_line2": 1000136,
+    "de.metas.bpartner.BPartnerLocationId:customer2_singleBPLocationI": "2156514_2205266",
+    "de.metas.handlingunits.HuPackingInstructionsId:LU": 3001957,
+    "de.metas.bpartner.BPartnerLocationId:customer1_singleBPLocationI": "2156513_2205265",
+    "org.adempiere.warehouse.LocatorId:wh": "1000377_1000282",
+    "de.metas.pricing.PriceListVersionId:PLV_2026-05-25T17:22:21.326Z": 2002215,
+    "de.metas.handlingunits.HUPIItemProductId:P1_4CU_P1": 3010207,
+    "de.metas.product.ProductId:P2": 2005918,
+    "de.metas.handlingunits.HuId:P2_HU": 1000929,
+    "de.metas.product.ProductId:P1": 2005917,
+    "de.metas.bpartner.BPartnerLocationId:customer3_singleBPLocationI": "2156515_2205267",
+    "de.metas.order.OrderLineId:SO2_line2": 1000138,
+    "org.adempiere.warehouse.WarehouseId:wh": 1000377,
+    "de.metas.order.OrderLineId:SO2_line1": 1000137,
+    "de.metas.handlingunits.HUPIItemProductId:P1_4CU": 3010207,
+    "de.metas.user.UserId:user": 2188409,
+    "de.metas.handlingunits.HUPIItemProductId:P2_3CU_P2": 3010208,
+    "de.metas.handlingunits.HuPackingInstructionsId:P2_3CU": 3001958,
+    "de.metas.order.OrderId:SO1": 1000089,
+    "de.metas.pricing.PricingSystemId:PS_2026-05-25T17:22:21.321Z": 2000912,
+    "de.metas.picking.api.PickingSlotId:slot2": 1000218,
+    "de.metas.picking.api.PickingSlotId:slot3": 1000219,
+    "de.metas.order.OrderId:SO2": 1000090,
+    "de.metas.order.OrderId:SO3": 1000091,
+    "de.metas.picking.api.PickingSlotId:slot1": 1000217,
+    "de.metas.bpartner.BPartnerId:customer1": 2156513,
+    "de.metas.handlingunits.HuId:P1_HU": 1000926,
+    "de.metas.bpartner.BPartnerId:customer3": 2156515,
+    "de.metas.bpartner.BPartnerId:customer2": 2156514,
+    "de.metas.handlingunits.HUPIItemProductId:P2_3CU": 3010208
+  },
+  "mobileConfig": {
+    "defaultAuthMethod": "UserPass",
+    "picking": {
+      "aggregationType": "product",
+      "allowPickingAnyCustomer": false,
+      "allowPickingAnyHU": true,
+      "createShipmentPolicy": "CL",
+      "completeJobAutomatically": false,
+      "alwaysSplitHUsEnabled": false,
+      "shipOnCloseLU": false,
+      "pickTo": [
+        "LU_TU"
+      ],
+      "readAttributes": [
+        "BestBeforeDate",
+        "LotNo"
+      ],
+      "filterByQRCode": false,
+      "allowCompletingPartialPickingJob": true,
+      "isAnonymousPickHUsOnTheFly": true,
+      "displayPickingSlotSuggestions": false,
+      "activeWorkplaceRequired": false,
+      "considerOnlyJobScheduledToWorkplace": false,
+      "filters": [
+        "Customer",
+        "DeliveryDate"
+      ]
+    }
+  },
+  "login": {
+    "user": {
+      "username": "user_20260525T192221288",
+      "password": "user_20260525T192221288",
+      "token": "b6bbd97fdc69448995900202cae46ea9"
+    }
+  },
+  "bpartners": {
+    "customer1": {
+      "id": 2156513,
+      "bpartnerCode": "customer1_20260525T192221321",
+      "bpartnerLocationId": 2205265,
+      "gln": "9568942792885",
+      "locations": null,
+      "contacts": null
+    },
+    "customer2": {
+      "id": 2156514,
+      "bpartnerCode": "customer2_20260525T192221346",
+      "bpartnerLocationId": 2205266,
+      "gln": "7317283866302",
+      "locations": null,
+      "contacts": null
+    },
+    "customer3": {
+      "id": 2156515,
+      "bpartnerCode": "customer3_20260525T192221365",
+      "bpartnerLocationId": 2205267,
+      "gln": "3037306278182",
+      "locations": null,
+      "contacts": null
+    }
+  },
+  "products": {
+    "P1": {
+      "id": 2005917,
+      "productCode": "P1_20260525T192221383",
+      "productName": "P1_20260525T192221383",
+      "gtin": null,
+      "ean13ProductCode": null
+    },
+    "P2": {
+      "id": 2005918,
+      "productCode": "P2_20260525T192221399",
+      "productName": "P2_20260525T192221399",
+      "gtin": null,
+      "ean13ProductCode": null
+    }
+  },
+  "resources": {},
+  "productPlannings": {},
+  "pickingSlots": {
+    "slot1": {
+      "id": 1000217,
+      "code": "slot1_20260525T192221423",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000217,\"caption\":\"slot1_20260525T192221423\"}"
+    },
+    "slot2": {
+      "id": 1000218,
+      "code": "slot2_20260525T192221424",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000218,\"caption\":\"slot2_20260525T192221424\"}"
+    },
+    "slot3": {
+      "id": 1000219,
+      "code": "slot3_20260525T192221426",
+      "qrCode": "PICKING_SLOT#1#{\"pickingSlotId\":1000219,\"caption\":\"slot3_20260525T192221426\"}"
+    }
+  },
+  "warehouses": {
+    "wh": {
+      "warehouseId": 1000377,
+      "warehouseCode": "wh_20260525T192221415",
+      "warehouseName": "wh_20260525T192221415",
+      "inTransit": false,
+      "locatorId": 1000282,
+      "locatorCode": "wh_20260525T192221415_Locator",
+      "locatorQRCode": "LOC#1#{\"warehouseId\":1000377,\"locatorId\":1000282,\"caption\":\"wh_20260525T192221415_Locator\"}",
+      "locators": {}
+    }
+  },
+  "workplaces": {},
+  "packingInstructions": {
+    "P1_20x4": {
+      "tuName": "P1_4CU_20260525T192221427",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010207",
+      "tuPITestId": "pi-3001956",
+      "luName": "LU_20260525T192221434",
+      "luPIItemTestId": "luPIItem-3008391",
+      "luPITestId": "pi-3001957"
+    },
+    "P2_7x3": {
+      "tuName": "P2_3CU_20260525T192221439",
+      "tuPIItemProductTestId": "tuPIItemProduct-3010208",
+      "tuPITestId": "pi-3001958",
+      "luName": "LU_20260525T192221434",
+      "luPIItemTestId": "luPIItem-3008393",
+      "luPITestId": "pi-3001957"
+    }
+  },
+  "shippers": {},
+  "handlingUnits": {
+    "P1_HU": {
+      "huId": "1000926",
+      "qrCode": "HU#1#{\"id\":\"9659de8e24ff8e6e52c4ad3523fe-06050\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001957,\"caption\":\"LU_20260525T192221434\"},\"product\":{\"id\":2005917,\"code\":\"P1_20260525T192221383\",\"name\":\"P1_20260525T192221383\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005917,
+      "warehouseId": 1000377,
+      "externalBarcode": null
+    },
+    "P2_HU": {
+      "huId": "1000929",
+      "qrCode": "HU#1#{\"id\":\"12beae24c427958ef987ae7f0bd2-16479\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001957,\"caption\":\"LU_20260525T192221434\"},\"product\":{\"id\":2005918,\"code\":\"P2_20260525T192221399\",\"name\":\"P2_20260525T192221399\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005918,
+      "warehouseId": 1000377,
+      "externalBarcode": null
+    },
+    "P2_HU_2": {
+      "huId": "1000932",
+      "qrCode": "HU#1#{\"id\":\"888567a9148c9535d48efa5c63b2-56411\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001957,\"caption\":\"LU_20260525T192221434\"},\"product\":{\"id\":2005918,\"code\":\"P2_20260525T192221399\",\"name\":\"P2_20260525T192221399\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005918,
+      "warehouseId": 1000377,
+      "externalBarcode": null
+    },
+    "P2_HU_3": {
+      "huId": "1000935",
+      "qrCode": "HU#1#{\"id\":\"9346832be4baa08a4f48b9fbf4e8-30189\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":3001957,\"caption\":\"LU_20260525T192221434\"},\"product\":{\"id\":2005918,\"code\":\"P2_20260525T192221399\",\"name\":\"P2_20260525T192221399\"},\"attributes\":[{\"code\":\"HU_BestBeforeDate\",\"displayName\":\"Mindesthaltbarkeit\"},{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\"},{\"code\":\"WeightNet\",\"displayName\":\"Gewicht Netto\",\"value\":\"0.000\"}]}",
+      "productId": 2005918,
+      "warehouseId": 1000377,
+      "externalBarcode": null
+    }
+  },
+  "generatedHUQRCodes": {},
+  "salesOrders": {
+    "SO1": {
+      "id": "1000089",
+      "documentNo": "0090"
+    },
+    "SO2": {
+      "id": "1000090",
+      "documentNo": "0091"
+    },
+    "SO3": {
+      "id": "1000091",
+      "documentNo": "0092"
+    }
+  },
+  "purchaseOrders": {},
+  "shipments": {},
+  "receipts": {},
+  "invoices": {},
+  "distributionOrders": {},
+  "manufacturingOrders": {},
+  "inventories": {}
+}
+Intercepted authentication token: b6bbd97fdc69448995900202cae46ea9 from login response {
+  token: [32m'b6bbd97fdc69448995900202cae46ea9'[39m,
+  language: [32m'en_US'[39m,
+  userId: [33m2188409[39m,
+  username: [32m'user_20260525T192221288'[39m,
+  userFullname: [32m'user_20260525T192221288 user_20260525T192221288'[39m
+}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000217,"caption":"slot1_20260525T192221423"}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000218,"caption":"slot2_20260525T192221424"}
+Scanning scanned code:
+PICKING_SLOT#1#{"pickingSlotId":1000219,"caption":"slot3_20260525T192221426"}
+
+[[ATTACHMENT|../../test-results/spec-picking-productBasedP-26613-onymous-pick-HUs-on-the-fly-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|../../test-results/spec-picking-productBasedP-26613-onymous-pick-HUs-on-the-fly-Mobile-Chrome/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

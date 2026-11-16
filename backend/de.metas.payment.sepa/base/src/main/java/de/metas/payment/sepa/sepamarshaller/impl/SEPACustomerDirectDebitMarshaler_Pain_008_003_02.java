@@ -51,7 +51,6 @@ import de.metas.util.StringUtils;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 
 import javax.xml.bind.JAXBContext;
@@ -182,7 +181,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 		//
 		// Payment Informations: create one PaymentInstructionInformationSDD for each line
-		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaDocument);
+		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentBL.class).retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
 			throw AdempiereException.newWithTranslatableMessage("@NoLines@: " + sepaDocument);
@@ -213,7 +212,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		customerDirectDebitInitiation.getGrpHdr().setNbOfTxs(String.valueOf(customerDirectDebitInitiation.getPmtInf().size()));
 
 		sepaDocument.setProcessed(customerDirectDebitInitiation.getPmtInf().size() > 0);
-		InterfaceWrapperHelper.save(sepaDocument);
+		Services.get(ISEPADocumentDAO.class).save(sepaDocument);
 		return document;
 	}
 

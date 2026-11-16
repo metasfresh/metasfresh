@@ -42,4 +42,15 @@ public interface IHUQRCode
 	default Optional<LocalDate> getProductionDate() {return Optional.empty();}
 
 	Optional<String> getLotNumber();
+
+	/** Expiration (use-by) date the code carries, if any. */
+	@JsonIgnore
+	default Optional<LocalDate> getExpirationDate() {return Optional.empty();}
+
+	/**
+	 * What this code says about the product it labels. Empty (the default): this kind of code never names a product.
+	 * Present: a product label; the codes it carries (product number, GTIN, EAN-13) may each be absent.
+	 */
+	@JsonIgnore
+	default Optional<ProductLabelCodes> getProductLabelCodes() {return Optional.empty();}
 }

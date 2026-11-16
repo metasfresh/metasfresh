@@ -283,6 +283,7 @@ public class AdempiereException extends RuntimeException
 	private AdIssueId adIssueId = null;
 	private boolean userNotified = false;
 	private boolean userValidationError;
+	private UserMessagePresentation userMessagePresentation = UserMessagePresentation.TOAST;
 
 	private Map<String, Object> parameters = null;
 	private final Map<String, String> mdcContextMap;
@@ -330,7 +331,11 @@ public class AdempiereException extends RuntimeException
 		// so we can consider those user-friendly errors
 		this.userValidationError = true;
 
-		this.errorCode = errorCode;
+		this.errorCode = errorCode != null
+				? errorCode
+				: message.getAdMessageKey()
+						.map(key -> coalesce(msgBL.getErrorCode(key), key.toAD_Message()))
+						.orElse(null);
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
@@ -357,6 +362,20 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final AdMessageKey adMessage, final Object... params)
 	{
 		this(Env.getAD_Language(), adMessage, params);
+	}
+
+	/** Like {@link #AdempiereException(AdMessageKey, Object...)} but also keeps the underlying {@code cause}. */
+	public AdempiereException(@Nullable final Throwable cause, @NonNull final AdMessageKey adMessage, final Object... params)
+	{
+		super(cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = TranslatableStrings.adMessage(adMessage, params);
+		this.userValidationError = true;
+		this.mdcContextMap = captureMDCContextMap();
+		this.errorCode = coalesce(msgBL.getErrorCode(adMessage), adMessage.toAD_Message());
+
+		setParameter("AD_Language", this.adLanguage);
+		setParameter("AD_Message", adMessage);
 	}
 
 	public AdempiereException(@Nullable final Throwable cause)
@@ -638,6 +657,12 @@ public class AdempiereException extends RuntimeException
 		return this;
 	}
 
+	public AdempiereException setUserMessagePresentation(@NonNull final UserMessagePresentation userMessagePresentation)
+	{
+		this.userMessagePresentation = userMessagePresentation;
+		return this;
+	}
+
 	/**
 	 * Sets parameter.
 	 *
@@ -806,6 +831,16 @@ public class AdempiereException extends RuntimeException
 	public static boolean isUserValidationError(final Throwable ex)
 	{
 		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();
+	}
+
+	public final UserMessagePresentation getUserMessagePresentation()
+	{
+		return userMessagePresentation;
+	}
+
+	public static UserMessagePresentation getUserMessagePresentation(final Throwable ex)
+	{
+		return (ex instanceof AdempiereException) ? ((AdempiereException)ex).getUserMessagePresentation() : UserMessagePresentation.TOAST;
 	}
 
 	/**

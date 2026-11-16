@@ -1,8 +1,8 @@
 ARG REFNAME=local
-ARG REGISTRY=
+ARG REGISTRY=ghcr.io/
 FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
-FROM eclipse-temurin:17.0.5_8-jdk
+FROM eclipse-temurin:17-jdk-jammy
 
 RUN apt-get -y update && \
     apt-get -y install curl && \

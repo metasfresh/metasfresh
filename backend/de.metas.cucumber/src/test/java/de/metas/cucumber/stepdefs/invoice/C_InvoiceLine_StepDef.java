@@ -25,15 +25,16 @@ package de.metas.cucumber.stepdefs.invoice;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
-import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.InvoiceId;
@@ -44,6 +45,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -64,10 +66,11 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Project;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -108,7 +111,37 @@ public class C_InvoiceLine_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
+	// for linking invoice lines back to order lines (C_OrderLine_ID FK, split-payment matching, etc.)
+	private final C_OrderLine_StepDefData orderLineTable;
+	// for setting a per-line GL account override (C_ElementValue_Override_ID) on draft invoice lines
+	private final C_ElementValue_StepDefData elementValueTable;
 
+	/**
+	 * Creates {@code C_InvoiceLine} records on existing invoices.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the parent invoice<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product<br>
+	 *   <b>QtyInvoiced</b> — (required) quantity with UOM (e.g. "1 PCE")<br>
+	 *   <b>C_UOM_ID</b> — (optional) UOM code; defaults from QtyInvoiced<br>
+	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) the tax to apply<br>
+	 *   <b>C_Tax_ID$set</b> — (optional, identifier-ref) force this tax on the line<br>
+	 *   <b>Price</b> — (optional) explicit price<br>
+	 *   <b>IsPackagingMaterial</b> — (optional) mark the line as packaging material; omit to keep the model default (N)<br>
+	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) source order line<br>
+	 *   <b>C_Project_ID</b> — (optional, identifier-ref) project (Positions Nr.) of the line<br>
+	 *   <b>M_InOutLine_ID</b> — (optional, identifier-ref) source receipt/shipment line<br>
+	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override (purchase invoices)<br>
+	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
+	 * @cucumber.depends C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData, C_ElementValue_StepDefData, C_OrderLine_StepDefData, C_Project_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_InvoiceLines
+	 *   | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID | C_ElementValue_Override_ID |
+	 *   | invoiceLine | invoice      | product      | 1 PCE       | zeroTax  | overrideAccount            |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
 	{
@@ -117,6 +150,26 @@ public class C_InvoiceLine_StepDef
 				.forEach(this::create_C_InvoiceLine);
 	}
 
+	/**
+	 * Finds one line of the given invoice per row and validates it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_InvoiceLine_ID</b> — (optional) alias to store the found line under, in C_InvoiceLine_StepDefData<br>
+	 * <b>C_Invoice_ID</b> — (required, identifier-ref) the invoice<br>
+	 * <b>M_Product_ID</b> — (required, identifier-ref or id) filter and assertion: the line's product<br>
+	 * <b>QtyInvoiced</b> — (required) filter and assertion: the line's invoiced quantity<br>
+	 * <b>M_InOutLine_ID</b> — (optional, identifier-ref) filter: the line's shipment line<br>
+	 * <b>C_Project_ID</b> — (optional, identifier-ref or id) expected project; {@code null} expects no project<br>
+	 * further optional assertion columns: QtyEntered, QtyEnteredInBPartnerUOM, C_UOM_BPartner_ID.X12DE355, C_UOM_ID.X12DE355,
+	 * Processed, PriceEntered, PriceActual, LineNetAmt, Discount, C_Tax_ID, C_TaxCategory_ID, Line, TaxAmtInfo, Price_UOM_ID.X12DE355,
+	 * IsManualPrice, QtyInvoicedInPriceUOM, C_Activity_ID.Identifier, Description, QtyMatched, ExternalIds
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, M_Product_StepDefData, M_InOutLine_StepDefData, C_Project_StepDefData
+	 * @cucumber.example <pre>
+	 * And validate created invoice lines
+	 *   | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
+	 *   | packing_line     | invoice      | crate        | 2           | shipment_line  | project_1    |
+	 * </pre>
+	 */
 	@And("validate created invoice lines")
 	public void validate_created_invoice_lines(@NonNull final DataTable table)
 	{
@@ -144,6 +197,10 @@ public class C_InvoiceLine_StepDef
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
 				.map(inOutLineTable::getId)
 				.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
+
+		// ...or the same product and qty on lines of different projects
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Project_ID, extractExpectedProjectId(projectIdentifier)));
 
 		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
 		if (invoiceLineRecords.isEmpty())
@@ -175,6 +232,25 @@ public class C_InvoiceLine_StepDef
 		}
 	}
 
+	/**
+	 * Finds, per DataTable row, the one line of the given invoice matching product + quantity (+ project) and validates it.
+	 * The row count must equal the number of lines on the invoice.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_InvoiceLine_ID</b> — (optional) alias to store the found line under, in C_InvoiceLine_StepDefData<br>
+	 * <b>M_Product_ID</b> — (required, identifier-ref or id) filter and assertion: the line's product<br>
+	 * <b>QtyInvoiced</b> — (required) filter and assertion: the line's invoiced quantity<br>
+	 * <b>C_Project_ID</b> — (optional, identifier-ref or id) filter and assertion: the line's project; {@code null} selects the project-less line<br>
+	 * plus the same optional assertion columns as {@code validate created invoice lines} (QtyEntered, PriceEntered, PriceActual, LineNetAmt, Discount, C_Tax_ID, …)
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, M_Product_StepDefData, C_Project_StepDefData
+	 * @cucumber.example <pre>
+	 * And validate invoice lines for bonusCreditMemo:
+	 *   | M_Product_ID | QtyInvoiced | C_Project_ID | LineNetAmt |
+	 *   | bonusWare    | 1           | project1     | 3.12       |
+	 *   | bonusWare    | 1           | project2     | 2.08       |
+	 *   | bonusPack    | 1           | null         | 0.40       |
+	 * </pre>
+	 */
 	@And("^validate invoice lines for (.*):$")
 	public void validate_invoice_lines(@NonNull final String invoiceIdentifier, @NonNull final DataTable table)
 	{
@@ -211,10 +287,27 @@ public class C_InvoiceLine_StepDef
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
 					.filter(line -> line.getM_Product_ID() == productId.getRepoId())
 					.filter(line -> line.getQtyInvoiced().equals(qtyInvoiced))
+					.filter(line -> isOfExpectedProject(line, row))
 					.collect(ImmutableList.toImmutableList()));
 
 			validateInvoiceLine(currentInvoiceLine, invoiceRecord, row);
 		});
+	}
+
+	private boolean isOfExpectedProject(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final DataTableRow row)
+	{
+		return row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.map(projectIdentifier -> Objects.equals(ProjectId.ofRepoIdOrNull(invoiceLine.getC_Project_ID()), extractExpectedProjectId(projectIdentifier)))
+				.orElse(true);
+	}
+
+	/** @return the identified project, or {@code null} for the {@code null} placeholder (expects no project) */
+	@Nullable
+	private ProjectId extractExpectedProjectId(@NonNull final StepDefDataIdentifier projectIdentifier)
+	{
+		return projectIdentifier.isNullPlaceholder()
+				? null
+				: projectTable.getIdOptional(projectIdentifier).orElseGet(() -> projectIdentifier.getAsId(ProjectId.class));
 	}
 
 	private ProductId getProductId(final DataTableRow row)
@@ -329,16 +422,10 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getQtyInvoicedInPriceUOM()).as(COLUMNNAME_QtyInvoicedInPriceUOM).isEqualByComparingTo(qtyInvoicedInPriceUOM);
 		}
 
-		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		if (Check.isNotBlank(projectIdentifier))
-		{
-			final Integer projectId = projectTable.getOptional(projectIdentifier)
-					.map(I_C_Project::getC_Project_ID)
-					.orElseGet(() -> Integer.parseInt(projectIdentifier));
-
-			softly.assertThat(invoiceLine.getC_Project_ID()).isEqualTo(projectId);
-		}
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> softly.assertThat(ProjectId.ofRepoIdOrNull(invoiceLine.getC_Project_ID()))
+						.as(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+						.isEqualTo(extractExpectedProjectId(projectIdentifier)));
 
 		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(costCenterIdentifier))
@@ -361,6 +448,12 @@ public class C_InvoiceLine_StepDef
 
 		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_ExternalIds)
 				.ifPresent(externalIds -> softly.assertThat(invoiceLine.getExternalIds()).as(I_C_InvoiceLine.COLUMNNAME_ExternalIds).isEqualTo(externalIds));
+
+		row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_IsWithoutCharge)
+				.ifPresent(isWithoutCharge -> softly.assertThat(invoiceLine.isWithoutCharge()).as("IsWithoutCharge").isEqualTo(isWithoutCharge));
+
+		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_Reason)
+				.ifPresent(reason -> softly.assertThat(invoiceLine.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
 
 		softly.assertAll();
 
@@ -409,11 +502,37 @@ public class C_InvoiceLine_StepDef
 					invoiceLine.setPriceActual(price);
 				});
 
+		// link the invoice line back to the order line so M_MatchInv → orderLine.C_Tax_ID
+		// traversal in DeliveryPrepaymentAllocationService works correctly.
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
+				.map(orderLineTable::getId)
+				.ifPresent(orderLineId -> invoiceLine.setC_OrderLine_ID(orderLineId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(projectIdentifier -> projectTable.getIdOptional(projectIdentifier).orElseGet(() -> projectIdentifier.getAsId(ProjectId.class)))
+				.ifPresent(projectId -> invoiceLine.setC_Project_ID(projectId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inOutLineTable::getId)
+				.ifPresent(inOutLineId -> invoiceLine.setM_InOutLine_ID(inOutLineId.getRepoId()));
+
+		// Per-line GL account override for purchase invoices
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_ElementValue_Override_ID)
+				.map(elementValueTable::getId)
+				.ifPresent(elementValueId -> invoiceLine.setC_ElementValue_Override_ID(elementValueId.getRepoId()));
+
 		row.getAsOptionalIdentifier("C_Tax_ID$set")
 				.ifPresent(taxIdentifier -> {
 					final TaxId taxId = taxTable.getId(taxIdentifier);
 					invoiceLine.setC_Tax_ID(taxId.getRepoId());
 				});
+
+		final Boolean isPackagingMaterial = row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_IsPackagingMaterial).toBooleanOrNull();
+		if (isPackagingMaterial != null)
+		{
+			invoiceLine.setIsPackagingMaterial(isPackagingMaterial);
+		}
 
 		invoiceLineBL.updatePrices(invoiceLine);
 		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());

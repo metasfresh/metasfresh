@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 public class JsonContact
 {
 	@NonNull String name;
+	@Nullable String department;
 	@Nullable String phone;
 	@Nullable String emailAddress;
 	@NonNull String language; // ISO 639-1 language code, e.g. "en"

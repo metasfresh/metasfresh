@@ -96,6 +96,48 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_AmountTendered = "AmountTendered";
 
 	/**
+	 * Set Card checkout started at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCardCheckoutStartedAt (@Nullable java.sql.Timestamp CardCheckoutStartedAt);
+
+	/**
+	 * Get Card checkout started at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getCardCheckoutStartedAt();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_CardCheckoutStartedAt = new ModelColumn<>(I_C_POS_Payment.class, "CardCheckoutStartedAt", null);
+	String COLUMNNAME_CardCheckoutStartedAt = "CardCheckoutStartedAt";
+
+	/**
+	 * Set SumUp lookup failing since.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCardLookupFailingSince (@Nullable java.sql.Timestamp CardLookupFailingSince);
+
+	/**
+	 * Get SumUp lookup failing since.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getCardLookupFailingSince();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_CardLookupFailingSince = new ModelColumn<>(I_C_POS_Payment.class, "CardLookupFailingSince", null);
+	String COLUMNNAME_CardLookupFailingSince = "CardLookupFailingSince";
+
+	/**
 	 * Set Change.
 	 *
 	 * <br>Type: Amount
@@ -155,10 +197,6 @@ public interface I_C_POS_Payment
 	 * <br>Virtual Column: false
 	 */
 	int getC_POS_Order_ID();
-
-	de.metas.pos.repository.model.I_C_POS_Order getC_POS_Order();
-
-	void setC_POS_Order(de.metas.pos.repository.model.I_C_POS_Order C_POS_Order);
 
 	ModelColumn<I_C_POS_Payment, de.metas.pos.repository.model.I_C_POS_Order> COLUMN_C_POS_Order_ID = new ModelColumn<>(I_C_POS_Payment.class, "C_POS_Order_ID", de.metas.pos.repository.model.I_C_POS_Order.class);
 	String COLUMNNAME_C_POS_Order_ID = "C_POS_Order_ID";
@@ -275,7 +313,7 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_POS_CardReader_ExternalId = "POS_CardReader_ExternalId";
 
 	/**
-	 * Set Card Reader Name.
+	 * Set Card Reader.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -284,7 +322,7 @@ public interface I_C_POS_Payment
 	void setPOS_CardReader_Name (@Nullable java.lang.String POS_CardReader_Name);
 
 	/**
-	 * Get Card Reader Name.
+	 * Get Card Reader.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -296,7 +334,7 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_POS_CardReader_Name = "POS_CardReader_Name";
 
 	/**
-	 * Set POS Payment Method.
+	 * Set Payment Method.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -305,7 +343,7 @@ public interface I_C_POS_Payment
 	void setPOSPaymentMethod (java.lang.String POSPaymentMethod);
 
 	/**
-	 * Get POS Payment Method.
+	 * Get Payment Method.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -317,7 +355,7 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_POSPaymentMethod = "POSPaymentMethod";
 
 	/**
-	 * Set Payment Processing Status.
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -326,7 +364,7 @@ public interface I_C_POS_Payment
 	void setPOSPaymentProcessingStatus (java.lang.String POSPaymentProcessingStatus);
 
 	/**
-	 * Get Payment Processing Status.
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -399,6 +437,48 @@ public interface I_C_POS_Payment
 
 	ModelColumn<I_C_POS_Payment, Object> COLUMN_POSPaymentProcessor = new ModelColumn<>(I_C_POS_Payment.class, "POSPaymentProcessor", null);
 	String COLUMNNAME_POSPaymentProcessor = "POSPaymentProcessor";
+
+	/**
+	 * Set Released SumUp client transaction ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReleasedSUMUPClientTransactionID (@Nullable java.lang.String ReleasedSUMUPClientTransactionID);
+
+	/**
+	 * Get Released SumUp client transaction ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReleasedSUMUPClientTransactionID();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_ReleasedSUMUPClientTransactionID = new ModelColumn<>(I_C_POS_Payment.class, "ReleasedSUMUPClientTransactionID", null);
+	String COLUMNNAME_ReleasedSUMUPClientTransactionID = "ReleasedSUMUPClientTransactionID";
+
+	/**
+	 * Set SumUp client transaction ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_ClientTransactionID (@Nullable java.lang.String SUMUP_ClientTransactionID);
+
+	/**
+	 * Get SumUp client transaction ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSUMUP_ClientTransactionID();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_SUMUP_ClientTransactionID = new ModelColumn<>(I_C_POS_Payment.class, "SUMUP_ClientTransactionID", null);
+	String COLUMNNAME_SUMUP_ClientTransactionID = "SUMUP_ClientTransactionID";
 
 	/**
 	 * Set SumUp Configuration.

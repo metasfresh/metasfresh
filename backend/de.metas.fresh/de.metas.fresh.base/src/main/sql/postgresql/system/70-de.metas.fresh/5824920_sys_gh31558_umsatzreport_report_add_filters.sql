@@ -1,0 +1,277 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Umsatzliste_Report.sql
+
+-- gh31558: add the Geschaeftspartner, Geschaeftspartnergruppe and Vertriebspartner filters
+-- to report.Umsatzreport_Report_Sub / report.umsatzreport_report.
+--
+-- Three new optional arguments are appended to both functions:
+--   $5 C_BPartner_ID          - restrict to one business partner
+--   $6 C_BP_Group_ID          - restrict to one business partner group
+--   $7 C_BPartner_SalesRep_ID - restrict to the sales partner recorded on the
+--                               invoice DOCUMENT (C_Invoice.C_BPartner_SalesRep_ID),
+--                               NOT the one on the partner master record. An invoice
+--                               carrying no sales partner is excluded once the filter is set.
+-- Each one is a no-op when NULL, so with all three unset the reports return exactly
+-- what they return today.
+--
+-- Three new columns are returned so the templates can echo the selected filters in the
+-- printed filter summary: param_bp, param_bp_group, param_salesrep. Because the returned
+-- column set changes, both SETOF pseudo-tables are dropped and recreated as well.
+
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric);
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN C_BP_Group_ID numeric, IN C_BPartner_SalesRep_ID numeric);
+
+DROP TABLE IF EXISTS report.umsatzreport_report;
+
+DROP FUNCTION IF EXISTS report.Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
+DROP FUNCTION IF EXISTS report.Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric);
+DROP FUNCTION IF EXISTS report.Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN C_BP_Group_ID numeric, IN C_BPartner_SalesRep_ID numeric);
+
+DROP TABLE IF EXISTS report.Umsatzreport_Report_Sub;
+
+CREATE TABLE report.Umsatzreport_Report_Sub
+(
+	name character varying(60),
+	periodend date,
+	lastyearperiodend date,
+	year character varying(10),
+	lastyear character varying(10),
+	sameperiodsum numeric,
+	sameperiodlastyearsum numeric,
+	perioddifference numeric,
+	perioddiffpercentage numeric,
+	sameyearsum numeric,
+	lastyearsum numeric,
+	yeardifference numeric,
+	yeardiffpercentage numeric,
+	attributesetinstance character varying(60),
+	ad_org_id numeric,
+	delivery_bp_name character varying(100),
+	param_bp character varying(100),
+	param_bp_group character varying(60),
+	param_salesrep character varying(100)
+)
+WITH (
+	OIDS=FALSE
+);
+
+
+CREATE FUNCTION report.Umsatzreport_Report_Sub(IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN C_BP_Group_ID numeric, IN C_BPartner_SalesRep_ID numeric) RETURNS SETOF report.Umsatzreport_Report_Sub AS
+$BODY$
+SELECT
+	report._merge_bp_name(name, delivery_bp_name) AS name,
+	PeriodEnd,
+	LastYearPeriodEnd,
+	Year,
+	LastYear,
+	SamePeriodSum AS SamePeriodSum,
+	SamePeriodLastYearSum,
+	SamePeriodSum - SamePeriodLastYearSum AS PeriodDifference,
+	CASE WHEN SamePeriodSum - SamePeriodLastYearSum != 0 AND SamePeriodLastYearSum != 0
+		THEN (SamePeriodSum - SamePeriodLastYearSum) / SamePeriodLastYearSum * 100 ELSE NULL
+	END AS PeriodDiffPercentage,
+	SameYearSum AS SameYearSum,
+	LastYearSum AS LastYearSum,
+	SameYearSum - LastYearSum AS YearDifference,
+	CASE WHEN SameYearSum - LastYearSum != 0 AND LastYearSum != 0
+		THEN (SameYearSum - LastYearSum) / LastYearSum * 100 ELSE NULL
+	END AS YearDiffPercentage,
+	Attributes as attributesetinstance,
+	ad_org_id,
+	delivery_bp_name,
+	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $5 AND isActive = 'Y') AS param_bp,
+	(SELECT name FROM C_BP_Group WHERE C_BP_Group_ID = $6 AND isActive = 'Y') AS param_bp_group,
+	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $7 AND isActive = 'Y') AS param_salesrep
+FROM
+	(
+		SELECT
+			bp.name,
+			p.EndDate::Date AS PeriodEnd,
+			pp.EndDate::Date AS LastYearPeriodEnd,
+			y.fiscalYear AS Year,
+			py.fiscalYear AS LastYear,
+			SUM( CASE WHEN fa.C_Period_ID = p.C_Period_ID THEN AmtAcct ELSE 0 END ) AS SamePeriodSum,
+			SUM( CASE WHEN fap.C_Year_ID = p.C_Year_ID AND fap.periodNo <= p.PeriodNo THEN AmtAcct ELSE 0 END ) AS SameYearSum,
+			SUM( CASE WHEN fa.C_Period_ID = pp.C_Period_ID THEN AmtAcct ELSE 0 END ) AS SamePeriodLastYearSum,
+			SUM( CASE WHEN fap.C_Year_ID = pp.C_Year_ID AND fap.periodNo <= pp.PeriodNo THEN AmtAcct ELSE 0 END ) AS LastYearSum,
+			att.Attributes,
+			fa.ad_org_id,
+			COALESCE(
+				CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END,
+				bp_orderer.Name
+			) AS delivery_bp_name
+		FROM
+			C_Period p
+			INNER JOIN C_Year y ON p.C_Year_ID = y.C_Year_ID AND y.isActive = 'Y'
+			-- Get same Period from previous year
+			LEFT OUTER JOIN C_Period pp ON pp.C_Period_ID = report.Get_Predecessor_Period_Recursive ( p.C_Period_ID,
+				( SELECT count(0) FROM C_Period sp WHERE sp.C_Year_ID = p.C_Year_ID and isActive = 'Y' )::int ) AND pp.isActive = 'Y'
+			LEFT OUTER JOIN C_Year py ON pp.C_Year_ID = py.C_Year_ID AND py.isActive = 'Y'
+			
+			-- Get data from fact account
+			INNER JOIN (	
+				SELECT 	
+					fa.M_Product_ID, fa.C_Period_ID, fa.C_BPartner_ID,
+					CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct,
+					il.M_AttributeSetInstance_ID, fa.ad_org_id, fa.AD_Client_ID,
+				il.C_OrderLine_ID
+				FROM 	
+					Fact_Acct fa 
+					JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+					JOIN C_InvoiceLine il ON fa.Line_ID = il.C_InvoiceLine_ID AND il.isActive = 'Y'
+				WHERE	
+					AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
+					AND IsSOtrx = $2 AND fa.isActive = 'Y'
+					-- Sales partner: taken from the invoice DOCUMENT, not from the partner master record.
+					-- A document with no sales partner is excluded once a sales partner is selected.
+					AND ( CASE WHEN $7 IS NULL THEN TRUE ELSE i.C_BPartner_SalesRep_ID = $7 END )
+					AND ( 
+				-- If the given attribute set instance has values set... 
+				CASE WHEN EXISTS ( SELECT ai_value FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $3 )
+				-- ... then apply following filter:
+				THEN ( 
+					-- Take lines where the attributes of the current InvoiceLine's asi are in the parameter asi and their Values Match
+					EXISTS (
+						SELECT	0
+						FROM	report.fresh_Attributes a -- a = Attributes from invoice line, pa = Parameter Attributes
+							INNER JOIN report.fresh_Attributes pa ON pa.M_AttributeSetInstance_ID = $3 
+								AND a.at_value = pa.at_value -- same attribute
+								AND a.ai_value = pa.ai_value -- same value
+						WHERE	a.M_AttributeSetInstance_ID = il.M_AttributeSetInstance_ID
+					)
+					-- Dismiss lines where the Attributes in the Parameter are not in the InvoiceLine's asi
+					AND NOT EXISTS (
+						SELECT	0
+						FROM	report.fresh_Attributes pa
+							LEFT OUTER JOIN report.fresh_Attributes a ON a.at_value = pa.at_value AND a.ai_value = pa.ai_value 
+								AND a.M_AttributeSetInstance_ID = il.M_AttributeSetInstance_ID
+						WHERE	pa.M_AttributeSetInstance_ID = $3
+							AND a.M_AttributeSetInstance_ID IS null
+					)
+				)
+				-- ... else deactivate the filter 
+				ELSE TRUE END
+			)
+			) fa ON true
+			INNER JOIN C_Period fap ON fa.C_Period_ID = fap.C_Period_ID AND fap.isActive = 'Y'
+			/* Please note: This is an important implicit filter. Inner Joining the Product
+			 * filters Fact Acct records for e.g. Taxes
+			 */  
+			INNER JOIN M_Product pr ON fa.M_Product_ID = pr.M_Product_ID  
+				AND pr.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', fa.AD_Client_ID, fa.AD_Org_ID) AND pr.isActive = 'Y'
+			INNER JOIN C_BPartner bp ON fa.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+
+			LEFT OUTER JOIN	(
+					SELECT 	String_agg ( ai_value, ', ' ORDER BY Length(ai_value), ai_value ) AS Attributes, M_AttributeSetInstance_ID FROM Report.fresh_Attributes
+					GROUP BY M_AttributeSetInstance_ID
+					) att ON $3 = att.M_AttributeSetInstance_ID
+
+			-- DropShip / delivery recipient joins
+			LEFT JOIN C_OrderLine ol_ds ON fa.C_OrderLine_ID = ol_ds.C_OrderLine_ID AND ol_ds.isActive = 'Y'
+			LEFT JOIN C_Order ord ON ol_ds.C_Order_ID = ord.C_Order_ID AND ord.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_dropship ON ord.DropShip_BPartner_ID = bp_dropship.C_BPartner_ID AND bp_dropship.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_orderer ON ord.C_BPartner_ID = bp_orderer.C_BPartner_ID AND bp_orderer.isActive = 'Y'
+		WHERE
+
+			p.C_Period_ID = $1 AND p.isActive = 'Y'
+			AND fa.ad_org_id = $4
+			AND ( CASE WHEN $5 IS NULL THEN TRUE ELSE bp.C_BPartner_ID = $5 END )
+			AND ( CASE WHEN $6 IS NULL THEN TRUE ELSE bp.C_BP_Group_ID = $6 END )
+
+		GROUP BY
+			bp.name,
+			p.EndDate,
+			pp.EndDate,
+			y.fiscalYear,
+			py.fiscalYear,
+			att.Attributes,
+			fa.ad_org_id,
+			COALESCE(CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END, bp_orderer.Name)
+	) a
+ORDER BY
+	SameYearSum DESC$BODY$
+LANGUAGE sql STABLE;
+
+
+
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric);
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN C_BP_Group_ID numeric, IN C_BPartner_SalesRep_ID numeric);
+
+DROP TABLE IF EXISTS report.umsatzreport_report;
+
+CREATE TABLE report.umsatzreport_report
+(
+	name character varying(60),
+	periodend date,
+	lastyearperiodend date,
+	year character varying(10),
+	lastyear character varying(10),
+	sameperiodsum numeric,
+	sameperiodlastyearsum numeric,
+	perioddifference numeric,
+	perioddiffpercentage numeric,
+	sameyearsum numeric,
+	lastyearsum numeric,
+	yeardifference numeric,
+	yeardiffpercentage numeric,
+	attributesetinstance character varying(60),
+	ad_org_id numeric,
+	delivery_bp_name character varying(100),
+	param_bp character varying(100),
+	param_bp_group character varying(60),
+	param_salesrep character varying(100),
+	unionorder integer
+)
+WITH (
+	OIDS=FALSE
+);
+
+
+CREATE FUNCTION report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN C_BP_Group_ID numeric, IN C_BPartner_SalesRep_ID numeric) RETURNS SETOF report.umsatzreport_report AS
+$BODY$
+	SELECT *, 1 AS UnionOrder FROM report.Umsatzreport_Report_Sub ($1, $2, $3, $4, $5, $6, $7)
+UNION ALL
+	SELECT 
+		null as name, 
+		PeriodEnd,
+		LastYearPeriodEnd,
+		Year,
+		LastYear,
+		SUM( SamePeriodSum ) AS SamePeriodSum,
+		SUM( SamePeriodLastYearSum ) AS SamePeriodLastYearSum,
+		SUM( SamePeriodSum ) - SUM( SamePeriodLastYearSum ) AS PeriodDifference,
+		CASE WHEN SUM( SamePeriodSum ) - SUM( SamePeriodLastYearSum ) != 0 AND SUM( SamePeriodLastYearSum ) != 0
+			THEN (SUM( SamePeriodSum ) - SUM( SamePeriodLastYearSum ) ) / SUM( SamePeriodLastYearSum ) * 100 ELSE NULL
+		END AS PeriodDiffPercentage,
+		SUM( SameYearSum ) AS SameYearSum,
+		SUM( LastYearSum ) AS LastYearSum,
+		SUM( SameYearSum ) - SUM( LastYearSum ) AS YearDifference,
+		CASE WHEN SUM( SameYearSum ) - SUM( LastYearSum ) != 0 AND SUM( LastYearSum ) != 0
+			THEN (SUM( SameYearSum ) - SUM( LastYearSum ) ) / SUM( LastYearSum ) * 100 ELSE NULL
+		END AS YearDiffPercentage,
+		attributesetinstance,
+		ad_org_id,
+		NULL::varchar(100) AS delivery_bp_name,
+		param_bp,
+		param_bp_group,
+		param_salesrep,
+		2 AS UnionOrder
+		
+	FROM 
+		report.Umsatzreport_Report_Sub ($1, $2, $3, $4, $5, $6, $7)
+	GROUP BY
+		PeriodEnd,
+		LastYearPeriodEnd,
+		Year,
+		LastYear,
+		attributesetinstance,
+		ad_org_id,
+		param_bp,
+		param_bp_group,
+		param_salesrep
+ORDER BY
+	UnionOrder, SameYearSum DESC
+$BODY$
+LANGUAGE sql STABLE;
+

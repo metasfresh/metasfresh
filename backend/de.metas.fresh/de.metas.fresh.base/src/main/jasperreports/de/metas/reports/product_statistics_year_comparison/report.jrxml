@@ -1,0 +1,921 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="812" leftMargin="15" rightMargin="15" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail" resourceBundle="de/metas/reports/product_statistics_year_comparison/report" uuid="db33bdcd-3d7c-4de5-9e1e-01292a7f6869">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_Year_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_To_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
+	<!-- login context key of the printing user (see Jasper parameter map), resolved to the user name in the query -->
+	<parameter name="#AD_User_ID" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[-- one header row from the parameters (also when the function returns no rows), the function's rows joined to it
+SELECT f.*, h.*
+FROM (SELECT (SELECT o.Name FROM AD_Org o WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS Hdr_OrgName,
+             (SELECT y.FiscalYear FROM C_Year y WHERE y.C_Year_ID = $P{C_Year_ID}) AS Hdr_FiscalYear,
+             (SELECT c.ISO_Code
+              FROM AD_Org o
+                       JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = getC_AcctSchema_ID(o.AD_Client_ID, o.AD_Org_ID)
+                       JOIN C_Currency c ON c.C_Currency_ID = acs.C_Currency_ID
+              WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS Hdr_Currency,
+             -- one product: value and name; a range: the lower and the higher value (text order, as the report sorts)
+             (SELECT CASE
+                         WHEN COUNT(*) = 1 THEN MIN(p.Value || ' ' || p.Name)
+                         WHEN COUNT(*) = 2 THEN MIN(p.Value) || ' … ' || MAX(p.Value)
+                     END
+              FROM M_Product p WHERE p.M_Product_ID IN ($P{M_Product_ID}, $P{M_Product_To_ID})) AS ParamProduct,
+             (SELECT pc.Name FROM M_Product_Category pc WHERE pc.M_Product_Category_ID = $P{M_Product_Category_ID}) AS ParamProductCategory,
+             (SELECT u.Name FROM AD_User u WHERE u.AD_User_ID = NULLIF($P{#AD_User_ID}, '')::numeric) AS PrintUser) h
+         LEFT JOIN report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{M_Product_ID}, $P{M_Product_To_ID}, $P{M_Product_Category_ID}) f ON TRUE
+ORDER BY f.ProductValue]]>
+	</queryString>
+	<field name="m_product_id" class="java.math.BigDecimal"/>
+	<field name="productvalue" class="java.lang.String"/>
+	<field name="productname" class="java.lang.String"/>
+	<field name="qty_01" class="java.math.BigDecimal"/>
+	<field name="qty_02" class="java.math.BigDecimal"/>
+	<field name="qty_03" class="java.math.BigDecimal"/>
+	<field name="qty_04" class="java.math.BigDecimal"/>
+	<field name="qty_05" class="java.math.BigDecimal"/>
+	<field name="qty_06" class="java.math.BigDecimal"/>
+	<field name="qty_07" class="java.math.BigDecimal"/>
+	<field name="qty_08" class="java.math.BigDecimal"/>
+	<field name="qty_09" class="java.math.BigDecimal"/>
+	<field name="qty_10" class="java.math.BigDecimal"/>
+	<field name="qty_11" class="java.math.BigDecimal"/>
+	<field name="qty_12" class="java.math.BigDecimal"/>
+	<field name="qty_total" class="java.math.BigDecimal"/>
+	<field name="amt_01" class="java.math.BigDecimal"/>
+	<field name="amt_02" class="java.math.BigDecimal"/>
+	<field name="amt_03" class="java.math.BigDecimal"/>
+	<field name="amt_04" class="java.math.BigDecimal"/>
+	<field name="amt_05" class="java.math.BigDecimal"/>
+	<field name="amt_06" class="java.math.BigDecimal"/>
+	<field name="amt_07" class="java.math.BigDecimal"/>
+	<field name="amt_08" class="java.math.BigDecimal"/>
+	<field name="amt_09" class="java.math.BigDecimal"/>
+	<field name="amt_10" class="java.math.BigDecimal"/>
+	<field name="amt_11" class="java.math.BigDecimal"/>
+	<field name="amt_12" class="java.math.BigDecimal"/>
+	<field name="amt_total" class="java.math.BigDecimal"/>
+	<field name="prevqty_01" class="java.math.BigDecimal"/>
+	<field name="prevqty_02" class="java.math.BigDecimal"/>
+	<field name="prevqty_03" class="java.math.BigDecimal"/>
+	<field name="prevqty_04" class="java.math.BigDecimal"/>
+	<field name="prevqty_05" class="java.math.BigDecimal"/>
+	<field name="prevqty_06" class="java.math.BigDecimal"/>
+	<field name="prevqty_07" class="java.math.BigDecimal"/>
+	<field name="prevqty_08" class="java.math.BigDecimal"/>
+	<field name="prevqty_09" class="java.math.BigDecimal"/>
+	<field name="prevqty_10" class="java.math.BigDecimal"/>
+	<field name="prevqty_11" class="java.math.BigDecimal"/>
+	<field name="prevqty_12" class="java.math.BigDecimal"/>
+	<field name="prevqty_total" class="java.math.BigDecimal"/>
+	<field name="prevamt_01" class="java.math.BigDecimal"/>
+	<field name="prevamt_02" class="java.math.BigDecimal"/>
+	<field name="prevamt_03" class="java.math.BigDecimal"/>
+	<field name="prevamt_04" class="java.math.BigDecimal"/>
+	<field name="prevamt_05" class="java.math.BigDecimal"/>
+	<field name="prevamt_06" class="java.math.BigDecimal"/>
+	<field name="prevamt_07" class="java.math.BigDecimal"/>
+	<field name="prevamt_08" class="java.math.BigDecimal"/>
+	<field name="prevamt_09" class="java.math.BigDecimal"/>
+	<field name="prevamt_10" class="java.math.BigDecimal"/>
+	<field name="prevamt_11" class="java.math.BigDecimal"/>
+	<field name="prevamt_12" class="java.math.BigDecimal"/>
+	<field name="prevamt_total" class="java.math.BigDecimal"/>
+	<field name="dev_01" class="java.math.BigDecimal"/>
+	<field name="dev_02" class="java.math.BigDecimal"/>
+	<field name="dev_03" class="java.math.BigDecimal"/>
+	<field name="dev_04" class="java.math.BigDecimal"/>
+	<field name="dev_05" class="java.math.BigDecimal"/>
+	<field name="dev_06" class="java.math.BigDecimal"/>
+	<field name="dev_07" class="java.math.BigDecimal"/>
+	<field name="dev_08" class="java.math.BigDecimal"/>
+	<field name="dev_09" class="java.math.BigDecimal"/>
+	<field name="dev_10" class="java.math.BigDecimal"/>
+	<field name="dev_11" class="java.math.BigDecimal"/>
+	<field name="dev_12" class="java.math.BigDecimal"/>
+	<field name="currency" class="java.lang.String"/>
+	<field name="orgname" class="java.lang.String"/>
+	<field name="fiscalyear" class="java.lang.String"/>
+	<field name="notposted_count" class="java.lang.Integer"/>
+	<field name="notposted_months" class="java.lang.String"/>
+	<field name="printuser" class="java.lang.String"/>
+	<field name="paramproduct" class="java.lang.String"/>
+	<field name="paramproductcategory" class="java.lang.String"/>
+	<field name="hdr_orgname" class="java.lang.String"/>
+	<field name="hdr_fiscalyear" class="java.lang.String"/>
+	<field name="hdr_currency" class="java.lang.String"/>
+	<title>
+		<band height="80">
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="0" width="812" height="19" uuid="f32d166f-27f0-463c-9cda-e6e942c43912"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="14" isBold="true" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="22" width="812" height="12" uuid="314ed135-ecc2-4c99-bc2d-c16927304830"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Organisation} + " " + ($F{hdr_orgname} != null ? $F{hdr_orgname} : "")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="39" width="45" height="12" uuid="b8444f9a-2b5c-4cf3-a4ba-a415e613a060"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Period} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="45" y="39" width="455" height="12" uuid="b7f7a5ac-bcce-468b-ba1f-735a697550b9"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{hdr_fiscalyear}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="51" width="45" height="12" uuid="7f9c423c-88d0-4247-8055-6d0a0191dd61"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Product} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="45" y="51" width="767" height="12" uuid="230a3ca2-5b81-4862-8edd-22d2089a1882"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{paramproduct} == null ? $R{AllProducts} : $F{paramproduct}) + ($F{paramproductcategory} == null ? "" : "; " + $R{ProductCategory} + ": " + $F{paramproductcategory})]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="65" width="500" height="12" uuid="c8588d47-352f-448e-99d6-86e390d1176f"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{AllAmountsIn} + " " + ($F{hdr_currency} != null ? $F{hdr_currency} : "")]]></textFieldExpression>
+				</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="18">
+				<rectangle>
+					<reportElement x="0" y="0" width="812" height="14" backcolor="#808080" uuid="dd1a2ae8-f9c0-4f46-a63b-077e8d64b393"/>
+					<graphicElement>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</graphicElement>
+				</rectangle>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="1" width="170" height="12" forecolor="#FFFFFF" uuid="18c1c2e5-27c8-4240-8c2c-ccaa4d3cd7c6"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Product}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="170" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="e5679a24-0d2e-4313-8f24-f1ef31b4570a"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month01}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="218" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="f2787663-f08c-41ff-b2f4-53bf3eacaa9b"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month02}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="266" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="5a4850cd-e20f-4afb-8a02-9e92b57d0323"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month03}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="314" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="13cd7a5f-00c0-43f8-b1ce-c68023828020"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month04}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="362" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="123270c7-2007-4b23-9fc6-2f906c1cbcd2"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month05}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="410" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="268e6582-a109-4dda-8c7c-313768663daf"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month06}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="458" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="2db1376a-52e2-4630-b709-c636cf58b340"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month07}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="506" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="fbfc3083-7881-4112-b375-f1fa86d041cd"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month08}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="554" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="f879f6c7-af3b-4282-9a1c-abbc1ae866b8"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month09}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="602" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="cbca3ef9-7152-48f3-98e5-5f5aa988a190"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month10}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="650" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="1ff928ab-bbba-452a-a022-7aef7e011ba2"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month11}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="698" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="a43de13a-69e0-44a0-b764-1863482c8d03"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Month12}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="746" y="1" width="66" height="12" forecolor="#FFFFFF" uuid="d1024f1b-1fbe-42f5-85b9-c183a4f0fccc"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
+				</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="90" splitType="Prevent">
+			<printWhenExpression><![CDATA[$F{m_product_id} != null]]></printWhenExpression>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="0" width="500" height="13" uuid="098e97d7-e5e8-4379-867b-45c2c90fcbcd"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{productvalue} != null ? $F{productvalue} : "") + " " + ($F{productname} != null ? $F{productname} : "")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="0" y="13" width="170" height="11" uuid="71ac5eda-c05e-47c3-b257-9f492a6a9cd6"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{productvalue} != null ? $F{productvalue} : "") + " " + ($F{productname} != null ? $F{productname} : "")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="170" y="13" width="48" height="11" uuid="bb56ca70-e259-4e2a-82c7-ef73587071e8"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_01}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="218" y="13" width="48" height="11" uuid="3c47e19b-5c07-411a-8fcf-ecad7752c65d"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_02}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="266" y="13" width="48" height="11" uuid="70bbd0a3-6493-4991-9249-7e4a6674c4b1"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_03}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="314" y="13" width="48" height="11" uuid="387e02e5-f76d-4ceb-8ae6-0ce804f90581"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_04}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="362" y="13" width="48" height="11" uuid="431afb99-b609-439e-9688-cdc9bd7b7dbf"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_05}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="410" y="13" width="48" height="11" uuid="6887c223-8127-42cb-ab81-e14a4de6c899"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_06}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="458" y="13" width="48" height="11" uuid="55dae9b5-9efd-44e6-ab23-f46c6582f110"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_07}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="506" y="13" width="48" height="11" uuid="b3c08dcf-6dbd-4682-8f7f-06a86db8409d"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_08}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="554" y="13" width="48" height="11" uuid="0aabe902-55e5-4693-ad3e-93b6040e3246"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_09}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="602" y="13" width="48" height="11" uuid="8f7d6a1e-d27c-41b0-b921-0b2e3cdddedd"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_10}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="650" y="13" width="48" height="11" uuid="58edf204-4229-4d33-809a-8138b947867a"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_11}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="698" y="13" width="48" height="11" uuid="b85769d1-7d0c-4f68-99e3-64b06f0497e5"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_12}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="746" y="13" width="66" height="11" uuid="a9f35455-24e2-47b4-9fb5-affc1e2f54ec"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{qty_total}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="0" y="24" width="170" height="11" uuid="1d79e908-5f8a-4ee4-b1ab-e9755e077c6a"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{CurrentPeriod}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="170" y="24" width="48" height="11" uuid="01a924fa-8ab3-4e57-9881-cbe654531b9e"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_01}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="218" y="24" width="48" height="11" uuid="9fc755e4-4de0-418e-a72c-9396b787c95f"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_02}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="266" y="24" width="48" height="11" uuid="97424d3c-3d9e-4155-8532-bec8865a757c"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_03}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="314" y="24" width="48" height="11" uuid="954025e6-1103-4829-8db4-94552de8d017"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_04}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="362" y="24" width="48" height="11" uuid="6e47c11c-69cf-4a37-9612-4be1cca55106"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_05}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="410" y="24" width="48" height="11" uuid="cf58ff3d-2b9a-483f-94d7-84660f7d4c43"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_06}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="458" y="24" width="48" height="11" uuid="ef38e3b7-4049-4bfa-9a0f-f819db1851c9"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_07}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="506" y="24" width="48" height="11" uuid="693be1e0-9e7f-412f-a1c8-ed84e6ec73e5"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_08}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="554" y="24" width="48" height="11" uuid="faf4a89a-5966-4808-8f27-d63745908cad"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_09}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="602" y="24" width="48" height="11" uuid="dad3eb36-d07d-4333-b91d-2888dd624448"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_10}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="650" y="24" width="48" height="11" uuid="8b509285-e3d1-4265-b359-7124054a82fd"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_11}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="698" y="24" width="48" height="11" uuid="bde982fa-567f-40ed-9f22-7f881783dfd6"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_12}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="746" y="24" width="66" height="11" uuid="1f8bf8f0-eaee-444d-8b84-309ab621ae9b"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{amt_total}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="35" width="170" height="11" uuid="c9f36596-3db2-4116-b3a2-d9abfeaa5929"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{productvalue} != null ? $F{productvalue} : "") + " " + ($F{productname} != null ? $F{productname} : "")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="170" y="35" width="48" height="11" uuid="cc513633-75fd-44ce-9f78-62d8b0a26228"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_01}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="218" y="35" width="48" height="11" uuid="62fb982a-9667-4efd-82c7-8f1637394784"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_02}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="266" y="35" width="48" height="11" uuid="fc1dde1a-29ce-40e9-927e-36e0301a3867"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_03}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="314" y="35" width="48" height="11" uuid="e52d7a60-9a6e-4814-bf0b-f55f89255e9e"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_04}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="362" y="35" width="48" height="11" uuid="beb8c1c6-8879-4c14-8aa8-b4bbf35fbba5"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_05}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="410" y="35" width="48" height="11" uuid="5fb6f3c4-cb2b-4b9c-835a-b96a4382c9b4"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_06}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="458" y="35" width="48" height="11" uuid="a644a612-1631-4e99-9f99-9b54226efb7b"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_07}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="506" y="35" width="48" height="11" uuid="01b67527-fbba-490d-a5fe-e82978ed8a64"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_08}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="554" y="35" width="48" height="11" uuid="7663ad00-895b-4ccd-9f5d-9b96f227210d"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_09}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="602" y="35" width="48" height="11" uuid="c958374e-933d-48ac-916c-1077098b5be8"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_10}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="650" y="35" width="48" height="11" uuid="38b8b7d9-baf1-464a-bb38-745868dde77f"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_11}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="698" y="35" width="48" height="11" uuid="a82dc9a7-7b8b-41a9-815e-d984456d0894"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_12}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="746" y="35" width="66" height="11" uuid="915f73a4-615f-42f2-8c1c-005b5b48aa2f"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevqty_total}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="46" width="170" height="11" uuid="0e198a8a-048e-4016-8ff6-42bc98d54582"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{PreviousPeriod}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="170" y="46" width="48" height="11" uuid="8acaf5a3-5b90-419a-b867-a188f3a1f322"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_01}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="218" y="46" width="48" height="11" uuid="971c5414-49a2-45c1-84f1-9586716f9b61"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_02}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="266" y="46" width="48" height="11" uuid="d39ad0a1-0d0a-4ef4-bd7c-72e7d96e5821"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_03}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="314" y="46" width="48" height="11" uuid="a1e08183-7391-4b8c-9470-942cf2f5ab8c"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_04}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="362" y="46" width="48" height="11" uuid="4a4fcb86-ab6a-4b4b-9504-e8b0d1499bdd"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_05}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="410" y="46" width="48" height="11" uuid="726b76c5-1cdf-4815-ac35-f7dc0d57ec4c"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_06}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="458" y="46" width="48" height="11" uuid="64224e12-ae47-4572-ae07-57459f349a03"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_07}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="506" y="46" width="48" height="11" uuid="d6328a49-6d23-4757-b07d-99af95f6d191"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_08}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="554" y="46" width="48" height="11" uuid="1201c374-6968-48a1-b3e0-44070a1d356e"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_09}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="602" y="46" width="48" height="11" uuid="840a244b-47bc-48d4-b512-4fa4b9c6394f"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_10}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="650" y="46" width="48" height="11" uuid="3f54c011-721e-44f0-aaa5-536e67803580"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_11}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="698" y="46" width="48" height="11" uuid="1296c274-9458-48aa-8534-03d5768d3b45"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_12}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="746" y="46" width="66" height="11" uuid="48df734e-cf81-4a84-a362-d82e13b5e91a"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{prevamt_total}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="57" width="812" height="1" uuid="6c9ea917-4c5c-4692-9855-bb671fa5c41e"/>
+					<graphicElement><pen lineWidth="0.75"/></graphicElement>
+				</line>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="58" width="170" height="11" uuid="1831d4d7-a493-47f6-b743-91f934c8834c"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Deviation}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="170" y="58" width="48" height="11" uuid="c6eb6ace-73ae-485a-b5d5-60b8bbdd3365"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_01}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="218" y="58" width="48" height="11" uuid="5deb206c-98d0-4293-bc8e-9747552a5627"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_02}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="266" y="58" width="48" height="11" uuid="4a49f91a-3ca5-4430-a954-016c9e971340"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_03}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="314" y="58" width="48" height="11" uuid="54184c16-d720-4aa5-b964-267f1bf80ce4"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_04}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="362" y="58" width="48" height="11" uuid="91d8ec22-ef9e-4f8d-ab1b-f8ede1c298fb"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_05}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="410" y="58" width="48" height="11" uuid="d3d14006-62fd-456b-972d-8c9c6a5c9d4b"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_06}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="458" y="58" width="48" height="11" uuid="63f16dec-8ee3-4b96-8ead-6785ce350c4e"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_07}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="506" y="58" width="48" height="11" uuid="f47798db-3867-4b4a-9ce8-75c29143784b"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_08}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="554" y="58" width="48" height="11" uuid="89737977-d49e-4536-b1e3-54f6250968ca"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_09}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="602" y="58" width="48" height="11" uuid="deb1b689-e51b-40d5-91ef-e8dfb45a8e2f"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_10}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="650" y="58" width="48" height="11" uuid="c2360477-12ae-4e28-a482-bd28a493a8ee"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_11}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="698" y="58" width="48" height="11" uuid="acf58301-89c8-41f5-ae93-af839d33d7d8"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dev_12}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="746" y="58" width="66" height="11" uuid="787f6e61-4e3f-4fb6-ab91-9f8cf06b6e5d"/>
+					<box leftPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="70" width="812" height="11" uuid="9825564d-4bb9-4a55-88a9-27e97eaedbd5" isRemoveLineWhenBlank="true"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{notposted_count} != null && $F{notposted_count}.intValue() > 0
+ ? java.text.MessageFormat.format($R{NotPostedWarning}, new Object[]{String.valueOf($F{notposted_count}), ($F{notposted_months} != null ? $F{notposted_months} : "")})
+ : null]]></textFieldExpression>
+				</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="30">
+			<line>
+				<reportElement x="0" y="1" width="812" height="1" uuid="6809dafb-c372-4d18-b33c-eaf42b821b2f"/>
+			</line>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="4" width="200" height="12" uuid="6c30b104-9c80-4863-96d0-749a374c8789"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", $P{REPORT_LOCALE}).format(new java.util.Date())]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="16" width="250" height="12" uuid="82d4f346-cff4-4f36-866d-a7a03ab72e1b"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{printuser}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="600" y="4" width="170" height="12" uuid="8f693817-1b39-4b17-8465-3f9e47fbf31a"/>
+					<box leftPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Page} + " " + $V{PAGE_NUMBER} + " " + $R{Of}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText" evaluationTime="Report">
+					<reportElement x="770" y="4" width="42" height="12" uuid="86b6cbce-0843-4d7f-851e-5bc66ce62cb4"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

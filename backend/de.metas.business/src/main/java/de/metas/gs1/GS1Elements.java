@@ -68,6 +68,18 @@ public class GS1Elements
 		return Optional.of(element.getValueAsLocalDate());
 	}
 
+	/** Expiration date (AI 17), the "use by" date printed on GS1 labels. */
+	public Optional<LocalDate> getExpirationDate()
+	{
+		final GS1Element element = byApplicationIdentifier.get(GS1ApplicationIdentifier.EXPIRATION_DATE);
+		if (element == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(element.getValueAsLocalDate());
+	}
+
 	public Optional<String> getLotNumber()
 	{
 		final GS1Element element = byApplicationIdentifier.get(GS1ApplicationIdentifier.BATCH_OR_LOT_NUMBER);

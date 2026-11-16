@@ -59,8 +59,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bpb_1_S0337                    | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bpb_1_S0337                    | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bpb_1_S0337                    | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_100            |
 
     And metasfresh contains C_Invoice:
       | Identifier      | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
@@ -246,8 +246,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bp_bank_account_metasfresh_S0337_200 | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bp_bank_account_metasfresh_S0337_200 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bp_bank_account_metasfresh_S0337_200 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_200            |
 
 	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference 123456700102156434010001795
     Given metasfresh contains C_Invoice:
@@ -486,8 +486,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bp_bank_account_metasfresh_S0337_300 | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bp_bank_account_metasfresh_S0337_300 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bp_bank_account_metasfresh_S0337_300 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_300            |
 
 	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference ReferenceNo_metasfresh_S0337_300_2
     Given metasfresh contains C_Invoice:
@@ -790,8 +790,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bp_bank_account_metasfresh_S0337_400 | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bp_bank_account_metasfresh_S0337_400 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bp_bank_account_metasfresh_S0337_400 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_400            |
 
 	  # create 1 invoice; we expect the sales invoice to end up with the Document no 511004_S0337_400
     Given metasfresh contains C_Invoice:

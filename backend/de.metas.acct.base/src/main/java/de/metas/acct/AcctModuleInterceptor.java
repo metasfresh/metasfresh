@@ -40,6 +40,7 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -166,9 +167,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_Journal(importProcessFactory));
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalLine());
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalBatch());
-		//
-		engine.addModelValidator(new de.metas.acct.interceptor.C_TaxDeclaration());
-		//
+		// de.metas.acct.interceptor.C_TaxDeclaration is auto-registered (it's @Component)
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_Distribution());
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_DistributionLine());
 	}
@@ -179,6 +178,15 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalBatch());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_Journal());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalLine());
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.C_TaxDeclaration());
+	}
+
+	@Override
+	protected void registerTabCallouts(final ITabCalloutFactory tabCalloutsRegistry)
+	{
+		tabCalloutsRegistry.registerTabCalloutForTable(
+				org.compiere.model.I_C_TaxDeclaration.Table_Name,
+				de.metas.acct.callout.C_TaxDeclaration_TabCallout.class);
 	}
 
 	@Override

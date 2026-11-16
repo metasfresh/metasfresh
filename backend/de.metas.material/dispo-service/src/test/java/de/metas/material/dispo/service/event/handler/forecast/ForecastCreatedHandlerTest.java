@@ -47,15 +47,22 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ForecastLine;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -90,6 +97,8 @@ public class ForecastCreatedHandlerTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ensureWarehouseExists(WAREHOUSE_ID);
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
 				new MDCandidateDimensionFactory(),
@@ -336,6 +345,75 @@ public class ForecastCreatedHandlerTest
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
+	}
+
+	/**
+	 * Two forecast lines on different warehouses: one OK, one excluded via MRP_Exclude=Y.
+	 * Only the OK line should result in a STOCK_UP candidate.
+	 */
+	@Test
+	public void handleEvent_perLineExclusion_onlyExcludedLineIsDropped()
+	{
+		final WarehouseId whOk = createWarehouse(null);      // not excluded
+		final WarehouseId whExcl = createWarehouse("Y");     // MRP_Exclude=Y
+
+		final ForecastLine lineOk = ForecastLine.builder()
+				.forecastLineId(forecastLineId)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(whOk)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("5"))
+						.date(NOW)
+						.build())
+				.build();
+		final ForecastLine lineExcl = ForecastLine.builder()
+				.forecastLineId(forecastLineId2)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithProductId(PRODUCT_ID + 10))
+						.warehouseId(whExcl)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("7"))
+						.date(NOW)
+						.build())
+				.build();
+
+		final ForecastCreatedEvent event = ForecastCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(1, 2))
+				.forecast(Forecast.builder()
+						.forecastId(200)
+						.docStatus("CO")
+						.forecastLine(lineOk)
+						.forecastLine(lineExcl)
+						.build())
+				.build();
+
+		// Mock zero stock for the OK line; the excluded line never reaches stockRepository.
+		final AvailableToPromiseMultiQuery queryOk = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(lineOk.getMaterialDescriptor());
+		when(stockRepository.retrieveAvailableStockQtySum(queryOk)).thenReturn(BigDecimal.ZERO);
+
+		forecastCreatedHandler.handleEvent(event);
+
+		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
+		assertThat(records).hasSize(1);
+		assertThat(records.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
+		assertThat(records.get(0).getM_Warehouse_ID()).isEqualTo(whOk.getRepoId());
+	}
+
+	private static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
+	static void ensureWarehouseExists(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, warehouseId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(warehouse);
 	}
 
 	private ForecastCreatedEvent createForecastWithQty(@NonNull final String qty)

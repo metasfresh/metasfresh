@@ -7,6 +7,7 @@ import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
 import lombok.NonNull;
 import org.adempiere.ad.service.ISystemBL;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,9 +27,14 @@ public class VersionRestController
 		userAuthTokenFilterConfiguration.doNotAuthenticatePathsContaining(ENDPOINT);
 	}
 
+	/**
+	 * The content type is set explicitly, because the app server's default content type is {@code application/json}.
+	 */
 	@GetMapping
-	public String getVersionString()
+	public ResponseEntity<String> getVersionString()
 	{
-		return systemBL.get().getDbVersion();
+		return ResponseEntity.ok()
+				.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
+				.body(systemBL.get().getDbVersion());
 	}
 }

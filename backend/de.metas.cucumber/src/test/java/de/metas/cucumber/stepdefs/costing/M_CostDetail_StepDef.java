@@ -1,6 +1,8 @@
 package de.metas.cucumber.stepdefs.costing;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -15,6 +17,8 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class M_CostDetail_StepDef
@@ -45,6 +49,19 @@ public class M_CostDetail_StepDef
 				.validate();
 	}
 
+	@And("^no M_CostDetails are found for product (.*) and cost element (.*)$")
+	public void assertNoCostDetails(
+			@NonNull final String productIdentifierStr,
+			@NonNull final String costElementStr)
+	{
+		final ImmutableList<CostDetail> costDetails = costDetailRepository.stream(CostDetailQuery.builder()
+						.productId(productTable.getId(productIdentifierStr))
+						.costElementId(costElementTable.getSingleId(costElementStr))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+		assertThat(costDetails).as("cost details of product %s and cost element %s", productIdentifierStr, costElementStr).isEmpty();
+	}
+
 	private CostDetailValidatorBuilder newCostDetailValidatorBuilder()
 	{
 		return CostDetailValidator.builder()
@@ -70,6 +87,10 @@ public class M_CostDetail_StepDef
 				.amtType(row.getAsOptionalString("AmtType").map(CostAmountType::ofCodeOrName).orElse(CostAmountType.MAIN))
 				.amt(row.getAsOptionalMoney("Amt", moneyService::getCurrencyIdByCurrencyCode).orElse(null))
 				.qty(row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null))
+				.prevCurrentCostPrice(row.getAsOptionalMoney("Prev_CurrentCostPrice", moneyService::getCurrencyIdByCurrencyCode).orElse(null))
+				.prevCurrentQty(row.getAsOptionalQuantity("Prev_CurrentQty", uomDAO::getByX12DE355).orElse(null))
+				.prevCumulatedAmt(row.getAsOptionalMoney("Prev_CumulatedAmt", moneyService::getCurrencyIdByCurrencyCode).orElse(null))
+				.prevCumulatedQty(row.getAsOptionalQuantity("Prev_CumulatedQty", uomDAO::getByX12DE355).orElse(null))
 				.build();
 	}
 }

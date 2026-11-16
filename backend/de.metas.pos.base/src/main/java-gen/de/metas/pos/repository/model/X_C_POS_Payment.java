@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 663180181L;
+	private static final long serialVersionUID = 299004654L;
 
     /** Standard Constructor */
     public X_C_POS_Payment (final Properties ctx, final int C_POS_Payment_ID, @Nullable final String trxName)
@@ -62,6 +62,30 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	}
 
 	@Override
+	public void setCardCheckoutStartedAt (final @Nullable java.sql.Timestamp CardCheckoutStartedAt)
+	{
+		set_Value (COLUMNNAME_CardCheckoutStartedAt, CardCheckoutStartedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getCardCheckoutStartedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CardCheckoutStartedAt);
+	}
+
+	@Override
+	public void setCardLookupFailingSince (final @Nullable java.sql.Timestamp CardLookupFailingSince)
+	{
+		set_Value (COLUMNNAME_CardLookupFailingSince, CardLookupFailingSince);
+	}
+
+	@Override
+	public java.sql.Timestamp getCardLookupFailingSince() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CardLookupFailingSince);
+	}
+
+	@Override
 	public void setChangeBackAmount (final BigDecimal ChangeBackAmount)
 	{
 		set_Value (COLUMNNAME_ChangeBackAmount, ChangeBackAmount);
@@ -87,18 +111,6 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public int getC_Payment_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Payment_ID);
-	}
-
-	@Override
-	public de.metas.pos.repository.model.I_C_POS_Order getC_POS_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_POS_Order_ID, de.metas.pos.repository.model.I_C_POS_Order.class);
-	}
-
-	@Override
-	public void setC_POS_Order(final de.metas.pos.repository.model.I_C_POS_Order C_POS_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_POS_Order_ID, de.metas.pos.repository.model.I_C_POS_Order.class, C_POS_Order);
 	}
 
 	@Override
@@ -205,6 +217,8 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public static final String POSPAYMENTPROCESSINGSTATUS_NEW = "NEW";
 	/** DELETED = DELETED */
 	public static final String POSPAYMENTPROCESSINGSTATUS_DELETED = "DELETED";
+	/** UNKNOWN = UNKNOWN */
+	public static final String POSPAYMENTPROCESSINGSTATUS_UNKNOWN = "UNKNOWN";
 	@Override
 	public void setPOSPaymentProcessingStatus (final java.lang.String POSPaymentProcessingStatus)
 	{
@@ -258,6 +272,30 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public java.lang.String getPOSPaymentProcessor() 
 	{
 		return get_ValueAsString(COLUMNNAME_POSPaymentProcessor);
+	}
+
+	@Override
+	public void setReleasedSUMUPClientTransactionID (final @Nullable java.lang.String ReleasedSUMUPClientTransactionID)
+	{
+		set_Value (COLUMNNAME_ReleasedSUMUPClientTransactionID, ReleasedSUMUPClientTransactionID);
+	}
+
+	@Override
+	public java.lang.String getReleasedSUMUPClientTransactionID() 
+	{
+		return get_ValueAsString(COLUMNNAME_ReleasedSUMUPClientTransactionID);
+	}
+
+	@Override
+	public void setSUMUP_ClientTransactionID (final @Nullable java.lang.String SUMUP_ClientTransactionID)
+	{
+		set_Value (COLUMNNAME_SUMUP_ClientTransactionID, SUMUP_ClientTransactionID);
+	}
+
+	@Override
+	public java.lang.String getSUMUP_ClientTransactionID() 
+	{
+		return get_ValueAsString(COLUMNNAME_SUMUP_ClientTransactionID);
 	}
 
 	@Override

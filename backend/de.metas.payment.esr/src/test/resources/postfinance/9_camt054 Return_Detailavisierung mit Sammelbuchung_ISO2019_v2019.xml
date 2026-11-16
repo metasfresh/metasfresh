@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08 file:///C:/camt.054.001.08.xsd">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>20190520375204012050698</MsgId>
+			<CreDtTm>2022-05-20T23:40:06</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+			<AddtlInf>SPS</AddtlInf>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>20190520375204012050705</Id>
+			<CreDtTm>2022-05-20T23:40:06</CreDtTm>
+			<FrToDt>
+				<FrDtTm>2022-05-20T00:00:00</FrDtTm>
+				<ToDtTm>2022-05-20T23:59:59</ToDtTm>
+			</FrToDt>
+			<RptgSrc>
+				<Prtry>OTHR</Prtry>
+			</RptgSrc>
+			<Acct>
+				<Id>
+					<IBAN>CH2909000000250094239</IBAN>
+				</Id>
+				<Ownr>
+					<Nm>Robert Schneider SA Grands magasins Biel/Bienne</Nm>
+				</Ownr>
+			</Acct>
+			<Ntry>
+				<Amt Ccy="CHF">400.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<RvslInd>false</RvslInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2022-05-20</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2022-05-20</Dt>
+				</ValDt>
+				<AcctSvcrRef>086820002PBWFX2U</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>ICDT</Cd>
+							<SubFmlyCd>RRTN</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>180327CH02P92DYD</AcctSvcrRef>
+							<PmtInfId>PmtInfId-004-01</PmtInfId>
+							<InstrId>InstrId-004-01-01</InstrId>
+							<EndToEndId>EndToEndId-004-01-01</EndToEndId>
+						</Refs>
+						<Amt Ccy="CHF">400.00</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>ICDT</Cd>
+									<SubFmlyCd>RRTN</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Robert Schneider SA</Nm>
+									<PstlAdr>
+										<AdrLine>Rue du Lac 177</AdrLine>
+										<AdrLine>2503 Biel/Bienne</AdrLine>
+									</PstlAdr>
+								</Pty>
+							</Dbtr>
+							<DbtrAcct>
+								<Id>
+									<IBAN>CH8709000000929471495</IBAN>
+								</Id>
+							</DbtrAcct>
+						</RltdPties>
+						<RltdAgts>
+							<DbtrAgt>
+								<FinInstnId>
+									<ClrSysMmbId>
+										<MmbId>9000</MmbId>
+									</ClrSysMmbId>
+									<Nm>PostFinance AG</Nm>
+									<PstlAdr>
+										<AdrLine>Mingerstrasse 20</AdrLine>
+										<AdrLine>3030 Bern</AdrLine>
+									</PstlAdr>
+								</FinInstnId>
+							</DbtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Ustrd>Kontouebertrag</Ustrd>
+						</RmtInf>
+						<RltdDts>
+							<AccptncDtTm>2022-05-20T20:00:00</AccptncDtTm>
+						</RltdDts>
+						<RtrInf>
+							<Rsn>
+								<Cd>AC01</Cd>
+							</Rsn>
+							<AddtlInf>Kontonummer falsch</AddtlInf>
+						</RtrInf>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>SAMMELGUTSCHRIFT RETOUREN VERARBEITUNG VOM 20.05.2022 PAKET ID: 190520CH000006O1</AddtlNtryInf>
+			</Ntry>
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>

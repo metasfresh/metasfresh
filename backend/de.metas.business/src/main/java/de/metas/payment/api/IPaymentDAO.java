@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -42,6 +43,8 @@ import org.compiere.model.I_C_Payment;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -49,6 +52,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IPaymentDAO extends ISingletonService
 {
@@ -113,4 +117,20 @@ public interface IPaymentDAO extends ISingletonService
 	void save(@NonNull final I_C_Payment payment);
 
 	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(OrgId orgId, BankAccountId bankAccountId, Instant startDate, Instant endDate);
+
+	/**
+	 * Returns the single Completed-or-Closed (DocStatus IN CO/CL) payment whose {@code Proforma_Invoice_ID} matches the given proforma invoice,
+	 * or empty if no such payment exists (never completed, or already reversed). Reversed payments do NOT count as paid.
+	 */
+	@NonNull
+	Optional<I_C_Payment> findCompletedOrClosedByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
+
+	@NonNull
+	Optional<PaymentId> findCompletedOrClosedPaymentIdByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
+
+	@NonNull
+	ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull Collection<OrderId> orderIds);
+
+	@NonNull
+	Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull OrderId orderId);
 }

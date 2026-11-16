@@ -91,6 +91,7 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -455,6 +456,27 @@ public class M_HU_StepDef
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(request));
 		});
+	}
+
+	/**
+	 * Moves a quantity from a source CU into an existing target TU.
+	 *
+	 * <ul>
+	 *   <li><b>sourceCU</b>: identifier of the source CU</li>
+	 *   <li><b>targetTU</b>: identifier of the target TU</li>
+	 *   <li><b>qty</b>: quantity to move</li>
+	 *   <li><b>OPT.UOM.X12DE355</b>: unit of measure X12 code; defaults to PCE</li>
+	 * </ul>
+	 */
+	@And("move CU to existing TU")
+	public void moveCUtoExistingTU(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> huTrxBL.process(huContext -> {
+			final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupNotNullIn(huTable);
+			final I_M_HU targetTU = row.getAsIdentifier("targetTU").lookupNotNullIn(huTable);
+			final Quantity qty = row.getAsQuantity("qty", "UOM.X12DE355", X12DE355.EACH, uomDAO::getByX12DE355);
+			HUTransformService.newInstance(huContext).cuToExistingTU(sourceCU, qty, targetTU);
+		}));
 	}
 
 	/**
@@ -849,6 +871,28 @@ public class M_HU_StepDef
 		}
 	}
 
+	/**
+	 * @cucumber.stepdef Destroys a single HU identified by its step-internal identifier (sets it to
+	 * {@code HUStatus=Destroyed} / inactive), so its on-hand stock no longer counts as available at its
+	 * locator. Used to change the per-locator stock picture between reconcile passes.
+	 * @cucumber.example
+	 * <pre>
+	 * When the HU identified by huA is destroyed
+	 * </pre>
+	 */
+	@And("^the HU identified by (.*) is destroyed$")
+	public void destroy_hu_by_identifier(@NonNull final String huIdentifier)
+	{
+		final I_M_HU hu = huTable.get(huIdentifier);
+
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newOutOfTrx());
+
+		handlingUnitsBL.markDestroyed(huContext, hu);
+
+		huTable.putOrReplace(huIdentifier, hu);
+	}
+
 	@And("destroy existing M_HUs")
 	public void destroy_existing_hus()
 	{
@@ -954,11 +998,12 @@ public class M_HU_StepDef
 		}
 	}
 
-	private void validateHUStorage(@NonNull final DataTableRow row)
+	private void validateHUStorage(final DataTableRow row)
 	{
-		final HuId huId = huTable.getId(row.getAsIdentifier(COLUMNNAME_M_HU_ID));
-		final I_M_Product productRecord = productTable.get(row.getAsIdentifier(COLUMNNAME_M_Product_ID));
-
+		final HuId huId = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIdIn(huTable);
+		assertThat(huId).isNotNull();
+		final I_M_Product productRecord = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		assertThat(productRecord).isNotNull();
 		final Optional<I_M_HU_Storage> huStorageRecord = getSingleHUStorageRecord(huId);
 
 		final String qty = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Qty);

@@ -132,6 +132,7 @@ public class Mailbox
 				final MicrosoftGraphConfig microsoftGraphConfig = getMicrosoftGraphConfigNotNull();
 				return ExplainedOptional.of(
 						toBuilder()
+								.email(userEmail)
 								.microsoftGraphConfig(microsoftGraphConfig.withDefaultReplyTo(userEmail))
 								.build()
 				);

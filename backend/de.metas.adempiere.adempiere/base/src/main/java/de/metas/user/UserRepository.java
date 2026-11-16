@@ -73,7 +73,9 @@ public class UserRepository
 				.name(userRecord.getName())
 				.firstName(userRecord.getFirstname())
 				.lastName(userRecord.getLastname())
+				.department(userRecord.getDepartment())
 				.birthday(TimeUtil.asLocalDate(userRecord.getBirthday()))
+				.phone(userRecord.getPhone())
 				.emailAddress(userRecord.getEMail())
 
 				.userLanguage(userLanguage)
@@ -108,6 +110,18 @@ public class UserRepository
 				.toBuilder()
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.build();
+	}
+
+	@NonNull
+	public Optional<User> getDefaultContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.create()
+				.firstOnlyOptional(I_AD_User.class)
+				.map(this::ofRecord);
 	}
 
 	@NonNull

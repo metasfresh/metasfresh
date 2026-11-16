@@ -193,7 +193,7 @@ Feature: create production order
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                    |
 
     # This avoids a potential race condition in which the PP_Order MD_Candidates are deleted, but not their associated STOCK records.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP  | M_AttributeSetInstance_ID |

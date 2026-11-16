@@ -168,6 +168,16 @@ public class DesadvLineSSCC18Generator
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
 
+				// Skip a 0-qty / null LU (exhausted or misconfigured calculator): persisting a MovementQty=0
+				// pack item would create an un-reclaimable orphan.
+				if (luQtys.isNull())
+				{
+					logger.warn("Skipping SSCC pack-item creation for desadvLine={} because LU breakdown returned Qty-0 (luQtys={}). "
+									+ "No pack/pack-item will be created for this label slot.",
+							desadvLine, luQtys);
+					continue;
+				}
+
 				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys, tuPIItemProduct);
 				enqueueToPrint(desadvPack);
 			}

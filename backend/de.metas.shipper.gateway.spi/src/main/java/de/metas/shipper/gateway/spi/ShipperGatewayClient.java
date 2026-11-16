@@ -51,7 +51,7 @@ public interface ShipperGatewayClient
 	@NonNull JsonDeliveryAdvisorResponse adviseShipment(@NonNull final JsonDeliveryAdvisorRequest request);
 
 	@Nullable
-	default JsonShipperConfig getJsonShipperConfig()
+	default JsonShipperConfig getJsonShipperConfigEffective(@NonNull final ShipperConfigRequest request)
 	{
 		return null;
 	}

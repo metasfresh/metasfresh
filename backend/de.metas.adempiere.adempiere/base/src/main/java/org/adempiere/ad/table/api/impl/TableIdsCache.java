@@ -1,5 +1,6 @@
 package org.adempiere.ad.table.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
@@ -31,7 +32,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -68,6 +72,19 @@ public class TableIdsCache
 			.build();
 
 	private final JUnitGeneratedTableInfoMap junitGeneratedTableInfoMap = new JUnitGeneratedTableInfoMap();
+
+	@NonNull private final Supplier<TableInfoMap> tableInfoMapLoader;
+
+	private TableIdsCache()
+	{
+		this.tableInfoMapLoader = this::retrieveTableInfoMap;
+	}
+
+	@VisibleForTesting
+	TableIdsCache(@NonNull final Supplier<TableInfoMap> tableInfoMapLoader)
+	{
+		this.tableInfoMapLoader = tableInfoMapLoader;
+	}
 
 	public AdTableId getTableIdNotNull(@NonNull final String tableName)
 	{
@@ -155,41 +172,61 @@ public class TableIdsCache
 		}
 	}
 
-	private TableInfo getTableInfo(final String tableName)
+	@VisibleForTesting
+	TableInfo getTableInfo(final String tableName)
 	{
-		TableInfo tableInfo = getTableInfoMap().getTableInfoOrNull(tableName);
+		TableInfoMap tableInfoMap = getTableInfoMap();
+		TableInfo tableInfo = tableInfoMap.getTableInfoOrNull(tableName);
 
 		// Finding no table info for a given table name is pretty unusual,
 		// and when happens it happens when a sysadm user just created the table.
 		// As a solution/workaround we are invalidating the cache and trying it again.
-		if (tableInfo == null)
+		//
+		// We do that at most once per table name and cache generation: resetting flushes the
+		// table metadata of the whole app server, so a name which is *permanently* unknown
+		// (e.g. AD metadata referencing a table that no longer exists) would otherwise flush it
+		// on every single lookup. A name that is still missing right after a reload does not
+		// exist, so we remember it on the freshly loaded map and stop resetting for it.
+		if (tableInfo == null && !tableInfoMap.isKnownMissing(tableName))
 		{
 			tableInfoMapHolder.reset();
-			tableInfo = getTableInfoMap().getTableInfoOrNull(tableName);
+			tableInfoMap = getTableInfoMap();
+			tableInfo = tableInfoMap.getTableInfoOrNull(tableName);
 			if (tableInfo == null)
 			{
-				throw new AdempiereException("No table info found for `" + tableName + "`");
+				tableInfoMap.markMissing(tableName);
 			}
+		}
+
+		if (tableInfo == null)
+		{
+			throw new AdempiereException("No table info found for `" + tableName + "`");
 		}
 
 		return tableInfo;
 	}
 
-	private TableInfo getTableInfo(@NonNull final AdTableId adTableId)
+	@VisibleForTesting
+	TableInfo getTableInfo(@NonNull final AdTableId adTableId)
 	{
-		TableInfo tableInfo = getTableInfoMap().getTableInfoOrNull(adTableId);
+		TableInfoMap tableInfoMap = getTableInfoMap();
+		TableInfo tableInfo = tableInfoMap.getTableInfoOrNull(adTableId);
 
-		// Finding no table info for a given table name is pretty unusual,
-		// and when happens it happens when a sysadm user just created the table.
-		// As a solution/workaround we are invalidating the cache and trying it again.
-		if (tableInfo == null)
+		// See getTableInfo(String) for why we reset at most once per AD_Table_ID and cache generation.
+		if (tableInfo == null && !tableInfoMap.isKnownMissing(adTableId))
 		{
 			tableInfoMapHolder.reset();
-			tableInfo = getTableInfoMap().getTableInfoOrNull(adTableId);
+			tableInfoMap = getTableInfoMap();
+			tableInfo = tableInfoMap.getTableInfoOrNull(adTableId);
 			if (tableInfo == null)
 			{
-				throw new AdempiereException("No table info found for " + adTableId);
+				tableInfoMap.markMissing(adTableId);
 			}
+		}
+
+		if (tableInfo == null)
+		{
+			throw new AdempiereException("No table info found for " + adTableId);
 		}
 
 		return tableInfo;
@@ -197,7 +234,7 @@ public class TableIdsCache
 
 	private TableInfoMap getTableInfoMap()
 	{
-		return tableInfoMapHolder.getOrLoad(0, this::retrieveTableInfoMap);
+		return tableInfoMapHolder.getOrLoad(0, tableInfoMapLoader::get);
 	}
 
 	private TableInfoMap retrieveTableInfoMap()
@@ -274,7 +311,7 @@ public class TableIdsCache
 
 	@Value
 	@Builder
-	private static class TableInfo
+	static class TableInfo
 	{
 		@NonNull
 		AdTableId adTableId;
@@ -289,10 +326,19 @@ public class TableIdsCache
 		TooltipType tooltipType;
 	}
 
-	private static class TableInfoMap
+	static class TableInfoMap
 	{
 		private final ImmutableMap<TableNameKey, TableInfo> tableInfoByTableName;
 		private final ImmutableMap<AdTableId, TableInfo> tableInfoByTableId;
+
+		/**
+		 * Table names/IDs which were confirmed to be missing from THIS snapshot, i.e. they were still
+		 * not found right after this snapshot was loaded. Tracked per snapshot on purpose: as soon as
+		 * the underlying cache is invalidated, a fresh snapshot with an empty set is loaded, so a table
+		 * which was created in the meantime is found again.
+		 */
+		private final Set<TableNameKey> knownMissingTableNames = ConcurrentHashMap.newKeySet();
+		private final Set<AdTableId> knownMissingTableIds = ConcurrentHashMap.newKeySet();
 
 		TableInfoMap(@NonNull final List<TableInfo> list)
 		{
@@ -319,6 +365,26 @@ public class TableIdsCache
 		public TableInfo getTableInfoOrNull(final AdTableId adTableId)
 		{
 			return tableInfoByTableId.get(adTableId);
+		}
+
+		public boolean isKnownMissing(final String tableName)
+		{
+			return knownMissingTableNames.contains(TableNameKey.of(tableName));
+		}
+
+		public void markMissing(final String tableName)
+		{
+			knownMissingTableNames.add(TableNameKey.of(tableName));
+		}
+
+		public boolean isKnownMissing(final AdTableId adTableId)
+		{
+			return knownMissingTableIds.contains(adTableId);
+		}
+
+		public void markMissing(final AdTableId adTableId)
+		{
+			knownMissingTableIds.add(adTableId);
 		}
 	}
 

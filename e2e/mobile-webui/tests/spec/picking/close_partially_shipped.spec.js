@@ -8,8 +8,6 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { generateEAN13 } from '../../utils/ean13';
 
-let previousSysconfigs = null;
-
 const createMasterdata = async () => {
     const masterdata = await Backend.createMasterdata({
       language: "en_US",
@@ -64,7 +62,6 @@ const createMasterdata = async () => {
         }
     });
 
-    previousSysconfigs = masterdata.previousSysconfigs;
     return masterdata;
 }
 
@@ -152,11 +149,5 @@ test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped
                 }
             },
         });
-    });
-
-    await test.step("Restore sysconfigs", async () => {
-        if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
-            await Backend.setSysconfigs(previousSysconfigs);
-        }
     });
 });

@@ -1,7 +1,10 @@
 {
   "header": {
     "closeCashJournal": "Close register",
-    "orders": "Orders"
+    "orders": "Orders",
+    "cashWithdrawal": "Withdrawal",
+    "return": "Return",
+    "invoiceSettlement": "Pay invoice"
   },
   "openCashJournal": {
     "title": "Open register",
@@ -30,6 +33,29 @@
     "actions": {
       "close": "Close",
       "cancel": "Cancel"
+    }
+  },
+  "cashWithdrawal": {
+    "title": "Cash withdrawal",
+    "category": "Category",
+    "amount": "Amount",
+    "actions": {
+      "ok": "Confirm",
+      "cancel": "Cancel"
+    },
+    "slip": {
+      "title": "Cash withdrawal",
+      "terminal": "Register",
+      "date": "Date",
+      "cashier": "Cashier",
+      "category": "Category",
+      "amount": "Amount",
+      "moneyReceived": "Money received",
+      "signature": "Recipient's signature",
+      "actions": {
+        "print": "Print",
+        "close": "Close"
+      }
     }
   },
   "selectTerminal": {
@@ -74,7 +100,8 @@
       "SUCCESSFUL": "Successful",
       "FAILED": "Failed",
       "PENDING": "Pending",
-      "NEW": "New"
+      "NEW": "New",
+      "UNKNOWN": "Unknown"
     },
     "actions": {
       "back": "Back",
@@ -110,6 +137,73 @@
     "actions": {
       "close": "Close",
       "print": "Print receipt"
+    }
+  },
+  "return": {
+    "line": {
+      "at": "at"
+    },
+    "totalAmt": "Refund",
+    "actions": {
+      "payout": "Pay out",
+      "cancel": "Cancel"
+    },
+    "qtyModal": {
+      "title": "Quantity",
+      "actions": {
+        "ok": "OK",
+        "cancel": "Cancel"
+      }
+    },
+    "confirmModal": {
+      "title": "Confirm return",
+      "totalAmt": "Refund",
+      "payCash": "Pay cash",
+      "success": "Credit memo %(docNo)s · %(amount)s paid out",
+      "actions": {
+        "cancel": "Cancel",
+        "close": "Close"
+      }
+    }
+  },
+  "invoiceSettlement": {
+    "title": "Pay invoice",
+    "documentNo": "Invoice number",
+    "noResults": "No open invoice found",
+    "success": "Invoice %(docNo)s paid",
+    "actions": {
+      "search": "Search",
+      "back": "Back",
+      "cancel": "Cancel",
+      "close": "Close",
+      "payByCash": "Cash payment",
+      "payByCard": "Card payment"
+    },
+    "customer": "Customer",
+    "openAmt": "Open amount",
+    "card": {
+      "waiting": "Waiting for card reader",
+      "failed": "Card payment not successful",
+      "bookingPending": "Paid by card — booking pending",
+      "bookingFailed": "Paid by card — booking failed, please inform the back office",
+      "paid": "Invoice %(docNo)s paid",
+      "paidRemainderAsCustomerCredit": "Invoice paid — remainder booked as customer credit, back office informed",
+      "bookedAsCustomerCredit": "Paid by card — booked as customer credit, back office informed",
+      "refunded": "Card payment refunded",
+      "released": "Released",
+      "otherStatus": "Card payment: status %(status)s",
+      "cardPaymentOpen": "Card payment open",
+      "cardPaymentStillOpen": "A card payment for this invoice is still open"
+    }
+  },
+  "cardRelease": {
+    "unknown": "Result unknown — please check the card reader",
+    "checkFailed": "SumUp not reachable — showing the last known state",
+    "releaseConfirmation": "I checked the card reader: the card was not charged",
+    "actions": {
+      "release": "Check / release card payment",
+      "confirmRelease": "Confirm",
+      "cancelRelease": "Cancel"
     }
   }
 }

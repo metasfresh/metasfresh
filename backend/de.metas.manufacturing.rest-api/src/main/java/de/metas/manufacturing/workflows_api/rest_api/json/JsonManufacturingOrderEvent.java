@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
@@ -11,9 +12,13 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Value
 public class JsonManufacturingOrderEvent
@@ -54,8 +59,46 @@ public class JsonManufacturingOrderEvent
 		@Nullable JsonLUReceivingTarget aggregateToLU;
 		@Nullable JsonTUReceivingTarget aggregateToTU;
 
+		/**
+		 * Generic, per-attribute-code editable-attribute values entered by the operator at receipt (the
+		 * config's {@code editableAttributes} list, see {@code MaterialReceiptActivityHandler}). This INCLUDES
+		 * Lot/Best-before/Production date - the mobile frontend submits them through this generic map, not via
+		 * the dedicated fields above. {@code ReceiveGoodsCommand} extracts those producer-managed codes from
+		 * the map and routes them to the HU-producer setters (preserving the auto-lot gate + creation-time
+		 * timing); every other attribute is applied onto the produced HU(s) via the HU attribute storage, next
+		 * to the catch-weight apply. The dedicated {@code lotNo}/{@code bestBeforeDate}/{@code productionDate}
+		 * fields above remain as a backwards-compatible fallback for non-mobile callers.
+		 */
+		@Nullable List<Attribute> attributes;
+
 		@JsonIgnore
 		public FinishedGoodsReceiveLineId getFinishedGoodsReceiveLineId() {return FinishedGoodsReceiveLineId.ofString(lineId);}
+
+		@JsonIgnore
+		@NonNull
+		public Map<AttributeCode, String> getAttributesAsMap()
+		{
+			if (attributes == null || attributes.isEmpty())
+			{
+				return ImmutableMap.of();
+			}
+
+			final HashMap<AttributeCode, String> result = new HashMap<>();
+			for (final Attribute attribute : attributes)
+			{
+				result.put(attribute.getCode(), attribute.getValue());
+			}
+			return result;
+		}
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Attribute
+	{
+		@NonNull AttributeCode code;
+		@Nullable String value;
 	}
 
 	@Nullable ReceiveFrom receiveFrom;

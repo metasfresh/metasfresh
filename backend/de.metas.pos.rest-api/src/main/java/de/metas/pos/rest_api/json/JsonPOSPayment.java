@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.pos.POSPayment;
 import de.metas.pos.POSPaymentCardProcessingDetails;
 import de.metas.pos.POSPaymentExternalId;
@@ -14,6 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -35,9 +37,19 @@ public class JsonPOSPayment
 	boolean allowDelete;
 	boolean allowRefund;
 
+	/**
+	 * For a card payment whose result is unknown: the instant from which the cashier may release it (the start of its
+	 * current checkout plus the configured wait), as ISO-8601; null for any other payment.
+	 */
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
+	@Nullable Instant releasableAt;
+
 	int hashCode;
 
-	public static JsonPOSPayment of(@NonNull final POSPayment payment)
+	/**
+	 * @param releasableAt see {@link #releasableAt}
+	 */
+	public static JsonPOSPayment of(@NonNull final POSPayment payment, @Nullable final Instant releasableAt)
 	{
 		final POSPaymentProcessingStatus paymentProcessingStatus = payment.getPaymentProcessingStatus();
 
@@ -53,6 +65,7 @@ public class JsonPOSPayment
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())
 				.allowDelete(payment.isAllowDelete())
 				.allowRefund(payment.isAllowRefund())
+				.releasableAt(releasableAt)
 				.hashCode(payment.hashCode())
 				.build();
 	}

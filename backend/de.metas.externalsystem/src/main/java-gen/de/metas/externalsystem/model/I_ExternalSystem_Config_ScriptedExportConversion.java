@@ -213,7 +213,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem_Outbound_Endpoint_ID (int ExternalSystem_Outbound_Endpoint_ID);
+	void setExternalSystem_Endpoint_ID (int ExternalSystem_Endpoint_ID);
 
 	/**
 	 * Get External System Outbound Endpoint.
@@ -222,10 +222,10 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getExternalSystem_Outbound_Endpoint_ID();
+	int getExternalSystem_Endpoint_ID();
 
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint> COLUMN_ExternalSystem_Outbound_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystem_Outbound_Endpoint_ID", de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint.class);
-	String COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID = "ExternalSystem_Outbound_Endpoint_ID";
+	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, de.metas.externalsystem.model.I_ExternalSystem_Endpoint> COLUMN_ExternalSystem_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystem_Endpoint_ID", de.metas.externalsystem.model.I_ExternalSystem_Endpoint.class);
+	String COLUMNNAME_ExternalSystem_Endpoint_ID = "ExternalSystem_Endpoint_ID";
 
 	/**
 	 * Set Value.

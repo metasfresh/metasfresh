@@ -15,6 +15,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.CreateSelectionResponse;
 
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is manually triggered from AD_Window=540095
@@ -55,12 +56,9 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.filter(getProcessInfo().getQueryFilterOrElseTrue())
 				.create()
-				.createSelection();
-
-		if (userSelectionId == null)
-		{
-			throw new AdempiereException(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED).markAsUserValidationError();
-		}
+				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElseThrow(() -> new AdempiereException(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED));
 
 		final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer = SpringContextHolder.instance.getBean(C_OLCandToOrderEnqueuer.class);
 

@@ -37,3 +37,20 @@ SELECT (CASE
         END);
 $BODY$
 ;
+
+COMMENT ON FUNCTION GenerateASIStorageAttributesKeyPart(numeric, text, text, numeric, timestamp with time zone, numeric) IS
+    'Encodes a single attribute instance''s value into one part of an AttributesKey string.
+
+    Despite the "Storage" in its name, this function does NOT filter by IsStorageRelevant — it just
+    encodes whichever attribute the caller passes in. The storage-relevance filter (when applicable)
+    lives in the caller (e.g. GenerateASIStorageAttributesKey vs GenerateASIAllAttributesKey).
+
+    Output format depends on the attribute''s value type:
+    * String (S):      ''<M_Attribute_ID>=<Value>''
+    * Number (N):      ''<M_Attribute_ID>=<Value>''     (trailing zeros stripped)
+    * Date   (D):      ''<M_Attribute_ID>=YYYY-MM-DD''
+    * List   (L):      ''<M_AttributeValue_ID>''
+    * anything else:   NULL (caller should drop NULLs before STRING_AGG)
+
+    Java equivalent: org.adempiere.mm.attributes.keys.AttributesKeys#createAttributesKeyPart'
+;

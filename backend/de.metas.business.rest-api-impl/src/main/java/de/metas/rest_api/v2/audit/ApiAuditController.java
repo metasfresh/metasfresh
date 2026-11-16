@@ -87,6 +87,7 @@ public class ApiAuditController
 		catch (final Exception e)
 		{
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.contentType(MetasfreshRestAPIConstants.TEXT_PLAIN_UTF8)
 					.body("Error while mimicking original response: " + e.getMessage());
 		}
 	}

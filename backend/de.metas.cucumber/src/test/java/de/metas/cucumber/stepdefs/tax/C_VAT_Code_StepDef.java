@@ -1,0 +1,146 @@
+/*
+ * #%L
+ * de.metas.cucumber
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+package de.metas.cucumber.stepdefs.tax;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.acct.vatcode.CreateVATCodeRequest;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeAmountType;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Step definitions for creating {@link de.metas.acct.model.I_C_VAT_Code} records tied to an existing {@code C_Tax}.
+ *
+ * @see C_VAT_Code_StepDefData
+ * @see IVATCodeDAO#createVATCode
+ */
+@RequiredArgsConstructor
+public class C_VAT_Code_StepDef
+{
+	@NonNull private final C_Tax_StepDefData taxTable;
+	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
+
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
+
+	/**
+	 * Create a {@link de.metas.acct.model.I_C_VAT_Code} per data-table row, tied to an existing {@code C_Tax}.
+	 *
+	 * <p><b>Required columns</b>:
+	 * <ul>
+	 *     <li>{@code Identifier} — unique identifier used to look the VAT code up later (e.g., in the report step)</li>
+	 *     <li>{@code C_Tax_ID} — identifier of an existing {@code C_Tax} record (from {@link C_Tax_StepDefData})</li>
+	 * </ul>
+	 *
+	 * <p><b>Optional columns</b>:
+	 * <ul>
+	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code;
+	 *         left empty, the code applies to both sides ({@code C_VAT_Code.IsSOTrx} is NULL)</li>
+	 *     <li>{@code AmountType} — {@code T} (tax amount, default) or {@code N} (net/base amount).
+	 *         If omitted, defaults to {@code T}. Use {@code N} only for VAT codes that represent the net
+	 *         base amount in reverse-charge scenarios (e.g., KZ 84/85 base-amount buckets).</li>
+	 *     <li>{@code Description} — the VAT code's description</li>
+	 *     <li>{@code SameVATCodeAs} — identifier of another VAT code whose code string is reused (instead of a random one), so a net row and a tax row form one VAT code</li>
+	 * </ul>
+	 *
+	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of
+	 * {@link StepDefConstants#CLIENT_ID} (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The
+	 * {@code VATCode} value has 10 digits (the {@code C_VAT_Code.VATCode} column is {@code VARCHAR(10)}):
+	 * a random 8-digit prefix per data table plus the 2-digit row position. So two codes created for the same
+	 * {@code C_Tax} within the same scenario (sales + purchase) have distinct values, and the codes of one
+	 * data table sort in row order under any collation (equal length, digits only) — a report ordered by
+	 * VAT code lists them in the order of the table.
+	 *
+	 * <p>Multiple {@code C_VAT_Code} rows per {@code (AcctSchema, C_Tax)} are allowed — one per
+	 * {@code IsSOTrx} side. The §13b reverse-charge posting routes T_Due_Acct (output, UStVA KZ 84/85)
+	 * to the {@code IsSOTrx=Y} code and T_Credit_Acct (input, KZ 67) to the {@code IsSOTrx=N} code.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And metasfresh contains C_Tax
+	 *   | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+	 *   | tax19      | taxCategory      | 19   | DE                       | DE                        |
+	 * And metasfresh contains C_VAT_Codes:
+	 *   | Identifier      | C_Tax_ID | IsSOTrx | AmountType |
+	 *   | vatCode19_sales | tax19    | Y       | T          |
+	 *   | vatCode19_buy   | tax19    | N       | T          |
+	 * }</pre>
+	 */
+	@And("metasfresh contains C_VAT_Codes:")
+	public void metasfresh_contains_c_vat_codes(@NonNull final DataTable dataTable)
+	{
+		final String codePrefix = String.format("%08d", ThreadLocalRandom.current().nextInt(100_000_000));
+		final AtomicInteger rowPosition = new AtomicInteger(0);
+		DataTableRows.of(dataTable).forEach(row -> createVATCode(row, codePrefix, rowPosition.getAndIncrement()));
+	}
+
+	private void createVATCode(@NonNull final DataTableRow row, @NonNull final String codePrefix, final int rowPosition)
+	{
+		Check.assume(rowPosition < 100, "At most 100 VAT codes per data table, so the code keeps 10 digits");
+		final Tax tax = taxTable.get(row.getAsIdentifier("C_Tax_ID"));
+		final TaxId taxId = tax.getTaxId();
+		// empty IsSOTrx => the code applies to both the sales and the purchase side
+		final Boolean isSOTrx = row.getAsOptionalBoolean("IsSOTrx").toBooleanOrNull();
+		final AcctSchema acctSchema = acctSchemaBL.getPrimaryAcctSchema(StepDefConstants.CLIENT_ID);
+
+		// C_VAT_Code.VATCode is VARCHAR(10) — any longer value is silently truncated by the PO
+		// setter, making two codes for the same C_Tax collide on the truncated prefix.
+		// Optional SameVATCodeAs: reuse the code string of another identifier, so that a net row and a tax row
+		// (or a sales row and a purchase row) form ONE VAT code, like one Kennzahl on the official form.
+		final String vatCodeValue = row.getAsOptionalIdentifier("SameVATCodeAs")
+				.map(sameAs -> sameAs.lookupNotNullIn(vatCodeTable).getCode())
+				.orElseGet(() -> codePrefix + String.format("%02d", rowPosition));
+
+		// AmountType: optional column; defaults to 'T' (tax amount).
+		// getAsOptionalEnum resolves by ReferenceListAwareEnum code ('N'/'T'), so invalid values fail fast
+		// at the step level with a clear enum-resolution error rather than a DB constraint violation.
+		final VATCodeAmountType amountType = row.getAsOptionalEnum("AmountType", VATCodeAmountType.class)
+				.orElse(VATCodeAmountType.Tax);
+
+		final VATCode vatCode = vatCodeDAO.createVATCode(CreateVATCodeRequest.builder()
+				.acctSchemaId(acctSchema.getId())
+				.taxId(taxId)
+				.vatCode(vatCodeValue)
+				.isSOTrx(isSOTrx)
+				.amountType(amountType)
+				.description(row.getAsOptionalString("Description").filter(d -> !d.trim().isEmpty()).orElse(null))
+				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
+				.build());
+
+		vatCodeTable.putOrReplace(row.getAsIdentifier(), vatCode);
+	}
+}

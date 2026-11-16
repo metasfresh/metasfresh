@@ -20,11 +20,17 @@
  * #L%
  */
 
+-- Prerequisites: 03_pricing_systems_lists_and_versions.sql, products imported (07 + I_Product import).
+-- Afterwards run the metasfresh campaign price import (I_Campaign_Price) on the inserted rows.
+--
+-- Campaign price = a Navision sales price with a real "Ending Date": not Navision's empty date 1753-01-01 and before
+-- 2027-01-01 (the project's "no end date" cut-off; adapt per project). Prices with no end date are the regular
+-- prices of 07_products_and_prices.sql / 09_historical_product_prices.sql.
 
 DROP TABLE IF EXISTS migration_data.i_campaign_price;
 CREATE TABLE migration_data.i_campaign_price AS
 SELECT 1000000                                                          AS ad_client_id,
-       1000000                                                          AS ad_org_id,
+       1000000                                                          AS ad_org_id, -- adapt per project
        'Y'                                                              AS isactive,
        NOW()                                                            AS created,
        99                                                               AS createdby,
@@ -34,14 +40,14 @@ SELECT 1000000                                                          AS ad_cl
        NULL                                                             AS i_errormsg,
        'N'                                                              AS processed,
        T_Item."No_"                                                     AS productvalue,
-       COALESCE(NULLIF(TRIM(T_Sales_Price."Currency Code"), ''), 'EUR') AS iso_code,
+       COALESCE(NULLIF(TRIM(T_Sales_Price."Currency Code"), ''), 'EUR') AS iso_code, -- adapt per project
        NULL                                                             AS c_taxcategory_name,
        T_Sales_Price."Unit Price"                                       AS pricestd,
        T_Sales_Price."Starting Date"                                    AS validfrom,
        T_Sales_Price."Ending Date"                                      AS validto,
        'Nominal'                                                        AS invoicableqtybasedon,
        NULL::numeric                                                    AS c_bpartner_id,
-       CASE
+       CASE -- ADAPT: Navision "VAT Prod_ Posting Group" codes of the project -> C_TaxCategory.InternalName
            WHEN T_Item."VAT Prod_ Posting Group" = '19ST'
                THEN (SELECT c_taxcategory_id FROM c_taxcategory WHERE internalname = 'Normal')
            ELSE (SELECT c_taxcategory_id FROM c_taxcategory WHERE internalname = 'Reduced')
@@ -49,11 +55,11 @@ SELECT 1000000                                                          AS ad_cl
        NULL                                                             AS pricingsystem_value,
        (SELECT m_pricingsystem_id
         FROM m_pricingsystem
-        WHERE migration_key = ('001 - ' || T_Sales_Price."Sales Code")) AS m_pricingsystem_id,
+        WHERE migration_key = ('001 - ' || T_Sales_Price."Sales Code")) AS m_pricingsystem_id, -- adapt per project
        NULL::numeric                                                    AS m_product_id,
-       'DE'                                                             AS countrycode,
+       'DE'                                                             AS countrycode, -- adapt per project
        T_Customer."No_"                                                 AS bpartner_value,
-       CASE T_Item."Base Unit of Measure" -- Map Navision "Base Unit of Measure" to UOM
+       CASE T_Item."Base Unit of Measure" -- ADAPT: map the Navision "Base Unit of Measure" codes of the project (see 06_uoms.sql)
            WHEN 'KG' THEN (SELECT name FROM c_uom WHERE x12de355 = 'KGM' AND isactive = 'Y')
            WHEN 'STCK' THEN (SELECT name FROM c_uom WHERE x12de355 = 'PCE' AND isactive = 'Y')
            ELSE (SELECT name FROM c_uom WHERE x12de355 = T_Item."Base Unit of Measure")
@@ -66,8 +72,9 @@ FROM "migration_data"."Navision$Sales Price" AS T_Sales_Price
          JOIN "migration_data"."Navision$Item" AS T_Item ON T_Sales_Price."Item No_" = T_Item."No_"
          LEFT JOIN "migration_data"."Navision$Customer" AS T_Customer
                    ON T_Sales_Price."Sales Code" = T_Customer."No_" AND T_Sales_Price."Sales Type" = 0
-WHERE T_Sales_Price."Starting Date" > '2020-01-01'
-  AND T_Sales_Price."Ending Date" < '2027-01-01'
+WHERE T_Sales_Price."Starting Date" > '2020-01-01' -- adapt per project
+  AND T_Sales_Price."Ending Date" <> '1753-01-01'
+  AND T_Sales_Price."Ending Date" < '2027-01-01' -- adapt per project
 ;
 
 INSERT INTO i_campaign_price (ad_client_id, ad_org_id, created, createdby, updated, updatedby,

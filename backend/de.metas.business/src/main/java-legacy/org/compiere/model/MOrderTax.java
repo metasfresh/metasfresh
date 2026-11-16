@@ -19,6 +19,7 @@ package org.compiere.model;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -133,6 +134,7 @@ public class MOrderTax extends X_C_OrderTax
 		retValue.setC_Order_ID(line.getC_Order_ID());
 		retValue.setC_Tax_ID(tax.getTaxId().getRepoId());
 		retValue.setIsWholeTax(tax.isWholeTax());
+		retValue.setIsReverseCharge(tax.isReverseCharge());
 		retValue.setIsDocumentLevel(tax.isDocumentLevel());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
@@ -225,12 +227,13 @@ public class MOrderTax extends X_C_OrderTax
 
 		BigDecimal taxBaseAmt = BigDecimal.ZERO;
 		BigDecimal taxAmt = BigDecimal.ZERO;
+		BigDecimal reverseChargeTaxAmt = BigDecimal.ZERO;
 		boolean havePackingMaterialLines = false;
 		boolean haveNonPackingMaterialLines = false;
 		boolean foundInvoiceLines = false;
 		//
-		final boolean documentLevel = getTax().isDocumentLevel();
 		final I_C_Tax tax = getTax();
+		final boolean documentLevel = tax.isDocumentLevel();
 		//
 		final String sql = "SELECT "
 				+ I_C_OrderLine.COLUMNNAME_LineNetAmt // 1
@@ -256,7 +259,9 @@ public class MOrderTax extends X_C_OrderTax
 				//
 				if (!documentLevel)
 				{
-					taxAmt = taxAmt.add(taxBL.calculateTaxAmt(tax, baseAmt, isTaxIncluded(), getPrecision()));
+					final CalculateTaxResult calculateTaxResult = taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision());
+					taxAmt = taxAmt.add(calculateTaxResult.getTaxAmount());
+					reverseChargeTaxAmt = reverseChargeTaxAmt.add(calculateTaxResult.getReverseChargeAmt());
 				}
 
 				//
@@ -273,26 +278,22 @@ public class MOrderTax extends X_C_OrderTax
 		}
 		catch (Exception e)
 		{
-			log.error(get_TrxName(), e);
-			taxBaseAmt = null;
+			throw new DBException(e, sql);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 		}
 
-		//
-		if (taxBaseAmt == null)
-		{
-			return false;
-		}
-
 		// Calculate Tax
 		if (documentLevel)
 		{
-			taxAmt = taxBL.calculateTaxAmt(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+			final CalculateTaxResult calculateTaxResult = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+			taxAmt = calculateTaxResult.getTaxAmount();
+			reverseChargeTaxAmt = calculateTaxResult.getReverseChargeAmt();
 		}
 		setTaxAmt(taxAmt);
+		setReverseChargeTaxAmt(reverseChargeTaxAmt);
 
 		// Set Base
 		if (isTaxIncluded())
@@ -309,6 +310,7 @@ public class MOrderTax extends X_C_OrderTax
 		setIsActive(foundInvoiceLines);
 
 		setIsPackagingTax(checkIsPackagingMaterialTax(havePackingMaterialLines, haveNonPackingMaterialLines));
+		setIsReverseCharge(tax.isReverseCharge());
 
 		return true;
 	}    // calculateTaxFromLines
@@ -342,6 +344,7 @@ public class MOrderTax extends X_C_OrderTax
 				+ ", C_Tax_ID=" + getC_Tax_ID()
 				+ ", Base=" + getTaxBaseAmt()
 				+ ", Tax=" + getTaxAmt()
+				+ (isReverseCharge() ? ", ReverseCharge=" + getReverseChargeTaxAmt() : "")
 				+ "]";
 	}
 

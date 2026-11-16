@@ -1,6 +1,8 @@
 ARG REFNAME=local
+# Two image sources: the metas-mvn-backend BUILD image is pinned to GHCR (below),
+# while REGISTRY (empty = Docker Hub) serves the metas-app DEPLOYABLE image further down.
 ARG REGISTRY=
-FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
+FROM ghcr.io/metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 # Aggregate SQL files in a separate stage to avoid copying entire backend to runtime
 # This stage runs on the backend image and only exports the small aggregated SQL

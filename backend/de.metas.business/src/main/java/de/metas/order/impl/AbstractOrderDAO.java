@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -16,9 +38,11 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderCriteria;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderQuery;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -58,28 +82,6 @@ import java.util.stream.Stream;
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
@@ -161,19 +163,22 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Collection<OrderAndLineId> orderAndLineIds)
+	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Set<OrderLineId> orderLineIds)
 	{
-		if (orderAndLineIds.isEmpty())
+		if (orderLineIds.isEmpty())
 		{
 			return ImmutableListMultimap.of();
 		}
-		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(Collectors.toSet()), I_C_Order.class)
+		final List<I_C_OrderLine> orderLines = loadByRepoIdAwares(orderLineIds, I_C_OrderLine.class);
+		final Set<OrderId> orderIds = orderLines.stream()
+				.map(orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID())).collect(Collectors.toSet());
+		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderIds)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(o -> OrderId.ofRepoId(o.getC_Order_ID()), Function.identity()));
 
-		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), I_C_OrderLine.class)
+		return orderLines
 				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(orderLineRecord -> orderIdToOrderMap.get(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())), Function.identity()));
+				.collect(ImmutableListMultimap.toImmutableListMultimap(ol -> orderIdToOrderMap.get(OrderId.ofRepoId(ol.getC_Order_ID())), Function.identity()));
 	}
 
 	@Override
@@ -344,6 +349,28 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.stream();
 	}
 
+	@Override
+	public Set<OrderId> retrieveNotProcessedOrderIds(@NonNull final BPartnerId bpartnerId)
+	{
+		return createQueryBuilder()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Processed, false)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.idsAsSet(OrderId::ofRepoId);
+	}
+
+	@Override
+	public List<I_C_Order> getByLinkOrderId(@NonNull final OrderId linkOrderId)
+	{
+		return createQueryBuilder()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkOrderId)
+				.orderBy(I_C_Order.COLUMNNAME_C_Order_ID)
+				.create()
+				.list();
+	}
+
 	private IQueryBuilder<I_C_Order> createQueryBuilder()
 	{
 		return Services.get(IQueryBL.class)
@@ -379,7 +406,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@NonNull
-	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderQuery query)
+	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderCriteria query)
 	{
 		if (query.getOrderId() != null)
 		{
@@ -419,7 +446,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Nullable
-	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderQuery query)
+	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderCriteria query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -514,23 +541,32 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.anyMatch();
 	}
 
-	@NonNull
-	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderQuery orderQuery)
+	@Override
+	public boolean isCalibrationRuleUsed(@NonNull final CalibrationRuleId calibrationRuleId)
 	{
-		final OrgId orgId = assumeNotNull(orderQuery.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderQuery);
-		final ExternalId externalId = assumeNotNull(orderQuery.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderQuery);
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, calibrationRuleId)
+				.create()
+				.anyMatch();
+	}
+
+	@NonNull
+	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderCriteria orderCriteria)
+	{
+		final OrgId orgId = assumeNotNull(orderCriteria.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderCriteria);
+		final ExternalId externalId = assumeNotNull(orderCriteria.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderCriteria);
 
 		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue());
 
-		final InputDataSourceId dataSourceId = orderQuery.getInputDataSourceId();
+		final InputDataSourceId dataSourceId = orderCriteria.getInputDataSourceId();
 		if (dataSourceId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_AD_InputDataSource_ID, dataSourceId);
 		}
 
-		final ExternalSystemId externalSystemId = orderQuery.getExternalSystemId();
+		final ExternalSystemId externalSystemId = orderCriteria.getExternalSystemId();
 		if (externalSystemId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalSystem_ID, externalSystemId);
@@ -545,7 +581,77 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return queryBL.createQueryBuilder(I_C_Order.class)
 				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
+	}
+
+	@Override
+	public List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.iterateAndStreamIds(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public List<OrderId> getOrderIds(@NonNull final OrderQuery query)
+	{
+		if ((query.getDocTypeIds() != null && query.getDocTypeIds().isEmpty())
+				|| (query.getDocumentNos() != null && query.getDocumentNos().isEmpty()))
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBuilder<I_C_Order> queryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getSoTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+		}
+		if (query.getDocStatus() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (query.getDocTypeIds() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Order.COLUMNNAME_C_DocType_ID, query.getDocTypeIds());
+		}
+		if (query.getDocumentNos() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Order.COLUMNNAME_DocumentNo, query.getDocumentNos());
+		}
+		if (query.getCurrencyId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
+		}
+		if (query.getAmount() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_GrandTotal, query.getAmount());
+		}
+		if (query.getBpartnerId() != null)
+		{
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Bill_BPartner_ID, query.getBpartnerId())
+					.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
+		}
+
+		return queryBuilder.create().listIds(OrderId::ofRepoId);
 	}
 }

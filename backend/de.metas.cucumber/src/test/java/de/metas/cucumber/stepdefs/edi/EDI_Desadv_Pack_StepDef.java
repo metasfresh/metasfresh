@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.handlingunits.HuId;
 import de.metas.logging.LogManager;
@@ -54,6 +55,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_GTIN_PackingMaterial;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
@@ -70,15 +72,18 @@ public class EDI_Desadv_Pack_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final EDI_Desadv_Pack_StepDefData ediDesadvPackTable;
+	private final EDI_Desadv_StepDefData ediDesadvTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
 
 	public EDI_Desadv_Pack_StepDef(
 			@NonNull final EDI_Desadv_Pack_StepDefData ediDesadvPackTable,
+			@NonNull final EDI_Desadv_StepDefData ediDesadvTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable)
 	{
 		this.ediDesadvPackTable = ediDesadvPackTable;
+		this.ediDesadvTable = ediDesadvTable;
 		this.huTable = huTable;
 		this.huPackagingCodeTable = huPackagingCodeTable;
 	}
@@ -97,6 +102,21 @@ public class EDI_Desadv_Pack_StepDef
 				.forEach(row -> packIsFound(row, timeoutSec));
 	}
 
+	/**
+	 * Updates fields of EDI_Desadv_Pack records previously registered under an identifier.
+	 *
+	 * <p>Required column:
+	 * <ul>
+	 *   <li>{@code EDI_Desadv_Pack_ID} – identifier of the pack to update</li>
+	 * </ul>
+	 * Optional field columns:
+	 * <ul>
+	 *   <li>{@code OPT.IPA_SSCC18} – new SSCC18 code</li>
+	 *   <li>{@code OPT.IsActive} – new IsActive flag (Y/N). Real-world trigger: a user deactivates the
+	 *       pack in the WebUI because the delivery was emptied; the underlying line must then surface
+	 *       in the no-pack export section (it is no longer covered by an active pack).</li>
+	 * </ul>
+	 */
 	@Then("EDI_Desadv_Pack records are updated")
 	public void update_EDI_Desadv_Pack(@NonNull final DataTable table)
 	{
@@ -131,6 +151,12 @@ public class EDI_Desadv_Pack_StepDef
 			packRecord.setIPA_SSCC18(ipaSSCC18.trim());
 		}
 
+		final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_EDI_Desadv_Pack.COLUMNNAME_IsActive, null);
+		if (isActive != null)
+		{
+			packRecord.setIsActive(isActive);
+		}
+
 		saveRecord(packRecord);
 	}
 
@@ -149,6 +175,9 @@ public class EDI_Desadv_Pack_StepDef
 				.orderByDescending(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_IsManual_IPA_SSCC18, isManualSSCC18);
+
+		row.getAsOptionalIdentifier(COLUMNNAME_EDI_Desadv_ID)
+				.ifPresent(desadvIdentifier -> queryBuilder.addEqualsFilter(COLUMNNAME_EDI_Desadv_ID, ediDesadvTable.get(desadvIdentifier).getEDI_Desadv_ID()));
 
 		row.getAsOptionalIdentifier(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID)
 				.ifPresent(huIdentifier -> queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, getHuId(huIdentifier)));

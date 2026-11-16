@@ -174,4 +174,7 @@ public interface IAttributeDAO extends ISingletonService
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
 
 	boolean isStorageRelevant(@NonNull AttributeCode attributeCode);
+
+	/** @return true if an attribute with this code exists and is active */
+	boolean isActive(@NonNull AttributeCode attributeCode);
 }

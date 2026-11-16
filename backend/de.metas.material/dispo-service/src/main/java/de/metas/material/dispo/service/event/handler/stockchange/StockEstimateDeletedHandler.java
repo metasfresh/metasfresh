@@ -40,6 +40,9 @@ import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,7 @@ public class StockEstimateDeletedHandler implements MaterialEventHandler<Abstrac
 {
 	private static final transient Logger logger = LogManager.getLogger(StockEstimateDeletedHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final StockEstimateEventService stockEstimateEventService;
 	private final CandidateChangeService candidateChangeHandler;
 	private final StockChangeDetailRepo stockChangeDetailRepo;
@@ -75,6 +79,16 @@ public class StockEstimateDeletedHandler implements MaterialEventHandler<Abstrac
 	@Override
 	public void handleEvent(final AbstractStockEstimateEvent event)
 	{
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
+			return;
+		}
+
 		final Candidate candidateToDelete = stockEstimateEventService.retrieveExistingStockEstimateCandidateOrNull(event);
 
 		if (candidateToDelete == null)

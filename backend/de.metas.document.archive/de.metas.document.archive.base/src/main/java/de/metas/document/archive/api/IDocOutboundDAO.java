@@ -55,6 +55,7 @@ public interface IDocOutboundDAO extends ISingletonService
 	 *
 	 * @return {@link I_C_Doc_Outbound_Log} record or null if not found
 	 */
+	@Nullable
 	I_C_Doc_Outbound_Log retrieveLog(ArchiveId archiveId);
 
 	@NonNull

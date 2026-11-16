@@ -24,14 +24,18 @@ package de.metas.banking.impexp;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.BankStatementCreateRequest;
+import de.metas.banking.service.BankStatementPrepayOrderResolver;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.ImportRecordsAsyncExecutor;
 import de.metas.impexp.MockedImportRecordsAsyncExecutor;
@@ -42,9 +46,19 @@ import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.impexp.processing.ImportDataDeleteRequest;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.ImportSource;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -57,7 +71,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_I_BankStatement;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -72,6 +89,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -95,6 +113,7 @@ public class BankStatementImportProcessTest
 		setupDBFunctionsRepository();
 		setupImportTableDescriptorRepository();
 		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+		BankStatementPrepayOrderResolver.newInstanceForUnitTesting();
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
@@ -156,10 +175,14 @@ public class BankStatementImportProcessTest
 			@Nullable final String debitOrCreditIndicator,
 			@Nullable final String debitOrCreditAmt,
 			@Nullable final String debitStmtAmt,
-			@Nullable final String creditStmtAmt)
+			@Nullable final String creditStmtAmt,
+			@Nullable final String invoiceDocumentNo,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_I_BankStatement record = newInstance(I_I_BankStatement.class);
 		record.setC_BankStatement_ID(bankStatementId != null ? bankStatementId.getRepoId() : -1);
+		record.setInvoiceDocumentNo(invoiceDocumentNo);
+		record.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 
 		record.setC_Currency_ID(CurrencyId.toRepoId(currencyId));
 		record.setStmtAmt(amtOrNull(trxAmt));
@@ -337,6 +360,260 @@ public class BankStatementImportProcessTest
 			assertThat(lines.get(1).getStmtAmt()).isEqualByComparingTo("33.33");
 			assertThat(lines.get(1).getTrxAmt()).isEqualByComparingTo("33.33");
 			assertThat(lines.get(1).getDescription()).isEqualTo("description for line 2");
+		}
+	}
+
+	@Nested
+	class LineReferencingAnInvoiceWithAPaymentBonus
+	{
+		private static final String NET_BONUS = "2.60";
+
+		private PaymentBonusDeduction deduction(@NonNull final InvoiceId invoiceId)
+		{
+			return PaymentBonusDeduction.builder()
+					.orgId(OrgId.ANY)
+					.invoiceId(invoiceId)
+					.customerId(BPartnerId.ofRepoId(1))
+					.currencyId(euroCurrencyId)
+					.precision(CurrencyPrecision.TWO)
+					.line(PaymentBonusDeductionLine.builder()
+							.bonusProductId(ProductId.ofRepoId(1))
+							.tax(Tax.builder()
+									.taxId(TaxId.ofRepoId(1))
+									.name("7 %")
+									.orgId(OrgId.ANY)
+									.validFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")))
+									.taxCategoryId(TaxCategoryId.ofRepoId(1))
+									.rate(new BigDecimal("7"))
+									.isTaxExempt(false)
+									.requiresTaxCertificate(false)
+									.seqNo(10)
+									.build())
+							.netAmt(Money.of(new BigDecimal(NET_BONUS), euroCurrencyId))
+							.build())
+					.build();
+		}
+
+		private I_C_Invoice createSalesInvoice(@NonNull final String documentNo, @NonNull final BPartnerId customerId)
+		{
+			final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+			invoice.setAD_Org_ID(OrgId.ANY.getRepoId());
+			invoice.setDocumentNo(documentNo);
+			invoice.setC_BPartner_ID(customerId.getRepoId());
+			invoice.setDocStatus(DocStatus.Completed.getCode());
+			invoice.setIsSOTrx(true);
+			invoice.setIsPaid(false);
+			invoice.setIsFinancial(true);
+			saveRecord(invoice);
+			return invoice;
+		}
+
+		@Test
+		void theLineIsLinkedToTheInvoice_butItsAmountsAreNotUpdatedFromTheInvoice()
+		{
+			final BPartnerId customerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("customer").getC_BPartner_ID());
+			final I_C_Invoice invoice = createSalesInvoice("100", customerId);
+			final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(id -> Optional.of(deduction(id))), new PaymentBonusCreditMemoService()));
+
+			final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+					.orgId(OrgId.ANY)
+					.orgBankAccountId(euroOrgBankAccountId)
+					.name("Bank Statement 1")
+					.statementDate(LocalDate.parse("2020-03-22"))
+					.build());
+
+			importRecords(record()
+					.bankStatementId(bankStatementId)
+					.statementLineDate("2020-03-22")
+					.currencyId(euroCurrencyId)
+					.trxAmt("163.72")
+					.invoiceDocumentNo("100")
+					.build());
+
+			final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
+			assertThat(lines).hasSize(1);
+			final I_C_BankStatementLine line = lines.get(0);
+			assertThat(line.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(invoiceId.getRepoId());
+			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(customerId.getRepoId());
+			assertThat(line.isUpdateAmountsFromInvoice()).as("IsUpdateAmountsFromInvoice: the amounts are coming from the bank").isFalse();
+			assertThat(line.getTrxAmt()).as("TrxAmt").isEqualByComparingTo("163.72");
+		}
+
+		@Test
+		void aLineWithoutAReferencedInvoice_keepsUpdatingItsAmountsFromTheInvoiceTheUserPicksLater()
+		{
+			createSalesInvoice("100", BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("customer").getC_BPartner_ID()));
+			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(id -> Optional.of(deduction(id))), new PaymentBonusCreditMemoService()));
+
+			final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+					.orgId(OrgId.ANY)
+					.orgBankAccountId(euroOrgBankAccountId)
+					.name("Bank Statement 1")
+					.statementDate(LocalDate.parse("2020-03-22"))
+					.build());
+
+			importRecords(record()
+					.bankStatementId(bankStatementId)
+					.statementLineDate("2020-03-22")
+					.currencyId(euroCurrencyId)
+					.trxAmt("163.72")
+					.invoiceDocumentNo("999") // no such invoice
+					.build());
+
+			final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
+			assertThat(lines).hasSize(1);
+			assertThat(lines.get(0).getC_Invoice_ID()).as("C_Invoice_ID").isLessThanOrEqualTo(0);
+			assertThat(lines.get(0).isUpdateAmountsFromInvoice()).as("IsUpdateAmountsFromInvoice").isTrue();
+		}
+	}
+
+	@Nested
+	class LineReferencingAWaitingPrepayOrder
+	{
+		private BankStatementId bankStatementId;
+		private BPartnerId customerId;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+					.orgId(OrgId.ANY)
+					.orgBankAccountId(euroOrgBankAccountId)
+					.name("Bank Statement 1")
+					.statementDate(LocalDate.parse("2020-03-22"))
+					.build());
+			customerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("customer").getC_BPartner_ID());
+		}
+
+		private I_C_Order createPrepayOrder(@NonNull final String documentNo, @NonNull final String grandTotal)
+		{
+			final I_C_DocType docType = newInstance(I_C_DocType.class);
+			docType.setDocBaseType(X_C_DocType.DOCBASETYPE_SalesOrder);
+			docType.setDocSubType(X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			saveRecord(docType);
+
+			final I_C_Order order = newInstance(I_C_Order.class);
+			order.setAD_Org_ID(OrgId.ANY.getRepoId());
+			order.setDocumentNo(documentNo);
+			order.setC_DocType_ID(docType.getC_DocType_ID());
+			order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			order.setIsSOTrx(true);
+			order.setDocStatus(DocStatus.WaitingPayment.getCode());
+			order.setC_BPartner_ID(customerId.getRepoId());
+			order.setBill_BPartner_ID(customerId.getRepoId());
+			order.setC_Currency_ID(euroCurrencyId.getRepoId());
+			order.setGrandTotal(new BigDecimal(grandTotal));
+			saveRecord(order);
+			return order;
+		}
+
+		private I_C_BankStatementLine importSingleLine(@NonNull final String trxAmt, @NonNull final String text)
+		{
+			return importSingleLine(trxAmt, text, null);
+		}
+
+		private I_C_BankStatementLine importSingleLine(@NonNull final String trxAmt, @NonNull final String text, @Nullable final BPartnerId importedBPartnerId)
+		{
+			importRecords(record()
+					.bankStatementId(bankStatementId)
+					.statementLineDate("2020-03-22")
+					.currencyId(euroCurrencyId)
+					.trxAmt(trxAmt)
+					.lineDescription(text)
+					.bpartnerId(importedBPartnerId)
+					.build());
+			final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
+			assertThat(lines).hasSize(1);
+			return lines.get(0);
+		}
+
+		@Test
+		void theLineGetsTheOrderAndItsPartner_ifTheTextNamesTheOrderAndTheAmountIsTheOrdersTotal()
+		{
+			final I_C_Order order = createPrepayOrder("1000123", "250.00");
+
+			final I_C_BankStatementLine line = importSingleLine("250.00", "1000123");
+
+			assertThat(line.getC_Order_ID()).as("C_Order_ID").isEqualTo(order.getC_Order_ID());
+			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(customerId.getRepoId());
+		}
+
+		@Test
+		void noOrder_ifTheAmountIsNotTheOrdersTotal()
+		{
+			createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("100.00", "1000123").getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		void theLineGetsTheOrder_ifTheOrderNumberIsASeparateWordOfTheText()
+		{
+			final I_C_Order order = createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("250.00", "Vorauskasse 1000123 Muster").getC_Order_ID()).as("C_Order_ID").isEqualTo(order.getC_Order_ID());
+		}
+
+		@Test
+		void noOrder_ifTheOrderNumberIsOnlyPartOfAWord()
+		{
+			createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("250.00", "Vorauskasse X1000123 Muster").getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		void noOrder_ifTheImportedPartnerIsNotThePartnerOfTheOrder()
+		{
+			createPrepayOrder("1000123", "250.00");
+			final BPartnerId otherPartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("other").getC_BPartner_ID());
+
+			final I_C_BankStatementLine line = importSingleLine("250.00", "1000123", otherPartnerId);
+
+			assertThat(line.getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID: the imported partner").isEqualTo(otherPartnerId.getRepoId());
+		}
+
+		@Test
+		void theLineGetsTheOrder_ifTheImportedPartnerIsTheOrderingPartnerOfTheOrder()
+		{
+			final I_C_Order order = createPrepayOrder("1000123", "250.00");
+			final BPartnerId billPartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("bill").getC_BPartner_ID());
+			order.setBill_BPartner_ID(billPartnerId.getRepoId());
+			saveRecord(order);
+
+			final I_C_BankStatementLine line = importSingleLine("250.00", "1000123", customerId);
+
+			assertThat(line.getC_Order_ID()).as("C_Order_ID").isEqualTo(order.getC_Order_ID());
+			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID: the imported partner").isEqualTo(customerId.getRepoId());
+		}
+
+		@Test
+		void noOrder_ifTheLineIsADebit()
+		{
+			createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("-250.00", "1000123").getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		void noOrder_ifAnInvoiceWithThatNumberIsReferenced()
+		{
+			createPrepayOrder("1000123", "250.00");
+			final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+			invoice.setAD_Org_ID(OrgId.ANY.getRepoId());
+			invoice.setDocumentNo("1000123");
+			invoice.setC_BPartner_ID(customerId.getRepoId());
+			invoice.setDocStatus(DocStatus.Completed.getCode());
+			invoice.setIsSOTrx(true);
+			invoice.setIsPaid(false);
+			invoice.setIsFinancial(true);
+			saveRecord(invoice);
+			// the partner has no payment bonus: the invoice is not linked, but it still wins over the order
+			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(id -> Optional.empty()), new PaymentBonusCreditMemoService()));
+
+			assertThat(importSingleLine("250.00", "1000123").getC_Order_ID()).as("C_Order_ID: the invoice wins, like in the CAMT import").isLessThanOrEqualTo(0);
 		}
 	}
 

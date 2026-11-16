@@ -35,7 +35,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -47,9 +46,11 @@ import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.M_PriceList_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -69,7 +70,15 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.IsPartialInvoice;
+import de.metas.invoice.process.C_Invoice_OverrideDueDate;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -83,7 +92,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
-import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -99,6 +107,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
@@ -123,6 +132,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -144,6 +154,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocumentNo;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
@@ -157,6 +168,13 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 @RequiredArgsConstructor
 public class C_Invoice_StepDef
 {
+	/**
+	 * An {@code @name@} placeholder: two '@' with at least one other character between them.
+	 */
+	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@]+@");
+
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -179,11 +197,13 @@ public class C_Invoice_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final AD_InputDataSource_StepDefData dataSourceTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final AD_Org_StepDefData orgTable;
 	private final AD_User_StepDefData userTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_Warehouse_StepDefData warehouseTable;
+	private final M_PriceList_StepDefData priceListTable;
 	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
@@ -196,6 +216,10 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 * </ul>
+	 * <p>
+	 * me03#29366: Added validation for {@code DueDate} — the persisted due date populated
+	 * on completion. Pin tests directly on this column so a regression surfaces at the
+	 * invoice step, not three steps later in dunning.
 	 */
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
@@ -205,7 +229,7 @@ public class C_Invoice_StepDef
 				.forEach(this::validateInvoice);
 	}
 
-	@And("^the invoice identified by (.*) is (completed|reversed|voided)$")
+	@And("^the invoice identified by (.*) is (completed|reversed|voided|closed)$")
 	public void invoice_action(@NonNull final String invoiceIdentifier, @NonNull final String action)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
@@ -223,11 +247,44 @@ public class C_Invoice_StepDef
 			case voided:
 				documentBL.processEx(invoice, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
+			case closed:
+				documentBL.processEx(invoice, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
 			default:
 				throw new AdempiereException("Unhandled C_Invoice action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Runs the given document action on the invoice through the document engine and checks the resulting doc status.
+	 * Unlike {@code the invoice identified by ... is (completed|reversed|voided)}, the action and the expected status are free,
+	 * so it can pin e.g. that {@code VO} on a completed invoice ends in {@code RE}.
+	 * <p>
+	 * Example: {@code And the invoice identified by invoice is processed with DocAction VO expecting DocStatus RE}
+	 */
+	@And("^the invoice identified by (.*) is processed with DocAction (\\w+) expecting DocStatus (\\w+)$")
+	public void invoice_processed_with_docAction(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String docAction,
+			@NonNull final String expectedDocStatus)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		documentBL.processEx(invoice, docAction, expectedDocStatus);
+	}
+
+	@And("^the reversal of invoice (.*) is identified by (.*)$")
+	public void identify_reversal_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String reversalIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		InterfaceWrapperHelper.refresh(invoice);
+		final int reversalId = invoice.getReversal_ID();
+		Check.assume(reversalId > 0, "Invoice {} must have a reversal", invoiceIdentifier);
+		final I_C_Invoice reversal = InterfaceWrapperHelper.load(reversalId, I_C_Invoice.class);
+		invoiceTable.putOrReplace(StepDefDataIdentifier.ofString(reversalIdentifier), reversal);
 	}
 
 	@And("load C_Invoice:")
@@ -280,6 +337,20 @@ public class C_Invoice_StepDef
 
 	/**
 	 * Note that the new invoice's IC is also added to {@link TestContext} for further use in API-requests.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *   <li>{@code AD_Org_ID} — org identifier; defaults to the login context org</li>
+	 *   <li>{@code C_BPartner_Location_ID} — bill-to location identifier</li>
+	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
+	 *   <li>{@code AD_User_ID} — contact identifier</li>
+	 *   <li>{@code DateAcct} — accounting date; defaults to today</li>
+	 *   <li>{@code POReference} — optional customer order reference of the invoice header</li>
+	 *   <li>{@code DocumentNo} — the document number; a {@code @name@} placeholder is replaced with the {@link TestContext} variable of that name,
+	 *   e.g. {@code INV-@runId@}, any other value is taken literally. The validation steps (e.g. {@code validate created invoices}) resolve it the same way.</li>
+	 *   <li>{@code ExternalId} — the external id; {@code @name@} placeholders are resolved like in {@code DocumentNo}, so a scenario can
+	 *   make it unique per run (e.g. from a product's {@code REST.Context.Value}).</li>
+	 * </ul>
 	 */
 	@And("metasfresh contains C_Invoice:")
 	public void addC_Invoices(@NonNull final DataTable dataTable)
@@ -287,6 +358,17 @@ public class C_Invoice_StepDef
 		DataTableRows.of(dataTable).forEach(this::create_C_Invoice);
 	}
 
+	/**
+	 * Credits the given invoices, i.e. creates a drafted credit memo that references the invoice and copies its lines.
+	 * <p>
+	 * Columns:
+	 * <ul>
+	 *   <li>{@code CreditMemo} — identifier of the new credit memo</li>
+	 *   <li>{@code C_Invoice_ID} — identifier of the credited invoice</li>
+	 *   <li>{@code CreditMemo.PriceEntered} — optional; sets this price on every credit memo line. If absent, the lines keep the credited invoice's prices</li>
+	 *   <li>{@code CreditMemo.IsCreditedInvoiceReinvoicable} — optional, default {@code false}; {@code true} gives the credited quantities back to their invoice candidates</li>
+	 * </ul>
+	 */
 	@And("create credit memo for C_Invoice")
 	public void create_credit_memo_for_invoice(@NonNull final DataTable dataTable)
 	{
@@ -294,7 +376,8 @@ public class C_Invoice_StepDef
 				.setAdditionalRowIdentifierColumnName("CreditMemo")
 				.forEach(row -> {
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-					final BigDecimal creditMemoLineAmt = row.getAsBigDecimal("CreditMemo.PriceEntered");
+					final Optional<BigDecimal> creditMemoLineAmt = row.getAsOptionalBigDecimal("CreditMemo.PriceEntered");
+					final boolean creditedInvoiceReinvoicable = row.getAsOptionalBoolean("CreditMemo.IsCreditedInvoiceReinvoicable").orElseFalse();
 					final DocTypeId creditMemoDocTypeId = docTypeBL.getDocTypeId(
 							DocTypeQuery.builder()
 									.docBaseType(invoice.isSOTrx() ? DocBaseType.SalesCreditMemo : DocBaseType.PurchaseCreditMemo)
@@ -309,19 +392,22 @@ public class C_Invoice_StepDef
 							.completeAndAllocate(false)
 							.referenceOriginalOrder(false)
 							.referenceInvoice(true)
-							.creditedInvoiceReinvoicable(false).build();
+							.creditedInvoiceReinvoicable(creditedInvoiceReinvoicable).build();
 
 					final I_C_Invoice creditMemo = invoiceBL.creditInvoice(InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class), creditCtx);
 
-					for (final de.metas.adempiere.model.I_C_InvoiceLine creditMemoLine : invoiceDAO.retrieveLines(InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID())))
+					if (creditMemoLineAmt.isPresent())
 					{
-						creditMemoLine.setPriceActual(creditMemoLineAmt);
+						for (final de.metas.adempiere.model.I_C_InvoiceLine creditMemoLine : invoiceDAO.retrieveLines(InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID())))
+						{
+							creditMemoLine.setPriceActual(creditMemoLineAmt.get());
 
-						// dev note : manually triggering as callouts don't run in cucumber
-						invoiceLineBL.updatePrices(creditMemoLine);
-						invoiceBL.setLineNetAmt(creditMemoLine);
+							// dev note : manually triggering as callouts don't run in cucumber
+							invoiceLineBL.updatePrices(creditMemoLine);
+							invoiceBL.setLineNetAmt(creditMemoLine);
 
-						InterfaceWrapperHelper.save(creditMemoLine);
+							InterfaceWrapperHelper.save(creditMemoLine);
+						}
 					}
 
 					row.getAsIdentifier().putOrReplace(invoiceTable, creditMemo);
@@ -477,8 +563,18 @@ public class C_Invoice_StepDef
 
 					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
 				});
+		row.getAsOptionalLocalDate(COLUMNNAME_DueDate)
+				.ifPresent(dueDate -> {
+					final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+					softly.assertThat(TimeUtil.asLocalDate(invoice.getDueDate(), zoneId))
+							.as("DueDate for Identifier=%s", identifierStr)
+							.isEqualTo(dueDate);
+				});
 
 		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.map(this::resolvePlaceholders)
 				.ifPresent(externalId -> softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
@@ -491,6 +587,18 @@ public class C_Invoice_StepDef
 
 		row.getAsOptionalBoolean(COLUMNNAME_IsSOTrx)
 				.ifPresent(isSOTrx -> softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx));
+
+		// IsPartialInvoice is a tri-state column (Y / N / null = NA). Read via the
+		// IsPartialInvoice.fromValue(...) helper because the PO layer stores YesNo
+		// column values as Boolean (Y -> TRUE, N -> FALSE, NULL -> null) — a raw
+		// <String>getValue cast throws ClassCastException at runtime. Cucumber's
+		// "-" / "null" tokens map to actual SQL null via DataTableUtil.nullToken2Null.
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+				.ifPresent(expectedRaw -> {
+					final IsPartialInvoice expected = IsPartialInvoice.fromCode(DataTableUtil.nullToken2Null(expectedRaw));
+					final IsPartialInvoice actual = IsPartialInvoice.fromValue(invoice.getIsPartialInvoice());
+					softly.assertThat(actual).as(I_C_Invoice.COLUMNNAME_IsPartialInvoice + " for Identifier=%s", identifierStr).isEqualTo(expected);
+				});
 
 		// payment related
 		{
@@ -529,6 +637,7 @@ public class C_Invoice_StepDef
 				});
 
 		row.getAsOptionalString(COLUMNNAME_DocumentNo)
+				.map(this::resolvePlaceholders)
 				.ifPresent(documentNo -> softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo));
 
 		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_M_Warehouse_ID)
@@ -540,8 +649,17 @@ public class C_Invoice_StepDef
 					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
 					softly.assertThat(invoice.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
 				});
-		
+
 		softly.assertAll();
+	}
+
+	/**
+	 * Resolves the {@code @name@} placeholders of a DocumentNo or ExternalId; any other value is taken literally
+	 * (the expression compiler would throw on a single '@' and turn '@@' into '@').
+	 */
+	private String resolvePlaceholders(@NonNull final String value)
+	{
+		return PLACEHOLDER.matcher(value).find() ? restTestContext.resolveVariables(value) : value;
 	}
 
 	private BigDecimal computeOpenAmount(@NonNull final InvoiceId invoiceId)
@@ -618,7 +736,7 @@ public class C_Invoice_StepDef
 		final List<StepDefDataIdentifier> invoiceIdentifiers = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).toCommaSeparatedList();
 		if (invoiceIds.size() != invoiceIdentifiers.size())
 		{
-			ProviderResult.resultWasNotFound("We expected one C_Invoice for each identified, but got {0} invoices instead; C_Invoice_ID.Identifier={1} ", invoiceIds.size(), invoiceIdentifiers);
+			return ProviderResult.resultWasNotFound("We expected one C_Invoice for each identified, but got {0} invoices instead; C_Invoice_ID.Identifier={1} ", invoiceIds.size(), invoiceIdentifiers);
 		}
 
 		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds)
@@ -802,30 +920,63 @@ public class C_Invoice_StepDef
 					invoice.setC_DocTypeTarget_ID(docTypeId);
 				});
 
+		// AD_Org must be set before C_BPartner_ID so seller-org resolution (e-invoicing) and the
+		// invoice lines pick up the right organisation.
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_AD_Org_ID)
+				.map(orgTable::getIdAsInt)
+				.ifPresent(invoice::setAD_Org_ID);
+
 		final StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 		final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
+
+		row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+				.map(bPartnerLocationTable::get)
+				.ifPresent(bpLocation -> invoice.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID()));
+
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_M_PriceList_ID)
+				.map(priceListTable::get)
+				.ifPresent(priceList -> invoice.setM_PriceList_ID(priceList.getM_PriceList_ID()));
+
+		// bill contact — its email becomes C_Doc_Outbound_Log.CurrentEMailAddress for the mailer
+		row.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.map(userTable::get)
+				.ifPresent(contact -> invoice.setAD_User_ID(contact.getAD_User_ID()));
+
+		// TotalLines/GrandTotal are intentionally NOT set on the header — they are recomputed from
+		// the invoice lines on save/completion, so setting them here would be redundant.
 
 		row.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
 				.map(warehouseTable::getId)
 				.ifPresent(warehouseId -> invoice.setM_Warehouse_ID(warehouseId.getRepoId()));
 
 		invoice.setDateInvoiced(row.getAsLocalDateTimestamp(COLUMNNAME_DateInvoiced));
+		row.getAsOptionalLocalDate(COLUMNNAME_DateAcct)
+				.map(TimeUtil::asTimestamp)
+				.ifPresent(invoice::setDateAcct);
 		invoice.setIsSOTrx(row.getAsBoolean(COLUMNNAME_IsSOTrx));
 
 		final CurrencyCode isoCode = row.getAsCurrencyCode();
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(isoCode);
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
-		row.getAsOptionalString(COLUMNNAME_DocumentNo).ifPresent(invoice::setDocumentNo);
-		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
+		row.getAsOptionalString(COLUMNNAME_DocumentNo)
+				.map(this::resolvePlaceholders)
+				.ifPresent(invoice::setDocumentNo);
+		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.map(this::resolvePlaceholders)
+				.ifPresent(invoice::setExternalId);
+		row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(invoice::setPOReference);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
 				.map(dataSourceTable::getId)
 				.ifPresent(dataSourceId -> invoice.setAD_InputDataSource_ID(dataSourceId.getRepoId()));
 
 		paymentTermStepDef.extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+
+		row.getAsOptionalEnum(I_C_Invoice.COLUMNNAME_PaymentRule, PaymentRule.class)
+				.ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
 
 		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
 				.ifPresent(externalSystemValue -> {
@@ -839,52 +990,108 @@ public class C_Invoice_StepDef
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
+	/**
+	 * Updates the given (typically still draft) invoices; only the columns that are present are changed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) identifier of the invoice to update<br>
+	 *   <b>DateInvoiced</b> — (optional) the new invoice date<br>
+	 *   <b>Description</b> — (optional) the new invoice description<br>
+	 *   <b>C_PaymentTerm_ID</b> — (optional, identifier-ref) the new payment term<br>
+	 *   Older features prefix the optional columns with <code>OPT.</code> (e.g. <code>OPT.DateInvoiced</code>); both forms are read.
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, C_PaymentTerm_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice:
+	 *   | Identifier | Description |
+	 *   | inv_1      | Invoice 1   |
+	 * </pre>
+	 */
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			updateInvoice(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateInvoice);
 	}
 
-	private void updateInvoice(@NonNull final Map<String, String> row)
+	private void updateInvoice(@NonNull final DataTableRow row)
 	{
-		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
-
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier();
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
-		if (dateInvoiced != null)
-		{
-			invoice.setDateInvoiced(dateInvoiced);
-		}
+		row.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateInvoiced).ifPresent(invoice::setDateInvoiced);
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_Description).ifPresent(invoice::setDescription);
 
-		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
-		if (Check.isNotBlank(paymentTerm))
-		{
-			final PaymentTermQuery query = PaymentTermQuery.builder()
-					.orgId(StepDefConstants.ORG_ID)
-					.value(paymentTerm)
-					.build();
-
-			final PaymentTermId paymentTermId = paymentTermRepo.firstIdOnly(query)
-					.orElse(null);
-
-			assertThat(paymentTermId).isNotNull();
-
-			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
-		}
+		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
+		// resolve correctly even when the DB record has a unique timestamped Value.
+		paymentTermStepDef.extractPaymentTermId(row)
+				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);
 
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
+	/**
+	 * Runs the {@code C_Invoice_OverrideDueDate} AD_Process on each invoice row in the DataTable.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) invoice to apply the override to<br>
+	 *   <b>OverrideDueDate</b> — (required) the new due date to apply (format: {@code yyyy-MM-dd})<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When C_Invoice_OverrideDueDate process is invoked:
+	 *   | C_Invoice_ID | OverrideDueDate |
+	 *   | inv_allow    | 2026-12-31      |
+	 * </pre>
+	 */
+	@And("C_Invoice_OverrideDueDate process is invoked:")
+	public void invoke_C_Invoice_OverrideDueDate_process(@NonNull final DataTable dataTable)
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Invoice_OverrideDueDate.class);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID);
+			final I_C_Invoice invoice = invoiceIdentifier.lookupNotNullIn(invoiceTable);
+			final int invoiceId = invoice.getC_Invoice_ID();
+			final Timestamp overrideDueDate = row.getAsLocalDateTimestamp("OverrideDueDate");
+
+			// run with the invoice's client ctx + WebUI role; the default cucumber ctx (System client/role) would match no records
+			final ClientId invoiceClientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
+			final UserId loggedUserId = Env.getLoggedUserId();
+			final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+					.stream()
+					.filter(r -> "WebUI".equals(r.getName()))
+					.map(Role::getId)
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+			ProcessInfo.builder()
+					.setAD_Process_ID(processId.getRepoId())
+					.setClientId(invoiceClientId)
+					.setRoleId(roleId)
+					.setCreateTemporaryCtx()
+					.setTableName(I_C_Invoice.Table_Name)
+					.setWhereClause(COLUMNNAME_C_Invoice_ID + "=" + invoiceId)
+					.addParameter("OverrideDueDate", overrideDueDate)
+					.buildAndPrepareExecution()
+					.switchContextWhenRunning()
+					.executeSync()
+					.getResult()
+					.propagateErrorIfAny();
+
+			// Re-load out-of-transaction so subsequent validate steps see the committed DB state.
+			final I_C_Invoice freshInvoice = invoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(invoiceId), I_C_Invoice.class);
+			invoiceTable.putOrReplace(invoiceIdentifier, freshInvoice);
+		});
+	}
+
 	@NonNull
 	private ProviderResult<I_C_Invoice> findInvoiceByExternalIdAndCandidateCount(@NonNull final Map<String, String> row)
 	{
-		final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
+		final String externalId = resolvePlaceholders(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId));
 		final int numberOfCandidates = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT.NumberOfCandidates");
 
 		final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)

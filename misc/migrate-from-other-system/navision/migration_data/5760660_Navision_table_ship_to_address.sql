@@ -34,82 +34,82 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Customer No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Customer No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Customer No_], '''', '''''') + '''' + ', ' +
 
         -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
         -- "Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Name, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Name, '''', '''''') + '''' + ', ' +
 
         -- "Name 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Name 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Name 2], '''', '''''') + '''' + ', ' +
 
         -- "Address" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Address, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Address, '''', '''''') + '''' + ', ' +
 
         -- "Address 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Address 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Address 2], '''', '''''') + '''' + ', ' +
 
         -- "City" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(City, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(City, '''', '''''') + '''' + ', ' +
 
         -- "Contact" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Contact, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Contact, '''', '''''') + '''' + ', ' +
 
         -- "Phone No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Phone No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Phone No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Telex No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex No_], '''', '''''') + '''' + ', ' +
 
         -- "Shipment Method Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Shipment Method Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Shipment Method Code], '''', '''''') + '''' + ', ' +
 
         -- "Shipping Agent Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Shipping Agent Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Shipping Agent Code], '''', '''''') + '''' + ', ' +
 
         -- "Place of Export" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Place of Export], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Place of Export], '''', '''''') + '''' + ', ' +
 
         -- "Country_Region Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Country_Region Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Country_Region Code], '''', '''''') + '''' + ', ' +
 
         -- "Last Date Modified" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Last Date Modified], 126) + '''' + ', ' +
 
         -- "Location Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Location Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Location Code], '''', '''''') + '''' + ', ' +
 
         -- "Fax No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Fax No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Fax No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex Answer Back" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Telex Answer Back], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex Answer Back], '''', '''''') + '''' + ', ' +
 
         -- "Post Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Post Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Post Code], '''', '''''') + '''' + ', ' +
 
         -- "County" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(County, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(County, '''', '''''') + '''' + ', ' +
 
         -- "E-Mail" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([E-Mail], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([E-Mail], '''', '''''') + '''' + ', ' +
 
         -- "Home Page" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([Home Page], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Home Page], '''', '''''') + '''' + ', ' +
 
         -- "Tax Area Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Tax Area Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Tax Area Code], '''', '''''') + '''' + ', ' +
 
         -- "Tax Liable" SMALLINT NOT NULL
     CAST([Tax Liable] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Shipping Agent Service Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Shipping Agent Service Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Shipping Agent Service Code], '''', '''''') + '''' + ', ' +
 
         -- "Service Zone Code" VARCHAR(10) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE([Service Zone Code], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Service Zone Code], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Ship-to Address];

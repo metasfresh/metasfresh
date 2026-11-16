@@ -4,6 +4,7 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo.ConfigQuery;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -62,13 +63,8 @@ public class C_Order
 			return; // nothing to do
 		}
 
-		final OrgId orgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
-
-		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
-				ConfigQuery.builder()
-						.clientId(ClientId.ofRepoId(orderRecord.getAD_Client_ID()))
-						.orgId(orgId)
-						.build());
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID());
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(clientAndOrgId);
 		if (!config.isFeatureEnabled())
 		{
 			return; // nothing to do
@@ -77,7 +73,7 @@ public class C_Order
 		// has to contain everything that the method to be invoked after commit needs
 		final List<CheckAvailableForSalesRequest> requests = availableForSalesUtil.createRequests(orderRecord);
 
-		availableForSalesUtil.checkAndUpdateOrderLineRecords(requests, config, orgId);
+		availableForSalesUtil.checkAndUpdateOrderLineRecords(requests, config, clientAndOrgId);
 	}
 
 	@ModelChange( //

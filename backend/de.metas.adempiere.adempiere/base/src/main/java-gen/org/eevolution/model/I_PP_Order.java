@@ -383,6 +383,29 @@ public interface I_PP_Order
 	String COLUMNNAME_C_OrderLine_MTO_ID = "C_OrderLine_MTO_ID";
 
 	/**
+	 * Set Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setCostDifference (@Nullable BigDecimal CostDifference);
+
+	/**
+	 * Get Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getCostDifference();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CostDifference = new ModelColumn<>(I_PP_Order.class, "CostDifference", null);
+	String COLUMNNAME_CostDifference = "CostDifference";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -433,7 +456,7 @@ public interface I_PP_Order
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -443,7 +466,7 @@ public interface I_PP_Order
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -873,6 +896,31 @@ public interface I_PP_Order
 	String COLUMNNAME_FloatBefored = "FloatBefored";
 
 	/**
+	 * Set Has cost difference.
+	 * Yes when the manufacturing order carries a cost difference other than zero.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setHasCostDifference (boolean HasCostDifference);
+
+	/**
+	 * Get Has cost difference.
+	 * Yes when the manufacturing order carries a cost difference other than zero.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isHasCostDifference();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_HasCostDifference = new ModelColumn<>(I_PP_Order.class, "HasCostDifference", null);
+	String COLUMNNAME_HasCostDifference = "HasCostDifference";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1051,6 +1099,36 @@ public interface I_PP_Order
 	String COLUMNNAME_Line = "Line";
 
 	/**
+	 * Set Manufacturing Order.
+	 * Opens the manufacturing order in the Manufacturing Order window.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setLink_PP_Order_ID (int Link_PP_Order_ID);
+
+	/**
+	 * Get Manufacturing Order.
+	 * Opens the manufacturing order in the Manufacturing Order window.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getLink_PP_Order_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getLink_PP_Order();
+
+	@Deprecated
+	void setLink_PP_Order(@Nullable org.eevolution.model.I_PP_Order Link_PP_Order);
+
+	ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Order> COLUMN_Link_PP_Order_ID = new ModelColumn<>(I_PP_Order.class, "Link_PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_Link_PP_Order_ID = "Link_PP_Order_ID";
+
+	/**
 	 * Set Lot No..
 	 *
 	 * <br>Type: String
@@ -1101,7 +1179,7 @@ public interface I_PP_Order
 	/**
 	 * Set Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1110,7 +1188,7 @@ public interface I_PP_Order
 	/**
 	 * Get Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1257,7 +1335,7 @@ public interface I_PP_Order
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1267,7 +1345,7 @@ public interface I_PP_Order
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1976,6 +2054,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1985,6 +2064,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2021,4 +2101,29 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Order.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
+
+
+	/**
+	 * Set Eff. Prod. Date Set.
+	 * If set, the "Eff. Prod. Datum" field is read-only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedProductionDate (boolean IsFixedProductionDate);
+
+	/**
+	 * Get Eff. Prod. Date Set.
+	 * If set, the "Eff. Prod. Datum" field is read-only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedProductionDate();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_IsFixedProductionDate = new ModelColumn<>(I_PP_Order.class, "IsFixedProductionDate", null);
+	String COLUMNNAME_IsFixedProductionDate = "IsFixedProductionDate";
+
 }

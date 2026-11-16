@@ -19,6 +19,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.api.Params;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
@@ -263,11 +264,9 @@ final class DataImportCommand
 					.addEqualsFilter(ImportTableDescriptor.COLUMNNAME_I_ErrorMsg, null)
 					.create();
 
-			_recordsToImportSelectionId = query.createSelection();
-			if (_recordsToImportSelectionId == null)
-			{
-				throw new AdempiereException("No records to import for " + query);
-			}
+			_recordsToImportSelectionId = query.createSelection()
+					.map(CreateSelectionResponse::getSelectionId)
+					.orElseThrow(() -> new AdempiereException("No records to import for " + query));
 		}
 
 		return _recordsToImportSelectionId;

@@ -1,9 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule_Recompute
  *  @author metasfresh (generated) 
@@ -12,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implements I_M_ShipmentSchedule_Recompute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1046235302L;
+	private static final long serialVersionUID = -186925966L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_Recompute (final Properties ctx, final int M_ShipmentSchedule_Recompute_ID, @Nullable final String trxName)
@@ -86,6 +87,19 @@ public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implem
 	public java.lang.String getChunkUUID() 
 	{
 		return get_ValueAsString(COLUMNNAME_ChunkUUID);
+	}
+
+	@Override
+	public void setDBTransactionNo (final @Nullable BigDecimal DBTransactionNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_DBTransactionNo, DBTransactionNo);
+	}
+
+	@Override
+	public BigDecimal getDBTransactionNo() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DBTransactionNo);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

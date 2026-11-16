@@ -7,8 +7,10 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceipt
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleDeliveryStopGuard;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
+import org.compiere.SpringContextHolder;
 import de.metas.process.JavaProcess;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -91,7 +93,14 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Iterator<I_M_ReceiptSchedule> receiptScheds = createIterator();
+		// Layer 2: reject atomically if ANY schedule belongs to a delivery-stopped vendor.
+		// Materialise the full selection upfront so the guard can inspect all records before
+		// any receipt is created.
+		final ImmutableList<I_M_ReceiptSchedule> receiptSchedsList = ImmutableList.copyOf(createIterator());
+		SpringContextHolder.instance.getBean(ReceiptScheduleDeliveryStopGuard.class)
+				.assertNoneBlocked(receiptSchedsList);
+
+		final Iterator<I_M_ReceiptSchedule> receiptScheds = receiptSchedsList.iterator();
 
 		final Mutable<Integer> counter = new Mutable<>(0);
 

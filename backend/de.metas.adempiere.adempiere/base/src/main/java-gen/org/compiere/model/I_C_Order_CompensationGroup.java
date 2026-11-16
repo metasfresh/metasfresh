@@ -98,6 +98,27 @@ public interface I_C_Order_CompensationGroup
 	String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
 
 	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_C_Order_CompensationGroup, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Order_CompensationGroup.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
 	 * Set Order Compensation Group.
 	 *
 	 * <br>Type: ID
@@ -258,7 +279,7 @@ public interface I_C_Order_CompensationGroup
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set BOM & Formula.
+	 * Set BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -268,7 +289,7 @@ public interface I_C_Order_CompensationGroup
 	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
-	 * Get BOM & Formula.
+	 * Get BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search

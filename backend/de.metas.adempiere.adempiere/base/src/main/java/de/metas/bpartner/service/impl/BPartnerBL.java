@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -41,7 +42,9 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
 import de.metas.common.util.StringUtils;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
@@ -55,6 +58,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -62,6 +66,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -99,6 +104,11 @@ public class BPartnerBL implements IBPartnerBL
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	/** {@code C_BPartner.SO_DocTypeTarget_ID} by partner; avoids re-loading the partner for every caller of a bulk process */
+	private final CCache<BPartnerId, Optional<DocTypeId>> salesOrderDocTypeIdCache = CCache.<BPartnerId, Optional<DocTypeId>>builder()
+			.cacheName(BPartnerBL.class.getSimpleName() + "#salesOrderDocTypeId")
+			.tableName(I_C_BPartner.Table_Name)
+			.build();
 
 	public BPartnerBL()
 	{
@@ -123,7 +133,15 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull Class<T> type)
+	public Optional<DocTypeId> getSalesOrderDocTypeId(@NonNull final BPartnerId bpartnerId)
+	{
+		return salesOrderDocTypeIdCache.getOrLoad(
+				bpartnerId,
+				() -> Optional.ofNullable(DocTypeId.ofRepoIdOrNull(getById(bpartnerId).getSO_DocTypeTarget_ID())));
+	}
+
+	@Override
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull final Class<T> type)
 	{
 		return bpartnersRepo.getById(bpartnerId, type);
 	}
@@ -924,10 +942,32 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public Optional<VATIdentifier> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
+		return resolveVATaxIDSource(bpartnerLocationId)
+				.map(source -> VATIdentifier.of(source.getVatTaxID()));
+	}
+
+	@NonNull
+	@Override
+	public Optional<String> getVATaxIDStatusCode(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return resolveVATaxIDSource(bpartnerLocationId)
+				.map(VATaxIDSource::getVatTaxIDStatus);
+	}
+
+	/**
+	 * The single resolution shared by {@link #getVATTaxId(BPartnerLocationId)} and
+	 * {@link #getVATaxIDStatusCode(BPartnerLocationId)}: which record — the location, or (unless
+	 * AD_SysConfig {@value #SYS_CONFIG_IgnorePartnerVATID} is set to Y) the partner — actually
+	 * supplies the VAT-ID. Both public methods read off the SAME resolved record, so a caller
+	 * combining them never mismatches a VAT-ID from one record with the status of the other.
+	 */
+	@NonNull
+	private Optional<VATaxIDSource> resolveVATaxIDSource(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
 		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
 		{
-			return Optional.of(VATIdentifier.of(bpartnerLocation.getVATaxID()));
+			return Optional.of(new VATaxIDSource(bpartnerLocation.getVATaxID(), bpartnerLocation.getVATaxIDStatus()));
 		}
 
 		// if is set on Y, we will not use the vatid from partner
@@ -942,11 +982,18 @@ public class BPartnerBL implements IBPartnerBL
 			final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
 			if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
 			{
-				return Optional.of(VATIdentifier.of(bPartner.getVATaxID()));
+				return Optional.of(new VATaxIDSource(bPartner.getVATaxID(), bPartner.getVATaxIDStatus()));
 			}
 
 		}
 		return Optional.empty();
+	}
+
+	@Value
+	private static class VATaxIDSource
+	{
+		@NonNull String vatTaxID;
+		@Nullable String vatTaxIDStatus;
 	}
 
 	@Override
@@ -967,4 +1014,51 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		return bpartnersRepo.retrieveBPartnerLocationsByIds(bpartnerLocationIds);
 	}
+
+	@Nullable
+	@Override
+	public I_AD_User retrieveContact(
+			final Properties ctx,
+			final int bpartnerId,
+			final boolean isSOTrx,
+			final String trxName)
+	{
+		return bpartnersRepo.retrieveContact(ctx, bpartnerId, isSOTrx, trxName);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final IBPartnerDAO.BPartnerLocationQuery query)
+	{
+		return bpartnersRepo.retrieveBPartnerLocation(query);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdInTrx(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public String getContactLocationEmail(@Nullable final BPartnerContactId contactId)
+	{
+		return bpartnersRepo.getContactLocationEmail(contactId);
+	}
+
+	@Nullable
+	@Override
+	public PricingSystemId retrievePricingSystemIdOrNull(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	{
+		return bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
+	}
+
 }

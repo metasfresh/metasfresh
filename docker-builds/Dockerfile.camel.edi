@@ -5,7 +5,7 @@ ARG REFNAME=local
 # thx to https://github.com/moby/moby/issues/1996#issuecomment-185872769
 ARG CACHEBUST=1
 
-ARG REGISTRY=
+ARG REGISTRY=ghcr.io/
 FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 FROM eclipse-temurin:17-jre-jammy

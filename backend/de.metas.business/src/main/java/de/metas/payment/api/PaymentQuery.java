@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
@@ -60,6 +61,10 @@ public class PaymentQuery
 
 	@Nullable
 	Money payAmt;
+
+	/** If set, only payments that carry this order ({@code C_Payment.C_Order_ID}). */
+	@Nullable
+	OrderId orderId;
 
 	@Singular
 	@NonNull

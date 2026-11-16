@@ -13,6 +13,7 @@ Feature: create distribution order based on aggregation sysconfig
     And metasfresh contains M_Products:
       | Identifier |
       | p_1        |
+      | p_2        |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |
@@ -74,8 +75,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by both orderId and orderLineId
-    When set sys config boolean value true for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value true for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value true for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value true for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -87,9 +88,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
@@ -127,8 +128,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by orderId
-    When set sys config boolean value true for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value false for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value true for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value false for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -140,9 +141,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
@@ -179,8 +180,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by orderLineId
-    When set sys config boolean value false for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value true for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value false for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value true for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -192,9 +193,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
@@ -230,8 +231,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: No aggregation by SalesOrderId or SalesOrderLineId
-    When set sys config boolean value false for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value false for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value false for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value false for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -243,9 +244,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
@@ -268,4 +269,56 @@ Feature: create distribution order based on aggregation sysconfig
       | Identifier | M_Product_ID | DD_Order_ID | QtyEntered | M_Locator_ID    | M_LocatorTo_ID  |
       | ddol1      | p_1          | ddo1        | 14         | sourceWHLocator | targetWHLocator |
 
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# Ground-replenishment case: planning-less candidates differing only by product.
+# HeaderAggregationKey already carries productPlanningId, so candidates with a planning always split per product.
+# The DDOrderAggregation.header.byProductId flag only matters when candidates share the header key across products,
+# i.e. productPlanningId = null. These two scenarios prove the flag both ways.
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+  @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
+  Scenario: Planning-less candidates for different products aggregate into one DD_Order when byProductId is off
+    When temporarily set sys config boolean value false for sys config 'DDOrderAggregation.header.byProductId'
+    And metasfresh contains DD_Order_Candidates:
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | M_Shipper_ID | Qty   |
+      | cand_p1    | p_1          | sourceWH            | targetWH         | shipper      | 2 PCE |
+      | cand_p2    | p_2          | sourceWH            | targetWH         | shipper      | 3 PCE |
+    And the following DD_Order_Candidates are enqueued for generating DD_Orders
+      | DD_Order_Candidate_ID |
+      | cand_p1               |
+      | cand_p2               |
+    # both candidates share the header key => one DD_Order, one line per product
+    Then after not more than 30s, the DD_Order_Candidates are aggregated into DD_Orders:
+      | DD_Order_Candidate_ID | DD_Order |
+      | cand_p1               | ddo      |
+      | cand_p2               | ddo      |
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+  @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
+  Scenario: Planning-less candidates for different products split into separate DD_Orders when byProductId is on
+    When temporarily set sys config boolean value true for sys config 'DDOrderAggregation.header.byProductId'
+    And metasfresh contains DD_Order_Candidates:
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | M_Shipper_ID | Qty   |
+      | cand_p1    | p_1          | sourceWH            | targetWH         | shipper      | 2 PCE |
+      | cand_p2    | p_2          | sourceWH            | targetWH         | shipper      | 3 PCE |
+    And the following DD_Order_Candidates are enqueued for generating DD_Orders
+      | DD_Order_Candidate_ID |
+      | cand_p1               |
+      | cand_p2               |
+    # product added to the header key => one DD_Order per product, each with a single line
+    Then after not more than 30s, the DD_Order_Candidates are aggregated into DD_Orders:
+      | DD_Order_Candidate_ID | DD_Order |
+      | cand_p1               | ddo_p1   |
+      | cand_p2               | ddo_p2   |
 

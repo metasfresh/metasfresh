@@ -1,7 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.inout.ShipmentScheduleId;
@@ -10,7 +9,6 @@ import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;

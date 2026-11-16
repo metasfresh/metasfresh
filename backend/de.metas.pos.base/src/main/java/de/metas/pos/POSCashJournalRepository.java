@@ -1,13 +1,16 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementId;
 import de.metas.pos.repository.model.I_C_POS_Journal;
 import de.metas.pos.repository.model.I_C_POS_JournalLine;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Repository
@@ -39,6 +43,26 @@ public class POSCashJournalRepository
 		return record;
 	}
 
+	/**
+	 * Loads the journal record under a {@code FOR NO KEY UPDATE} row lock, used by the read-modify-write in
+	 * {@link #changeJournalById}. Prevents a lost update to {@code CashEndingBalance}: {@code changeJournalById} reads the
+	 * journal aggregate, mutates it (add a cash line, re-sum the ending balance) and writes it back, and two POS cash
+	 * flows that touch the same open journal concurrently (e.g. a return and an invoice settlement at the same till, or
+	 * an order checkout and a withdrawal) would otherwise both read the pre-update balance and the later committer would
+	 * overwrite the earlier one's ending balance. Locking the row here serialises those writers on the DB, so the second
+	 * blocks until the first commits and then re-reads the committed balance. Mirrors the invoice lock in
+	 * {@code POSInvoiceSettlementService.getByIdInTrxWithRowLock} and the precedent in {@code CurrentCostsRepository} /
+	 * {@code VATaxIDCheckRepository}. NOTE: the read-only {@link #getById} deliberately does NOT lock.
+	 */
+	private @NonNull I_C_POS_Journal retrieveRecordByIdForUpdate(final @NonNull POSCashJournalId cashJournalId)
+	{
+		return queryBL.createQueryBuilder(I_C_POS_Journal.class)
+				.addEqualsFilter(I_C_POS_Journal.COLUMNNAME_C_POS_Journal_ID, cashJournalId)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnlyNotNull(I_C_POS_Journal.class);
+	}
+
 	private List<I_C_POS_JournalLine> retrieveLineRecordsByJournalId(final @NonNull POSCashJournalId cashJournalId)
 	{
 		return queryBL.createQueryBuilder(I_C_POS_JournalLine.class)
@@ -47,6 +71,25 @@ public class POSCashJournalRepository
 				.orderBy(I_C_POS_JournalLine.COLUMN_C_POS_JournalLine_ID)
 				.create()
 				.list();
+	}
+
+	/**
+	 * @return those of the given payments that have an (active) line on any journal
+	 */
+	public ImmutableSet<POSPaymentId> retrieveJournaledPaymentIds(@NonNull final Set<POSPaymentId> paymentIds)
+	{
+		if (paymentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_POS_JournalLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_POS_JournalLine.COLUMNNAME_C_POS_Payment_ID, paymentIds)
+				.create()
+				.stream()
+				.map(lineRecord -> POSPaymentId.ofRepoId(lineRecord.getC_POS_Payment_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public POSCashJournal newJournal(final POSCashJournalCreateRequest request)
@@ -92,6 +135,7 @@ public class POSCashJournalRepository
 				.cashierId(UserId.ofRepoId(record.getCashier_ID()))
 				.description(record.getDescription())
 				.posOrderAndPaymentId(POSOrderAndPaymentId.ofRepoIdsOrNull(record.getC_POS_Order_ID(), record.getC_POS_Payment_ID()))
+				.posInvoiceCardSettlementId(POSInvoiceCardSettlementId.ofRepoIdOrNull(record.getC_POS_InvoiceCardSettlement_ID()))
 				.build();
 	}
 
@@ -115,11 +159,12 @@ public class POSCashJournalRepository
 		record.setDescription(from.getDescription());
 		record.setC_POS_Order_ID(from.getPosOrderAndPaymentId() != null ? from.getPosOrderAndPaymentId().getOrderId().getRepoId() : -1);
 		record.setC_POS_Payment_ID(from.getPosOrderAndPaymentId() != null ? from.getPosOrderAndPaymentId().getPaymentId().getRepoId() : -1);
+		record.setC_POS_InvoiceCardSettlement_ID(from.getPosInvoiceCardSettlementId() != null ? from.getPosInvoiceCardSettlementId().getRepoId() : -1);
 	}
 
 	public POSCashJournal changeJournalById(@NonNull final POSCashJournalId cashJournalId, @NonNull final Consumer<POSCashJournal> updater)
 	{
-		final I_C_POS_Journal record = retrieveRecordById(cashJournalId);
+		final I_C_POS_Journal record = retrieveRecordByIdForUpdate(cashJournalId);
 		final List<I_C_POS_JournalLine> lineRecords = retrieveLineRecordsByJournalId(cashJournalId);
 
 		final POSCashJournal journal = fromRecord(record, lineRecords);

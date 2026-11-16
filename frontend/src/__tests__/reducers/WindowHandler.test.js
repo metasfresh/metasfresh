@@ -13,7 +13,11 @@ import reducer, {
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
+  isRelevantSaveError,
+  computeSaveStatusFlags,
+  getIncludedTabCreateNewDisabledReason,
 } from '../../reducers/windowHandler';
+import * as IndicatorState from '../../constants/IndicatorState';
 
 const createState = function (state = {}) {
   return merge(
@@ -190,6 +194,181 @@ describe('WindowHandler helper functions', () => {
     const layoutFields = layout.elements[elementIndex].fields;
 
     expect(fieldsData).toEqual(layoutFields);
+  });
+});
+
+describe('isRelevantSaveError', () => {
+  // A server-side business rejection of a complete, individually-valid document
+  // (e.g. a unique-index collision) carries a real save exception flagged
+  // userFriendlyError -> the reason must be surfaced.
+  it('is true for a userFriendly save exception (business rejection)', () => {
+    const saveStatus = {
+      saved: false,
+      error: true,
+      reason: 'The date is already used in another version of this price list.',
+      exception: { message: 'duplicate date', userFriendlyError: true },
+    };
+    expect(isRelevantSaveError(saveStatus)).toBe(true);
+  });
+
+  // A mandatory-missing / incomplete new record ALSO sets error=true, but with NO
+  // exception (a pure validation state) -> must stay quiet (field cues already signal it).
+  it('is false for a mandatory-missing state (error but no exception)', () => {
+    const saveStatus = {
+      saved: false,
+      error: true,
+      reason: 'Fill mandatory fields:  Price List Version',
+    };
+    expect(isRelevantSaveError(saveStatus)).toBe(false);
+  });
+
+  it('is false when an exception is present but not userFriendly', () => {
+    const saveStatus = {
+      error: true,
+      exception: { message: 'NPE somewhere', userFriendlyError: false },
+    };
+    expect(isRelevantSaveError(saveStatus)).toBe(false);
+  });
+
+  it('is false when there is no error', () => {
+    expect(isRelevantSaveError({ error: false, exception: { userFriendlyError: true } })).toBe(false);
+    expect(isRelevantSaveError({ saved: true })).toBe(false);
+  });
+
+  it('is null-safe', () => {
+    expect(isRelevantSaveError(undefined)).toBe(false);
+    expect(isRelevantSaveError(null)).toBe(false);
+    expect(isRelevantSaveError({})).toBe(false);
+    expect(isRelevantSaveError({ error: true })).toBe(false);
+  });
+});
+
+describe('computeSaveStatusFlags — relevant save error surfacing', () => {
+  // A complete, individually-valid document rejected by a server-side business rule /
+  // unique-index collision: error=true + userFriendly exception. For a NOT-yet-persisted
+  // (new) record the server reports presentInDatabase=false, so the legacy ERROR gate
+  // (isDocumentNotSaved && presentInDatabase) stays quiet and the reason is swallowed.
+  const relevantNewRecordError = {
+    saved: false,
+    error: true,
+    presentInDatabase: false,
+    reason: 'The date is already used in another version of this price list.',
+    exception: { userFriendlyError: true },
+  };
+
+  // Mandatory-missing / incomplete new record: error=true, presentInDatabase=false, but NO
+  // exception (a pure validation state). Must stay quiet — field-level cues already signal it.
+  const mandatoryMissingNewRecord = {
+    saved: false,
+    error: true,
+    presentInDatabase: false,
+    reason: 'Fill mandatory fields:  Price List Version',
+  };
+
+  it('surfaces (ERROR) a relevant save error on a NEW main-window (master) record', () => {
+    const { indicator } = computeSaveStatusFlags({
+      master: {
+        saveStatus: relevantNewRecordError,
+        indicator: IndicatorState.SAVED,
+        layout: { windowId: '143' },
+        docId: 'NEW',
+      },
+    });
+    expect(indicator).toBe(IndicatorState.ERROR);
+  });
+
+  it('does NOT surface (keeps base) a mandatory-missing state on a NEW main-window record', () => {
+    const { indicator } = computeSaveStatusFlags({
+      master: {
+        saveStatus: mandatoryMissingNewRecord,
+        indicator: IndicatorState.SAVED,
+        layout: { windowId: '143' },
+        docId: 'NEW',
+      },
+    });
+    expect(indicator).toBe(IndicatorState.SAVED);
+  });
+
+  it('surfaces (ERROR) a relevant save error on a NEW window modal via the shared core', () => {
+    const { indicator } = computeSaveStatusFlags({
+      modal: {
+        visible: true,
+        modalType: 'window',
+        windowId: '143',
+        docId: 'NEW',
+        saveStatus: relevantNewRecordError,
+        indicator: IndicatorState.SAVED,
+      },
+    });
+    expect(indicator).toBe(IndicatorState.ERROR);
+  });
+
+  it('does NOT surface (keeps base) a mandatory-missing state on a NEW window modal', () => {
+    const { indicator } = computeSaveStatusFlags({
+      modal: {
+        visible: true,
+        modalType: 'window',
+        windowId: '143',
+        docId: 'NEW',
+        saveStatus: mandatoryMissingNewRecord,
+        indicator: IndicatorState.SAVED,
+      },
+    });
+    expect(indicator).toBe(IndicatorState.SAVED);
+  });
+
+  it('does NOT promote a process modal to ERROR on a relevant save error (Start button stays enabled)', () => {
+    const { indicator } = computeSaveStatusFlags({
+      modal: {
+        visible: true,
+        modalType: 'process',
+        saveStatus: relevantNewRecordError,
+        indicator: IndicatorState.PENDING,
+      },
+    });
+    expect(indicator).toBe(IndicatorState.PENDING);
+  });
+});
+
+describe('getIncludedTabCreateNewDisabledReason', () => {
+  it('is null when there is no tab info at all', () => {
+    expect(getIncludedTabCreateNewDisabledReason(undefined)).toBeNull();
+    expect(getIncludedTabCreateNewDisabledReason(null)).toBeNull();
+  });
+
+  it('is null when creating a new record is allowed (nothing to report)', () => {
+    const tabInfo = {
+      allowCreateNew: true,
+      allowCreateNewReason: 'irrelevant',
+      allowCreateNewReasonKey: 'irrelevant',
+    };
+    expect(getIncludedTabCreateNewDisabledReason(tabInfo)).toBeNull();
+  });
+
+  // An internal technical reason (no reasonKey) must never reach the DOM.
+  it('is null when creation is refused but no allowCreateNewReasonKey is present (internal technical reason)', () => {
+    const tabInfo = {
+      allowCreateNew: false,
+      allowCreateNewReason: 'Unsaved row found',
+    };
+    expect(getIncludedTabCreateNewDisabledReason(tabInfo)).toBeNull();
+  });
+
+  // The load-bearing case: this is what stops a technical string such as
+  // `ParentDocumentProcessed` from being shown to a customer — only a reason accompanied
+  // by its stable AD_Message key is ever surfaced. The backend sets allowCreateNewReasonKey
+  // only for the role-permissions refusal (JSONDocumentPermissions.setAllowCreateNew), so the
+  // key here must be the real role-restriction message key, not an internal technical name.
+  it('returns the reason and its key when creation is refused with a reasonKey', () => {
+    const tabInfo = {
+      allowCreateNew: false,
+      allowCreateNewReason: 'Your role does not allow creating new records here.',
+      allowCreateNewReasonKey: 'ERR_Role_CreateNewRecordsNotAllowed',
+    };
+    expect(getIncludedTabCreateNewDisabledReason(tabInfo)).toEqual({
+      reason: 'Your role does not allow creating new records here.',
+      reasonKey: 'ERR_Role_CreateNewRecordsNotAllowed',
+    });
   });
 });
 

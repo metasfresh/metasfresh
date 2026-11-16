@@ -46,7 +46,7 @@ export const usePickProductsScan = ({ applicationId, wfProcessId, activityId }) 
 
     const { lineId } = await api.getNextEligibleLineToPack({ wfProcessId, huScannedCode: qrCode });
     if (!lineId) {
-      throw 'No matching lines found'; // TODO trl
+      throw { messageKey: 'activities.picking.noMatchingLines' };
     }
 
     const openDialogScreen = () => {

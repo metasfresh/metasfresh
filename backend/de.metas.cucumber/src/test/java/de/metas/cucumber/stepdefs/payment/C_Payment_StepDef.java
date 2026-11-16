@@ -22,8 +22,10 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import com.google.common.base.Throwables;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
@@ -38,20 +40,26 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatementLine_StepDefData;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
+import de.metas.cucumber.stepdefs.charge.C_Charge_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -63,10 +71,15 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.acct.PostingStatus;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -81,6 +94,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
@@ -88,11 +102,16 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_DiscountAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_PaymentBonusAmt;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_TenderType;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 
 @RequiredArgsConstructor
 public class C_Payment_StepDef
 {
+	private static final String COLUMNNAME_PostingError = "PostingError";
+	private static final String COLUMNNAME_IsOnBankStatement = "IsOnBankStatement";
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
@@ -100,6 +119,8 @@ public class C_Payment_StepDef
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
@@ -109,7 +130,39 @@ public class C_Payment_StepDef
 	private final C_BankStatementLine_StepDefData bankStatementLineTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final C_Charge_StepDefData chargeTable;
+	private final C_Order_StepDefData orderTable;
 
+	/**
+	 * Creates one or more {@link I_C_Payment} records in Draft status.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) vendor or customer BPartner<br>
+	 *   <b>PayAmt</b> — (required unless C_Invoice_ID is given) amount with currency code, e.g. {@code 5000 EUR};
+	 *                   without it the payment is a draft of 0 in the invoice's currency, whose amounts can then come from its invoice
+	 *                   ({@link #updateAmountsFromInvoice(String)})<br>
+	 *   <b>IsReceipt</b> — (required) {@code true} = inbound (AR), {@code false} = outbound (AP)<br>
+	 *   <b>C_BP_BankAccount_ID</b> — (optional, identifier-ref) bank account; defaults to the org's EUR account<br>
+	 *   <b>Proforma_Invoice_ID</b> — (optional, identifier-ref) links the payment to a proforma invoice;
+	 *                                {@link org.compiere.model.MPayment} {@code beforeSave} auto-sets
+	 *                                {@code IsPrepayment=Y} when this is non-null, causing
+	 *                                {@link org.compiere.acct.Doc_Payment} to post to
+	 *                                {@code C_Prepayment_Acct} (AR) or {@code V_Prepayment_Acct} (AP).
+	 *                                {@code PayAmt} must equal the proforma's {@code GrandTotal}.<br>
+	 *   <b>C_Invoice_ID</b> — (optional, identifier-ref) pre-linked invoice<br>
+	 *   <b>C_Order_ID</b> — (optional, identifier-ref) the order the payment is entered for, as in window {@code Zahlung} field {@code Auftrag}<br>
+	 * @cucumber.depends {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData},
+	 *                   {@link de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData},
+	 *                   {@link de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_Payment
+	 *   | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+	 *   | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | s6_proforma         |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_Payment")
 	public void createPayments(@NonNull final DataTable dataTable)
 	{
@@ -118,8 +171,14 @@ public class C_Payment_StepDef
 				.forEach(this::createPayment);
 	}
 
-	@And("^the payment identified by (.*) is (completed|reversed)$")
-	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action)
+	/**
+	 * Completes, closes, reverses or voids the payment referenced by {@code paymentIdentifier}.
+	 * For {@code reversed}, the reversal is stored under {@code <identifier>^}.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
+	@And("^the payment identified by (.*) is (completed|closed|reversed|voided)$")
+	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action) throws InterruptedException
 	{
 		switch (StepDefDocAction.valueOf(action))
 		{
@@ -128,11 +187,25 @@ public class C_Payment_StepDef
 				reversePayment(StepDefDataIdentifier.ofString(paymentIdentifier), StepDefDataIdentifier.ofString(paymentIdentifier + "^"));
 				break;
 			}
+			case voided:
+			{
+				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+				payment.setDocAction(IDocument.ACTION_Void);
+				documentBL.processEx(payment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			}
 			case completed:
 			{
 				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
 				payment.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			}
+			case closed:
+			{
+				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+				payment.setDocAction(IDocument.ACTION_Close);
+				documentBL.processEx(payment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			}
 			default:
@@ -144,17 +217,88 @@ public class C_Payment_StepDef
 		}
 	}
 
+	/**
+	 * Completes the payment referenced by {@code paymentIdentifier} and asserts that the completion is refused with the given {@code AD_Message.ErrorCode}.
+	 * Afterwards the payment is reloaded, so later steps see what the failed completion left in the database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>paymentIdentifier</b> — identifier of a {@code C_Payment} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * Then the payment identified by payment is completed expecting error code PAYMENT_BONUS_NOT_DEDUCTIBLE
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) is completed expecting error code (.*)$")
+	public void completePaymentExpectingErrorCode(@NonNull final String paymentIdentifier, @NonNull final String errorCode)
+	{
+		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		payment.setDocAction(IDocument.ACTION_Complete);
+
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+
+		paymentTable.putOrReplace(paymentIdentifier, paymentBL.getById(PaymentId.ofRepoId(payment.getC_Payment_ID())));
+	}
+
+	/**
+	 * Completes the payment referenced by {@code paymentIdentifier} and asserts that the completion fails because an accounting period is closed.
+	 * Afterwards the payment is reloaded, so later steps see what the failed completion left in the database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>paymentIdentifier</b> — identifier of a {@code C_Payment} created earlier in the scenario
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * When the payment identified by payment is completed expecting a closed accounting period
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) is completed expecting a closed accounting period$")
+	public void completePaymentExpectingClosedPeriod(@NonNull final String paymentIdentifier)
+	{
+		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		payment.setDocAction(IDocument.ACTION_Complete);
+
+		assertThatThrownBy(() -> documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed))
+				.satisfies(exception -> assertThat(Throwables.getCausalChain(exception))
+						.as("causal chain of %s", exception)
+						.hasAtLeastOneElementOfType(PeriodClosedException.class));
+
+		paymentTable.putOrReplace(paymentIdentifier, paymentBL.getById(PaymentId.ofRepoId(payment.getC_Payment_ID())));
+	}
+
+	/**
+	 * Reverses the payment referenced by {@code paymentIdentifierStr} and, if
+	 * {@code reversalIdentifierStr} is given, stores the created reversal under it.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
 	@And("^the payment identified by (.*) is reversed with a reversal identified by (.*)")
-	public void reversePayment(@NonNull final String paymentIdentifierStr, @Nullable final String reversalIdentifierStr)
+	public void reversePayment(@NonNull final String paymentIdentifierStr, @Nullable final String reversalIdentifierStr) throws InterruptedException
 	{
 		reversePayment(StepDefDataIdentifier.ofString(paymentIdentifierStr), StepDefDataIdentifier.ofNullableString(reversalIdentifierStr));
 	}
 
-	private void reversePayment(@NonNull final StepDefDataIdentifier paymentIdentifier, @Nullable final StepDefDataIdentifier reversalIdentifier)
+	/**
+	 * Fires {@code ACTION_Reverse_Correct} and then asserts {@code DocStatus=Reversed} via a bounded
+	 * refresh poll (tolerant of a transient stale read of the just-committed status; still fails loud
+	 * if the payment stays {@code Completed}).
+	 */
+	private void reversePayment(@NonNull final StepDefDataIdentifier paymentIdentifier, @Nullable final StepDefDataIdentifier reversalIdentifier) throws InterruptedException
 	{
 		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
 		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
-		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		// expectedDocStatus is left unchecked here (2-arg overload); the reversal's committed status is
+		// asserted below via a bounded poll, tolerant of a transient stale read of that status.
+		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct);
+
+		StepDefUtil.tryAndWait(30, 500, () -> {
+			InterfaceWrapperHelper.refresh(payment);
+			return DocStatus.Reversed.getCode().equals(payment.getDocStatus());
+		});
 
 		if (reversalIdentifier != null)
 		{
@@ -164,6 +308,137 @@ public class C_Payment_StepDef
 		}
 	}
 
+	/**
+	 * Changes fields of a saved draft payment and saves it once, like the WebUI: for each changed amount field it first runs what the field's
+	 * {@code CalloutPayment.amounts} callout runs ({@link IPaymentBL#updateAmounts(I_C_Payment, String, boolean)}), then the save runs the same
+	 * {@code BEFORE_CHANGE} interceptors as the WebUI's save after a field edit.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PayAmt</b> — (optional) new amount, a plain number in the currency of the payment, e.g. {@code 163.72}<br>
+	 *   <b>IsOverUnderPayment</b> — (optional) new value of the "over/under payment" flag<br>
+	 *   <b>PaymentBonusAmt</b> — (optional) new payment bonus, a plain number in the currency of the payment<br>
+	 *   <b>DateTrx</b> — (optional) new payment date, e.g. {@code 2026-07-26}<br>
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the draft payment identified by payment is changed
+	 *   | PayAmt |
+	 *   | 163.72 |
+	 * </pre>
+	 */
+	@And("^the draft payment identified by (.*) is changed$")
+	public void changeDraftPayment(@NonNull final String paymentIdentifier, @NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment to change").isEqualTo(DocStatus.Drafted.getCode());
+
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payAmt -> {
+			payment.setPayAmt(payAmt);
+			runAmountsCallout(payment, COLUMNNAME_PayAmt);
+		});
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment).ifPresent(isOverUnderPayment -> {
+			payment.setIsOverUnderPayment(isOverUnderPayment);
+			runAmountsCallout(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment);
+		});
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(paymentBonusAmt -> {
+			payment.setPaymentBonusAmt(paymentBonusAmt);
+			runAmountsCallout(payment, COLUMNNAME_PaymentBonusAmt);
+		});
+		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
+				.map(dateTrx -> TimeUtil.asTimestamp(dateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(payment.getAD_Org_ID()))))
+				.ifPresent(payment::setDateTrx);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
+	 * Changes fields of a saved draft payment and saves it once, <b>without</b> running any WebUI callout: like a process, the REST API or any other
+	 * non-WebUI save. Only the {@code BEFORE_CHANGE} interceptors run.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PayAmt</b> — (optional) new amount, a plain number in the currency of the payment<br>
+	 *   <b>PaymentBonusAmt</b> — (optional) new payment bonus, a plain number in the currency of the payment<br>
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the draft payment identified by payment is saved without UI callouts
+	 *   | PaymentBonusAmt |
+	 *   | 0               |
+	 * </pre>
+	 */
+	@And("^the draft payment identified by (.*) is saved without UI callouts$")
+	public void saveDraftPaymentWithoutCallouts(@NonNull final String paymentIdentifier, @NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment to change").isEqualTo(DocStatus.Drafted.getCode());
+
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payment::setPayAmt);
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(payment::setPaymentBonusAmt);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
+	 * What the WebUI's {@code CalloutPayment.amounts} runs when the user changes the given field.
+	 */
+	private void runAmountsCallout(@NonNull final I_C_Payment payment, @NonNull final String columnName)
+	{
+		paymentBL.updateAmounts(payment, columnName, true);
+	}
+
+	/**
+	 * Sets the amounts of a saved draft payment from its invoice (open amount, Skonto, payment bonus) and saves it.
+	 * Runs the same code as the {@code C_Payment} interceptor on a {@code DateTrx} change, i.e. {@link IPaymentBL#updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment)};
+	 * the WebUI callout on „Rechnung“ ({@code CalloutPayment.invoice}) has its own SQL and is not driven by this step.
+	 *
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the payment identified by payment gets its amounts from its invoice
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) gets its amounts from its invoice$")
+	public void updateAmountsFromInvoice(@NonNull final String paymentIdentifier)
+	{
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment").isEqualTo(DocStatus.Drafted.getCode());
+
+		paymentBL.updateDiscountAndPayAmtFromInvoiceIfAny(payment);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
+	 * Asserts the given payments' current state (reloaded from the DB).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Payment_ID</b> — (required, identifier-ref) the payment to validate<br>
+	 *   <b>C_Charge_ID</b> — (optional, identifier-ref) expected charge<br>
+	 *   <b>Posted</b> — (optional) expected posting status code (e.g. {@code Y} posted, {@code E} posting error)<br>
+	 *   <b>PostingError</b> — (optional) the payment must carry a {@code PostingError_Issue_ID} whose issue summary contains this text<br>
+	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, OverUnderAmt, IsOverUnderPayment, C_Invoice_ID, DateTrx, C_BPartner_ID,
+	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, TenderType, IsPrepayment, Proforma_Invoice_ID, PaymentBonusAmt)<br>
+	 *   <b>IsOnBankStatement</b> — (optional) whether a bank statement line (e.g. the cash statement line of a cash bank) references the payment<br>
+	 *   <b>PaymentBonus_CreditMemo_ID</b> — (optional, identifier) registers the payment's payment bonus credit memo under the given invoice identifier; {@code null} expects none
+	 * @cucumber.depends StepDefData: C_Payment_StepDefData, C_Charge_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData,
+	 * C_BP_BankAccount_StepDefData, C_DocType_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate payments
+	 *   | C_Payment_ID | IsReceipt | C_Charge_ID | DocStatus | Posted | PostingError               |
+	 *   | withdrawal   | false     | unmapped    | CO        | E      | No Charge accounts defined |
+	 * </pre>
+	 */
 	@And("validate payments")
 	public void validateCreatedPayments(@NonNull final DataTable table)
 	{
@@ -193,10 +468,43 @@ public class C_Payment_StepDef
 				.ifPresent(discountAmt -> softly.assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo(discountAmt));
 		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
+		row.getAsOptionalBigDecimal(I_C_Payment.COLUMNNAME_OverUnderAmt)
+				.ifPresent(overUnderAmt -> softly.assertThat(payment.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(overUnderAmt));
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment)
+				.ifPresent(isOverUnderPayment -> softly.assertThat(payment.isOverUnderPayment()).as("IsOverUnderPayment").isEqualTo(isOverUnderPayment));
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt)
+				.ifPresent(paymentBonusAmt -> softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo(paymentBonusAmt));
 
-		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
-				.map(invoiceTable::getId)
-				.ifPresent(expectedInvoiceId -> softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId()));
+		row.getAsOptionalString(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID should not be set").isZero();
+					}
+					else
+					{
+						final InvoiceId expectedInvoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(rawValue));
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId());
+					}
+				});
+
+		// the payment bonus credit memo is registered under the given identifier, so later steps can validate it; "null" expects no credit memo
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_PaymentBonus_CreditMemo_ID)
+				.ifPresent(creditMemoIdentifier -> {
+					final InvoiceId creditMemoId = InvoiceId.ofRepoIdOrNull(payment.getPaymentBonus_CreditMemo_ID());
+					if (creditMemoIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(creditMemoId).as("PaymentBonus_CreditMemo_ID should not be set").isNull();
+					}
+					else if (creditMemoId == null)
+					{
+						softly.fail("PaymentBonus_CreditMemo_ID is not set; expected the payment bonus credit memo %s", creditMemoIdentifier);
+					}
+					else
+					{
+						invoiceTable.putOrReplace(creditMemoIdentifier, invoiceBL.getById(creditMemoId));
+					}
+				});
 
 		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
 				.ifPresent(dateTrx -> {
@@ -223,7 +531,107 @@ public class C_Payment_StepDef
 		row.getAsOptionalEnum(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.class)
 				.ifPresent(docStatus -> softly.assertThat(payment.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
 
+		row.getAsOptionalEnum(COLUMNNAME_TenderType, TenderType.class)
+				.ifPresent(tenderType -> softly.assertThat(payment.getTenderType()).as("TenderType").isEqualTo(tenderType.getCode()));
+
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
+				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));
+
+		row.getAsOptionalBoolean(COLUMNNAME_IsOnBankStatement)
+				.ifPresent(isOnBankStatement -> softly.assertThat(bankStatementBL.isPaymentOnBankStatement(PaymentId.ofRepoId(payment.getC_Payment_ID())))
+						.as("IsOnBankStatement")
+						.isEqualTo(isOnBankStatement));
+
+		// "null" expects the payment to be linked to no bank statement line
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID)
+				.ifPresent(lineIdentifier -> {
+					if (lineIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(payment.getC_BankStatementLine_ID()).as("C_BankStatementLine_ID should not be set").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(payment.getC_BankStatementLine_ID()).as("C_BankStatementLine_ID").isEqualTo(lineIdentifier.lookupNotNullIn(bankStatementLineTable).getC_BankStatementLine_ID());
+					}
+				});
+
+		// "null" expects the payment to carry no order
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> {
+					if (orderIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(payment.getC_Order_ID()).as("C_Order_ID should not be set").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(payment.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderIdentifier.lookupNotNullIn(orderTable).getC_Order_ID());
+					}
+				});
+
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
+				.map(invoiceTable::getId)
+				.ifPresent(expectedProformaInvoiceId -> softly.assertThat(payment.getProforma_Invoice_ID()).as("Proforma_Invoice_ID").isEqualTo(expectedProformaInvoiceId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Charge_ID)
+				.map(chargeTable::getId)
+				.ifPresent(expectedChargeId -> softly.assertThat(payment.getC_Charge_ID()).as("C_Charge_ID").isEqualTo(expectedChargeId.getRepoId()));
+
+		row.getAsOptionalEnum(I_C_Payment.COLUMNNAME_Posted, PostingStatus.class)
+				.ifPresent(expectedPostingStatus -> softly.assertThat(AccountingCucumberHelper.retrievePostingStatus(TableRecordReference.of(payment)))
+						.as("Posted")
+						.isEqualTo(expectedPostingStatus));
+
+		row.getAsOptionalString(COLUMNNAME_PostingError)
+				.ifPresent(expectedPostingErrorSubstring -> {
+					softly.assertThat(payment.getPostingError_Issue_ID()).as("PostingError_Issue_ID").isPositive();
+					if (payment.getPostingError_Issue_ID() > 0)
+					{
+						final I_AD_Issue postingErrorIssue = InterfaceWrapperHelper.load(payment.getPostingError_Issue_ID(), I_AD_Issue.class);
+						softly.assertThat(postingErrorIssue.getIssueSummary()).as("PostingError_Issue_ID.IssueSummary").contains(expectedPostingErrorSubstring);
+					}
+				});
+
 		softly.assertAll();
+	}
+
+	/**
+	 * Asserts the number of active payments that carry the given order ({@code C_Payment.C_Order_ID}), whatever their status.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then exactly 0 payments carry the order identified by order_1
+	 * </pre>
+	 */
+	@And("^exactly (\\d+) payments? carr(?:y|ies) the order identified by (.*)$")
+	public void assertPaymentCountOfOrder(final int expectedCount, @NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final int actualCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of C_Payment with C_Order_ID of %s", orderIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts the number of active payments that belong to the given bank statement line ({@code C_Payment.C_BankStatementLine_ID}), whatever their status.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then exactly 0 payments belong to the bank statement line identified by bsl_1
+	 * </pre>
+	 */
+	@And("^exactly (\\d+) payments? belong(?:s)? to the bank statement line identified by (.*)$")
+	public void assertPaymentCountOfBankStatementLine(final int expectedCount, @NonNull final String lineIdentifier)
+	{
+		final I_C_BankStatementLine line = bankStatementLineTable.get(lineIdentifier);
+		final int actualCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID, line.getC_BankStatementLine_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of C_Payment with C_BankStatementLine_ID of %s", lineIdentifier).isEqualTo(expectedCount);
 	}
 
 	@And("^after not more than (.*)s, C_Payment is found")
@@ -291,7 +699,16 @@ public class C_Payment_StepDef
 		final OrgId orgId = Env.getOrgId();
 		final BPartnerId bpartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
 
-		final Money payAmt = row.getAsMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode);
+		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.map(invoiceTable::getId)
+				.orElse(null);
+
+		final Money payAmt = row.getAsOptionalMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode)
+				.orElseGet(() -> {
+					// a draft for an invoice whose amounts are not set yet
+					Check.assumeNotNull(invoiceId, "PayAmt is required for a payment without C_Invoice_ID: {}", row);
+					return Money.zero(CurrencyId.ofRepoId(invoiceBL.getById(invoiceId).getC_Currency_ID()));
+				});
 		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(null);
 		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt);
 		final boolean isReceipt = row.getAsBoolean(COLUMNNAME_IsReceipt);
@@ -302,8 +719,12 @@ public class C_Payment_StepDef
 				.map(bpBankAccountTable::getOrgBankAccountId)
 				.orElseGet(() -> retrieveDefaultOrgBankAccountId(orgId, payAmt.getCurrencyId()));
 
-		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+		final InvoiceId proformaInvoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
 				.map(invoiceTable::getId)
+				.orElse(null);
+
+		final OrderId orderId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Order_ID)
+				.map(orderIdentifier -> OrderId.ofRepoId(orderIdentifier.lookupNotNullIn(orderTable).getC_Order_ID()))
 				.orElse(null);
 
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
@@ -316,6 +737,8 @@ public class C_Payment_StepDef
 				.dateTrx(dateTrx)
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
+				.proformaInvoiceId(proformaInvoiceId)
+				.orderId(orderId)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 

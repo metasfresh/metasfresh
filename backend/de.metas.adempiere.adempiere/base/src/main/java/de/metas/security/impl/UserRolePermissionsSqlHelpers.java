@@ -96,7 +96,7 @@ final class UserRolePermissionsSqlHelpers
 
 	private boolean hasTableAccess(@Nullable final AdTableId adTableId, final Access access)
 	{
-		return adTableId != null && _role.isTableAccess(adTableId.getRepoId(), access);
+		return adTableId != null && _role.isTableAccess(adTableId, access);
 	}
 
 	private String getClientWhere(final String tableName, final String tableAlias, final Access access)

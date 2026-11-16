@@ -48,10 +48,18 @@ Feature: Invoice aggregation of 2 IC2 when one IC was previously invoiced and re
       | s_s_2_1    | sol_2_1        | N             |
       | s_s_2_2    | sol_2_2        | N             |
 
-    And after not more than 60s, C_Invoice_Candidate are found:
+    # No queue-drain step: the drain checks only the queue's ready-message count and is blind to
+    # in-flight (unacked) cascade events, so it reports "empty" prematurely. Instead poll the
+    # committed terminal state — the candidates exist (QtyToInvoice=0 pre-shipment) AND are no
+    # longer flagged for recompute — which only holds once the async cascade has fully settled.
+    And after not more than 300s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyToInvoice |
       | ic_2_1                 | sol_2_1        | 0            |
       | ic_2_2                 | sol_2_2        | 0            |
+    And after not more than 300s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_2_1                            |
+      | ic_2_2                            |
 
     # Ship first order line on 2021-04-20 08:00
     And metasfresh has date and time 2021-04-20T08:00:00+01:00[Europe/Berlin]

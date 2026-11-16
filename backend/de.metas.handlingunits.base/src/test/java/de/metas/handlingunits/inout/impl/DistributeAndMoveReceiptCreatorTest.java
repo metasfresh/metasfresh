@@ -9,7 +9,6 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleReposi
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -88,7 +87,7 @@ public class DistributeAndMoveReceiptCreatorTest
 								new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 										new PPOrderIssueScheduleService(
 												new PPOrderIssueScheduleRepository(),
-												new HUQtyService(InventoryService.newInstanceForUnitTesting())
+												HUQtyService.newInstanceForUnitTesting()
 										)),
 								HUQRCodesService.newInstanceForUnitTesting()
 						)
@@ -110,7 +109,7 @@ public class DistributeAndMoveReceiptCreatorTest
 		saveRecord(receiptWarehouse);
 
 		final I_M_Locator receiptLineLocator = newInstance(I_M_Locator.class);
-		receiptLineLocator.setM_Warehouse(receiptWarehouse);
+		receiptLineLocator.setM_Warehouse_ID(receiptWarehouse.getM_Warehouse_ID());
 		save(receiptLineLocator);
 
 		final I_M_InOutLine receiptLineRecord = newInstance(I_M_InOutLine.class);

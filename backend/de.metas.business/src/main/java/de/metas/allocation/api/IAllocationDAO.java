@@ -112,4 +112,11 @@ public interface IAllocationDAO extends ISingletonService
 	@NonNull I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
 
 	@NonNull I_C_AllocationLine getLineById(@NonNull PaymentAllocationLineId lineId);
+
+	boolean hasActiveAllocationBetween(@NonNull InvoiceId invoiceId, @NonNull PaymentId paymentId);
+
+	/**
+	 * @return the sum of the {@code C_AllocationLine.Amount} of the active lines of completed/closed allocations that allocate the given payment to the given invoice; zero if there are none
+	 */
+	@NonNull BigDecimal retrieveAllocatedAmtBetween(@NonNull InvoiceId invoiceId, @NonNull PaymentId paymentId);
 }

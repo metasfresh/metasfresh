@@ -51,6 +51,7 @@ public class DistributionJob
 	@Nullable private final SalesOrderRef salesOrderRef;
 	@Nullable private final ManufacturingOrderRef manufacturingOrderRef;
 	@NonNull private final ITranslatableString pickingInstruction;
+	@NonNull private final ImmutableList<ITranslatableString> sourceDocPickingNoteLines;
 	private final boolean allowPickingAnyHU;
 	@NonNull private final ImmutableList<DistributionJobLine> lines;
 
@@ -73,6 +74,7 @@ public class DistributionJob
 			@Nullable final SalesOrderRef salesOrderRef,
 			@Nullable final ManufacturingOrderRef manufacturingOrderRef,
 			@Nullable final ITranslatableString pickingInstruction,
+			@Nullable final List<ITranslatableString> sourceDocPickingNoteLines,
 			final boolean allowPickingAnyHU,
 			@NonNull final List<DistributionJobLine> lines)
 	{
@@ -91,6 +93,7 @@ public class DistributionJob
 		this.salesOrderRef = salesOrderRef;
 		this.manufacturingOrderRef = manufacturingOrderRef;
 		this.pickingInstruction = pickingInstruction != null ? pickingInstruction : TranslatableStrings.empty();
+		this.sourceDocPickingNoteLines = sourceDocPickingNoteLines != null ? ImmutableList.copyOf(sourceDocPickingNoteLines) : ImmutableList.of();
 		this.allowPickingAnyHU = allowPickingAnyHU;
 		this.lines = ImmutableList.copyOf(lines);
 
@@ -99,6 +102,11 @@ public class DistributionJob
 
 	public void assertCanEdit(final UserId userId)
 	{
+		// A closed job can no longer be edited, even by its responsible user (guards the in-flight-edit race).
+		if (isClosed)
+		{
+			throw new AdempiereException("Cannot edit " + this + " because it is closed");
+		}
 		if (!UserId.equals(this.responsibleId, userId))
 		{
 			throw new AdempiereException("Cannot edit " + this + " because it is not assigned to " + userId);
@@ -195,12 +203,28 @@ public class DistributionJob
 				.collect(GuavaCollectors.singleElementOrNull());
 	}
 
+	@NonNull
+	public LocatorId getSinglePickFromLocatorId()
+	{
+		final LocatorId locatorId = getSinglePickFromLocatorIdOrNull();
+		if (locatorId == null)
+		{
+			throw new AdempiereException("No single pick-from locator for " + this);
+		}
+		return locatorId;
+	}
+
 	public Optional<LocatorInfo> getSinglePickFromLocator()
 	{
 		return lines.stream()
 				.map(DistributionJobLine::getPickFromLocator)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrEmpty());
+	}
+
+	public boolean canSwitchPickFromLocator()
+	{
+		return getSinglePickFromLocatorIdOrNull() != null;
 	}
 
 	@Nullable
@@ -232,12 +256,15 @@ public class DistributionJob
 	@Nullable
 	public Quantity getSingleUnitQuantityOrNull()
 	{
+		// Sum every line's qty (no .distinct(): two lines with an equal qty+UOM must both count,
+		// otherwise the caption under-reports the total).
 		final MixedQuantity qty = lines.stream()
 				.map(DistributionJobLine::getQtyToMove)
-				.distinct()
 				.collect(MixedQuantity.collectAndSum());
 
-		return qty.toNoneOrSingleValue().orElse(null);
+		// A distribution job whose lines span multiple UOMs has no single caption quantity;
+		// resolve to null (rendered as blank) instead of throwing, so the launcher still loads.
+		return qty.toSingleValueOrNull();
 	}
 
 	public Optional<DistributionJobLineId> getNextEligiblePickFromLineId(@NonNull final ProductId productId)

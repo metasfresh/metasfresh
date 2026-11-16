@@ -1,4 +1,4 @@
-import { CLOSE_MODAL, SHOW_MODAL } from '../actionTypes';
+import { CLOSE_MODAL, CLOSE_PANEL, SET_CASH_TENDERED_DRAFT, SHOW_MODAL, SHOW_PANEL } from '../actionTypes';
 
 export function uiReducer(applicationState, action) {
   switch (action.type) {
@@ -20,6 +20,38 @@ export function uiReducer(applicationState, action) {
       return {
         ...applicationState,
         modal: null,
+      };
+    }
+    case SHOW_PANEL: {
+      const { panel } = action.payload;
+      if (applicationState.panel === panel) {
+        return applicationState;
+      }
+      return {
+        ...applicationState,
+        panel,
+      };
+    }
+    case CLOSE_PANEL: {
+      if (!applicationState.panel) {
+        return applicationState;
+      }
+      return {
+        ...applicationState,
+        panel: null,
+      };
+    }
+    case SET_CASH_TENDERED_DRAFT: {
+      const { payment_uuid, tenderedEditingAmount } = action.payload;
+      const current = applicationState.cashTenderedDraft;
+      if (current?.payment_uuid === payment_uuid && current?.tenderedEditingAmount === tenderedEditingAmount) {
+        return applicationState;
+      }
+      // Only one cash payment dialog is open at a time, so one draft is enough; the next dialog replaces it.
+      // Not cleared on checkout or cancel: a late snapshot can still re-open the dialog for that payment.
+      return {
+        ...applicationState,
+        cashTenderedDraft: { payment_uuid, tenderedEditingAmount },
       };
     }
   }

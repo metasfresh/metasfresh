@@ -55,19 +55,20 @@ class UpdateQtyDeliveredCommand
 	{
 		final Quantity reservationQty = reservation.getQty();
 		final UomId uomId = reservationQty.getUomId();
+		final Quantity zero = reservationQty.toZero();
 
 		final HashMap<OrderLineId, MixedQuantity> remainingByOrderLineId = getRemainingQtyDeliveredByOrderLineId();
 		final OrderLineId orderLineId = reservation.getOrderLineId();
 		final MixedQuantity qtyDeliveredRemaining = remainingByOrderLineId.get(orderLineId);
 		if (qtyDeliveredRemaining == null || !qtyDeliveredRemaining.hasUOM(uomId))
 		{
-			return reservation;
+			return reservation.withQtyDelivered(zero);
 		}
 
 		final Quantity qtyDeliveredAllocated = qtyDeliveredRemaining.getByUOM(uomId).min(reservationQty).toZeroIfNegative();
 		if (qtyDeliveredAllocated.signum() <= 0)
 		{
-			return reservation;
+			return reservation.withQtyDelivered(zero);
 		}
 
 		remainingByOrderLineId.put(orderLineId, qtyDeliveredRemaining.subtract(qtyDeliveredAllocated));

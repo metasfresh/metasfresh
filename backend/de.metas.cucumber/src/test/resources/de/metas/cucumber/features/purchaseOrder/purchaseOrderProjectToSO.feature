@@ -75,7 +75,7 @@ Feature: Purchase order project is automatically created when PO is completed
       | C_PurchaseCandidate_ID | QtyToPurchase |
       | pc_1                   | 10            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID | C_PurchaseCandidate_Alloc_ID |
@@ -89,7 +89,7 @@ Feature: Purchase order project is automatically created when PO is completed
       | C_Order_ID | C_OrderLine_ID |
       | po_1       | pol_1          |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
 ## PO header and lines
     Then validate the created orders
