@@ -25,10 +25,8 @@ package de.metas.handlingunits.receiptschedule.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -47,7 +45,6 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 
-import javax.annotation.Nullable;
 import java.util.Properties;
 
 /* package */class ReceiptScheduleDocumentLUTUConfigurationHandler extends AbstractDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule>
@@ -74,7 +71,7 @@ import java.util.Properties;
 			return null;
 		}
 
-		if (retrieveLUPIIdSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID())) != null)
+		if (lutuFactory.getLUPIIdSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID()), receiptScheduleBL.getBPartnerEffectiveId(documentLine)) != null)
 		{
 			return null; // a new configuration is derived, which uses the product-specific LU item
 		}
@@ -101,7 +98,7 @@ import java.util.Properties;
 		if (luPIId == null)
 		{
 			// stay on the stored LU packing instruction if the product has an LU item of its own there
-			luPIId = retrieveLUPIIdSupersededByProductSpecificLUItem(documentLine.getM_HU_LUTU_Configuration(), cuProductId);
+			luPIId = lutuFactory.getLUPIIdSupersededByProductSpecificLUItem(documentLine.getM_HU_LUTU_Configuration(), cuProductId, bpartnerId);
 		}
 
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
@@ -119,34 +116,6 @@ import java.util.Properties;
 		// NOTE: don't save it...we might use it as "in-memory POJO"
 
 		return lutuConfiguration;
-	}
-
-	/**
-	 * @return the configuration's LU packing instruction if it has an item of its own for the product that the configuration does not use; {@code null} otherwise
-	 */
-	@Nullable
-	/* package */ static HuPackingInstructionsId retrieveLUPIIdSupersededByProductSpecificLUItem(
-			@Nullable final I_M_HU_LUTU_Configuration lutuConfiguration,
-			@NonNull final ProductId productId)
-	{
-		if (lutuConfiguration == null)
-		{
-			return null;
-		}
-
-		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_ID());
-		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(lutuConfiguration.getM_HU_PI_Item_Product_ID());
-		if (luPIId == null || tuPIItemProductId == null || lutuConfiguration.getM_LU_HU_PI_Item_ID() <= 0)
-		{
-			return null;
-		}
-
-		final boolean superseded = Services.get(IHandlingUnitsDAO.class)
-				.getTUPIItemForLUPIAndItemProduct(BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID()), luPIId, tuPIItemProductId, productId)
-				.filter(luPIItem -> luPIItem.getM_Product_ID() > 0)
-				.filter(luPIItem -> luPIItem.getM_HU_PI_Item_ID() != lutuConfiguration.getM_LU_HU_PI_Item_ID())
-				.isPresent();
-		return superseded ? luPIId : null;
 	}
 
 	@Override

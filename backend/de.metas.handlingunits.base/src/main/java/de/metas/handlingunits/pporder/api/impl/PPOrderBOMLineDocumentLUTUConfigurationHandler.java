@@ -76,7 +76,7 @@ import java.math.BigDecimal;
 				cuUOMId,
 				bpartnerId,
 				true, // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
-				PPOrderDocumentLUTUConfigurationHandler.retrieveLUPIIdSupersededByProductSpecificLUItem(ppOrderBOMLine.getM_HU_LUTU_Configuration(), cuProductId), // stay on the stored LU packing instruction
+				lutuConfigurationFactory.getLUPIIdSupersededByProductSpecificLUItem(ppOrderBOMLine.getM_HU_LUTU_Configuration(), cuProductId, bpartnerId), // stay on the stored LU packing instruction
 				BigDecimal.ZERO);
 		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, ppOrderBOMLine);
 
@@ -128,7 +128,8 @@ import java.math.BigDecimal;
 			return null;
 		}
 
-		if (PPOrderDocumentLUTUConfigurationHandler.retrieveLUPIIdSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID())) != null)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(documentLine.getPP_Order().getC_BPartner_ID());
+		if (Services.get(ILUTUConfigurationFactory.class).getLUPIIdSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID()), bpartnerId) != null)
 		{
 			return null; // a new configuration is derived, which uses the product-specific LU item
 		}
