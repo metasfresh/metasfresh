@@ -235,8 +235,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		else
 		{
 			luPIItem = (luPIId != null)
-					? handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID())).orElse(null)
-					: handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
+					? handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()), cuProductId).orElse(null)
+					: handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId, cuProductId);
 		}
 
 		if (luPIItem != null)

@@ -34,6 +34,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleReposi
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.product.ProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -517,7 +518,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
-		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId, null);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId, null, null);
 		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
 	}
 
@@ -527,7 +528,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final HUItemType itemType,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType != null ? itemType.getCode() : null, bpartnerId, null);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType != null ? itemType.getCode() : null, bpartnerId, null, null);
 		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
 	}
 
@@ -537,8 +538,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final HuPackingInstructionsId includedPIId,
 			@Nullable final BPartnerId bpartnerId)
 	{
+		return retrieveFirstPIItem(piId, includedPIId, bpartnerId, null);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
+	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
-		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId, includedPIId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId, includedPIId, productId);
 		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
 	}
 
@@ -556,13 +567,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return retrievePIItems(version, null, bpartnerId, null);
+		return retrievePIItems(version, null, bpartnerId, null, null);
 	}
 
 	@Override
 	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
 	{
-		final List<I_M_HU_PI_Item> materialItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_Material, null, null);
+		final List<I_M_HU_PI_Item> materialItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_Material, null, null, null);
 		if (materialItems.isEmpty())
 		{
 			throw new AdempiereException("No material items found for " + version);
@@ -581,7 +592,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable final String expectedItemType,
 			@Nullable final BPartnerId bpartnerId,
-			@Nullable final HuPackingInstructionsId includedPIId)
+			@Nullable final HuPackingInstructionsId includedPIId,
+			@Nullable final ProductId productId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
@@ -640,6 +652,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 					// does not matter if we were asked for a specific partner because this is a generic item
 				}
 
+				// an item carrying a product is eligible only for that very product (never for a product-less caller)
+				final ProductId itemProductId = ProductId.ofRepoIdOrNull(piItem.getM_Product_ID());
+				if (itemProductId != null && !ProductId.equals(itemProductId, productId))
+				{
+					continue;
+				}
+
 				if (includedPIId != null)
 				{
 					final HuPackingInstructionsId itemIncludedPIId = HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID());
@@ -653,6 +672,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 			piItems.add(piItem);
 		}
+
+		// product-specific HU items first; the sort is stable, so the existing order is kept within each group
+		piItems.sort(Comparator.comparing((I_M_HU_PI_Item item) -> X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(item.getItemType()) && item.getM_Product_ID() > 0 ? 0 : 1));
 
 		return Collections.unmodifiableList(piItems);
 	}
@@ -831,11 +853,21 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final String huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
+		return retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId, null);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
+	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
 		final HuPackingInstructionsId packingInstructionsId = HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID());
 
-		return retrieveParentPIItemsForParentPI(ctx, packingInstructionsId, huUnitType, bpartnerId, trxName);
+		return retrieveParentPIItemsForParentPI(ctx, packingInstructionsId, huUnitType, bpartnerId, productId, trxName);
 	}
 
 	@Override
@@ -844,7 +876,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final String huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
+		return retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId, null);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
+	{
+		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, productId, ITrx.TRXNAME_None);
 	}
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
@@ -852,6 +894,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
 			@Nullable final String huUnitType,
 			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId,
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_M_HU_PI_Item> piItemsQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx, trxName)
@@ -869,7 +912,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		// Fetch only those PI Items which have set our BPartner or who don't have set a BPartner at all
 		// ... and put first those with specific partner
 		piItemsQueryBuilder.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
+
+		//
+		// Fetch only those PI Items which have set our product or who don't have set a product at all.
+		// Without a product, only the product-less items are eligible.
+		addProductFilter(piItemsQueryBuilder, productId);
+
 		piItemsQueryBuilder.orderBy()
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID, Direction.Descending, Nulls.Last) // lines with product set, first
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 		;
@@ -923,7 +973,21 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
+		// a parent that was built from a product-specific PI item keeps that item for the child PI
+		// (the query below has no product context, so it would never return it)
+		for (final I_M_HU_Item existingItem : retrieveItems(parentHU, HUItemType.HandlingUnit))
+		{
+			final I_M_HU_PI_Item existingPIItem = existingItem.getM_HU_PI_Item();
+			if (existingPIItem != null
+					&& existingPIItem.isActive()
+					&& existingPIItem.getM_Product_ID() > 0
+					&& existingPIItem.getIncluded_HU_PI_ID() == piOfChildHU.getM_HU_PI_ID())
+			{
+				return existingPIItem;
+			}
+		}
+
+		final IQueryBuilder<I_M_HU_PI_Item> queryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
 				.addOnlyActiveRecordsFilter()
 
 				// it's an PI-item of the the parent's PI
@@ -933,11 +997,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
 
 				// it either has no C_BPartner_ID or a matching one
-				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID());
 
-				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
-				.orderByDescending(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID)
+		// no product in context: product-specific items are not eligible
+		addProductFilter(queryBuilder, null);
 
+		return queryBuilder
+				.orderBy()
+				// NULLS FIRST is what orderByDescending(C_BPartner_ID) always did, so the order is unchanged
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.First)
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
+				.endOrderBy()
 				.create()
 				.first();
 	}
@@ -1152,9 +1222,20 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final String huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
+		return retrieveDefaultParentPIItem(huPI, huUnitType, bpartnerId, null);
+	}
+
+	@Override
+	@Nullable
+	public I_M_HU_PI_Item retrieveDefaultParentPIItem(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
+	{
 		//
 		// Fetch all eligible parent PI Items
-		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
+		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId, productId);
 
 		//
 		// Case: no parent PI items found
@@ -1179,7 +1260,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			// Get those PI Items which are about Default LUs
 			final List<I_M_HU_PI_Item> defaultLUPIItems = parentPIItems
 					.stream()
-					.sorted(Comparator.<I_M_HU_PI_Item, Integer>comparing(item -> isDefaultLU(item) ? 0 : 1) // defaults first
+					.sorted(Comparator.<I_M_HU_PI_Item, Integer>comparing(item -> item.getM_Product_ID() > 0 ? 0 : 1) // product-specific items first
+							.thenComparing(item -> isDefaultLU(item) ? 0 : 1) // defaults first
 							.thenComparing(item -> item.getQty().signum() > 0 ? 0 : 1) // those who have a finite Qty TUs/LU first
 							.thenComparing(I_M_HU_PI_Item::getM_HU_PI_Item_ID)) // by ID just to have a deterministic order
 					.collect(Collectors.toList());
@@ -1352,13 +1434,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(final BPartnerId bpartnerId, final @NonNull HuPackingInstructionsId luPIId, final @NonNull HUPIItemProductId piItemProductId)
 	{
+		return getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, piItemProductId, null);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(final BPartnerId bpartnerId, final @NonNull HuPackingInstructionsId luPIId, final @NonNull HUPIItemProductId piItemProductId, @Nullable final ProductId productId)
+	{
 		final I_M_HU_PI_Version luPIVersion = retrievePICurrentVersionOrNull(luPIId);
 		if (luPIVersion == null || !luPIVersion.isActive() || !luPIVersion.isCurrent() || !X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(luPIVersion.getHU_UnitType()))
 		{
 			return Optional.empty();
 		}
 
-		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+		final IQueryBuilder<I_M_HU_PI_Item> luItemsQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, piItemProductId)
 				.andCollect(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.class)
@@ -1374,8 +1462,31 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit)
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, luPIVersion.getM_HU_PI_Version_ID())
-				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID)
+				;
+
+		addProductFilter(luItemsQueryBuilder, productId);
+
+		return luItemsQueryBuilder
+				.orderBy()
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID, Direction.Descending, Nulls.Last) // lines with product set, first
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID)
+				.endOrderBy()
 				.create()
 				.firstOptional(I_M_HU_PI_Item.class);
+	}
+
+	/**
+	 * Keeps only the items without product and, if {@code productId} is set, the items of that product.
+	 */
+	private static void addProductFilter(@NonNull final IQueryBuilder<I_M_HU_PI_Item> queryBuilder, @Nullable final ProductId productId)
+	{
+		if (productId != null)
+		{
+			queryBuilder.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID, null, productId);
+		}
+		else
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID, null);
+		}
 	}
 }
