@@ -49,7 +49,8 @@ const createMasterdata = async ({ orderProduct }) => {
                     lu: "LU", qtyTUsPerLU: 30, tu: "TU", product: "XY", qtyCUsPerTU: 4,
                     additionalLUItems: [{ product: "XY", qtyTUsPerLU: 40 }],
                 },
-                // same LU and TU packing instructions, other product, no product-specific LU item
+                // Same LU and TU packing instructions (reused by identifier) for another product, without a product-specific LU item.
+                // Note: this creates a second Material item in the same TU packing instruction version, which the receipt does not mind.
                 "PI_OTHER": { tu: "TU", product: "OTHER", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
