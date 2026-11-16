@@ -8,8 +8,9 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast, VERY_SLOW_ACTION_TIMEOUT } from '../../utils/common';
+import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
-import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
+import { ReopenLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
 import { ConfirmActivityErrorPanel } from '../../utils/components/ConfirmActivityErrorPanel';
 import { expect } from '@playwright/test';
 import { InventoryJobsListScreen } from '../../utils/screens/inventory/InventoryJobsListScreen';
@@ -21,6 +22,7 @@ const createMasterdata = async ({
                                     allowCompletingPartialPickingJob = false,
                                     shipOnCloseLU = false,
                                     salesOrdersQty = 12,
+                                    salesOrderLineCount = 1,
                                     shipperConfig = null,
                                 } = {}) => {
     const shippers = shipperConfig ? {
@@ -69,7 +71,7 @@ const createMasterdata = async ({
                     warehouse: 'wh',
                     shipper: shipperConfig ? 'SHP' : undefined,
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'P1', qty: salesOrdersQty, piItemProduct: 'TU' }]
+                    lines: Array.from({ length: salesOrderLineCount }, () => ({ product: 'P1', qty: salesOrdersQty, piItemProduct: 'TU' }))
                 }
             },
         }
@@ -535,7 +537,94 @@ test('Close LU / Reopen LU', async ({ page }) => {
     await PickingJobScreen.closeTargetLU();
 
     await PickingJobScreen.clickReopenLUButton();
-    await SelectPickTargetLUScreen.waitForScreen();
+    await ReopenLUScreen.waitForScreen();
+    // The closed LU is listed and selectable; tapping it reopens it as the current pick target.
+    await ReopenLUScreen.expectClosedLUs({ total: 1, enabled: 1, disabled: 0 });
+    await ReopenLUScreen.expectEnabledLUWithName({ name: masterdata.packingInstructions.PI.luName });
+    await ReopenLUScreen.clickFirstEnabledLU();
+    await PickingJobScreen.waitForScreen();
+    await expect(page.getByTestId('targetLU-button')).toContainText(masterdata.packingInstructions.PI.luName); // the reopened LU is the current target
+});
+
+// "LU wieder öffnen" showed an empty list when another closed LU of the job was already shipped
+// (the server threw "Not a physical HU" for the whole list). A shipped LU stays listed, greyed out, with a status label.
+// noinspection JSUnusedLocalSymbols
+test('Reopen LU: a shipped LU is listed greyed out, the other closed LU can be reopened', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Reopen LU with a shipped LU');
+    allure.severity('critical');
+
+    // two lines, so that LU #1 (line 1) can be shipped while the job is still open, and LU #2 (line 2) stays physical
+    const masterdata = await createMasterdata({ language: 'de_DE', salesOrderLineCount: 2 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startPickingApplication();
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+
+    await test.step('Pick + close LU #1, then ship it while the job is still open', async () => {
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.closeTargetLU();
+        await Backend.generateShipments({ salesOrderId: masterdata.salesOrders.SO1.id, quantityType: 'P' });
+    });
+
+    await test.step('Pick + close LU #2 (not shipped)', async () => {
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.closeTargetLU();
+    });
+
+    await PickingJobScreen.clickReopenLUButton();
+    await ReopenLUScreen.waitForScreen();
+    await ReopenLUScreen.expectClosedLUs({ total: 2, enabled: 1, disabled: 1 });
+    await ReopenLUScreen.expectDisabledLUWithLabel({ label: 'Geliefert' });
+    await ErrorToast.expectNoErrorToast();
+
+    await ReopenLUScreen.expectEnabledLUWithName({ name: masterdata.packingInstructions.PI.luName });
+    await ReopenLUScreen.clickFirstEnabledLU();
+    await PickingJobScreen.waitForScreen();
+    await expect(page.getByTestId('targetLU-button')).toContainText(masterdata.packingInstructions.PI.luName); // LU #2 is the current target
+});
+
+// whatever makes the closed-LU list fail, the screen must tell the operator (never a blank list).
+// noinspection JSUnusedLocalSymbols
+test('Reopen LU: an error message is shown when the closed LU list cannot be loaded', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Reopen LU list load failure');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ language: 'de_DE' });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startPickingApplication();
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.closeTargetLU();
+
+    await ReopenLUScreen.simulateClosedLUsLoadFailure();
+
+    await PickingJobScreen.clickReopenLUButton();
+    await ReopenLUScreen.waitForScreen(); // spinner gone
+    await ReopenLUScreen.expectErrorToast();
+
+    await ReopenLUScreen.stopSimulatingClosedLUsLoadFailure();
+    await ReopenLUScreen.goBack();
+    await PickingJobScreen.waitForScreen();
 });
 
 // noinspection JSUnusedLocalSymbols
