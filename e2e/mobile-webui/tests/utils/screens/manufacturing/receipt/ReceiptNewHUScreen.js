@@ -22,6 +22,16 @@ export const ReceiptNewHUScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
+    expectLUTargetNotPresent: async ({ luPIItemTestId }) => await test.step(`${NAME} - Expect LU target "${luPIItemTestId}" not offered`, async () => {
+        await ReceiptNewHUScreen.expectVisible();
+        await expect(page.getByTestId(luPIItemTestId)).toHaveCount(0);
+    }),
+
+    expectLUTargetOffered: async ({ luPIItemTestId }) => await test.step(`${NAME} - Expect LU target "${luPIItemTestId}" offered`, async () => {
+        await ReceiptNewHUScreen.expectVisible();
+        await expect(page.getByTestId(luPIItemTestId)).toBeVisible();
+    }),
+
     clickTUTarget: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Click TU target "${tuPIItemProductTestId}"`, async () => {
         await ReceiptNewHUScreen.expectVisible();
         await page.getByTestId(tuPIItemProductTestId).tap();

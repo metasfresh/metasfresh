@@ -26,9 +26,17 @@ export const MaterialReceiptLineScreen = {
         await ReceiptReceiveTargetScreen.waitForScreen();
     }),
 
-    selectNewLUTarget: async ({ luPIItemTestId }) => await test.step(`${NAME} - Select New LU target "${luPIItemTestId}"`, async () => {
+    /**
+     * @param luPIItemTestId the LU target to select
+     * @param expectNotOfferedLUPIItemTestIds LU targets which must NOT be offered on the screen
+     */
+    selectNewLUTarget: async ({ luPIItemTestId, expectNotOfferedLUPIItemTestIds = [] }) => await test.step(`${NAME} - Select New LU target "${luPIItemTestId}"`, async () => {
         await MaterialReceiptLineScreen.clickReceiveTargetButton();
         await ReceiptReceiveTargetScreen.clickNewHUButton();
+        await ReceiptNewHUScreen.expectLUTargetOffered({ luPIItemTestId });
+        for (const notOfferedTestId of expectNotOfferedLUPIItemTestIds) {
+            await ReceiptNewHUScreen.expectLUTargetNotPresent({ luPIItemTestId: notOfferedTestId });
+        }
         await ReceiptNewHUScreen.clickLUTarget({ luPIItemTestId });
         await MaterialReceiptLineScreen.waitForScreen();
     }),

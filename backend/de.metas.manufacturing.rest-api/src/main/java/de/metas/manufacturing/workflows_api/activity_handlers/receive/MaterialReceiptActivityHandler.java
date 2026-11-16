@@ -1,5 +1,6 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -10,6 +11,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -57,6 +59,9 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -66,6 +71,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/materialReceipt");
 
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
@@ -193,10 +199,13 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			final HuPackingInstructionsItemId tuPackingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID());
 			final HuPackingInstructionsId tuPackingInstructionsId = handlingUnitsBL.getPackingInstructionsId(tuPackingInstructionsItemId);
 
-			final List<I_M_HU_PI_Item> luPackingInstructionsItems = handlingUnitsBL.retrieveParentPIItemsForParentPI(
-					tuPackingInstructionsId,
-					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
-					customerId);
+			final List<I_M_HU_PI_Item> luPackingInstructionsItems = removeGenericItemsCompetingWithProductSpecificOnes(
+					handlingUnitsDAO.retrieveParentPIItemsForParentPI(
+							tuPackingInstructionsId,
+							X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+							customerId,
+							productId),
+					luPackingInstructionsItem -> handlingUnitsBL.getPI(luPackingInstructionsItem).getM_HU_PI_ID());
 
 			if (!luPackingInstructionsItems.isEmpty())
 			{
@@ -226,6 +235,34 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		{
 			return JsonNewLUTargetsList.ofList(targets, debugMessages);
 		}
+	}
+
+	/**
+	 * When an LU packing instruction has an item bound to the received product, its generic (product-less) items
+	 * of the same LU packing instruction (and same included TU packing instruction) must not be offered,
+	 * else the operator could build LUs with the generic TUs-per-LU quantity for that product.
+	 * Items of other LU packing instructions and the list as a whole stay unchanged when there is no product-specific item.
+	 *
+	 * @param items          items of one included TU packing instruction, as returned by the product-aware DAO lookup
+	 * @param luPIIdProvider provides the LU packing instruction ID of an item
+	 */
+	@VisibleForTesting
+	static List<I_M_HU_PI_Item> removeGenericItemsCompetingWithProductSpecificOnes(
+			@NonNull final List<I_M_HU_PI_Item> items,
+			@NonNull final ToIntFunction<I_M_HU_PI_Item> luPIIdProvider)
+	{
+		final Set<Integer> luPIIdsWithProductSpecificItem = items.stream()
+				.filter(item -> item.getM_Product_ID() > 0)
+				.map(luPIIdProvider::applyAsInt)
+				.collect(Collectors.toSet());
+		if (luPIIdsWithProductSpecificItem.isEmpty())
+		{
+			return items;
+		}
+
+		return items.stream()
+				.filter(item -> item.getM_Product_ID() > 0 || !luPIIdsWithProductSpecificItem.contains(luPIIdProvider.applyAsInt(item)))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public static JsonTestId extractNewLUTargetTestId(final I_M_HU_PI_Item luPackingInstructionsItem)
