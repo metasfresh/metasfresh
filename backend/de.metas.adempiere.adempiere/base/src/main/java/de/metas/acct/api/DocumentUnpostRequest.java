@@ -18,7 +18,7 @@ import java.time.Instant;
 public class DocumentUnpostRequest
 {
 	/**
-	 * The document model (e.g. a {@code I_GL_Journal}, {@code I_C_Invoice} or a legacy {@code PO}). It needs the columns {@code Posted}, {@code DocStatus}, {@code AD_Client_ID} and {@code UpdatedBy} (a completed or closed document without it makes the lookup fail; {@code AD_Org_ID} is read too, with {@code OrgId.ANY} as fallback);
+	 * The document model (e.g. a {@code I_GL_Journal}, {@code I_C_Invoice} or a legacy {@code PO}). It needs the columns {@code Posted}, {@code DocStatus}, {@code AD_Client_ID} and {@code UpdatedBy} (a completed, closed or reversed document without it makes the lookup fail; {@code AD_Org_ID} is read too, with {@code OrgId.ANY} as fallback);
 	 * {@code Posted} is set to {@code false} and saved on this very instance.
 	 */
 	@NonNull Object document;

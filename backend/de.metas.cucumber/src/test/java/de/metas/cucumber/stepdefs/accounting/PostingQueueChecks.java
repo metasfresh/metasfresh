@@ -50,6 +50,22 @@ public class PostingQueueChecks
 		assertThat(now.getNotes()).as("AD_Note entries of %s since remembered", documentRef).isEqualTo(before.getNotes());
 	}
 
+	/** Polls (at most {@link #MAX_WAIT_MILLIS}) until a posting request ({@link I_Document_Acct_Log}) was added since remembered, then asserts it. */
+	public void assertNewPostingRequestSinceRemembered(@NonNull final TableRecordReference documentRef) throws InterruptedException
+	{
+		final Counts before = remembered.get(documentRef);
+		assertThat(before).as("counts remembered for %s", documentRef).isNotNull();
+
+		final long start = System.currentTimeMillis();
+		Counts current = currentCounts(documentRef);
+		while (current.getLogs() <= before.getLogs() && System.currentTimeMillis() - start < MAX_WAIT_MILLIS)
+		{
+			Thread.sleep(POLL_MILLIS);
+			current = currentCounts(documentRef);
+		}
+		assertThat(current.getLogs()).as("Document_Acct_Log entries of %s since remembered (a new posting request is expected)", documentRef).isGreaterThan(before.getLogs());
+	}
+
 	private Counts waitUntilStable(@NonNull final TableRecordReference documentRef) throws InterruptedException
 	{
 		final long start = System.currentTimeMillis();

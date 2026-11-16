@@ -93,7 +93,8 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
 
     When the material receipt identified by receipt is reversed as receiptReversal
 
-    Then Wait until documents invoice,invoiceReversal are posted
+    Then documents invoice,invoiceReversal got a new posting request
+    And Wait until documents invoice,invoiceReversal are posted
     # the reversed receipt no longer clears the invoiced goods: the whole amount is booked on the expense account
     # (the reversal books the same lines with negative amounts on the same side)
     And Fact_Acct records are matching

@@ -373,6 +373,23 @@ public class Fact_Acct_StepDef
 		}
 	}
 
+	/**
+	 * Asserts that at least one new posting request ({@code Document_Acct_Log}) was created for each document since {@code the posting requests of documents ... are remembered}.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then documents invoice,invoiceReversal got a new posting request
+	 * </pre>
+	 */
+	@And("^documents (.*) got a new posting request$")
+	public void assertNewPostingRequest(@NonNull final String commaSeparatedIdentifiers) throws InterruptedException
+	{
+		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
+		{
+			postingQueueChecks.assertNewPostingRequestSinceRemembered(recordRef);
+		}
+	}
+
 	@And("^Fact_Acct records balances for documents (.*) are matching$")
 	public void assertBalances(
 			@NonNull final String commaSeparatedIdentifiers,

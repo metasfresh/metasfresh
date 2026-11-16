@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * {@link BankStatementBL#unpost(I_C_BankStatement)} un-posts a posted statement through {@link IPostingService#unpost(DocumentUnpostRequest)}
- * (which re-queues it only when it is completed or closed, see {@code PostingServiceTest}), and queues a not yet posted statement for posting.
+ * (which re-queues it only when it is completed, closed or reversed, see {@code PostingServiceTest}), and queues a not yet posted statement for posting.
  */
 public class BankStatementBLUnpostTest
 {
