@@ -11,7 +11,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
@@ -108,6 +110,7 @@ public class ContractCompensationGroupService
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
 
@@ -189,6 +192,46 @@ public class ContractCompensationGroupService
 				.createGroup(positionLines.stream().map(CandidateLine::getLineId).collect(ImmutableList.toImmutableList()));
 
 		contractGroupRepository.setProjectOnCompensationLines(group.getGroupId(), positionId);
+	}
+
+	/** When all goods lines of the changed line's contract-created group carry one position, sets it on the group's compensation lines that have an open invoice candidate or none. */
+	public void copyPositionToCompensationLines(@NonNull final I_C_OrderLine changedLine)
+	{
+		if (changedLine.isGroupCompensationLine() || changedLine.isPackagingMaterial())
+		{
+			return;
+		}
+
+		final int orderCompensationGroupRepoId = changedLine.getC_Order_CompensationGroup_ID();
+		if (!orderGroupRepository.isContractCreatedGroup(orderCompensationGroupRepoId))
+		{
+			return;
+		}
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(changedLine.getC_Order_ID()), orderCompensationGroupRepoId);
+		final ImmutableSet<Optional<ProjectId>> goodsPositions = contractGroupRepository.retrieveActiveGoodsLines(groupId)
+				.stream()
+				.map(goodsLine -> Optional.ofNullable(ProjectId.ofRepoIdOrNull(goodsLine.getC_Project_ID())))
+				.collect(ImmutableSet.toImmutableSet());
+		if (goodsPositions.size() != 1)
+		{
+			return;
+		}
+
+		final ProjectId position = goodsPositions.iterator().next().orElse(null);
+		if (position == null)
+		{
+			return;
+		}
+
+		contractGroupRepository.setProjectOnCompensationLines(groupId, position, this::hasOpenInvoiceCandidate);
+	}
+
+	/** @return true if the line has no invoice candidate yet or at least one unprocessed one */
+	private boolean hasOpenInvoiceCandidate(@NonNull final I_C_OrderLine compensationLine)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(compensationLine.getC_OrderLine_ID()));
+		return invoiceCandidates.isEmpty() || invoiceCandidates.stream().anyMatch(invoiceCandidate -> !invoiceCandidate.isProcessed());
 	}
 
 	private OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)

@@ -1765,3 +1765,357 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | discountProduct | 1           | position1    | -3.30      |
       | discountProduct | 1           | position2    | -6.60      |
       | discountProduct | 1           | null         | -1.65      |
+
+  # ##############################################################################################
+  # A position that arrives after completion (drop-ship: the purchase order pushes its position onto the sales order line)
+  # is copied onto the Bonus line when all the group's goods end on one position; no line is added, nothing is split
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC14_TC17b_positionBetweenPartialInvoices
+  Scenario: The position arrives between two partial invoices: the Bonus line, its open candidate and the later invoice line carry it, the first invoice keeps none
+    # a partially invoiced candidate must stay open for the goods still to ship (the local default is Y: close it)
+    Given temporarily set sys config boolean value false for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderLate  | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price |
+      | ol_late    | orderLate             | goods1                  | 20         | 10    |
+    And the order identified by orderLate is completed
+
+    # no position at completion: one Bonus line without position
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_lateBonus              | orderLate             | discountProduct         | 1          | true                        | -6.00 | mainTerm                          | null         |
+    And the order identified by orderLate has 2 order lines
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_late    | ol_late                   | N             |
+      | ss_lateB   | ol_lateBonus              | N             |
+
+    # first delivery and invoice: 12 of the 20 units, before the position arrives
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_late               | 12                                              |
+      | ss_lateB              |                                                 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_late                          | shipmentLate1         |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_late        | ic_late                |
+      | ol_lateBonus   | ic_lateB               |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_late                |
+      | ic_lateB               |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_late                           | 120             |
+      | ic_lateB                          | -3.6            |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_late                           | 12              |
+      | ic_lateB                          | 1               |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoiceLate1            | ic_late                           |
+    And validate invoice lines for invoiceLate1:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 12          | null         | 120        |
+      | discountProduct | 1           | null         | -3.60      |
+
+    # the first invoice leaves the candidates flagged as processed until their recompute reopens them: wait for it
+    And after not more than 60s, C_Invoice_Candidates are invalidated and recomputed:
+      | C_Invoice_Candidate_ID |
+      | ic_late                |
+      | ic_lateB               |
+    # the Bonus candidate is invoiced for the shipped goods only and stays open for the rest
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | Processed |
+      | ic_late                           | false     |
+      | ic_lateB                          | false     |
+
+    # the position arrives on the goods line, as the purchase order's project push does
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | ol_late                   | position1                   |
+
+    # the Bonus line takes the position; no line added, no split, same amount
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Project_ID | LineNetAmt |
+      | ol_late                   | position1    | 200        |
+      | ol_lateBonus              | position1    | -6.00      |
+    And the order identified by orderLate has 2 order lines
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | C_Project_ID |
+      | ic_late                           | position1    |
+      | ic_lateB                          | position1    |
+
+    # second delivery and invoice: the remaining 8 units
+    When update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | ss_late                          | 8                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_late                          |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_late               |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | QtyOrdered | QtyDelivered |
+      | ss_late                          | 20         | 20           |
+    # the second delivery is on the candidates only after their recompute: force it, as the first delivery was waited for
+    And after not more than 60s, C_Invoice_Candidates are invalidated and recomputed:
+      | C_Invoice_Candidate_ID |
+      | ic_late                |
+      | ic_lateB               |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_late                           | 80              |
+      | ic_lateB                          | -2.4            |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_late                           |
+      | ic_lateB                          |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier   | C_Invoice_Candidate_ID.Identifier |
+      | invoiceLate1,invoiceLate2 | ic_late                           |
+    # the first invoice is untouched; the rest of the goods and of the Bonus are on the position
+    And validate invoice lines for invoiceLate1:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 12          | null         | 120        |
+      | discountProduct | 1           | null         | -3.60      |
+    And validate invoice lines for invoiceLate2:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 8           | position1    | 80         |
+      | discountProduct | 1           | position1    | -2.40      |
+    # the invoiced Bonus equals the order line: -3.60 - 2.40 = -6.00
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtInvoiced | Processed |
+      | ic_lateB                          | -6             | true      |
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | LineNetAmt |
+      | ol_lateBonus              | -6.00      |
+    And the order identified by orderLate has 2 order lines
+
+  # ##############################################################################################
+  # The position arrives after the order was fully invoiced: no failure, the invoiced Bonus keeps its empty position
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC14_positionAfterInvoice
+  Scenario: The position arrives after the invoice: no failure, the invoiced Bonus keeps its empty position
+    Given metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderDone  | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price |
+      | ol_done    | orderDone             | goods1                  | 10         | 100   |
+    And the order identified by orderDone is completed
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price  | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_doneBonus              | orderDone             | discountProduct         | 1          | true                        | -30.00 | mainTerm                          | null         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_done    | ol_done                   | N             |
+      | ss_doneB   | ol_doneBonus              | N             |
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_done               |
+      | ss_doneB              |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_done                          | shipmentDone          |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_done        | ic_done                |
+      | ol_doneBonus   | ic_doneB               |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_done                           |
+      | ic_doneB                          |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoiceDone             | ic_done                           |
+
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | ol_done                   | position1                   |
+
+    # the goods line takes the position; the Bonus that is already invoiced keeps its empty position everywhere
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Project_ID | LineNetAmt |
+      | ol_done                   | position1    | 1000       |
+      | ol_doneBonus              | null         | -30.00     |
+    And the order identified by orderDone has 2 order lines
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | C_Project_ID | NetAmtInvoiced |
+      | ic_doneB                          | null         | -30            |
+    And validate invoice lines for invoiceDone:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 10          | null         | 1000       |
+      | discountProduct | 1           | null         | -30.00     |
+
+  # ##############################################################################################
+  # A packing material line in the group has no position of its own: the position of the goods is still copied onto the Bonus line
+  # (a schema line without base takes every line, packing material included, into the group)
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC14_packingLineInGroup
+  Scenario: A packing material line in the group does not keep the Bonus line from taking the position of the goods
+    Given metasfresh contains M_Products:
+      | Identifier   | OPT.IsStocked |
+      | packProductG | false         |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_packG   | contractPLV                       | packProductG            | 5        | PCE               | Normal                        |
+    And metasfresh contains M_HU_PackingMaterial:
+      | Identifier | M_Product_ID.Identifier | IsInvoiceable |
+      | pmPackG    | packProductG            | N             |
+    And metasfresh contains M_HU_PI:
+      | Identifier |
+      | piPackG    |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier | M_HU_PI_ID.Identifier | HU_UnitType | IsCurrent |
+      | piPackGV   | piPackG               | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier  | M_HU_PI_Version_ID.Identifier | Qty | ItemType | M_HU_PackingMaterial_ID.Identifier |
+      | piPackGItem | piPackGV                      | 0   | PM       | pmPackG                            |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | pipGoodsG  | piPackGItem                | goods1                  | 1   |
+    # a contract of its own whose schema line has no base
+    And metasfresh contains M_Products:
+      | Identifier       | OPT.IsStocked |
+      | discountProductG | false         |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_discountG | contractPLV                       | discountProductG        | 1        | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier    | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | headOfficeBPG | Y              | contractPS                    | D               |
+      | storeBPG      | Y              | contractPS                    | D               |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name         | OPT.IsAdditive |
+      | schemaG    | Bonus all 3% | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier  | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount |
+      | schemaLineG | schemaG                                  | discountProductG        | 3                         |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier | Name       | C_CompensationGroup_Schema_ID.Identifier |
+      | settingsG  | Settings G | schemaG                                  |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | settingsG                                          | docTypeSalesOrder       |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier  | Name         | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | conditionsG | Conditions G | CompensationGroup | zeroDurTrans                            | settingsG                                              |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | termG      | conditionsG                         | headOfficeBPG               | 2026-06-15 | 2026-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by termG is completed
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderPackG | true    | storeBPG                 | storeBPG                              | 2026-07-01  | headOfficeBPG                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_packG   | orderPackG            | goods1                  | 2          | 50    | pipGoodsG                              |
+    And the order identified by orderPackG is completed
+
+    # the goods line, its packing material line (2 x 5,00) and the Bonus line in one group, none with a position
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_packGBonus             | orderPackG            | discountProductG        | 1          | true                        | termG                             | null         |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | C_Project_ID |
+      | ol_packGPacking           | orderPackG            | packProductG            | 2          | null         |
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | LineNetAmt |
+      | ol_packGBonus             | -3.30      |
+    And the order identified by orderPackG has 3 order lines
+
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | ol_packG                  | position1                   |
+
+    # the packing line stays without position, the Bonus line takes the position of the goods; same lines, same amount
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Project_ID | LineNetAmt |
+      | ol_packG                  | position1    | 100        |
+      | ol_packGPacking           | null         | 10         |
+      | ol_packGBonus             | position1    | -3.30      |
+    And the order identified by orderPackG has 3 order lines
+
+  # ##############################################################################################
+  # Goods that end on several positions (accepted caveat, drop-ship with several positions on one order): the Bonus stays one line without position
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC14_positionsArriveOneByOne
+  Scenario: The Bonus line takes the position only when the last goods line has it too, and not when the goods end on two positions
+    Given metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderOne   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+      | orderTwo   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price |
+      | ol_one1    | orderOne              | goods1                  | 1          | 100   |
+      | ol_one2    | orderOne              | goods2                  | 1          | 200   |
+      | ol_two1    | orderTwo              | goods1                  | 1          | 100   |
+      | ol_two2    | orderTwo              | goods2                  | 1          | 200   |
+    And the order identified by orderOne is completed
+    And the order identified by orderTwo is completed
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_oneBonus               | orderOne              | discountProduct         | 1          | true                        | -9.00 | mainTerm                          | null         |
+      | ol_twoBonus               | orderTwo              | discountProduct         | 1          | true                        | -9.00 | mainTerm                          | null         |
+
+    # one goods line has the position, the other not yet: the Bonus line waits
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | ol_one1                   | position1                   |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Project_ID | LineNetAmt |
+      | ol_oneBonus               | null         | -9.00      |
+    # the last goods line gets the same position: the Bonus line takes it
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | ol_one2                   | position1                   |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Project_ID | LineNetAmt |
+      | ol_oneBonus               | position1    | -9.00      |
+    And the order identified by orderOne has 3 order lines
+
+    # two goods lines on two positions: the Bonus line stays without position
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | ol_two1                   | position1                   |
+      | ol_two2                   | position2                   |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Project_ID | LineNetAmt |
+      | ol_twoBonus               | null         | -9.00      |
+    And the order identified by orderTwo has 3 order lines
