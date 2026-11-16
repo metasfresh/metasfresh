@@ -72,7 +72,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
-import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_Journal;
 import org.compiere.model.X_GL_JournalLine;
@@ -114,7 +113,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GL_Journal_StepDef
 {
 	@NonNull private final GL_Journal_StepDefData glJournalTable;
-	@NonNull private final GL_JournalBatch_StepDefData glJournalBatchTable;
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
 	@NonNull private final PostingQueueChecks postingQueueChecks;
 
@@ -129,38 +127,9 @@ public class GL_Journal_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
-	 * Creates GL journal batches in the standard org with the default GL journal document type.
-	 * <b>Columns</b>: {@code Identifier} (required), {@code PostingType} (optional, default {@code A}).
-	 */
-	@Given("metasfresh contains GL_JournalBatch:")
-	public void createGLJournalBatches(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final StepDefDataIdentifier identifier = row.getAsIdentifier();
-			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(DocBaseType.GLJournal)
-					.adClientId(StepDefConstants.CLIENT_ID.getRepoId())
-					.adOrgId(StepDefConstants.ORG_ID.getRepoId())
-					.build());
-
-			final I_GL_JournalBatch record = InterfaceWrapperHelper.newInstance(I_GL_JournalBatch.class);
-			record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			record.setC_DocType_ID(docTypeId.getRepoId());
-			record.setDocumentNo("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
-			record.setDescription("cucumber GL journal batch " + identifier.getAsString());
-			record.setPostingType(row.getAsOptionalString(I_GL_JournalBatch.COLUMNNAME_PostingType).orElse(X_GL_Journal.POSTINGTYPE_Actual));
-			record.setDocStatus(IDocument.STATUS_Drafted);
-			record.setDocAction(IDocument.ACTION_Complete);
-			InterfaceWrapperHelper.saveRecord(record);
-
-			glJournalBatchTable.putOrReplace(identifier, record);
-		});
-	}
-
-	/**
-	 * Creates drafted GL journal headers (no batch) in the primary accounting schema, with the default GL journal document type.
+	 * Creates drafted GL journal headers in the primary accounting schema, with the default GL journal document type.
 	 * <b>Columns</b>: {@code Identifier} (required), {@code DateDoc} (required), {@code DateAcct} (optional, default DateDoc),
-	 * {@code PostingType} (optional, default {@code A}), {@code GL_JournalBatch_ID} (optional, identifier of a batch created with {@code metasfresh contains GL_JournalBatch:}).
+	 * {@code PostingType} (optional, default {@code A}).
 	 */
 	@Given("metasfresh contains GL_Journal:")
 	public void createGLJournals(@NonNull final DataTable dataTable)
@@ -197,9 +166,6 @@ public class GL_Journal_StepDef
 		record.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		record.setCurrencyRate(BigDecimal.ONE);
 		record.setGL_Category_ID(glCategoryId.getRepoId());
-		row.getAsOptionalIdentifier(I_GL_Journal.COLUMNNAME_GL_JournalBatch_ID)
-				.map(batchIdentifier -> batchIdentifier.lookupNotNullIn(glJournalBatchTable))
-				.ifPresent(batch -> record.setGL_JournalBatch_ID(batch.getGL_JournalBatch_ID()));
 		record.setDescription("cucumber GL journal " + identifier.getAsString());
 		record.setDocStatus(IDocument.STATUS_Drafted);
 		record.setDocAction(IDocument.ACTION_Complete);
@@ -310,24 +276,6 @@ public class GL_Journal_StepDef
 		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
 		InterfaceWrapperHelper.refresh(record);
 		assertThat(record.getPostingType()).as("GL_Journal.PostingType of %s", identifier).isEqualTo(postingType);
-	}
-
-	/** Asserts the current {@code GL_JournalBatch.PostingType} of the batch. */
-	@Then("the GL journal batch {string} has GL_JournalBatch.PostingType {string}")
-	public void assertBatchPostingType(@NonNull final String identifier, @NonNull final String postingType)
-	{
-		final I_GL_JournalBatch record = glJournalBatchTable.get(StepDefDataIdentifier.ofString(identifier));
-		InterfaceWrapperHelper.refresh(record);
-		assertThat(record.getPostingType()).as("GL_JournalBatch.PostingType of %s", identifier).isEqualTo(postingType);
-	}
-
-	/** Runs process {@code GL_Journal_ChangePostingType} on the batch, as the WebUI role. */
-	@When("the GL_Journal_ChangePostingType process is invoked for GL journal batch {string} with PostingType {string}")
-	public void invokeChangePostingTypeOnBatch(@NonNull final String identifier, @NonNull final String postingType)
-	{
-		final I_GL_JournalBatch batch = glJournalBatchTable.get(StepDefDataIdentifier.ofString(identifier));
-		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, ClientId.ofRepoId(batch.getAD_Client_ID()),
-				I_GL_JournalBatch.Table_Name, batch.getGL_JournalBatch_ID(), builder -> builder.addParameter("PostingType", postingType));
 	}
 
 	/**

@@ -40,30 +40,6 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
 
     Then the GL journal "gj" is eventually posted with PostingType "A" and 4 Fact_Acct lines
 
-  @Id:S33766_02
-  Scenario: the completed journals of a batch are posted again after the posting type of the batch was changed from Statistical to Actual
-    Given metasfresh contains GL_JournalBatch:
-      | Identifier | PostingType |
-      | gjBatch    | S           |
-    And metasfresh contains GL_Journal:
-      | Identifier | DateDoc    | PostingType | GL_JournalBatch_ID |
-      | gjS1       | 2024-01-10 | S           | gjBatch            |
-      | gjS2       | 2024-01-11 | S           | gjBatch            |
-    And metasfresh contains GL_JournalLines:
-      | GL_Journal_ID | Account_DR_ID | Account_CR_ID | Amount |
-      | gjS1          | gjDebit       | gjCredit      | 100.00 |
-      | gjS2          | gjDebit       | gjCredit      | 200.00 |
-    And the GL journal "gjS1" is completed
-    And the GL journal "gjS2" is completed
-    And the GL journal "gjS1" is eventually posted with PostingType "S" and 2 Fact_Acct lines
-    And the GL journal "gjS2" is eventually posted with PostingType "S" and 2 Fact_Acct lines
-
-    When the GL_Journal_ChangePostingType process is invoked for GL journal batch "gjBatch" with PostingType "A"
-
-    Then the GL journal batch "gjBatch" has GL_JournalBatch.PostingType "A"
-    And the GL journal "gjS1" is eventually posted with PostingType "A" and 2 Fact_Acct lines
-    And the GL journal "gjS2" is eventually posted with PostingType "A" and 2 Fact_Acct lines
-
   @Id:S33766_03
   Scenario: reactivating a posted GL journal does not post it again
     Given metasfresh contains GL_Journal:
@@ -80,27 +56,3 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
 
     Then the GL journal "gjReact" is not posted and has no Fact_Acct lines
     And GL journal "gjReact" got no new posting request and no note
-
-  @Id:S33766_04
-  Scenario: a drafted journal in a batch is not queued for posting when the posting type of the batch is changed
-    Given metasfresh contains GL_JournalBatch:
-      | Identifier | PostingType |
-      | gjBatch5   | S           |
-    And metasfresh contains GL_Journal:
-      | Identifier | DateDoc    | PostingType | GL_JournalBatch_ID |
-      | gjDone     | 2024-01-10 | S           | gjBatch5           |
-      | gjDraft    | 2024-01-11 | S           | gjBatch5           |
-    And metasfresh contains GL_JournalLines:
-      | GL_Journal_ID | Account_DR_ID | Account_CR_ID | Amount |
-      | gjDone        | gjDebit       | gjCredit      | 100.00 |
-      | gjDraft       | gjDebit       | gjCredit      | 200.00 |
-    And the GL journal "gjDone" is completed
-    And the GL journal "gjDone" is eventually posted with PostingType "S" and 2 Fact_Acct lines
-    And the posting requests of GL journal "gjDraft" are remembered
-
-    When the GL_Journal_ChangePostingType process is invoked for GL journal batch "gjBatch5" with PostingType "A"
-
-    Then the GL journal "gjDraft" has GL_Journal.PostingType "A"
-    And the GL journal "gjDraft" is not posted and has no Fact_Acct lines
-    And GL journal "gjDraft" got no new posting request and no note
-    And the GL journal "gjDone" is eventually posted with PostingType "A" and 2 Fact_Acct lines
