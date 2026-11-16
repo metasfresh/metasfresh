@@ -39,6 +39,13 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.util.TimeUtil;
 
@@ -55,6 +62,7 @@ public class C_BankStatement_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;
@@ -116,6 +124,43 @@ public class C_BankStatement_StepDef
 			assertThat(bankStatementRecord).as("C_BankStatement of C_BP_BankAccount_ID=%s (identifier %s) with Name=%s", bankAccountId, bankAccountIdentifier, name).isNotNull();
 
 			row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID).putOrReplace(bankStatementTable, bankStatementRecord);
+		});
+	}
+
+	/**
+	 * Creates drafted bank statements (header only) in the standard org, with the default bank statement document type.
+	 * <b>Columns</b>: {@code Identifier} (required), {@code C_BP_BankAccount_ID} (required, identifier of an organization bank account), {@code StatementDate} (required).
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains C_BankStatement:
+	 *   | Identifier | C_BP_BankAccount_ID | StatementDate |
+	 *   | bs         | bankAccount         | 2026-07-20    |
+	 * </pre>
+	 */
+	@Given("metasfresh contains C_BankStatement:")
+	public void createBankStatements(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier identifier = row.getAsIdentifier();
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(DocBaseType.BankStatement)
+					.adClientId(StepDefConstants.CLIENT_ID.getRepoId())
+					.adOrgId(StepDefConstants.ORG_ID.getRepoId())
+					.build());
+
+			final I_C_BankStatement record = InterfaceWrapperHelper.newInstance(I_C_BankStatement.class);
+			record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+			record.setC_DocType_ID(docTypeId.getRepoId());
+			record.setC_BP_BankAccount_ID(row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID).lookupNotNullIn(bankAccountTable).getC_BP_BankAccount_ID());
+			record.setStatementDate(row.getAsLocalDateTimestamp(I_C_BankStatement.COLUMNNAME_StatementDate));
+			record.setName("cucumber bank statement " + identifier.getAsString());
+			record.setDocumentNo("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
+			record.setDocStatus(IDocument.STATUS_Drafted);
+			record.setDocAction(IDocument.ACTION_Complete);
+			InterfaceWrapperHelper.saveRecord(record);
+
+			bankStatementTable.putOrReplace(identifier, record);
 		});
 	}
 
