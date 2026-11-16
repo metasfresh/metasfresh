@@ -973,7 +973,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
+		// the parent keeps the PI item it already has for the child PI
+		for (final I_M_HU_Item existingItem : retrieveItems(parentHU, HUItemType.HandlingUnit))
+		{
+			final I_M_HU_PI_Item existingPIItem = existingItem.getM_HU_PI_Item();
+			if (existingPIItem != null && existingPIItem.isActive() && existingPIItem.getIncluded_HU_PI_ID() == piOfChildHU.getM_HU_PI_ID())
+			{
+				return existingPIItem;
+			}
+		}
+
+		final IQueryBuilder<I_M_HU_PI_Item> queryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
 				.addOnlyActiveRecordsFilter()
 
 				// it's an PI-item of the the parent's PI
@@ -983,11 +993,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
 
 				// it either has no C_BPartner_ID or a matching one
-				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID());
 
-				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
-				.orderByDescending(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID)
+		// no product in context: product-specific items are not eligible
+		addProductFilter(queryBuilder, null);
 
+		return queryBuilder
+				.orderBy()
+				// favor any piItem with a matching C_BPartner_ID
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
+				.endOrderBy()
 				.create()
 				.first();
 	}

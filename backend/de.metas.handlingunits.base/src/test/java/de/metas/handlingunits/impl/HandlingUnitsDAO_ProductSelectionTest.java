@@ -5,6 +5,7 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -198,5 +199,60 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 		final I_M_HU_PI_Item partnerItem = partnerItem35();
 		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, productXY)).contains(productItem40);
 		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, otherProduct)).contains(partnerItem);
+	}
+
+	// ---- retrieveParentPIItemForChildHUOrNull
+
+	private I_M_HU createLUHU()
+	{
+		final I_M_HU luHU = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+		luHU.setM_HU_PI_Version_ID(dao.retrievePICurrentVersion(luPI).getM_HU_PI_Version_ID());
+		InterfaceWrapperHelper.save(luHU);
+		return luHU;
+	}
+
+	private I_M_HU_PI_Item parentPIItemForChild(final I_M_HU luHU)
+	{
+		return dao.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, helper.getHUContext());
+	}
+
+	@Test
+	void parentPIItemForChildHU_luWithoutItems_picksGeneric_neverProductItem()
+	{
+		assertThat(parentPIItemForChild(createLUHU())).isEqualTo(genericItem30);
+	}
+
+	@Test
+	void parentPIItemForChildHU_luBuiltFromProductItem_keepsProductItem()
+	{
+		final I_M_HU luHU = createLUHU();
+		dao.createHUItem(luHU, productItem40);
+		assertThat(parentPIItemForChild(luHU)).isEqualTo(productItem40);
+	}
+
+	@Test
+	void parentPIItemForChildHU_luBuiltFromGenericItem_keepsGenericItem()
+	{
+		final I_M_HU luHU = createLUHU();
+		dao.createHUItem(luHU, genericItem30);
+		assertThat(parentPIItemForChild(luHU)).isEqualTo(genericItem30);
+	}
+
+	@Test
+	void parentPIItemForChildHU_partnerPreferenceUnchanged()
+	{
+		final I_M_HU luHU = createLUHU();
+		luHU.setC_BPartner_ID(bpartner.getRepoId());
+		InterfaceWrapperHelper.save(luHU);
+		final I_M_HU_PI_Item partnerItem = partnerItem35();
+
+		assertThat(parentPIItemForChild(luHU)).isEqualTo(partnerItem);
+	}
+
+	@Test
+	void parentPIItemForChildHU_noProductItems_sameAsBefore()
+	{
+		InterfaceWrapperHelper.delete(productItem40);
+		assertThat(parentPIItemForChild(createLUHU())).isEqualTo(genericItem30);
 	}
 }
