@@ -28,6 +28,11 @@ export const ReopenLUScreen = {
         await expect(row).toBeDisabled();
     }),
 
+    /** Asserts that the (single) tappable LU row carries the given LU name. */
+    expectEnabledLUWithName: async ({ name }) => await test.step(`${NAME} - Expect the enabled LU to be "${name}"`, async () => {
+        await expect(luButtons().and(page.locator(':enabled'))).toContainText(name, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     clickFirstEnabledLU: async () => await test.step(`${NAME} - Click the first enabled LU`, async () => {
         await luButtons().and(page.locator(':enabled')).first().tap();
     }),

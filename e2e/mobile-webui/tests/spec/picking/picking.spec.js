@@ -540,9 +540,10 @@ test('Close LU / Reopen LU', async ({ page }) => {
     await ReopenLUScreen.waitForScreen();
     // The closed LU is listed and selectable; tapping it reopens it as the current pick target.
     await ReopenLUScreen.expectClosedLUs({ total: 1, enabled: 1, disabled: 0 });
+    await ReopenLUScreen.expectEnabledLUWithName({ name: masterdata.packingInstructions.PI.luName });
     await ReopenLUScreen.clickFirstEnabledLU();
     await PickingJobScreen.waitForScreen();
-    await expect(page.getByTestId('targetLU-button')).toContainText(':'); // "Current: <LU>" instead of "New"
+    await expect(page.getByTestId('targetLU-button')).toContainText(masterdata.packingInstructions.PI.luName); // the reopened LU is the current target
 });
 
 // "LU wieder öffnen" showed an empty list when another closed LU of the job was already shipped
@@ -586,8 +587,10 @@ test('Reopen LU: a shipped LU is listed greyed out, the other closed LU can be r
     await ReopenLUScreen.expectDisabledLUWithLabel({ label: 'Versendet' });
     await ErrorToast.expectNoErrorToast();
 
+    await ReopenLUScreen.expectEnabledLUWithName({ name: masterdata.packingInstructions.PI.luName });
     await ReopenLUScreen.clickFirstEnabledLU();
     await PickingJobScreen.waitForScreen();
+    await expect(page.getByTestId('targetLU-button')).toContainText(masterdata.packingInstructions.PI.luName); // LU #2 is the current target
 });
 
 // whatever makes the closed-LU list fail, the screen must tell the operator (never a blank list).
