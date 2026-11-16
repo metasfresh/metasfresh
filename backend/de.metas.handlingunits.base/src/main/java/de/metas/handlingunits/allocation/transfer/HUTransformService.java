@@ -1295,10 +1295,10 @@ public class HUTransformService
 		if (tuPIId.isRealPackingInstructions())
 		{
 			// a product-specific item (M_HU_PI_Item.M_Product_ID = productId) wins; otherwise the partner-aware lookup of the LU version
-			return (productId != null
+			final Optional<I_M_HU_PI_Item> productSpecificItem = productId != null
 					? handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId, productId).filter(piItem -> piItem.getM_Product_ID() > 0)
-					: Optional.<I_M_HU_PI_Item>empty())
-					.or(() -> retrieveFirstLUItem(luPIVersion, tuPIId, bpartnerId))
+					: Optional.empty();
+			return (productSpecificItem.isPresent() ? productSpecificItem : retrieveFirstLUItem(luPIVersion, tuPIId, bpartnerId))
 					.orElseThrow(() -> {
 						final String luPIName = handlingUnitsBL.getPIName(luPIId);
 						final String tuPIName = handlingUnitsBL.getPIName(tuPIId);
