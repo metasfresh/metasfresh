@@ -8,6 +8,7 @@ import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -100,10 +101,7 @@ public class ContractCompensationGroupRepository
 	/** Deletes the given group's compensation (discount) lines, leaving its regular lines ungrouped so {@link OrderGroupRepository#retrieveGroupIfExists} can rebuild it. */
 	public void deleteCompensationLines(@NonNull final GroupId groupId)
 	{
-		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
-		queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
+		queryGroupLines(groupId)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.delete();
@@ -132,13 +130,10 @@ public class ContractCompensationGroupRepository
 		}
 	}
 
-	/** @return the given group's compensation (discount) lines */
+	/** @return the given group's compensation (discount) lines, active or not, like {@link OrderGroupRepository}'s own compensation-line storage */
 	public List<I_C_OrderLine> retrieveCompensationLines(@NonNull final GroupId groupId)
 	{
-		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
-		return queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
+		return queryGroupLines(groupId)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.list(I_C_OrderLine.class);
@@ -147,15 +142,20 @@ public class ContractCompensationGroupRepository
 	/** @return the given group's active goods lines: neither compensation (discount) lines nor packing material lines */
 	public List<I_C_OrderLine> retrieveActiveGoodsLines(@NonNull final GroupId groupId)
 	{
-		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
-		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+		return queryGroupLines(groupId)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, false)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false)
 				.create()
 				.list(I_C_OrderLine.class);
+	}
+
+	/** @return a new query builder for all lines of the given group, active or not */
+	private IQueryBuilder<I_C_OrderLine> queryGroupLines(@NonNull final GroupId groupId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, OrderGroupRepository.extractOrderIdFromGroupId(groupId))
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId());
 	}
 
 	/**
