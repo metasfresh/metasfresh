@@ -23,6 +23,7 @@ package de.metas.handlingunits.inout.impl;
  */
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
@@ -34,6 +35,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
@@ -65,6 +67,7 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -75,7 +78,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +101,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	@Override
 	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -456,6 +462,76 @@ public class HUInOutBL implements IHUInOutBL
 			{
 				huAttributesBL.validateMandatoryShipmentAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
 			}
+		}
+	}
+
+	@Override
+	public void setReceivedDateOnReceiptLineASIs(@NonNull final I_M_InOut inout)
+	{
+		if (!isReceiptIntoStock(inout))
+		{
+			return;
+		}
+
+		final Timestamp movementDate = inout.getMovementDate();
+		for (final org.compiere.model.I_M_InOutLine line : inOutBL.getLines(inout))
+		{
+			setHUDateReceivedOnLineASI(line, movementDate);
+		}
+	}
+
+	@Override
+	public void setReceivedDateOnReceiptHUs(@NonNull final I_M_InOut inout)
+	{
+		if (!isReceiptIntoStock(inout))
+		{
+			return;
+		}
+
+		final List<I_M_HU> hus = retrieveHandlingUnits(inout);
+		if (hus.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<HuId> huIds = hus.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		huAttributesBL.updateHUAttributeRecursive(
+				huIds,
+				HUAttributeUpdateRequest.builder()
+						.attributeCode(AttributeConstants.ATTR_DateReceived)
+						.attributeValue(inout.getMovementDate())
+						.build());
+	}
+
+	private boolean isReceiptIntoStock(@NonNull final I_M_InOut inout)
+	{
+		// Vendor receipt or customer return — both bring stock into the warehouse.
+		return (!inout.isSOTrx() && !inOutBL.isVendorReturn(inout))
+				|| isCustomerReturn(inout);
+	}
+
+	private void setHUDateReceivedOnLineASI(@NonNull final org.compiere.model.I_M_InOutLine line, @Nullable final Timestamp value)
+	{
+		final AttributeSetInstanceId existingAsiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId newAsiId;
+		if (existingAsiId.isRegular())
+		{
+			newAsiId = attributeSetInstanceBL.setAttributeInstanceValue(existingAsiId, AttributeConstants.ATTR_DateReceived, value);
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+			final org.compiere.model.I_M_AttributeSetInstance newASI = attributeSetInstanceBL.createASI(productId);
+			newAsiId = AttributeSetInstanceId.ofRepoId(newASI.getM_AttributeSetInstance_ID());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(newAsiId, AttributeConstants.ATTR_DateReceived, value);
+		}
+		if (newAsiId.getRepoId() != line.getM_AttributeSetInstance_ID())
+		{
+			line.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
+			InterfaceWrapperHelper.saveRecord(line);
 		}
 	}
 
