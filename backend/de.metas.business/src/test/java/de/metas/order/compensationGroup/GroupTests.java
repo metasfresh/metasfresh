@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -150,9 +151,20 @@ public class GroupTests
 
 	}
 
-	private static GroupRegularLine regularLineOf(final BigDecimal lineNetAmt, final ProductCategoryId productCategoryId)
+	private static GroupRegularLine regularLineInCategory(final String lineNetAmt, final ProductCategoryId productCategoryId)
 	{
-		return GroupRegularLine.builder().lineNetAmt(lineNetAmt).productCategoryIds(ImmutableSet.of(productCategoryId)).build();
+		return GroupRegularLine.builder().lineNetAmt(new BigDecimal(lineNetAmt)).productCategoryIds(ImmutableSet.of(productCategoryId)).build();
+	}
+
+	private static Group newAdditiveSalesGroup(final int orderCompensationGroupId, final GroupRegularLine... regularLines)
+	{
+		return Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, orderCompensationGroupId))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.additive(true)
+				.regularLines(Arrays.asList(regularLines))
+				.build();
 	}
 
 	private GroupRegularLine.GroupRegularLineBuilder regularLine(int lineNetAmt)
@@ -561,25 +573,14 @@ public class GroupTests
 	void percentageOfBase_threeLinesOf16_50_equalsOneLineOf49_50()
 	{
 		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
-		final Group threeLines = Group.builder()
-				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
-				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
-				.soTrx(SOTrx.SALES)
-				.additive(true)
-				.regularLine(regularLineOf(new BigDecimal("16.50"), goods))
-				.regularLine(regularLineOf(new BigDecimal("16.50"), goods))
-				.regularLine(regularLineOf(new BigDecimal("16.50"), goods))
-				.build();
+		final Group threeLines = newAdditiveSalesGroup(1,
+				regularLineInCategory("16.50", goods),
+				regularLineInCategory("16.50", goods),
+				regularLineInCategory("16.50", goods));
 		threeLines.addNewCompensationLine(newPercentageDiscountRequest(3, goods));
 		threeLines.updateAllCompensationLines();
 
-		final Group oneLine = Group.builder()
-				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 2))
-				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
-				.soTrx(SOTrx.SALES)
-				.additive(true)
-				.regularLine(regularLineOf(new BigDecimal("49.50"), goods))
-				.build();
+		final Group oneLine = newAdditiveSalesGroup(2, regularLineInCategory("49.50", goods));
 		oneLine.addNewCompensationLine(newPercentageDiscountRequest(3, goods));
 		oneLine.updateAllCompensationLines();
 
