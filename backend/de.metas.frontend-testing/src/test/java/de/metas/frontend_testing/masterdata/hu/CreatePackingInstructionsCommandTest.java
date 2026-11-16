@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CreatePackingInstructionsCommandTest
 {
@@ -112,5 +113,16 @@ public class CreatePackingInstructionsCommandTest
 		assertThat(items).hasSize(1);
 		assertThat(items.get(0).getM_Product_ID()).isLessThanOrEqualTo(0);
 		assertThat(items.get(0).getQty()).isEqualByComparingTo(BigDecimal.valueOf(30));
+	}
+
+	@Test
+	public void execute_additionalLUItemsWithoutLU_fails()
+	{
+		createProduct("P1");
+		createProduct("XY");
+
+		assertThatThrownBy(() -> luItems("{\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4,"
+				+ "\"additionalLUItems\":[{\"product\":\"XY\",\"qtyTUsPerLU\":40}]}"))
+				.hasMessageContaining("additionalLUItems");
 	}
 }

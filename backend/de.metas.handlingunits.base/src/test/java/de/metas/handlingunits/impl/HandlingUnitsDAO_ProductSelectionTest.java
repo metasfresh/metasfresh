@@ -1,5 +1,6 @@
 package de.metas.handlingunits.impl;
 
+import javax.annotation.Nullable;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -56,14 +57,19 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 		tuPIItemProduct = helper.assignProduct(helper.createHU_PI_Item_Material(tuPI), productXY, BigDecimal.TEN, uomEach);
 
 		luPI = helper.createHUDefinition("LU", LU_UNIT_TYPE);
-		genericItem30 = helper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("30"), (BPartnerId)null);
+		genericItem30 = createItem(new BigDecimal("30"), null, null);
 		productItem40 = createItem(new BigDecimal("40"), null, productXY);
 	}
 
-	private I_M_HU_PI_Item createItem(final BigDecimal qty, final BPartnerId bpartnerId, final ProductId productId)
+	/**
+	 * Unset IDs are stored as {@code NULL} (like the generated {@code X_} setters do in the real DB), not as {@code -1},
+	 * so the in-memory {@code ORDER BY ... NULLS FIRST/LAST} behaves like Postgres.
+	 */
+	private I_M_HU_PI_Item createItem(final BigDecimal qty, @Nullable final BPartnerId bpartnerId, @Nullable final ProductId productId)
 	{
 		final I_M_HU_PI_Item item = helper.createHU_PI_Item_IncludedHU(luPI, tuPI, qty, bpartnerId);
-		item.setM_Product_ID(ProductId.toRepoId(productId));
+		InterfaceWrapperHelper.setValue(item, I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, bpartnerId != null ? bpartnerId.getRepoId() : null);
+		InterfaceWrapperHelper.setValue(item, I_M_HU_PI_Item.COLUMNNAME_M_Product_ID, productId != null ? productId.getRepoId() : null);
 		InterfaceWrapperHelper.save(item);
 		return item;
 	}
@@ -198,7 +204,8 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 
 		final I_M_HU_PI_Item partnerItem = partnerItem35();
 		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, productXY)).contains(productItem40);
-		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, otherProduct)).contains(partnerItem);
+		// the LU-item level of this lookup has no partner preference (it never had one), so only the product rule is asserted
+		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, otherProduct)).hasValueSatisfying(item -> assertThat(item).isIn(genericItem30, partnerItem));
 	}
 
 	// ---- retrieveParentPIItemForChildHUOrNull
@@ -238,15 +245,32 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 		assertThat(parentPIItemForChild(luHU)).isEqualTo(genericItem30);
 	}
 
+	/**
+	 * Pins the pre-existing order: {@code C_BPartner_ID DESC} with the query builder's default {@code NULLS FIRST} for descending order,
+	 * i.e. the generic item comes before the partner-specific one.
+	 */
 	@Test
-	void parentPIItemForChildHU_partnerPreferenceUnchanged()
+	void parentPIItemForChildHU_partnerVsGenericOrderUnchanged()
+	{
+		final I_M_HU luHU = createLUHU();
+		luHU.setC_BPartner_ID(bpartner.getRepoId());
+		InterfaceWrapperHelper.save(luHU);
+		partnerItem35();
+
+		assertThat(parentPIItemForChild(luHU)).isEqualTo(genericItem30);
+	}
+
+	@Test
+	void parentPIItemForChildHU_luWithProductLessExistingItem_sameAsBefore()
 	{
 		final I_M_HU luHU = createLUHU();
 		luHU.setC_BPartner_ID(bpartner.getRepoId());
 		InterfaceWrapperHelper.save(luHU);
 		final I_M_HU_PI_Item partnerItem = partnerItem35();
+		dao.createHUItem(luHU, partnerItem);
 
-		assertThat(parentPIItemForChild(luHU)).isEqualTo(partnerItem);
+		// only an existing *product-specific* item is kept; product-less data is resolved by the query as before
+		assertThat(parentPIItemForChild(luHU)).isEqualTo(genericItem30);
 	}
 
 	@Test

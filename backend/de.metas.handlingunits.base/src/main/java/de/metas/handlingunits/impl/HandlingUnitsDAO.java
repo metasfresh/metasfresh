@@ -673,8 +673,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			piItems.add(piItem);
 		}
 
-		// product-specific items first; the sort is stable, so the existing order is kept within each group
-		piItems.sort(Comparator.comparing((I_M_HU_PI_Item item) -> item.getM_Product_ID() > 0 ? 0 : 1));
+		// product-specific HU items first; the sort is stable, so the existing order is kept within each group
+		piItems.sort(Comparator.comparing((I_M_HU_PI_Item item) -> X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(item.getItemType()) && item.getM_Product_ID() > 0 ? 0 : 1));
 
 		return Collections.unmodifiableList(piItems);
 	}
@@ -973,11 +973,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
 	{
-		// the parent keeps the PI item it already has for the child PI
+		// a parent that was built from a product-specific PI item keeps that item for the child PI
+		// (the query below has no product context, so it would never return it)
 		for (final I_M_HU_Item existingItem : retrieveItems(parentHU, HUItemType.HandlingUnit))
 		{
 			final I_M_HU_PI_Item existingPIItem = existingItem.getM_HU_PI_Item();
-			if (existingPIItem != null && existingPIItem.isActive() && existingPIItem.getIncluded_HU_PI_ID() == piOfChildHU.getM_HU_PI_ID())
+			if (existingPIItem != null
+					&& existingPIItem.isActive()
+					&& existingPIItem.getM_Product_ID() > 0
+					&& existingPIItem.getIncluded_HU_PI_ID() == piOfChildHU.getM_HU_PI_ID())
 			{
 				return existingPIItem;
 			}
@@ -1000,8 +1004,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBuilder
 				.orderBy()
-				// favor any piItem with a matching C_BPartner_ID
-				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
+				// NULLS FIRST is what orderByDescending(C_BPartner_ID) always did, so the order is unchanged
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.First)
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
 				.endOrderBy()
 				.create()

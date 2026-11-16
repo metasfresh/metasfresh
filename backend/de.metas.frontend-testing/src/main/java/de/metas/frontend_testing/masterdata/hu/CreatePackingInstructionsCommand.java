@@ -99,6 +99,11 @@ public class CreatePackingInstructionsCommand
 		}
 		else
 		{
+			if (!request.getAdditionalLUItems().isEmpty())
+			{
+				throw new AdempiereException("additionalLUItems require lu to be set: " + request);
+			}
+
 			lu = null;
 			luPIItem = null;
 			luPIItemTestId = null;
