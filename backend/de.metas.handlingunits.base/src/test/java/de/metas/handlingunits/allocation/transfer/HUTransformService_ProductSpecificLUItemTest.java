@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.transfer;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -12,6 +14,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -111,6 +114,28 @@ public class HUTransformService_ProductSpecificLUItemTest
 		assertThat(lus).hasSize(2); // 5 + 5
 		assertLU(lus.get(0), luPIItemGeneric5, 5);
 		assertLU(lus.get(1), luPIItemGeneric5, 5);
+	}
+
+	/** no product item: a partner-specific item (20) next to the generic one (30) must not change how the TU is attached */
+	@Test
+	public void tuToNewLU_noProductItem_partnerSpecificVsGeneric_attachesAsBefore()
+	{
+		InterfaceWrapperHelper.delete(luPIItemTomato8);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("BP").getC_BPartner_ID());
+		final I_M_HU_PI_Item partnerItem20 = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("20"), bpartnerId);
+		final I_M_HU_PI_Item generic30 = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("30"));
+
+		final I_M_HU realTU = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("20"));
+		realTU.setC_BPartner_ID(bpartnerId.getRepoId());
+		save(realTU);
+
+		final I_M_HU_PI_Item chosen = handlingUnitsDAO.retrieveFirstPIItem(luPIId(), HuPackingInstructionsId.ofRepoId(data.piTU_IFCO.getM_HU_PI_ID()), bpartnerId, null).get();
+		final I_M_HU lu = huTransformService.tuToNewLU(realTU, QtyTU.ONE, luPIId(), null).getLURecords().get(0);
+
+		// as before: attached via the generic-first lookup result, not via the item that tuToNewLU chose by itself
+		final I_M_HU_PI_Item expected = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, data.piTU_IFCO, data.helper.getHUContext());
+		assertThat(handlingUnitsDAO.retrieveParentItem(realTU).getM_HU_PI_Item_ID()).isEqualTo(expected.getM_HU_PI_Item_ID());
+		assertThat(chosen.getM_HU_PI_Item_ID()).as("guard: the two lookups differ in this setup").isNotEqualTo(expected.getM_HU_PI_Item_ID());
 	}
 
 	@Test

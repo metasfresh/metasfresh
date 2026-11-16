@@ -7,6 +7,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -278,5 +279,33 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 	{
 		InterfaceWrapperHelper.delete(productItem40);
 		assertThat(parentPIItemForChild(createLUHU())).isEqualTo(genericItem30);
+	}
+
+	private void createAggregateItem(final I_M_HU luHU, final I_M_HU_PI_Item piItem)
+	{
+		final I_M_HU_Item haItem = dao.createAggregateHUItem(luHU);
+		haItem.setM_HU_PI_Item(piItem);
+		InterfaceWrapperHelper.save(haItem);
+	}
+
+	@Test
+	void parentPIItemForChildHU_luWithAggregateItemFromProductItem_keepsProductItem()
+	{
+		final I_M_HU luHU = createLUHU();
+		createAggregateItem(luHU, productItem40);
+		assertThat(parentPIItemForChild(luHU)).isEqualTo(productItem40);
+	}
+
+	@Test
+	void parentPIItemForChildHU_luWithAggregateItemFromGenericItem_sameAsBefore()
+	{
+		final I_M_HU luHU = createLUHU();
+		luHU.setC_BPartner_ID(bpartner.getRepoId());
+		InterfaceWrapperHelper.save(luHU);
+		final I_M_HU_PI_Item partnerItem = partnerItem35();
+		createAggregateItem(luHU, partnerItem);
+
+		// not product-specific => resolved by the query as before (generic before partner-specific)
+		assertThat(parentPIItemForChild(luHU)).isEqualTo(genericItem30);
 	}
 }

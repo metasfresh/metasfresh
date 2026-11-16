@@ -1282,8 +1282,9 @@ public class HUTransformService
 				{
 					// create the new parent-item that will link sourceTuHU with lu
 					final I_M_HU_PI tuPI = handlingUnitsBL.getPI(sourceTuHU);
-					// the caller already chose the LU item (possibly a product-specific one, which the lookup below never returns); use it if it is the link to the TU's PI
-					final I_M_HU_PI_Item parentPIItem = luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
+					// a product-specific LU item chosen by the caller is never returned by the lookup below; use it if it is the link to the TU's PI.
+					// Other items: unchanged lookup.
+					final I_M_HU_PI_Item parentPIItem = luPIItem.getM_Product_ID() > 0 && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
 							? luPIItem
 							: handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
 					if (parentPIItem == null)
@@ -1320,7 +1321,8 @@ public class HUTransformService
 				final I_M_HU_Item huItemOfLU = handlingUnitsDAO.retrieveItems(lu).get(0);
 				final QtyTU qtyTUEffective = QtyTU.ofBigDecimal(sourceLUItem.getQty());
 				huItemOfLU.setQty(qtyTUEffective.toBigDecimal());
-				huItemOfLU.setM_HU_PI_Item(luPIItem); // the item the new LU was created for (the source LU item might be a different one)
+				// a product-specific item the new LU was created for must be kept; otherwise keep the source LU's item as before
+				huItemOfLU.setM_HU_PI_Item(luPIItem.getM_Product_ID() > 0 ? luPIItem : handlingUnitsBL.getPIItem(sourceLUItem));
 				InterfaceWrapperHelper.save(huItemOfLU);
 
 				huAttributesBL.updateHUAttribute(huContext, lu, sourceTuHU, AttributeConstants.ATTR_LotNumber);

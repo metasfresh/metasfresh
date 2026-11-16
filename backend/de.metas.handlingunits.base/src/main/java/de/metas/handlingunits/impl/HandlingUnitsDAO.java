@@ -970,6 +970,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return parentPIItems;
 	}
 
+	/**
+	 * Note: a parent built from a product-specific PI item keeps that item for any further child of the given PI (also if it holds aggregated TUs).
+	 * This assumes a single-product parent (LU); the child's own product is not considered.
+	 */
 	@Override
 	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
 	{
