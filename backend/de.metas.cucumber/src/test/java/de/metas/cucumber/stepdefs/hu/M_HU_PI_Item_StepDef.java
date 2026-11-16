@@ -24,13 +24,13 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.product.ProductId;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -87,8 +87,8 @@ public class M_HU_PI_Item_StepDef
 							.filter(StepDefDataIdentifier::isNotNullPlaceholder)
 							.map(huPackingMaterialTable::getId)
 							.orElse(null);
-					// optional: an LU->TU item that is used for this product only
 					final ProductId productId = row.getAsOptionalIdentifier(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID)
+							.filter(StepDefDataIdentifier::isNotNullPlaceholder)
 							.map(productTable::getId)
 							.orElse(null);
 

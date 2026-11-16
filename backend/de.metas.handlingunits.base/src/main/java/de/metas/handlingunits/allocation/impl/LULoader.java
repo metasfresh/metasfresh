@@ -78,6 +78,9 @@ public class LULoader
 	/**
 	 * Same as {@link #addTU(I_M_HU)}, but when a new LU has to be created, the LU->TU packing instruction item is selected for the given product,
 	 * i.e. an item that is restricted to that product is eligible. With no product, items that are restricted to a product are never used.
+	 * <p>
+	 * Contract: feed one loader with TUs of one product only. Already created LUs are reused without comparing the product,
+	 * so TUs of another product could end up on an LU that was built for a product-specific item.
 	 *
 	 * @param productId the product that is packed into the given TU; may be {@code null}
 	 */
