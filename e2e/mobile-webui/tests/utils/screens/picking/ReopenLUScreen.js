@@ -7,6 +7,8 @@ const NAME = 'ReopenLUScreen';
 const containerElement = () => page.locator('#ReopenLUScreen');
 /** @returns {import('@playwright/test').Locator} */
 const luButtons = () => containerElement().locator('button.hu-button');
+/** the closed-LU list call of the screen */
+const CLOSED_LUS_ROUTE = /\/picking\/job\/[^/]+\/closed-lu(\?|$)/;
 
 export const ReopenLUScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -39,6 +41,19 @@ export const ReopenLUScreen = {
 
     expectErrorToast: async () => await test.step(`${NAME} - Expect an error message`, async () => {
         await expect(page.locator('.Toastify__toast--error')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Makes the closed-LU list call fail (HTTP 500) on the test page only; no production change. */
+    simulateClosedLUsLoadFailure: async () => await test.step(`${NAME} - Simulate closed LU list load failure`, async () => {
+        await page.route(CLOSED_LUS_ROUTE, route => route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'simulated closed-lu failure' }),
+        }));
+    }),
+
+    stopSimulatingClosedLUsLoadFailure: async () => await test.step(`${NAME} - Stop simulating closed LU list load failure`, async () => {
+        await page.unroute(CLOSED_LUS_ROUTE);
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

@@ -616,19 +616,13 @@ test('Reopen LU: an error message is shown when the closed LU list cannot be loa
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
     await PickingJobScreen.closeTargetLU();
 
-    // make the list call fail on the test page only (no production change)
-    const closedLURoute = /\/picking\/job\/[^/]+\/closed-lu(\?|$)/;
-    await page.route(closedLURoute, route => route.fulfill({
-        status: 500,
-        contentType: 'application/json',
-        body: JSON.stringify({ error: 'simulated closed-lu failure' }),
-    }));
+    await ReopenLUScreen.simulateClosedLUsLoadFailure();
 
     await PickingJobScreen.clickReopenLUButton();
     await ReopenLUScreen.waitForScreen(); // spinner gone
     await ReopenLUScreen.expectErrorToast();
 
-    await page.unroute(closedLURoute);
+    await ReopenLUScreen.stopSimulatingClosedLUsLoadFailure();
     await ReopenLUScreen.goBack();
     await PickingJobScreen.waitForScreen();
 });

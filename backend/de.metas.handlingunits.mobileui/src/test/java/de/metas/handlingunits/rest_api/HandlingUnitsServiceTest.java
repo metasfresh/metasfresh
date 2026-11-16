@@ -86,4 +86,22 @@ class HandlingUnitsServiceTest
 						Tuple.tuple(String.valueOf(shipped.getRepoId()), X_M_HU.HUSTATUS_Shipped),
 						Tuple.tuple(String.valueOf(destroyed.getRepoId()), X_M_HU.HUSTATUS_Destroyed));
 	}
+
+	/** the HUs are loaded in one go; the result must still follow the caller's order, not the load order */
+	@Test
+	void getHUsListOfAnyStatus_keepsTheGivenOrder()
+	{
+		final HuId first = createHU(X_M_HU.HUSTATUS_Active);
+		final HuId second = createHU(X_M_HU.HUSTATUS_Shipped);
+		final HuId third = createHU(X_M_HU.HUSTATUS_Destroyed);
+
+		final JsonHUList result = service.getHUsListOfAnyStatus(Arrays.asList(third, first, second), "en_US");
+
+		assertThat(result.getHus())
+				.extracting(JsonHU::getId)
+				.containsExactly(
+						String.valueOf(third.getRepoId()),
+						String.valueOf(first.getRepoId()),
+						String.valueOf(second.getRepoId()));
+	}
 }

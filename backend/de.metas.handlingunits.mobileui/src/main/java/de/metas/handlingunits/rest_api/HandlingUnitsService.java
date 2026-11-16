@@ -178,12 +178,21 @@ public class HandlingUnitsService
 			@NonNull final Collection<HuId> huIds,
 			@NonNull final String adLanguage)
 	{
+		final Map<HuId, I_M_HU> husById = handlingUnitsBL.getByIdsReturningMap(huIds); // one query for all HUs
+
 		return JsonHUList.builder()
 				.hus(huIds.stream()
-						.map(huId -> toJson(LoadJsonHURequest.builder()
-								.hu(handlingUnitsBL.getById(huId))
-								.adLanguage(adLanguage)
-								.build()))
+						.map(huId -> {
+							final I_M_HU hu = husById.get(huId);
+							if (hu == null)
+							{
+								throw new AdempiereException("No HU found for M_HU_ID: " + huId);
+							}
+							return toJson(LoadJsonHURequest.builder()
+									.hu(hu)
+									.adLanguage(adLanguage)
+									.build());
+						})
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}

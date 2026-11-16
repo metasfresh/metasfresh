@@ -10,15 +10,16 @@ const HU_STATUS_SHIPPED = 'E';
 const HU_STATUS_DESTROYED = 'D';
 
 // shipped / destroyed LUs are no physical HUs any more: listed for information, but cannot be re-opened
+const NOT_REOPENABLE_HU_STATUSES = [HU_STATUS_SHIPPED, HU_STATUS_DESTROYED];
+const isNotReopenable = (hu) => NOT_REOPENABLE_HU_STATUSES.includes(hu.huStatus);
+
+const HU_STATUS_CAPTION_KEYS = {
+  [HU_STATUS_SHIPPED]: 'activities.picking.luStatusShipped',
+  [HU_STATUS_DESTROYED]: 'activities.picking.luStatusDestroyed',
+};
 const getHUStatusCaption = (hu) => {
-  switch (hu.huStatus) {
-    case HU_STATUS_SHIPPED:
-      return trl('activities.picking.luStatusShipped');
-    case HU_STATUS_DESTROYED:
-      return trl('activities.picking.luStatusDestroyed');
-    default:
-      return undefined;
-  }
+  const captionKey = HU_STATUS_CAPTION_KEYS[hu.huStatus];
+  return captionKey ? trl(captionKey) : undefined;
 };
 
 export const ReopenLUScreen = () => {
@@ -35,7 +36,7 @@ export const ReopenLUScreen = () => {
       <SelectHUIntermediateList
         huList={closedLUs}
         disabled={isWorking}
-        getHUDisabled={(hu) => !!getHUStatusCaption(hu)}
+        getHUDisabled={isNotReopenable}
         getHUStatusCaption={getHUStatusCaption}
         onHuSelected={(lu) => reopenLU(lu).then(() => history.goBack())}
       />
