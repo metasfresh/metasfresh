@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
@@ -28,6 +29,7 @@ import java.util.function.UnaryOperator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
@@ -113,7 +115,8 @@ class SumUpServiceRefundTest
 		Mockito.when(trxRepository.updateById(ArgumentMatchers.eq(named.getExternalId()), ArgumentMatchers.<UnaryOperator<SumUpTransaction>>any()))
 				.thenAnswer(invocation -> invocation.<UnaryOperator<SumUpTransaction>>getArgument(1).apply(named));
 		// only the named transaction is refunded at SumUp (an unexpected request fails the test)
-		server.expect(requestTo(BASE_URL + "/me/refund/ext-named")).andExpect(method(HttpMethod.POST)).andRespond(withSuccess());
+		server.expect(requestTo("http://stub/v1.0/merchants/M1/payments/ext-named/refunds")).andExpect(method(HttpMethod.POST))
+				.andRespond(withStatus(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body("{}"));
 		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?id=ext-named")).andExpect(method(HttpMethod.GET))
 				.andRespond(withSuccess(refundedRemoteTrxJson("ext-named", "ctid-named"), MediaType.APPLICATION_JSON));
 

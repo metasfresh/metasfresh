@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
@@ -217,6 +218,49 @@ class SumUpClientTest
 				});
 	}
 
+	/**
+	 * "Refund a transaction" (https://developer.sumup.com/api/transactions/refund): {@code POST
+	 * /v1.0/merchants/{merchant_code}/payments/{transaction_id}/refunds}; a body without {@code amount} refunds the full
+	 * amount; success is 201 with body {@code {}}. The v0.1 {@code /me/refund/{id}} refunds against the API key's default
+	 * merchant, which is not necessarily the configured one.
+	 */
+	@Test
+	void refund_callsV10MerchantPaymentRefunds_forTheFullAmount()
+	{
+		server.expect(requestTo("http://stub/v1.0/merchants/M1/payments/TX1/refunds"))
+				.andExpect(method(POST))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(content().string("{}"))
+				.andRespond(withStatus(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body("{}"));
+
+		client.refundTransaction(SumUpTransactionExternalId.ofString("TX1"));
+
+		server.verify();
+	}
+
+	@Test
+	void refund_409NotRefundable_isDefiniteRejection()
+	{
+		// as answered by the sandbox for a transaction refunded already
+		server.expect(requestTo("http://stub/v1.0/merchants/M1/payments/TX1/refunds"))
+				.andRespond(withStatus(HttpStatus.CONFLICT)
+						.contentType(MediaType.valueOf("application/problem+json"))
+						.body("{\"type\":\"https://developer.sumup.com/problem/conflict\",\"title\":\"Conflict\",\"status\":409,"
+								+ "\"detail\":\"The transaction is not refundable in its current state\"}"));
+
+		assertThatThrownBy(() -> client.refundTransaction(SumUpTransactionExternalId.ofString("TX1")))
+				.isInstanceOfSatisfying(SumUpCallException.class, ex -> assertThat(ex.isDefiniteRejection()).isTrue());
+	}
+
+	@Test
+	void refund_5xx_isNotDefiniteRejection()
+	{
+		server.expect(requestTo("http://stub/v1.0/merchants/M1/payments/TX1/refunds")).andRespond(withServerError());
+
+		assertThatThrownBy(() -> client.refundTransaction(SumUpTransactionExternalId.ofString("TX1")))
+				.isInstanceOfSatisfying(SumUpCallException.class, ex -> assertThat(ex.isDefiniteRejection()).isFalse());
+	}
+
 	@Test
 	void transactionsApiBaseUrl_replacesTheTrailingV01Segment()
 	{
@@ -224,11 +268,19 @@ class SumUpClientTest
 		assertThat(SumUpClient.toTransactionsApiBaseUrl("http://wiremock:8080/sumup/v0.1/")).isEqualTo("http://wiremock:8080/sumup/v2.1");
 	}
 
+	@Test
+	void refundsApiBaseUrl_replacesTheTrailingV01Segment()
+	{
+		assertThat(SumUpClient.toRefundsApiBaseUrl("https://api.sumup.com/v0.1")).isEqualTo("https://api.sumup.com/v1.0");
+		assertThat(SumUpClient.toRefundsApiBaseUrl("http://wiremock:8080/sumup/v0.1/")).isEqualTo("http://wiremock:8080/sumup/v1.0");
+	}
+
 	/**
-	 * A base URL the lookup cannot be derived from fails the lookup (which the poller records as an issue), but not the reader calls.
+	 * A base URL the lookup and refund bases cannot be derived from fails the lookup (which the poller records as an issue) and
+	 * the refund, but not the reader calls.
 	 */
 	@Test
-	void baseUrlWithoutTrailingV01Segment_failsOnlyTheLookup()
+	void baseUrlWithoutTrailingV01Segment_failsOnlyTheLookupAndTheRefund()
 	{
 		final RestTemplate restTemplate = new RestTemplate();
 		final MockRestServiceServer otherServer = MockRestServiceServer.bindTo(restTemplate).build();
@@ -248,6 +300,9 @@ class SumUpClientTest
 		otherServer.verify();
 
 		assertThatThrownBy(() -> clientWithOtherBaseUrl.getTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("sumup.baseUrl");
+		assertThatThrownBy(() -> clientWithOtherBaseUrl.refundTransaction(SumUpTransactionExternalId.ofString("TX1")))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("sumup.baseUrl");
 	}
