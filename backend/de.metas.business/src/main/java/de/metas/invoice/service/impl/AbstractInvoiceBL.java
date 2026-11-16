@@ -190,8 +190,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	// lazy: the IPostingService implementation (de.metas.acct.base) is not available to every module that creates an invoice BL
-	@Nullable private IPostingService _postingService; // null = not yet initialized
+	@NonNull private final IPostingService postingService = Services.get(IPostingService.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -2167,20 +2166,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		postingService().unpost(DocumentUnpostRequest.builder()
+		postingService.unpost(DocumentUnpostRequest.builder()
 				.document(invoice)
 				.dateAcct(TimeUtil.asInstant(invoice.getDateAcct()))
 				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
 				.build());
-	}
-
-	private IPostingService postingService()
-	{
-		IPostingService result = _postingService;
-		if (result == null)
-		{
-			result = _postingService = Services.get(IPostingService.class);
-		}
-		return result;
 	}
 }

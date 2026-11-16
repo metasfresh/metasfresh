@@ -39,7 +39,8 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
     And the GL journal "gj" is eventually posted with PostingType "S" and 4 Fact_Acct lines
     # the year-end journal closes gjDebit (balance 100 Dr) and gjCredit (balance 100 Cr) against the income summary account
     # (GL_Journal_GenerateYearEnding.createFacts_ProfitAndLoss_ThisYear); the net of both is 0, so there is no retained-earnings line
-    # Fact_Acct records are matching checks ALL Fact_Acct rows of the journal, whatever their PostingType: an unexpected row fails it
+    # the wildcard rows (AccountConceptualName *) below only check that each existing row has one of these shapes; the row count over all PostingTypes pins the rest
+    And the GL journal "gj" has 4 Fact_Acct lines in total, whatever their PostingType
     And Fact_Acct records are matching
       | AccountConceptualName | Account_ID      | AmtAcctDr | AmtAcctCr | Record_ID |
       | *                     | gjIncomeSummary | 100       |           | gj        |
@@ -52,7 +53,8 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
 
     Then the GL journal "gj" is eventually posted with PostingType "A" and 4 Fact_Acct lines
     And documents gj got a new posting request
-    # same accounts and amounts as before; since all rows of the journal are matched, no PostingType=S row may be left
+    # no PostingType=S row is left and nothing is duplicated: 4 rows in total over all posting types
+    And the GL journal "gj" has 4 Fact_Acct lines in total, whatever their PostingType
     And Fact_Acct records are matching
       | AccountConceptualName | Account_ID      | AmtAcctDr | AmtAcctCr | Record_ID |
       | *                     | gjIncomeSummary | 100       |           | gj        |

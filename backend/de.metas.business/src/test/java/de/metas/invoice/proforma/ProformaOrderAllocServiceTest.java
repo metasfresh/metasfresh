@@ -35,6 +35,7 @@ import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
@@ -75,6 +76,7 @@ class ProformaOrderAllocServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		// Mock IPaymentDAO so individual tests can pretend the proforma has a completed/closed payment.

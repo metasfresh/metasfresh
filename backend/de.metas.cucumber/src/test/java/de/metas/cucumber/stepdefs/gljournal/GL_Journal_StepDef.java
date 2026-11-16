@@ -328,6 +328,21 @@ public class GL_Journal_StepDef
 		assertThat(factAcctCount).as("Fact_Acct lines with PostingType=%s", postingType).isEqualTo(expectedFactAcctCount);
 	}
 
+	/**
+	 * Counts the journal's {@code Fact_Acct} rows over ALL posting types, so that a leftover row of another posting type (or a duplicate) fails.
+	 */
+	@Then("the GL journal {string} has {int} Fact_Acct lines in total, whatever their PostingType")
+	public void assertFactAcctCountOfAllPostingTypes(@NonNull final String identifier, final int expectedFactAcctCount)
+	{
+		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
+		final int count = queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_GL_Journal.class))
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, record.getGL_Journal_ID())
+				.create()
+				.count();
+		assertThat(count).as("Fact_Acct lines of GL journal %s over all PostingTypes", identifier).isEqualTo(expectedFactAcctCount);
+	}
+
 	private boolean isPosted(@NonNull final I_GL_Journal record, @NonNull final String postingType, final int expectedFactAcctCount)
 	{
 		InterfaceWrapperHelper.refresh(record);

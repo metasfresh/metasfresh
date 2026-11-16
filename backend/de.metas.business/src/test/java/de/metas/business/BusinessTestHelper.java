@@ -1,5 +1,6 @@
 package de.metas.business;
 
+import de.metas.acct.api.IPostingService;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
@@ -47,6 +48,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_UOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -83,6 +85,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 @UtilityClass
 public class BusinessTestHelper
 {
+	/**
+	 * Registers a stand-in {@link IPostingService}: its implementation lives in {@code de.metas.acct.base}, which depends on this module and so is not on this module's test classpath.
+	 * Call it right after {@code AdempiereTestHelper.get().init()}, before anything creates an invoice BL (which looks the service up eagerly).
+	 */
+	public static void registerPostingServiceStandIn()
+	{
+		Services.registerService(IPostingService.class, Mockito.mock(IPostingService.class));
+	}
+
 	/**
 	 * Default precision
 	 */
