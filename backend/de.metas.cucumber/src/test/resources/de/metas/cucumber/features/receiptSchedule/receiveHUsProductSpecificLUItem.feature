@@ -48,9 +48,9 @@ Feature: Receive HUs on a purchase receipt schedule packs the pallet with the TU
       | Identifier | M_PriceList_ID.Identifier | Name | ValidFrom  |
       | plv_PO     | pl_PO                     | plv  | 2021-01-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_specific | plv_PO                           | specificProduct         | 10.0     | PCE               | Normal                        |
-      | pp_other    | plv_PO                           | otherProduct            | 10.0     | PCE               | Normal                        |
+      | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_specific | plv_PO                            | specificProduct         | 10.0     | PCE               | Normal                        |
+      | pp_other    | plv_PO                            | otherProduct            | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
       | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -80,11 +80,11 @@ Feature: Receive HUs on a purchase receipt schedule packs the pallet with the TU
       | order      | N       | supplier                 | 2025-04-01  | POO             | ps_PO                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID | QtyEnteredTU |
-      | orderLine  | order                 | specificProduct         | 1200       | specificProductTU         | 120          |
+      | orderLine  | order                 | specificProduct         | 1200       | specificProductTU       | 120          |
     And the order identified by order is completed
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | specificProduct        | 1200       | warehouseStd              |
+      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | specificProduct         | 1200       | warehouseStd              |
 
     When receive HUs for M_ReceiptSchedule with its default M_HU_LUTU_Configuration:
       | M_ReceiptSchedule_ID | M_HU_ID.Identifier                     |
@@ -122,11 +122,11 @@ Feature: Receive HUs on a purchase receipt schedule packs the pallet with the TU
       | order      | N       | supplier                 | 2025-04-01  | POO             | ps_PO                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID | QtyEnteredTU |
-      | orderLine  | order                 | otherProduct            | 1200       | otherProductTU            | 120          |
+      | orderLine  | order                 | otherProduct            | 1200       | otherProductTU          | 120          |
     And the order identified by order is completed
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | otherProduct           | 1200       | warehouseStd              |
+      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | otherProduct            | 1200       | warehouseStd              |
 
     When receive HUs for M_ReceiptSchedule with its default M_HU_LUTU_Configuration:
       | M_ReceiptSchedule_ID | M_HU_ID.Identifier                      |
@@ -167,11 +167,11 @@ Feature: Receive HUs on a purchase receipt schedule packs the pallet with the TU
       | order      | N       | supplier                 | 2025-04-01  | POO             | ps_PO                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID | QtyEnteredTU |
-      | orderLine  | order                 | specificProduct         | 1200       | specificProductTU         | 120          |
+      | orderLine  | order                 | specificProduct         | 1200       | specificProductTU       | 120          |
     And the order identified by order is completed
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | specificProduct        | 1200       | warehouseStd              |
+      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | specificProduct         | 1200       | warehouseStd              |
 
     And receive HUs for M_ReceiptSchedule with its default M_HU_LUTU_Configuration:
       | M_ReceiptSchedule_ID | M_HU_ID.Identifier                                              | IsSaveLUTUConfiguration |
@@ -221,11 +221,11 @@ Feature: Receive HUs on a purchase receipt schedule packs the pallet with the TU
       | order      | N       | supplier                 | 2025-04-01  | POO             | ps_PO                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID | QtyEnteredTU |
-      | orderLine  | order                 | specificProduct         | 1200       | specificProductTU         | 120          |
+      | orderLine  | order                 | specificProduct         | 1200       | specificProductTU       | 120          |
     And the order identified by order is completed
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | specificProduct        | 1200       | warehouseStd              |
+      | receiptSchedule                 | order                 | orderLine                 | supplier                 | supplierLocation                  | specificProduct         | 1200       | warehouseStd              |
 
     When create M_HU_LUTU_Configuration for M_ReceiptSchedule:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
