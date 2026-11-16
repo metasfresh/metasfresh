@@ -222,7 +222,7 @@ public class ContractCompensationGroupService
 	/** When all goods lines of the changed line's contract-created group carry one position, sets it on the group's compensation lines that have an open invoice candidate or none. */
 	public void copyPositionToCompensationLines(@NonNull final I_C_OrderLine changedLine)
 	{
-		final GroupId groupId = extractContractGroupIdOfGoodsLineOrNull(changedLine);
+		final GroupId groupId = findContractGroupIdOfGoodsLineOrNull(changedLine);
 		if (groupId == null)
 		{
 			return;
@@ -240,7 +240,7 @@ public class ContractCompensationGroupService
 
 	/** @return the contract-created group of the given goods line; null if it is a compensation or packing material line, or not in such a group */
 	@Nullable
-	private GroupId extractContractGroupIdOfGoodsLineOrNull(@NonNull final I_C_OrderLine orderLine)
+	private GroupId findContractGroupIdOfGoodsLineOrNull(@NonNull final I_C_OrderLine orderLine)
 	{
 		if (orderLine.isGroupCompensationLine() || orderLine.isPackagingMaterial())
 		{
@@ -282,7 +282,7 @@ public class ContractCompensationGroupService
 	/**
 	 * Reads the active invoice candidates of all given lines with one query.
 	 *
-	 * @return those of the given lines that have at least one unprocessed invoice candidate, or none at all
+	 * @return those of the given lines that have at least one unprocessed invoice candidate, or no invoice candidate at all
 	 */
 	private ImmutableList<I_C_OrderLine> retainLinesWithOpenOrNoInvoiceCandidate(@NonNull final List<I_C_OrderLine> orderLines)
 	{

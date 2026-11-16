@@ -150,7 +150,10 @@ public class ContractCompensationGroupRepository
 				.list(I_C_OrderLine.class);
 	}
 
-	/** @return a new query builder for all lines of the given group, active or not */
+	/**
+	 * @return a new, unordered query builder for all lines of the given group, active or not; not {@link OrderGroupRepository#retrieveGroupOrderLinesQuery},
+	 * which needs an {@link OrderGroupRepository} instance (this repository uses only its static helpers) and orders by {@code Line}
+	 */
 	private IQueryBuilder<I_C_OrderLine> queryGroupLines(@NonNull final GroupId groupId)
 	{
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)

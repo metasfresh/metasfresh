@@ -248,6 +248,7 @@ public class ContractSettingsTakeOverService
 				.flatMap(group -> group.getCompensationLines().stream())
 				.filter(line -> GroupCompensationLineCreateRequestFactory.isPercentDiscount(line.getType(), line.getAmtType()))
 				.collect(ImmutableList.toImmutableList());
+		// the order's contract groups (one per position) share one schema: take each schema line over once, not once per group
 		final ImmutableList<GroupCompensationLine> salesOrderDiscountLines = keepFirstLinePerSchemaLine(percentDiscountLines);
 
 		final ImmutableListMultimap<ConditionsId, TakenOverRefund> refundsByConditionsId = findTakenOverRefunds(order, takeOvers);
@@ -258,10 +259,7 @@ public class ContractSettingsTakeOverService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Keeps the first line of each schema line: the contract groups of one order (one per position) are all created from the same
-	 * schema, so each of its lines is taken over once, not once per group. Lines without a schema line (no schema origin) all stay.
-	 */
+	/** @return the given lines in their order, keeping only the first line of each schema line; lines without a schema line are all kept */
 	private static ImmutableList<GroupCompensationLine> keepFirstLinePerSchemaLine(@NonNull final List<GroupCompensationLine> lines)
 	{
 		final Set<GroupTemplateLineId> seenSchemaLineIds = new HashSet<>();
