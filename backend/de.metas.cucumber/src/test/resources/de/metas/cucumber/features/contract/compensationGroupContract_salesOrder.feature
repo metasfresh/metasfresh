@@ -834,3 +834,84 @@ Feature: Contract-triggered compensation group on sales-order completion
       | ol_t1BonusPfand           | orderTwoSL            | pfandBonusProduct       | 1          | true                        | 1                               | -2    | twoLineTerm                       | position1    |
       | ol_t2BonusGoods           | orderTwoSL            | discountProduct         | 1          | true                        | 3                               | -60   | twoLineTerm                       | position2    |
     And the order identified by orderTwoSL has 6 order lines
+
+  # ##############################################################################################
+  # Additive and compounding schemas on two positions: each position computes its Bonus on its own goods
+  # (3.15 % + 0.25 % on position 1 = 1 x 1000 and position 2 = 2 x 1000)
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC3_additiveCompounding
+  Scenario: Additive computes every Bonus line on its position's base, non-additive compounds within each position
+    Given metasfresh contains M_Products:
+      | Identifier       | OPT.M_Product_Category_ID.Identifier |
+      | discountProduct2 | goodsCategory                        |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_discount2 | contractPLV                       | discountProduct2        | 1        | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | additiveBP | Y              | contractPS                    |
+      | compoundBP | Y              | contractPS                    |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier     | Name        | OPT.IsAdditive |
+      | additiveSchema | Additive    | true           |
+      | compoundSchema | Compounding | false          |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier    | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier | OPT.SeqNo |
+      | additiveLine1 | additiveSchema                           | discountProduct         | 3.15                      | goodsCategory                        | 10        |
+      | additiveLine2 | additiveSchema                           | discountProduct2        | 0.25                      | goodsCategory                        | 20        |
+      | compoundLine1 | compoundSchema                           | discountProduct         | 3.15                      | goodsCategory                        | 10        |
+      | compoundLine2 | compoundSchema                           | discountProduct2        | 0.25                      | goodsCategory                        | 20        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier       | Name                 | C_CompensationGroup_Schema_ID.Identifier |
+      | additiveSettings | Additive settings    | additiveSchema                           |
+      | compoundSettings | Compounding settings | compoundSchema                           |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | additiveSettings                                   | docTypeSalesOrder       |
+      | compoundSettings                                   | docTypeSalesOrder       |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier         | Name                   | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | additiveConditions | Additive conditions    | CompensationGroup | contractProduct                      | zeroDurTrans                            | additiveSettings                                       |
+      | compoundConditions | Compounding conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | compoundSettings                                       |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | additiveTerm | additiveConditions                  | additiveBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | compoundTerm | compoundConditions                  | compoundBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by additiveTerm is completed
+    And the C_Flatrate_Term identified by compoundTerm is completed
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderAddPos   | true    | additiveBP               | 2026-07-01  |
+      | orderCompPos  | true    | compoundBP               | 2026-07-01  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_Project_ID |
+      | ol_a1      | orderAddPos           | goodsProduct            | 1          | position1    |
+      | ol_a2      | orderAddPos           | goodsProduct            | 2          | position2    |
+      | ol_c1      | orderCompPos          | goodsProduct            | 1          | position1    |
+      | ol_c2      | orderCompPos          | goodsProduct            | 2          | position2    |
+
+    When the order identified by orderAddPos is completed
+    And the order identified by orderCompPos is completed
+
+    # additive: both percentages on the position's full base
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | C_Project_ID |
+      | ol_a1Bonus1               | orderAddPos           | discountProduct         | 1          | true                        | 3.15                            | -31.50 | position1    |
+      | ol_a1Bonus2               | orderAddPos           | discountProduct2        | 1          | true                        | 0.25                            | -2.50  | position1    |
+      | ol_a2Bonus1               | orderAddPos           | discountProduct         | 1          | true                        | 3.15                            | -63.00 | position2    |
+      | ol_a2Bonus2               | orderAddPos           | discountProduct2        | 1          | true                        | 0.25                            | -5.00  | position2    |
+    # compounding: the second percentage on the position's base less its first Bonus line (968.50 and 1937.00)
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | C_Project_ID |
+      | ol_c1Bonus1               | orderCompPos          | discountProduct         | 1          | true                        | 3.15                            | -31.50 | position1    |
+      | ol_c1Bonus2               | orderCompPos          | discountProduct2        | 1          | true                        | 0.25                            | -2.42  | position1    |
+      | ol_c2Bonus1               | orderCompPos          | discountProduct         | 1          | true                        | 3.15                            | -63.00 | position2    |
+      | ol_c2Bonus2               | orderCompPos          | discountProduct2        | 1          | true                        | 0.25                            | -4.84  | position2    |

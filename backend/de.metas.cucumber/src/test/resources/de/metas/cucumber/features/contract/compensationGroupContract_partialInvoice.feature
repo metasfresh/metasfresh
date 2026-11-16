@@ -1128,6 +1128,9 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_refB1              |
       | ss_refB2              |
       | ss_refB3              |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_ref1 | shipmentRef |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_ref1        | ic_ref1                |
@@ -1157,3 +1160,283 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | discountProduct | 1           | position1    | -3.30      |
       | discountProduct | 1           | position2    | -6.60      |
       | discountProduct | 1           | null         | -1.65      |
+
+  # ##############################################################################################
+  # Two positions with the same goods value: two separate Bonus lines of equal product and amount, on the order and on the invoice
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC4_equalGoodsValue
+  Scenario: Two positions with equal goods value get two separate Bonus lines on the invoice
+    Given metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderEq    | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | ol_eq1     | orderEq               | goods1                  | 1          | 100   | position1    |
+      | ol_eq2     | orderEq               | goods2                  | 1          | 100   | position2    |
+
+    When the order identified by orderEq is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_eqBonus1               | orderEq               | discountProduct         | 1          | true                        | -3.00 | mainTerm                          | position1    |
+      | ol_eqBonus2               | orderEq               | discountProduct         | 1          | true                        | -3.00 | mainTerm                          | position2    |
+    And the order identified by orderEq has 4 order lines
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_eq1     | ol_eq1                    | N             |
+      | ss_eq2     | ol_eq2                    | N             |
+      | ss_eqB1    | ol_eqBonus1               | N             |
+      | ss_eqB2    | ol_eqBonus2               | N             |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_eq1                |
+      | ss_eq2                |
+      | ss_eqB1               |
+      | ss_eqB2               |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_eq1 | shipmentEq |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_eq1         | ic_eq1                 |
+      | ol_eq2         | ic_eq2                 |
+      | ol_eqBonus1    | ic_eqB1                |
+      | ol_eqBonus2    | ic_eqB2                |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_eq1                            |
+      | ic_eq2                            |
+      | ic_eqB1                           |
+      | ic_eqB2                           |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoiceEq               | ic_eq1                            |
+
+    # the two Bonus lines are equal in product and amount and stay two lines, each on its own position
+    Then validate invoice lines for invoiceEq:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 1           | position1    | 100        |
+      | goods2          | 1           | position2    | 100        |
+      | discountProduct | 1           | position1    | -3.00      |
+      | discountProduct | 1           | position2    | -3.00      |
+
+  # ##############################################################################################
+  # Partial shipment on two positions (invoice rule D): each position's Bonus follows the goods shipped and invoiced for that position.
+  # Position 1: goods 20 x 10,00 = 200,00; position 2: goods 1 x 185,00; 3 % Bonus: -6,00 and -5,55.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC5_partialShipmentTwoPositions
+  Scenario: Partial shipment of position 1: its Bonus follows the shipped goods, position 2 stays open; the invoiced Bonus ends equal to the order's
+    # a partially invoiced candidate must stay open for the goods still to ship (the local default is Y: close it)
+    Given temporarily set sys config boolean value false for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderPS    | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | ol_ps1     | orderPS               | goods1                  | 20         | 10    | position1    |
+      | ol_ps2     | orderPS               | goods2                  | 1          | 185   | position2    |
+    And the order identified by orderPS is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_psBonus1               | orderPS               | discountProduct         | 1          | true                        | -6.00 | mainTerm                          | position1    |
+      | ol_psBonus2               | orderPS               | discountProduct         | 1          | true                        | -5.55 | mainTerm                          | position2    |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_ps1     | ol_ps1                    | N             |
+      | ss_ps2     | ol_ps2                    | N             |
+      | ss_psB1    | ol_psBonus1               | N             |
+      | ss_psB2    | ol_psBonus2               | N             |
+
+    # first delivery: 12 of the 20 units of position 1 and the Bonus line of position 1
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_ps1                | 12                                              |
+      | ss_psB1               |                                                 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_ps1 | shipmentPS1 |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_ps1         | ic_ps1                 |
+      | ol_ps2         | ic_ps2                 |
+      | ol_psBonus1    | ic_psB1                |
+      | ol_psBonus2    | ic_psB2                |
+
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_ps1                 |
+      | ic_ps2                 |
+      | ic_psB1                |
+      | ic_psB2                |
+    # the Bonus of position 1 is 3 % of the 120,00 delivered; position 2 has nothing delivered
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_ps1                            | 120             |
+      | ic_ps2                            | 0               |
+      | ic_psB1                           | -3.6            |
+      | ic_psB2                           | 0               |
+
+    # position 1 alone: only its group is selected, no incomplete-group error
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_ps1                            | 12              |
+      | ic_psB1                           | 1               |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoicePS1              | ic_ps1                            |
+    And validate invoice lines for invoicePS1:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 12          | position1    | 120        |
+      | discountProduct | 1           | position1    | -3.60      |
+
+    # second delivery: the remaining 8 units of position 1, all of position 2 with its Bonus line
+    When update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | ss_ps1                            | 8                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_ps1                            |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_ps1                |
+      | ss_ps2                |
+      | ss_psB2               |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_ps2 | shipmentPS2 |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_ps1                 |
+      | ic_ps2                 |
+      | ic_psB1                |
+      | ic_psB2                |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_ps1                            | 80              |
+      | ic_ps2                            | 185             |
+      | ic_psB1                           | -2.4            |
+      | ic_psB2                           | -5.55           |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_ps1                            |
+      | ic_ps2                            |
+      | ic_psB1                           |
+      | ic_psB2                           |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoicePS2              | ic_ps2                            |
+    And validate invoice lines for invoicePS2:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 8           | position1    | 80         |
+      | goods2          | 1           | position2    | 185        |
+      | discountProduct | 1           | position1    | -2.40      |
+      | discountProduct | 1           | position2    | -5.55      |
+
+    # per position the invoiced Bonus equals the order line: -3.60 - 2.40 = -6.00 and -5.55
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtInvoiced | Processed |
+      | ic_psB1                           | -6             | true      |
+      | ic_psB2                           | -5.55          | true      |
+
+  # ##############################################################################################
+  # Partial shipment, single-group order (all goods on the order's header position): the Bonus amounts are those of today
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC17d_singleGroup
+  Scenario: Partial shipment of an order with one position gives the same partial Bonus amounts as before
+    # a partially invoiced candidate must stay open for the goods still to ship (the local default is Y: close it)
+    Given temporarily set sys config boolean value false for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier | C_Project_ID |
+      | orderSG    | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    | position1    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | ol_sg1     | orderSG               | goods1                  | 20         | 10    | position1    |
+      | ol_sg2     | orderSG               | goods2                  | 1          | 185   | position1    |
+    And the order identified by orderSG is completed
+
+    # 3 % of 200 + 185 = 11.55
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_sgBonus                | orderSG               | discountProduct         | 1          | true                        | -11.55 | mainTerm                          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_sg1     | ol_sg1                    | N             |
+      | ss_sg2     | ol_sg2                    | N             |
+      | ss_sgB     | ol_sgBonus                | N             |
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_sg1                | 12                                              |
+      | ss_sgB                |                                                 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_sg1 | shipmentSG1 |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_sg1         | ic_sg1                 |
+      | ol_sg2         | ic_sg2                 |
+      | ol_sgBonus     | ic_sgB                 |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_sg1                 |
+      | ic_sg2                 |
+      | ic_sgB                 |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_sg1                            | 120             |
+      | ic_sg2                            | 0               |
+      | ic_sgB                            | -3.6            |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_sg1                            | 12              |
+      | ic_sg2                            | 0               |
+      | ic_sgB                            | 1               |
+
+    When update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | ss_sg1                            | 8                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_sg1                            |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_sg1                |
+      | ss_sg2                |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_sg2 | shipmentSG2 |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_sg1                 |
+      | ic_sg2                 |
+      | ic_sgB                 |
+    # the rest of the Bonus: 11.55 - 3.60
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_sg1                            | 80              |
+      | ic_sg2                            | 185             |
+      | ic_sgB                            | -7.95           |

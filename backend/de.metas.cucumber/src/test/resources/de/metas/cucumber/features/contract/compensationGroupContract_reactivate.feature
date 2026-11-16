@@ -293,3 +293,46 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | invPartlyInvoicedDiscount | ic_partlyInvoicedDiscount         |
 
     And the order identified by orderPartlyInvoiced cannot be reactivated because of error code ContractCompGroup_ReactivateInvoiced
+
+  # ##############################################################################################
+  # One Bonus line per position: reactivating, changing a line's position and completing again rebuilds the Bonus lines from the current positions
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC9
+  Scenario: Reactivating, moving a goods line to another position and completing again rebuilds the Bonus lines per position
+    Given metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderMove  | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_Project_ID |
+      | ol_mv1     | orderMove             | goodsProduct            | 1          | position1    |
+      | ol_mv2     | orderMove             | goodsProduct            | 1          | position2    |
+    And the order identified by orderMove is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_mvBonus1               | orderMove             | discountProduct         | 1          | true                        | -30   | mainTerm                          | position1    |
+      | ol_mvBonus2               | orderMove             | discountProduct         | 1          | true                        | -30   | mainTerm                          | position2    |
+    And the order identified by orderMove has 4 order lines
+
+    When the order identified by orderMove is reactivated
+    Then no C_Order_CompensationGroup exists for order "orderMove"
+    And the order identified by orderMove has 2 order lines
+
+    # the second goods line moves to position 1; position 2 has no goods line any more
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | ol_mv2                    | position1                   |
+    And the order identified by orderMove is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_mvBonusMoved           | orderMove             | discountProduct         | 1          | true                        | -60   | mainTerm                          | position1    |
+    And the order identified by orderMove has 3 order lines
