@@ -29,9 +29,9 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
       | purchasePL | ps                 | CH           | CHF           | false |
       | salesPL    | ps                 | CH           | CHF           | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier   | M_PriceList_ID |
-      | purchasePLV  | purchasePL     |
-      | salesPLV     | salesPL        |
+      | Identifier  | M_PriceList_ID |
+      | purchasePLV | purchasePL     |
+      | salesPLV    | salesPL        |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | purchasePLV            | product      | 10.0     | PCE      |
@@ -40,8 +40,8 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | bpartner   | Y        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier   | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
-      | bpLocation   | bpartner      | CH           | Y               | Y               |
+      | Identifier | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | bpLocation | bpartner      | CH           | Y               | Y               |
 
   @Id:S33766_10
   Scenario: the purchase invoice is posted again after the material receipt it is matched to was reversed

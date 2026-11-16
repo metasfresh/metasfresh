@@ -31,7 +31,7 @@ import org.compiere.util.Env;
 public class C_ElementValue_StepDef
 {
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@NonNull private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
 
 	private final C_ElementValue_StepDefData elementValueTable;
@@ -81,9 +81,7 @@ public class C_ElementValue_StepDef
 	@Given("the income summary account of the primary accounting schema allows posting of actual and statistical amounts")
 	public void allowStatisticalPostingOnIncomeSummaryAccount()
 	{
-		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(Env.getCtx());
-		final AccountId incomeSummaryAccountId = acctSchema.getGeneralLedger().getIncomeSummaryAcct().getAccountId();
-		setPostActualAndStatistical(accountDAO.getElementValueIdByAccountId(incomeSummaryAccountId));
+		setPostActualAndStatistical(getIncomeSummaryElementValueId());
 	}
 
 	/**
@@ -92,10 +90,15 @@ public class C_ElementValue_StepDef
 	@Given("the income summary account of the primary accounting schema is registered as {string}")
 	public void registerIncomeSummaryAccount(@NonNull final String identifier)
 	{
+		final ElementValueId elementValueId = getIncomeSummaryElementValueId();
+		elementValueTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), InterfaceWrapperHelper.load(elementValueId.getRepoId(), I_C_ElementValue.class));
+	}
+
+	private ElementValueId getIncomeSummaryElementValueId()
+	{
 		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(Env.getCtx());
 		final AccountId incomeSummaryAccountId = acctSchema.getGeneralLedger().getIncomeSummaryAcct().getAccountId();
-		final ElementValueId elementValueId = accountDAO.getElementValueIdByAccountId(incomeSummaryAccountId);
-		elementValueTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), InterfaceWrapperHelper.load(elementValueId.getRepoId(), I_C_ElementValue.class));
+		return accountDAO.getElementValueIdByAccountId(incomeSummaryAccountId);
 	}
 
 	private void setPostActualAndStatistical(@NonNull final ElementValueId elementValueId)

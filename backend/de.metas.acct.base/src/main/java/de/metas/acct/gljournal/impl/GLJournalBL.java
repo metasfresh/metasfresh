@@ -48,8 +48,8 @@ import java.util.Properties;
 
 public class GLJournalBL implements IGLJournalBL
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IPostingService postingService = Services.get(IPostingService.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IPostingService postingService = Services.get(IPostingService.class);
 
 	private static final AdMessageKey MSG_HeaderAndLinePeriodMismatchError = AdMessageKey.of("GL_Journal.HeaderAndLinePeriodMismatch");
 

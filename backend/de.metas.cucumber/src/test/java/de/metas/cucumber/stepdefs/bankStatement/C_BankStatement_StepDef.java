@@ -45,7 +45,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
-import de.metas.cucumber.stepdefs.DataTableRows;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.util.TimeUtil;
 
@@ -73,7 +72,7 @@ public class C_BankStatement_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;

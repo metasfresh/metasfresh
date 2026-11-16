@@ -6,9 +6,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +29,7 @@ public class PostingQueueChecks
 	private static final long STABLE_MILLIS = 2000;
 	private static final long MAX_WAIT_MILLIS = 15000;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final Map<TableRecordReference, Counts> remembered = new HashMap<>();
 
 	@Value
@@ -94,22 +96,25 @@ public class PostingQueueChecks
 
 	private Counts currentCounts(@NonNull final TableRecordReference documentRef)
 	{
-		final int logs = queryBL.createQueryBuilderOutOfTrx(I_Document_Acct_Log.class)
-				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
-				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
-				.create()
-				.count();
-		final int enqueuedLogs = queryBL.createQueryBuilderOutOfTrx(I_Document_Acct_Log.class)
-				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
-				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
-				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Type, DocumentPostingLogRequestType.Enqueued.getCode())
-				.create()
-				.count();
+		final int logs = countDocumentAcctLogs(documentRef, null);
+		final int enqueuedLogs = countDocumentAcctLogs(documentRef, DocumentPostingLogRequestType.Enqueued);
 		final int notes = queryBL.createQueryBuilderOutOfTrx(I_AD_Note.class)
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
 				.create()
 				.count();
 		return new Counts(logs, enqueuedLogs, notes);
+	}
+
+	private int countDocumentAcctLogs(@NonNull final TableRecordReference documentRef, @Nullable final DocumentPostingLogRequestType type)
+	{
+		final IQueryBuilder<I_Document_Acct_Log> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_Document_Acct_Log.class)
+				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
+				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Record_ID, documentRef.getRecord_ID());
+		if (type != null)
+		{
+			queryBuilder.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Type, type.getCode());
+		}
+		return queryBuilder.create().count();
 	}
 }

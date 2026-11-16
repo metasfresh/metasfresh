@@ -110,14 +110,14 @@ public class GL_Journal_StepDef
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
 	@NonNull private final AD_Process_Run_StepDef processRunStepDef;
 
-	private final GLCategoryRepository glCategoryRepository = SpringContextHolder.instance.getBean(GLCategoryRepository.class);
-	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final GLCategoryRepository glCategoryRepository = SpringContextHolder.instance.getBean(GLCategoryRepository.class);
+	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	@NonNull private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Creates drafted GL journal headers in the primary accounting schema, with the default GL journal document type.
