@@ -20,6 +20,7 @@ import CardSettlementStatusPanel, {
   isNewPaymentAllowed,
   isReleasableStatus,
 } from './CardSettlementStatusPanel';
+import { formatDateToHumanReadableStr } from '../../../../utils/dates';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { toastError } from '../../../../utils/toast';
 import { trl } from '../../../../utils/translations';
@@ -404,7 +405,7 @@ const InvoiceSettlementModal = () => {
                     {invoice.bpartnerName}
                   </div>
                   <div className="invoice-row-dateInvoiced" data-testid="pos-invoice-settlement-row-dateInvoiced">
-                    {invoice.dateInvoiced}
+                    {formatDateToHumanReadableStr(invoice.dateInvoiced)}
                   </div>
                   <div className="invoice-row-openAmt" data-testid="pos-invoice-settlement-row-openAmt">
                     {formatAmountToHumanReadableStr({ amount: invoice.openAmt, currency, precision })}
