@@ -13,6 +13,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
+import de.metas.order.compensationGroup.GroupTemplateLineId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -29,9 +30,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -244,6 +248,7 @@ public class ContractSettingsTakeOverService
 				.stream()
 				.flatMap(group -> group.getCompensationLines().stream())
 				.filter(line -> GroupCompensationLineCreateRequestFactory.isPercentDiscount(line.getType(), line.getAmtType()))
+				.filter(distinctBySchemaLine())
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableListMultimap<ConditionsId, TakenOverRefund> refundsByConditionsId = findTakenOverRefunds(order, takeOvers);
@@ -252,6 +257,16 @@ public class ContractSettingsTakeOverService
 				.map(takeOver -> computeMatchOrNull(takeOver, salesOrderDiscountLines, refundsByConditionsId))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Keeps the first line of each schema line: the contract groups of one order (one per position) are all created from the same
+	 * schema, so each of its lines is taken over once, not once per group. Lines without a schema line (no schema origin) all stay.
+	 */
+	private static Predicate<GroupCompensationLine> distinctBySchemaLine()
+	{
+		final Set<GroupTemplateLineId> seenSchemaLineIds = new HashSet<>();
+		return line -> line.getGroupTemplateLineId() == null || seenSchemaLineIds.add(line.getGroupTemplateLineId());
 	}
 
 	/**

@@ -17,6 +17,7 @@ import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -204,6 +205,37 @@ class ContractSettingsTakeOverServiceTest
 				ContractSettingsTakeOverMatch.TakenOverPercentage.of(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, Percent.of(1)),
 				ContractSettingsTakeOverMatch.TakenOverPercentage.of(BONUS_WARE_ID, Percent.of(3)));
 		assertThat(results.get(0).getSummedPercent().toBigDecimal()).isEqualByComparingTo("7");
+	}
+
+	@Test
+	void twoContractGroupsSharingOneSchemaLine_countTheSchemaLineOnce()
+	{
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
+		final int schemaLineId = createSchemaLine();
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3").withSchemaLineId(schemaLineId));
+		addContractGroupWithDiscountLine(salesOrder, new LineSpec(BONUS_WARE_ID, "3").withSchemaLineId(schemaLineId));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+
+		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
+
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).getTakenOverPercentages()).containsExactly(
+				ContractSettingsTakeOverMatch.TakenOverPercentage.of(BONUS_WARE_ID, Percent.of(3)));
+		assertThat(results.get(0).getSummedPercent().toBigDecimal()).isEqualByComparingTo("3");
+	}
+
+	@Test
+	void twoDifferentSchemaLinesWithTheSameProduct_stillCountTwice()
+	{
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3").withSchemaLineId(createSchemaLine()));
+		addContractGroupWithDiscountLine(salesOrder, new LineSpec(BONUS_WARE_ID, "3").withSchemaLineId(createSchemaLine()));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+
+		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
+
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).getSummedPercent().toBigDecimal()).isEqualByComparingTo("6");
 	}
 
 	@Test
@@ -1083,6 +1115,13 @@ class ContractSettingsTakeOverServiceTest
 				.build();
 	}
 
+	private static int createSchemaLine()
+	{
+		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		saveRecord(schemaLine);
+		return schemaLine.getC_CompensationGroup_SchemaLine_ID();
+	}
+
 	private I_C_Order createSalesOrderWithLines(final LineSpec... lines)
 	{
 		final I_C_Order so = newInstance(I_C_Order.class);
@@ -1140,6 +1179,10 @@ class ContractSettingsTakeOverServiceTest
 		line.setGroupCompensationType(spec.compensationType);
 		line.setGroupCompensationAmtType(spec.amtType);
 		line.setGroupCompensationPercentage(new BigDecimal(spec.percentage));
+		if (spec.schemaLineId > 0)
+		{
+			line.setC_CompensationGroup_SchemaLine_ID(spec.schemaLineId);
+		}
 		saveRecord(line);
 	}
 
@@ -1149,6 +1192,13 @@ class ContractSettingsTakeOverServiceTest
 		final String compensationType;
 		final String amtType;
 		final String percentage;
+		int schemaLineId;
+
+		LineSpec withSchemaLineId(final int schemaLineId)
+		{
+			this.schemaLineId = schemaLineId;
+			return this;
+		}
 
 		LineSpec(final ProductId productId, final String percentage)
 		{
