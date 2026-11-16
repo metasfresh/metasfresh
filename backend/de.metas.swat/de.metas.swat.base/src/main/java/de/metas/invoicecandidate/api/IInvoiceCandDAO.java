@@ -217,6 +217,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	int deleteAllReferencingInvoiceCandidates(Object model);
 
 	/**
+	 * Same as {@link #deleteAllReferencingInvoiceCandidates(Object)}, but first checks whether any of the referencing
+	 * invoice candidates already has an invoice line on a non-voided/reversed {@code C_Invoice}; if so, the delete is
+	 * blocked (nothing is deleted) instead of proceeding.
+	 */
+	void deleteOrGuardReferencingInvoiceCandidates(Object model);
+
+	/**
 	 * Updates <code>dateInvoiced</code> of candidates from selection.
 	 *
 	 * @param dateInvoiced new value to be set.

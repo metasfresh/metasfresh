@@ -24,9 +24,21 @@ public class C_OrderLine
 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(ol);
 	}
 
+	/**
+	 * Cascades the delete onto the {@code C_Invoice_Candidate}s of an order line, guarding against deleting a
+	 * sales order line whose candidate already has an invoice line on a non-voided/reversed invoice.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteInvoiceCandidates(final I_C_OrderLine ol)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(ol);
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		if (ol.getC_Order().isSOTrx())
+		{
+			invoiceCandDAO.deleteOrGuardReferencingInvoiceCandidates(ol);
+		}
+		else
+		{
+			invoiceCandDAO.deleteAllReferencingInvoiceCandidates(ol);
+		}
 	}
 }
