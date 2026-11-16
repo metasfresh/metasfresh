@@ -1187,11 +1187,24 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final HuPackingInstructionsId luPIId)
 	{
+		return tuToNewLU(sourceTuHU, qtyTU, luPIId, null);
+	}
+
+	/**
+	 * @param productId the product that is moved onto the new LU(s); if an LU PI item is configured for exactly this product, it is used (and its TU capacity splits the TUs over LUs).
+	 *                  {@code null} (e.g. unknown or several products) means "no product context": product-specific LU items are not eligible.
+	 */
+	public LUTUResult tuToNewLU(
+			@NonNull final I_M_HU sourceTuHU,
+			@NonNull final QtyTU qtyTU,
+			@NonNull final HuPackingInstructionsId luPIId,
+			@Nullable final ProductId productId)
+	{
 		assertNotReserved(sourceTuHU);
 		final HuPackingInstructionsId tuPIId = handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU);
 		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
 
-		final I_M_HU_PI_Item luPIItem = getLuPIItem(luPIId, tuPIId, bpartnerId);
+		final I_M_HU_PI_Item luPIItem = getLuPIItem(luPIId, tuPIId, bpartnerId, productId);
 
 		return tuToNewLUs(sourceTuHU, qtyTU, luPIItem, true);
 	}
@@ -1199,11 +1212,12 @@ public class HUTransformService
 	private I_M_HU_PI_Item getLuPIItem(
 			@NonNull final HuPackingInstructionsId luPIId,
 			@NonNull final HuPackingInstructionsId tuPIId,
-			@Nullable final BPartnerId bpartnerId)
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
 	{
 		if (tuPIId.isRealPackingInstructions())
 		{
-			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
+			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId, productId)
 					.orElseThrow(() -> {
 						final String luPIName = handlingUnitsBL.getPIName(luPIId);
 						final String tuPIName = handlingUnitsBL.getPIName(tuPIId);
@@ -1268,7 +1282,10 @@ public class HUTransformService
 				{
 					// create the new parent-item that will link sourceTuHU with lu
 					final I_M_HU_PI tuPI = handlingUnitsBL.getPI(sourceTuHU);
-					final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
+					// the caller already chose the LU item (possibly a product-specific one, which the lookup below never returns); use it if it is the link to the TU's PI
+					final I_M_HU_PI_Item parentPIItem = luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
+							? luPIItem
+							: handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
 					if (parentPIItem == null)
 					{
 						throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(lu) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(sourceTuHU) + "` because there is no link between them.")
@@ -1303,7 +1320,7 @@ public class HUTransformService
 				final I_M_HU_Item huItemOfLU = handlingUnitsDAO.retrieveItems(lu).get(0);
 				final QtyTU qtyTUEffective = QtyTU.ofBigDecimal(sourceLUItem.getQty());
 				huItemOfLU.setQty(qtyTUEffective.toBigDecimal());
-				huItemOfLU.setM_HU_PI_Item(handlingUnitsBL.getPIItem(sourceLUItem));
+				huItemOfLU.setM_HU_PI_Item(luPIItem); // the item the new LU was created for (the source LU item might be a different one)
 				InterfaceWrapperHelper.save(huItemOfLU);
 
 				huAttributesBL.updateHUAttribute(huContext, lu, sourceTuHU, AttributeConstants.ATTR_LotNumber);
