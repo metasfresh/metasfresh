@@ -84,6 +84,10 @@ public class CostingDocuments_StepDef
 	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_ShipmentSchedule_StepDef shipmentScheduleStepDef;
 
+	/**
+	 * Creates a drafted order with one line from each row and completes it. Columns: see the class-level Gherkin example
+	 * ({@code C_OrderLine_ID, C_BPartner_ID, DateOrdered, DocBaseType, M_Warehouse_ID, M_Product_ID, QtyEntered, Price}).
+	 */
 	@Given("for costing, create completed order with one line")
 	public void createOrders(@NonNull final DataTable dataTable)
 	{

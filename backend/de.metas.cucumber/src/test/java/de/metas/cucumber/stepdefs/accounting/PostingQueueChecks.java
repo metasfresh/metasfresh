@@ -74,12 +74,19 @@ public class PostingQueueChecks
 		final Counts before = remembered.get(documentRef);
 		assertThat(before).as("counts remembered for %s", documentRef).isNotNull();
 
-		StepDefUtil.tryAndWait(
-				MAX_WAIT_MILLIS / 1000,
-				POLL_MILLIS,
-				() -> currentCounts(documentRef).getEnqueuedLogs() > before.getEnqueuedLogs());
+		try
+		{
+			StepDefUtil.tryAndWait(
+					MAX_WAIT_MILLIS / 1000,
+					POLL_MILLIS,
+					() -> currentCounts(documentRef).getEnqueuedLogs() > before.getEnqueuedLogs());
+		}
+		catch (final AssertionError e)
+		{
+			// the wait timed out (StepDefUtil.tryAndWait fails with a generic message) - fall through to the assertion below, which names the document and the counts
+		}
 		final Counts current = currentCounts(documentRef);
-		assertThat(current.getEnqueuedLogs()).as("Document_Acct_Log entries of type Enqueued of %s since remembered (a new posting request is expected)", documentRef).isGreaterThan(before.getEnqueuedLogs());
+		assertThat(current.getEnqueuedLogs()).as("Document_Acct_Log entries of type Enqueued of %s since remembered (a new posting request is expected; before: %s)", documentRef, before.getEnqueuedLogs()).isGreaterThan(before.getEnqueuedLogs());
 	}
 
 	private Counts waitUntilStable(@NonNull final TableRecordReference documentRef) throws InterruptedException

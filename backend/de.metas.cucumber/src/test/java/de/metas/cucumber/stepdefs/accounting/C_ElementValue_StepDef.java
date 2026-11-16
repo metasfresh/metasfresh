@@ -26,6 +26,16 @@ import org.compiere.util.Env;
 
 /**
  * Step definitions for creating and registering {@link I_C_ElementValue} (GL account) records.
+ *
+ * <p><b>Gherkin usage example</b> (columns: <b>Identifier</b> required; <b>Value</b>, <b>Name</b> optional):
+ * <pre>{@code
+ * And metasfresh contains C_ElementValues:
+ *   | Identifier      |
+ *   | overrideAccount |
+ * And C_ElementValue "overrideAccount" allows posting of actual and statistical amounts
+ * And the income summary account of the primary accounting schema allows posting of actual and statistical amounts
+ * And the income summary account of the primary accounting schema is registered as "incomeSummary"
+ * }</pre>
  */
 @RequiredArgsConstructor
 public class C_ElementValue_StepDef
