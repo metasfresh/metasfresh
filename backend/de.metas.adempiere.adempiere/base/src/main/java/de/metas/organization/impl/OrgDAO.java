@@ -249,6 +249,12 @@ public class OrgDAO implements IOrgDAO
 				result.put(I_AD_OrgInfo.COLUMNNAME_ReportBottom_Logo_ID, reportBottomLogoId);
 			}
 
+			final AdImageId reportBackgroundImageId = AdImageId.ofRepoIdOrNull(orgInfo.getReportBackground_Image_ID());
+			if (reportBackgroundImageId != null)
+			{
+				result.put(I_AD_OrgInfo.COLUMNNAME_ReportBackground_Image_ID, reportBackgroundImageId);
+			}
+
 			return OrgImagesMap.ofImageIdsByColumnName(result);
 		}
 		else
