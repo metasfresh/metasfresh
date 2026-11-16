@@ -168,6 +168,11 @@ Feature: Jasper Report Tests
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID | C_Invoice_ID  |
       | so_ic1                 | salesInvoice1 |
+    # dev-note: the dunning below counts the days due from DateInvoiced + this payment term (no payment schedule);
+    # if the invoice fell back to the DB's default payment term instead, the result would depend on the customer's master data
+    And validate created invoices
+      | C_Invoice_ID  | C_PaymentTerm_ID    |
+      | salesInvoice1 | customerPaymentTerm |
     And The jasper process is run
       | Value             | Record_ID     |
       | Rechnung (Jasper) | salesInvoice1 |
