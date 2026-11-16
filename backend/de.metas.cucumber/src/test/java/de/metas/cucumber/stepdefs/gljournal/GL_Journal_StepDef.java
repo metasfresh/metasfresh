@@ -77,8 +77,8 @@ import org.compiere.model.X_GL_JournalLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import java.math.BigDecimal;
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.HashSet;
