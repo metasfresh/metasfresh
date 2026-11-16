@@ -10,6 +10,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -66,6 +67,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/materialReceipt");
 
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
@@ -193,10 +195,15 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			final HuPackingInstructionsItemId tuPackingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID());
 			final HuPackingInstructionsId tuPackingInstructionsId = handlingUnitsBL.getPackingInstructionsId(tuPackingInstructionsItemId);
 
-			final List<I_M_HU_PI_Item> luPackingInstructionsItems = handlingUnitsBL.retrieveParentPIItemsForParentPI(
+			// The product-aware DAO lookup returns at most one item per LU packing instruction, a product-specific item
+			// (M_HU_PI_Item.M_Product_ID = productId) winning over the generic one. So when the product has its own item,
+			// the competing generic target of the same LU PI + TU PI is not offered, i.e. the operator cannot build the
+			// generic TUs-per-LU quantity for it. Pinned by HandlingUnitsDAO_ProductSelectionTest#parentPIItems_orderAndFilter.
+			final List<I_M_HU_PI_Item> luPackingInstructionsItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 					tuPackingInstructionsId,
 					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
-					customerId);
+					customerId,
+					productId);
 
 			if (!luPackingInstructionsItems.isEmpty())
 			{
