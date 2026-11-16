@@ -167,6 +167,8 @@ const translations = {
       },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
+      luStatusShipped: 'Versendet',
+      luStatusDestroyed: 'Aufgelöst',
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
       noMatchingLines: 'Keine passende Packzeile gefunden',

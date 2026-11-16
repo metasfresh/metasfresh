@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 
 let nextQueryId = 1;
 
-export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) => {
+export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess, onError }) => {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [data, setData] = useState();
+  const [error, setError] = useState();
 
   useEffect(() => {
     const doLog = window.logUseQuery;
@@ -33,6 +34,15 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) 
         setData(data);
         setIsSuccess(true);
         if (doLog) console.log(`useQuery(${queryId}) - success`, { data, queryKey, queryFn });
+      })
+      .catch((error) => {
+        // opt-in: callers without onError keep the previous behaviour (the rejection stays unhandled)
+        if (!onError) throw error;
+        if (interrupted) return;
+
+        setError(error);
+        onError(error);
+        if (doLog) console.log(`useQuery(${queryId}) - error`, { error, queryKey, queryFn });
       })
       .finally(() => {
         if (interrupted) {
@@ -62,5 +72,5 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) 
 
   //
   //
-  return { isPending, data, setData };
+  return { isPending, data, error, setData };
 };
