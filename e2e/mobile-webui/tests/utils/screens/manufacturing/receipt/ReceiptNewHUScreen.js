@@ -34,6 +34,21 @@ export const ReceiptNewHUScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
+    /**
+     * Expects the LU target not to be offered, once the list of offered targets is shown (at least one target is displayed),
+     * so a not yet rendered list cannot make this pass.
+     */
+    expectLUTargetNotPresent: async ({ luPIItemTestId }) => await test.step(`${NAME} - Expect LU target "${luPIItemTestId}" not offered`, async () => {
+        await ReceiptNewHUScreen.expectVisible();
+        await expect(containerElement().locator('[data-testid^="luPIItem-"]').first()).toBeVisible();
+        await expect(page.getByTestId(luPIItemTestId)).toHaveCount(0);
+    }),
+
+    expectLUTargetOffered: async ({ luPIItemTestId }) => await test.step(`${NAME} - Expect LU target "${luPIItemTestId}" offered`, async () => {
+        await ReceiptNewHUScreen.expectVisible();
+        await expect(page.getByTestId(luPIItemTestId)).toBeVisible();
+    }),
+
     clickTUTarget: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Click TU target "${tuPIItemProductTestId}"`, async () => {
         await ReceiptNewHUScreen.expectVisible();
         // Capture mode only (UAT_CAPTURE): show the target on the recording before tapping it — a spec that

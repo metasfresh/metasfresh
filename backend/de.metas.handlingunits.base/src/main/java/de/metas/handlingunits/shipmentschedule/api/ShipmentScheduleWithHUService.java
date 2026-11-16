@@ -1161,6 +1161,7 @@ public class ShipmentScheduleWithHUService
 		//
 		// Create our LU Loader. This will help us to aggregate TUs on corresponding LUs
 		final LULoader luLoader = new LULoader(huContext);
+		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
 		//
 		// Iterate QtyPicked records
@@ -1208,14 +1209,14 @@ public class ShipmentScheduleWithHUService
 			{
 				final I_M_HU_PI_Version tuPIVersion = handlingUnitsBL.getEffectivePIVersion(tuHU);
 				final I_M_HU_PI tuPI = handlingUnitsDAO.getPackingInstructionById(HuPackingInstructionsId.ofRepoId(tuPIVersion.getM_HU_PI_ID()));
-				final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
+				final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null, productId);
 				if (luPIItem == null)
 				{
 					continue;
 				}
 			}
 
-			luLoader.addTU(tuHU);
+			luLoader.addTU(tuHU, productId);
 
 			// NOTE: after TU was added to an LU we expect this qtyPickedRecord to be updated and M_LU_HU_ID to be set
 			// Also, if there are more than one QtyPickedRecords for tuHU, all those shall be updated

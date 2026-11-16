@@ -52,7 +52,7 @@ public interface I_M_HU_PI_Item
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Business Partner.
+	 * Set Geschäftspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -61,7 +61,7 @@ public interface I_M_HU_PI_Item
 	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Geschäftspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -97,7 +97,7 @@ public interface I_M_HU_PI_Item
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Unter-Packvorschrift.
+	 * Set Sub Packing Instruction.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -106,7 +106,7 @@ public interface I_M_HU_PI_Item
 	void setIncluded_HU_PI_ID (int Included_HU_PI_ID);
 
 	/**
-	 * Get Unter-Packvorschrift.
+	 * Get Sub Packing Instruction.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -233,18 +233,18 @@ public interface I_M_HU_PI_Item
 	String COLUMNNAME_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
 
 	/**
-	 * Set Packvorschrift Version.
+	 * Set Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
 
 	/**
-	 * Get Packvorschrift Version.
+	 * Get Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -256,6 +256,28 @@ public interface I_M_HU_PI_Item
 
 	ModelColumn<I_M_HU_PI_Item, de.metas.handlingunits.model.I_M_HU_PI_Version> COLUMN_M_HU_PI_Version_ID = new ModelColumn<>(I_M_HU_PI_Item.class, "M_HU_PI_Version_ID", de.metas.handlingunits.model.I_M_HU_PI_Version.class);
 	String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Quantity.
