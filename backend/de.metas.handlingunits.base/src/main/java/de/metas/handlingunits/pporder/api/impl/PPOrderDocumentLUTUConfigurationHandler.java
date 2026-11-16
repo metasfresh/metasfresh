@@ -2,6 +2,8 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -187,6 +189,32 @@ import java.util.Properties;
 			return null;
 		}
 
+		if (isSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID())))
+		{
+			return null; // a new configuration is derived, which uses the product-specific LU item
+		}
+
 		return lutuConfiguration;
+	}
+
+	/**
+	 * @return {@code true} if the configuration's LU packing instruction has an item of its own for the product that the configuration does not use
+	 */
+	private boolean isSupersededByProductSpecificLUItem(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
+			@NonNull final ProductId productId)
+	{
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_ID());
+		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(lutuConfiguration.getM_HU_PI_Item_Product_ID());
+		if (luPIId == null || tuPIItemProductId == null || lutuConfiguration.getM_LU_HU_PI_Item_ID() <= 0)
+		{
+			return false;
+		}
+
+		return Services.get(IHandlingUnitsDAO.class)
+				.getTUPIItemForLUPIAndItemProduct(BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID()), luPIId, tuPIItemProductId, productId)
+				.filter(luPIItem -> luPIItem.getM_Product_ID() > 0)
+				.filter(luPIItem -> luPIItem.getM_HU_PI_Item_ID() != lutuConfiguration.getM_LU_HU_PI_Item_ID())
+				.isPresent();
 	}
 }
