@@ -23,8 +23,6 @@
 package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -192,8 +190,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	// lazy: IPostingService (acct module) is not on the classpath of every module that constructs an invoice BL
-	private final Supplier<IPostingService> postingServiceSupplier = Suppliers.memoize(() -> Services.get(IPostingService.class));
+	// lazy: the IPostingService implementation (de.metas.acct.base) is not available to every module that creates an invoice BL
+	@Nullable private IPostingService _postingService; // null = not yet initialized
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -2169,10 +2167,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		postingServiceSupplier.get().unpost(DocumentUnpostRequest.builder()
+		postingService().unpost(DocumentUnpostRequest.builder()
 				.document(invoice)
 				.dateAcct(TimeUtil.asInstant(invoice.getDateAcct()))
 				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
 				.build());
+	}
+
+	private IPostingService postingService()
+	{
+		IPostingService result = _postingService;
+		if (result == null)
+		{
+			result = _postingService = Services.get(IPostingService.class);
+		}
+		return result;
 	}
 }

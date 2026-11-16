@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.accounting;
 
+import de.metas.acct.posting.log.DocumentPostingLogRequestType;
 import de.metas.acct.model.I_Document_Acct_Log;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -15,7 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Remembers, per document, how many posting requests ({@link I_Document_Acct_Log}) and notes ({@link I_AD_Note}) existed at some point,
- * so that a scenario can assert that a later action did NOT queue a posting and did not raise a posting error.
+ * so that a scenario can assert that a later action did NOT queue a posting and did not raise a posting error,
+ * or (positive check) that a later action DID queue a new posting request.
  * Shared (per scenario) between the document step definitions.
  */
 public class PostingQueueChecks
@@ -32,6 +34,8 @@ public class PostingQueueChecks
 	private static class Counts
 	{
 		int logs;
+		/** only {@link DocumentPostingLogRequestType#Enqueued} entries (the PostingOK log is written after Posted=Y, so it is no new request) */
+		int enqueuedLogs;
 		int notes;
 	}
 
@@ -58,12 +62,12 @@ public class PostingQueueChecks
 
 		final long start = System.currentTimeMillis();
 		Counts current = currentCounts(documentRef);
-		while (current.getLogs() <= before.getLogs() && System.currentTimeMillis() - start < MAX_WAIT_MILLIS)
+		while (current.getEnqueuedLogs() <= before.getEnqueuedLogs() && System.currentTimeMillis() - start < MAX_WAIT_MILLIS)
 		{
 			Thread.sleep(POLL_MILLIS);
 			current = currentCounts(documentRef);
 		}
-		assertThat(current.getLogs()).as("Document_Acct_Log entries of %s since remembered (a new posting request is expected)", documentRef).isGreaterThan(before.getLogs());
+		assertThat(current.getEnqueuedLogs()).as("Document_Acct_Log entries of type Enqueued of %s since remembered (a new posting request is expected)", documentRef).isGreaterThan(before.getEnqueuedLogs());
 	}
 
 	private Counts waitUntilStable(@NonNull final TableRecordReference documentRef) throws InterruptedException
@@ -95,11 +99,17 @@ public class PostingQueueChecks
 				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
 				.create()
 				.count();
+		final int enqueuedLogs = queryBL.createQueryBuilderOutOfTrx(I_Document_Acct_Log.class)
+				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
+				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
+				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Type, DocumentPostingLogRequestType.Enqueued.getCode())
+				.create()
+				.count();
 		final int notes = queryBL.createQueryBuilderOutOfTrx(I_AD_Note.class)
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
 				.create()
 				.count();
-		return new Counts(logs, notes);
+		return new Counts(logs, enqueuedLogs, notes);
 	}
 }
