@@ -19,7 +19,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -116,34 +115,33 @@ public class ContractCompensationGroupRepository
 	 */
 	public void setProjectOnCompensationLines(@NonNull final GroupId groupId, @Nullable final ProjectId projectId)
 	{
-		setProjectOnCompensationLines(groupId, projectId, compensationLine -> true);
+		setProjectOnOrderLines(retrieveCompensationLines(groupId), projectId);
 	}
 
-	/**
-	 * Like {@link #setProjectOnCompensationLines(GroupId, ProjectId)}, but only on the compensation lines accepted by {@code lineFilter}.
-	 */
-	public void setProjectOnCompensationLines(
-			@NonNull final GroupId groupId,
-			@Nullable final ProjectId projectId,
-			@NonNull final Predicate<I_C_OrderLine> lineFilter)
+	/** Sets the given position ({@code C_OrderLine.C_Project_ID}) on those of the given order lines that do not carry it yet. */
+	public void setProjectOnOrderLines(@NonNull final List<I_C_OrderLine> orderLines, @Nullable final ProjectId projectId)
+	{
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			if (ProjectId.equals(ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()), projectId))
+			{
+				continue;
+			}
+			orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
+			InterfaceWrapperHelper.save(orderLine);
+		}
+	}
+
+	/** @return the given group's compensation (discount) lines */
+	public List<I_C_OrderLine> retrieveCompensationLines(@NonNull final GroupId groupId)
 	{
 		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
-		final List<I_C_OrderLine> compensationLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.list(I_C_OrderLine.class);
-
-		for (final I_C_OrderLine compensationLine : compensationLines)
-		{
-			if (ProjectId.equals(ProjectId.ofRepoIdOrNull(compensationLine.getC_Project_ID()), projectId) || !lineFilter.test(compensationLine))
-			{
-				continue;
-			}
-			compensationLine.setC_Project_ID(ProjectId.toRepoId(projectId));
-			InterfaceWrapperHelper.save(compensationLine);
-		}
 	}
 
 	/** @return the given group's active goods lines: neither compensation (discount) lines nor packing material lines */

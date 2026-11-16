@@ -147,8 +147,8 @@ public class ContractCompensationGroupService
 		final GroupTemplate schemaWithTakeOvers = takeOverService.applyToSchema(schema, extractDropShipInfo(order), termMatch.getSettings());
 
 		final ProjectId orderProjectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
-		final List<CandidateLine> candidateLines = findCandidateLines(orderId, schemaWithTakeOvers, orderProjectId);
-		if (candidateLines.isEmpty())
+		final CandidateSelection candidateSelection = findCandidateLines(orderId, schemaWithTakeOvers, orderProjectId);
+		if (candidateSelection.isEmpty())
 		{
 			return;
 		}
@@ -156,24 +156,17 @@ public class ContractCompensationGroupService
 		// One group per position (C_OrderLine.C_Project_ID, else the order's C_Project_ID); the goods without any position share one group.
 		// Each group computes on its own goods, so percentages, revenue-break and fixed-amount discount lines apply per position.
 		// Everything downstream (computation, shipment, invoicing) is keyed by group and so works per position.
-		final Map<Optional<ProjectId>, List<CandidateLine>> candidateLinesByPosition = candidateLines.stream()
-				.collect(Collectors.groupingBy(candidateLine -> Optional.ofNullable(candidateLine.getPositionId()), LinkedHashMap::new, Collectors.toList()));
-
-		for (final Map.Entry<Optional<ProjectId>, List<CandidateLine>> entry : candidateLinesByPosition.entrySet())
-		{
-			createGroup(termMatch, schemaWithTakeOvers, entry.getKey().orElse(null), entry.getValue());
-		}
+		candidateSelection.splitByPosition()
+				.forEach((positionId, positionSelection) -> createGroup(termMatch, schemaWithTakeOvers, positionId.orElse(null), positionSelection));
 	}
 
 	private void createGroup(
 			@NonNull final TermMatch termMatch,
 			@NonNull final GroupTemplate schema,
 			@Nullable final ProjectId positionId,
-			@NonNull final List<CandidateLine> positionLines)
+			@NonNull final CandidateSelection positionSelection)
 	{
-		final ImmutableSet<GroupCompensationBase> matchedBases = positionLines.stream()
-				.flatMap(candidateLine -> candidateLine.getMatchedBases().stream())
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<GroupCompensationBase> matchedBases = positionSelection.getMatchedBases();
 
 		// A discount line whose base (product category, packing-material category) matches none of the position's candidate lines is
 		// skipped (no 0.00 line); a discount line with no base at all always applies to the whole group.
@@ -189,7 +182,7 @@ public class ContractCompensationGroupService
 		final Group group = orderGroupRepository.prepareNewGroup()
 				.groupTemplate(schemaWithoutUnmatchedCompensationLines)
 				.flatrateTermId(FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()))
-				.createGroup(positionLines.stream().map(CandidateLine::getLineId).collect(ImmutableList.toImmutableList()));
+				.createGroup(positionSelection.getLineIds());
 
 		contractGroupRepository.setProjectOnCompensationLines(group.getGroupId(), positionId);
 	}
@@ -224,14 +217,47 @@ public class ContractCompensationGroupService
 			return;
 		}
 
-		contractGroupRepository.setProjectOnCompensationLines(groupId, position, this::hasOpenInvoiceCandidate);
+		final ImmutableList<I_C_OrderLine> compensationLinesWithOtherPosition = contractGroupRepository.retrieveCompensationLines(groupId)
+				.stream()
+				.filter(compensationLine -> !ProjectId.equals(ProjectId.ofRepoIdOrNull(compensationLine.getC_Project_ID()), position))
+				.collect(ImmutableList.toImmutableList());
+		if (compensationLinesWithOtherPosition.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<OrderLineId> lineIdsWithOnlyProcessedInvoiceCandidates = retrieveLineIdsWithOnlyProcessedInvoiceCandidates(compensationLinesWithOtherPosition);
+		final ImmutableList<I_C_OrderLine> openCompensationLines = compensationLinesWithOtherPosition.stream()
+				.filter(compensationLine -> !lineIdsWithOnlyProcessedInvoiceCandidates.contains(OrderLineId.ofRepoId(compensationLine.getC_OrderLine_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+		contractGroupRepository.setProjectOnOrderLines(openCompensationLines, position);
 	}
 
-	/** @return true if the line has no invoice candidate yet or at least one unprocessed one */
-	private boolean hasOpenInvoiceCandidate(@NonNull final I_C_OrderLine compensationLine)
+	/**
+	 * Reads the active invoice candidates of all given lines with one query.
+	 *
+	 * @return those of the given lines that have at least one (active) invoice candidate, all of them processed;
+	 * a line without any invoice candidate, or with at least one unprocessed one, is not returned
+	 */
+	private ImmutableSet<OrderLineId> retrieveLineIdsWithOnlyProcessedInvoiceCandidates(@NonNull final List<I_C_OrderLine> orderLines)
 	{
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(compensationLine.getC_OrderLine_ID()));
-		return invoiceCandidates.isEmpty() || invoiceCandidates.stream().anyMatch(invoiceCandidate -> !invoiceCandidate.isProcessed());
+		final ImmutableSet<OrderLineId> orderLineIds = orderLines.stream()
+				.map(orderLine -> OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<OrderLineId, Boolean> allProcessedByOrderLineId = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineIds(orderLineIds)
+				.stream()
+				.collect(Collectors.toMap(
+						invoiceCandidate -> OrderLineId.ofRepoId(invoiceCandidate.getC_OrderLine_ID()),
+						I_C_Invoice_Candidate::isProcessed,
+						Boolean::logicalAnd));
+
+		return allProcessedByOrderLineId.entrySet()
+				.stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)
@@ -381,7 +407,7 @@ public class ContractCompensationGroupService
 	 * A line's product categories include its ancestors; its packing-material categories come from the packing
 	 * instruction of the order line itself (none for a line without one).
 	 */
-	private List<CandidateLine> findCandidateLines(
+	private CandidateSelection findCandidateLines(
 			@NonNull final OrderId orderId,
 			@NonNull final GroupTemplate schema,
 			@Nullable final ProjectId orderProjectId)
@@ -395,7 +421,7 @@ public class ContractCompensationGroupService
 
 		if (eligibleOrderLines.isEmpty())
 		{
-			return ImmutableList.of();
+			return CandidateSelection.NONE;
 		}
 
 		final ImmutableSet<GroupCompensationBase> declaredBases = schema.getCompensationLines().stream()
@@ -434,7 +460,47 @@ public class ContractCompensationGroupService
 			}
 		}
 
-		return candidateLines.build();
+		return new CandidateSelection(candidateLines.build());
+	}
+
+	/** The order's candidate lines and what callers need from them: their ids, the bases they match, and their split by position. */
+	@Value
+	private static class CandidateSelection
+	{
+		static final CandidateSelection NONE = new CandidateSelection(ImmutableList.of());
+
+		@NonNull ImmutableList<CandidateLine> lines;
+
+		boolean isEmpty()
+		{
+			return lines.isEmpty();
+		}
+
+		ImmutableList<OrderLineId> getLineIds()
+		{
+			return lines.stream()
+					.map(CandidateLine::getLineId)
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		/** @return the schema bases that at least one of the lines falls into */
+		ImmutableSet<GroupCompensationBase> getMatchedBases()
+		{
+			return lines.stream()
+					.flatMap(candidateLine -> candidateLine.getMatchedBases().stream())
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		/** @return one selection per position, in the order of the positions' first line; the key is empty for the lines without any position */
+		ImmutableMap<Optional<ProjectId>, CandidateSelection> splitByPosition()
+		{
+			final Map<Optional<ProjectId>, ImmutableList<CandidateLine>> linesByPosition = lines.stream()
+					.collect(Collectors.groupingBy(candidateLine -> Optional.ofNullable(candidateLine.getPositionId()), LinkedHashMap::new, ImmutableList.toImmutableList()));
+
+			final ImmutableMap.Builder<Optional<ProjectId>, CandidateSelection> result = ImmutableMap.builder();
+			linesByPosition.forEach((positionId, positionLines) -> result.put(positionId, new CandidateSelection(positionLines)));
+			return result.build();
+		}
 	}
 
 	@Value
