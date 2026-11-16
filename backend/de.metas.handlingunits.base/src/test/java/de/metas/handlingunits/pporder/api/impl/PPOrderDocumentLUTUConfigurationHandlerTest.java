@@ -281,6 +281,43 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 			final I_M_HU_LUTU_Configuration newConfig = PPOrderDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(ppOrderWithStoredConfig);
 			assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(itemOfProduct.getM_HU_PI_Item_ID());
 		}
+
+		@Test
+		void derived_config_stays_on_stored_LU_PI_when_another_LU_PI_also_has_an_item_for_the_product()
+		{
+			final I_M_HU_PI otherLU = huTestHelper.createHUDefinition("otherLU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			final I_M_HU_PI_Item itemOfOtherLU = huTestHelper.createHU_PI_Item_IncludedHU(otherLU, piTU, new BigDecimal("5"));
+			itemOfOtherLU.setM_Product_ID(productId.getRepoId());
+			save(itemOfOtherLU);
+
+			final I_M_HU_PI_Item itemOfStoredLU = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+			itemOfStoredLU.setM_Product_ID(productId.getRepoId());
+			save(itemOfStoredLU);
+
+			final I_M_HU_LUTU_Configuration newConfig = PPOrderDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(ppOrderWithStoredConfig);
+
+			assertThat(newConfig.getM_LU_HU_PI_ID()).isEqualTo(storedConfig.getM_LU_HU_PI_ID());
+			assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(itemOfStoredLU.getM_HU_PI_Item_ID());
+		}
+
+		@Test
+		void keeps_stored_config_without_LU_when_product_specific_LU_item_exists()
+		{
+			final I_M_HU_LUTU_Configuration configWithoutLU = newInstance(I_M_HU_LUTU_Configuration.class);
+			configWithoutLU.setM_HU_PI_Item_Product_ID(piTU_Item_Product.getM_HU_PI_Item_Product_ID());
+			save(configWithoutLU);
+			ppOrderWithStoredConfig.setM_HU_LUTU_Configuration(configWithoutLU);
+			save(ppOrderWithStoredConfig);
+
+			final I_M_HU_PI_Item itemOfProduct = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+			itemOfProduct.setM_Product_ID(productId.getRepoId());
+			save(itemOfProduct);
+
+			final I_M_HU_LUTU_Configuration result = PPOrderDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(ppOrderWithStoredConfig);
+
+			assertThat(result).isNotNull();
+			assertThat(result.getM_HU_LUTU_Configuration_ID()).isEqualTo(configWithoutLU.getM_HU_LUTU_Configuration_ID());
+		}
 	}
 
 	private I_PP_Order createPPOrder(final I_M_HU_PI_Item_Product piTU_Item_Product, final BigDecimal qtyOrdered)

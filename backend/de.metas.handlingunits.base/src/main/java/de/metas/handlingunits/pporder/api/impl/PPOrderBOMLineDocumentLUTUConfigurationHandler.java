@@ -40,6 +40,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
+
 /**
  * Handles {@link I_PP_Order_BOMLine} lines from which we are able to receive materials
  *
@@ -73,7 +75,9 @@ import lombok.NonNull;
 				cuProductId,
 				cuUOMId,
 				bpartnerId,
-				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
+				true, // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
+				PPOrderDocumentLUTUConfigurationHandler.retrieveLUPIIdSupersededByProductSpecificLUItem(ppOrderBOMLine.getM_HU_LUTU_Configuration(), cuProductId), // stay on the stored LU packing instruction
+				BigDecimal.ZERO);
 		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, ppOrderBOMLine);
 
 		return lutuConfiguration;
@@ -124,7 +128,7 @@ import lombok.NonNull;
 			return null;
 		}
 
-		if (PPOrderDocumentLUTUConfigurationHandler.isSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID())))
+		if (PPOrderDocumentLUTUConfigurationHandler.retrieveLUPIIdSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID())) != null)
 		{
 			return null; // a new configuration is derived, which uses the product-specific LU item
 		}

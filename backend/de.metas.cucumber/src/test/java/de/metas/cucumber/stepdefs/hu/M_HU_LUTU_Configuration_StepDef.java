@@ -160,7 +160,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	 * own LU/TU configuration: the one stored on the order, else a new one derived from the packing instructions.
 	 * <p>
 	 * Required columns: {@code PP_Order_ID} (identifier) and {@code M_HU_ID.Identifier}, one or several
-	 * comma-separated identifiers, bound positionally to the created top-level HUs (ascending {@code M_HU_ID}).
+	 * comma-separated identifiers, bound positionally to the created top-level HUs in the order the producer returns them.
 	 * <pre>
 	 * And receive HUs for PP_Order with its default M_HU_LUTU_Configuration:
 	 *   | PP_Order_ID | M_HU_ID.Identifier |
