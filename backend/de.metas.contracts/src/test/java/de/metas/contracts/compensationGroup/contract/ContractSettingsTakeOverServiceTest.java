@@ -15,6 +15,7 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
+import de.metas.order.compensationGroup.GroupTemplateLineId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
@@ -211,7 +212,7 @@ class ContractSettingsTakeOverServiceTest
 	void twoContractGroupsSharingOneSchemaLine_countTheSchemaLineOnce()
 	{
 		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
-		final int schemaLineId = createSchemaLine();
+		final GroupTemplateLineId schemaLineId = createSchemaLine();
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3").withSchemaLineId(schemaLineId));
 		addContractGroupWithDiscountLine(salesOrder, new LineSpec(BONUS_WARE_ID, "3").withSchemaLineId(schemaLineId));
 		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
@@ -1115,11 +1116,11 @@ class ContractSettingsTakeOverServiceTest
 				.build();
 	}
 
-	private static int createSchemaLine()
+	private static GroupTemplateLineId createSchemaLine()
 	{
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
 		saveRecord(schemaLine);
-		return schemaLine.getC_CompensationGroup_SchemaLine_ID();
+		return GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID());
 	}
 
 	private I_C_Order createSalesOrderWithLines(final LineSpec... lines)
@@ -1179,9 +1180,9 @@ class ContractSettingsTakeOverServiceTest
 		line.setGroupCompensationType(spec.compensationType);
 		line.setGroupCompensationAmtType(spec.amtType);
 		line.setGroupCompensationPercentage(new BigDecimal(spec.percentage));
-		if (spec.schemaLineId > 0)
+		if (spec.schemaLineId != null)
 		{
-			line.setC_CompensationGroup_SchemaLine_ID(spec.schemaLineId);
+			line.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(spec.schemaLineId));
 		}
 		saveRecord(line);
 	}
@@ -1192,13 +1193,7 @@ class ContractSettingsTakeOverServiceTest
 		final String compensationType;
 		final String amtType;
 		final String percentage;
-		int schemaLineId;
-
-		LineSpec withSchemaLineId(final int schemaLineId)
-		{
-			this.schemaLineId = schemaLineId;
-			return this;
-		}
+		@Nullable final GroupTemplateLineId schemaLineId;
 
 		LineSpec(final ProductId productId, final String percentage)
 		{
@@ -1207,10 +1202,26 @@ class ContractSettingsTakeOverServiceTest
 
 		LineSpec(final ProductId productId, final String compensationType, final String amtType, final String percentage)
 		{
+			this(productId, compensationType, amtType, percentage, null);
+		}
+
+		private LineSpec(
+				final ProductId productId,
+				final String compensationType,
+				final String amtType,
+				final String percentage,
+				@Nullable final GroupTemplateLineId schemaLineId)
+		{
 			this.productId = productId;
 			this.compensationType = compensationType;
 			this.amtType = amtType;
 			this.percentage = percentage;
+			this.schemaLineId = schemaLineId;
+		}
+
+		LineSpec withSchemaLineId(final GroupTemplateLineId schemaLineId)
+		{
+			return new LineSpec(productId, compensationType, amtType, percentage, schemaLineId);
 		}
 	}
 }
