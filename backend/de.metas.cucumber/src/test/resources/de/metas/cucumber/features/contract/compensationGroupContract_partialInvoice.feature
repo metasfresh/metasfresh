@@ -1340,15 +1340,25 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ic_ps2                            |
       | ic_psB1                           |
       | ic_psB2                           |
+    # the position 1 candidates carry the date of their first invoice, the position 2 candidates have none yet: their header aggregation keys
+    # differ (DateInvoiced, DateAcct), so they get two invoices; position 2 with its Bonus is one of them, position 1's rest follows on the other
+    # (invoicePS1 is mapped again to itself, the rest invoice of position 1 gets its own identifier)
     Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
-      | invoicePS2              | ic_ps2                            |
-    And validate invoice lines for invoicePS2:
+      | C_Invoice_ID.Identifier        | C_Invoice_Candidate_ID.Identifier |
+      | invoicePS1,invoicePS1Rest      | ic_ps1                            |
+      | invoicePS2                     | ic_ps2                            |
+    And validate invoice lines for invoicePS1Rest:
       | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
       | goods1          | 8           | position1    | 80         |
-      | goods2          | 1           | position2    | 185        |
       | discountProduct | 1           | position1    | -2.40      |
+    And validate invoice lines for invoicePS2:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods2          | 1           | position2    | 185        |
       | discountProduct | 1           | position2    | -5.55      |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyInvoiced | NetAmtInvoiced | Processed |
+      | ic_ps1                            | 20          | 200            | true      |
+      | ic_ps2                            | 1           | 185            | true      |
 
     # per position the invoiced Bonus equals the order line: -3.60 - 2.40 = -6.00 and -5.55
     And validate C_Invoice_Candidate:
@@ -1440,3 +1450,318 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ic_sg1                            | 80              |
       | ic_sg2                            | 185             |
       | ic_sgB                            | -7.95           |
+
+
+  # ##############################################################################################
+  # Partial shipment with C_Invoice_Candidate_Close_PartiallyInvoiced = Y (a customer instance value): the partially invoiced candidate is closed
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC17d_singleGroup_closePartiallyInvoicedY
+  Scenario: Partial shipment of an order with one position, partially invoiced candidates closed (customer setting): Bonus amounts as before
+    # a customer instance runs with this value (as does the default of a fresh database): a partially invoiced candidate is closed
+    Given temporarily set sys config boolean value true for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier | C_Project_ID |
+      | orderSG    | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    | position1    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | ol_sg1     | orderSG               | goods1                  | 20         | 10    | position1    |
+      | ol_sg2     | orderSG               | goods2                  | 1          | 185   | position1    |
+    And the order identified by orderSG is completed
+
+    # 3 % of 200 + 185 = 11.55
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_sgBonus                | orderSG               | discountProduct         | 1          | true                        | -11.55 | mainTerm                          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_sg1     | ol_sg1                    | N             |
+      | ss_sg2     | ol_sg2                    | N             |
+      | ss_sgB     | ol_sgBonus                | N             |
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_sg1                | 12                                              |
+      | ss_sgB                |                                                 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_sg1 | shipmentSG1 |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_sg1         | ic_sg1                 |
+      | ol_sg2         | ic_sg2                 |
+      | ol_sgBonus     | ic_sgB                 |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_sg1                 |
+      | ic_sg2                 |
+      | ic_sgB                 |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_sg1                            | 120             |
+      | ic_sg2                            | 0               |
+      | ic_sgB                            | -3.6            |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_sg1                            | 12              |
+      | ic_sg2                            | 0               |
+      | ic_sgB                            | 1               |
+
+    When update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | ss_sg1                            | 8                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_sg1                            |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_sg1                |
+      | ss_sg2                |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_sg2 | shipmentSG2 |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_sg1                 |
+      | ic_sg2                 |
+      | ic_sgB                 |
+    # with this setting the partially invoiced goods candidate (12 of 20 units) is closed: its remaining 8 units are not invoiceable any more.
+    # The Bonus candidate is not closed (its quantity 1 is fully invoiced) and follows the goods shipped since: 3 % of 185 = 5.55
+    # (a result of the setting as it is today, same before and after the per-position Bonus)
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice | NetAmtInvoiced | Processed |
+      | ic_sg1                            | 0               | 120            | true      |
+      | ic_sg2                            | 185             | 0              | false     |
+      | ic_sgB                            | -5.55           | -3.6           | false     |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC5_partialShipmentTwoPositions_closePartiallyInvoicedY
+  Scenario: Partial shipment of position 1, partially invoiced candidates closed (customer setting): Bonus per position
+    # a customer instance runs with this value (as does the default of a fresh database): a partially invoiced candidate is closed
+    Given temporarily set sys config boolean value true for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderPS    | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | ol_ps1     | orderPS               | goods1                  | 20         | 10    | position1    |
+      | ol_ps2     | orderPS               | goods2                  | 1          | 185   | position2    |
+    And the order identified by orderPS is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_psBonus1               | orderPS               | discountProduct         | 1          | true                        | -6.00 | mainTerm                          | position1    |
+      | ol_psBonus2               | orderPS               | discountProduct         | 1          | true                        | -5.55 | mainTerm                          | position2    |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_ps1     | ol_ps1                    | N             |
+      | ss_ps2     | ol_ps2                    | N             |
+      | ss_psB1    | ol_psBonus1               | N             |
+      | ss_psB2    | ol_psBonus2               | N             |
+
+    # first delivery: 12 of the 20 units of position 1 and the Bonus line of position 1
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_ps1                | 12                                              |
+      | ss_psB1               |                                                 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_ps1 | shipmentPS1 |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_ps1         | ic_ps1                 |
+      | ol_ps2         | ic_ps2                 |
+      | ol_psBonus1    | ic_psB1                |
+      | ol_psBonus2    | ic_psB2                |
+
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_ps1                 |
+      | ic_ps2                 |
+      | ic_psB1                |
+      | ic_psB2                |
+    # the Bonus of position 1 is 3 % of the 120,00 delivered; position 2 has nothing delivered
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_ps1                            | 120             |
+      | ic_ps2                            | 0               |
+      | ic_psB1                           | -3.6            |
+      | ic_psB2                           | 0               |
+
+    # position 1 alone: only its group is selected, no incomplete-group error
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_ps1                            | 12              |
+      | ic_psB1                           | 1               |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoicePS1              | ic_ps1                            |
+    And validate invoice lines for invoicePS1:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 12          | position1    | 120        |
+      | discountProduct | 1           | position1    | -3.60      |
+
+    # second delivery: the remaining 8 units of position 1, all of position 2 with its Bonus line
+    When update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | ss_ps1                            | 8                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_ps1                            |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_ps1                |
+      | ss_ps2                |
+      | ss_psB2               |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_ps2 | shipmentPS2 |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_ps1                 |
+      | ic_ps2                 |
+      | ic_psB1                |
+      | ic_psB2                |
+    # with this setting position 1 (partially invoiced) and its Bonus are closed: the rest of its goods and of its Bonus are not invoiceable any more;
+    # position 2 and its Bonus were not invoiced so far and follow in full
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_ps1                            | 0               |
+      | ic_ps2                            | 185             |
+      | ic_psB1                           | 0               |
+      | ic_psB2                           | -5.55           |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_ps2                            |
+      | ic_psB2                           |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoicePS2              | ic_ps2                            |
+    And validate invoice lines for invoicePS2:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods2          | 1           | position2    | 185        |
+      | discountProduct | 1           | position2    | -5.55      |
+
+    # position 1's Bonus stays at what its first partial invoice carried; position 2's Bonus is invoiced in full
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtInvoiced | Processed |
+      | ic_psB1                           | -3.6           | true      |
+      | ic_psB2                           | -5.55          | true      |
+
+  # ##############################################################################################
+  # The reference case with its packing lines (the real order has packing lines on positions 1 and 2): packing material is not in the Bonus base,
+  # the Bonus per position is the same as without packing lines
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC1_referenceCase_packingLines
+  Scenario: Goods with packing lines on two positions and without position: one Bonus line per position, packing lines stay out of the Bonus base
+    Given metasfresh contains M_Product_Categories:
+      | Identifier |
+      | packCat    |
+    And metasfresh contains M_Products:
+      | Identifier  | OPT.M_Product_Category_ID.Identifier | OPT.IsStocked |
+      | packProduct | packCat                              | false         |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_pack    | contractPLV                       | packProduct             | 5        | PCE               | Normal                        |
+    And metasfresh contains M_HU_PackingMaterial:
+      | Identifier | M_Product_ID.Identifier | IsInvoiceable |
+      | pmPack     | packProduct             | N             |
+    And metasfresh contains M_HU_PI:
+      | Identifier |
+      | piPack     |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier | M_HU_PI_ID.Identifier | HU_UnitType | IsCurrent |
+      | piPackV    | piPack                | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | M_HU_PackingMaterial_ID.Identifier |
+      | piPackItem | piPackV                       | 0   | PM       | pmPack                             |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | pipGoods1  | piPackItem                 | goods1                  | 1   |
+      | pipGoods2  | piPackItem                 | goods2                  | 1   |
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderRefP  | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_refP1   | orderRefP             | goods1                  | 1          | 110   | position1    | pipGoods1                              |
+      | ol_refP2   | orderRefP             | goods2                  | 1          | 220   | position2    | pipGoods2                              |
+      | ol_refP3   | orderRefP             | goods3                  | 1          | 55    |              |                                        |
+
+    When the order identified by orderRefP is completed
+
+    # packing lines (priced 5,00 each) exist on the order, but only the goods carry the Bonus: 3 % of 110,00 / 220,00 / 55,00
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_refPBonus1             | orderRefP             | discountProduct         | 1          | true                        | -3.30 | mainTerm                          | position1    |
+      | ol_refPBonus2             | orderRefP             | discountProduct         | 1          | true                        | -6.60 | mainTerm                          | position2    |
+      | ol_refPBonus3             | orderRefP             | discountProduct         | 1          | true                        | -1.65 | mainTerm                          | null         |
+    And the order identified by orderRefP has 8 order lines
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_refP1   | ol_refP1                  | N             |
+      | ss_refP2   | ol_refP2                  | N             |
+      | ss_refP3   | ol_refP3                  | N             |
+      | ss_refPB1  | ol_refPBonus1             | N             |
+      | ss_refPB2  | ol_refPBonus2             | N             |
+      | ss_refPB3  | ol_refPBonus3             | N             |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_refP1              |
+      | ss_refP2              |
+      | ss_refP3              |
+      | ss_refPB1             |
+      | ss_refPB2             |
+      | ss_refPB3             |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_refP1                         | shipmentRefP          |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_refP1       | ic_refP1               |
+      | ol_refP2       | ic_refP2               |
+      | ol_refP3       | ic_refP3               |
+      | ol_refPBonus1  | ic_refPB1              |
+      | ol_refPBonus2  | ic_refPB2              |
+      | ol_refPBonus3  | ic_refPB3              |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
+      | ic_refP1                          | Y                         |
+      | ic_refP2                          | Y                         |
+      | ic_refP3                          | Y                         |
+      | ic_refPB1                         | Y                         |
+      | ic_refPB2                         | Y                         |
+      | ic_refPB3                         | Y                         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoiceRefP             | ic_refP1                          |
+
+    Then validate invoice lines for invoiceRefP:
+      | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goods1          | 1           | position1    | 110        |
+      | goods2          | 1           | position2    | 220        |
+      | goods3          | 1           | null         | 55         |
+      | discountProduct | 1           | position1    | -3.30      |
+      | discountProduct | 1           | position2    | -6.60      |
+      | discountProduct | 1           | null         | -1.65      |

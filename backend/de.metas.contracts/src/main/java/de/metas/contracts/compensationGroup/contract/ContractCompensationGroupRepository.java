@@ -4,16 +4,19 @@ import com.google.common.collect.ImmutableList;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -50,7 +53,7 @@ import java.util.List;
  * {@code InvoiceCandidateGroupRepository}.
  * <p>
  * Persistence primitives for a contract-created {@code C_Order_CompensationGroup}: stamping the term it came
- * from, and the plumbing {@link ContractCompensationGroupService} needs to remove one again.
+ * from, the position on its discount lines, and the plumbing {@link ContractCompensationGroupService} needs to remove one again.
  */
 @Repository
 public class ContractCompensationGroupRepository
@@ -104,6 +107,27 @@ public class ContractCompensationGroupRepository
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.delete();
+	}
+
+	/**
+	 * Sets the given position ({@code C_OrderLine.C_Project_ID}) on the given group's compensation (discount) lines,
+	 * so that each line carries the position its group's goods are on (also when {@code projectId} is {@code null}).
+	 */
+	public void setProjectOnCompensationLines(@NonNull final GroupId groupId, @Nullable final ProjectId projectId)
+	{
+		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
+		final List<I_C_OrderLine> compensationLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
+				.create()
+				.list(I_C_OrderLine.class);
+
+		for (final I_C_OrderLine compensationLine : compensationLines)
+		{
+			compensationLine.setC_Project_ID(ProjectId.toRepoId(projectId));
+			InterfaceWrapperHelper.save(compensationLine);
+		}
 	}
 
 	/**

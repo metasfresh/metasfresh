@@ -31,6 +31,7 @@ import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +44,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -70,8 +74,8 @@ import java.util.Optional;
  */
 
 /**
- * (Re)creates the compensation group that a {@code Type_Conditions=CompensationGroup} contract adds to an
- * order on every completion attempt (sales or purchase; remove-then-recreate, so a reactivated order that is
+ * (Re)creates the compensation group(s) that a {@code Type_Conditions=CompensationGroup} contract adds to an
+ * order on every completion attempt, one group per position (sales or purchase; remove-then-recreate, so a reactivated order that is
  * never re-completed simply keeps the group from its last completion attempt).
  * <p>
  * The order is matched to its contract by <b>invoice partner</b> ({@code Bill_BPartner_ID}), not by the
@@ -110,8 +114,10 @@ public class ContractCompensationGroupService
 	/**
 	 * Removes this order's contract-created compensation group(s) (if any), then, if the order's invoice
 	 * partner has an active {@code CompensationGroup} contract whose settings list the order's document type
-	 * and whose period covers the order date, (re)creates the group from the order's current, not-yet-grouped
-	 * lines that fall into the base (product and/or packing-material category) of one of the schema's discount lines.
+	 * and whose period covers the order date, (re)creates the group(s) from the order's current, not-yet-grouped
+	 * lines that fall into the base (product and/or packing-material category) of one of the schema's discount lines:
+	 * one group per position ({@code C_OrderLine.C_Project_ID}, else the order's {@code C_Project_ID}), whose discount
+	 * lines carry that position; the lines without any position share one group.
 	 * <p>
 	 * A no-op (beyond the removal) when no contract matches, or when no order line qualifies as a candidate.
 	 */
@@ -137,27 +143,52 @@ public class ContractCompensationGroupService
 		// before candidate selection, so that a take-over category joins it
 		final GroupTemplate schemaWithTakeOvers = takeOverService.applyToSchema(schema, extractDropShipInfo(order), termMatch.getSettings());
 
-		final CandidateSelection candidateSelection = findCandidateLines(orderId, schemaWithTakeOvers);
-		if (candidateSelection.getLineIds().isEmpty())
+		final ProjectId orderProjectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
+		final List<CandidateLine> candidateLines = findCandidateLines(orderId, schemaWithTakeOvers, orderProjectId);
+		if (candidateLines.isEmpty())
 		{
 			return;
 		}
 
-		// A discount line whose base (product category, packing-material category) matches none of the candidate lines is
+		// One group per position (C_OrderLine.C_Project_ID, else the order's C_Project_ID); the goods without any position share one group.
+		// Each group computes on its own goods, so percentages, revenue-break and fixed-amount discount lines apply per position.
+		// Everything downstream (computation, shipment, invoicing) is keyed by group and so works per position.
+		final Map<Optional<ProjectId>, List<CandidateLine>> candidateLinesByPosition = candidateLines.stream()
+				.collect(Collectors.groupingBy(candidateLine -> Optional.ofNullable(candidateLine.getPositionId()), LinkedHashMap::new, Collectors.toList()));
+
+		for (final Map.Entry<Optional<ProjectId>, List<CandidateLine>> entry : candidateLinesByPosition.entrySet())
+		{
+			createGroup(termMatch, schemaWithTakeOvers, entry.getKey().orElse(null), entry.getValue());
+		}
+	}
+
+	private void createGroup(
+			@NonNull final TermMatch termMatch,
+			@NonNull final GroupTemplate schema,
+			@Nullable final ProjectId positionId,
+			@NonNull final List<CandidateLine> positionLines)
+	{
+		final ImmutableSet<GroupCompensationBase> matchedBases = positionLines.stream()
+				.flatMap(candidateLine -> candidateLine.getMatchedBases().stream())
+				.collect(ImmutableSet.toImmutableSet());
+
+		// A discount line whose base (product category, packing-material category) matches none of the position's candidate lines is
 		// skipped (no 0.00 line); a discount line with no base at all always applies to the whole group.
-		final GroupTemplate schemaWithoutUnmatchedCompensationLines = schemaWithTakeOvers.toBuilder()
+		final GroupTemplate schemaWithoutUnmatchedCompensationLines = schema.toBuilder()
 				.clearCompensationLines()
-				.compensationLines(schemaWithTakeOvers.getCompensationLines().stream()
+				.compensationLines(schema.getCompensationLines().stream()
 						.filter(compensationLine -> compensationLine.getBase().isNone()
-								|| candidateSelection.getMatchedBases().contains(compensationLine.getBase()))
+								|| matchedBases.contains(compensationLine.getBase()))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 
 		// the header carries the term before its lines join the group, so that the lines' interceptors already see a contract-created group
-		orderGroupRepository.prepareNewGroup()
+		final Group group = orderGroupRepository.prepareNewGroup()
 				.groupTemplate(schemaWithoutUnmatchedCompensationLines)
 				.flatrateTermId(FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()))
-				.createGroup(candidateSelection.getLineIds());
+				.createGroup(positionLines.stream().map(CandidateLine::getLineId).collect(ImmutableList.toImmutableList()));
+
+		contractGroupRepository.setProjectOnCompensationLines(group.getGroupId(), positionId);
 	}
 
 	private OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)
@@ -300,14 +331,17 @@ public class ContractCompensationGroupService
 	 * freight-cost line, carrying a product (a product-less charge line cannot be part of a {@link Group}) —
 	 * and, when every one of the schema's discount lines has a base (product category and/or packing-material category),
 	 * only those lines that match the base of at least one discount line (when at least one discount line has no base,
-	 * every eligible line is a candidate) — together with the subset of the schema's bases that at least one of
-	 * those candidate lines actually falls into. The latter is used to drop a discount line whose base
-	 * matches none of the order's lines, so it never becomes a spurious 0.00 line.
+	 * every eligible line is a candidate) — each with its position and the subset of the schema's bases it falls into.
+	 * The latter is used to drop, per position, a discount line whose base matches none of the position's lines,
+	 * so it never becomes a spurious 0.00 line.
 	 * <p>
 	 * A line's product categories include its ancestors; its packing-material categories come from the packing
 	 * instruction of the order line itself (none for a line without one).
 	 */
-	private CandidateSelection findCandidateLines(@NonNull final OrderId orderId, @NonNull final GroupTemplate schema)
+	private List<CandidateLine> findCandidateLines(
+			@NonNull final OrderId orderId,
+			@NonNull final GroupTemplate schema,
+			@Nullable final ProjectId orderProjectId)
 	{
 		final ImmutableList<I_C_OrderLine> eligibleOrderLines = contractGroupRepository.retrieveActiveRegularOrderLines(orderId)
 				.stream()
@@ -318,7 +352,7 @@ public class ContractCompensationGroupService
 
 		if (eligibleOrderLines.isEmpty())
 		{
-			return CandidateSelection.NONE;
+			return ImmutableList.of();
 		}
 
 		final ImmutableSet<GroupCompensationBase> declaredBases = schema.getCompensationLines().stream()
@@ -335,8 +369,7 @@ public class ContractCompensationGroupService
 						? OrderGroupRepository.retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(eligibleOrderLines)
 						: ImmutableMap.of();
 
-		final ImmutableList.Builder<OrderLineId> candidateLineIds = ImmutableList.builder();
-		final ImmutableSet.Builder<GroupCompensationBase> matchedBases = ImmutableSet.builder();
+		final ImmutableList.Builder<CandidateLine> candidateLines = ImmutableList.builder();
 		for (final I_C_OrderLine orderLine : eligibleOrderLines)
 		{
 			final GroupRegularLine regularLine = OrderGroupRepository.buildCategoryOnlyRegularLine(
@@ -351,20 +384,22 @@ public class ContractCompensationGroupService
 			final boolean isCandidate = hasCompensationLineWithoutBase || !lineMatchedBases.isEmpty();
 			if (isCandidate)
 			{
-				candidateLineIds.add(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
-				matchedBases.addAll(lineMatchedBases);
+				// a goods line without a position of its own counts as the order's position
+				final ProjectId lineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+				final ProjectId positionId = lineProjectId != null ? lineProjectId : orderProjectId;
+				candidateLines.add(new CandidateLine(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()), positionId, lineMatchedBases));
 			}
 		}
 
-		return new CandidateSelection(candidateLineIds.build(), matchedBases.build());
+		return candidateLines.build();
 	}
 
 	@Value
-	private static class CandidateSelection
+	private static class CandidateLine
 	{
-		static final CandidateSelection NONE = new CandidateSelection(ImmutableList.of(), ImmutableSet.of());
-
-		ImmutableList<OrderLineId> lineIds;
+		OrderLineId lineId;
+		/** the line's position ({@code C_OrderLine.C_Project_ID}, else the order's {@code C_Project_ID}); null if there is none */
+		@Nullable ProjectId positionId;
 		ImmutableSet<GroupCompensationBase> matchedBases;
 	}
 }
