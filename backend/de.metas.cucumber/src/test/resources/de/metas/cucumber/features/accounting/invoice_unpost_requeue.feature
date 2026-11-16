@@ -57,3 +57,102 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     When the material receipt identified by receipt is reversed as receiptReversal
 
     Then Wait until documents invoice are posted
+
+  @Id:S33766_11
+  Scenario: the reversed invoices stay unposted when the material receipt is reversed after the invoice was reversed
+    Given for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+    And for costing, create completed material receipt with one line
+      | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
+      | po_l1          | receipt    | receipt_line1  |
+    And for costing, create completed invoice with one line
+      | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
+      | invoice      | po_l1          | matchInv      |
+    And Wait until documents invoice are posted
+    And the invoice identified by invoice is reversed
+    And the reversal of invoice invoice is identified by invoiceReversal
+    And Wait until documents invoice,invoiceReversal are posted
+    And the posting requests of invoice "invoice" are remembered
+    And the posting requests of invoice "invoiceReversal" are remembered
+
+    When the material receipt identified by receipt is reversed as receiptReversal
+
+    Then invoice "invoice" got no new posting request and no note
+    And invoice "invoiceReversal" got no new posting request and no note
+    And the invoice "invoice" is not posted and has no Fact_Acct lines
+    And the invoice "invoiceReversal" is not posted and has no Fact_Acct lines
+
+  @Id:S33766_13
+  Scenario: reversing the material receipt adds no posting request for a purchase invoice that is not posted yet
+    Given for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+    And for costing, create completed material receipt with one line
+      | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
+      | po_l1          | receipt    | receipt_line1  |
+    # accounting off while the invoice is completed: the invoice is completed but never queued for posting
+    And temporarily set sys config boolean value false for sys config 'org.adempiere.acct.Enabled'
+    And for costing, create completed invoice with one line
+      | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
+      | invoice      | po_l1          | matchInv      |
+    And set sys config boolean value true for sys config org.adempiere.acct.Enabled
+    And the invoice "invoice" is not posted and has no Fact_Acct lines
+    And the posting requests of invoice "invoice" are remembered
+
+    When the material receipt identified by receipt is reversed as receiptReversal
+
+    Then invoice "invoice" got no new posting request and no note
+    And the invoice "invoice" is not posted and has no Fact_Acct lines
+
+  @Id:S33766_20
+  Scenario: the posted invoice is posted again after "Steuer berechnen"
+    Given for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+    And for costing, create completed material receipt with one line
+      | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
+      | po_l1          | receipt    | receipt_line1  |
+    And for costing, create completed invoice with one line
+      | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
+      | invoice      | po_l1          | matchInv      |
+    And Wait until documents invoice are posted
+
+    When the InvoiceCalculateTax process is invoked for invoice "invoice"
+
+    Then Wait until documents invoice are posted
+
+  @Id:S33766_21
+  Scenario: "Steuer berechnen" on a drafted invoice adds no posting request
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | draftInv   | bpartner      | Ausgangsrechnung        | 2027-03-15   | Spot                     | true    | CHF                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | draftLine  | draftInv     | product      | 5 PCE       |
+    And the posting requests of invoice "draftInv" are remembered
+
+    When the InvoiceCalculateTax process is invoked for invoice "draftInv"
+
+    Then invoice "draftInv" got no new posting request and no note
+    And the invoice "draftInv" is not posted and has no Fact_Acct lines
+
+  @Id:S33766_12
+  Scenario: the posted purchase invoice is posted again after a material match was created for it
+    Given for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+    And for costing, create completed material receipt with one line
+      | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
+      | po_l1          | receipt    | receipt_line1  |
+    And for costing, create completed invoice with one line
+      | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
+      | invoice      | po_l1          | matchInv      |
+    And Wait until documents invoice are posted
+    # the match is removed (invoice posted again without it), then created again: the posted invoice has to be booked again
+    And the material matches of receipt line "receipt_line1" are deleted
+    And Wait until documents invoice are posted
+
+    When a material match of invoice "invoice" and receipt line "receipt_line1" is created
+
+    Then Wait until documents invoice are posted

@@ -5,8 +5,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_Note;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Note;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class PostingQueueChecks
 {
-	/** The posting after-commit message is sent asynchronously; give it time to show up before asserting that nothing happened. */
-	private static final long WAIT_BEFORE_NEGATIVE_CHECK_MILLIS = 5000;
+	/** The posting after-commit message is processed asynchronously: a negative check polls until the counts stayed unchanged for {@link #STABLE_MILLIS} (at most {@link #MAX_WAIT_MILLIS}). */
+	private static final long POLL_MILLIS = 250;
+	private static final long STABLE_MILLIS = 2000;
+	private static final long MAX_WAIT_MILLIS = 15000;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final Map<String, Counts> remembered = new HashMap<>();
@@ -43,11 +45,31 @@ public class PostingQueueChecks
 		final Counts before = remembered.get(key(tableModelClass, recordId));
 		assertThat(before).as("counts remembered for %s %s", tableModelClass.getSimpleName(), recordId).isNotNull();
 
-		Thread.sleep(WAIT_BEFORE_NEGATIVE_CHECK_MILLIS);
-
-		final Counts now = currentCounts(tableModelClass, recordId);
+		final Counts now = waitUntilStable(tableModelClass, recordId);
 		assertThat(now.getLogs()).as("Document_Acct_Log entries of %s %s (enqueued / posting_ok / posting_error) since remembered", tableModelClass.getSimpleName(), recordId).isEqualTo(before.getLogs());
 		assertThat(now.getNotes()).as("AD_Note entries of %s %s since remembered", tableModelClass.getSimpleName(), recordId).isEqualTo(before.getNotes());
+	}
+
+	private Counts waitUntilStable(@NonNull final Class<?> tableModelClass, final int recordId) throws InterruptedException
+	{
+		final long start = System.currentTimeMillis();
+		Counts last = currentCounts(tableModelClass, recordId);
+		long lastChange = start;
+		while (true)
+		{
+			Thread.sleep(POLL_MILLIS);
+			final long now = System.currentTimeMillis();
+			final Counts current = currentCounts(tableModelClass, recordId);
+			if (!current.equals(last))
+			{
+				last = current;
+				lastChange = now;
+			}
+			if (now - lastChange >= STABLE_MILLIS || now - start >= MAX_WAIT_MILLIS)
+			{
+				return current;
+			}
+		}
 	}
 
 	private Counts currentCounts(@NonNull final Class<?> tableModelClass, final int recordId)

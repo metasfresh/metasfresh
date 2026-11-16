@@ -22,10 +22,10 @@
 
 package de.metas.banking.service.impl;
 
-import de.metas.acct.api.DocumentUnpostRequest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.DocumentUnpostRequest;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.banking.BankAccountId;

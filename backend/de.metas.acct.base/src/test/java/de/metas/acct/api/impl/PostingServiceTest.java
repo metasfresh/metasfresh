@@ -9,10 +9,8 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
-import de.metas.acct.posting.DocumentPostingBusService;
-import java.sql.Timestamp;
-import org.adempiere.exceptions.AdempiereException;
 import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.user.UserId;
@@ -30,7 +28,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -38,7 +38,9 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -242,7 +244,7 @@ public class PostingServiceTest
 			verify(factAcctDAO).deleteForDocumentModel(invoice);
 			InterfaceWrapperHelper.refresh(invoice);
 			assertThat(invoice.isPosted()).isFalse();
-			final org.mockito.ArgumentCaptor<DocumentPostMultiRequest> captor = org.mockito.ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
+			final ArgumentCaptor<DocumentPostMultiRequest> captor = ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
 			verify(postingBusService).sendAfterCommit(captor.capture());
 			assertThat(captor.getValue().toSet()).hasSize(1);
 			final DocumentPostRequest posting = captor.getValue().toSet().iterator().next();
@@ -265,7 +267,7 @@ public class PostingServiceTest
 		void closedPeriod_nothingIsChanged()
 		{
 			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
-			org.mockito.Mockito.doThrow(new AdempiereException("period closed")).when(periodBL).testPeriodOpen(any(), any(), any(), org.mockito.ArgumentMatchers.anyInt());
+			doThrow(new AdempiereException("period closed")).when(periodBL).testPeriodOpen(any(), any(), any(), anyInt());
 
 			assertThatThrownBy(() -> postingService.unpost(requestFor(invoice))).hasMessageContaining("period closed");
 

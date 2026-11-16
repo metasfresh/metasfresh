@@ -18,12 +18,13 @@ package org.eevolution.process;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MPeriod;
 
-import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.DocumentUnpostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.document.DocTypeId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -80,12 +81,14 @@ public class InvoiceCalculateTax extends JavaProcess
 
 		//
 		// Delete accounting /UnPost
-		MPeriod.testPeriodOpen(invoice.getCtx(), invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());
-		Services.get(IFactAcctDAO.class).deleteForDocument(invoice);
+		Services.get(IPostingService.class).unpost(DocumentUnpostRequest.builder()
+				.document(invoice)
+				.dateAcct(invoice.getDateAcct())
+				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+				.build());
 		//
 		// Update Invoice
 		invoice.calculateTaxTotal();
-		invoice.setPosted(false);
 		invoice.saveEx();
 
 		// FRESH-152 Update bpartner stats

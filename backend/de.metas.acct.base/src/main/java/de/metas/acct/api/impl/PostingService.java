@@ -18,6 +18,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.ReferencedRecordRepository;
@@ -26,10 +27,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import de.metas.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.acct.Doc;
@@ -93,7 +92,7 @@ public class PostingService implements IPostingService
 
 		factAcctDAO.deleteForDocumentModel(document);
 
-		setNotPosted(document);
+		InterfaceWrapperHelper.setValue(document, "Posted", false);
 		InterfaceWrapperHelper.save(document);
 
 		final String docStatus = InterfaceWrapperHelper.getValueOrNull(document, "DocStatus");
@@ -105,21 +104,6 @@ public class PostingService implements IPostingService
 					.clientId(ClientId.ofRepoId(InterfaceWrapperHelper.<Integer>getValueOrNull(document, "AD_Client_ID")))
 					.onErrorNotifyUserId(updatedBy != null && updatedBy > 0 ? UserId.ofRepoId(updatedBy) : null)
 					.build());
-		}
-	}
-
-	/**
-	 * {@code Posted} is not updateable through the generic setter ("Column not updateable"), so we set it the same way the generated {@code setPosted} does.
-	 */
-	private static void setNotPosted(@NonNull final Object document)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			InterfaceWrapperHelper.setValue(document, "Posted", false);
-		}
-		else
-		{
-			InterfaceWrapperHelper.getPO(document).set_ValueNoCheck("Posted", false);
 		}
 	}
 

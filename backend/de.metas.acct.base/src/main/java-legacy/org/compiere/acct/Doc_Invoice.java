@@ -23,7 +23,8 @@ import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.InvoiceAccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.DocumentUnpostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
@@ -31,6 +32,7 @@ import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -53,7 +55,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MPeriod;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -61,7 +62,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -1101,6 +1101,9 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return optionalSalesOrderId.orElse(null);
 	}
 
+	/**
+	 * Un-posts the invoice if it is posted, through {@link IPostingService#unpost(DocumentUnpostRequest)}, which also queues it for posting again when it is completed or closed.
+	 */
 	public static void unpostIfNeeded(final I_C_Invoice invoice)
 	{
 		if (!invoice.isPosted())
@@ -1108,14 +1111,11 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		// Make sure the period is open
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		MPeriod.testPeriodOpen(ctx, invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());
-
-		Services.get(IFactAcctDAO.class).deleteForDocumentModel(invoice);
-
-		invoice.setPosted(false);
-		InterfaceWrapperHelper.save(invoice);
+		Services.get(IPostingService.class).unpost(DocumentUnpostRequest.builder()
+				.document(invoice)
+				.dateAcct(invoice.getDateAcct())
+				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+				.build());
 	}
 
 }   // Doc_Invoice

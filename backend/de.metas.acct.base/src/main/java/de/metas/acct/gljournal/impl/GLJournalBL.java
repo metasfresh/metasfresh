@@ -23,11 +23,11 @@ package de.metas.acct.gljournal.impl;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.DocumentUnpostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.gljournal.IGLJournalBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
-import de.metas.acct.api.DocumentUnpostRequest;
-import de.metas.acct.api.IPostingService;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;

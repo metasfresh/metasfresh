@@ -38,6 +38,7 @@ import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.PostingQueueChecks;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -119,9 +120,11 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
+import org.eevolution.process.InvoiceCalculateTax;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -209,7 +212,7 @@ public class C_Invoice_StepDef
 	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
-	private final de.metas.cucumber.stepdefs.accounting.PostingQueueChecks postingQueueChecks;
+	private final PostingQueueChecks postingQueueChecks;
 
 	/**
 	 * Validates {@code C_Invoice} records against expected values.
@@ -1058,7 +1061,7 @@ public class C_Invoice_StepDef
 	public void invoke_InvoiceCalculateTax_process(@NonNull final String invoiceIdentifier)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(org.eevolution.process.InvoiceCalculateTax.class);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(InvoiceCalculateTax.class);
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
 				.stream()
@@ -1104,9 +1107,9 @@ public class C_Invoice_StepDef
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 		InterfaceWrapperHelper.refresh(invoice);
 		assertThat(invoice.isPosted()).as("C_Invoice.Posted of %s", invoiceIdentifier).isFalse();
-		final int factCount = queryBL.createQueryBuilder(org.compiere.model.I_Fact_Acct.class)
-				.addEqualsFilter(org.compiere.model.I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
-				.addEqualsFilter(org.compiere.model.I_Fact_Acct.COLUMNNAME_Record_ID, invoice.getC_Invoice_ID())
+		final int factCount = queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, invoice.getC_Invoice_ID())
 				.create()
 				.count();
 		assertThat(factCount).as("Fact_Acct lines of invoice %s", invoiceIdentifier).isZero();
