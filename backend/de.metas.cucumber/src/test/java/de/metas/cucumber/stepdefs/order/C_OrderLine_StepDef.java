@@ -462,6 +462,8 @@ public class C_OrderLine_StepDef
 	 * also narrows the lookup, so that two compensation lines with the same product and quantity can be told apart;
 	 * so does {@code OPT.GroupCompensationPercentage} when given, for two such lines that share the category as well;
 	 * and {@code C_Project_ID} (identifier of a {@code C_Project}, or {@code null} for no project), for lines that differ only by their position.
+	 * <p>
+	 * {@code OPT.Line} only asserts the {@code C_OrderLine.Line} sequence number (e.g. to pin the order of the lines); it does not narrow the lookup.
 	 * <pre>
 	 * And validate the created order lines
 	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
@@ -1040,7 +1042,7 @@ public class C_OrderLine_StepDef
 	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
 	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
 	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
-	 *       C_Tax_ID, ExternalId, C_Project_ID, GroupCompensationCalibrationFactor,
+	 *       C_Tax_ID, ExternalId, C_Project_ID, Line (the C_OrderLine.Line number), GroupCompensationCalibrationFactor,
 	 *       GroupCompensationQtyEnteredUncalibrated and C_CompensationGroup_CalibrationRule_ID — each also accepts
 	 *       the literal {@code null} to assert an empty value — and GroupCompensation_Product_Category_ID
 	 *       (identifier-ref to an M_Product_Category; {@code null} asserts none))</li>
@@ -1154,6 +1156,9 @@ public class C_OrderLine_StepDef
 					.orElseGet(() -> taxCategoryIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
 			softly.assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
 		}
+
+		row.getAsOptionalInt(I_C_OrderLine.COLUMNNAME_Line)
+				.ifPresent(expectedLine -> softly.assertThat(orderLine.getLine()).as("Line for Identifier=%s", identifierStr).isEqualTo(expectedLine));
 
 		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.ifPresent(orderIdentifier -> softly.assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID()));

@@ -1105,11 +1105,15 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
     When the order identified by orderRef is completed
 
     # 3 % of 110,00 / 220,00 / 55,00, each Bonus line on its own position
+    # Line: each Bonus line directly after the goods of its own position (the goods without position come last here only because they were entered last)
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
-      | ol_refBonus1              | orderRef              | discountProduct         | 1          | true                        | -3.30 | mainTerm                          | position1    |
-      | ol_refBonus2              | orderRef              | discountProduct         | 1          | true                        | -6.60 | mainTerm                          | position2    |
-      | ol_refBonus3              | orderRef              | discountProduct         | 1          | true                        | -1.65 | mainTerm                          | null         |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID | OPT.Line |
+      | ol_ref1                   | orderRef              | goods1                  | 1          | false                       | 110   | mainTerm                          | position1    | 10       |
+      | ol_refBonus1              | orderRef              | discountProduct         | 1          | true                        | -3.30 | mainTerm                          | position1    | 20       |
+      | ol_ref2                   | orderRef              | goods2                  | 1          | false                       | 220   | mainTerm                          | position2    | 30       |
+      | ol_refBonus2              | orderRef              | discountProduct         | 1          | true                        | -6.60 | mainTerm                          | position2    | 40       |
+      | ol_ref3                   | orderRef              | goods3                  | 1          | false                       | 55    | mainTerm                          | null         | 50       |
+      | ol_refBonus3              | orderRef              | discountProduct         | 1          | true                        | -1.65 | mainTerm                          | null         | 60       |
     And the order identified by orderRef has 6 order lines
 
     And after not more than 60s, M_ShipmentSchedules are found:

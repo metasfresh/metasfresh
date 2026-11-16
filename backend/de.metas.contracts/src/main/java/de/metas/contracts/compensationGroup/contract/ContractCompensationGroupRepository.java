@@ -186,7 +186,7 @@ public class ContractCompensationGroupRepository
 	/**
 	 * @return this order's active, non-compensation regular lines (candidates for a new group — NOT filtered
 	 * by group membership; a line already in a different group is still returned here, and the caller filters
-	 * that separately via {@code OrderGroupCompensationUtils.isNotInGroup(...)})
+	 * that separately via {@code OrderGroupCompensationUtils.isNotInGroup(...)}), ordered by {@code Line}, then {@code C_OrderLine_ID}
 	 */
 	public List<I_C_OrderLine> retrieveActiveRegularOrderLines(@NonNull final OrderId orderId)
 	{
@@ -194,6 +194,9 @@ public class ContractCompensationGroupRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, false)
+				// in line order: the positions' groups, and so their Bonus lines, follow the order of their goods lines
+				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.create()
 				.list(I_C_OrderLine.class);
 	}
