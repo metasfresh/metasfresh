@@ -379,7 +379,9 @@ public final class SumUpApiStub
 			}
 			else
 			{
-				respond(exchange, 404, "{\"error\":\"not found\"}");
+				// not 404: the client reads a 404 of the lookup as "SumUp does not know the transaction", so a request to a path
+				// the stub does not serve (e.g. an outdated API path) would pass as a programmed not-found answer
+				respond(exchange, 501, "{\"error\":\"stub: unrouted " + method + " " + uri.getPath().replace('"', '\'') + "\"}");
 			}
 		}
 		catch (final Exception ex)

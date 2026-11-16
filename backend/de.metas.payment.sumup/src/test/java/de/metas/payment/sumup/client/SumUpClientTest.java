@@ -46,6 +46,20 @@ class SumUpClientTest
 	private static final String BASE_URL = "http://stub/v0.1";
 	private static final SumUpCardReaderExternalId READER_ID = SumUpCardReaderExternalId.ofString("R1");
 
+	/**
+	 * Body as answered by SumUp's "Retrieve a transaction": a single transaction object, not wrapped.
+	 */
+	private static final String TRANSACTION_JSON = "{"
+			+ "\"id\":\"TX1\","
+			+ "\"transaction_code\":\"TCODE1\","
+			+ "\"client_transaction_id\":\"CTX1\","
+			+ "\"merchant_code\":\"M1\","
+			+ "\"timestamp\":\"2026-11-16T08:55:19Z\","
+			+ "\"status\":\"SUCCESSFUL\","
+			+ "\"amount\":10.0,"
+			+ "\"currency\":\"EUR\""
+			+ "}";
+
 	private MockRestServiceServer server;
 	private IErrorManager errorManager;
 	private SumUpClient client;
@@ -156,20 +170,6 @@ class SumUpClientTest
 	}
 
 	/**
-	 * Body as answered by SumUp's "Retrieve a transaction": a single transaction object, not wrapped.
-	 */
-	private static final String TRANSACTION_JSON = "{"
-			+ "\"id\":\"TX1\","
-			+ "\"transaction_code\":\"TCODE1\","
-			+ "\"client_transaction_id\":\"CTX1\","
-			+ "\"merchant_code\":\"M1\","
-			+ "\"timestamp\":\"2026-11-16T08:55:19Z\","
-			+ "\"status\":\"SUCCESSFUL\","
-			+ "\"amount\":10.0,"
-			+ "\"currency\":\"EUR\""
-			+ "}";
-
-	/**
 	 * SumUp answers 404 to every v0.1 {@code /me/transactions} lookup; "Retrieve a transaction" exists only as
 	 * {@code GET /v2.1/merchants/{merchant_code}/transactions} (https://developer.sumup.com/api/transactions/get).
 	 */
@@ -222,6 +222,34 @@ class SumUpClientTest
 	{
 		assertThat(SumUpClient.toTransactionsApiBaseUrl("https://api.sumup.com/v0.1")).isEqualTo("https://api.sumup.com/v2.1");
 		assertThat(SumUpClient.toTransactionsApiBaseUrl("http://wiremock:8080/sumup/v0.1/")).isEqualTo("http://wiremock:8080/sumup/v2.1");
+	}
+
+	/**
+	 * A base URL the lookup cannot be derived from fails the lookup (which the poller records as an issue), but not the reader calls.
+	 */
+	@Test
+	void baseUrlWithoutTrailingV01Segment_failsOnlyTheLookup()
+	{
+		final RestTemplate restTemplate = new RestTemplate();
+		final MockRestServiceServer otherServer = MockRestServiceServer.bindTo(restTemplate).build();
+		final SumUpClient clientWithOtherBaseUrl = SumUpClient.builder()
+				.errorManager(errorManager)
+				.logRepository(Mockito.mock(SumUpLogRepository.class))
+				.jsonObjectMapper(JsonObjectMapperHolder.sharedJsonObjectMapper())
+				.configId(SumUpConfigId.ofRepoId(1))
+				.apiKey("key")
+				.merchantCode(SumUpMerchantCode.ofString("M1"))
+				.baseUrl("http://proxy/sumup")
+				.restTemplate(restTemplate)
+				.build();
+		otherServer.expect(requestTo("http://proxy/sumup/merchants/M1/readers/R1/terminate")).andExpect(method(POST)).andRespond(withSuccess());
+
+		clientWithOtherBaseUrl.terminateCardReaderCheckout(READER_ID);
+		otherServer.verify();
+
+		assertThatThrownBy(() -> clientWithOtherBaseUrl.getTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("sumup.baseUrl");
 	}
 
 	@Test

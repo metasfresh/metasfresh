@@ -54,12 +54,9 @@ public class SumUpClient
 	@NonNull private final SumUpMerchantCode merchantCode;
 	/**
 	 * Base of SumUp API v0.1 (e.g. {@code https://api.sumup.com/v0.1}), from {@code sumup.baseUrl}: the reader and refund calls.
+	 * The transaction lookup uses API v2.1, see {@link #toTransactionsApiBaseUrl(String)}.
 	 */
 	@NonNull private final String baseUrl;
-	/**
-	 * Base of SumUp API v2.1, derived from {@link #baseUrl}: the transaction lookup, see {@link #toTransactionsApiBaseUrl(String)}.
-	 */
-	@NonNull private final String transactionsApiBaseUrl;
 
 	@NonNull private final RestTemplate restTemplate;
 
@@ -90,7 +87,6 @@ public class SumUpClient
 		this.apiKey = apiKey;
 		this.merchantCode = merchantCode;
 		this.baseUrl = baseUrl;
-		this.transactionsApiBaseUrl = toTransactionsApiBaseUrl(baseUrl);
 
 		this.restTemplate = restTemplate != null
 				? restTemplate
@@ -106,7 +102,8 @@ public class SumUpClient
 	 * {@code /me/transactions} lookup answers 404 even for transactions that exist. The reader endpoints are v0.1, which is
 	 * what {@code sumup.baseUrl} names, so the v2.1 base is that URL with its trailing {@code /v0.1} replaced by {@code /v2.1}.
 	 *
-	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}
+	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}; thrown by the lookup only, so the reader
+	 *                             calls keep working and the poller records the failed lookup like any other
 	 */
 	@VisibleForTesting
 	static String toTransactionsApiBaseUrl(@NonNull final String baseUrl)
@@ -265,22 +262,7 @@ public class SumUpClient
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpClientTransactionId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(transactionsApiBaseUrl)
-				.pathSegment("merchants", merchantCode.getAsString(), "transactions")
-				.queryParam("client_transaction_id", id.getAsString())
-				.toUriString();
-
-		final String json = httpCall(uri, HttpMethod.GET, null, String.class);
-
-		try
-		{
-			return jsonObjectMapper.readValue(json, JsonGetTransactionResponse.class)
-					.withJson(json);
-		}
-		catch (JsonProcessingException ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+		return getTransaction("client_transaction_id", id.getAsString());
 	}
 
 	/**
@@ -288,9 +270,14 @@ public class SumUpClient
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpTransactionExternalId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(transactionsApiBaseUrl)
+		return getTransaction("id", id.getAsString());
+	}
+
+	private JsonGetTransactionResponse getTransaction(@NonNull final String queryParamName, @NonNull final String queryParamValue)
+	{
+		final String uri = UriComponentsBuilder.fromHttpUrl(toTransactionsApiBaseUrl(baseUrl))
 				.pathSegment("merchants", merchantCode.getAsString(), "transactions")
-				.queryParam("id", id.getAsString())
+				.queryParam(queryParamName, queryParamValue)
 				.toUriString();
 
 		final String json = httpCall(uri, HttpMethod.GET, null, String.class);
