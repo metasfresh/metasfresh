@@ -200,7 +200,7 @@ import java.util.Properties;
 	/**
 	 * @return {@code true} if the configuration's LU packing instruction has an item of its own for the product that the configuration does not use
 	 */
-	private boolean isSupersededByProductSpecificLUItem(
+	/* package */ static boolean isSupersededByProductSpecificLUItem(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
 			@NonNull final ProductId productId)
 	{

@@ -124,6 +124,11 @@ import lombok.NonNull;
 			return null;
 		}
 
+		if (PPOrderDocumentLUTUConfigurationHandler.isSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID())))
+		{
+			return null; // a new configuration is derived, which uses the product-specific LU item
+		}
+
 		return lutuConfiguration;
 	}
 }
