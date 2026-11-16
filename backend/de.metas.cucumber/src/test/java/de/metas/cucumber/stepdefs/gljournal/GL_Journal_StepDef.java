@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
+import de.metas.cucumber.stepdefs.accounting.PostingQueueChecks;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -71,6 +72,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
+import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_Journal;
 import org.compiere.model.X_GL_JournalLine;
@@ -112,7 +114,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GL_Journal_StepDef
 {
 	@NonNull private final GL_Journal_StepDefData glJournalTable;
+	@NonNull private final GL_JournalBatch_StepDefData glJournalBatchTable;
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
+	@NonNull private final PostingQueueChecks postingQueueChecks;
 
 	private final GLCategoryRepository glCategoryRepository = SpringContextHolder.instance.getBean(GLCategoryRepository.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
@@ -125,9 +129,38 @@ public class GL_Journal_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
+	 * Creates GL journal batches in the standard org with the default GL journal document type.
+	 * <b>Columns</b>: {@code Identifier} (required), {@code PostingType} (optional, default {@code A}).
+	 */
+	@Given("metasfresh contains GL_JournalBatch:")
+	public void createGLJournalBatches(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier identifier = row.getAsIdentifier();
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(DocBaseType.GLJournal)
+					.adClientId(StepDefConstants.CLIENT_ID.getRepoId())
+					.adOrgId(StepDefConstants.ORG_ID.getRepoId())
+					.build());
+
+			final I_GL_JournalBatch record = InterfaceWrapperHelper.newInstance(I_GL_JournalBatch.class);
+			record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+			record.setC_DocType_ID(docTypeId.getRepoId());
+			record.setDocumentNo("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
+			record.setDescription("cucumber GL journal batch " + identifier.getAsString());
+			record.setPostingType(row.getAsOptionalString(I_GL_JournalBatch.COLUMNNAME_PostingType).orElse(X_GL_Journal.POSTINGTYPE_Actual));
+			record.setDocStatus(IDocument.STATUS_Drafted);
+			record.setDocAction(IDocument.ACTION_Complete);
+			InterfaceWrapperHelper.saveRecord(record);
+
+			glJournalBatchTable.putOrReplace(identifier, record);
+		});
+	}
+
+	/**
 	 * Creates drafted GL journal headers (no batch) in the primary accounting schema, with the default GL journal document type.
 	 * <b>Columns</b>: {@code Identifier} (required), {@code DateDoc} (required), {@code DateAcct} (optional, default DateDoc),
-	 * {@code PostingType} (optional, default {@code A}).
+	 * {@code PostingType} (optional, default {@code A}), {@code GL_JournalBatch_ID} (optional, identifier of a batch created with {@code metasfresh contains GL_JournalBatch:}).
 	 */
 	@Given("metasfresh contains GL_Journal:")
 	public void createGLJournals(@NonNull final DataTable dataTable)
@@ -164,6 +197,9 @@ public class GL_Journal_StepDef
 		record.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		record.setCurrencyRate(BigDecimal.ONE);
 		record.setGL_Category_ID(glCategoryId.getRepoId());
+		row.getAsOptionalIdentifier(I_GL_Journal.COLUMNNAME_GL_JournalBatch_ID)
+				.map(batchIdentifier -> batchIdentifier.lookupNotNullIn(glJournalBatchTable))
+				.ifPresent(batch -> record.setGL_JournalBatch_ID(batch.getGL_JournalBatch_ID()));
 		record.setDescription("cucumber GL journal " + identifier.getAsString());
 		record.setDocStatus(IDocument.STATUS_Drafted);
 		record.setDocAction(IDocument.ACTION_Complete);
@@ -225,6 +261,70 @@ public class GL_Journal_StepDef
 		InterfaceWrapperHelper.refresh(record);
 	}
 
+	@When("the GL journal {string} is reactivated")
+	public void reactivateGLJournal(@NonNull final String identifier)
+	{
+		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
+		InterfaceWrapperHelper.refresh(record);
+		documentBL.processEx(record, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+		InterfaceWrapperHelper.refresh(record);
+	}
+
+	/** Remembers the number of posting requests ({@code Document_Acct_Log}) and notes ({@code AD_Note}) of the journal. */
+	@And("the posting requests of GL journal {string} are remembered")
+	public void rememberPostingRequests(@NonNull final String identifier)
+	{
+		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
+		postingQueueChecks.remember(I_GL_Journal.class, record.getGL_Journal_ID());
+	}
+
+	/** Waits a few seconds (posting is asynchronous), then asserts that no posting request and no note was created since {@code the posting requests of GL journal ... are remembered}. */
+	@Then("GL journal {string} got no new posting request and no note")
+	public void assertNoNewPostingRequest(@NonNull final String identifier) throws InterruptedException
+	{
+		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
+		postingQueueChecks.assertNothingNewSinceRemembered(I_GL_Journal.class, record.getGL_Journal_ID());
+	}
+
+	/** The journal is not posted and has no accounting entries (nothing queued it again). */
+	@Then("the GL journal {string} is not posted and has no Fact_Acct lines")
+	public void assertNotPosted(@NonNull final String identifier)
+	{
+		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
+		InterfaceWrapperHelper.refresh(record);
+		assertThat(record.isPosted()).as("GL_Journal.Posted of %s", identifier).isFalse();
+		final int factAcctCount = queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_GL_Journal.class))
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, record.getGL_Journal_ID())
+				.create()
+				.count();
+		assertThat(factAcctCount).as("Fact_Acct lines of %s", identifier).isZero();
+	}
+
+	@Then("the GL journal {string} has GL_Journal.PostingType {string}")
+	public void assertPostingType(@NonNull final String identifier, @NonNull final String postingType)
+	{
+		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
+		InterfaceWrapperHelper.refresh(record);
+		assertThat(record.getPostingType()).as("GL_Journal.PostingType of %s", identifier).isEqualTo(postingType);
+	}
+
+	@Then("the GL journal batch {string} has GL_JournalBatch.PostingType {string}")
+	public void assertBatchPostingType(@NonNull final String identifier, @NonNull final String postingType)
+	{
+		final I_GL_JournalBatch record = glJournalBatchTable.get(StepDefDataIdentifier.ofString(identifier));
+		InterfaceWrapperHelper.refresh(record);
+		assertThat(record.getPostingType()).as("GL_JournalBatch.PostingType of %s", identifier).isEqualTo(postingType);
+	}
+
+	@When("the GL_Journal_ChangePostingType process is invoked for GL journal batch {string} with PostingType {string}")
+	public void invokeChangePostingTypeOnBatch(@NonNull final String identifier, @NonNull final String postingType)
+	{
+		final I_GL_JournalBatch batch = glJournalBatchTable.get(StepDefDataIdentifier.ofString(identifier));
+		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, ClientId.ofRepoId(batch.getAD_Client_ID()),
+				I_GL_JournalBatch.Table_Name, batch.getGL_JournalBatch_ID(), builder -> builder.addParameter("PostingType", postingType));
+	}
+
 	/**
 	 * Runs the year-end process ({@link GL_Journal_GenerateYearEnding}) for the primary accounting schema and the standard org, as the WebUI role.
 	 * It creates one drafted GL journal with {@code PostingType=S} that moves the balances of all expense/revenue accounts
@@ -238,7 +338,7 @@ public class GL_Journal_StepDef
 
 		final Set<Integer> idsBefore = retrieveYearEndingJournalIds(dateAcctTs);
 
-		runProcessAsWebUIRole(GL_Journal_GenerateYearEnding.class, StepDefConstants.CLIENT_ID, null, builder -> builder
+		runProcessAsWebUIRole(GL_Journal_GenerateYearEnding.class, StepDefConstants.CLIENT_ID, null, 0, builder -> builder
 				.addParameter(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, acctSchema.getId().getRepoId())
 				.addParameter(I_GL_Journal.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID.getRepoId())
 				.addParameter(I_GL_Journal.COLUMNNAME_DateAcct, dateAcctTs));
@@ -268,13 +368,14 @@ public class GL_Journal_StepDef
 	public void invokeChangePostingType(@NonNull final String identifier, @NonNull final String postingType)
 	{
 		final I_GL_Journal journal = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, ClientId.ofRepoId(journal.getAD_Client_ID()), journal, builder -> builder.addParameter("PostingType", postingType));
+		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, ClientId.ofRepoId(journal.getAD_Client_ID()), I_GL_Journal.Table_Name, journal.getGL_Journal_ID(), builder -> builder.addParameter("PostingType", postingType));
 	}
 
 	private void runProcessAsWebUIRole(
 			@NonNull final Class<?> processClass,
 			@NonNull final ClientId clientId,
-			@Nullable final I_GL_Journal record,
+			@Nullable final String recordTableName,
+			final int recordId,
 			@NonNull final Consumer<ProcessInfo.ProcessInfoBuilder> parameterSetter)
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
@@ -292,9 +393,9 @@ public class GL_Journal_StepDef
 				.setClientId(clientId)
 				.setRoleId(roleId)
 				.setCreateTemporaryCtx();
-		if (record != null)
+		if (recordTableName != null)
 		{
-			builder.setRecord(I_GL_Journal.Table_Name, record.getGL_Journal_ID());
+			builder.setRecord(recordTableName, recordId);
 		}
 		parameterSetter.accept(builder);
 
