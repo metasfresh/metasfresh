@@ -584,7 +584,7 @@ test('Reopen LU: a shipped LU is listed greyed out, the other closed LU can be r
     await PickingJobScreen.clickReopenLUButton();
     await ReopenLUScreen.waitForScreen();
     await ReopenLUScreen.expectClosedLUs({ total: 2, enabled: 1, disabled: 1 });
-    await ReopenLUScreen.expectDisabledLUWithLabel({ label: 'Versendet' });
+    await ReopenLUScreen.expectDisabledLUWithLabel({ label: 'Geliefert' });
     await ErrorToast.expectNoErrorToast();
 
     await ReopenLUScreen.expectEnabledLUWithName({ name: masterdata.packingInstructions.PI.luName });

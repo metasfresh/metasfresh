@@ -162,8 +162,6 @@ const translations = {
       },
       overPickConfirmationPrompt: 'Do you really want to pack more than ordered?',
       reopenLU: 'Reopen LU',
-      luStatusShipped: 'Shipped',
-      luStatusDestroyed: 'Destroyed',
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
       noMatchingLines: 'No matching lines found',
