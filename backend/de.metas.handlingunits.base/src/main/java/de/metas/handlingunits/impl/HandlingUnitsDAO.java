@@ -970,13 +970,24 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return parentPIItems;
 	}
 
+	/**
+	 * Note: a parent built from a product-specific PI item keeps that item for any further child of the given PI (also if it holds aggregated TUs).
+	 * This assumes a single-product parent (LU); the child's own product is not considered.
+	 */
 	@Override
 	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
 	{
 		// a parent that was built from a product-specific PI item keeps that item for the child PI
 		// (the query below has no product context, so it would never return it)
-		for (final I_M_HU_Item existingItem : retrieveItems(parentHU, HUItemType.HandlingUnit))
+		// (an LU holding aggregated TUs has them under an aggregate item; that item also carries the PI item)
+		for (final I_M_HU_Item existingItem : retrieveItems(parentHU))
 		{
+			if (!HUItemType.HandlingUnit.getCode().equals(existingItem.getItemType())
+					&& !HUItemType.HUAggregate.getCode().equals(existingItem.getItemType()))
+			{
+				continue;
+			}
+
 			final I_M_HU_PI_Item existingPIItem = existingItem.getM_HU_PI_Item();
 			if (existingPIItem != null
 					&& existingPIItem.isActive()
