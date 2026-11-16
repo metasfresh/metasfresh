@@ -40,7 +40,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
-import de.metas.cucumber.stepdefs.accounting.PostingQueueChecks;
+import de.metas.cucumber.stepdefs.process.AD_Process_Run_StepDef;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -50,13 +50,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
-import de.metas.security.IRoleDAO;
-import de.metas.security.Role;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -68,14 +63,12 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_Journal;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -114,7 +107,7 @@ public class GL_Journal_StepDef
 {
 	@NonNull private final GL_Journal_StepDefData glJournalTable;
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
-	@NonNull private final PostingQueueChecks postingQueueChecks;
+	@NonNull private final AD_Process_Run_StepDef processRunStepDef;
 
 	private final GLCategoryRepository glCategoryRepository = SpringContextHolder.instance.getBean(GLCategoryRepository.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
@@ -123,7 +116,6 @@ public class GL_Journal_StepDef
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
@@ -238,37 +230,6 @@ public class GL_Journal_StepDef
 		InterfaceWrapperHelper.refresh(record);
 	}
 
-	/** Remembers the number of posting requests ({@code Document_Acct_Log}) and notes ({@code AD_Note}) of the journal. */
-	@And("the posting requests of GL journal {string} are remembered")
-	public void rememberPostingRequests(@NonNull final String identifier)
-	{
-		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		postingQueueChecks.remember(I_GL_Journal.class, record.getGL_Journal_ID());
-	}
-
-	/** Waits a few seconds (posting is asynchronous), then asserts that no posting request and no note was created since {@code the posting requests of GL journal ... are remembered}. */
-	@Then("GL journal {string} got no new posting request and no note")
-	public void assertNoNewPostingRequest(@NonNull final String identifier) throws InterruptedException
-	{
-		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		postingQueueChecks.assertNothingNewSinceRemembered(I_GL_Journal.class, record.getGL_Journal_ID());
-	}
-
-	/** The journal is not posted and has no accounting entries (nothing queued it again). */
-	@Then("the GL journal {string} is not posted and has no Fact_Acct lines")
-	public void assertNotPosted(@NonNull final String identifier)
-	{
-		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		InterfaceWrapperHelper.refresh(record);
-		assertThat(record.isPosted()).as("GL_Journal.Posted of %s", identifier).isFalse();
-		final int factAcctCount = queryBL.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_GL_Journal.class))
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, record.getGL_Journal_ID())
-				.create()
-				.count();
-		assertThat(factAcctCount).as("Fact_Acct lines of %s", identifier).isZero();
-	}
-
 	/** Asserts the current {@code GL_Journal.PostingType} of the journal. */
 	@Then("the GL journal {string} has GL_Journal.PostingType {string}")
 	public void assertPostingType(@NonNull final String identifier, @NonNull final String postingType)
@@ -291,7 +252,7 @@ public class GL_Journal_StepDef
 
 		final Set<Integer> idsBefore = retrieveYearEndingJournalIds(dateAcctTs);
 
-		runProcessAsWebUIRole(GL_Journal_GenerateYearEnding.class, StepDefConstants.CLIENT_ID, null, 0, builder -> builder
+		runProcessAsWebUIRole(GL_Journal_GenerateYearEnding.class, null, 0, builder -> builder
 				.addParameter(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, acctSchema.getId().getRepoId())
 				.addParameter(I_GL_Journal.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID.getRepoId())
 				.addParameter(I_GL_Journal.COLUMNNAME_DateAcct, dateAcctTs));
@@ -321,31 +282,16 @@ public class GL_Journal_StepDef
 	public void invokeChangePostingType(@NonNull final String identifier, @NonNull final String postingType)
 	{
 		final I_GL_Journal journal = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, ClientId.ofRepoId(journal.getAD_Client_ID()), I_GL_Journal.Table_Name, journal.getGL_Journal_ID(), builder -> builder.addParameter("PostingType", postingType));
+		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, I_GL_Journal.Table_Name, journal.getGL_Journal_ID(), builder -> builder.addParameter("PostingType", postingType));
 	}
 
 	private void runProcessAsWebUIRole(
 			@NonNull final Class<?> processClass,
-			@NonNull final ClientId clientId,
 			@Nullable final String recordTableName,
 			final int recordId,
 			@NonNull final Consumer<ProcessInfo.ProcessInfoBuilder> parameterSetter)
 	{
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
-
-		final UserId loggedUserId = Env.getLoggedUserId();
-		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
-				.stream()
-				.filter(r -> "WebUI".equals(r.getName()))
-				.map(Role::getId)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
-
-		final ProcessInfo.ProcessInfoBuilder builder = ProcessInfo.builder()
-				.setAD_Process_ID(processId.getRepoId())
-				.setClientId(clientId)
-				.setRoleId(roleId)
-				.setCreateTemporaryCtx();
+		final ProcessInfo.ProcessInfoBuilder builder = processRunStepDef.newProcessInfoBuilder(adProcessDAO.retrieveProcessIdByClass(processClass));
 		if (recordTableName != null)
 		{
 			builder.setRecord(recordTableName, recordId);

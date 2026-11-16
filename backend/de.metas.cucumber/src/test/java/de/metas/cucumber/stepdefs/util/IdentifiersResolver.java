@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
 import de.metas.cucumber.stepdefs.customs.C_Customs_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
+import de.metas.cucumber.stepdefs.gljournal.GL_Journal_StepDefData;
 import de.metas.cucumber.stepdefs.gljournal_sap.SAP_GLJournal_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -63,6 +64,7 @@ import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
@@ -95,6 +97,7 @@ public class IdentifiersResolver
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final SAP_GLJournal_StepDefData sapGLJournalTable;
+	@NonNull private final GL_Journal_StepDefData glJournalTable;
 	@NonNull private final C_Customs_Invoice_StepDefData customsInvoiceTable;
 	@NonNull private final M_Locator_StepDefData locatorTable;
 
@@ -172,6 +175,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		sapGLJournalTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_SAP_GLJournal.Table_Name, id))
+				.ifPresent(result::add);
+		glJournalTable.getOptional(identifier)
+				.map(glJournal -> TableRecordReference.of(I_GL_Journal.Table_Name, glJournal.getGL_Journal_ID()))
 				.ifPresent(result::add);
 		customsInvoiceTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_C_Customs_Invoice.Table_Name, id))

@@ -5,7 +5,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
 
 import java.util.HashMap;
@@ -26,7 +26,7 @@ public class PostingQueueChecks
 	private static final long MAX_WAIT_MILLIS = 15000;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final Map<String, Counts> remembered = new HashMap<>();
+	private final Map<TableRecordReference, Counts> remembered = new HashMap<>();
 
 	@Value
 	private static class Counts
@@ -35,31 +35,31 @@ public class PostingQueueChecks
 		int notes;
 	}
 
-	public void remember(@NonNull final Class<?> tableModelClass, final int recordId)
+	public void remember(@NonNull final TableRecordReference documentRef)
 	{
-		remembered.put(key(tableModelClass, recordId), currentCounts(tableModelClass, recordId));
+		remembered.put(documentRef, currentCounts(documentRef));
 	}
 
-	public void assertNothingNewSinceRemembered(@NonNull final Class<?> tableModelClass, final int recordId) throws InterruptedException
+	public void assertNothingNewSinceRemembered(@NonNull final TableRecordReference documentRef) throws InterruptedException
 	{
-		final Counts before = remembered.get(key(tableModelClass, recordId));
-		assertThat(before).as("counts remembered for %s %s", tableModelClass.getSimpleName(), recordId).isNotNull();
+		final Counts before = remembered.get(documentRef);
+		assertThat(before).as("counts remembered for %s", documentRef).isNotNull();
 
-		final Counts now = waitUntilStable(tableModelClass, recordId);
-		assertThat(now.getLogs()).as("Document_Acct_Log entries of %s %s (enqueued / posting_ok / posting_error) since remembered", tableModelClass.getSimpleName(), recordId).isEqualTo(before.getLogs());
-		assertThat(now.getNotes()).as("AD_Note entries of %s %s since remembered", tableModelClass.getSimpleName(), recordId).isEqualTo(before.getNotes());
+		final Counts now = waitUntilStable(documentRef);
+		assertThat(now.getLogs()).as("Document_Acct_Log entries of %s (enqueued / posting_ok / posting_error) since remembered", documentRef).isEqualTo(before.getLogs());
+		assertThat(now.getNotes()).as("AD_Note entries of %s since remembered", documentRef).isEqualTo(before.getNotes());
 	}
 
-	private Counts waitUntilStable(@NonNull final Class<?> tableModelClass, final int recordId) throws InterruptedException
+	private Counts waitUntilStable(@NonNull final TableRecordReference documentRef) throws InterruptedException
 	{
 		final long start = System.currentTimeMillis();
-		Counts last = currentCounts(tableModelClass, recordId);
+		Counts last = currentCounts(documentRef);
 		long lastChange = start;
 		while (true)
 		{
 			Thread.sleep(POLL_MILLIS);
 			final long now = System.currentTimeMillis();
-			final Counts current = currentCounts(tableModelClass, recordId);
+			final Counts current = currentCounts(documentRef);
 			if (!current.equals(last))
 			{
 				last = current;
@@ -72,21 +72,18 @@ public class PostingQueueChecks
 		}
 	}
 
-	private Counts currentCounts(@NonNull final Class<?> tableModelClass, final int recordId)
+	private Counts currentCounts(@NonNull final TableRecordReference documentRef)
 	{
-		final int tableId = InterfaceWrapperHelper.getTableId(tableModelClass);
 		final int logs = queryBL.createQueryBuilderOutOfTrx(I_Document_Acct_Log.class)
-				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_AD_Table_ID, tableId)
-				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
+				.addEqualsFilter(I_Document_Acct_Log.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
 				.create()
 				.count();
 		final int notes = queryBL.createQueryBuilderOutOfTrx(I_AD_Note.class)
-				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, tableId)
-				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
 				.create()
 				.count();
 		return new Counts(logs, notes);
 	}
-
-	private static String key(final Class<?> tableModelClass, final int recordId) {return tableModelClass.getSimpleName() + "#" + recordId;}
 }

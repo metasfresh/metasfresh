@@ -38,8 +38,8 @@ import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.accounting.PostingQueueChecks;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.process.AD_Process_Run_StepDef;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
@@ -99,7 +99,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.Builder;
 import lombok.NonNull;
@@ -120,7 +119,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -212,7 +210,7 @@ public class C_Invoice_StepDef
 	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
-	private final PostingQueueChecks postingQueueChecks;
+	private final AD_Process_Run_StepDef processRunStepDef;
 
 	/**
 	 * Validates {@code C_Invoice} records against expected values.
@@ -1056,26 +1054,13 @@ public class C_Invoice_StepDef
 		});
 	}
 
-	/** Runs the "Steuer berechnen" process ({@code InvoiceCalculateTax}) for the invoice as the WebUI role. */
+	/** Runs the "Steuer berechnen" process ({@code InvoiceCalculateTax}) for the invoice, as the WebUI role. */
 	@When("the InvoiceCalculateTax process is invoked for invoice {string}")
 	public void invoke_InvoiceCalculateTax_process(@NonNull final String invoiceIdentifier)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(InvoiceCalculateTax.class);
-		final UserId loggedUserId = Env.getLoggedUserId();
-		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
-				.stream()
-				.filter(r -> "WebUI".equals(r.getName()))
-				.map(Role::getId)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
 
-		ProcessInfo.builder()
-				.setAD_Process_ID(processId.getRepoId())
-				.setClientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
-				.setRoleId(roleId)
-				.setCreateTemporaryCtx()
-				.setTableName(I_C_Invoice.Table_Name)
+		processRunStepDef.newProcessInfoBuilder(adProcessDAO.retrieveProcessIdByClass(InvoiceCalculateTax.class))
 				.setRecord(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID())
 				.addParameter(COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
 				.buildAndPrepareExecution()
@@ -1084,35 +1069,6 @@ public class C_Invoice_StepDef
 				.getResult()
 				.propagateErrorIfAny();
 		InterfaceWrapperHelper.refresh(invoice);
-	}
-
-	/** Remembers the number of posting requests ({@code Document_Acct_Log}) and notes ({@code AD_Note}) of the invoice. */
-	@And("the posting requests of invoice {string} are remembered")
-	public void rememberPostingRequests(@NonNull final String invoiceIdentifier)
-	{
-		postingQueueChecks.remember(I_C_Invoice.class, invoiceTable.get(invoiceIdentifier).getC_Invoice_ID());
-	}
-
-	/** Waits a few seconds (posting is asynchronous), then asserts that no posting request and no note was created since {@code the posting requests of invoice ... are remembered}. */
-	@Then("invoice {string} got no new posting request and no note")
-	public void assertNoNewPostingRequest(@NonNull final String invoiceIdentifier) throws InterruptedException
-	{
-		postingQueueChecks.assertNothingNewSinceRemembered(I_C_Invoice.class, invoiceTable.get(invoiceIdentifier).getC_Invoice_ID());
-	}
-
-	/** The invoice is not posted and has no accounting entries (nothing queued it again). */
-	@Then("the invoice {string} is not posted and has no Fact_Acct lines")
-	public void assertInvoiceNotPosted(@NonNull final String invoiceIdentifier)
-	{
-		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-		InterfaceWrapperHelper.refresh(invoice);
-		assertThat(invoice.isPosted()).as("C_Invoice.Posted of %s", invoiceIdentifier).isFalse();
-		final int factCount = queryBL.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, invoice.getC_Invoice_ID())
-				.create()
-				.count();
-		assertThat(factCount).as("Fact_Acct lines of invoice %s", invoiceIdentifier).isZero();
 	}
 
 	@NonNull

@@ -43,6 +43,7 @@ public class FactAcctDAO implements IFactAcctDAO
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	// private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 
+	private static final String COLUMNNAME_Posted = "Posted";
 	private static final String ACCOUNTCONCEPTUALNAME_NULL_MARKER = "NOTSET";
 
 	@Override
@@ -77,6 +78,14 @@ public class FactAcctDAO implements IFactAcctDAO
 				.deleteDirectly();
 
 		// factAcctListenersService.fireAfterUnpost(documentObj);
+	}
+
+	@Override
+	public void setDocumentModelNotPosted(@NonNull final Object documentObj)
+	{
+		InterfaceWrapperHelper.disableReadOnlyColumnCheck(documentObj);
+		InterfaceWrapperHelper.setValue(documentObj, COLUMNNAME_Posted, false); // the column has the same name on every postable table
+		InterfaceWrapperHelper.save(documentObj);
 	}
 
 	@Override

@@ -43,6 +43,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -84,7 +85,7 @@ public class PostingServiceTest
 		SpringContextHolder.registerJUnitBean(DocumentPostingUserNotificationService.class, userNotificationService);
 		SpringContextHolder.registerJUnitBean(ReferencedRecordRepository.class, referencedRecordRepositorySupplier.get());
 
-		factAcctDAO = mock(IFactAcctDAO.class);
+		factAcctDAO = spy(new FactAcctDAO()); // real: the tests assert the Posted flag of the saved document
 		Services.registerService(IFactAcctDAO.class, factAcctDAO);
 		periodBL = mock(IPeriodBL.class);
 		Services.registerService(IPeriodBL.class, periodBL);

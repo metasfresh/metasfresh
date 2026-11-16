@@ -32,7 +32,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.acct.Doc;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -94,10 +93,7 @@ public class PostingService implements IPostingService
 
 		factAcctDAO.deleteForDocumentModel(document);
 
-		// Posted is not updateable on some document tables (e.g. GL_Journal): bypass the read-only check, as the generated setPosted() does via set_ValueNoCheck
-		InterfaceWrapperHelper.disableReadOnlyColumnCheck(document);
-		InterfaceWrapperHelper.setValue(document, I_C_Invoice.COLUMNNAME_Posted, false); // the column has the same name on every postable table
-		InterfaceWrapperHelper.save(document);
+		factAcctDAO.setDocumentModelNotPosted(document);
 
 		final String docStatus = InterfaceWrapperHelper.getValueOrNull(document, IDocument.COLUMNNAME_DocStatus);
 		if (IDocument.STATUS_Completed.equals(docStatus) || IDocument.STATUS_Closed.equals(docStatus))

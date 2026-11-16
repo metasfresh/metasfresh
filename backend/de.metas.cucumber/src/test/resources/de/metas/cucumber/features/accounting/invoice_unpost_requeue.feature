@@ -59,6 +59,12 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     When the material receipt identified by receipt is reversed as receiptReversal
 
     Then Wait until documents invoice are posted
+    # the reversed receipt no longer clears the invoiced goods: the whole amount is booked on the expense account
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      |             | 108.10 CHF  | invoice   |
+      | P_Expense_Acct        | 100 CHF     |             | invoice   |
+      | T_Credit_Acct         | 8.10 CHF    |             | invoice   |
 
   @Id:S33766_11
   Scenario: the reversed invoices stay unposted when the material receipt is reversed after the invoice was reversed
@@ -75,15 +81,13 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     And the invoice identified by invoice is reversed
     And the reversal of invoice invoice is identified by invoiceReversal
     And Wait until documents invoice,invoiceReversal are posted
-    And the posting requests of invoice "invoice" are remembered
-    And the posting requests of invoice "invoiceReversal" are remembered
+    And the posting requests of documents invoice,invoiceReversal are remembered
 
     When the material receipt identified by receipt is reversed as receiptReversal
 
-    Then invoice "invoice" got no new posting request and no note
-    And invoice "invoiceReversal" got no new posting request and no note
-    And the invoice "invoice" is not posted and has no Fact_Acct lines
-    And the invoice "invoiceReversal" is not posted and has no Fact_Acct lines
+    Then documents invoice,invoiceReversal got no new posting request and no note
+    And the documents invoice,invoiceReversal are not posted
+    And no Fact_Acct records exist for documents invoice,invoiceReversal
 
   @Id:S33766_13
   Scenario: reversing the material receipt adds no posting request for a purchase invoice that is not posted yet
@@ -99,13 +103,15 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
       | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
       | invoice      | po_l1          | matchInv      |
     And set sys config boolean value true for sys config org.adempiere.acct.Enabled
-    And the invoice "invoice" is not posted and has no Fact_Acct lines
-    And the posting requests of invoice "invoice" are remembered
+    And the documents invoice are not posted
+    And no Fact_Acct records exist for documents invoice
+    And the posting requests of documents invoice are remembered
 
     When the material receipt identified by receipt is reversed as receiptReversal
 
-    Then invoice "invoice" got no new posting request and no note
-    And the invoice "invoice" is not posted and has no Fact_Acct lines
+    Then documents invoice got no new posting request and no note
+    And the documents invoice are not posted
+    And no Fact_Acct records exist for documents invoice
 
   @Id:S33766_20
   Scenario: the posted invoice is posted again after "Steuer berechnen"
@@ -123,6 +129,12 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     When the InvoiceCalculateTax process is invoked for invoice "invoice"
 
     Then Wait until documents invoice are posted
+    # the receipt is still matched: the goods are booked on the clearing account, the tax line equals C_InvoiceTax.TaxAmt
+    And Fact_Acct records are matching
+      | AccountConceptualName    | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct         |             | 108.10 CHF  | invoice   |
+      | P_InventoryClearing_Acct | 100 CHF     |             | invoice   |
+      | T_Credit_Acct            | 8.10 CHF    |             | invoice   |
 
   @Id:S33766_21
   Scenario: "Steuer berechnen" on a drafted invoice adds no posting request
@@ -132,12 +144,13 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | draftLine  | draftInv     | product      | 5 PCE       |
-    And the posting requests of invoice "draftInv" are remembered
+    And the posting requests of documents draftInv are remembered
 
     When the InvoiceCalculateTax process is invoked for invoice "draftInv"
 
-    Then invoice "draftInv" got no new posting request and no note
-    And the invoice "draftInv" is not posted and has no Fact_Acct lines
+    Then documents draftInv got no new posting request and no note
+    And the documents draftInv are not posted
+    And no Fact_Acct records exist for documents draftInv
 
   @Id:S33766_12
   Scenario: the posted purchase invoice is posted again after a material match was created for it

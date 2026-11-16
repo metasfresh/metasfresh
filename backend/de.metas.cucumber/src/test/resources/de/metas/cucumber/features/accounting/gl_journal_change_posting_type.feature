@@ -50,9 +50,10 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
       | gjReact       | gjDebit       | gjCredit      | 100.00 |
     And the GL journal "gjReact" is completed
     And the GL journal "gjReact" is eventually posted with PostingType "A" and 2 Fact_Acct lines
-    And the posting requests of GL journal "gjReact" are remembered
+    And the posting requests of documents gjReact are remembered
 
     When the GL journal "gjReact" is reactivated
 
-    Then the GL journal "gjReact" is not posted and has no Fact_Acct lines
-    And GL journal "gjReact" got no new posting request and no note
+    Then the documents gjReact are not posted
+    And no Fact_Acct records exist for documents gjReact
+    And documents gjReact got no new posting request and no note
