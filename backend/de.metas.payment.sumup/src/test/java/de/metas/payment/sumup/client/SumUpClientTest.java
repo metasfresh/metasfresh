@@ -221,8 +221,7 @@ class SumUpClientTest
 	/**
 	 * "Refund a transaction" (https://developer.sumup.com/api/transactions/refund): {@code POST
 	 * /v1.0/merchants/{merchant_code}/payments/{transaction_id}/refunds}; a body without {@code amount} refunds the full
-	 * amount; success is 201 with body {@code {}}. The v0.1 {@code /me/refund/{id}} refunds against the API key's default
-	 * merchant, which is not necessarily the configured one.
+	 * amount; success is 201 with body {@code {}}.
 	 */
 	@Test
 	void refund_callsV10MerchantPaymentRefunds_forTheFullAmount()

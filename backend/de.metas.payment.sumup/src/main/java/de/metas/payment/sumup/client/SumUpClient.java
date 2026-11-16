@@ -101,12 +101,8 @@ public class SumUpClient
 	}
 
 	/**
-	 * SumUp offers "Retrieve a transaction" only as {@code GET /v2.1/merchants/{merchant_code}/transactions}; the v0.1
-	 * {@code /me/transactions} lookup answers 404 even for transactions that exist. The reader endpoints are v0.1, which is
-	 * what {@code sumup.baseUrl} names, so the v2.1 base is that URL with its trailing {@code /v0.1} replaced by {@code /v2.1}.
-	 *
-	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}; thrown by the lookup only, so the reader
-	 *                             calls keep working and the poller records the failed lookup like any other
+	 * @return the base of SumUp API v2.1 (transaction lookup): the given v0.1 base with its trailing {@code /v0.1} replaced by {@code /v2.1}
+	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}
 	 */
 	@VisibleForTesting
 	static String toTransactionsApiBaseUrl(@NonNull final String baseUrl)
@@ -115,12 +111,8 @@ public class SumUpClient
 	}
 
 	/**
-	 * SumUp offers "Refund a transaction" for a given merchant only as
-	 * {@code POST /v1.0/merchants/{merchant_code}/payments/{transaction_id}/refunds}; the v0.1 {@code /me/refund/{id}} refunds
-	 * against the API key's default merchant, which need not be the configured one. Derived from {@code sumup.baseUrl} like
-	 * {@link #toTransactionsApiBaseUrl(String)}.
-	 *
-	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}; thrown by the refund only
+	 * @return the base of SumUp API v1.0 (refund): the given v0.1 base with its trailing {@code /v0.1} replaced by {@code /v1.0}
+	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}
 	 */
 	@VisibleForTesting
 	static String toRefundsApiBaseUrl(@NonNull final String baseUrl)
