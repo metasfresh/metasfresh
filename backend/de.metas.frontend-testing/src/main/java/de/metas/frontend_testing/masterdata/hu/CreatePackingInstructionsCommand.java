@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -86,6 +87,7 @@ public class CreatePackingInstructionsCommand
 		final PIResult lu;
 		final I_M_HU_PI_Item luPIItem;
 		final JsonTestId luPIItemTestId;
+		final ImmutableList.Builder<JsonTestId> additionalLUPIItemTestIds = ImmutableList.builder();
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
@@ -93,7 +95,8 @@ public class CreatePackingInstructionsCommand
 			for (final JsonPackingInstructionsRequest.AdditionalLUItem additionalLUItem : request.getAdditionalLUItems())
 			{
 				final ProductId productId = context.getId(additionalLUItem.getProduct(), ProductId.class);
-				createPIItem_IncludedHU(lu, tu, additionalLUItem.getQtyTUsPerLU(), productId);
+				final I_M_HU_PI_Item additionalLUPIItem = createPIItem_IncludedHU(lu, tu, additionalLUItem.getQtyTUsPerLU(), productId);
+				additionalLUPIItemTestIds.add(MaterialReceiptActivityHandler.extractNewLUTargetTestId(additionalLUPIItem));
 			}
 			luPIItemTestId = MaterialReceiptActivityHandler.extractNewLUTargetTestId(luPIItem);
 		}
@@ -127,6 +130,7 @@ public class CreatePackingInstructionsCommand
 				//
 				.luName(lu != null ? lu.getPiName() : null)
 				.luPIItemTestId(luPIItemTestId)
+				.additionalLUPIItemTestIds(additionalLUPIItemTestIds.build())
 				.luPITestId(lu != null ? GenerateHUQRCodesActivityHandler.toPITestId(lu.getPiId()) : null)
 				//
 				.grai(grai)
