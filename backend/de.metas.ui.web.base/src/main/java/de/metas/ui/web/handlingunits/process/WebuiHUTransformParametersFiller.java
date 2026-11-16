@@ -484,13 +484,21 @@ public class WebuiHUTransformParametersFiller
 
 	public I_M_HU_PI_Item getDefaultM_LU_PI_ItemOrNull()
 	{
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLUPIItems();
-		final Optional<I_M_HU_PI_Item> defaultHUPIItem = luPIItems.stream()
-				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
-				.sorted(Comparator.comparing(I_M_HU_PI_Item::getM_HU_PI_Item_ID)) // TODO what to order by ?
-				.findFirst();
+		return pickDefaultLUPIItem(getAvailableLUPIItems());
+	}
 
-		return defaultHUPIItem.orElse(null);
+	/**
+	 * @return the item for the product being transformed (if any is among the given ones), else the one with the lowest ID
+	 */
+	@Nullable
+	static I_M_HU_PI_Item pickDefaultLUPIItem(@NonNull final List<I_M_HU_PI_Item> luPIItems)
+	{
+		return luPIItems.stream()
+				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
+				.min(Comparator
+						.comparing((I_M_HU_PI_Item luPIItem) -> luPIItem.getM_Product_ID() > 0 ? 0 : 1) // product-specific item first
+						.thenComparing(I_M_HU_PI_Item::getM_HU_PI_Item_ID)) // TODO what to order by ?
+				.orElse(null);
 	}
 
 	private List<I_M_HU_PI_Item> getAvailableLUPIItems()
@@ -503,7 +511,8 @@ public class WebuiHUTransformParametersFiller
 		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 				effectivePIVersion.getM_HU_PI(),
 				HuUnitType.LU,
-				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU));
+				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU),
+				tuRow.getProductId()); // null if the TU holds several products => product-specific items are not eligible
 	}
 
 	public boolean getShowWarehouseFlag()
