@@ -170,6 +170,24 @@ public class HandlingUnitsService
 				.build();
 	}
 
+	/**
+	 * Like {@link #getFullHUsList(Collection, String)} but does not reject non-physical HUs (e.g. shipped or destroyed):
+	 * every HU is returned, in the given order, with its {@link JsonHU#getHuStatus()}.
+	 */
+	public JsonHUList getHUsListOfAnyStatus(
+			@NonNull final Collection<HuId> huIds,
+			@NonNull final String adLanguage)
+	{
+		return JsonHUList.builder()
+				.hus(huIds.stream()
+						.map(huId -> toJson(LoadJsonHURequest.builder()
+								.hu(handlingUnitsBL.getById(huId))
+								.adLanguage(adLanguage)
+								.build()))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
 	@NonNull
 	public JsonHU getFullHU(
 			@NonNull final HuId huId,
