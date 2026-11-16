@@ -78,10 +78,21 @@ public class CostingDocuments_StepDef
 	public void createOrders(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.forEach(this::createOrder);
+				.forEach(row -> {
+					final I_C_Order order = createDraftedOrder(row);
+					orderStepDef.completeOrder(order);
+				});
 	}
 
-	private void createOrder(final DataTableRow row)
+	/** Same columns as {@code for costing, create completed order with one line}, but the order stays drafted (e.g. to add order costs before completing it). */
+	@Given("for costing, create drafted order with one line")
+	public void createDraftedOrders(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(this::createDraftedOrder);
+	}
+
+	private I_C_Order createDraftedOrder(final DataTableRow row)
 	{
 		row.setValueIfMissing(I_C_Order.COLUMNNAME_C_Order_ID, () -> StepDefDataIdentifier.nextUnnamed("purchaseOrder").getAsString());
 		row.setValueIfMissing(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, () -> StepDefDataIdentifier.nextUnnamed("purchaseOrderLine").getAsString());
@@ -92,7 +103,7 @@ public class CostingDocuments_StepDef
 		row.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
 		orderLineStepDef.createOrderLine(row);
 
-		orderStepDef.completeOrder(order);
+		return order;
 	}
 
 	@Given("for costing, create completed material receipt with one line")

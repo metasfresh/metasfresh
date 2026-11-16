@@ -90,28 +90,46 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     And no Fact_Acct records exist for documents invoice,invoiceReversal
 
   @Id:S33766_13
-  Scenario: reversing the material receipt adds no posting request for a purchase invoice that is not posted yet
-    Given for costing, create completed order with one line
-      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
-      | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+  Scenario: matching the in/out costs adds no posting request for a cost invoice that is not posted yet
+    # real flow: order with an order cost -> receipt (creates the in/out cost) -> cost invoice (service line)
+    Given metasfresh contains M_Products:
+      | Identifier  | ProductType |
+      | costService | S           |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | costService  | 20.0     | PCE      |
+    And metasfresh contains C_Cost_Type:
+      | Identifier |
+      | freight    |
+    And for costing, create drafted order with one line
+      | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po         | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+    And metasfresh contains order costs:
+      | C_OrderLine_ID | C_Cost_Type_ID | C_BPartner_ID | Amount |
+      | po_l1          | freight        | bpartner      | 20     |
+    And the order identified by po is completed
     And for costing, create completed material receipt with one line
       | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
       | po_l1          | receipt    | receipt_line1  |
     # accounting off while the invoice is completed: the invoice is completed but never queued for posting
     And temporarily set sys config boolean value false for sys config 'org.adempiere.acct.Enabled'
-    And for costing, create completed invoice with one line
-      | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
-      | invoice      | po_l1          | matchInv      |
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | costInvoice | bpartner      | Eingangsrechnung        | 2027-03-15   | Spot                     | false   | CHF                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price |
+      | costLine   | costInvoice  | costService  | 1 PCE       | 20    |
+    And the invoice identified by costInvoice is completed
     And set sys config boolean value true for sys config org.adempiere.acct.Enabled
-    And the documents invoice are not posted
-    And no Fact_Acct records exist for documents invoice
-    And the posting requests of documents invoice are remembered
+    And the documents costInvoice are not posted
+    And no Fact_Acct records exist for documents costInvoice
+    And the posting requests of documents costInvoice are remembered
 
-    When the material receipt identified by receipt is reversed as receiptReversal
+    When the in/out costs of material receipt "receipt" are matched to the line of invoice "costInvoice"
 
-    Then documents invoice got no new posting request and no note
-    And the documents invoice are not posted
-    And no Fact_Acct records exist for documents invoice
+    Then documents costInvoice got no new posting request and no note
+    And the documents costInvoice are not posted
+    And no Fact_Acct records exist for documents costInvoice
 
   @Id:S33766_20
   Scenario: the posted invoice is posted again after "Steuer berechnen"
@@ -153,21 +171,48 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     And no Fact_Acct records exist for documents draftInv
 
   @Id:S33766_12
-  Scenario: the posted purchase invoice is posted again after a material match was created for it
-    Given for costing, create completed order with one line
-      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
-      | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+  Scenario: the posted cost invoice is posted again after the in/out costs of the receipt were matched to it
+    # real flow: order with an order cost -> receipt (creates the in/out cost) -> cost invoice (service line) -> the "in/out costs" action matches the cost to the invoice line
+    Given metasfresh contains M_Products:
+      | Identifier  | ProductType |
+      | costService | S           |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | costService  | 20.0     | PCE      |
+    And metasfresh contains C_Cost_Type:
+      | Identifier |
+      | freight    |
+    And for costing, create drafted order with one line
+      | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po         | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+    And metasfresh contains order costs:
+      | C_OrderLine_ID | C_Cost_Type_ID | C_BPartner_ID | Amount |
+      | po_l1          | freight        | bpartner      | 20     |
+    And the order identified by po is completed
     And for costing, create completed material receipt with one line
       | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
       | po_l1          | receipt    | receipt_line1  |
-    And for costing, create completed invoice with one line
-      | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
-      | invoice      | po_l1          | matchInv      |
-    And Wait until documents invoice are posted
-    # the match is removed (invoice posted again without it), then created again: the posted invoice has to be booked again
-    And the material matches of receipt line "receipt_line1" are deleted
-    And Wait until documents invoice are posted
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | costInvoice | bpartner      | Eingangsrechnung        | 2027-03-15   | Spot                     | false   | CHF                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price |
+      | costLine   | costInvoice  | costService  | 1 PCE       | 20    |
+    And the invoice identified by costInvoice is completed
+    And Wait until documents costInvoice are posted
+    # not matched yet: the whole cost invoice amount is booked on the expense account
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID   |
+      | V_Liability_Acct      |             | 21.62 CHF   | costInvoice |
+      | P_Expense_Acct        | 20 CHF      |             | costInvoice |
+      | T_Credit_Acct         | 1.62 CHF    |             | costInvoice |
 
-    When a material match of invoice "invoice" and receipt line "receipt_line1" is created
+    When the in/out costs of material receipt "receipt" are matched to the line of invoice "costInvoice"
 
-    Then Wait until documents invoice are posted
+    Then Wait until documents costInvoice are posted
+    And Fact_Acct records are matching
+      | AccountConceptualName    | AmtSourceDr | AmtSourceCr | Record_ID   |
+      | V_Liability_Acct         |             | 21.62 CHF   | costInvoice |
+      | P_InventoryClearing_Acct | 20 CHF      |             | costInvoice |
+      | P_Expense_Acct           | 0 CHF       | 0 CHF       | costInvoice |
+      | T_Credit_Acct            | 1.62 CHF    |             | costInvoice |
