@@ -98,6 +98,8 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -207,6 +209,7 @@ public class C_Invoice_StepDef
 	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
+	private final de.metas.cucumber.stepdefs.accounting.PostingQueueChecks postingQueueChecks;
 
 	/**
 	 * Validates {@code C_Invoice} records against expected values.
@@ -1048,6 +1051,65 @@ public class C_Invoice_StepDef
 			final I_C_Invoice freshInvoice = invoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(invoiceId), I_C_Invoice.class);
 			invoiceTable.putOrReplace(invoiceIdentifier, freshInvoice);
 		});
+	}
+
+	/** Runs the "Steuer berechnen" process ({@code InvoiceCalculateTax}) for the invoice as the WebUI role. */
+	@When("the InvoiceCalculateTax process is invoked for invoice {string}")
+	public void invoke_InvoiceCalculateTax_process(@NonNull final String invoiceIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(org.eevolution.process.InvoiceCalculateTax.class);
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+				.stream()
+				.filter(r -> "WebUI".equals(r.getName()))
+				.map(Role::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setClientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
+				.setRoleId(roleId)
+				.setCreateTemporaryCtx()
+				.setTableName(I_C_Invoice.Table_Name)
+				.setRecord(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID())
+				.addParameter(COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult()
+				.propagateErrorIfAny();
+		InterfaceWrapperHelper.refresh(invoice);
+	}
+
+	/** Remembers the number of posting requests ({@code Document_Acct_Log}) and notes ({@code AD_Note}) of the invoice. */
+	@And("the posting requests of invoice {string} are remembered")
+	public void rememberPostingRequests(@NonNull final String invoiceIdentifier)
+	{
+		postingQueueChecks.remember(I_C_Invoice.class, invoiceTable.get(invoiceIdentifier).getC_Invoice_ID());
+	}
+
+	/** Waits a few seconds (posting is asynchronous), then asserts that no posting request and no note was created since {@code the posting requests of invoice ... are remembered}. */
+	@Then("invoice {string} got no new posting request and no note")
+	public void assertNoNewPostingRequest(@NonNull final String invoiceIdentifier) throws InterruptedException
+	{
+		postingQueueChecks.assertNothingNewSinceRemembered(I_C_Invoice.class, invoiceTable.get(invoiceIdentifier).getC_Invoice_ID());
+	}
+
+	/** The invoice is not posted and has no accounting entries (nothing queued it again). */
+	@Then("the invoice {string} is not posted and has no Fact_Acct lines")
+	public void assertInvoiceNotPosted(@NonNull final String invoiceIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		InterfaceWrapperHelper.refresh(invoice);
+		assertThat(invoice.isPosted()).as("C_Invoice.Posted of %s", invoiceIdentifier).isFalse();
+		final int factCount = queryBL.createQueryBuilder(org.compiere.model.I_Fact_Acct.class)
+				.addEqualsFilter(org.compiere.model.I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+				.addEqualsFilter(org.compiere.model.I_Fact_Acct.COLUMNNAME_Record_ID, invoice.getC_Invoice_ID())
+				.create()
+				.count();
+		assertThat(factCount).as("Fact_Acct lines of invoice %s", invoiceIdentifier).isZero();
 	}
 
 	@NonNull
