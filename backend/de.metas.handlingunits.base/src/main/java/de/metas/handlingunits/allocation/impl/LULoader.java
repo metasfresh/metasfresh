@@ -28,6 +28,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -35,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +72,17 @@ public class LULoader
 	 */
 	public void addTU(final I_M_HU tuHU)
 	{
+		addTU(tuHU, null);
+	}
+
+	/**
+	 * Same as {@link #addTU(I_M_HU)}, but when a new LU has to be created, the LU->TU packing instruction item is selected for the given product,
+	 * i.e. an item that is restricted to that product is eligible. With no product, items that are restricted to a product are never used.
+	 *
+	 * @param productId the product that is packed into the given TU; may be {@code null}
+	 */
+	public void addTU(final I_M_HU tuHU, @Nullable final ProductId productId)
+	{
 		Check.assumeNotNull(tuHU, "tuHU not null");
 
 		//
@@ -85,7 +98,7 @@ public class LULoader
 		//
 		// None of current LUs accepted our TU, e.g. because there is no more free capacity in their wrapped LUs, or maybe because the TU's C_BPartner didn't match.
 		// => create another LU
-		final LULoaderInstance luInstance = createLULoaderInstanceForTU(tuHU);
+		final LULoaderInstance luInstance = createLULoaderInstanceForTU(tuHU, productId);
 		if (!luInstance.addTU(tuHU))
 		{
 			// shall not happen
@@ -102,9 +115,10 @@ public class LULoader
 	 * This instance will be automatically enqueued to our current LU instances.
 	 *
 	 * @param tuHU
+	 * @param productId the product that is packed into the TU; may be {@code null}
 	 * @return LU instance; never return null
 	 */
-	private LULoaderInstance createLULoaderInstanceForTU(final I_M_HU tuHU)
+	private LULoaderInstance createLULoaderInstanceForTU(final I_M_HU tuHU, @Nullable final ProductId productId)
 	{
 		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU);
 		final int bpartnerLocationId = tuHU.getC_BPartner_Location_ID();
@@ -113,7 +127,7 @@ public class LULoader
 		final I_M_HU_PI_Version tuPIVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU);
 		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.ofHU(tuHU);
 
-		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion, clearanceStatusInfo);
+		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion, clearanceStatusInfo, productId);
 
 		luInstances.add(luInstance);
 		return luInstance;
