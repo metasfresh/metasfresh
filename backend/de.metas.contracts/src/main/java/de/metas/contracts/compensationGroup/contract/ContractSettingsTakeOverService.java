@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -244,12 +243,12 @@ public class ContractSettingsTakeOverService
 			return ImmutableList.of();
 		}
 
-		final ImmutableList<GroupCompensationLine> salesOrderDiscountLines = orderGroupRepository.retrieveContractCreatedGroupsByOrderId(salesOrderId)
+		final ImmutableList<GroupCompensationLine> percentDiscountLines = orderGroupRepository.retrieveContractCreatedGroupsByOrderId(salesOrderId)
 				.stream()
 				.flatMap(group -> group.getCompensationLines().stream())
 				.filter(line -> GroupCompensationLineCreateRequestFactory.isPercentDiscount(line.getType(), line.getAmtType()))
-				.filter(distinctBySchemaLine())
 				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<GroupCompensationLine> salesOrderDiscountLines = keepFirstLinePerSchemaLine(percentDiscountLines);
 
 		final ImmutableListMultimap<ConditionsId, TakenOverRefund> refundsByConditionsId = findTakenOverRefunds(order, takeOvers);
 
@@ -263,10 +262,19 @@ public class ContractSettingsTakeOverService
 	 * Keeps the first line of each schema line: the contract groups of one order (one per position) are all created from the same
 	 * schema, so each of its lines is taken over once, not once per group. Lines without a schema line (no schema origin) all stay.
 	 */
-	private static Predicate<GroupCompensationLine> distinctBySchemaLine()
+	private static ImmutableList<GroupCompensationLine> keepFirstLinePerSchemaLine(@NonNull final List<GroupCompensationLine> lines)
 	{
 		final Set<GroupTemplateLineId> seenSchemaLineIds = new HashSet<>();
-		return line -> line.getGroupTemplateLineId() == null || seenSchemaLineIds.add(line.getGroupTemplateLineId());
+		final ImmutableList.Builder<GroupCompensationLine> result = ImmutableList.builder();
+		for (final GroupCompensationLine line : lines)
+		{
+			final GroupTemplateLineId schemaLineId = line.getGroupTemplateLineId();
+			if (schemaLineId == null || seenSchemaLineIds.add(schemaLineId))
+			{
+				result.add(line);
+			}
+		}
+		return result.build();
 	}
 
 	/**
