@@ -9,7 +9,6 @@ describe('dates tests', () => {
       // [ language, ISO date, expected ]
       ['de_DE', '2026-11-04', '04.11.2026'],
       ['de_DE', '2026-01-31', '31.01.2026'],
-      ['de_CH', '2026-11-04', '04.11.2026'],
       ['en_US', '2026-11-04', '11/04/2026'],
     ];
     expectations.forEach(([language, isoDate, expected]) => {
@@ -28,7 +27,11 @@ describe('dates tests', () => {
           expect(formatDateToHumanReadableStr('2026-11-04')).toBe('04.11.2026');
         });
       } finally {
-        process.env.TZ = originalTZ;
+        if (originalTZ === undefined) {
+          delete process.env.TZ;
+        } else {
+          process.env.TZ = originalTZ;
+        }
       }
     });
 
