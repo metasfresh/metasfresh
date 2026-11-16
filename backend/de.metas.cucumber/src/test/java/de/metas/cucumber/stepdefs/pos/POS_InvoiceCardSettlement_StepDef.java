@@ -1619,7 +1619,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
-	 * Asserts how many status lookups ({@code GET /me/transactions}) of the settlement's SumUp transaction the stub
+	 * Asserts how many status lookups ({@code GET /v2.1/merchants/{merchant}/transactions}) of the settlement's SumUp transaction the stub
 	 * received in this scenario, whatever they were answered.
 	 *
 	 * @cucumber.stepdef

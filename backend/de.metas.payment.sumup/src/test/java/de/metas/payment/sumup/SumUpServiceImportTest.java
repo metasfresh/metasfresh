@@ -45,7 +45,7 @@ class SumUpServiceImportTest
 	private static final SumUpCardReaderExternalId READER_ID = SumUpCardReaderExternalId.ofString("R1");
 	private static final SumUpClientTransactionId CLIENT_TRX_ID = SumUpClientTransactionId.ofString("ctid-1");
 	private static final SumUpPOSRef POS_REF = SumUpPOSRef.builder().posOrderId(11).posPaymentId(12).build();
-	private static final String GET_TRX_URL = BASE_URL + "/me/transactions?client_transaction_id=ctid-1";
+	private static final String GET_TRX_URL = "http://stub/v2.1/merchants/M1/transactions?client_transaction_id=ctid-1";
 
 	private MockRestServiceServer server;
 	private SumUpTransactionRepository trxRepository;

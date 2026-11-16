@@ -5,10 +5,14 @@ import de.metas.error.IErrorManager;
 import de.metas.payment.sumup.SumUpCallException;
 import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpClientFactory;
+import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpMerchantCode;
+import de.metas.payment.sumup.SumUpTransactionExternalId;
+import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
 import de.metas.payment.sumup.client.json.JsonReaderCheckoutRequest;
 import de.metas.payment.sumup.repository.SumUpLogRepository;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -23,6 +28,7 @@ import java.net.SocketTimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -147,6 +153,83 @@ class SumUpClientTest
 
 		assertThatThrownBy(() -> client.terminateCardReaderCheckout(READER_ID))
 				.isInstanceOfSatisfying(SumUpCallException.class, ex -> assertThat(ex.isDefiniteRejection()).isTrue());
+	}
+
+	/**
+	 * Body as answered by SumUp's "Retrieve a transaction": a single transaction object, not wrapped.
+	 */
+	private static final String TRANSACTION_JSON = "{"
+			+ "\"id\":\"TX1\","
+			+ "\"transaction_code\":\"TCODE1\","
+			+ "\"client_transaction_id\":\"CTX1\","
+			+ "\"merchant_code\":\"M1\","
+			+ "\"timestamp\":\"2026-11-16T08:55:19Z\","
+			+ "\"status\":\"SUCCESSFUL\","
+			+ "\"amount\":10.0,"
+			+ "\"currency\":\"EUR\""
+			+ "}";
+
+	/**
+	 * SumUp answers 404 to every v0.1 {@code /me/transactions} lookup; "Retrieve a transaction" exists only as
+	 * {@code GET /v2.1/merchants/{merchant_code}/transactions} (https://developer.sumup.com/api/transactions/get).
+	 */
+	@Test
+	void getTransactionByClientTransactionId_callsV21MerchantTransactions()
+	{
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=CTX1"))
+				.andExpect(method(GET))
+				.andRespond(withSuccess(TRANSACTION_JSON, MediaType.APPLICATION_JSON));
+
+		final JsonGetTransactionResponse trx = client.getTransactionById(SumUpClientTransactionId.ofString("CTX1"));
+
+		server.verify();
+		assertThat(trx.getId()).isEqualTo(SumUpTransactionExternalId.ofString("TX1"));
+		assertThat(trx.getStatus()).isEqualTo("SUCCESSFUL");
+	}
+
+	@Test
+	void getTransactionByExternalId_callsV21MerchantTransactions()
+	{
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?id=TX1"))
+				.andExpect(method(GET))
+				.andRespond(withSuccess(TRANSACTION_JSON, MediaType.APPLICATION_JSON));
+
+		final JsonGetTransactionResponse trx = client.getTransactionById(SumUpTransactionExternalId.ofString("TX1"));
+
+		server.verify();
+		assertThat(trx.getClient_transaction_id()).isEqualTo(SumUpClientTransactionId.ofString("CTX1"));
+	}
+
+	/**
+	 * SumUpService tells "SumUp does not know the transaction" from a failed call by the 404 cause.
+	 */
+	@Test
+	void getTransaction_404_keepsTheHttpStatusAsCause()
+	{
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=CTX1"))
+				.andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+		assertThatThrownBy(() -> client.getTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+				.isInstanceOfSatisfying(SumUpCallException.class, ex -> {
+					assertThat(ex.isDefiniteRejection()).isTrue();
+					assertThat(ex.getCause()).isInstanceOfSatisfying(HttpClientErrorException.class,
+							cause -> assertThat(cause.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
+				});
+	}
+
+	@Test
+	void transactionsApiBaseUrl_replacesTheTrailingV01Segment()
+	{
+		assertThat(SumUpClient.toTransactionsApiBaseUrl("https://api.sumup.com/v0.1")).isEqualTo("https://api.sumup.com/v2.1");
+		assertThat(SumUpClient.toTransactionsApiBaseUrl("http://wiremock:8080/sumup/v0.1/")).isEqualTo("http://wiremock:8080/sumup/v2.1");
+	}
+
+	@Test
+	void baseUrlWithoutTrailingV01Segment_isRejected()
+	{
+		assertThatThrownBy(() -> SumUpClient.toTransactionsApiBaseUrl("https://api.sumup.com"))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("sumup.baseUrl");
 	}
 
 	@Test

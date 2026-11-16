@@ -37,10 +37,11 @@ import java.util.concurrent.TimeUnit;
  * In-process stand-in for the SumUp REST API, for cucumber. A JDK {@link HttpServer} on an ephemeral port; the base
  * URL is handed to metasfresh via the {@code sumup.baseUrl} property (see {@code CucumberLifeCycleSupport}).
  * <p>
- * Endpoints (all below {@code /v0.1}):
+ * Endpoints (the reader calls below {@code /v0.1}, the transaction lookup below {@code /v2.1}, whose base metasfresh
+ * derives from {@code sumup.baseUrl} by replacing its trailing {@code /v0.1}):
  * <ul>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/checkout} - answers per the programmed {@link CheckoutBehavior}; a successful answer echoes a fresh {@code client_transaction_id}. A checkout can be held ({@link #holdNextCheckout()}) and answered later ({@link #answerHeldCheckout})</li>
- *   <li>{@code GET /me/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure, an unreadable answer ({@link #answerLookupUnreadable}), or HTTP 404 ({@link #answerLookupNotFound}) (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
+ *   <li>{@code GET /v2.1/merchants/{merchant}/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure, an unreadable answer ({@link #answerLookupUnreadable}), or HTTP 404 ({@link #answerLookupNotFound}) (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
  * A transaction's timestamp (when SumUp created it) is taken from metasfresh's clock ({@link SystemTime}), which a scenario
@@ -97,7 +98,7 @@ public final class SumUpApiStub
 	// the reader ids of the terminate requests received, in order
 	private static final List<String> receivedTerminateReaderIds = new ArrayList<>();
 	private static final Map<String, TransactionState> transactionsByClientTransactionId = new LinkedHashMap<>();
-	// the status lookups (GET /me/transactions) received, per client_transaction_id, whatever they were answered
+	// the status lookups (GET /v2.1/merchants/{merchant}/transactions) received, per client_transaction_id, whatever they were answered
 	private static final Map<String, Integer> statusLookupCountsByClientTransactionId = new HashMap<>();
 	// the client_transaction_ids whose status lookup is answered with a transaction metasfresh cannot read (see answerLookupUnreadable)
 	private static final Set<String> unreadableLookupClientTransactionIds = new HashSet<>();
@@ -362,7 +363,7 @@ public final class SumUpApiStub
 			final URI uri = exchange.getRequestURI();
 			final String method = exchange.getRequestMethod();
 			final String[] segments = uri.getPath().replaceFirst("^/+", "").split("/");
-			// segments[0] is the version prefix "v0.1"
+			// segments[0] is the version prefix: "v0.1" for the reader calls, "v2.1" for the transaction lookup
 
 			if ("POST".equals(method) && segments.length == 6 && "merchants".equals(segments[1]) && "readers".equals(segments[3]) && "checkout".equals(segments[5]))
 			{
@@ -372,7 +373,7 @@ public final class SumUpApiStub
 			{
 				handleTerminate(exchange, segments[4]);
 			}
-			else if ("GET".equals(method) && segments.length == 3 && "me".equals(segments[1]) && "transactions".equals(segments[2]))
+			else if ("GET".equals(method) && segments.length == 4 && "v2.1".equals(segments[0]) && "merchants".equals(segments[1]) && "transactions".equals(segments[3]))
 			{
 				handleGetTransaction(exchange, uri.getRawQuery());
 			}

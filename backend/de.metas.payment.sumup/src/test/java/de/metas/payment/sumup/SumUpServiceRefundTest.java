@@ -114,7 +114,7 @@ class SumUpServiceRefundTest
 				.thenAnswer(invocation -> invocation.<UnaryOperator<SumUpTransaction>>getArgument(1).apply(named));
 		// only the named transaction is refunded at SumUp (an unexpected request fails the test)
 		server.expect(requestTo(BASE_URL + "/me/refund/ext-named")).andExpect(method(HttpMethod.POST)).andRespond(withSuccess());
-		server.expect(requestTo(BASE_URL + "/me/transactions?id=ext-named")).andExpect(method(HttpMethod.GET))
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?id=ext-named")).andExpect(method(HttpMethod.GET))
 				.andRespond(withSuccess(refundedRemoteTrxJson("ext-named", "ctid-named"), MediaType.APPLICATION_JSON));
 
 		final SumUpTransaction refunded = service.refundTransaction(named.getClientTransactionId());

@@ -2,6 +2,7 @@ package de.metas.payment.sumup.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -41,6 +42,9 @@ import java.time.Duration;
 
 public class SumUpClient
 {
+	private static final String API_V01_SEGMENT = "/v0.1";
+	private static final String API_V21_SEGMENT = "/v2.1";
+
 	@NonNull private final IErrorManager errorManager;
 	@NonNull private final SumUpLogRepository logRepository;
 	@NonNull private final ObjectMapper jsonObjectMapper;
@@ -48,7 +52,14 @@ public class SumUpClient
 	@NonNull private final SumUpConfigId configId;
 	@NonNull private final String apiKey;
 	@NonNull private final SumUpMerchantCode merchantCode;
+	/**
+	 * Base of SumUp API v0.1 (e.g. {@code https://api.sumup.com/v0.1}), from {@code sumup.baseUrl}: the reader and refund calls.
+	 */
 	@NonNull private final String baseUrl;
+	/**
+	 * Base of SumUp API v2.1, derived from {@link #baseUrl}: the transaction lookup, see {@link #toTransactionsApiBaseUrl(String)}.
+	 */
+	@NonNull private final String transactionsApiBaseUrl;
 
 	@NonNull private final RestTemplate restTemplate;
 
@@ -79,6 +90,7 @@ public class SumUpClient
 		this.apiKey = apiKey;
 		this.merchantCode = merchantCode;
 		this.baseUrl = baseUrl;
+		this.transactionsApiBaseUrl = toTransactionsApiBaseUrl(baseUrl);
 
 		this.restTemplate = restTemplate != null
 				? restTemplate
@@ -87,6 +99,26 @@ public class SumUpClient
 				.setConnectTimeout(Duration.ofSeconds(60))
 				.setReadTimeout(Duration.ofSeconds(60))
 				.build();
+	}
+
+	/**
+	 * SumUp offers "Retrieve a transaction" only as {@code GET /v2.1/merchants/{merchant_code}/transactions}; the v0.1
+	 * {@code /me/transactions} lookup answers 404 even for transactions that exist. The reader endpoints are v0.1, which is
+	 * what {@code sumup.baseUrl} names, so the v2.1 base is that URL with its trailing {@code /v0.1} replaced by {@code /v2.1}.
+	 *
+	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}
+	 */
+	@VisibleForTesting
+	static String toTransactionsApiBaseUrl(@NonNull final String baseUrl)
+	{
+		final String baseUrlNorm = baseUrl.replaceFirst("/+$", "");
+		if (!baseUrlNorm.endsWith(API_V01_SEGMENT))
+		{
+			throw new AdempiereException("sumup.baseUrl must end with " + API_V01_SEGMENT)
+					.appendParametersToMessage()
+					.setParameter("sumup.baseUrl", baseUrl);
+		}
+		return baseUrlNorm.substring(0, baseUrlNorm.length() - API_V01_SEGMENT.length()) + API_V21_SEGMENT;
 	}
 
 	private SumUpLogRequest.SumUpLogRequestBuilder newLogRequest()
@@ -233,8 +265,8 @@ public class SumUpClient
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpClientTransactionId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
-				.pathSegment("me", "transactions")
+		final String uri = UriComponentsBuilder.fromHttpUrl(transactionsApiBaseUrl)
+				.pathSegment("merchants", merchantCode.getAsString(), "transactions")
 				.queryParam("client_transaction_id", id.getAsString())
 				.toUriString();
 
@@ -256,8 +288,8 @@ public class SumUpClient
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpTransactionExternalId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
-				.pathSegment("me", "transactions")
+		final String uri = UriComponentsBuilder.fromHttpUrl(transactionsApiBaseUrl)
+				.pathSegment("merchants", merchantCode.getAsString(), "transactions")
 				.queryParam("id", id.getAsString())
 				.toUriString();
 
