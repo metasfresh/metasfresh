@@ -89,7 +89,12 @@ public class CreatePackingInstructionsCommand
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
-			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU());
+			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU(), null);
+			for (final JsonPackingInstructionsRequest.AdditionalLUItem additionalLUItem : request.getAdditionalLUItems())
+			{
+				final ProductId productId = context.getId(additionalLUItem.getProduct(), ProductId.class);
+				createPIItem_IncludedHU(lu, tu, additionalLUItem.getQtyTUsPerLU(), productId);
+			}
 			luPIItemTestId = MaterialReceiptActivityHandler.extractNewLUTargetTestId(luPIItem);
 		}
 		else
@@ -323,13 +328,14 @@ public class CreatePackingInstructionsCommand
 				.build();
 	}
 
-	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)
+	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU, @Nullable final ProductId productId)
 	{
 		final I_M_HU_PI_Item luPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
 		luPIItemRecord.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
 		luPIItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
 		luPIItemRecord.setQty(BigDecimal.valueOf(qtyTUsPerLU));
 		luPIItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
+		luPIItemRecord.setM_Product_ID(ProductId.toRepoId(productId));
 		saveRecord(luPIItemRecord);
 		return luPIItemRecord;
 	}
