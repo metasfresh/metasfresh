@@ -41,6 +41,7 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_GL_Journal;
+import org.compiere.util.TimeUtil;
 
 import java.util.List;
 import java.util.Properties;
@@ -66,7 +67,7 @@ public class GLJournalBL implements IGLJournalBL
 	{
 		postingService.unpost(DocumentUnpostRequest.builder()
 				.document(glJournal)
-				.dateAcct(glJournal.getDateAcct())
+				.dateAcct(TimeUtil.asInstant(glJournal.getDateAcct()))
 				.docTypeId(DocTypeId.ofRepoId(glJournal.getC_DocType_ID()))
 				.build());
 	}

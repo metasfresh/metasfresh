@@ -23,8 +23,6 @@ import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.InvoiceAccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.DocumentUnpostRequest;
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
@@ -32,7 +30,6 @@ import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -1099,23 +1096,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		//noinspection DataFlowIssue
 		return optionalSalesOrderId.orElse(null);
-	}
-
-	/**
-	 * Un-posts the invoice if it is posted, through {@link IPostingService#unpost(DocumentUnpostRequest)}.
-	 */
-	public static void unpostIfNeeded(final I_C_Invoice invoice)
-	{
-		if (!invoice.isPosted())
-		{
-			return;
-		}
-
-		Services.get(IPostingService.class).unpost(DocumentUnpostRequest.builder()
-				.document(invoice)
-				.dateAcct(invoice.getDateAcct())
-				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
-				.build());
 	}
 
 }   // Doc_Invoice

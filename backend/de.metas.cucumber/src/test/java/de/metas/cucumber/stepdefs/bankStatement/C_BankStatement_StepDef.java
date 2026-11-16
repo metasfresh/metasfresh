@@ -25,7 +25,13 @@ package de.metas.cucumber.stepdefs.bankStatement;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.organization.IOrgDAO;
@@ -40,12 +46,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.util.TimeUtil;
 
@@ -58,6 +58,17 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for bank statements ({@code C_BankStatement}): creating a statement, completing it and loading it.
+ *
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * And metasfresh contains C_BankStatement:
+ *   | Identifier | ... |
+ *   | bs         | ... |
+ * And the C_BankStatement identified by bs is completed
+ * }</pre>
+ */
 public class C_BankStatement_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);

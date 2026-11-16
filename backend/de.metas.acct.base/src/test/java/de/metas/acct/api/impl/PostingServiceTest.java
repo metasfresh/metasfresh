@@ -24,6 +24,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -230,7 +231,7 @@ public class PostingServiceTest
 		{
 			return DocumentUnpostRequest.builder()
 					.document(invoice)
-					.dateAcct(dateAcct)
+					.dateAcct(TimeUtil.asInstant(dateAcct))
 					.docBaseType(DocBaseType.PurchaseInvoice)
 					.build();
 		}
@@ -253,6 +254,30 @@ public class PostingServiceTest
 			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
 			assertThat(posting.getClientId()).isEqualTo(ClientId.ofRepoId(invoice.getAD_Client_ID()));
 			assertThat(posting.getOnErrorNotifyUserId()).isEqualTo(NOTIFY_USER_ID);
+		}
+
+		@Test
+		void reversedDocument_isPostedAgain()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Reversed, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			final ArgumentCaptor<DocumentPostMultiRequest> captor = ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
+			verify(postingBusService).sendAfterCommit(captor.capture());
+			assertThat(captor.getValue().toSet()).hasSize(1);
+		}
+
+		@Test
+		void voidedDocument_isUnposted_butNotScheduled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Voided, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			verify(postingBusService, never()).sendAfterCommit(any());
 		}
 
 		@Test

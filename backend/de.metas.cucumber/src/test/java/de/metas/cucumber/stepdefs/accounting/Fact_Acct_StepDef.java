@@ -46,6 +46,17 @@ import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.new
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for the accounting facts ({@code Fact_Acct}): waiting for a document to be posted, asserting the booked
+ * accounts and amounts, and asserting that documents are (not) posted.
+ *
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * And Wait until documents invoice is posted
+ * And the documents invoice are unposted
+ * And the documents invoice are not posted
+ * }</pre>
+ */
 public class Fact_Acct_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);

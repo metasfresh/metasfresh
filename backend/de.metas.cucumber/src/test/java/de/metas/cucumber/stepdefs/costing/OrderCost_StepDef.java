@@ -24,6 +24,8 @@
 package de.metas.cucumber.stepdefs.costing;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -32,8 +34,9 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
-import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -43,23 +46,24 @@ import de.metas.order.costs.OrderCostTypeId;
 import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.order.costs.invoice.CreateMatchInvoiceRequest;
-import de.metas.inout.InOutId;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Cost_Type;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Cost_Type;
 
 import java.math.BigDecimal;
@@ -86,6 +90,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class OrderCost_StepDef
 {
+	private static final String COST_ELEMENT_NAME = "cucumber order cost element";
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final OrderCostService orderCostService = SpringContextHolder.instance.getBean(OrderCostService.class);
 
 	@NonNull private final C_Cost_Type_StepDefData costTypeTable;
@@ -94,8 +102,10 @@ public class OrderCost_StepDef
 	@NonNull private final M_InOut_StepDefData inoutTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
+	private boolean orderCostElementUsed;
+
 	/**
-	 * Creates order cost types ({@code C_Cost_Type}), each with its own non-material cost element (a material cost element would add a second cost amount to every stocked product).
+	 * Creates order cost types ({@code C_Cost_Type}), each using the one shared non-material cost element (a material cost element would add a second cost amount to every stocked product).
 	 * <b>Columns</b>: {@code Identifier} (required),
 	 * {@code CostCalculationMethod} (optional, default {@code F} = fixed amount), {@code CostDistributionMethod} (optional, default {@code A} = by amount).
 	 */
@@ -109,7 +119,7 @@ public class OrderCost_StepDef
 			record.setAD_Org_ID(0);
 			record.setValue("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
 			record.setName("cucumber cost type " + identifier.getAsString());
-			record.setM_CostElement_ID(createNonMaterialCostElement(identifier).getM_CostElement_ID());
+			record.setM_CostElement_ID(getOrCreateNonMaterialCostElement().getM_CostElement_ID());
 			record.setCostCalculationMethod(row.getAsOptionalString(I_C_Cost_Type.COLUMNNAME_CostCalculationMethod).orElse(X_C_Cost_Type.COSTCALCULATIONMETHOD_FixedAmount));
 			record.setCostDistributionMethod(row.getAsOptionalString(I_C_Cost_Type.COLUMNNAME_CostDistributionMethod).orElse(X_C_Cost_Type.COSTDISTRIBUTIONMETHOD_Amount));
 			InterfaceWrapperHelper.saveRecord(record);
@@ -118,16 +128,50 @@ public class OrderCost_StepDef
 		});
 	}
 
-	private I_M_CostElement createNonMaterialCostElement(@NonNull final StepDefDataIdentifier identifier)
+	/**
+	 * Gets (or creates, or re-activates) THE one cucumber cost element for order costs, found by its fixed name.
+	 * Manufacturing costing iterates all <i>active</i> non-material cost elements, so it must never grow per cost type or per run;
+	 * {@link #deactivateOrderCostElement()} deactivates it again after the scenario.
+	 */
+	private I_M_CostElement getOrCreateNonMaterialCostElement()
 	{
-		final I_M_CostElement costElement = InterfaceWrapperHelper.newInstance(I_M_CostElement.class);
-		costElement.setAD_Org_ID(0);
-		costElement.setName("cucumber cost element " + identifier.getAsString() + " " + System.nanoTime());
-		costElement.setCostElementType(CostElementType.Overhead.getCode());
-		costElement.setCostingMethod(CostingMethod.AveragePO.getCode());
-		costElement.setIsCalculated(false);
+		I_M_CostElement costElement = queryBL.createQueryBuilder(I_M_CostElement.class)
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_Name, COST_ELEMENT_NAME)
+				.create()
+				.firstOnly(I_M_CostElement.class); // active or not
+		if (costElement == null)
+		{
+			costElement = InterfaceWrapperHelper.newInstance(I_M_CostElement.class);
+			costElement.setAD_Org_ID(0);
+			costElement.setName(COST_ELEMENT_NAME);
+			costElement.setCostElementType(CostElementType.Overhead.getCode());
+			costElement.setCostingMethod(CostingMethod.AveragePO.getCode());
+			costElement.setIsCalculated(false);
+		}
+		costElement.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(costElement);
+		orderCostElementUsed = true;
 		return costElement;
+	}
+
+	/** Deactivates the cucumber order cost element so that it does not take part in the costing of later scenarios (e.g. manufacturing). */
+	@After
+	public void deactivateOrderCostElement()
+	{
+		if (!orderCostElementUsed)
+		{
+			return;
+		}
+		orderCostElementUsed = false;
+
+		queryBL.createQueryBuilder(I_M_CostElement.class)
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_Name, COST_ELEMENT_NAME)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.update(costElement -> {
+					costElement.setIsActive(false);
+					return IQueryUpdater.MODEL_UPDATED;
+				});
 	}
 
 	/**
@@ -164,7 +208,7 @@ public class OrderCost_StepDef
 		final List<InOutCost> inoutCosts = orderCostService.getByInOutId(InOutId.ofRepoId(inout.getM_InOut_ID()));
 		assertThat(inoutCosts).as("in/out costs of material receipt %s", inoutIdentifier).isNotEmpty();
 
-		final List<de.metas.adempiere.model.I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoiceTable.get(invoiceIdentifier));
+		final List<I_C_InvoiceLine> invoiceLines = invoiceDAO.retrieveLines(invoiceTable.get(invoiceIdentifier));
 		assertThat(invoiceLines).as("lines of invoice %s", invoiceIdentifier).hasSize(1);
 
 		orderCostService.createMatchInvoice(CreateMatchInvoiceRequest.builder()

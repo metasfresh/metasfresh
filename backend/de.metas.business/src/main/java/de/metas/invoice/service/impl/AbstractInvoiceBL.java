@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.acct.api.DocumentUnpostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.InvoiceOpenRequest;
@@ -2153,5 +2155,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		invoiceDAO.save(invoice);
+	}
+
+	@Override
+	public void unpost(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		if (!invoice.isPosted())
+		{
+			return;
+		}
+
+		Services.get(IPostingService.class).unpost(DocumentUnpostRequest.builder()
+				.document(invoice)
+				.dateAcct(TimeUtil.asInstant(invoice.getDateAcct()))
+				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+				.build());
 	}
 }

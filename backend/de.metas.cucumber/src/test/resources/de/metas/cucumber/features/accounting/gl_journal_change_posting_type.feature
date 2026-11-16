@@ -11,7 +11,8 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2024-01-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh has date and time 2018-01-15T10:00:00+01:00[Europe/Berlin]
+    # a year that no other feature books on: the year-end process closes ALL expense/revenue balances of the year, so the expected line count must not depend on other features run before in the same database
     And all periods are open
     And metasfresh contains C_ElementValues:
       | Identifier |
@@ -26,13 +27,13 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
     # real year-end flow: expense/revenue balances booked as Actual are closed by a Statistical journal created by GL_Journal_GenerateYearEnding
     Given metasfresh contains GL_Journal:
       | Identifier | DateDoc    | PostingType |
-      | gjActual   | 2024-01-10 | A           |
+      | gjActual   | 2018-01-10 | A           |
     And metasfresh contains GL_JournalLines:
       | GL_Journal_ID | Account_DR_ID | Account_CR_ID | Amount |
       | gjActual      | gjDebit       | gjCredit      | 100.00 |
     And the GL journal "gjActual" is completed
     And the GL journal "gjActual" is eventually posted with PostingType "A" and 2 Fact_Acct lines
-    And the GL_Journal_GenerateYearEnding process is invoked for DateAcct "2024-12-31" and the created GL journal is registered as "gj"
+    And the GL_Journal_GenerateYearEnding process is invoked for DateAcct "2018-12-31" and the created GL journal is registered as "gj"
     And the GL journal "gj" is completed
     And the GL journal "gj" is eventually posted with PostingType "S" and 4 Fact_Acct lines
 
@@ -44,7 +45,7 @@ Feature: Changing the posting type of a completed GL journal keeps it posted
   Scenario: reactivating a posted GL journal does not post it again
     Given metasfresh contains GL_Journal:
       | Identifier | DateDoc    | PostingType |
-      | gjReact    | 2024-01-10 | A           |
+      | gjReact    | 2018-01-10 | A           |
     And metasfresh contains GL_JournalLines:
       | GL_Journal_ID | Account_DR_ID | Account_CR_ID | Amount |
       | gjReact       | gjDebit       | gjCredit      | 100.00 |

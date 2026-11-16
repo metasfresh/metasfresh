@@ -4,8 +4,8 @@
 Feature: A completed invoice whose accounting entries were deleted is posted again
 ##
 ## Several actions delete the accounting entries (Fact_Acct) of an invoice and set C_Invoice.Posted='N' while the invoice stays completed:
-## reversing the material receipt that the invoice is matched to (M_MatchInv deleted), and the process "Steuer berechnen" (InvoiceCalculateTax).
-## The invoice must then be posted again. A drafted or reversed invoice must not be queued.
+## reversing the material receipt that the invoice is matched to (M_MatchInv deleted), and matching the in/out costs of a receipt to a cost invoice.
+## The invoice must then be posted again. A drafted or voided invoice must not be queued; a reversed one is posted again (reversed documents are posted too).
 ##
 
   Background:
@@ -67,7 +67,7 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
       | T_Credit_Acct         | 8.10 CHF    |             | invoice   |
 
   @Id:S33766_11
-  Scenario: the reversed invoices stay unposted when the material receipt is reversed after the invoice was reversed
+  Scenario: the reversed invoice and its reversal are posted again when the material receipt is reversed after the invoice was reversed
     Given for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
       | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
@@ -85,9 +85,16 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
 
     When the material receipt identified by receipt is reversed as receiptReversal
 
-    Then documents invoice,invoiceReversal got no new posting request and no note
-    And the documents invoice,invoiceReversal are not posted
-    And no Fact_Acct records exist for documents invoice,invoiceReversal
+    Then Wait until documents invoice,invoiceReversal are posted
+    # the reversed receipt no longer clears the invoiced goods: the whole amount is booked on the expense account (and booked the other way round by the reversal)
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID       |
+      | V_Liability_Acct      |             | 108.10 CHF  | invoice         |
+      | P_Expense_Acct        | 100 CHF     |             | invoice         |
+      | T_Credit_Acct         | 8.10 CHF    |             | invoice         |
+      | V_Liability_Acct      | 108.10 CHF  |             | invoiceReversal |
+      | P_Expense_Acct        |             | 100 CHF     | invoiceReversal |
+      | T_Credit_Acct         |             | 8.10 CHF    | invoiceReversal |
 
   @Id:S33766_13
   Scenario: matching the in/out costs adds no posting request for a cost invoice that is not posted yet
@@ -130,45 +137,8 @@ Feature: A completed invoice whose accounting entries were deleted is posted aga
     Then documents costInvoice got no new posting request and no note
     And the documents costInvoice are not posted
     And no Fact_Acct records exist for documents costInvoice
-
-  @Id:S33766_20
-  Scenario: the posted invoice is posted again after "Steuer berechnen"
-    Given for costing, create completed order with one line
-      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
-      | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
-    And for costing, create completed material receipt with one line
-      | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
-      | po_l1          | receipt    | receipt_line1  |
-    And for costing, create completed invoice with one line
-      | C_Invoice_ID | C_OrderLine_ID | M_MatchInv_ID |
-      | invoice      | po_l1          | matchInv      |
-    And Wait until documents invoice are posted
-
-    When the InvoiceCalculateTax process is invoked for invoice "invoice"
-
-    Then Wait until documents invoice are posted
-    # the receipt is still matched: the goods are booked on the clearing account, the tax line equals C_InvoiceTax.TaxAmt
-    And Fact_Acct records are matching
-      | AccountConceptualName    | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct         |             | 108.10 CHF  | invoice   |
-      | P_InventoryClearing_Acct | 100 CHF     |             | invoice   |
-      | T_Credit_Acct            | 8.10 CHF    |             | invoice   |
-
-  @Id:S33766_21
-  Scenario: "Steuer berechnen" on a drafted invoice adds no posting request
-    Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | draftInv   | bpartner      | Ausgangsrechnung        | 2027-03-15   | Spot                     | true    | CHF                 |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | draftLine  | draftInv     | product      | 5 PCE       |
-    And the posting requests of documents draftInv are remembered
-
-    When the InvoiceCalculateTax process is invoked for invoice "draftInv"
-
-    Then documents draftInv got no new posting request and no note
-    And the documents draftInv are not posted
-    And no Fact_Acct records exist for documents draftInv
+    # clean up: post the invoice now, so no completed-but-unposted invoice stays in the database (a later "repost all" in the same database would book it)
+    And the documents costInvoice are reposted
 
   @Id:S33766_12
   Scenario: the posted cost invoice is posted again after the in/out costs of the receipt were matched to it

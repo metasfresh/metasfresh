@@ -15,6 +15,7 @@ import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -33,6 +34,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.acct.Doc;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -89,14 +91,14 @@ public class PostingService implements IPostingService
 				? request.getDocBaseType()
 				: docTypeDAO.getDocBaseTypeById(Check.assumeNotNull(request.getDocTypeId(), "docTypeId"));
 		final OrgId orgId = InterfaceWrapperHelper.getOrgId(document).orElse(OrgId.ANY);
-		periodBL.testPeriodOpen(InterfaceWrapperHelper.getCtx(document), request.getDateAcct(), docBaseType, orgId.getRepoId());
+		periodBL.testPeriodOpen(InterfaceWrapperHelper.getCtx(document), TimeUtil.asTimestamp(request.getDateAcct()), docBaseType, orgId.getRepoId());
 
 		factAcctDAO.deleteForDocumentModel(document);
 
 		factAcctDAO.setDocumentModelNotPosted(document);
 
-		final String docStatus = InterfaceWrapperHelper.getValueOrNull(document, IDocument.COLUMNNAME_DocStatus);
-		if (IDocument.STATUS_Completed.equals(docStatus) || IDocument.STATUS_Closed.equals(docStatus))
+		final DocStatus docStatus = DocStatus.ofNullableCode(InterfaceWrapperHelper.getValueOrNull(document, IDocument.COLUMNNAME_DocStatus));
+		if (docStatus != null && docStatus.isCompletedOrClosedOrReversed())
 		{
 			final UserId updatedBy = InterfaceWrapperHelper.getUpdatedBy(document);
 			schedule(DocumentPostRequest.builder()

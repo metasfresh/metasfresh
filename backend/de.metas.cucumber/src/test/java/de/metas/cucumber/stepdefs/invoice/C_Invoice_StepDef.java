@@ -39,7 +39,6 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
-import de.metas.cucumber.stepdefs.process.AD_Process_Run_StepDef;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
@@ -99,7 +98,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.When;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -122,7 +120,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
-import org.eevolution.process.InvoiceCalculateTax;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -168,6 +165,11 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 
+/**
+ * Step definitions for invoices ({@code C_Invoice}): creating, completing, reversing, loading and asserting them.
+ *
+ * <p><b>Gherkin usage example</b>: see {@code accounting/invoice_unpost_requeue.feature}.
+ */
 @RequiredArgsConstructor
 public class C_Invoice_StepDef
 {
@@ -210,7 +212,6 @@ public class C_Invoice_StepDef
 	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
-	private final AD_Process_Run_StepDef processRunStepDef;
 
 	/**
 	 * Validates {@code C_Invoice} records against expected values.
@@ -1052,23 +1053,6 @@ public class C_Invoice_StepDef
 			final I_C_Invoice freshInvoice = invoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(invoiceId), I_C_Invoice.class);
 			invoiceTable.putOrReplace(invoiceIdentifier, freshInvoice);
 		});
-	}
-
-	/** Runs the "Steuer berechnen" process ({@code InvoiceCalculateTax}) for the invoice, as the WebUI role. */
-	@When("the InvoiceCalculateTax process is invoked for invoice {string}")
-	public void invoke_InvoiceCalculateTax_process(@NonNull final String invoiceIdentifier)
-	{
-		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-		processRunStepDef.newProcessInfoBuilder(adProcessDAO.retrieveProcessIdByClass(InvoiceCalculateTax.class))
-				.setRecord(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID())
-				.addParameter(COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
-				.buildAndPrepareExecution()
-				.switchContextWhenRunning()
-				.executeSync()
-				.getResult()
-				.propagateErrorIfAny();
-		InterfaceWrapperHelper.refresh(invoice);
 	}
 
 	@NonNull

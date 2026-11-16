@@ -462,4 +462,10 @@ public interface IInvoiceBL extends ISingletonService
 	Amount retrieveOpenAmt(InvoiceId invoiceId);
 
 	void save(@NonNull I_C_Invoice invoice);
+
+	/**
+	 * Un-posts the invoice if it is posted, through {@link de.metas.acct.api.IPostingService#unpost(de.metas.acct.api.DocumentUnpostRequest)}:
+	 * deletes its accounting facts and, if the invoice is completed or closed, queues it for posting again.
+	 */
+	void unpost(@NonNull org.compiere.model.I_C_Invoice invoice);
 }

@@ -14,6 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +65,7 @@ public class BankStatementBLUnpostTest
 		assertThat(postingService.unposts).hasSize(1);
 		final DocumentUnpostRequest request = postingService.unposts.get(0);
 		assertThat(request.getDocument()).isSameAs(bankStatement);
-		assertThat(request.getDateAcct()).isEqualTo(statementDate);
+		assertThat(request.getDateAcct()).isEqualTo(TimeUtil.asInstant(statementDate));
 		assertThat(request.getDocBaseType()).isEqualTo(DocBaseType.BankStatement);
 		assertThat(postingService.schedules).isEmpty();
 	}

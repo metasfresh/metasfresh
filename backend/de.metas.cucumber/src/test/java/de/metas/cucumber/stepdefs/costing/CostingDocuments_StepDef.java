@@ -54,6 +54,11 @@ import java.util.List;
 
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 
+/**
+ * Step definitions that create costing-relevant documents (orders, receipts, invoices, match-invoices) from a single table.
+ *
+ * <p><b>Gherkin usage example</b>: see the features under {@code costing/}, e.g. {@code costing/moving_average_invoice/}.
+ */
 @RequiredArgsConstructor
 public class CostingDocuments_StepDef
 {

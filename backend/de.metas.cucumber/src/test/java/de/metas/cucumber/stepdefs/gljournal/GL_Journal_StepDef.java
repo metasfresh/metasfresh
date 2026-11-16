@@ -230,15 +230,6 @@ public class GL_Journal_StepDef
 		InterfaceWrapperHelper.refresh(record);
 	}
 
-	/** Asserts the current {@code GL_Journal.PostingType} of the journal. */
-	@Then("the GL journal {string} has GL_Journal.PostingType {string}")
-	public void assertPostingType(@NonNull final String identifier, @NonNull final String postingType)
-	{
-		final I_GL_Journal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		InterfaceWrapperHelper.refresh(record);
-		assertThat(record.getPostingType()).as("GL_Journal.PostingType of %s", identifier).isEqualTo(postingType);
-	}
-
 	/**
 	 * Runs the year-end process ({@link GL_Journal_GenerateYearEnding}) for the primary accounting schema and the standard org, as the WebUI role.
 	 * It creates one drafted GL journal with {@code PostingType=S} that moves the balances of all expense/revenue accounts

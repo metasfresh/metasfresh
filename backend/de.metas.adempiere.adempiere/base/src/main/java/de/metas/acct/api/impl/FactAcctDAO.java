@@ -20,6 +20,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_Fact_Acct;
@@ -83,9 +84,13 @@ public class FactAcctDAO implements IFactAcctDAO
 	@Override
 	public void setDocumentModelNotPosted(@NonNull final Object documentObj)
 	{
-		InterfaceWrapperHelper.disableReadOnlyColumnCheck(documentObj);
-		InterfaceWrapperHelper.setValue(documentObj, COLUMNNAME_Posted, false); // the column has the same name on every postable table
-		InterfaceWrapperHelper.save(documentObj);
+		// GL_Journal.Posted is not updateable (AD_Column.IsUpdateable=N): PO.set_Value would reject the change (PO.java, ATTR_ReadOnlyColumnCheckDisabled check), so the check is bypassed.
+		// The bypass is scoped: the caller's instance must not keep the read-only check disabled after this method returns
+		try (final IAutoCloseable ignored = InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.temporarySetValue(documentObj, true))
+		{
+			InterfaceWrapperHelper.setValue(documentObj, COLUMNNAME_Posted, false); // the column has the same name on every postable table
+			InterfaceWrapperHelper.save(documentObj);
+		}
 	}
 
 	@Override

@@ -22,28 +22,28 @@
 
 package de.metas.cucumber.stepdefs.bankStatement;
 
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.IBankStatementPaymentBL;
-import de.metas.currency.Amount;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.money.CurrencyId;
-import de.metas.payment.PaymentId;
-import io.cucumber.java.en.When;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,11 +64,23 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Step definitions for bank statement lines ({@code C_BankStatementLine}): creating lines, linking payments to a line
+ * (as the "link payments" action of the bank statement window does) and loading lines.
+ *
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * And metasfresh contains C_BankStatementLines:
+ *   | Identifier | C_BankStatement_ID | Line | StmtAmt | C_Currency.ISO_Code |
+ * When the payments payment are linked to bank statement line bsl
+ * }</pre>
+ */
 public class C_BankStatementLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBankStatementPaymentBL bankStatementPaymentBL = Services.get(IBankStatementPaymentBL.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BankStatementLine_StepDefData bankStatementLineTable;
@@ -151,7 +163,7 @@ public class C_BankStatementLine_StepDef
 					.build());
 		}
 
-		Services.get(IBankStatementPaymentBL.class).linkMultiPayments(request.build());
+		bankStatementPaymentBL.linkMultiPayments(request.build());
 	}
 
 	@And("load C_BankStatementLine")

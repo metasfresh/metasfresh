@@ -58,6 +58,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -131,7 +132,7 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			postingService.unpost(DocumentUnpostRequest.builder()
 					.document(bankStatement)
-					.dateAcct(bankStatement.getStatementDate())
+					.dateAcct(TimeUtil.asInstant(bankStatement.getStatementDate()))
 					.docBaseType(DocBaseType.BankStatement)
 					.build());
 		}

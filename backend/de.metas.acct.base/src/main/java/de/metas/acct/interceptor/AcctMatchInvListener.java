@@ -14,7 +14,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MPeriod;
 import org.compiere.util.Env;
@@ -100,6 +99,6 @@ public class AcctMatchInvListener implements MatchInvListener
 		}
 
 		invoiceBL.getByIds(invoiceIds)
-				.forEach(Doc_Invoice::unpostIfNeeded);
+				.forEach(invoiceBL::unpost);
 	}
 }
