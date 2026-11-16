@@ -758,7 +758,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 							tuPI,
 							X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
-							ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfigurationNew))
+							ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfigurationNew),
+							ProductId.ofRepoIdOrNull(lutuConfigurationNew.getM_Product_ID()))
 					//
 					.stream()
 					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
