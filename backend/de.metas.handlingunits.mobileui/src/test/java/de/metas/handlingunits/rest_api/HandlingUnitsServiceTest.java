@@ -7,7 +7,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.inventory.InventoryCandidateRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -40,9 +40,9 @@ class HandlingUnitsServiceTest
 
 		service = new HandlingUnitsService(
 				HUQRCodesService.newInstanceForUnitTesting(),
-				new HUQtyService(InventoryService.newInstanceForUnitTesting()),
+				HUQtyService.newInstanceForUnitTesting(),
 				HULabelService.newInstanceForUnitTesting(),
-				new InventoryCandidateService(adReferenceService),
+				new InventoryCandidateService(adReferenceService, new InventoryCandidateRepository()),
 				new HUGraiService(new HUPIGraiRepository()));
 	}
 
