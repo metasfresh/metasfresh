@@ -61,6 +61,17 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+/**
+ * Step definitions for bank statements ({@code C_BankStatement}): creating a statement, completing it and loading it.
+ *
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * And metasfresh contains C_BankStatement:
+ *   | Identifier | C_BP_BankAccount_ID | StatementDate |
+ *   | bs         | bankAccount         | 2026-07-20    |
+ * And the C_BankStatement identified by bs is completed
+ * }</pre>
+ */
 public class C_BankStatement_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
