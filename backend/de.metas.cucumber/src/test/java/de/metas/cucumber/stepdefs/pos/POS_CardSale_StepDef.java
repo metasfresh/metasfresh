@@ -1023,7 +1023,7 @@ public class POS_CardSale_StepDef
 				StepDefUtil.tryAndWait(30, 100, () -> countSessionsWaitingForOrderLock() >= 2);
 
 				// 3. SumUp's approval is imported while step 3 waits; its status event is queued behind the lock, too
-				sumUpService.bulkUpdatePendingTransactions(false);
+				sumUpService.bulkUpdateRecentPendingTransactions();
 				Thread.sleep(500);
 			}
 			finally

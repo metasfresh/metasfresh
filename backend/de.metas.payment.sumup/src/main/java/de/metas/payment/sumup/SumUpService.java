@@ -48,6 +48,7 @@ public class SumUpService
 	 * ({@link #bulkUpdateRecentPendingTransactions()})
 	 */
 	public static final Duration BACKGROUND_LOOKUP_MAX_AGE = Duration.ofHours(24);
+
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final SumUpClientFactory clientFactory;
@@ -471,6 +472,7 @@ public class SumUpService
 	 * {@link #BACKGROUND_LOOKUP_MAX_AGE} ago (by {@link SystemTime}). An older PENDING transaction is no longer asked for in
 	 * the background, e.g. a reader checkout whose card was never presented, which SumUp keeps answering with "not found":
 	 * it stays PENDING, and an explicit lookup (the till's check, back office's update processes) still asks SumUp.
+	 * Status change events are not force-sent.
 	 */
 	public BulkUpdateByQueryResult bulkUpdateRecentPendingTransactions()
 	{

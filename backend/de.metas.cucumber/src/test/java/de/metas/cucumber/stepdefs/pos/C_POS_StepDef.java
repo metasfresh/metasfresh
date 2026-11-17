@@ -489,7 +489,7 @@ public class C_POS_StepDef
 				.orElseThrow(() -> new AdempiereException("No SumUp transaction for the POS card payment").setParameter("posPayment", posPayment));
 
 		SumUpApiStub.setTransactionStatus(sumUpTrx.getClientTransactionId().getAsString(), SumUpTransactionStatus.SUCCESSFUL.getCode(), null);
-		sumUpService.bulkUpdatePendingTransactions(false);
+		sumUpService.bulkUpdateRecentPendingTransactions();
 		SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 	}
 
