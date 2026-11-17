@@ -14,6 +14,7 @@ import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -25,6 +26,7 @@ import org.mockito.Mockito;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -183,6 +185,35 @@ class SumUpTransactionRepositoryTest
 		{
 			SystemTime.resetTimeSource();
 		}
+	}
+
+	/**
+	 * The poller's query is limited (default 1000) and keeps transactions whose lookups keep failing, whatever their age: the
+	 * newest transactions come first, so a new payment is always polled even if more old ones than the limit are waiting.
+	 */
+	@Test
+	void bulkUpdateByQuery_overTheLimit_updatesTheNewestTransactions()
+	{
+		final SumUpTransaction oldest = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(1).build());
+		final SumUpTransaction older = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(2).build());
+		final SumUpTransaction newest = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(3).build());
+		repository.saveNew(oldest);
+		repository.saveNew(older);
+		repository.saveNew(newest);
+
+		final List<Integer> updatedPaymentIds = new ArrayList<>();
+		repository.bulkUpdateByQuery(
+				SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.limit(QueryLimit.ofInt(2))
+						.build(),
+				false,
+				trx -> {
+					updatedPaymentIds.add(Objects.requireNonNull(trx.getPosRef()).getPosPaymentId());
+					return trx;
+				});
+
+		assertThat(updatedPaymentIds).containsExactly(3, 2);
 	}
 
 	@Test

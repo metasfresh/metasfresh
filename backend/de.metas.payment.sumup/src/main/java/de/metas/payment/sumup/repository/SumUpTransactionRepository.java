@@ -474,9 +474,11 @@ public class SumUpTransactionRepository
 
 		try (IAutoCloseable ignored = SumUpEventsDispatcher.temporaryForceSendingChangeEventsIf(isForceSendingChangeEvents))
 		{
+			// newest first: the query is limited, and transactions whose lookups keep failing stay in it whatever their age,
+			// so a recent transaction (a payment the cashier is waiting for) must never be pushed out by older ones
 			toSqlQuery(query)
 					.clearOrderBys()
-					.orderBy(I_SUMUP_Transaction.COLUMNNAME_SUMUP_Transaction_ID)
+					.orderByDescending(I_SUMUP_Transaction.COLUMNNAME_SUMUP_Transaction_ID)
 					.create()
 					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 					.iterateAndStream()
