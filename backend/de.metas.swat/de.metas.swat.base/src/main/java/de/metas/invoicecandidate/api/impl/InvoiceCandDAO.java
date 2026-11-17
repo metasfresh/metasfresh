@@ -373,13 +373,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				// unordered, this and the async recompute (fetchInvalidInvoiceCandidates) could take the same
 				// rows in opposite order and deadlock.
 				//
-				// C_Invoice_Candidate_ID alone is enough to agree with that recompute even though the recompute
-				// orders by (IsFreightCost, IsManual, C_Invoice_Candidate_ID): both leading keys are constant
-				// across THIS query's result set, so the two orderings coincide on it. IsFreightCost is derived
-				// from the order line's product (C_OrderLine_Handler.setOrderedData), and IsManual can only be
-				// 'N' here -- the sole writer of IsManual='Y' on a candidate,
-				// ExternallyReferencedCandidateRepository, never sets C_OrderLine_ID, so a manual candidate
-				// cannot pass this method's C_OrderLine_ID filter in the first place.
+				// For the candidates of ONE order line, C_Invoice_Candidate_ID alone agrees with that recompute even
+				// though the recompute orders by (IsFreightCost, IsManual, C_Invoice_Candidate_ID): both leading
+				// keys are constant there. IsFreightCost is derived from the order line's product
+				// (C_OrderLine_Handler.setOrderedData), and IsManual can only be 'N' -- the sole writer of
+				// IsManual='Y', ExternallyReferencedCandidateRepository, never sets C_OrderLine_ID. Across several
+				// order lines IsFreightCost may differ, so a caller that locks the candidates of several lines does
+				// not get the recompute's order.
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
 				.list(I_C_Invoice_Candidate.class);
