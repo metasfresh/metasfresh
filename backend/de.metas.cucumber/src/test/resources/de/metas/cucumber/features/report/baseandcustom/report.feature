@@ -238,6 +238,9 @@ Feature: Jasper Report Tests
   # asserts and removing the PP_Product_Plannings row below is what must make it fail. Scenario-scoped
   # fixtures only, so the shared Background 'wh'/'product' -- which carry neither prerequisite -- stay
   # untouched for the sibling scenarios above.
+  # The routing is created here too, never taken from the step's default AD_Workflow_ID: this feature also
+  # runs (tag @report) against customer databases, which do not carry the core-only default routing
+  # (StepDefConstants.WORKFLOW_ID = 540075) -> FK violation adworkflow_ppproductplanning there.
   Scenario: Order Checkup Warehouse Report Test
     Given create S_Resource:
       | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
@@ -245,9 +248,21 @@ Feature: Jasper Report Tests
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID   | PP_Plant_ID  |
       | checkupWarehouse | checkupPlant |
+    And load AD_User:
+      | Login      | AD_User_ID.Identifier |
+      | metasfresh | checkupUser           |
+    And create AD_Workflow:
+      | AD_Workflow_ID.Identifier | WorkflowType | OPT.AD_User_InCharge_ID.Identifier |
+      | checkupRouting            | M            | checkupUser                        |
+    And create AD_WF_Node:
+      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Name               | Value              | Duration |
+      | checkupRoutingNode       | checkupRouting            | checkupPlant                 | checkupRoutingNode | checkupRoutingNode | 1        |
+    And update AD_Workflow:
+      | AD_Workflow_ID.Identifier | OPT.AD_WF_Node_ID.Identifier |
+      | checkupRouting            | checkupRoutingNode           |
     And metasfresh contains PP_Product_Plannings
-      | M_Product_ID | S_Resource_ID | IsManufactured | IsTraded |
-      | product      | checkupPlant  | true           | false    |
+      | M_Product_ID | S_Resource_ID | AD_Workflow_ID | IsManufactured | IsTraded |
+      | product      | checkupPlant  | checkupRouting | true           | false    |
     And metasfresh contains C_Orders:
       | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID   |
       | checkupOrderWh | true    | customer      | 2025-04-01  | checkupWarehouse |
