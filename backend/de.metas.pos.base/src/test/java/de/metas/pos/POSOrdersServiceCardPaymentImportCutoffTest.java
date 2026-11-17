@@ -33,7 +33,7 @@ class POSOrdersServiceCardPaymentImportCutoffTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		ordersRepository = spy(new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty())));
+		ordersRepository = spy(new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource()));
 		doReturn(Stream.empty()).when(ordersRepository).streamCardPaymentsToImport(any());
 		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), mock(POSOrderProcessingServices.class), mock(SumUpService.class), new POSCardReleaseWait(), new POSCardReaderCheckoutTerminator(mock(POSTerminalService.class), mock(SumUpService.class)), duration -> {});
 	}
