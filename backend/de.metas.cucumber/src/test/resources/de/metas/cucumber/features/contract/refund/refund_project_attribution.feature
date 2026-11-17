@@ -402,7 +402,8 @@ Feature: Refund credit memo lines per project
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @allure.label.feature:F2000_Contract_Management
-  @Id:S33096_TC11_refund
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC11b
   Scenario: A refund of a two-position order with a contract Bonus is computed on the goods only and split per position as before
     Given metasfresh contains M_Product_Categories:
       | Identifier    |
@@ -413,10 +414,10 @@ Feature: Refund credit memo lines per project
       | bonusDiscount |                                      | false         |
       | contractProd  |                                      | false         |
     And metasfresh contains M_ProductPrices
-      | Identifier         | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_bonusGoods      | refundPLV                         | bonusGoods              | 100      | PCE               | Normal                        |
-      | pp_bonusDiscount   | refundPLV                         | bonusDiscount           | 1        | PCE               | Normal                        |
-      | pp_bonusGoodsRefund | refundPLVCHF                     | bonusGoods              | 100      | PCE               | Normal                        |
+      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_bonusGoods       | refundPLV                         | bonusGoods              | 100      | PCE               | Normal                        |
+      | pp_bonusDiscount    | refundPLV                         | bonusDiscount           | 1        | PCE               | Normal                        |
+      | pp_bonusGoodsRefund | refundPLVCHF                      | bonusGoods              | 100      | PCE               | Normal                        |
     And load C_DocType:
       | DocBaseType | DocSubType | C_DocType_ID      |
       | SOO         | SO         | docTypeSalesOrder |
@@ -424,7 +425,7 @@ Feature: Refund credit memo lines per project
       | Identifier   | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.EnsurePeriodsForYears |
       | zeroDurTrans | 0            | day              | 0                | day                  | EO                | 2026,2027                 |
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name          | OPT.IsAdditive |
+      | Identifier  | Name          | OPT.IsAdditive |
       | bonusSchema | Bonus Ware 3% | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier      | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
@@ -436,8 +437,8 @@ Feature: Refund credit memo lines per project
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
       | bonusSettings                                      | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name             | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | bonusConditions  | Bonus conditions | CompensationGroup | contractProd                         | zeroDurTrans                            | bonusSettings                                          |
+      | Identifier      | Name             | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | bonusConditions | Bonus conditions | CompensationGroup | contractProd                         | zeroDurTrans                            | bonusSettings                                          |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | bonusTerm  | bonusConditions                     | customerBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |

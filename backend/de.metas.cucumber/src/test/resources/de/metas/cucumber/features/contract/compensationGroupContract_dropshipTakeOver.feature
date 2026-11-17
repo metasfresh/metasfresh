@@ -3645,7 +3645,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | elstar1    | goodsCategory                        | Y      | Y           |
       | gala       | goodsCategory                        | Y      | Y           |
     And metasfresh contains M_Products:
-      | Identifier          | Name                     | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | Identifier          | Name                      | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
       | bonusWare           | Bonus Ware_twoPositions   | discountCategory                     | Y      | Y           |
       | bonusVendorDropship | Bonus Vendor_twoPositions | discountCategory                     | Y      | Y           |
 
@@ -3756,7 +3756,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | elstar1    | goodsCategory                        | Y      | Y           |
       | gala       | goodsCategory                        | Y      | Y           |
     And metasfresh contains M_Products:
-      | Identifier          | Name             | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | Identifier          | Name              | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
       | bonusVendorDropship | Bonus Vendor_TC15 | discountCategory                     | Y      | Y           |
     And metasfresh contains M_ProductPrices
       | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |

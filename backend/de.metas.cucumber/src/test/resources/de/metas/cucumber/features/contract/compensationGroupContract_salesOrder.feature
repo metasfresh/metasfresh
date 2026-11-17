@@ -662,7 +662,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC7_headerProject
+  @Id:S33096_TC7a
   Scenario: An order whose header and goods lines are on one position gets one Bonus line on that position
     Given metasfresh contains C_Projects:
       | Identifier |
@@ -686,7 +686,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC7_noPosition
+  @Id:S33096_TC7b
   Scenario: An order without any position gets one Bonus line without position
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
@@ -706,7 +706,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC6_headerVariant
+  @Id:S33096_TC6a
   Scenario: A goods line without position on an order with a header position counts as the header position, one Bonus line
     Given metasfresh contains C_Projects:
       | Identifier |
@@ -733,7 +733,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC6_mixed
+  @Id:S33096_TC6b
   Scenario: One position plus goods lines without position: a Bonus line for the position and one without position
     Given metasfresh contains C_Projects:
       | Identifier |
@@ -758,7 +758,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC6_emptyHeader
+  @Id:S33096_TC6c
   Scenario: All goods lines on one position and an empty order header: the Bonus line carries that position at completion
     Given metasfresh contains C_Projects:
       | Identifier |
@@ -781,32 +781,32 @@ Feature: Contract-triggered compensation group on sales-order completion
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC2_twoSchemaLines
+  @Id:S33096_TC2a
   Scenario: Two positions and two schema lines: one Bonus line per position and schema line that has a base, none for an empty base
     Given metasfresh contains M_Products:
-      | Identifier         | OPT.M_Product_Category_ID.Identifier |
-      | pfandBonusProduct  | pfandCategory                        |
+      | Identifier        | OPT.M_Product_Category_ID.Identifier |
+      | pfandBonusProduct | pfandCategory                        |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_pfandBonus  | contractPLV                       | pfandBonusProduct       | 1        | PCE               | Normal                        |
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_pfandBonus | contractPLV                       | pfandBonusProduct       | 1        | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier  | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | twoLinesBP  | Y              | contractPS                    |
+      | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | twoLinesBP | Y              | contractPS                    |
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name                     | OPT.IsAdditive |
+      | Identifier    | Name                     | OPT.IsAdditive |
       | twoLineSchema | Bonus Ware 3% + Pfand 1% | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier        | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier | OPT.SeqNo |
-      | twoLineGoodsLine  | twoLineSchema                            | discountProduct         | 3                         | goodsCategory                        | 10        |
-      | twoLinePfandLine  | twoLineSchema                            | pfandBonusProduct       | 1                         | pfandCategory                        | 20        |
+      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier | OPT.SeqNo |
+      | twoLineGoodsLine | twoLineSchema                            | discountProduct         | 3                         | goodsCategory                        | 10        |
+      | twoLinePfandLine | twoLineSchema                            | pfandBonusProduct       | 1                         | pfandCategory                        | 20        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
-      | twoLineSettings  | Two line settings | twoLineSchema                            |
+      | Identifier      | Name              | C_CompensationGroup_Schema_ID.Identifier |
+      | twoLineSettings | Two line settings | twoLineSchema                            |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
       | twoLineSettings                                    | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier        | Name               | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | Identifier        | Name                | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | twoLineConditions | Two line conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | twoLineSettings                                        |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
@@ -817,8 +817,8 @@ Feature: Contract-triggered compensation group on sales-order completion
       | position1  |
       | position2  |
     And metasfresh contains C_Orders:
-      | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderTwoSL  | true    | twoLinesBP               | 2026-07-01  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderTwoSL | true    | twoLinesBP               | 2026-07-01  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_Project_ID |
       | ol_t1g     | orderTwoSL            | goodsProduct            | 1          | position1    |
@@ -843,7 +843,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC3_additiveCompounding
+  @Id:S33096_TC3a
   Scenario: Additive computes every Bonus line on its position's base, non-additive compounds within each position
     Given metasfresh contains M_Products:
       | Identifier       | OPT.M_Product_Category_ID.Identifier |
@@ -888,9 +888,9 @@ Feature: Contract-triggered compensation group on sales-order completion
       | position1  |
       | position2  |
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderAddPos   | true    | additiveBP               | 2026-07-01  |
-      | orderCompPos  | true    | compoundBP               | 2026-07-01  |
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderAddPos  | true    | additiveBP               | 2026-07-01  |
+      | orderCompPos | true    | compoundBP               | 2026-07-01  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_Project_ID |
       | ol_a1      | orderAddPos           | goodsProduct            | 1          | position1    |

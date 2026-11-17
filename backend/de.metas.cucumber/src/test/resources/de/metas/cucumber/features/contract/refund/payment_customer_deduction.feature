@@ -876,15 +876,15 @@ Feature: Bonus that the customer deducts when paying an invoice
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC11_paymentBonus
+  @Id:S33096_TC11a
   Scenario: The payment bonus of an invoice with goods on two projects and a contract Bonus is computed on the goods only and split per project
     Given metasfresh contains M_Products:
-      | Identifier      | OPT.M_Product_Category_ID.Identifier | OPT.IsStocked |
-      | contractBonus   | goodsCategory                        | false         |
-      | contractProd    |                                      | false         |
+      | Identifier    | OPT.M_Product_Category_ID.Identifier | OPT.IsStocked |
+      | contractBonus | goodsCategory                        | false         |
+      | contractProd  |                                      | false         |
     And metasfresh contains M_ProductPrices
-      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
-      | pp_contractBon  | deductionPLV                      | contractBonus           | 1        | PCE               | lowTaxCateg      |
+      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
+      | pp_contractBon | deductionPLV                      | contractBonus           | 1        | PCE               | lowTaxCateg      |
     And load C_DocType:
       | DocBaseType | DocSubType | C_DocType_ID      |
       | SOO         | SO         | docTypeSalesOrder |

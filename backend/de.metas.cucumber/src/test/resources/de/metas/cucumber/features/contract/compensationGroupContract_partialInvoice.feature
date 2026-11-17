@@ -1087,7 +1087,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC1_referenceCase
+  @Id:S33096_TC1a
   Scenario: Goods on two positions and without position: one Bonus line per position on the order and on the invoice
     Given metasfresh contains C_Projects:
       | Identifier |
@@ -1134,7 +1134,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_refB3              |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_ref1 | shipmentRef |
+      | ss_ref1                          | shipmentRef           |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_ref1        | ic_ref1                |
@@ -1172,7 +1172,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC4_equalGoodsValue
+  @Id:S33096_TC4a
   Scenario: Two positions with equal goods value get two separate Bonus lines on the invoice
     Given metasfresh contains C_Projects:
       | Identifier |
@@ -1208,7 +1208,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_eqB2               |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_eq1 | shipmentEq |
+      | ss_eq1                           | shipmentEq            |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_eq1         | ic_eq1                 |
@@ -1241,7 +1241,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC5_partialShipmentTwoPositions
+  @Id:S33096_TC5a
   Scenario: Partial shipment of position 1: its Bonus follows the shipped goods, position 2 stays open; the invoiced Bonus ends equal to the order's
     # a partially invoiced candidate must stay open for the goods still to ship (the local default is Y: close it)
     Given temporarily set sys config boolean value false for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
@@ -1276,7 +1276,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_psB1               |                                                 |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_ps1 | shipmentPS1 |
+      | ss_ps1                           | shipmentPS1           |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_ps1         | ic_ps1                 |
@@ -1314,10 +1314,10 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
     # second delivery: the remaining 8 units of position 1, all of position 2 with its Bonus line
     When update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
-      | ss_ps1                            | 8                         |
+      | ss_ps1                           | 8                         |
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
-      | ss_ps1                            |
+      | ss_ps1                           |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_ps1                |
@@ -1325,7 +1325,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_psB2               |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_ps2 | shipmentPS2 |
+      | ss_ps2                           | shipmentPS2           |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
       | ic_ps1                 |
@@ -1348,9 +1348,9 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
     # differ (DateInvoiced, DateAcct), so they get two invoices; position 2 with its Bonus is one of them, position 1's rest follows on the other
     # (invoicePS1 is mapped again to itself, the rest invoice of position 1 gets its own identifier)
     Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_ID.Identifier        | C_Invoice_Candidate_ID.Identifier |
-      | invoicePS1,invoicePS1Rest      | ic_ps1                            |
-      | invoicePS2                     | ic_ps2                            |
+      | C_Invoice_ID.Identifier   | C_Invoice_Candidate_ID.Identifier |
+      | invoicePS1,invoicePS1Rest | ic_ps1                            |
+      | invoicePS2                | ic_ps2                            |
     And validate invoice lines for invoicePS1Rest:
       | M_Product_ID    | QtyInvoiced | C_Project_ID | LineNetAmt |
       | goods1          | 8           | position1    | 80         |
@@ -1377,7 +1377,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC17d_singleGroup
+  @Id:S33096_TC17d1
   Scenario: Partial shipment of an order with one position gives the same partial Bonus amounts as before
     # a partially invoiced candidate must stay open for the goods still to ship (the local default is Y: close it)
     Given temporarily set sys config boolean value false for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
@@ -1408,7 +1408,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_sgB                |                                                 |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_sg1 | shipmentSG1 |
+      | ss_sg1                           | shipmentSG1           |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_sg1         | ic_sg1                 |
@@ -1432,17 +1432,17 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
 
     When update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
-      | ss_sg1                            | 8                         |
+      | ss_sg1                           | 8                         |
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
-      | ss_sg1                            |
+      | ss_sg1                           |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_sg1                |
       | ss_sg2                |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_sg2 | shipmentSG2 |
+      | ss_sg2                           | shipmentSG2           |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
       | ic_sg1                 |
@@ -1463,7 +1463,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC17d_singleGroup_closePartiallyInvoicedY
+  @Id:S33096_TC17d2
   Scenario: Partial shipment of an order with one position, partially invoiced candidates closed (customer setting): Bonus amounts as before
     # a customer instance runs with this value (as does the default of a fresh database): a partially invoiced candidate is closed
     Given temporarily set sys config boolean value true for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
@@ -1494,7 +1494,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_sgB                |                                                 |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_sg1 | shipmentSG1 |
+      | ss_sg1                           | shipmentSG1           |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_sg1         | ic_sg1                 |
@@ -1518,17 +1518,17 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
 
     When update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
-      | ss_sg1                            | 8                         |
+      | ss_sg1                           | 8                         |
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
-      | ss_sg1                            |
+      | ss_sg1                           |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_sg1                |
       | ss_sg2                |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_sg2 | shipmentSG2 |
+      | ss_sg2                           | shipmentSG2           |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
       | ic_sg1                 |
@@ -1547,7 +1547,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC5_partialShipmentTwoPositions_closePartiallyInvoicedY
+  @Id:S33096_TC5b
   Scenario: Partial shipment of position 1, partially invoiced candidates closed (customer setting): Bonus per position
     # a customer instance runs with this value (as does the default of a fresh database): a partially invoiced candidate is closed
     Given temporarily set sys config boolean value true for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
@@ -1582,7 +1582,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_psB1               |                                                 |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_ps1 | shipmentPS1 |
+      | ss_ps1                           | shipmentPS1           |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_ps1         | ic_ps1                 |
@@ -1620,10 +1620,10 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
     # second delivery: the remaining 8 units of position 1, all of position 2 with its Bonus line
     When update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
-      | ss_ps1                            | 8                         |
+      | ss_ps1                           | 8                         |
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
-      | ss_ps1                            |
+      | ss_ps1                           |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_ps1                |
@@ -1631,7 +1631,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
       | ss_psB2               |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_ps2 | shipmentPS2 |
+      | ss_ps2                           | shipmentPS2           |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
       | ic_ps1                 |
@@ -1672,7 +1672,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC1_referenceCase_packingLines
+  @Id:S33096_TC1b
   Scenario: Goods with packing lines on two positions and without position: one Bonus line per position, packing lines stay out of the Bonus base
     Given metasfresh contains M_Product_Categories:
       | Identifier |
@@ -1778,7 +1778,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC14_TC17b_positionBetweenPartialInvoices
+  @Id:S33096_TC14e
   Scenario: The position arrives between two partial invoices: the Bonus line, its open candidate and the later invoice line carry it, the first invoice keeps none
     # a partially invoiced candidate must stay open for the goods still to ship (the local default is Y: close it)
     Given temporarily set sys config boolean value false for sys config "C_Invoice_Candidate_Close_PartiallyInvoiced"
@@ -1916,7 +1916,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC14_positionAfterInvoice
+  @Id:S33096_TC14a
   Scenario: The position arrives after the invoice: no failure, the invoiced Bonus keeps its empty position
     Given metasfresh contains C_Projects:
       | Identifier |
@@ -1980,7 +1980,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC14_packingLineInGroup
+  @Id:S33096_TC14b
   Scenario: A packing material line in the group does not keep the Bonus line from taking the position of the goods
     Given metasfresh contains M_Products:
       | Identifier   | OPT.IsStocked |
@@ -2075,7 +2075,7 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S33096_TC14_positionsArriveOneByOne
+  @Id:S33096_TC14c
   Scenario: The Bonus line takes the position only when the last goods line has it too, and not when the goods end on two positions
     Given metasfresh contains C_Projects:
       | Identifier |
