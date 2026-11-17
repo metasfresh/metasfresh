@@ -12,9 +12,11 @@ import de.metas.logging.LogManager;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,6 +27,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 public class IssueRawMaterialsCommand
 {
@@ -111,10 +115,54 @@ public class IssueRawMaterialsCommand
 			assertEmptyingAllowed(step, resolveEmptyingHUsConfig(), reasonCode);
 		}
 
+		// Cap the issued qty at the BOM line's remaining open demand (the same ceiling the mobile UI
+		// enforces via JsonRawMaterialsIssueLineStep.qtyToIssueMax), so a replayed/crafted request cannot
+		// over-issue from any HU -- a primary step or an engaged alternative (non-FEFO) one. The remaining
+		// demand already includes the issuing tolerance, so a legitimate within-tolerance issue is untouched.
+		assertWithinRemainingDemand(step, remainingQtyToIssueMaxForStep(step), request.getQtyIssued());
+
 		final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
 		this.processed = true;
 
 		return step.withIssued(issueSchedule.getIssued());
+	}
+
+	/**
+	 * The BOM line's remaining open demand (incl. issuing tolerance), converted to {@code step}'s stocking
+	 * UOM -- i.e. the ceiling the mobile UI caps the Qty input at. The step's own issue schedule is not yet
+	 * issued, so this is the amount still free for the whole line.
+	 */
+	private Quantity remainingQtyToIssueMaxForStep(@NonNull final RawMaterialsIssueStep step)
+	{
+		final RawMaterialsIssueLine line = job.streamRawMaterialsIssueLines()
+				.filter(l -> l.getSteps().stream().anyMatch(s -> Objects.equals(s.getId(), step.getId())))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No raw-materials issue line found for step")
+						.setParameter("step", step)
+						.setParameter("job", job));
+
+		return line.getRemainingQtyToIssueMaxInUOM(step.getQtyToIssue().getUomId());
+	}
+
+	/**
+	 * Pure guard for the write path: throws when the requested issued qty exceeds the BOM line's remaining
+	 * open demand (both in the step's stocking UOM). The mobile UI already caps the input at this ceiling;
+	 * this stops a replayed/crafted request over-issuing from any HU. A within-ceiling qty is a no-op.
+	 */
+	@VisibleForTesting
+	public static void assertWithinRemainingDemand(
+			@NonNull final RawMaterialsIssueStep step,
+			@NonNull final Quantity remainingQtyToIssueMax,
+			@NonNull final BigDecimal qtyIssued)
+	{
+		if (qtyIssued.compareTo(remainingQtyToIssueMax.toBigDecimal()) > 0)
+		{
+			throw new AdempiereException("Cannot issue more than the line's remaining demand")
+					.markAsUserValidationError()
+					.setParameter("qtyIssued", qtyIssued)
+					.setParameter("remainingQtyToIssueMax", remainingQtyToIssueMax)
+					.setParameter("step", step);
+		}
 	}
 
 	/**
@@ -135,6 +183,18 @@ public class IssueRawMaterialsCommand
 		}
 
 		if (!step.isAllowEmptying() || !config.getIsAllowEmptyingHUs().isTrue())
+		{
+			throw new AdempiereException(MSG_EmptyingNotAllowedForHU)
+					.markAsUserValidationError()
+					.setParameter("step", step)
+					.setParameter("config", config);
+		}
+
+		// A non-primary (alternative, non-FEFO) HU may be emptied only when it is a free-standing top-level
+		// HU -- mirroring the mobile gate: a pallet-nested TU keeps its locked zero-target placeholder (it is
+		// issued/emptied via its pallet, not from this line), so a replayed/crafted EMPTIED on such an
+		// alternative step is refused. A primary step (isAlternativeIssue=false) is unaffected.
+		if (step.isAlternativeIssue() && !step.isIssueFromTopLevelHU())
 		{
 			throw new AdempiereException(MSG_EmptyingNotAllowedForHU)
 					.markAsUserValidationError()
