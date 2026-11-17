@@ -50,7 +50,9 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.util.TimeUtil;
 
 import javax.xml.bind.JAXBContext;
@@ -80,6 +82,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 	private final BankAccountService bankAccountService;
 
 	private final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final String encoding = "UTF-8";
 
@@ -506,7 +509,38 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> line.getSEPA_MandateRefNo(),
+				() -> getMandateReferenceForLine(line).orElse(null),
 				() -> getBPartnerValueById(line.getC_BPartner_ID()) + "-1");
+	}
+
+	/**
+	 * If the line's debtor bank account has an active SEPA direct-debit mandate, return that mandate's real
+	 * {@code MandateReference} (e.g. the customer's bare Kundennummer). Empty when there is no mandate, so the
+	 * caller keeps the standard metasfresh {@code <BPartnerValue>-1} default for accounts without a mandate.
+	 */
+	private Optional<String> getMandateReferenceForLine(@NonNull final I_SEPA_Export_Line line)
+	{
+		final int bankAccountRepoId = line.getC_BP_BankAccount_ID();
+		if (bankAccountRepoId <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_BP_BankAccount_DirectDebitMandate mandate = queryBL
+				.createQueryBuilder(I_C_BP_BankAccount_DirectDebitMandate.class)
+				.addEqualsFilter(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_C_BP_BankAccount_ID, bankAccountRepoId)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_C_BP_BankAccount_DirectDebitMandate_ID)
+				.create()
+				.first(I_C_BP_BankAccount_DirectDebitMandate.class);
+
+		if (mandate == null)
+		{
+			return Optional.empty();
+		}
+
+		final String mandateReference = mandate.getMandateReference();
+		return Check.isBlank(mandateReference) ? Optional.empty() : Optional.of(mandateReference.trim());
 	}
 
 	private String getBPartnerValueById(final int bpartnerRepoId)
