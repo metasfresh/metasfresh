@@ -105,7 +105,7 @@ public class S_Resource_StepDef
 	 *     <li>{@code PlanningHorizon}</li>
 	 *     <li>{@code CapacityPerProductionCycle} (+ its UOM column)</li>
 	 *     <li>{@code AD_User_ID} — identifier of an {@code AD_User}: the resource's responsible user (for a plant: the user
-	 *     the Bestellkontrolle Büro is printed for; without one its printing-queue item is cancelled)</li>
+	 *     the Plant order checkup (PL) is printed for; without one its printing-queue item is cancelled)</li>
 	 * </ul>
 	 * <pre>
 	 * And create S_Resource:

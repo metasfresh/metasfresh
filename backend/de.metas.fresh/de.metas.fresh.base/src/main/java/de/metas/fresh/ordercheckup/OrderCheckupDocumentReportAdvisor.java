@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 
 /**
- * Report info for the order checkup ({@code C_Order_MFGWarehouse_Report}): the generic result, adjusted for a Bestellkontrolle Büro (Plant),
+ * Report info for the order checkup ({@code C_Order_MFGWarehouse_Report}): the generic result, adjusted for a Plant order checkup (PL),
  * which prints the same number of copies as the delivery note of its order ({@link IOrderCheckupBL#getPlantCopiesOrNull}):
  * <ul>
  * <li>the archive copies are 1: the copies are set by the print handler on every enqueue ({@link IOrderCheckupBL#getNumberOfCopies});
@@ -62,15 +62,15 @@ public class OrderCheckupDocumentReportAdvisor implements DocumentReportAdvisor
 		final DocumentReportInfo reportInfo = fallbackAdvisor.getDocumentReportInfo(recordRef, adPrintFormatToUseId, reportProcessIdToUse);
 
 		final I_C_Order_MFGWarehouse_Report report = recordRef.getModel(I_C_Order_MFGWarehouse_Report.class);
-		final OrderCheckupCopies plantCopies = orderCheckupBL.getPlantCopiesOrNull(report);
-		if (plantCopies == null)
+		if (!OrderCheckupDocumentType.ofCode(report.getDocumentType()).isPlant())
 		{
 			return reportInfo;
 		}
 
+		final OrderCheckupCopies plantCopies = orderCheckupBL.getPlantCopiesOrNull(report);
 		return reportInfo.toBuilder()
 				.copies(PrintCopies.ONE)
-				.suppressAutoPrint(plantCopies.isShipperSaysNoPrint())
+				.suppressAutoPrint(plantCopies != null && plantCopies.isShipperSaysNoPrint())
 				.build();
 	}
 }

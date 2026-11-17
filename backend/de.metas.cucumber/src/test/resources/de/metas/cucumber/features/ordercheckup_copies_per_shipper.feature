@@ -2,13 +2,13 @@
 @allure.label.epic:E0159_Manufacturing_Planning
 @allure.label.feature:F8005_Order_Checkup
 @ghActions:run_on_executor2
-Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
+Feature: Plant order checkup (PL) copies from the shipper (Lieferweg) of the order
 ## F8005: Order Checkup
   The ship-to address references a shipper (Lieferweg) that carries a copy count; the sales order takes the shipper over.
-  - Copy count N > 0: the Bestellkontrolle Büro (Plant) prints N copies, automatically and on a manual reprint.
-  - Copy count 0: the Bestellkontrolle Büro is archived but not printed automatically; a manual reprint prints one copy.
-  - The Bestellkontrolle Büro always prints as many copies as the delivery note of its order: shipper count, else the ship-to address
-    print format, else the shipment document type. The Bestellkontrolle Produktion (Warehouse) is never affected.
+  - Copy count N > 0: the Plant order checkup (PL) prints N copies, automatically and on a manual reprint.
+  - Copy count 0: the Plant order checkup (PL) is archived but not printed automatically; a manual reprint prints one copy.
+  - The Plant order checkup (PL) always prints as many copies as the delivery note of its order: shipper count, else the ship-to address
+    print format, else the shipment document type. The Warehouse order checkup (WH) is never affected.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -18,7 +18,7 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
     And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And set sys config boolean value false for sys config InterceptorEnabled_de.metas.edi.model.validator.C_BPartner#validate
-    # the plant's responsible user is who the Bestellkontrolle Büro is printed for; without one its queue item is cancelled
+    # the plant's responsible user is who the Plant order checkup (PL) is printed for; without one its queue item is cancelled
     And metasfresh contains AD_Users:
       | Identifier |
       | plantUser  |
@@ -54,17 +54,17 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
 # ####################################################################################################################
 # ####################################################################################################################
   @Id:S33610_TC1
-  Scenario: Reference case - shipper "frei Bremerhaven" with 2 copies: the Bestellkontrolle Büro is enqueued with 2 copies, the shipment still with 2
+  Scenario: Reference case - shipper with 2 copies: the Plant order checkup (PL) is enqueued with 2 copies, the shipment still with 2
     # on-hand stock, so the shipment can be generated
     Given metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyCount | QtyBook |
       | stock1         | warehouse      | 2026-11-17   | product      | 20 PCE   | 0 PCE   |
     And contains M_Shippers
       | Identifier       | DocumentCopies |
-      | freiBremerhaven1 | 2              |
+      | shipperTwoCopies1 | 2              |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID     |
-      | location1  | bpartner      | 4008123433101 | true     | true     | freiBremerhaven1 |
+      | location1  | bpartner      | 4008123433101 | true     | true     | shipperTwoCopies1 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_BPartner_Location_ID | M_Warehouse_ID |
       | order1     | true    | bpartner      | 2026-11-17  | location1              | warehouse      |
@@ -122,10 +122,10 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
     Given temporarily set sys config int value 2 for sys config 'de.metas.fresh.ordercheckup.Copies'
     And contains M_Shippers
       | Identifier       | DocumentCopies |
-      | freiBremerhaven2 | 2              |
+      | shipperTwoCopies2 | 2              |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID     |
-      | location2  | bpartner      | 4008123433102 | true     | true     | freiBremerhaven2 |
+      | location2  | bpartner      | 4008123433102 | true     | true     | shipperTwoCopies2 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_BPartner_Location_ID | M_Warehouse_ID |
       | order2     | true    | bpartner      | 2026-11-17  | location2              | warehouse      |
@@ -160,10 +160,10 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
       | bpartnerWithBPF | 2                       |
     And contains M_Shippers
       | Identifier       | DocumentCopies |
-      | freiBremerhaven3 | 2              |
+      | shipperTwoCopies3 | 2              |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | C_BPartner_ID   | GLN           | IsShipTo | IsBillTo | M_Shipper_ID     |
-      | location3  | bpartnerWithBPF | 4008123433103 | true     | true     | freiBremerhaven3 |
+      | location3  | bpartnerWithBPF | 4008123433103 | true     | true     | shipperTwoCopies3 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID   | DateOrdered | C_BPartner_Location_ID | M_Warehouse_ID |
       | order3     | true    | bpartnerWithBPF | 2026-11-17  | location3              | warehouse      |
@@ -211,11 +211,11 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
       | warehouseRpt4 | order4     | WH           | warehouse      | plant       |
       | plantRpt4     | order4     | PL           |                | plant       |
 
-    # the Bestellkontrolle Produktion is still enqueued (not affected by the shipper)
+    # the Warehouse order checkup (WH) is still enqueued (not affected by the shipper)
     Then C_Printing_Queue item is located:
       | Identifier      | C_Order_MFGWarehouse_Report_ID |
       | warehouseQueue4 | warehouseRpt4                  |
-    # the Bestellkontrolle Büro is archived, but nothing is enqueued automatically
+    # the Plant order checkup (PL) is archived, but nothing is enqueued automatically
     And after not more than 60s, an AD_Archive exists for the record identified by "plantRpt4"
     And C_Printing_Queue contains 0 items for the record identified by "plantRpt4"
 
@@ -234,10 +234,10 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
   Scenario: Shipper with 2 copies: a manual reprint prints 2 copies as well
     Given contains M_Shippers
       | Identifier       | DocumentCopies |
-      | freiBremerhaven5 | 2              |
+      | shipperTwoCopies5 | 2              |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID     |
-      | location5  | bpartner      | 4008123433105 | true     | true     | freiBremerhaven5 |
+      | location5  | bpartner      | 4008123433105 | true     | true     | shipperTwoCopies5 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_BPartner_Location_ID | M_Warehouse_ID |
       | order5     | true    | bpartner      | 2026-11-17  | location5              | warehouse      |

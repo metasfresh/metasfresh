@@ -34,7 +34,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The Bestellkontrolle report advisor answers like the generic fallback, except for a Bestellkontrolle Büro (Plant): its archive copies
+ * The Bestellkontrolle report advisor answers like the generic fallback, except for a Plant order checkup (PL): its archive copies
  * are always 1 (the print handler sets the delivery-note copies, the printing queue's archive multiplier must not turn them into k x N),
  * and a shipper (Lieferweg) count of 0 suppresses the automatic print.
  */

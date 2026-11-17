@@ -414,7 +414,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		}
 
-		// Bestellkontrolle Büro: the same copies as the delivery note (shipment) of its order, on automatic and manual prints alike.
+		// Plant order checkup (PL): the same copies as the delivery note (shipment) of its order, on automatic and manual prints alike.
 		// A shipper count of 0 only suppresses the automatic print (OrderCheckupDocumentReportAdvisor), so a manual print prints one copy.
 		final OrderCheckupCopies plantCopies = report != null ? getPlantCopiesOrNull(report) : null;
 		if (plantCopies != null)
@@ -442,7 +442,8 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		final I_C_Order order = orderDAO.getById(orderId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-		if (bpartnerId == null)
+		// like the delivery note: the shipper count etc. apply to customer (sales) documents only
+		if (bpartnerId == null || !order.isSOTrx())
 		{
 			return null;
 		}
@@ -454,7 +455,8 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return OrderCheckupCopies.builder().copies(shipperCopies).fromShipper(true).build();
 		}
 
-		// 2. + 3. the delivery note's partner/address print format, else its document type
+		// 2. + 3. the delivery note's partner/address print format, else its document type.
+		// Note: the order header's ship-to address is used; a shipment schedule with an overridden or line-specific address can deviate.
 		final DocumentReportAdvisorUtil util = SpringContextHolder.instance.getBean(DocumentReportAdvisorUtil.class);
 		final I_C_DocType shipmentDocType = getShipmentDocTypeOrNull(order);
 		final BPPrintFormatQuery deliveryNotePrintFormatQuery = BPPrintFormatQuery.builder()

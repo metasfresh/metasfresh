@@ -38,10 +38,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Copies of an order checkup printing-queue item ({@link OrderCheckupBL#getNumberOfCopies}): the Bestellkontrolle Büro (Plant)
+ * Copies of an order checkup printing-queue item ({@link OrderCheckupBL#getNumberOfCopies}): the Plant order checkup (PL)
  * prints the same number of copies as the delivery note (shipment) of its order - shipper (Lieferweg) count, else the
  * ship-to address print format for the shipment document type, else the shipment document type's copies.
- * The Bestellkontrolle Produktion (Warehouse) keeps its sysconfig.
+ * The Warehouse order checkup (WH) keeps its sysconfig.
  */
 public class OrderCheckupCopiesTest
 {
@@ -51,6 +51,7 @@ public class OrderCheckupCopiesTest
 	private OrderCheckupBL orderCheckupBL;
 	private I_C_DocType shipmentDocType;
 	private I_C_DocType orderDocType;
+	private boolean purchaseOrder = false;
 
 	@BeforeEach
 	public void init()
@@ -122,6 +123,14 @@ public class OrderCheckupCopiesTest
 		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, false, null, null)).isEqualTo(2);
 	}
 
+	/** The shipper count applies to customer (sales) documents only, as for the delivery note. */
+	@Test
+	public void plant_purchaseOrder_sysConfig()
+	{
+		purchaseOrder = true;
+		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, new BigDecimal("2"), null)).isEqualTo(5);
+	}
+
 	@Test
 	public void warehouse_keepsSysConfig()
 	{
@@ -152,7 +161,7 @@ public class OrderCheckupCopiesTest
 		}
 
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setIsSOTrx(true);
+		order.setIsSOTrx(!purchaseOrder);
 		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		order.setC_BPartner_Location_ID(location.getC_BPartner_Location_ID());
 		order.setC_DocType_ID(orderDocType.getC_DocType_ID());

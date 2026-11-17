@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * Copies of a Bestellkontrolle Büro (Plant order checkup). It prints the same number of copies as the delivery note of its order,
+ * Copies of a Plant order checkup (PL). It prints the same number of copies as the delivery note of its order,
  * determined the same way the delivery note's are:
  * <ol>
  * <li>the order's shipper (Lieferweg) {@code M_Shipper.DocumentCopies}, if set (incl. 0 = archive, but no automatic print)</li>
