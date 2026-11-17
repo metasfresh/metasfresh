@@ -1,7 +1,6 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.util.Services;
@@ -129,10 +128,7 @@ public class POSOrdersRepository
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus.UNKNOWN.getCode())
 				.addNotNull(I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID)
-				.addNotInSubQueryFilter(
-						I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID,
-						I_SUMUP_Transaction.COLUMNNAME_SUMUP_ClientTransactionId,
-						queryBL.createQueryBuilder(I_SUMUP_Transaction.class).create())
+				.filter(NoStoredSumUpTransactionFilter.INSTANCE)
 				.filter(queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
 						.setJoinOr()
 						.addFilter(checkoutStartedLater)
