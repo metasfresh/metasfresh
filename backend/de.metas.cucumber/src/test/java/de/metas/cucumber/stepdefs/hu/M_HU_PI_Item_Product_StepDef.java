@@ -106,6 +106,8 @@ public class M_HU_PI_Item_Product_StepDef
 	 *   <li>{@code IsAllowAnyProduct} — allow any product flag (default: false)</li>
 	 *   <li>{@code IsDefaultForProduct} — default for product flag (default: false)</li>
 	 *   <li>{@code IsInfiniteCapacity} — infinite capacity flag (default: false); when true, Qty is set to 0</li>
+	 *   <li>{@code IsWithoutUOM} — (default: false) when true, the record is stored without {@code C_UOM_ID} (the column is nullable), as for old packing instructions.
+	 *   {@code Qty} is still required; its unit is then ignored (no unit is stored). Without this flag the unit defaults to EACH.</li>
 	 *   <li>{@code IsOrderInTuUomWhenMatched} — order in TU UOM when matched</li>
 	 *   <li>{@code Name} — display name</li>
 	 *   <li>{@code M_HU_PackagingCode_LU_Fallback_ID} — fallback LU packaging code (references M_HU_PackagingCode_StepDefData)</li>
@@ -149,6 +151,8 @@ public class M_HU_PI_Item_Product_StepDef
 				? tableRow.getAsQuantity(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, I_C_UOM.COLUMNNAME_C_UOM_ID + ".X12DE355", X12DE355.EACH, uomDAO::getByX12DE355)
 				: null;
 
+		final boolean isWithoutUOM = tableRow.getAsOptionalBoolean("IsWithoutUOM").orElse(false);
+
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
 		final Integer bpartnerIdFilter = tableRow.getAsOptionalIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID)
 				.map(bpIdentifier -> bpIdentifier.lookupNotNullIdIn(bpartnerTable).getRepoId())
@@ -174,7 +178,7 @@ public class M_HU_PI_Item_Product_StepDef
 					else
 					{
 						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, qtyCUsPerTU.toBigDecimal());
-						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_UOM_ID, qtyCUsPerTU.getUomId());
+						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_UOM_ID, isWithoutUOM ? null : qtyCUsPerTU.getUomId());
 					}
 
 					final I_M_HU_PI_Item_Product record = queryBuilder.create().firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
@@ -201,7 +205,7 @@ public class M_HU_PI_Item_Product_StepDef
 		else
 		{
 			huPiItemProductRecord.setQty(qtyCUsPerTU.toBigDecimal());
-			huPiItemProductRecord.setC_UOM_ID(qtyCUsPerTU.getUomId().getRepoId());
+			huPiItemProductRecord.setC_UOM_ID(isWithoutUOM ? -1 : qtyCUsPerTU.getUomId().getRepoId());
 		}
 
 		tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_Name).ifPresent(huPiItemProductRecord::setName);

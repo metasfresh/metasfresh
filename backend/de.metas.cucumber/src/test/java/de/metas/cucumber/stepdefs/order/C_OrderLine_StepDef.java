@@ -182,6 +182,7 @@ public class C_OrderLine_StepDef
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
 	 *   <li>{@code C_CompensationGroup_CalibrationRule_ID} (optional, identifier-ref) — the calibration rule the line refers to</li>
+	 *   <li>{@code OPT.BPartner_QtyItemCapacity} (optional, BigDecimal) — the CUs-per-TU capacity of the line as seen by the business partner</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -257,6 +258,12 @@ public class C_OrderLine_StepDef
 		if (qtyItemCapacity != null)
 		{
 			orderLine.setQtyItemCapacity(qtyItemCapacity);
+		}
+
+		final BigDecimal bPartnerQtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
+		if (bPartnerQtyItemCapacity != null)
+		{
+			orderLine.setBPartner_QtyItemCapacity(bPartnerQtyItemCapacity);
 		}
 
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -618,7 +625,8 @@ public class C_OrderLine_StepDef
 	 *   <ul>
 	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
 	 *     <li>{@code C_Flatrate_Term_ID}, {@code QtyEntered}, {@code M_HU_PI_Item_Product_ID},
-	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID}, {@code Description} — optional,
+	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID}, {@code Description},
+	 *         {@code IsAllowSeparateInvoicing} — optional,
 	 *         each is applied only when the column is present</li>
 	 *     <li>{@code AsUIAction} — optional, defaults to {@code N}</li>
 	 *   </ul>
@@ -799,6 +807,10 @@ public class C_OrderLine_StepDef
 
 			orderLine.setM_AttributeSetInstance_ID(asiId);
 		}
+
+		DataTableRow.singleRow(row)
+				.getAsOptionalBoolean(I_C_OrderLine.COLUMNNAME_IsAllowSeparateInvoicing)
+				.ifPresent(orderLine::setIsAllowSeparateInvoicing);
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(projectIdentifier))
