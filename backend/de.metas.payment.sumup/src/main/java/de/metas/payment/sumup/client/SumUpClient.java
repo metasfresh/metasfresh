@@ -32,14 +32,17 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.util.Optional;
 
 public class SumUpClient
 {
@@ -149,12 +152,26 @@ public class SumUpClient
 		return httpHeaders;
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	private <T> T httpCall(
 			@NonNull final String uri,
 			@NonNull final HttpMethod method,
 			@Nullable final Object requestBody,
 			@Nullable final Class<T> responseType)
+	{
+		return httpCall(uri, method, requestBody, responseType, false);
+	}
+
+	/**
+	 * @param isNotFoundAnAnswer whether an HTTP 404 is an answer of SumUp ("it does not exist"), not a failed call: then null is
+	 *                           returned, no AD_Issue is recorded, and the call is logged with its 404
+	 */
+	@Nullable
+	private <T> T httpCall(
+			@NonNull final String uri,
+			@NonNull final HttpMethod method,
+			@Nullable final Object requestBody,
+			@Nullable final Class<T> responseType,
+			final boolean isNotFoundAnAnswer)
 	{
 		final SumUpLogRequest.SumUpLogRequestBuilder log = newLogRequest()
 				.method(method)
@@ -177,8 +194,9 @@ public class SumUpClient
 			}
 			if (String.class.equals(responseType))
 			{
+				// never null, so that null tells only "not found" (see isNotFoundAnAnswer)
 				//noinspection unchecked
-				return (T)bodyJson;
+				return (T)(bodyJson != null ? bodyJson : "");
 			}
 			else
 			{
@@ -187,6 +205,17 @@ public class SumUpClient
 		}
 		catch (Exception ex)
 		{
+			if (ex instanceof HttpStatusCodeException)
+			{
+				final HttpStatusCodeException httpEx = (HttpStatusCodeException)ex;
+				log.responseCode(httpEx.getStatusCode());
+				log.responseBody(StringUtils.trimBlankToNull(httpEx.getResponseBodyAsString()));
+				if (isNotFoundAnAnswer && httpEx.getStatusCode() == HttpStatus.NOT_FOUND)
+				{
+					return null;
+				}
+			}
+
 			// 4xx: SumUp definitely rejected the request. Anything else (5xx, timeout/IO, parse errors)
 			// leaves it open whether the request took effect.
 			final SumUpCallException metasfreshException = new SumUpCallException(ex, ex instanceof HttpClientErrorException);
@@ -272,11 +301,16 @@ public class SumUpClient
 	}
 
 	/**
+	 * Looks up the transaction of a checkout by the client transaction id SumUp gave it. SumUp creates the transaction only
+	 * once the card is presented on the reader; until then (and forever, if the reader timed out) it answers HTTP 404.
+	 *
+	 * @return the transaction, or empty if SumUp answered that it does not know it (HTTP 404: no AD_Issue, the call is logged)
+	 * @throws SumUpCallException if the call failed otherwise
 	 * @implSpec <a href="https://developer.sumup.com/api/transactions/get">spec</a>
 	 */
-	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpClientTransactionId id)
+	public Optional<JsonGetTransactionResponse> findTransactionById(@NonNull final SumUpClientTransactionId id)
 	{
-		return getTransaction("client_transaction_id", id.getAsString());
+		return Optional.ofNullable(getTransaction("client_transaction_id", id.getAsString(), true));
 	}
 
 	/**
@@ -284,17 +318,28 @@ public class SumUpClient
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpTransactionExternalId id)
 	{
-		return getTransaction("id", id.getAsString());
+		return getTransaction("id", id.getAsString(), false);
 	}
 
-	private JsonGetTransactionResponse getTransaction(@NonNull final String queryParamName, @NonNull final String queryParamValue)
+	/**
+	 * @return the transaction; null only if {@code isNotFoundAnAnswer} and SumUp answered HTTP 404
+	 */
+	@Nullable
+	private JsonGetTransactionResponse getTransaction(
+			@NonNull final String queryParamName,
+			@NonNull final String queryParamValue,
+			final boolean isNotFoundAnAnswer)
 	{
 		final String uri = UriComponentsBuilder.fromHttpUrl(toTransactionsApiBaseUrl(baseUrl))
 				.pathSegment("merchants", merchantCode.getAsString(), "transactions")
 				.queryParam(queryParamName, queryParamValue)
 				.toUriString();
 
-		final String json = httpCall(uri, HttpMethod.GET, null, String.class);
+		final String json = httpCall(uri, HttpMethod.GET, null, String.class, isNotFoundAnAnswer);
+		if (json == null)
+		{
+			return null;
+		}
 
 		try
 		{

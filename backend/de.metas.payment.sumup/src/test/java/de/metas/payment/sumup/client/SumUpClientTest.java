@@ -7,6 +7,7 @@ import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpClientFactory;
 import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.payment.sumup.SumUpLogRequest;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
@@ -15,6 +16,7 @@ import de.metas.payment.sumup.repository.SumUpLogRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -63,6 +65,7 @@ class SumUpClientTest
 
 	private MockRestServiceServer server;
 	private IErrorManager errorManager;
+	private SumUpLogRepository logRepository;
 	private SumUpClient client;
 
 	@BeforeEach
@@ -71,9 +74,10 @@ class SumUpClientTest
 		final RestTemplate restTemplate = new RestTemplate();
 		server = MockRestServiceServer.bindTo(restTemplate).build();
 		errorManager = Mockito.mock(IErrorManager.class);
+		logRepository = Mockito.mock(SumUpLogRepository.class);
 		client = SumUpClient.builder()
 				.errorManager(errorManager)
-				.logRepository(Mockito.mock(SumUpLogRepository.class))
+				.logRepository(logRepository)
 				.jsonObjectMapper(JsonObjectMapperHolder.sharedJsonObjectMapper())
 				.configId(SumUpConfigId.ofRepoId(1))
 				.apiKey("key")
@@ -175,13 +179,13 @@ class SumUpClientTest
 	 * {@code GET /v2.1/merchants/{merchant_code}/transactions} (https://developer.sumup.com/api/transactions/get).
 	 */
 	@Test
-	void getTransactionByClientTransactionId_callsV21MerchantTransactions()
+	void findTransactionByClientTransactionId_callsV21MerchantTransactions()
 	{
 		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=CTX1"))
 				.andExpect(method(GET))
 				.andRespond(withSuccess(TRANSACTION_JSON, MediaType.APPLICATION_JSON));
 
-		final JsonGetTransactionResponse trx = client.getTransactionById(SumUpClientTransactionId.ofString("CTX1"));
+		final JsonGetTransactionResponse trx = client.findTransactionById(SumUpClientTransactionId.ofString("CTX1")).orElseThrow(AssertionError::new);
 
 		server.verify();
 		assertThat(trx.getId()).isEqualTo(SumUpTransactionExternalId.ofString("TX1"));
@@ -202,20 +206,58 @@ class SumUpClientTest
 	}
 
 	/**
-	 * SumUpService tells "SumUp does not know the transaction" from a failed call by the 404 cause.
+	 * SumUp answers 404 for a reader checkout whose card was not presented yet (or never, if the reader timed out): that is
+	 * an answer, not a failed call. So no AD_Issue is recorded, but the call is logged with its 404 and SumUp's body.
 	 */
 	@Test
-	void getTransaction_404_keepsTheHttpStatusAsCause()
+	void findTransactionByClientTransactionId_404_isEmpty_notRecordedAsIssue_butLogged()
 	{
 		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=CTX1"))
+				.andRespond(withStatus(HttpStatus.NOT_FOUND)
+						.contentType(MediaType.APPLICATION_JSON)
+						.body("{\"message\":\"Resource not found\",\"error_code\":\"NOT_FOUND\"}"));
+
+		assertThat(client.findTransactionById(SumUpClientTransactionId.ofString("CTX1"))).isEmpty();
+
+		server.verify();
+		Mockito.verifyNoInteractions(errorManager);
+		final ArgumentCaptor<SumUpLogRequest> log = ArgumentCaptor.forClass(SumUpLogRequest.class);
+		Mockito.verify(logRepository).createLog(log.capture());
+		assertThat(log.getValue().getResponseCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(log.getValue().getResponseBody()).isEqualTo("{\"message\":\"Resource not found\",\"error_code\":\"NOT_FOUND\"}");
+		assertThat(log.getValue().getAdIssueId()).isNull();
+	}
+
+	/**
+	 * Any other HTTP error of the lookup is a failed call, recorded as AD_Issue (unless the caller reports it itself).
+	 */
+	@Test
+	void findTransactionByClientTransactionId_401_isFailedCall()
+	{
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=CTX1"))
+				.andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+
+		assertThatThrownBy(() -> client.findTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+				.isInstanceOfSatisfying(SumUpCallException.class, ex -> assertThat(ex.getCause()).isInstanceOf(HttpClientErrorException.class));
+		Mockito.verify(errorManager).createIssue(Mockito.any(SumUpCallException.class));
+	}
+
+	/**
+	 * The lookup by SumUp's own transaction id (after a refund) knows no "not found" answer: a 404 is a failed call.
+	 */
+	@Test
+	void getTransactionByExternalId_404_isFailedCall_keepsTheHttpStatusAsCause()
+	{
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?id=TX1"))
 				.andRespond(withStatus(HttpStatus.NOT_FOUND));
 
-		assertThatThrownBy(() -> client.getTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+		assertThatThrownBy(() -> client.getTransactionById(SumUpTransactionExternalId.ofString("TX1")))
 				.isInstanceOfSatisfying(SumUpCallException.class, ex -> {
 					assertThat(ex.isDefiniteRejection()).isTrue();
 					assertThat(ex.getCause()).isInstanceOfSatisfying(HttpClientErrorException.class,
 							cause -> assertThat(cause.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
 				});
+		Mockito.verify(errorManager).createIssue(Mockito.any(SumUpCallException.class));
 	}
 
 	/**
@@ -298,7 +340,7 @@ class SumUpClientTest
 		clientWithOtherBaseUrl.terminateCardReaderCheckout(READER_ID);
 		otherServer.verify();
 
-		assertThatThrownBy(() -> clientWithOtherBaseUrl.getTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+		assertThatThrownBy(() -> clientWithOtherBaseUrl.findTransactionById(SumUpClientTransactionId.ofString("CTX1")))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("sumup.baseUrl");
 		assertThatThrownBy(() -> clientWithOtherBaseUrl.refundTransaction(SumUpTransactionExternalId.ofString("TX1")))

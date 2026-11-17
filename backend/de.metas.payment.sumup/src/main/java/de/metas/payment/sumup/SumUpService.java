@@ -26,9 +26,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.slf4j.Logger;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -202,12 +200,16 @@ public class SumUpService
 		final JsonGetTransactionResponse remoteTrx;
 		try
 		{
-			remoteTrx = client.getTransactionById(clientTransactionId);
+			remoteTrx = client.findTransactionById(clientTransactionId).orElse(null);
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Could not get SumUp transaction {} from SumUp; nothing imported", clientTransactionId, ex);
-			return isNotFound(ex) ? SumUpImportResult.notFound() : SumUpImportResult.ofLookupError(ex);
+			return SumUpImportResult.ofLookupError(ex);
+		}
+		if (remoteTrx == null)
+		{
+			return SumUpImportResult.notFound();
 		}
 
 		final SumUpTransaction trx = toSumUpTransaction(remoteTrx, config, cardReader, posRef, clientAndOrgId);
@@ -261,16 +263,6 @@ public class SumUpService
 	public List<SumUpTransaction> listSuccessfulTransactionsByPOSRefUpdatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant updatedSince)
 	{
 		return trxRepository.listSuccessfulByPOSRefUpdatedSince(posRef, updatedSince);
-	}
-
-	/**
-	 * @return true if SumUp answered that it does not know the transaction (HTTP 404), as opposed to a failure of the call
-	 */
-	private static boolean isNotFound(@NonNull final Exception ex)
-	{
-		return ex instanceof SumUpCallException
-				&& ex.getCause() instanceof HttpClientErrorException
-				&& ((HttpClientErrorException)ex.getCause()).getStatusCode() == HttpStatus.NOT_FOUND;
 	}
 
 	private static SumUpTransaction toSumUpTransaction(
@@ -353,7 +345,9 @@ public class SumUpService
 
 	/**
 	 * Refreshes the transaction from SumUp; a failed lookup is recorded as AD_Issue and stored as the transaction's
-	 * {@link LastSync}.
+	 * {@link LastSync}. For a PENDING transaction, SumUp answering that it does not know it (HTTP 404) is no failed lookup:
+	 * SumUp creates the transaction of a reader checkout only once the card is presented on the reader, and never if the
+	 * reader timed out, so the transaction stays PENDING and the lookup counts as successful.
 	 */
 	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id)
 	{
@@ -387,8 +381,25 @@ public class SumUpService
 
 		try
 		{
-			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getClientTransactionId());
-			return updateTransactionFromRemote(trx, remoteTrx);
+			final JsonGetTransactionResponse remoteTrx = client.findTransactionById(trx.getClientTransactionId()).orElse(null);
+			if (remoteTrx != null)
+			{
+				return updateTransactionFromRemote(trx, remoteTrx);
+			}
+			else if (trx.getStatus().isPending())
+			{
+				// no card presented on the reader yet (or the reader timed out): SumUp has no transaction yet; still waiting
+				return trx.toBuilder()
+						.lastSync(LastSync.ok())
+						.build();
+			}
+			else
+			{
+				// SumUp reported this transaction before: not knowing it now is an anomaly, e.g. for the booking's refund check
+				throw new AdempiereException("SumUp does not know the transaction anymore")
+						.setParameter("clientTransactionId", trx.getClientTransactionId())
+						.setParameter("status", trx.getStatus());
+			}
 		}
 		catch (Exception ex)
 		{
