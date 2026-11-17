@@ -31,19 +31,19 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   // such an HU and it is BOTH emptying-eligible (`allowEmptying` — a single-product TU/VHU, not an
   // aggregate/LU) AND a free-standing top-level HU (`issueFromTopLevelHU` — not a TU nested on a pallet/LU,
   // which is issued/emptied via its pallet and stays a locked placeholder on this line, even though such a
-  // TU is itself emptying-eligible), they may still use it — issue from it and/or declare it empty. Target is
-  // then the HU's own content; the amount that may actually go to the line stays capped at the line's
-  // remaining demand (`qtyToIssueMax` below → the over-issue guard), so issuing from it simply reallocates
-  // the demand away from the FEFO-preferred HU. A non-eligible alternative keeps its zero placeholder.
+  // TU is itself emptying-eligible), they may still use it — issue from it and/or declare it empty. Only the
+  // zero TARGET is lifted to the HU's own content; the max cap stays `stepQtyToIssueMax` — the backend sends
+  // the line's remaining demand converted to THIS step's stocking UOM for every step (alternative steps
+  // included), so it remains the correct-UOM over-issue guard and issuing from the HU simply reallocates the
+  // demand away from the FEFO-preferred HU. A non-eligible alternative keeps its zero placeholder.
   const isEngageableAlternativeHU =
     !!step.alternativeIssue && !!step.allowEmptying && !!step.issueFromTopLevelHU && qtyHUCapacity > 0;
   const effStepQtyToIssue = isEngageableAlternativeHU ? qtyHUCapacity : stepQtyToIssue;
-  const effStepQtyToIssueMax = isEngageableAlternativeHU ? null : stepQtyToIssueMax;
 
   const qtyToIssueMax =
     isWeightable && isProcessedQtyStillOnScale
       ? Math.max(lineQtyToIssueMax, 0)
-      : Math.max(effStepQtyToIssueMax ?? lineQtyToIssueMax - lineQtyIssued, 0);
+      : Math.max(stepQtyToIssueMax ?? lineQtyToIssueMax - lineQtyIssued, 0);
 
   const qtyAlreadyOnScale = isWeightable && isProcessedQtyStillOnScale ? Math.max(lineQtyIssued, 0) : undefined;
   //qtyToIssueMax = Math.min(qtyToIssueMax, qtyHUCapacity); // allow exceeding the HU capacity

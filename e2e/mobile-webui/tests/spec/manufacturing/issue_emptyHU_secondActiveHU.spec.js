@@ -98,10 +98,10 @@ test('A newer HU can be ISSUED while an older HU is the FEFO default', async ({ 
 
     await startIssueStepAndScanNewerHU(masterdata);
 
-    // DESIRED: FEFO only SUGGESTS the older HU; the operator may use up the newer HU instead. Scanning it
-    // opens a usable step whose target is the newer HU's own content (0.1), capped by the line's remaining
-    // demand (50). CURRENT bug: the plan hands the newer HU a zero-target alternative step, so the quantity
-    // field is locked at 0 and nothing can be issued from it.
+    // FEFO only SUGGESTS the older HU; the operator may use up the newer HU instead. Scanning it opens a
+    // usable step whose target is the newer HU's own content (0.1), capped by the line's remaining demand
+    // (50). This is the regression guard: a non-FEFO HU used to get a zero-target alternative step whose
+    // quantity field was locked at 0, so nothing could be issued from it.
     await GetQuantityDialog.expectQtyEntered('0.1');
 
     // Issue the whole newer HU toward the line (take exactly its content, so no reject reason is involved).
@@ -136,8 +136,8 @@ test('A newer HU can be EMPTIED while an older HU is the FEFO default', async ({
 
     await startIssueStepAndScanNewerHU(masterdata);
 
-    // Same lock as the issue case: the dialog must open at the newer HU's own content (0.1) so the operator
-    // can account for it. CURRENT bug: it opens at the alternative step's zero target.
+    // Same as the issue case: the dialog opens at the newer HU's own content (0.1) so the operator can
+    // account for it (before the fix it opened at the alternative step's zero target).
     await GetQuantityDialog.expectQtyEntered('0.1');
 
     // The operator uses most of the newer HU (0.08 KGM) and declares the rest empty: entering less than the
@@ -160,6 +160,10 @@ test('A newer HU can be EMPTIED while an older HU is the FEFO default', async ({
 
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
+
+    // The 0.08 kg the operator entered reached the line (displayed as 80 g of the 50 kg demand) — the issued
+    // part is reallocated to the newer HU, no over-issue.
+    await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '50 kg', qtyIssued: '80 g' });
 
     // The NEWER HU is consumed: 0.08 issued toward the line, the remaining 0.02 written off to zero via a
     // completed inventory doc, and the HU closed (Destroyed); the OLDER HU is untouched and still Active with
