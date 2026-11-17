@@ -61,7 +61,6 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.MPeriod;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
