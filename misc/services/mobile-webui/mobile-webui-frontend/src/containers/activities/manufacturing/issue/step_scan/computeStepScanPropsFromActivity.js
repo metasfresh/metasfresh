@@ -25,10 +25,25 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   // and cannot cap a Stk entry (that let a manual override issue e.g. 30 Stk against a 34.5 kg demand).
   const stepQtyToIssueMax = step.qtyToIssueMax;
 
+  // An ALTERNATIVE issue step is a non-FEFO HU of the line's product that the plan did not pre-assign any
+  // demand to (the first/earliest-expiring HU already covers the line), so it carries a ZERO target — in
+  // the plan it is only a placeholder. FEFO is the DEFAULT suggestion, not a lock: when the operator scans
+  // such an HU and it is BOTH emptying-eligible (`allowEmptying` — a single-product TU/VHU, not an
+  // aggregate/LU) AND a free-standing top-level HU (`issueFromTopLevelHU` — not a TU nested on a pallet/LU,
+  // which is issued/emptied via its pallet and stays a locked placeholder on this line, even though such a
+  // TU is itself emptying-eligible), they may still use it — issue from it and/or declare it empty. Target is
+  // then the HU's own content; the amount that may actually go to the line stays capped at the line's
+  // remaining demand (`qtyToIssueMax` below → the over-issue guard), so issuing from it simply reallocates
+  // the demand away from the FEFO-preferred HU. A non-eligible alternative keeps its zero placeholder.
+  const isEngageableAlternativeHU =
+    !!step.alternativeIssue && !!step.allowEmptying && !!step.issueFromTopLevelHU && qtyHUCapacity > 0;
+  const effStepQtyToIssue = isEngageableAlternativeHU ? qtyHUCapacity : stepQtyToIssue;
+  const effStepQtyToIssueMax = isEngageableAlternativeHU ? null : stepQtyToIssueMax;
+
   const qtyToIssueMax =
     isWeightable && isProcessedQtyStillOnScale
       ? Math.max(lineQtyToIssueMax, 0)
-      : Math.max(stepQtyToIssueMax ?? lineQtyToIssueMax - lineQtyIssued, 0);
+      : Math.max(effStepQtyToIssueMax ?? lineQtyToIssueMax - lineQtyIssued, 0);
 
   const qtyAlreadyOnScale = isWeightable && isProcessedQtyStillOnScale ? Math.max(lineQtyIssued, 0) : undefined;
   //qtyToIssueMax = Math.min(qtyToIssueMax, qtyHUCapacity); // allow exceeding the HU capacity
@@ -39,8 +54,8 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   // in the stocking UOM, while lineQtyToIssueRemaining is in the (different) BOM line UOM — mixing it in
   // would wrongly cap the target (e.g. undo the round-up to a whole stocking unit).
   const qtyToIssueTarget = isWeightable
-    ? Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax, qtyHUCapacity)
-    : Math.min(stepQtyToIssue, qtyToIssueMax, qtyHUCapacity);
+    ? Math.min(effStepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax, qtyHUCapacity)
+    : Math.min(effStepQtyToIssue, qtyToIssueMax, qtyHUCapacity);
 
   console.log('RawMaterialIssueStepScanScreen.getPropsFromState', {
     qtyToIssueTarget,

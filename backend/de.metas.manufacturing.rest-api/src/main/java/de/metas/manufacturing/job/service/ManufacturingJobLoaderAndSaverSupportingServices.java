@@ -228,6 +228,16 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 		return isEmptyingEligible(hu);
 	}
 
+	/**
+	 * Whether the issue-from HU is a free-standing, top-level HU (not nested inside another HU, e.g. a TU
+	 * standing on a pallet/LU). Only such an HU is an independent issue source the operator may engage as an
+	 * alternative to the FEFO-preferred HU; a nested TU is issued/emptied via its pallet, not from this line.
+	 */
+	public boolean isTopLevelHU(@NonNull final HuId huId)
+	{
+		return handlingUnitsBL.isTopLevel(handlingUnitsBL.getById(huId));
+	}
+
 	private boolean isEmptyingEligible(@NonNull final I_M_HU hu)
 	{
 		if (handlingUnitsBL.isAggregateHU(hu)) { return false; }          // orthogonal to unit type
