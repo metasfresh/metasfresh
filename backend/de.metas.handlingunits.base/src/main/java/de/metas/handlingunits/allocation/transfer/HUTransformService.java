@@ -584,7 +584,7 @@ public class HUTransformService
 			final Quantity catchWeightOrNull;
 			final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(currentCuHU);
 			final IWeightable weightable = Weightables.wrap(attributeStorage);
-			if (weightable != null)
+			if (weightable != null && weightable.hasWeightNet())
 			{
 				catchWeightOrNull = Quantity.of(weightable.getWeightNet().multiply(factor), weightable.getWeightNetUOM());
 			}

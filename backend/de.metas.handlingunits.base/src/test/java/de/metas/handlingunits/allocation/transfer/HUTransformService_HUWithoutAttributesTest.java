@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
@@ -83,7 +84,9 @@ public class HUTransformService_HUWithoutAttributesTest
 	 */
 	private static IHUContext freshHUContext()
 	{
-		return Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		huContext.getHUPackingMaterialsCollector().disable(); // new LUs would otherwise want a packing material movement (needs the empties warehouse bean)
+		return huContext;
 	}
 
 	private void assertNoWeightNet(final IHUContext huContext, final I_M_HU tu)
