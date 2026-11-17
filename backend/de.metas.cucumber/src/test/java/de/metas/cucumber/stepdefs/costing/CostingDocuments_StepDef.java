@@ -54,6 +54,16 @@ import java.util.List;
 
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 
+/**
+ * Step definitions that create costing-relevant documents (orders, receipts, invoices, match-invoices) from a single table.
+ *
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * Given for costing, create completed order with one line
+ *   | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+ *   | po_l1          | bpartner      | 2027-03-15  | POO         | warehouseStd   | product      | 10         | 10    |
+ * }</pre>
+ */
 @RequiredArgsConstructor
 public class CostingDocuments_StepDef
 {
@@ -74,14 +84,29 @@ public class CostingDocuments_StepDef
 	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_ShipmentSchedule_StepDef shipmentScheduleStepDef;
 
+	/**
+	 * Creates a drafted order with one line from each row and completes it. Columns: see the class-level Gherkin example
+	 * ({@code C_OrderLine_ID, C_BPartner_ID, DateOrdered, DocBaseType, M_Warehouse_ID, M_Product_ID, QtyEntered, Price}).
+	 */
 	@Given("for costing, create completed order with one line")
 	public void createOrders(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.forEach(this::createOrder);
+				.forEach(row -> {
+					final I_C_Order order = createDraftedOrder(row);
+					orderStepDef.completeOrder(order);
+				});
 	}
 
-	private void createOrder(final DataTableRow row)
+	/** Same columns as {@code for costing, create completed order with one line}, but the order stays drafted (e.g. to add order costs before completing it). */
+	@Given("for costing, create drafted order with one line")
+	public void createDraftedOrders(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(this::createDraftedOrder);
+	}
+
+	private I_C_Order createDraftedOrder(final DataTableRow row)
 	{
 		row.setValueIfMissing(I_C_Order.COLUMNNAME_C_Order_ID, () -> StepDefDataIdentifier.nextUnnamed("purchaseOrder").getAsString());
 		row.setValueIfMissing(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, () -> StepDefDataIdentifier.nextUnnamed("purchaseOrderLine").getAsString());
@@ -92,7 +117,7 @@ public class CostingDocuments_StepDef
 		row.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
 		orderLineStepDef.createOrderLine(row);
 
-		orderStepDef.completeOrder(order);
+		return order;
 	}
 
 	@Given("for costing, create completed material receipt with one line")

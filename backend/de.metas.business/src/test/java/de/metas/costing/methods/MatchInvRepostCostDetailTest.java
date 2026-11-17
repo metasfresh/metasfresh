@@ -127,6 +127,7 @@ public class MatchInvRepostCostDetailTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 
 		orgId1 = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 

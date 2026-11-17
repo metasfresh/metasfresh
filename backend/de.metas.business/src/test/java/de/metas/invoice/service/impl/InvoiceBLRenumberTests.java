@@ -27,6 +27,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +41,7 @@ public class InvoiceBLRenumberTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 	}
 

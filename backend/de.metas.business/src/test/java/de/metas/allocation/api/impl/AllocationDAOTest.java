@@ -10,6 +10,7 @@ import de.metas.money.Money;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_AllocationHdr;
@@ -34,6 +35,7 @@ class AllocationDAOTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 
 		allocationDAO = (PlainAllocationDAO)Services.get(IAllocationDAO.class);
 
