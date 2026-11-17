@@ -109,6 +109,7 @@ public class CostRevaluationLinePostingMovingAverageInvoiceTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 		orgId = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
