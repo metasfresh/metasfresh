@@ -353,28 +353,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_OrderLine_ID, orderLineId)
-				.addOnlyActiveRecordsFilter()
-				//
-				// Ordered so the caller takes C_Invoice_Candidate row locks in a deterministic sequence;
-				// unordered, this and the async recompute (fetchInvalidInvoiceCandidates) could take the same
-				// rows in opposite order and deadlock.
-				//
-				// C_Invoice_Candidate_ID alone is enough to agree with that recompute even though the recompute
-				// orders by (IsFreightCost, IsManual, C_Invoice_Candidate_ID): both leading keys are constant
-				// across THIS query's result set, so the two orderings coincide on it. IsFreightCost is derived
-				// from the order line's product (C_OrderLine_Handler.setOrderedData), and IsManual can only be
-				// 'N' here -- the sole writer of IsManual='Y' on a candidate,
-				// ExternallyReferencedCandidateRepository, never sets C_OrderLine_ID, so a manual candidate
-				// cannot pass this method's C_OrderLine_ID filter in the first place.
-				.orderBy()
-				.addColumnAscending(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
-				.endOrderBy()
-				//
-				.create()
-				.list(I_C_Invoice_Candidate.class);
+		return retrieveInvoiceCandidatesForOrderLineIds(ImmutableSet.of(orderLineId));
 	}
 
 	@Override
@@ -389,6 +368,18 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLineIds)
 				.addOnlyActiveRecordsFilter()
+				//
+				// Ordered so the caller takes C_Invoice_Candidate row locks in a deterministic sequence;
+				// unordered, this and the async recompute (fetchInvalidInvoiceCandidates) could take the same
+				// rows in opposite order and deadlock.
+				//
+				// C_Invoice_Candidate_ID alone is enough to agree with that recompute even though the recompute
+				// orders by (IsFreightCost, IsManual, C_Invoice_Candidate_ID): both leading keys are constant
+				// across THIS query's result set, so the two orderings coincide on it. IsFreightCost is derived
+				// from the order line's product (C_OrderLine_Handler.setOrderedData), and IsManual can only be
+				// 'N' here -- the sole writer of IsManual='Y' on a candidate,
+				// ExternallyReferencedCandidateRepository, never sets C_OrderLine_ID, so a manual candidate
+				// cannot pass this method's C_OrderLine_ID filter in the first place.
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
 				.list(I_C_Invoice_Candidate.class);

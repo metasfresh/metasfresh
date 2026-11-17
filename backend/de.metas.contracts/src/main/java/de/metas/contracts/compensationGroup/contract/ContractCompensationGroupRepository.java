@@ -106,10 +106,7 @@ public class ContractCompensationGroupRepository
 				.delete();
 	}
 
-	/**
-	 * Sets the given position ({@code C_OrderLine.C_Project_ID}) on the given group's compensation (discount) lines,
-	 * so that each line carries the position its group's goods are on (also when {@code projectId} is {@code null}).
-	 */
+	/** Sets the given position ({@code C_OrderLine.C_Project_ID}) on all compensation (discount) lines of the given group; a {@code null} position clears it. */
 	public void setProjectOnCompensationLines(@NonNull final GroupId groupId, @Nullable final ProjectId projectId)
 	{
 		setProjectOnOrderLines(retrieveCompensationLines(groupId), projectId);
