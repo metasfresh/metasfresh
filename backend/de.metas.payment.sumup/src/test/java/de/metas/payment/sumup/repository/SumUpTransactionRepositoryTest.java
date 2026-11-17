@@ -191,6 +191,43 @@ class SumUpTransactionRepositoryTest
 	 * The poller's query is limited (default 1000) and keeps transactions whose lookups keep failing, whatever their age: the
 	 * newest transactions come first, so a new payment is always polled even if more old ones than the limit are waiting.
 	 */
+	/**
+	 * Created at 10:00 on the 16th; see {@link de.metas.payment.sumup.SumUpPollSchedule}.
+	 */
+	@Test
+	void query_pollDueAt_onlyTheTransactionsDueByThePollSchedule()
+	{
+		try
+		{
+			newPendingTrxCreatedAt10(1, null, null); // never looked up
+			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:00Z"), null); // 1 min ago, 30 min old
+			newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:01Z"), null); // 59 s ago, 30 min old
+			newPendingTrxCreatedAt10(4, lastSync(LastSyncStatus.Error, "2026-11-16T10:29:30Z"), null); // 30 s ago, failed
+			newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // for the slow phase
+
+			// 30 min old: once a minute
+			assertThat(listPaymentIdsDueAt("2026-11-16T10:30:00Z")).containsExactly(1, 2);
+			// over 1 h old: once every 15 min
+			assertThat(listPaymentIdsDueAt("2026-11-16T11:14:59Z")).containsExactly(1, 2, 3, 4);
+			assertThat(listPaymentIdsDueAt("2026-11-16T11:15:00Z")).containsExactly(1, 2, 3, 4, 5);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
+	private List<Integer> listPaymentIdsDueAt(final String now)
+	{
+		return repository.list(SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.pollDueAt(Instant.parse(now))
+						.build())
+				.stream()
+				.map(trx -> Objects.requireNonNull(trx.getPosRef()).getPosPaymentId())
+				.collect(Collectors.toList());
+	}
+
 	@Test
 	void bulkUpdateByQuery_overTheLimit_updatesTheNewestTransactions()
 	{

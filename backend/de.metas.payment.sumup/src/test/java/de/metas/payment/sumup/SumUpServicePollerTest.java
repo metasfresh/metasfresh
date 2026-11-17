@@ -163,7 +163,7 @@ class SumUpServicePollerTest
 	{
 		pollAt("2026-11-17T11:00:00Z", notFound());
 
-		pollAt("2026-11-17T11:00:30Z", null);
+		pollAt("2026-11-17T11:15:00Z", null); // due by the schedule, but SumUp's "not found" after 24 h is final
 
 		assertThat(getTrx().getStatus()).isEqualTo(SumUpTransactionStatus.PENDING);
 		assertThat(getTrx().getLastSync().getTimestamp()).isEqualTo(Instant.parse("2026-11-17T11:00:00Z"));
@@ -175,7 +175,8 @@ class SumUpServicePollerTest
 		pollAt("2026-11-17T11:00:00Z", withServerError());
 		assertThat(getTrx().getLastSync().getStatus()).isEqualTo(LastSyncStatus.Error);
 
-		pollAt("2026-11-17T11:00:30Z", notFound());
+		pollAt("2026-11-17T11:14:59Z", null); // a failed lookup is retried on the slow schedule, too
+		pollAt("2026-11-17T11:15:00Z", notFound());
 	}
 
 	@Test
@@ -183,9 +184,29 @@ class SumUpServicePollerTest
 	{
 		pollAt("2026-11-16T11:00:00Z", notFound());
 		pollAt("2026-11-17T09:59:59Z", notFound());
-		pollAt("2026-11-17T10:00:30Z", notFound());
+		pollAt("2026-11-17T10:14:59Z", notFound()); // 15 min after the last lookup, 24 h 14 min 59 s after creation
 
-		pollAt("2026-11-17T10:01:00Z", null);
+		pollAt("2026-11-17T10:30:00Z", null);
+	}
+
+	/**
+	 * In the reader's checkout window (5 min) in every cycle, then once a minute up to 1 h, then once every 15 min.
+	 */
+	@Test
+	void pollsInEveryCycleFor5Min_thenOnceAMinuteUpTo1h_thenEvery15Min()
+	{
+		pollAt("2026-11-16T10:00:02Z", notFound());
+		pollAt("2026-11-16T10:00:04Z", notFound());
+		pollAt("2026-11-16T10:04:59Z", notFound());
+
+		pollAt("2026-11-16T10:05:00Z", null); // 1 s after the last lookup
+		pollAt("2026-11-16T10:05:59Z", notFound());
+		pollAt("2026-11-16T10:06:30Z", null);
+		pollAt("2026-11-16T10:06:59Z", notFound());
+
+		pollAt("2026-11-16T11:00:00Z", notFound()); // 53 min after the last lookup
+		pollAt("2026-11-16T11:14:59Z", null);
+		pollAt("2026-11-16T11:15:00Z", notFound());
 	}
 
 	/**

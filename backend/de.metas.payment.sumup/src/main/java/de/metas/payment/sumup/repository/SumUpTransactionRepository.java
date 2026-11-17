@@ -361,6 +361,10 @@ public class SumUpTransactionRepository
 		{
 			sqlQueryBuilder.filter(new ExcludeNotFoundConfirmedAtAgeFilter(query.getExcludeNotFoundConfirmedAtAge()));
 		}
+		if (query.getPollDueAt() != null)
+		{
+			sqlQueryBuilder.filter(new PollDueQueryFilter(query.getPollDueAt()));
+		}
 		if (query.getPosRef() != null)
 		{
 			final SumUpPOSRef posRef = query.getPosRef();

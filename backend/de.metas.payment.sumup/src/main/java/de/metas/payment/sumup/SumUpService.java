@@ -493,7 +493,8 @@ public class SumUpService
 	 * failed, or that was never looked up (e.g. while the server was down), keeps being polled, so the first lookup that gets
 	 * through after an outage still stores a charge SumUp approved meanwhile. This covers the transactions metasfresh stores;
 	 * a card payment whose transaction metasfresh does not store is looked up by the POS card-sale sweep, with its own rule.
-	 * Status change events are not force-sent.
+	 * A transaction is asked for only when it is due by {@link SumUpPollSchedule} (every cycle in its first 5 min, then less
+	 * often as it ages), also after a failed lookup. Status change events are not force-sent.
 	 */
 	public BulkUpdateByQueryResult bulkUpdatePendingTransactionsToPoll()
 	{
@@ -501,6 +502,7 @@ public class SumUpService
 				SumUpTransactionQuery.builder()
 						.status(SumUpTransactionStatus.PENDING)
 						.excludeNotFoundConfirmedAtAge(BACKGROUND_LOOKUP_MAX_AGE)
+						.pollDueAt(SystemTime.asInstant())
 						.build(),
 				false);
 	}

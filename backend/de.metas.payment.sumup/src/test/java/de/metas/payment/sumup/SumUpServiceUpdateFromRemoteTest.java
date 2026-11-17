@@ -2,6 +2,7 @@ package de.metas.payment.sumup;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.error.AdIssueId;
@@ -142,17 +143,27 @@ class SumUpServiceUpdateFromRemoteTest
 	 * transaction by a lookup made at least 24 h after metasfresh created them (see {@link SumUpServicePollerTest}).
 	 */
 	@Test
-	void poller_refreshesPendingTransactions_exceptThoseConfirmedNotFoundAt24h()
+	void poller_refreshesPendingTransactions_exceptThoseConfirmedNotFoundAt24h_onlyWhenDue()
 	{
-		service.bulkUpdatePendingTransactionsToPoll();
+		try
+		{
+			SystemTime.setFixedTimeSource("2026-11-17T12:00:00Z");
 
-		Mockito.verify(trxRepository).bulkUpdateByQuery(
-				ArgumentMatchers.eq(SumUpTransactionQuery.builder()
-						.status(SumUpTransactionStatus.PENDING)
-						.excludeNotFoundConfirmedAtAge(Duration.ofHours(24))
-						.build()),
-				ArgumentMatchers.eq(false),
-				ArgumentMatchers.any());
+			service.bulkUpdatePendingTransactionsToPoll();
+
+			Mockito.verify(trxRepository).bulkUpdateByQuery(
+					ArgumentMatchers.eq(SumUpTransactionQuery.builder()
+							.status(SumUpTransactionStatus.PENDING)
+							.excludeNotFoundConfirmedAtAge(Duration.ofHours(24))
+							.pollDueAt(Instant.parse("2026-11-17T12:00:00Z"))
+							.build()),
+					ArgumentMatchers.eq(false),
+					ArgumentMatchers.any());
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
 	}
 
 	@Test

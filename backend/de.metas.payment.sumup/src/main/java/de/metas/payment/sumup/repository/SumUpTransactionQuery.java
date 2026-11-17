@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
 
 @Value
@@ -30,6 +31,10 @@ public class SumUpTransactionQuery
 	 * long after metasfresh created them, see {@link ExcludeNotFoundConfirmedAtAgeFilter}
 	 */
 	@Nullable Duration excludeNotFoundConfirmedAtAge;
+	/**
+	 * If set: only the transactions due for the SumUp poller's cycle at this time, see {@link de.metas.payment.sumup.SumUpPollSchedule}
+	 */
+	@Nullable Instant pollDueAt;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.ofInt(1000);
 
