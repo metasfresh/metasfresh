@@ -53,6 +53,11 @@ class SumUpServiceUpdateFromRemoteTest
 	private static final SumUpPOSRef POS_REF = SumUpPOSRef.builder().posOrderId(11).posPaymentId(12).build();
 	private static final String GET_TRX_URL = "http://stub/v2.1/merchants/M1/transactions?client_transaction_id=ctid-1";
 	private static final AdIssueId ISSUE_ID = AdIssueId.ofRepoId(4711);
+	/**
+	 * SumUp's answer for a transaction it does not know, as answered by the SumUp sandbox for a reader checkout whose card
+	 * was not presented
+	 */
+	private static final String SUMUP_NOT_FOUND_BODY = "{\"message\":\"Resource not found\",\"error_code\":\"NOT_FOUND\"}";
 
 	private MockRestServiceServer server;
 	private IErrorManager errorManager;
@@ -130,9 +135,7 @@ class SumUpServiceUpdateFromRemoteTest
 	@Test
 	void pending_notFound404_staysPending_lastSyncOk_noIssue()
 	{
-		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND)
-				.contentType(MediaType.APPLICATION_JSON)
-				.body("{\"message\":\"Resource not found\",\"error_code\":\"NOT_FOUND\"}"));
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(SUMUP_NOT_FOUND_BODY));
 
 		final SumUpTransaction updated = updateFromRemote(storedTrx(SumUpTransactionStatus.PENDING), true);
 
@@ -147,7 +150,7 @@ class SumUpServiceUpdateFromRemoteTest
 	@Test
 	void pending_notFound404_withoutIssueOnError_lastSyncOk()
 	{
-		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND));
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(SUMUP_NOT_FOUND_BODY));
 
 		final SumUpTransaction updated = updateFromRemote(storedTrx(SumUpTransactionStatus.PENDING), false);
 
@@ -162,7 +165,7 @@ class SumUpServiceUpdateFromRemoteTest
 	@Test
 	void poller_pending_notFound404_lastSyncOk_noIssue()
 	{
-		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND));
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(SUMUP_NOT_FOUND_BODY));
 
 		service.bulkUpdatePendingTransactions(false);
 
@@ -211,7 +214,7 @@ class SumUpServiceUpdateFromRemoteTest
 	@Test
 	void successful_notFound404_isFailedLookup_withIssue()
 	{
-		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND));
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(SUMUP_NOT_FOUND_BODY));
 
 		final SumUpTransaction updated = updateFromRemote(storedTrx(SumUpTransactionStatus.SUCCESSFUL), true);
 

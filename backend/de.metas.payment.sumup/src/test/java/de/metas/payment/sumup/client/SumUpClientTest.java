@@ -229,6 +229,38 @@ class SumUpClientTest
 	}
 
 	/**
+	 * A 404 that is not SumUp's "not found" answer (e.g. a wrong base URL or merchant code, answered by something else than
+	 * the SumUp API) is a failed call, not "the card was not presented yet".
+	 */
+	@Test
+	void findTransactionByClientTransactionId_404WithoutSumUpNotFoundErrorCode_isFailedCall()
+	{
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=CTX1"))
+				.andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.TEXT_HTML).body("<html>Not Found</html>"));
+
+		assertThatThrownBy(() -> client.findTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+				.isInstanceOf(SumUpCallException.class);
+		Mockito.verify(errorManager).createIssue(Mockito.any(SumUpCallException.class));
+	}
+
+	/**
+	 * A failed call is logged with SumUp's HTTP status and answer.
+	 */
+	@Test
+	void failedCall_isLoggedWithHttpStatusAndBody()
+	{
+		server.expect(requestTo(BASE_URL + "/merchants/M1/readers/R1/checkout"))
+				.andRespond(withServerError().contentType(MediaType.APPLICATION_JSON).body("{\"message\":\"boom\"}"));
+
+		assertThatThrownBy(this::checkout).isInstanceOf(SumUpCallException.class);
+
+		final ArgumentCaptor<SumUpLogRequest> log = ArgumentCaptor.forClass(SumUpLogRequest.class);
+		Mockito.verify(logRepository).createLog(log.capture());
+		assertThat(log.getValue().getResponseCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+		assertThat(log.getValue().getResponseBody()).isEqualTo("{\"message\":\"boom\"}");
+	}
+
+	/**
 	 * Any other HTTP error of the lookup is a failed call, recorded as AD_Issue (unless the caller reports it itself).
 	 */
 	@Test

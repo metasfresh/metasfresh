@@ -1347,7 +1347,8 @@ Feature: POS invoice card settlement
 
     When metasfresh polls SumUp 2 times
 
-    Then card settlement settlement1 has status PENDING
+    Then the SumUp stub received 2 status lookups for card settlement settlement1
+    And card settlement settlement1 has status PENDING
     And the SumUp transaction of card settlement settlement1 has status PENDING
     And card settlement settlement1 has 0 AD_Issues
 

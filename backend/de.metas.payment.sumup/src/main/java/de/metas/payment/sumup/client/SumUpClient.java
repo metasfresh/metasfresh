@@ -162,8 +162,9 @@ public class SumUpClient
 	}
 
 	/**
-	 * @param isNotFoundAnAnswer whether an HTTP 404 is an answer of SumUp ("it does not exist"), not a failed call: then null is
-	 *                           returned, no AD_Issue is recorded, and the call is logged with its 404
+	 * @param isNotFoundAnAnswer whether SumUp answering that the resource does not exist ({@link #isResourceNotFound}) is an
+	 *                           answer, not a failed call: then null is returned, no AD_Issue is recorded, and the call is
+	 *                           logged with its 404
 	 */
 	@Nullable
 	private <T> T httpCall(
@@ -210,7 +211,7 @@ public class SumUpClient
 				final HttpStatusCodeException httpEx = (HttpStatusCodeException)ex;
 				log.responseCode(httpEx.getStatusCode());
 				log.responseBody(StringUtils.trimBlankToNull(httpEx.getResponseBodyAsString()));
-				if (isNotFoundAnAnswer && httpEx.getStatusCode() == HttpStatus.NOT_FOUND)
+				if (isNotFoundAnAnswer && isResourceNotFound(httpEx))
 				{
 					return null;
 				}
@@ -235,6 +236,28 @@ public class SumUpClient
 		finally
 		{
 			logRepository.createLog(log.build());
+		}
+	}
+
+	/**
+	 * @return whether SumUp answered that the requested resource does not exist: HTTP 404 with {@code error_code}
+	 * {@code NOT_FOUND}. Any other 404 (e.g. a wrong base URL or merchant code, answered by something else than the SumUp
+	 * API) is a failed call, so that it is not taken for "the card was not presented yet" and goes unnoticed.
+	 */
+	private boolean isResourceNotFound(@NonNull final HttpStatusCodeException ex)
+	{
+		if (ex.getStatusCode() != HttpStatus.NOT_FOUND)
+		{
+			return false;
+		}
+
+		try
+		{
+			return "NOT_FOUND".equals(jsonObjectMapper.readTree(ex.getResponseBodyAsString()).path("error_code").asText(null));
+		}
+		catch (final Exception parseEx)
+		{
+			return false;
 		}
 	}
 
@@ -304,7 +327,8 @@ public class SumUpClient
 	 * Looks up the transaction of a checkout by the client transaction id SumUp gave it. SumUp creates the transaction only
 	 * once the card is presented on the reader; until then (and forever, if the reader timed out) it answers HTTP 404.
 	 *
-	 * @return the transaction, or empty if SumUp answered that it does not know it (HTTP 404: no AD_Issue, the call is logged)
+	 * @return the transaction, or empty if SumUp answered that it does not know it (HTTP 404 with {@code error_code}
+	 * {@code NOT_FOUND}: no AD_Issue, the call is logged); any other 404 is a failed call
 	 * @throws SumUpCallException if the call failed otherwise
 	 * @implSpec <a href="https://developer.sumup.com/api/transactions/get">spec</a>
 	 */
