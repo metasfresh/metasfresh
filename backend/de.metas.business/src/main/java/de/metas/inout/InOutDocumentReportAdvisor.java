@@ -24,7 +24,6 @@ package de.metas.inout;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -38,8 +37,8 @@ import de.metas.report.DocumentReportInfo;
 import de.metas.report.PrintCopies;
 import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.shipping.IShipperDAO;
-import de.metas.shipping.ShipperDocumentCopies;
+import de.metas.inout.ShipmentDocumentCopiesResolver.ShipmentDocumentCopies;
+import de.metas.inout.ShipmentDocumentCopiesResolver.ShipmentDocumentCopiesRequest;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -59,12 +58,13 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 {
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final DocumentReportAdvisorUtil util;
+	private final ShipmentDocumentCopiesResolver shipmentCopiesResolver;
 
 	public InOutDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util)
 	{
 		this.util = util;
+		this.shipmentCopiesResolver = new ShipmentDocumentCopiesResolver(util);
 	}
 
 	@Override
@@ -110,20 +110,17 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 		// a manual shipment has no order to inspect -> treat as NOT a drop-ship (do not suppress auto-print)
 		final boolean docIsDropShip = order != null && util.isDropShip(order);
 
-		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
-				.adTableId(recordRef.getAdTableId())
-				.bpartnerId(bpartnerId)
-				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()))
-				.docTypeId(docTypeId)
-				.onlyCopiesGreaterZero(true)
-				.isDropShip(docIsDropShip)
-				.build();
-
 		// the shipment's Lieferweg count (incl. 0) wins over the per-address/doc-type resolution, which stays the fallback
-		final PrintCopies shipperCopies = getShipperCopiesOrNull(inout, docType);
-		final PrintCopies copies = shipperCopies != null ? shipperCopies : util.getDocumentCopies(docType, bpPrintFormatQuery);
+		final ShipmentDocumentCopies shipmentCopies = shipmentCopiesResolver.resolve(ShipmentDocumentCopiesRequest.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()))
+				.shipmentDocType(docType)
+				.shipperId(getShipperIdOrNull(inout, docType))
+				.dropShip(docIsDropShip)
+				.build());
+		final PrintCopies copies = shipmentCopies.getCopies();
 		// 0 copies are coerced to 1 when the print data is created, so a 0 must suppress the auto-print queue item instead
-		final boolean suppressAutoPrint = (shipperCopies != null && shipperCopies.isZero()) || util.resolveSuppressAutoPrint(bpPrintFormatQuery);
+		final boolean suppressAutoPrint = shipmentCopies.isShipperSaysNoPrint() || util.resolveSuppressAutoPrint(shipmentCopies.getBpPrintFormatQuery());
 
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_M_InOut.Table_Name, inoutId))
@@ -139,11 +136,10 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 	}
 
 	/**
-	 * @return the copies configured on the shipment's Lieferweg ({@code M_Shipper.DocumentCopies}); {@code null} if the record is not a customer shipment,
-	 * has no shipper or the column is NULL
+	 * @return the shipment's Lieferweg, whose copy count applies; {@code null} if the record is not a customer shipment or has no shipper
 	 */
 	@Nullable
-	private PrintCopies getShipperCopiesOrNull(@NonNull final I_M_InOut inout, @NonNull final I_C_DocType docType)
+	private ShipperId getShipperIdOrNull(@NonNull final I_M_InOut inout, @NonNull final I_C_DocType docType)
 	{
 		// the Lieferweg count is a delivery-note setting; receipts and returns keep their per-address/doc-type copies
 		if (!inout.isSOTrx() || !DocBaseType.Shipment.getCode().equals(docType.getDocBaseType()))
@@ -151,13 +147,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 			return null;
 		}
 
-		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(inout.getM_Shipper_ID());
-		if (shipperId == null)
-		{
-			return null;
-		}
-
-		return ShipperDocumentCopies.ofShipperOrNull(shipperDAO.getById(shipperId));
+		return ShipperId.ofRepoIdOrNull(inout.getM_Shipper_ID());
 	}
 
 	@Nullable

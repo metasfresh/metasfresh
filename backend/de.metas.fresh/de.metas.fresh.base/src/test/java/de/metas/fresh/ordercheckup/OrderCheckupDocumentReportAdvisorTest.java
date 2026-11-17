@@ -15,6 +15,7 @@ import de.metas.user.UserRepository;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BPartner;
@@ -33,9 +34,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The Bestellkontrolle report advisor answers like the generic fallback, except for a Bestellkontrolle Büro (Plant) whose order
- * shipper (Lieferweg) has a copy count: 0 suppresses the automatic print; N > 0 sets the archive copies to 1, so the printing
- * queue's archive multiplier cannot turn the N copies of the print handler into k x N.
+ * The Bestellkontrolle report advisor answers like the generic fallback, except for a Bestellkontrolle Büro (Plant): its archive copies
+ * are always 1 (the print handler sets the delivery-note copies, the printing queue's archive multiplier must not turn them into k x N),
+ * and a shipper (Lieferweg) count of 0 suppresses the automatic print.
  */
 public class OrderCheckupDocumentReportAdvisorTest
 {
@@ -55,6 +56,7 @@ public class OrderCheckupDocumentReportAdvisorTest
 				new PrintFormatRepository(),
 				new DefaultPrintFormatsRepository(),
 				new BPartnerPrintFormatRepository());
+		SpringContextHolder.registerJUnitBean(util);
 
 		bpartner = newInstance(I_C_BPartner.class);
 		save(bpartner);
@@ -78,7 +80,7 @@ public class OrderCheckupDocumentReportAdvisorTest
 		final DocumentReportInfo info = advisor().getDocumentReportInfo(report, printFormatId, null);
 
 		assertThat(info.isSuppressAutoPrint()).isTrue();
-		assertThat(info).isEqualTo(fallback(report).toBuilder().suppressAutoPrint(true).build());
+		assertThat(info).isEqualTo(fallback(report).toBuilder().copies(PrintCopies.ONE).suppressAutoPrint(true).build());
 	}
 
 	@Test
@@ -108,18 +110,19 @@ public class OrderCheckupDocumentReportAdvisorTest
 		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null).getCopies()).isEqualTo(PrintCopies.ONE);
 	}
 
+	/** No shipper count: the copies come from the shipment rule in the print handler; the archive copies stay 1, nothing suppressed. */
 	@Test
-	public void plant_shipperCopiesNull_asFallback()
+	public void plant_shipperCopiesNull_archiveCopies1_notSuppressed()
 	{
 		final TableRecordReference report = createReport(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, null);
-		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report));
+		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report).toBuilder().copies(PrintCopies.ONE).build());
 	}
 
 	@Test
-	public void plant_orderWithoutShipper_asFallback()
+	public void plant_orderWithoutShipper_archiveCopies1_notSuppressed()
 	{
 		final TableRecordReference report = createReport(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, false, null);
-		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report));
+		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report).toBuilder().copies(PrintCopies.ONE).build());
 	}
 
 	@Test
@@ -156,6 +159,8 @@ public class OrderCheckupDocumentReportAdvisorTest
 	private TableRecordReference createReport(final String documentType, final boolean withShipper, @Nullable final BigDecimal shipperCopies)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		if (withShipper)
 		{
 			final I_M_Shipper shipper = newInstance(I_M_Shipper.class);

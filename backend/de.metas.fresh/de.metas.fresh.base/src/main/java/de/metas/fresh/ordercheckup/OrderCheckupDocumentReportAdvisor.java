@@ -1,6 +1,7 @@
 package de.metas.fresh.ordercheckup;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.inout.ShipmentDocumentCopiesResolver.ShipmentDocumentCopies;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -17,14 +18,13 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 
 /**
- * Report info for the order checkup ({@code C_Order_MFGWarehouse_Report}): the generic result, adjusted for a Bestellkontrolle Büro (Plant)
- * whose order shipper (Lieferweg) carries a copy count ({@code M_Shipper.DocumentCopies}):
+ * Report info for the order checkup ({@code C_Order_MFGWarehouse_Report}): the generic result, adjusted for a Bestellkontrolle Büro (Plant),
+ * which prints the same number of copies as the delivery note of its order ({@link IOrderCheckupBL#getShipmentCopiesOrNull}):
  * <ul>
- * <li>0: the automatic print is suppressed (the PDF is still archived; a manual print from the outbound documents still works,
- * because the suppress flag lives only on the archive instance created here)</li>
- * <li>N &gt; 0: the archive copies are 1. The N copies are set by the print handler on every enqueue
- * ({@link IOrderCheckupBL#getNumberOfCopies}); the printing queue multiplies them by the archive copies, so anything else
- * (e.g. a partner print-format count) would print k x N.</li>
+ * <li>the archive copies are 1: the copies are set by the print handler on every enqueue ({@link IOrderCheckupBL#getNumberOfCopies});
+ * the printing queue multiplies them by the archive copies, so anything else (e.g. a partner print-format count) would print k x N</li>
+ * <li>shipper (Lieferweg) count 0: the automatic print is suppressed (the PDF is still archived; a manual print from the outbound
+ * documents still works, because the suppress flag lives only on the archive instance created here)</li>
  * </ul>
  * Found by table name only (no standard report type), like the generic advisor it replaces for this table.
  */
@@ -63,14 +63,15 @@ public class OrderCheckupDocumentReportAdvisor implements DocumentReportAdvisor
 		final DocumentReportInfo reportInfo = fallbackAdvisor.getDocumentReportInfo(recordRef, adPrintFormatToUseId, reportProcessIdToUse);
 
 		final I_C_Order_MFGWarehouse_Report report = recordRef.getModel(I_C_Order_MFGWarehouse_Report.class);
-		final PrintCopies shipperCopies = orderCheckupBL.getShipperCopiesOrNull(report);
-		if (shipperCopies == null)
+		final ShipmentDocumentCopies shipmentCopies = orderCheckupBL.getShipmentCopiesOrNull(report);
+		if (shipmentCopies == null)
 		{
 			return reportInfo;
 		}
 
-		return shipperCopies.isZero()
-				? reportInfo.toBuilder().suppressAutoPrint(true).build()
-				: reportInfo.toBuilder().copies(PrintCopies.ONE).build();
+		return reportInfo.toBuilder()
+				.copies(PrintCopies.ONE)
+				.suppressAutoPrint(shipmentCopies.isShipperSaysNoPrint())
+				.build();
 	}
 }
