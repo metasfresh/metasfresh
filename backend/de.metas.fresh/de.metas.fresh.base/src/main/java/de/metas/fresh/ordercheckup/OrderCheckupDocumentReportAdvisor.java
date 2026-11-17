@@ -1,7 +1,6 @@
 package de.metas.fresh.ordercheckup;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
-import de.metas.inout.ShipmentDocumentCopiesResolver.ShipmentDocumentCopies;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -19,7 +18,7 @@ import javax.annotation.Nullable;
 
 /**
  * Report info for the order checkup ({@code C_Order_MFGWarehouse_Report}): the generic result, adjusted for a Bestellkontrolle Büro (Plant),
- * which prints the same number of copies as the delivery note of its order ({@link IOrderCheckupBL#getShipmentCopiesOrNull}):
+ * which prints the same number of copies as the delivery note of its order ({@link IOrderCheckupBL#getPlantCopiesOrNull}):
  * <ul>
  * <li>the archive copies are 1: the copies are set by the print handler on every enqueue ({@link IOrderCheckupBL#getNumberOfCopies});
  * the printing queue multiplies them by the archive copies, so anything else (e.g. a partner print-format count) would print k x N</li>
@@ -63,15 +62,15 @@ public class OrderCheckupDocumentReportAdvisor implements DocumentReportAdvisor
 		final DocumentReportInfo reportInfo = fallbackAdvisor.getDocumentReportInfo(recordRef, adPrintFormatToUseId, reportProcessIdToUse);
 
 		final I_C_Order_MFGWarehouse_Report report = recordRef.getModel(I_C_Order_MFGWarehouse_Report.class);
-		final ShipmentDocumentCopies shipmentCopies = orderCheckupBL.getShipmentCopiesOrNull(report);
-		if (shipmentCopies == null)
+		final OrderCheckupCopies plantCopies = orderCheckupBL.getPlantCopiesOrNull(report);
+		if (plantCopies == null)
 		{
 			return reportInfo;
 		}
 
 		return reportInfo.toBuilder()
 				.copies(PrintCopies.ONE)
-				.suppressAutoPrint(shipmentCopies.isShipperSaysNoPrint())
+				.suppressAutoPrint(plantCopies.isShipperSaysNoPrint())
 				.build();
 	}
 }

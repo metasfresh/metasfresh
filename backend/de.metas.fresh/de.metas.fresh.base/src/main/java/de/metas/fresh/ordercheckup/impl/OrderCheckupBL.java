@@ -47,9 +47,15 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.inout.ShipmentDocumentCopiesResolver;
-import de.metas.inout.ShipmentDocumentCopiesResolver.ShipmentDocumentCopies;
-import de.metas.inout.ShipmentDocumentCopiesResolver.ShipmentDocumentCopiesRequest;
+import de.metas.fresh.ordercheckup.OrderCheckupCopies;
+import de.metas.report.PrintCopies;
+import de.metas.shipping.IShipperDAO;
+import de.metas.bpartner.service.BPPrintFormatQuery;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Shipper;
+import java.math.RoundingMode;
 import de.metas.report.DocumentReportAdvisorUtil;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
@@ -94,6 +100,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@NonNull final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -409,10 +416,10 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		// Bestellkontrolle Büro: the same copies as the delivery note (shipment) of its order, on automatic and manual prints alike.
 		// A shipper count of 0 only suppresses the automatic print (OrderCheckupDocumentReportAdvisor), so a manual print prints one copy.
-		final ShipmentDocumentCopies shipmentCopies = report != null ? getShipmentCopiesOrNull(report) : null;
-		if (shipmentCopies != null)
+		final OrderCheckupCopies plantCopies = report != null ? getPlantCopiesOrNull(report) : null;
+		if (plantCopies != null)
 		{
-			return shipmentCopies.getCopies().isZero() ? 1 : shipmentCopies.getCopies().toInt();
+			return plantCopies.getCopiesToPrint();
 		}
 
 		return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
@@ -420,7 +427,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	@Override
 	@Nullable
-	public ShipmentDocumentCopies getShipmentCopiesOrNull(@NonNull final I_C_Order_MFGWarehouse_Report report)
+	public OrderCheckupCopies getPlantCopiesOrNull(@NonNull final I_C_Order_MFGWarehouse_Report report)
 	{
 		if (!OrderCheckupDocumentType.ofCode(report.getDocumentType()).isPlant())
 		{
@@ -440,14 +447,50 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return null;
 		}
 
+		// 1. the order's shipper (Lieferweg) count, incl. 0
+		final PrintCopies shipperCopies = getShipperCopiesOrNull(ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID()));
+		if (shipperCopies != null)
+		{
+			return OrderCheckupCopies.builder().copies(shipperCopies).fromShipper(true).build();
+		}
+
+		// 2. + 3. the delivery note's partner/address print format, else its document type
 		final DocumentReportAdvisorUtil util = SpringContextHolder.instance.getBean(DocumentReportAdvisorUtil.class);
-		return new ShipmentDocumentCopiesResolver(util).resolve(ShipmentDocumentCopiesRequest.builder()
+		final I_C_DocType shipmentDocType = getShipmentDocTypeOrNull(order);
+		final BPPrintFormatQuery deliveryNotePrintFormatQuery = BPPrintFormatQuery.builder()
+				.adTableId(AdTableId.ofRepoId(tableDAO.retrieveTableId(I_M_InOut.Table_Name)))
 				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, order.getC_BPartner_Location_ID()))
-				.shipmentDocType(getShipmentDocTypeOrNull(order))
-				.shipperId(ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID()))
-				.dropShip(util.isDropShip(order))
-				.build());
+				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, order.getC_BPartner_Location_ID()))
+				.docTypeId(shipmentDocType != null ? DocTypeId.ofRepoId(shipmentDocType.getC_DocType_ID()) : null)
+				.onlyCopiesGreaterZero(true)
+				.isDropShip(util.isDropShip(order))
+				.build();
+		return OrderCheckupCopies.builder()
+				.copies(util.getDocumentCopies(shipmentDocType, deliveryNotePrintFormatQuery))
+				.fromShipper(false)
+				.build();
+	}
+
+	/**
+	 * @return the shipper's (Lieferweg) {@code M_Shipper.DocumentCopies}, incl. {@link PrintCopies#ZERO}; {@code null} if no shipper or the column is NULL
+	 */
+	@Nullable
+	private PrintCopies getShipperCopiesOrNull(@Nullable final ShipperId shipperId)
+	{
+		if (shipperId == null)
+		{
+			return null;
+		}
+
+		// the generated getter returns 0 for NULL, so NULL ("not set") must be checked on the column itself
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		if (InterfaceWrapperHelper.isNull(shipper, I_M_Shipper.COLUMNNAME_DocumentCopies))
+		{
+			return null;
+		}
+
+		// the column is a Quantity; a fraction can only come from a non-UI write and is rounded up, so a positive count never becomes 0
+		return PrintCopies.ofInt(shipper.getDocumentCopies().setScale(0, RoundingMode.CEILING).intValueExact());
 	}
 
 	/**
