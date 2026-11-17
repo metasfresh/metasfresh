@@ -53,8 +53,12 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
 # ####################################################################################################################
 # ####################################################################################################################
   @Id:S33610_TC1
-  Scenario: Reference case - shipper "frei Bremerhaven" with 2 copies: the Bestellkontrolle Büro is enqueued with 2 copies
-    Given contains M_Shippers
+  Scenario: Reference case - shipper "frei Bremerhaven" with 2 copies: the Bestellkontrolle Büro is enqueued with 2 copies, the shipment still with 2
+    # on-hand stock, so the shipment can be generated
+    Given metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyCount | QtyBook |
+      | stock1         | warehouse      | 2026-11-17   | product      | 20 PCE   | 0 PCE   |
+    And contains M_Shippers
       | Identifier       | DocumentCopies |
       | freiBremerhaven1 | 2              |
     And metasfresh contains C_BPartner_Locations:
@@ -86,6 +90,28 @@ Feature: Bestellkontrolle Büro copies from the shipper (Lieferweg) of the order
     And C_Printing_Queue has IsActive:
       | C_Printing_Queue_ID | IsActive |
       | plantQueue1         | true     |
+
+    # the same Lieferweg count still drives the delivery note exactly as before: 2 copies, not more
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
+      | schedule1  | orderLine1     | N             | warehouse      |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | schedule1             | D            | false               | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | schedule1             | shipment1  |
+    When the shipment identified by shipment1 is completed
+    Then after not more than 60s validate C_Doc_Outbound_Log:
+      | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType | OPT.DocStatus |
+      | shipmentLog1                     | shipment1            | M_InOut       | MMS             | CO            |
+    And C_Printing_Queue item is located:
+      | Identifier     | Record_ID |
+      | shipmentQueue1 | shipment1 |
+    And C_Printing_Queue has Copies:
+      | C_Printing_Queue_ID | Copies |
+      | shipmentQueue1      | 2      |
+    And C_Printing_Queue contains 1 items for the record identified by "shipment1"
 
 
 # ####################################################################################################################
