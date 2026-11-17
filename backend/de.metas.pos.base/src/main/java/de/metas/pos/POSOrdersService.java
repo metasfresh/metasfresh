@@ -712,9 +712,9 @@ public class POSOrdersService
 	 * was not looked up after its first 24 h at all (e.g. the server was down): the payment records no time of its last
 	 * answered lookup. The till's check still asks SumUp.
 	 */
-	public ImmutableList<POSOrderAndPaymentId> getCardPaymentIdsToImport()
+	public ImmutableList<POSCardPaymentToImport> getCardPaymentsToImport()
 	{
-		try (final Stream<POSOrderAndPaymentId> stream = ordersRepository.streamCardPaymentsToImport(SystemTime.asInstant().minus(SumUpService.BACKGROUND_LOOKUP_MAX_AGE)))
+		try (final Stream<POSCardPaymentToImport> stream = ordersRepository.streamCardPaymentsToImport(SystemTime.asInstant().minus(SumUpService.BACKGROUND_LOOKUP_MAX_AGE)))
 		{
 			return stream.collect(ImmutableList.toImmutableList());
 		}

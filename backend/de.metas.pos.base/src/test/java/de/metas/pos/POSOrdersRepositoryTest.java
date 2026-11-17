@@ -143,9 +143,9 @@ class POSOrdersRepositoryTest
 
 	private List<POSPaymentId> streamCardPaymentsToImport(final String checkoutStartedAfter)
 	{
-		try (final Stream<POSOrderAndPaymentId> stream = repository.streamCardPaymentsToImport(Instant.parse(checkoutStartedAfter)))
+		try (final Stream<POSCardPaymentToImport> stream = repository.streamCardPaymentsToImport(Instant.parse(checkoutStartedAfter)))
 		{
-			return stream.map(POSOrderAndPaymentId::getPaymentId).collect(Collectors.toList());
+			return stream.map(toImport -> toImport.getId().getPaymentId()).collect(Collectors.toList());
 		}
 	}
 
@@ -189,6 +189,30 @@ class POSOrdersRepositoryTest
 			assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
 					.containsExactly(failing)
 					.doesNotContain(answered);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
+	/**
+	 * Each payment comes with the start of its checkout, or, without a recorded start, its creation time: the sweep's poll
+	 * schedule counts the payment's age from it.
+	 */
+	@Test
+	void streamCardPaymentsToImport_carriesTheCheckoutStart_orTheCreationTime()
+	{
+		try
+		{
+			newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T10:59:00Z", "ctid-started");
+			newUnknownCardPaymentToImport("2026-11-16T11:30:00Z", null, "ctid-created");
+
+			try (final Stream<POSCardPaymentToImport> stream = repository.streamCardPaymentsToImport(Instant.parse("2026-11-16T10:00:00Z")))
+			{
+				assertThat(stream.map(POSCardPaymentToImport::getCheckoutStartedAt).collect(Collectors.toList()))
+						.containsExactly(Instant.parse("2026-11-16T10:59:00Z"), Instant.parse("2026-11-16T11:30:00Z"));
+			}
 		}
 		finally
 		{

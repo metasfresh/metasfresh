@@ -113,7 +113,7 @@ public class POSOrdersRepository
 	 * start, which were created) after the given time, and those whose SumUp lookups are failing ({@code CardLookupFailingSince}
 	 * set), however old: SumUp has not answered for them yet. Oldest first. The caller must close the stream.
 	 */
-	public Stream<POSOrderAndPaymentId> streamCardPaymentsToImport(@NonNull final Instant checkoutStartedAfter)
+	public Stream<POSCardPaymentToImport> streamCardPaymentsToImport(@NonNull final Instant checkoutStartedAfter)
 	{
 		final Timestamp after = Timestamp.from(checkoutStartedAfter);
 		final ICompositeQueryFilter<I_C_POS_Payment> checkoutStartedLater = queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
@@ -137,7 +137,9 @@ public class POSOrdersRepository
 				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
 				.create()
 				.stream()
-				.map(POSOrdersRepository::toPOSOrderAndPaymentId);
+				.map(record -> POSCardPaymentToImport.of(
+						toPOSOrderAndPaymentId(record),
+						(record.getCardCheckoutStartedAt() != null ? record.getCardCheckoutStartedAt() : record.getCreated()).toInstant()));
 	}
 
 	/**

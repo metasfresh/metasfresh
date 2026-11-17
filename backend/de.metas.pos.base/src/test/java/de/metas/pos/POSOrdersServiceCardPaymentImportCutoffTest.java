@@ -49,7 +49,7 @@ class POSOrdersServiceCardPaymentImportCutoffTest
 	{
 		SystemTime.setFixedTimeSource("2026-11-17T12:00:00Z");
 
-		service.getCardPaymentIdsToImport();
+		service.getCardPaymentsToImport();
 
 		verify(ordersRepository).streamCardPaymentsToImport(eq(Instant.parse("2026-11-16T12:00:00Z")));
 	}
