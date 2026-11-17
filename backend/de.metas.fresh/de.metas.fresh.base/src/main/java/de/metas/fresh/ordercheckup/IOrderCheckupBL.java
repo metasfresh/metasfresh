@@ -3,8 +3,11 @@ package de.metas.fresh.ordercheckup;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.report.PrintCopies;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Order;
+
+import javax.annotation.Nullable;
 
 public interface IOrderCheckupBL extends ISingletonService
 {
@@ -44,4 +47,11 @@ public interface IOrderCheckupBL extends ISingletonService
 	int getNumberOfCopies(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
 
 	I_C_Order_MFGWarehouse_Report getReportOrNull(I_AD_Archive printOut);
+
+	/**
+	 * @return the copies of the order's shipper (Lieferweg, {@code M_Shipper.DocumentCopies}) for a Bestellkontrolle Büro (Plant) report,
+	 * incl. {@link PrintCopies#ZERO}; {@code null} for any other report kind, an order without shipper or a shipper without copies
+	 */
+	@Nullable
+	PrintCopies getShipperCopiesOrNull(I_C_Order_MFGWarehouse_Report report);
 }

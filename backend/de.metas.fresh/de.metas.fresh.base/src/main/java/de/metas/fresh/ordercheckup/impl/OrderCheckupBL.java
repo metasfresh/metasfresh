@@ -42,6 +42,10 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.report.PrintCopies;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperDocumentCopies;
+import de.metas.shipping.ShipperId;
 import de.metas.organization.OrgId;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ProductId;
@@ -80,6 +84,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@NonNull final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
 	@NonNull final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -393,7 +398,35 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		}
 
+		// Bestellkontrolle Büro: the order's shipper (Lieferweg) count wins, on automatic and manual prints alike.
+		// A count of 0 is not applied here: it only suppresses the automatic print (OrderCheckupDocumentReportAdvisor),
+		// so a manual print still gets the sysconfig copies.
+		final PrintCopies shipperCopies = report != null ? getShipperCopiesOrNull(report) : null;
+		if (shipperCopies != null && !shipperCopies.isZero())
+		{
+			return shipperCopies.toInt();
+		}
+
 		return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+	}
+
+	@Override
+	@Nullable
+	public PrintCopies getShipperCopiesOrNull(@NonNull final I_C_Order_MFGWarehouse_Report report)
+	{
+		if (!OrderCheckupDocumentType.ofCode(report.getDocumentType()).isPlant())
+		{
+			return null;
+		}
+
+		final OrderId orderId = OrderId.ofRepoIdOrNull(report.getC_Order_ID());
+		if (orderId == null)
+		{
+			return null;
+		}
+
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(orderDAO.getById(orderId).getM_Shipper_ID());
+		return shipperId != null ? ShipperDocumentCopies.ofShipperOrNull(shipperDAO.getById(shipperId)) : null;
 	}
 
 	@Override
