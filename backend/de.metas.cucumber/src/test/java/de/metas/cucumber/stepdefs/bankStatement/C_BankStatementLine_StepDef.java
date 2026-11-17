@@ -22,19 +22,29 @@
 
 package de.metas.cucumber.stepdefs.bankStatement;
 
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
+import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,11 +65,23 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Step definitions for bank statement lines ({@code C_BankStatementLine}): creating lines, linking payments to a line
+ * (as the "link payments" action of the bank statement window does) and loading lines.
+ *
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * And metasfresh contains C_BankStatementLines:
+ *   | Identifier | C_BankStatement_ID | Line | StmtAmt | C_Currency.ISO_Code |
+ * When the payments payment are linked to bank statement line bsl
+ * }</pre>
+ */
 public class C_BankStatementLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBankStatementPaymentBL bankStatementPaymentBL = Services.get(IBankStatementPaymentBL.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BankStatementLine_StepDefData bankStatementLineTable;
@@ -79,6 +101,73 @@ public class C_BankStatementLine_StepDef
 		this.partnerTable = partnerTable;
 		this.invoiceTable = invoiceTable;
 		this.paymentTable = paymentTable;
+	}
+
+	/**
+	 * Creates unreconciled bank statement lines (no payment, no invoice).
+	 * <b>Columns</b>: {@code Identifier} (required), {@code C_BankStatement_ID} (required), {@code Line} (required), {@code StmtAmt} (required; positive = money received), {@code C_Currency.ISO_Code} (required).
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_BankStatementLines:
+	 *   | Identifier | C_BankStatement_ID | Line | StmtAmt | C_Currency.ISO_Code |
+	 *   | bsl        | bs                 | 10   | 100     | EUR                 |
+	 * </pre>
+	 */
+	@And("metasfresh contains C_BankStatementLines:")
+	public void createBankStatementLines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createBankStatementLine);
+	}
+
+	private void createBankStatementLine(@NonNull final DataTableRow row)
+	{
+		final I_C_BankStatement statement = row.getAsIdentifier(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID).lookupNotNullIn(bankStatementTable);
+		final BigDecimal stmtAmt = row.getAsBigDecimal(I_C_BankStatementLine.COLUMNNAME_StmtAmt);
+		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(row.getAsString("C_Currency.ISO_Code")));
+
+		final I_C_BankStatementLine record = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
+		record.setAD_Org_ID(statement.getAD_Org_ID());
+		record.setC_BankStatement_ID(statement.getC_BankStatement_ID());
+		record.setLine(row.getAsInt(I_C_BankStatementLine.COLUMNNAME_Line));
+		record.setValutaDate(statement.getStatementDate());
+		record.setDateAcct(statement.getStatementDate());
+		record.setStatementLineDate(statement.getStatementDate());
+		record.setC_Currency_ID(currency.getId().getRepoId());
+		record.setStmtAmt(stmtAmt);
+		record.setTrxAmt(stmtAmt);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		bankStatementLineTable.putOrReplace(row.getAsIdentifier(), record);
+	}
+
+	/**
+	 * Reconciles the bank statement line with the given payments, as "Reconcile payments" of the bank statement reconciliation window does
+	 * ({@code IBankStatementPaymentBL.linkMultiPayments}). Each payment is linked with its own pay amount (negated for outbound payments).
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * When the payments payment1 are linked to bank statement line bsl
+	 * </pre>
+	 */
+	@When("^the payments (.*) are linked to bank statement line (.*)$")
+	public void linkPayments(@NonNull final String commaSeparatedPaymentIdentifiers, @NonNull final String lineIdentifier)
+	{
+		final I_C_BankStatementLine line = bankStatementLineTable.get(lineIdentifier);
+
+		final BankStatementLineMultiPaymentLinkRequest.BankStatementLineMultiPaymentLinkRequestBuilder request = BankStatementLineMultiPaymentLinkRequest.builder()
+				.bankStatementLineId(BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID()));
+		for (final StepDefDataIdentifier paymentIdentifier : StepDefDataIdentifier.ofCommaSeparatedString(commaSeparatedPaymentIdentifiers))
+		{
+			final I_C_Payment payment = paymentIdentifier.lookupNotNullIn(paymentTable);
+			final BigDecimal payAmt = payment.isReceipt() ? payment.getPayAmt() : payment.getPayAmt().negate();
+			request.paymentToLink(BankStatementLineMultiPaymentLinkRequest.PaymentToLink.builder()
+					.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+					.statementLineAmt(Amount.of(payAmt, currencyDAO.getById(CurrencyId.ofRepoId(payment.getC_Currency_ID())).getCurrencyCode()))
+					.build());
+		}
+
+		bankStatementPaymentBL.linkMultiPayments(request.build());
 	}
 
 	@And("load C_BankStatementLine")

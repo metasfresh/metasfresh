@@ -49,6 +49,7 @@ class IInvoiceBLTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		invoiceBL = Services.get(IInvoiceBL.class);

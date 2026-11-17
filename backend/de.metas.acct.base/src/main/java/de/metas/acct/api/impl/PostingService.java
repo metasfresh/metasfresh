@@ -4,18 +4,26 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.DocumentUnpostRequest;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
+import de.metas.calendar.IPeriodBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.ReferencedRecordRepository;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -23,6 +31,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.acct.Doc;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -34,6 +43,8 @@ public class PostingService implements IPostingService
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	@NonNull private final IPeriodBL periodBL = Services.get(IPeriodBL.class);
 	@NonNull private final Lazy<ReferencedRecordRepository> referencedRecordRepositoryHolder = SpringContextHolder.lazyBean(ReferencedRecordRepository.class);
 	@NonNull private final Lazy<DocumentPostingUserNotificationService> userNotificationsHolder = SpringContextHolder.lazyBean(DocumentPostingUserNotificationService.class);
 	@NonNull private final Lazy<AcctDocRegistry> acctDocRegistryHolder = SpringContextHolder.lazyBean(AcctDocRegistry.class);
@@ -65,6 +76,40 @@ public class PostingService implements IPostingService
 		}
 
 		postingBusServiceHolder.get().sendAfterCommit(requests);
+	}
+
+	@Override
+	public void unpost(@NonNull final DocumentUnpostRequest request)
+	{
+		final Object document = request.getDocument();
+
+		assertPeriodOpen(request);
+		factAcctDAO.deleteForDocumentModel(document);
+		factAcctDAO.setDocumentModelNotPosted(document);
+		scheduleRepostingIfCompletedClosedOrReversed(document);
+	}
+
+	private void assertPeriodOpen(@NonNull final DocumentUnpostRequest request)
+	{
+		final Object document = request.getDocument();
+		final OrgId orgId = InterfaceWrapperHelper.getOrgId(document).orElse(OrgId.ANY);
+		periodBL.testPeriodOpen(InterfaceWrapperHelper.getCtx(document), TimeUtil.asTimestamp(request.getDateAcct()), request.getDocBaseType(), orgId.getRepoId());
+	}
+
+	private void scheduleRepostingIfCompletedClosedOrReversed(@NonNull final Object document)
+	{
+		final DocStatus docStatus = DocStatus.ofNullableCode(InterfaceWrapperHelper.getValueOrNull(document, IDocument.COLUMNNAME_DocStatus));
+		if (docStatus == null || !docStatus.isCompletedOrClosedOrReversed())
+		{
+			return;
+		}
+
+		final UserId updatedBy = InterfaceWrapperHelper.getUpdatedBy(document);
+		schedule(DocumentPostRequest.builder()
+				.record(TableRecordReference.of(document))
+				.clientId(InterfaceWrapperHelper.getClientId(document).orElseThrow(() -> new AdempiereException("No AD_Client_ID in " + document)))
+				.onErrorNotifyUserId(updatedBy.isSystemUser() ? null : updatedBy)
+				.build());
 	}
 
 	@Override

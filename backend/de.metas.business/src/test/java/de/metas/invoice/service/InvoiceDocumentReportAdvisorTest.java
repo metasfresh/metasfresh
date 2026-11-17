@@ -9,6 +9,7 @@ import de.metas.report.PrintFormatId;
 import de.metas.report.PrintFormatRepository;
 import de.metas.user.UserRepository;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PrintFormat;
@@ -36,6 +37,7 @@ class InvoiceDocumentReportAdvisorTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 		POJOWrapper.setDefaultStrictValues(false);
 
 		advisor = new InvoiceDocumentReportAdvisor(new DocumentReportAdvisorUtil(

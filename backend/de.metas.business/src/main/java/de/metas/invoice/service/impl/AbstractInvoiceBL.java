@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.acct.api.DocumentUnpostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.InvoiceOpenRequest;
@@ -188,6 +190,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IPostingService postingService = Services.get(IPostingService.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -2153,5 +2156,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		invoiceDAO.save(invoice);
+	}
+
+	@Override
+	public void unpostIfPosted(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		if (!invoice.isPosted())
+		{
+			return;
+		}
+
+		postingService.unpost(DocumentUnpostRequest.builder()
+				.document(invoice)
+				.dateAcct(TimeUtil.asInstant(invoice.getDateAcct()))
+				.docBaseType(getInvoiceDocBaseType(invoice).getDocBaseType())
+				.build());
 	}
 }
