@@ -93,6 +93,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	private final PrintFormatRepository printFormatRepository = SpringContextHolder.instance.getBean(PrintFormatRepository.class);
 
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData reportTable;
+	@NonNull private final de.metas.cucumber.stepdefs.order.C_Order_MFGWarehouse_Report_StepDefData recordIdTable;
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
@@ -262,6 +263,8 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		}
 
 		row.getAsIdentifier().putOrReplace(reportTable, matches.get(0));
+		// also make the identifier resolvable by IdentifiersResolver ("... for the record identified by ..." steps)
+		recordIdTable.put(row.getAsIdentifier(), matches.get(0).getC_Order_MFGWarehouse_Report_ID());
 	}
 
 	/**
