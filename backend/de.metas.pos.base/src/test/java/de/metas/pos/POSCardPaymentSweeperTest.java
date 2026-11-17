@@ -81,6 +81,23 @@ class POSCardPaymentSweeperTest
 	}
 
 	/**
+	 * A payment that is no longer a candidate is forgotten (the in-memory last lookups do not grow): if it becomes one again,
+	 * it is asked for at once.
+	 */
+	@Test
+	void aPaymentNoLongerToImport_isForgotten()
+	{
+		sweepAt("2026-11-16T11:00:00Z", true);
+
+		when(ordersService.getCardPaymentsToImport()).thenReturn(ImmutableList.of());
+		sweepAt("2026-11-16T11:00:02Z", false);
+
+		when(ordersService.getCardPaymentsToImport())
+				.thenReturn(ImmutableList.of(POSCardPaymentToImport.of(PAYMENT, Instant.parse("2026-11-16T10:00:00Z"))));
+		sweepAt("2026-11-16T11:00:04Z", true);
+	}
+
+	/**
 	 * The last lookup is kept in memory only: after a restart (a new sweeper) a payment is looked up at once.
 	 */
 	@Test
