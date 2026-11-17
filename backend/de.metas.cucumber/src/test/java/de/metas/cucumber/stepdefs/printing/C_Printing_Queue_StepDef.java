@@ -108,6 +108,40 @@ public class C_Printing_Queue_StepDef
 	}
 
 	/**
+	 * Asserts the {@code Copies} of <em>every</em> active printing-queue item of the given record's archives, e.g. the automatic item
+	 * and a later manual reprint of the same document (which {@code C_Printing_Queue item is located:} cannot tell apart).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then all C_Printing_Queue items for the record identified by "plantReport" have Copies 2
+	 * </pre>
+	 */
+	@Then("all C_Printing_Queue items for the record identified by {string} have Copies {int}")
+	public void assert_all_printing_queue_items_copies(@NonNull final String recordIdentifier, final int expectedCopies)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		final IQuery<I_AD_Archive> archivesOfRecord = queryBL.createQueryBuilder(I_AD_Archive.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.create();
+
+		final List<I_C_Printing_Queue> items = queryBL.createQueryBuilder(I_C_Printing_Queue.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_Printing_Queue.COLUMNNAME_AD_Archive_ID, I_AD_Archive.COLUMNNAME_AD_Archive_ID, archivesOfRecord)
+				.create()
+				.list();
+
+		assertThat(items).as("C_Printing_Queue items for record %s", recordRef).isNotEmpty();
+		assertThat(items)
+				.as("C_Printing_Queue Copies for record %s", recordRef)
+				.extracting(I_C_Printing_Queue::getCopies)
+				.containsOnly(expectedCopies);
+	}
+
+	/**
 	 * Locates the {@code C_Printing_Queue} item enqueued for a previously-located {@code C_Order_MFGWarehouse_Report}
 	 * or any other printed document -- i.e. the real record -&gt; archive -&gt; printing-queue-item path, never a
 	 * fabricated queue item. Stored under {@code Identifier} for the following assertions.
