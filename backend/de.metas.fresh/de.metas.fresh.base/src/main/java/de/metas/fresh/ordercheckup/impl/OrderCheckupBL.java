@@ -42,6 +42,14 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.fresh.ordercheckup.OrderCheckupCopies;
+import de.metas.report.PrintCopies;
+import de.metas.shipping.IShipperDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Shipper;
+import java.math.RoundingMode;
+import de.metas.shipping.ShipperId;
 import de.metas.organization.OrgId;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ProductId;
@@ -80,6 +88,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@NonNull final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
 	@NonNull final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -393,7 +402,71 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		}
 
+		// Plant order checkup (PL): the order shipper's (Lieferweg) count N > 0, on automatic and manual prints alike.
+		// No count, or 0 (which only suppresses the automatic print, see OrderCheckupDocumentReportAdvisor): the sysconfig, as before.
+		final OrderCheckupCopies plantCopies = report != null ? getPlantCopiesOrNull(report) : null;
+		if (plantCopies != null && !plantCopies.getCopies().isZero())
+		{
+			return plantCopies.getCopies().toInt();
+		}
+
 		return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+	}
+
+	@Override
+	@Nullable
+	public OrderCheckupCopies getPlantCopiesOrNull(@NonNull final I_C_Order_MFGWarehouse_Report report)
+	{
+		if (!OrderCheckupDocumentType.ofCode(report.getDocumentType()).isPlant())
+		{
+			return null;
+		}
+
+		final OrderId orderId = OrderId.ofRepoIdOrNull(report.getC_Order_ID());
+		if (orderId == null)
+		{
+			return null;
+		}
+
+		final I_C_Order order = orderDAO.getById(orderId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		// like the delivery note: the shipper count etc. apply to customer (sales) documents only
+		if (bpartnerId == null || !order.isSOTrx())
+		{
+			return null;
+		}
+
+		// 1. the order's shipper (Lieferweg) count, incl. 0
+		final PrintCopies shipperCopies = getShipperCopiesOrNull(ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID()));
+		if (shipperCopies != null)
+		{
+			return OrderCheckupCopies.builder().copies(shipperCopies).build();
+		}
+
+		// no shipper count: the sysconfig, as before
+		return null;
+	}
+
+	/**
+	 * @return the shipper's (Lieferweg) {@code M_Shipper.DocumentCopies}, incl. {@link PrintCopies#ZERO}; {@code null} if no shipper or the column is NULL
+	 */
+	@Nullable
+	private PrintCopies getShipperCopiesOrNull(@Nullable final ShipperId shipperId)
+	{
+		if (shipperId == null)
+		{
+			return null;
+		}
+
+		// the generated getter returns 0 for NULL, so NULL ("not set") must be checked on the column itself
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		if (InterfaceWrapperHelper.isNull(shipper, I_M_Shipper.COLUMNNAME_DocumentCopies))
+		{
+			return null;
+		}
+
+		// the column is a Quantity; a fraction can only come from a non-UI write and is rounded up, so a positive count never becomes 0
+		return PrintCopies.ofInt(shipper.getDocumentCopies().setScale(0, RoundingMode.CEILING).intValueExact());
 	}
 
 	@Override

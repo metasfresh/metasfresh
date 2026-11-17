@@ -41,8 +41,11 @@ import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 
+/**
+ * Generic advisor for every table that has no own {@link DocumentReportAdvisor}. Public so that a table-specific advisor can start from its result.
+ */
 // @Component // IMPORTANT: don't annotate it with Component
-final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
+public final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final DocumentReportAdvisorUtil util;

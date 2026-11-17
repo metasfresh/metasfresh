@@ -76,7 +76,10 @@ public class DocumentReportService
 			@NonNull final DocTypePrintOptionsRepository docTypePrintOptionsRepository,
 			@NonNull final DocumentReportAdvisorUtil util)
 	{
-		this.advisorsByType = Maps.uniqueIndex(advisors, DocumentReportAdvisor::getStandardDocumentReportType);
+		// an advisor without a standard report type is found by table name only
+		this.advisorsByType = Maps.uniqueIndex(
+				advisors.stream().filter(advisor -> advisor.getStandardDocumentReportType() != null).iterator(),
+				DocumentReportAdvisor::getStandardDocumentReportType);
 		this.advisorsByTableName = Maps.uniqueIndex(advisors, DocumentReportAdvisor::getHandledTableName);
 		this.fallbackAdvisor = new FallbackDocumentReportAdvisor(util);
 		logger.info("Advisors: {}", advisors);

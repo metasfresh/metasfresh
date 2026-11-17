@@ -33,6 +33,10 @@ public interface DocumentReportAdvisor
 	@NonNull
 	String getHandledTableName();
 
+	/**
+	 * @return the standard report type this advisor serves, or {@code null} if it is looked up by {@link #getHandledTableName()} only
+	 */
+	@Nullable
 	StandardDocumentReportType getStandardDocumentReportType();
 
 	@NonNull
