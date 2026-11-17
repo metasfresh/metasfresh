@@ -53,7 +53,7 @@ class POSOrdersServiceTest
 		AdempiereTestHelper.get().init();
 		POSTestMessages.createLateApprovalNotBooked();
 
-		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()));
+		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource());
 		posOrderProcessingServices = mock(POSOrderProcessingServices.class);
 		service = new POSOrdersService(mock(POSTerminalService.class), ordersRepository, mock(CurrencyRepository.class), posOrderProcessingServices, mock(SumUpService.class), new POSCardReleaseWait(), new POSCardReaderCheckoutTerminator(mock(POSTerminalService.class), mock(SumUpService.class)), Optional.empty());
 	}

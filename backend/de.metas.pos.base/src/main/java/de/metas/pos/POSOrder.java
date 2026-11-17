@@ -66,6 +66,14 @@ public class POSOrder
 
 	@Nullable @Getter @Setter private OrderId salesOrderId;
 
+	/**
+	 * Version of this order's state (see {@link POSOrderVersionSource}): stamped on load, before reading, and by every save, after its commit.
+	 * Kept in memory only, not persisted. Null for an order which was neither loaded nor saved and committed yet.
+	 * Clients use it to drop order snapshots which arrive out of order: the websocket "order changed" events are debounced,
+	 * so they can arrive after the REST response of a newer save.
+	 */
+	@EqualsAndHashCode.Exclude @Nullable @Getter @Setter private Long version;
+
 	@Builder
 	private POSOrder(
 			@NonNull final POSOrderExternalId externalId,
