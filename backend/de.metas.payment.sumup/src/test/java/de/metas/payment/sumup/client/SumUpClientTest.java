@@ -244,6 +244,20 @@ class SumUpClientTest
 	}
 
 	/**
+	 * A 404 with a JSON answer that carries another error code than {@code NOT_FOUND} is a failed call, too.
+	 */
+	@Test
+	void findTransactionByClientTransactionId_404WithOtherErrorCode_isFailedCall()
+	{
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=CTX1"))
+				.andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body("{\"error_code\":\"X\"}"));
+
+		assertThatThrownBy(() -> client.findTransactionById(SumUpClientTransactionId.ofString("CTX1")))
+				.isInstanceOf(SumUpCallException.class);
+		Mockito.verify(errorManager).createIssue(Mockito.any(SumUpCallException.class));
+	}
+
+	/**
 	 * A failed call is logged with SumUp's HTTP status and answer.
 	 */
 	@Test
