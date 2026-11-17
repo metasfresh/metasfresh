@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 public class IssueRawMaterialsCommand
@@ -155,7 +156,14 @@ public class IssueRawMaterialsCommand
 			@NonNull final Quantity remainingQtyToIssueMax,
 			@NonNull final BigDecimal qtyIssued)
 	{
-		if (qtyIssued.compareTo(remainingQtyToIssueMax.toBigDecimal()) > 0)
+		// Round the requested qty to the UOM's precision (HALF_UP) before comparing: an on-scale weightable
+		// issue is submitted as an unrounded JS subtraction (e.g. 5.200000000000001), so an exact compare
+		// would wrongly refuse a legitimate issue sitting exactly on the remaining-demand boundary. HALF_UP
+		// absorbs that sub-precision float noise while a genuine over-issue (at the UOM precision) still
+		// exceeds the ceiling. (Quantity.roundToUOMPrecision rounds UP, which would not absorb the noise.)
+		final int uomPrecision = remainingQtyToIssueMax.getUOM().getStdPrecision();
+		final BigDecimal qtyIssuedRounded = qtyIssued.setScale(uomPrecision, RoundingMode.HALF_UP);
+		if (qtyIssuedRounded.compareTo(remainingQtyToIssueMax.toBigDecimal()) > 0)
 		{
 			throw new AdempiereException("Cannot issue more than the line's remaining demand")
 					.markAsUserValidationError()

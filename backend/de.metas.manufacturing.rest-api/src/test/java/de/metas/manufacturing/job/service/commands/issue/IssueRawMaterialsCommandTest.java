@@ -181,7 +181,8 @@ class IssueRawMaterialsCommandTest
 		private Quantity qty(final String value)
 		{
 			final I_C_UOM uom = newInstance(I_C_UOM.class);
-			uom.setUOMSymbol("Ea");
+			uom.setUOMSymbol("kg");
+			uom.setStdPrecision(3);
 			return Quantity.of(new BigDecimal(value), uom);
 		}
 
@@ -203,6 +204,22 @@ class IssueRawMaterialsCommandTest
 		void qtyIssuedExceedsRemaining_throws()
 		{
 			assertThatThrownBy(() -> IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("10"), new BigDecimal("11")))
+					.isInstanceOf(AdempiereException.class);
+		}
+
+		@Test
+		void qtyIssuedWithFloatNoiseAtBoundary_doesNotThrow()
+		{
+			// an on-scale weightable issue can arrive as 5.200000000000001 (unrounded JS subtraction);
+			// rounding to the UOM precision absorbs the noise, so it is not refused as an over-issue.
+			IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("5.2"), new BigDecimal("5.200000000000001"));
+			// no exception
+		}
+
+		@Test
+		void qtyIssuedGenuinelyOverAtUomPrecision_throws()
+		{
+			assertThatThrownBy(() -> IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("5.2"), new BigDecimal("5.201")))
 					.isInstanceOf(AdempiereException.class);
 		}
 	}
