@@ -2,7 +2,9 @@ package de.metas.payment.sumup.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.payment.sumup.SumUpCallException;
@@ -41,6 +43,10 @@ import java.time.Duration;
 
 public class SumUpClient
 {
+	private static final String API_V01_SEGMENT = "/v0.1";
+	private static final String API_V10_SEGMENT = "/v1.0";
+	private static final String API_V21_SEGMENT = "/v2.1";
+
 	@NonNull private final IErrorManager errorManager;
 	@NonNull private final SumUpLogRepository logRepository;
 	@NonNull private final ObjectMapper jsonObjectMapper;
@@ -48,6 +54,11 @@ public class SumUpClient
 	@NonNull private final SumUpConfigId configId;
 	@NonNull private final String apiKey;
 	@NonNull private final SumUpMerchantCode merchantCode;
+	/**
+	 * Base of SumUp API v0.1 (e.g. {@code https://api.sumup.com/v0.1}), from {@code sumup.baseUrl}: the reader calls.
+	 * The transaction lookup uses API v2.1, see {@link #toTransactionsApiBaseUrl(String)}, the refund API v1.0, see
+	 * {@link #toRefundsApiBaseUrl(String)}.
+	 */
 	@NonNull private final String baseUrl;
 
 	@NonNull private final RestTemplate restTemplate;
@@ -87,6 +98,38 @@ public class SumUpClient
 				.setConnectTimeout(Duration.ofSeconds(60))
 				.setReadTimeout(Duration.ofSeconds(60))
 				.build();
+	}
+
+	/**
+	 * @return the base of SumUp API v2.1 (transaction lookup): the given v0.1 base with its trailing {@code /v0.1} replaced by {@code /v2.1}
+	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}
+	 */
+	@VisibleForTesting
+	static String toTransactionsApiBaseUrl(@NonNull final String baseUrl)
+	{
+		return replaceApiVersionSegment(baseUrl, API_V21_SEGMENT);
+	}
+
+	/**
+	 * @return the base of SumUp API v1.0 (refund): the given v0.1 base with its trailing {@code /v0.1} replaced by {@code /v1.0}
+	 * @throws AdempiereException if the base URL does not end with {@code /v0.1}
+	 */
+	@VisibleForTesting
+	static String toRefundsApiBaseUrl(@NonNull final String baseUrl)
+	{
+		return replaceApiVersionSegment(baseUrl, API_V10_SEGMENT);
+	}
+
+	private static String replaceApiVersionSegment(@NonNull final String baseUrl, @NonNull final String apiVersionSegment)
+	{
+		final String baseUrlNorm = baseUrl.replaceFirst("/+$", "");
+		if (!baseUrlNorm.endsWith(API_V01_SEGMENT))
+		{
+			throw new AdempiereException("sumup.baseUrl must end with " + API_V01_SEGMENT)
+					.appendParametersToMessage()
+					.setParameter("sumup.baseUrl", baseUrl);
+		}
+		return baseUrlNorm.substring(0, baseUrlNorm.length() - API_V01_SEGMENT.length()) + apiVersionSegment;
 	}
 
 	private SumUpLogRequest.SumUpLogRequestBuilder newLogRequest()
@@ -233,9 +276,22 @@ public class SumUpClient
 	 */
 	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpClientTransactionId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
-				.pathSegment("me", "transactions")
-				.queryParam("client_transaction_id", id.getAsString())
+		return getTransaction("client_transaction_id", id.getAsString());
+	}
+
+	/**
+	 * @implSpec <a href="https://developer.sumup.com/api/transactions/get">spec</a>
+	 */
+	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpTransactionExternalId id)
+	{
+		return getTransaction("id", id.getAsString());
+	}
+
+	private JsonGetTransactionResponse getTransaction(@NonNull final String queryParamName, @NonNull final String queryParamValue)
+	{
+		final String uri = UriComponentsBuilder.fromHttpUrl(toTransactionsApiBaseUrl(baseUrl))
+				.pathSegment("merchants", merchantCode.getAsString(), "transactions")
+				.queryParam(queryParamName, queryParamValue)
 				.toUriString();
 
 		final String json = httpCall(uri, HttpMethod.GET, null, String.class);
@@ -252,35 +308,17 @@ public class SumUpClient
 	}
 
 	/**
-	 * @implSpec <a href="https://developer.sumup.com/api/transactions/get">spec</a>
+	 * Refunds the transaction's full amount: the request carries no {@code amount}. SumUp answers 201 with an empty object.
+	 *
+	 * @implSpec <a href="https://developer.sumup.com/api/transactions/refund">spec</a>
 	 */
-	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpTransactionExternalId id)
-	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
-				.pathSegment("me", "transactions")
-				.queryParam("id", id.getAsString())
-				.toUriString();
-
-		final String json = httpCall(uri, HttpMethod.GET, null, String.class);
-
-		try
-		{
-			return jsonObjectMapper.readValue(json, JsonGetTransactionResponse.class)
-					.withJson(json);
-		}
-		catch (JsonProcessingException ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-	}
-
 	public void refundTransaction(@NonNull final SumUpTransactionExternalId id)
 	{
-		final String uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
-				.pathSegment("me", "refund", id.getAsString())
+		final String uri = UriComponentsBuilder.fromHttpUrl(toRefundsApiBaseUrl(baseUrl))
+				.pathSegment("merchants", merchantCode.getAsString(), "payments", id.getAsString(), "refunds")
 				.toUriString();
 
-		httpCall(uri, HttpMethod.POST, null, null);
+		httpCall(uri, HttpMethod.POST, ImmutableMap.of(), null);
 	}
 
 }

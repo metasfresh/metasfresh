@@ -930,7 +930,7 @@ public class POS_CardSale_StepDef
 	}
 
 	/**
-	 * Asserts how many status lookups ({@code GET /me/transactions}) of the sale's first transaction the stub received in this
+	 * Asserts how many status lookups ({@code GET /v2.1/merchants/{merchant}/transactions}) of the sale's first transaction the stub received in this
 	 * scenario, whatever they were answered.
 	 *
 	 * @cucumber.stepdef
