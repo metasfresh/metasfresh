@@ -112,6 +112,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 
 		orgId1 = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 

@@ -29,4 +29,10 @@ public interface IPostingService extends ISingletonService
 	 * any posting error is thrown to the caller (and neither logged nor notified: that is up to the caller).
 	 */
 	void postNowAndThrow(@NonNull DocumentPostRequest request);
+
+	/**
+	 * Checks that the accounting period is open, deletes the document's {@code Fact_Acct}, sets {@code Posted=false} and schedules it for posting again if its {@code DocStatus} is CO, CL or RE.
+	 * The document needs the columns {@code Posted}, {@code DocStatus}, {@code AD_Client_ID} and {@code UpdatedBy} ({@code AD_Org_ID} optional).
+	 */
+	void unpost(@NonNull DocumentUnpostRequest request);
 }

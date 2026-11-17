@@ -14,6 +14,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -41,6 +42,7 @@ class PaymentBonusOnPaymentServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 	}
 
 	private static PaymentBonusDeduction deduction()
