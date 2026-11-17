@@ -482,7 +482,9 @@ public class SumUpService
 	 * checkout whose card was never presented): those are no longer asked for in the background. They stay PENDING, and an
 	 * explicit lookup (the till's check, back office's update processes) still asks SumUp. A transaction whose last lookup
 	 * failed, or that was never looked up (e.g. while the server was down), keeps being polled, so the first lookup that gets
-	 * through after an outage still stores a charge SumUp approved meanwhile. Status change events are not force-sent.
+	 * through after an outage still stores a charge SumUp approved meanwhile. This covers the transactions metasfresh stores;
+	 * a card payment whose transaction metasfresh does not store is looked up by the POS card-sale sweep, with its own rule.
+	 * Status change events are not force-sent.
 	 */
 	public BulkUpdateByQueryResult bulkUpdatePendingTransactionsToPoll()
 	{
