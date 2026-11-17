@@ -275,7 +275,7 @@ public class ContractCompensationGroupService
 	{
 		return contractGroupRepository.retrieveCompensationLines(groupId)
 				.stream()
-				.filter(compensationLine -> !ProjectId.equals(ProjectId.ofRepoIdOrNull(compensationLine.getC_Project_ID()), positionId))
+				.filter(compensationLine -> !ContractCompensationGroupRepository.hasPosition(compensationLine, positionId))
 				.collect(ImmutableList.toImmutableList());
 	}
 

@@ -101,8 +101,7 @@ public class ContractCompensationGroupRepository
 	/** Deletes the given group's compensation (discount) lines, leaving its regular lines ungrouped so {@link OrderGroupRepository#retrieveGroupIfExists} can rebuild it. */
 	public void deleteCompensationLines(@NonNull final GroupId groupId)
 	{
-		queryGroupLines(groupId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
+		queryCompensationLines(groupId)
 				.create()
 				.delete();
 	}
@@ -121,7 +120,7 @@ public class ContractCompensationGroupRepository
 	{
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
-			if (ProjectId.equals(ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()), projectId))
+			if (hasPosition(orderLine, projectId))
 			{
 				continue;
 			}
@@ -133,8 +132,7 @@ public class ContractCompensationGroupRepository
 	/** @return the given group's compensation (discount) lines, active or not, like {@link OrderGroupRepository}'s own compensation-line storage */
 	public List<I_C_OrderLine> retrieveCompensationLines(@NonNull final GroupId groupId)
 	{
-		return queryGroupLines(groupId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
+		return queryCompensationLines(groupId)
 				.create()
 				.list(I_C_OrderLine.class);
 	}
@@ -148,6 +146,18 @@ public class ContractCompensationGroupRepository
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false)
 				.create()
 				.list(I_C_OrderLine.class);
+	}
+
+	/** @return true if the given line carries the given position ({@code C_OrderLine.C_Project_ID}); a {@code null} position matches a line without one */
+	public static boolean hasPosition(@NonNull final I_C_OrderLine orderLine, @Nullable final ProjectId positionId)
+	{
+		return ProjectId.equals(ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()), positionId);
+	}
+
+	private IQueryBuilder<I_C_OrderLine> queryCompensationLines(@NonNull final GroupId groupId)
+	{
+		return queryGroupLines(groupId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true);
 	}
 
 	/**
