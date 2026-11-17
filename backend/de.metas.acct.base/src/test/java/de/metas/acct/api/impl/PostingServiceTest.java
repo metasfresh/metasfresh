@@ -260,10 +260,7 @@ public class PostingServiceTest
 			verify(factAcctDAO).deleteForDocumentModel(invoice);
 			InterfaceWrapperHelper.refresh(invoice);
 			assertThat(invoice.isPosted()).isFalse();
-			final ArgumentCaptor<DocumentPostMultiRequest> captor = ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
-			verify(postingBusService).sendAfterCommit(captor.capture());
-			assertThat(captor.getValue().toSet()).hasSize(1);
-			final DocumentPostRequest posting = captor.getValue().toSet().iterator().next();
+			final DocumentPostRequest posting = captureScheduledPosting();
 			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
 			assertThat(posting.getClientId()).isEqualTo(ClientId.ofRepoId(invoice.getAD_Client_ID()));
 			assertThat(posting.getOnErrorNotifyUserId()).isEqualTo(NOTIFY_USER_ID);
@@ -285,7 +282,7 @@ public class PostingServiceTest
 		void completedDocumentWithoutClient_failsInsteadOfScheduling()
 		{
 			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
-			InterfaceWrapperHelper.setValue(invoice, "AD_Client_ID", -1);
+			InterfaceWrapperHelper.setValue(invoice, I_C_Invoice.COLUMNNAME_AD_Client_ID, -1);
 
 			assertThatThrownBy(() -> postingService.unpost(requestFor(invoice))).hasMessageContaining("No AD_Client_ID");
 
@@ -321,9 +318,7 @@ public class PostingServiceTest
 			postingService.unpost(requestFor(invoice));
 
 			verify(factAcctDAO).deleteForDocumentModel(invoice);
-			final ArgumentCaptor<DocumentPostMultiRequest> captor = ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
-			verify(postingBusService).sendAfterCommit(captor.capture());
-			assertThat(captor.getValue().toSet()).hasSize(1);
+			captureScheduledPosting();
 		}
 
 		@Test

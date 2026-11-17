@@ -130,7 +130,7 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		if (bankStatement.isPosted())
 		{
-			unpostAndRepost(bankStatement);
+			unpostThroughPostingService(bankStatement);
 		}
 		else
 		{
@@ -138,7 +138,7 @@ public class BankStatementBL implements IBankStatementBL
 		}
 	}
 
-	private void unpostAndRepost(final I_C_BankStatement bankStatement)
+	private void unpostThroughPostingService(final I_C_BankStatement bankStatement)
 	{
 		postingService.unpost(DocumentUnpostRequest.builder()
 				.document(bankStatement)

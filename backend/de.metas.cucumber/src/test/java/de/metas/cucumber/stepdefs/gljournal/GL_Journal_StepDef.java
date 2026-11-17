@@ -193,8 +193,8 @@ public class GL_Journal_StepDef
 		line.setC_ConversionType_ID(journal.getC_ConversionType_ID());
 		line.setCurrencyRate(BigDecimal.ONE);
 		line.setDateAcct(journal.getDateAcct());
-		line.setAccount_DR_ID(getValidCombinationId(row.getAsIdentifier("Account_DR_ID").lookupNotNullIdIn(elementValueTable), journal));
-		line.setAccount_CR_ID(getValidCombinationId(row.getAsIdentifier("Account_CR_ID").lookupNotNullIdIn(elementValueTable), journal));
+		line.setAccount_DR_ID(getValidCombinationId(row.getAsIdentifier(I_GL_JournalLine.COLUMNNAME_Account_DR_ID).lookupNotNullIdIn(elementValueTable), journal));
+		line.setAccount_CR_ID(getValidCombinationId(row.getAsIdentifier(I_GL_JournalLine.COLUMNNAME_Account_CR_ID).lookupNotNullIdIn(elementValueTable), journal));
 		line.setAmtSourceDr(amount);
 		line.setAmtSourceCr(amount);
 		line.setAmtAcctDr(amount);
@@ -214,7 +214,7 @@ public class GL_Journal_StepDef
 		return accountId.getRepoId();
 	}
 
-	/** Completes the GL journal and waits for status CO. */
+	/** Completes the GL journal; fails if it does not end up CO. */
 	@And("the GL journal {string} is completed")
 	public void completeGLJournal(@NonNull final String identifier)
 	{
@@ -277,7 +277,7 @@ public class GL_Journal_StepDef
 	public void invokeChangePostingType(@NonNull final String identifier, @NonNull final String postingType)
 	{
 		final I_GL_Journal journal = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, TableRecordReference.of(journal), builder -> builder.addParameter("PostingType", postingType));
+		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, TableRecordReference.of(journal), builder -> builder.addParameter(I_GL_Journal.COLUMNNAME_PostingType, postingType));
 	}
 
 	private void runProcessAsWebUIRole(

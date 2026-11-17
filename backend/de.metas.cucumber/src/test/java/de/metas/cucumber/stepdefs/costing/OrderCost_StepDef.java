@@ -59,6 +59,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Cost_Type;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -193,7 +194,7 @@ public class OrderCost_StepDef
 		final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
 		final I_C_Order order = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
 		final OrderCostTypeId costTypeId = OrderCostTypeId.ofRepoId(row.getAsIdentifier(I_C_Cost_Type.COLUMNNAME_C_Cost_Type_ID).lookupNotNullIn(costTypeTable).getC_Cost_Type_ID());
-		final BPartnerId bpartnerId = row.getAsIdentifier("C_BPartner_ID").lookupNotNullIdIn(bpartnerTable);
+		final BPartnerId bpartnerId = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
 		final Money amount = Money.of(row.getAsBigDecimal("Amount"), CurrencyId.ofRepoId(order.getC_Currency_ID()));
 
 		orderCostService.createOrderCost(OrderCostCreateRequest.builder()

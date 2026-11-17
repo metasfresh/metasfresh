@@ -80,7 +80,7 @@ public class C_ElementValue_StepDef
 	 * {@code C_ElementValue.PostStatistical}), which a GL journal with {@code PostingType=A} / {@code S} requires for every account it books.
 	 */
 	@Given("C_ElementValue {string} allows posting of actual and statistical amounts")
-	public void allowStatisticalPosting(@NonNull final String identifier)
+	public void allowActualAndStatisticalPosting(@NonNull final String identifier)
 	{
 		setPostActualAndStatistical(elementValueTable.getId(StepDefDataIdentifier.ofString(identifier)));
 	}
@@ -89,7 +89,7 @@ public class C_ElementValue_StepDef
 	 * Same as above, for the income summary account of the primary accounting schema (the account the year-end process books to).
 	 */
 	@Given("the income summary account of the primary accounting schema allows posting of actual and statistical amounts")
-	public void allowStatisticalPostingOnIncomeSummaryAccount()
+	public void allowActualAndStatisticalPostingOnIncomeSummaryAccount()
 	{
 		setPostActualAndStatistical(getIncomeSummaryElementValueId());
 	}
