@@ -2166,11 +2166,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final DocTypeId docTypeId = Check.assumeNotNull(getDocTypeIdEffectiveOrNull(invoice), "C_Invoice_ID={} has neither C_DocType_ID nor C_DocTypeTarget_ID", invoice.getC_Invoice_ID());
 		postingService.unpost(DocumentUnpostRequest.builder()
 				.document(invoice)
 				.dateAcct(TimeUtil.asInstant(invoice.getDateAcct()))
-				.docBaseType(Services.get(IDocTypeDAO.class).getDocBaseTypeById(docTypeId))
+				.docBaseType(getInvoiceDocBaseType(invoice).getDocBaseType())
 				.build());
 	}
 }

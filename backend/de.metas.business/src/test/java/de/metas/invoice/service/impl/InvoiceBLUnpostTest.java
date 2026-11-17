@@ -4,6 +4,7 @@ import de.metas.acct.api.DocumentUnpostRequest;
 import de.metas.acct.api.IPostingService;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -15,10 +16,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -51,11 +54,11 @@ public class InvoiceBLUnpostTest
 		return DocTypeId.ofRepoId(docType.getC_DocType_ID());
 	}
 
-	private I_C_Invoice createInvoice(final boolean posted, final DocTypeId docTypeId, final DocTypeId docTypeTargetId)
+	private I_C_Invoice createInvoice(final boolean posted, @Nullable final DocTypeId docTypeId, @Nullable final DocTypeId docTypeTargetId)
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setPosted(posted);
-		invoice.setDocStatus("CO");
+		invoice.setDocStatus(DocStatus.Completed.getCode());
 		invoice.setDateAcct(dateAcct);
 		invoice.setC_DocType_ID(docTypeId != null ? docTypeId.getRepoId() : 0);
 		invoice.setC_DocTypeTarget_ID(docTypeTargetId != null ? docTypeTargetId.getRepoId() : 0);
@@ -104,7 +107,7 @@ public class InvoiceBLUnpostTest
 		assertThatThrownBy(() -> invoiceBL.unpostIfPosted(invoice))
 				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
 
-		verify(postingService, never()).unpost(org.mockito.ArgumentMatchers.any());
+		verify(postingService, never()).unpost(any());
 	}
 
 	@Test
@@ -114,6 +117,6 @@ public class InvoiceBLUnpostTest
 
 		invoiceBL.unpostIfPosted(invoice);
 
-		verify(postingService, never()).unpost(org.mockito.ArgumentMatchers.any());
+		verify(postingService, never()).unpost(any());
 	}
 }
