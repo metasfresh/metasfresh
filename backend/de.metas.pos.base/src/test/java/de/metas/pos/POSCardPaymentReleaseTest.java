@@ -81,7 +81,7 @@ class POSCardPaymentReleaseTest
 		// past the default wait of 180 s
 		SystemTime.setFixedTimeSource(CHECKOUT_STARTED_AT.plusSeconds(200).atZone(ZoneId.of("UTC")));
 
-		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()));
+		ordersRepository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource());
 		sumUpService = mock(SumUpService.class);
 		when(sumUpService.findTransactionByClientTransactionId(OWN_TRX)).thenAnswer(invocation -> Optional.of(ownTransaction(storedStatus.get())));
 		when(sumUpService.getConfig(SUMUP_CONFIG_ID)).thenReturn(SumUpConfig.builder()
