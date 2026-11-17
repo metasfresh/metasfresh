@@ -39,22 +39,20 @@ import de.metas.report.PrintCopies;
 import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperDocumentCopies;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.math.RoundingMode;
 
 @Component
 public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
@@ -159,17 +157,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 			return null;
 		}
 
-		// the generated getter returns 0 for NULL, so NULL ("not set") must be checked on the column itself
-		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
-		if (InterfaceWrapperHelper.isNull(shipper, I_M_Shipper.COLUMNNAME_DocumentCopies))
-		{
-			return null;
-		}
-
-		// the column is a Quantity (so that clearing it in the UI stores NULL, not 0); a fraction can only come from a non-UI write
-		// and is rounded up, so a positive count never becomes 0 (= print nothing)
-		final int copies = shipper.getDocumentCopies().setScale(0, RoundingMode.CEILING).intValueExact();
-		return PrintCopies.ofInt(copies);
+		return ShipperDocumentCopies.ofShipperOrNull(shipperDAO.getById(shipperId));
 	}
 
 	@Nullable
