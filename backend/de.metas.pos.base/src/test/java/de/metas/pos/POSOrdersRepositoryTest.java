@@ -26,7 +26,7 @@ class POSOrdersRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		repository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()));
+		repository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource());
 	}
 
 	private int newOrder(final POSTerminalId terminalId)
