@@ -1,14 +1,17 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -32,6 +35,14 @@ public class JsonPackingInstructionsRequest
 	// LU
 	@Nullable Identifier lu;
 	int qtyTUsPerLU;
+
+	/**
+	 * Optional extra LU->TU items of the same LU packing instruction, each bound to a product
+	 * ({@code M_HU_PI_Item.M_Product_ID}), e.g. {@code additionalLUItems: [{product: "XY", qtyTUsPerLU: 40}]}.
+	 * They include the same TU packing instruction as the generic item ({@link #qtyTUsPerLU}). Requires {@link #lu}.
+	 */
+	@Builder.Default
+	List<AdditionalLUItem> additionalLUItems = ImmutableList.of();
 
 	//
 	// GRAI mapping
@@ -131,4 +142,13 @@ public class JsonPackingInstructionsRequest
 	public Identifier getProductNotNull() {return Check.assumeNotNull(product, "product must be set");}
 
 	public BigDecimal getQtyCUsPerTUNotNull() {return Check.assumeNotNull(qtyCUsPerTU, "qtyCUsPerTU must be set");}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class AdditionalLUItem
+	{
+		@NonNull Identifier product;
+		int qtyTUsPerLU;
+	}
 }

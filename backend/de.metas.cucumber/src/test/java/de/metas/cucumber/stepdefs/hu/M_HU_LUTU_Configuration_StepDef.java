@@ -278,6 +278,40 @@ public class M_HU_LUTU_Configuration_StepDef
 		return bomLine;
 	}
 
+	/**
+	 * Receives the main product of a {@code PP_Order} into planning HUs, packed per the manufacturing order's
+	 * own LU/TU configuration: the one stored on the order, else a new one derived from the packing instructions.
+	 * <p>
+	 * Required columns: {@code PP_Order_ID} (identifier) and {@code M_HU_ID.Identifier}, one or several
+	 * comma-separated identifiers, bound positionally to the created top-level HUs in the order the producer returns them.
+	 * <pre>
+	 * And receive HUs for PP_Order with its default M_HU_LUTU_Configuration:
+	 *   | PP_Order_ID | M_HU_ID.Identifier |
+	 *   | ppOrder_1   | lu_1,lu_2          |
+	 * </pre>
+	 */
+	@And("receive HUs for PP_Order with its default M_HU_LUTU_Configuration:")
+	public void receive_HUs_for_pp_order_with_default_M_HU_LUTU_Configuration(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(tableRow -> {
+			final I_PP_Order ppOrder = ppOrderTable.get(tableRow.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID));
+
+			final List<I_M_HU> hus = huPPOrderBL.receivingMainProduct(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
+					.createDraftReceiptCandidatesAndPlanningHUs();
+
+			final List<StepDefDataIdentifier> huIdentifiers = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).toCommaSeparatedList();
+
+			assertThat(hus)
+					.as("received HUs must match the number of identifiers given in M_HU_ID.Identifier")
+					.hasSize(huIdentifiers.size());
+
+			for (int i = 0; i < huIdentifiers.size(); i++)
+			{
+				huTable.putOrReplace(huIdentifiers.get(i), hus.get(i));
+			}
+		});
+	}
+
 	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule:")
 	public void createLUTUConfigurationForReceiptSchedule(@NonNull final DataTable dataTable)
 	{

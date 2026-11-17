@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1927581782L;
+	private static final long serialVersionUID = 1655980638L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item (final Properties ctx, final int M_HU_PI_Item_ID, @Nullable final String trxName)
@@ -179,6 +179,21 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	public int getM_HU_PI_Version_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Version_ID);
+	}
+
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override

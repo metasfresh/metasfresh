@@ -55,6 +55,8 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 	private ProductId productId;
 	private I_M_HU_PI_Item_Product piTU_Item_Product;
 	private I_M_HU_PI_Item_Product huDefItemProductVirtual;
+	private I_M_HU_PI piTU;
+	private I_M_HU_PI piLU;
 
 	@BeforeEach
 	public void init()
@@ -67,12 +69,12 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 		productUOM = huTestHelper.uomEach;
 
 		// 10 CUs fit into one TU
-		final I_M_HU_PI piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
 		piTU_Item_Product = huTestHelper.assignProduct(piTU_Item, productId, TEN, productUOM);
 
 		// 3 TUs fit onto 1 LU
-		final I_M_HU_PI piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, THREE);
 
 		huDefItemProductVirtual = huTestHelper.huDefItemProductVirtual;
@@ -226,6 +228,95 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 			assertThat(result.getM_HU_PI_Item_Product_ID())
 					.as("PP_Order.M_HU_PI_Item_Product_ID should take priority over order line's")
 					.isEqualTo(piTU2_Item_Product.getM_HU_PI_Item_Product_ID());
+		}
+	}
+
+	@Nested
+	class GetCurrentLUTUConfigurationOrNull
+	{
+		private I_PP_Order ppOrderWithStoredConfig;
+		private I_M_HU_LUTU_Configuration storedConfig;
+
+		@BeforeEach
+		void storeConfigOnGenericLUItem()
+		{
+			ppOrderWithStoredConfig = createPPOrder(piTU_Item_Product, TEN);
+			storedConfig = PPOrderDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(ppOrderWithStoredConfig);
+			save(storedConfig);
+			ppOrderWithStoredConfig.setM_HU_LUTU_Configuration(storedConfig);
+			save(ppOrderWithStoredConfig);
+		}
+
+		@Test
+		void keeps_stored_config_when_no_product_specific_LU_item_exists()
+		{
+			final I_M_HU_LUTU_Configuration result = PPOrderDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(ppOrderWithStoredConfig);
+
+			assertThat(result).isNotNull();
+			assertThat(result.getM_HU_LUTU_Configuration_ID()).isEqualTo(storedConfig.getM_HU_LUTU_Configuration_ID());
+		}
+
+		@Test
+		void keeps_stored_config_when_product_specific_LU_item_is_for_another_product()
+		{
+			final I_M_HU_PI_Item itemOfOtherProduct = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+			itemOfOtherProduct.setM_Product_ID(huTestHelper.pSaladProductId.getRepoId());
+			save(itemOfOtherProduct);
+
+			final I_M_HU_LUTU_Configuration result = PPOrderDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(ppOrderWithStoredConfig);
+
+			assertThat(result).isNotNull();
+			assertThat(result.getM_HU_LUTU_Configuration_ID()).isEqualTo(storedConfig.getM_HU_LUTU_Configuration_ID());
+		}
+
+		@Test
+		void drops_stored_config_when_product_specific_LU_item_exists()
+		{
+			final I_M_HU_PI_Item itemOfProduct = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+			itemOfProduct.setM_Product_ID(productId.getRepoId());
+			save(itemOfProduct);
+
+			assertThat(PPOrderDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(ppOrderWithStoredConfig)).isNull();
+
+			final I_M_HU_LUTU_Configuration newConfig = PPOrderDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(ppOrderWithStoredConfig);
+			assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(itemOfProduct.getM_HU_PI_Item_ID());
+		}
+
+		@Test
+		void derived_config_stays_on_stored_LU_PI_when_another_LU_PI_also_has_an_item_for_the_product()
+		{
+			final I_M_HU_PI otherLU = huTestHelper.createHUDefinition("otherLU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			final I_M_HU_PI_Item itemOfOtherLU = huTestHelper.createHU_PI_Item_IncludedHU(otherLU, piTU, new BigDecimal("5"));
+			itemOfOtherLU.setM_Product_ID(productId.getRepoId());
+			save(itemOfOtherLU);
+
+			final I_M_HU_PI_Item itemOfStoredLU = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+			itemOfStoredLU.setM_Product_ID(productId.getRepoId());
+			save(itemOfStoredLU);
+
+			final I_M_HU_LUTU_Configuration newConfig = PPOrderDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(ppOrderWithStoredConfig);
+
+			assertThat(newConfig.getM_LU_HU_PI_ID()).isEqualTo(storedConfig.getM_LU_HU_PI_ID());
+			assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(itemOfStoredLU.getM_HU_PI_Item_ID());
+		}
+
+		@Test
+		void keeps_stored_config_without_LU_when_product_specific_LU_item_exists()
+		{
+			final I_M_HU_LUTU_Configuration configWithoutLU = newInstance(I_M_HU_LUTU_Configuration.class);
+			configWithoutLU.setM_HU_PI_Item_Product_ID(piTU_Item_Product.getM_HU_PI_Item_Product_ID());
+			save(configWithoutLU);
+			ppOrderWithStoredConfig.setM_HU_LUTU_Configuration(configWithoutLU);
+			save(ppOrderWithStoredConfig);
+
+			final I_M_HU_PI_Item itemOfProduct = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+			itemOfProduct.setM_Product_ID(productId.getRepoId());
+			save(itemOfProduct);
+
+			final I_M_HU_LUTU_Configuration result = PPOrderDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(ppOrderWithStoredConfig);
+
+			assertThat(result).isNotNull();
+			assertThat(result.getM_HU_LUTU_Configuration_ID()).isEqualTo(configWithoutLU.getM_HU_LUTU_Configuration_ID());
 		}
 	}
 
