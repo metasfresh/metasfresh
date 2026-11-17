@@ -16,7 +16,9 @@ import de.metas.payment.sumup.repository.SumUpLogRepository;
 import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -249,5 +251,28 @@ class SumUpServiceUpdateFromRemoteTest
 		assertThat(updated.getStatus()).isEqualTo(SumUpTransactionStatus.SUCCESSFUL);
 		assertThat(updated.getLastSync().getStatus()).isEqualTo(LastSyncStatus.Error);
 		assertThat(updated.getLastSync().getErrorId()).isEqualTo(ISSUE_ID);
+	}
+
+	/**
+	 * The AD_Issue of that failed lookup names the card settlement, as the AD_Issue of any other failed SumUp call of a
+	 * settlement does, so back office finds it on the settlement.
+	 */
+	@Test
+	void successful_notFound404_issueNamesTheSettlement()
+	{
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(SUMUP_NOT_FOUND_BODY));
+		final SumUpTransaction stored = storedTrx(SumUpTransactionStatus.SUCCESSFUL).toBuilder()
+				.posRef(SumUpPOSRef.builder().posInvoiceCardSettlementId(4242).build())
+				.build();
+
+		updateFromRemote(stored, true);
+
+		final ArgumentCaptor<Throwable> issue = ArgumentCaptor.forClass(Throwable.class);
+		Mockito.verify(errorManager).createIssue(issue.capture());
+		assertThat(issue.getValue()).isInstanceOf(AdempiereException.class);
+		final TableRecordReference record = ((AdempiereException)issue.getValue()).getRecord();
+		assertThat(record).isNotNull();
+		assertThat(record.getTableName()).isEqualTo("C_POS_InvoiceCardSettlement");
+		assertThat(record.getRecord_ID()).isEqualTo(4242);
 	}
 }

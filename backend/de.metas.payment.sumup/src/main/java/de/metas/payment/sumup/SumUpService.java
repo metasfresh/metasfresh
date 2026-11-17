@@ -25,6 +25,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -404,9 +405,16 @@ public class SumUpService
 			else
 			{
 				// SumUp reported this transaction before: not knowing it now is an anomaly, e.g. for the booking's refund check
-				throw new AdempiereException("SumUp does not know the transaction anymore")
+				final AdempiereException notKnownAnymore = new AdempiereException("SumUp does not know the transaction anymore")
 						.setParameter("clientTransactionId", trx.getClientTransactionId())
 						.setParameter("status", trx.getStatus());
+				// tagged with the settlement, as the client tags the AD_Issue of any other failed call
+				final TableRecordReference settlementRef = trx.getPosRef() != null ? trx.getPosRef().toPOSInvoiceCardSettlementRecordRefOrNull() : null;
+				if (settlementRef != null)
+				{
+					notKnownAnymore.setRecord(settlementRef);
+				}
+				throw notKnownAnymore;
 			}
 		}
 		catch (Exception ex)
