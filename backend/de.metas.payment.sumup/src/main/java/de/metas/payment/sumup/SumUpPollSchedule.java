@@ -17,6 +17,9 @@ import java.time.Instant;
  * </ul>
  * A transaction never looked up is always due. An explicit lookup (the till's check, back office's update processes) is not
  * subject to this schedule.
+ * <p>
+ * {@link #isDue} is used by the POS card sale sweep; the SumUp poller's query applies the same rule in SQL
+ * ({@code SumUpTransactionRepository}), and a test checks that both agree for every phase and boundary.
  */
 public final class SumUpPollSchedule
 {

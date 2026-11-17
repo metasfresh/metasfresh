@@ -8,6 +8,7 @@ import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpEventsDispatcher;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpPollSchedule;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
@@ -218,7 +219,8 @@ class SumUpTransactionRepositoryTest
 	}
 
 	/**
-	 * The phase boundaries by age: under 5 min every cycle; from 5 min once a minute; from 1 h once every 15 min.
+	 * The phase boundaries by age: under 5 min every cycle; from 5 min once a minute; from 1 h once every 15 min. Each row is
+	 * saved before the times it is queried at, with its last lookup before them.
 	 */
 	@Test
 	void query_pollDueAt_phaseBoundaries()
@@ -226,12 +228,49 @@ class SumUpTransactionRepositoryTest
 		try
 		{
 			newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-16T10:04:58Z"), null);
-			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:58:59Z"), null);
-
-			assertThat(listPaymentIdsDueAt("2026-11-16T10:04:59Z")).containsExactly(1, 2); // age 4:59: every cycle
+			assertThat(listPaymentIdsDueAt("2026-11-16T10:04:59Z")).containsExactly(1); // age 4:59: every cycle
 			assertThat(listPaymentIdsDueAt("2026-11-16T10:05:00Z")).isEmpty(); // age 5:00, 2 s after the last lookup
+
+			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:58:59Z"), null);
 			assertThat(listPaymentIdsDueAt("2026-11-16T10:59:59Z")).containsExactly(1, 2); // age 59:59, 60 s after #2's lookup
 			assertThat(listPaymentIdsDueAt("2026-11-16T11:00:00Z")).containsExactly(1); // age 1 h: #2 looked up 61 s ago
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
+	/**
+	 * The poller's query and {@link SumUpPollSchedule#isDue} (which the POS card sale sweep uses) are one schedule: for each
+	 * age and time since the last lookup, the query lists the transaction exactly when {@code isDue} says it is due. So the
+	 * two cannot drift apart.
+	 *
+	 * The cases ("age seconds:seconds since the last lookup", -1 = never looked up) run by ascending age, so that every row's
+	 * last lookup lies before every later query time.
+	 */
+	@Test
+	void query_pollDueAt_agreesWithSumUpPollSchedule()
+	{
+		final String cases = "2:1 299:1 299:-1 300:1 300:59 300:60 300:-1 1800:59 1800:60 3599:59 3599:60 3600:60 3600:899 3600:900 86400:899 86400:900 86400:-1";
+		try
+		{
+			final Instant created = Instant.parse("2026-11-16T10:00:00Z");
+			int paymentId = 0;
+			for (final String c : cases.split(" "))
+			{
+				final long ageSeconds = Long.parseLong(c.split(":")[0]);
+				final long sinceLastLookupSeconds = Long.parseLong(c.split(":")[1]);
+				final Instant now = created.plusSeconds(ageSeconds);
+				final Instant lastLookupAt = sinceLastLookupSeconds < 0 ? null : now.minusSeconds(sinceLastLookupSeconds);
+
+				paymentId++;
+				newPendingTrxCreatedAt10(paymentId, lastLookupAt != null ? LastSync.builder().status(LastSyncStatus.OK).timestamp(lastLookupAt).build() : null, null);
+
+				assertThat(listPaymentIdsDueAt(now.toString()).contains(paymentId))
+						.as("case %s", c)
+						.isEqualTo(SumUpPollSchedule.isDue(created, lastLookupAt, now));
+			}
 		}
 		finally
 		{
