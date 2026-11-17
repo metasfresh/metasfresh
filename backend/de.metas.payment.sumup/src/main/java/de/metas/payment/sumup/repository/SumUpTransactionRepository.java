@@ -13,6 +13,7 @@ import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpEventsDispatcher;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpPollSchedule;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
@@ -25,6 +26,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ForUpdate;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
@@ -363,7 +365,7 @@ public class SumUpTransactionRepository
 		}
 		if (query.getPollDueAt() != null)
 		{
-			sqlQueryBuilder.filter(new PollDueQueryFilter(query.getPollDueAt()));
+			sqlQueryBuilder.filter(createPollDueFilter(query.getPollDueAt()));
 		}
 		if (query.getPosRef() != null)
 		{
@@ -383,6 +385,29 @@ public class SumUpTransactionRepository
 		}
 
 		return sqlQueryBuilder;
+	}
+
+	/**
+	 * The transactions due for the SumUp poller's cycle at the given time, by {@link SumUpPollSchedule}, from
+	 * {@code Created} and the last lookup {@code SUMUP_LastSync_Timestamp}. A transaction never looked up (no timestamp) is
+	 * due by the first branch, so the other branches need not handle a missing timestamp.
+	 */
+	private ICompositeQueryFilter<I_SUMUP_Transaction> createPollDueFilter(@NonNull final Instant now)
+	{
+		final String created = I_SUMUP_Transaction.COLUMNNAME_Created;
+		final String lastLookupAt = I_SUMUP_Transaction.COLUMNNAME_SUMUP_LastSync_Timestamp;
+		return queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+				.setJoinOr()
+				// never looked up
+				.addEqualsFilter(lastLookupAt, null)
+				// fast phase: every cycle
+				.addCompareFilter(created, CompareQueryFilter.Operator.GREATER, Timestamp.from(now.minus(SumUpPollSchedule.FAST_PHASE)))
+				// medium phase: once a minute
+				.addFilter(queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+						.addCompareFilter(created, CompareQueryFilter.Operator.GREATER, Timestamp.from(now.minus(SumUpPollSchedule.MEDIUM_PHASE)))
+						.addCompareFilter(lastLookupAt, CompareQueryFilter.Operator.LESS_OR_EQUAL, Timestamp.from(now.minus(SumUpPollSchedule.MEDIUM_INTERVAL))))
+				// slow phase (also true in the earlier phases)
+				.addCompareFilter(lastLookupAt, CompareQueryFilter.Operator.LESS_OR_EQUAL, Timestamp.from(now.minus(SumUpPollSchedule.SLOW_INTERVAL)));
 	}
 
 	/**

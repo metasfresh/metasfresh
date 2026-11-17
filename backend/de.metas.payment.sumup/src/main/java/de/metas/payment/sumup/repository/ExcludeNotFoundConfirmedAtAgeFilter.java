@@ -22,6 +22,11 @@ import java.util.Properties;
  * one SumUp knows (even if still PENDING), and one whose last "not found" came earlier than that.
  * <p>
  * Evaluated in SQL and, for the in-memory database of unit tests, in Java, with the same meaning.
+ * <p>
+ * A custom filter because the standard filters cannot express {@code SUMUP_LastSync_Timestamp < Created + age}:
+ * {@link org.adempiere.ad.dao.impl.CompareQueryFilter} can compare a column with another column, but the only date
+ * arithmetic modifier, {@link org.adempiere.ad.dao.impl.AddHoursQueryFilterModifier}, adds hours read from a column, not a
+ * constant duration.
  */
 @EqualsAndHashCode
 @ToString

@@ -217,6 +217,28 @@ class SumUpTransactionRepositoryTest
 		}
 	}
 
+	/**
+	 * The phase boundaries by age: under 5 min every cycle; from 5 min once a minute; from 1 h once every 15 min.
+	 */
+	@Test
+	void query_pollDueAt_phaseBoundaries()
+	{
+		try
+		{
+			newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-16T10:04:58Z"), null);
+			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:58:59Z"), null);
+
+			assertThat(listPaymentIdsDueAt("2026-11-16T10:04:59Z")).containsExactly(1, 2); // age 4:59: every cycle
+			assertThat(listPaymentIdsDueAt("2026-11-16T10:05:00Z")).isEmpty(); // age 5:00, 2 s after the last lookup
+			assertThat(listPaymentIdsDueAt("2026-11-16T10:59:59Z")).containsExactly(1, 2); // age 59:59, 60 s after #2's lookup
+			assertThat(listPaymentIdsDueAt("2026-11-16T11:00:00Z")).containsExactly(1); // age 1 h: #2 looked up 61 s ago
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
 	private List<Integer> listPaymentIdsDueAt(final String now)
 	{
 		return repository.list(SumUpTransactionQuery.builder()
