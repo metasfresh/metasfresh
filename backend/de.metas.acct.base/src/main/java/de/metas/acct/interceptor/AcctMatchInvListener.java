@@ -99,6 +99,6 @@ public class AcctMatchInvListener implements MatchInvListener
 		}
 
 		invoiceBL.getByIds(invoiceIds)
-				.forEach(invoiceBL::unpost);
+				.forEach(invoiceBL::unpostIfPosted);
 	}
 }

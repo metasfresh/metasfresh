@@ -130,16 +130,21 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		if (bankStatement.isPosted())
 		{
-			postingService.unpost(DocumentUnpostRequest.builder()
-					.document(bankStatement)
-					.dateAcct(TimeUtil.asInstant(bankStatement.getStatementDate()))
-					.docBaseType(DocBaseType.BankStatement)
-					.build());
+			unpostAndRepost(bankStatement);
 		}
 		else
 		{
 			postIt(bankStatement);
 		}
+	}
+
+	private void unpostAndRepost(final I_C_BankStatement bankStatement)
+	{
+		postingService.unpost(DocumentUnpostRequest.builder()
+				.document(bankStatement)
+				.dateAcct(TimeUtil.asInstant(bankStatement.getStatementDate()))
+				.docBaseType(DocBaseType.BankStatement)
+				.build());
 	}
 
 	private void postIt(final I_C_BankStatement bankStatement)

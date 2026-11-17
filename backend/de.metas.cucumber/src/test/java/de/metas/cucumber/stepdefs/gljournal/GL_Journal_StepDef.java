@@ -64,6 +64,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
@@ -175,28 +176,30 @@ public class GL_Journal_StepDef
 	@And("metasfresh contains GL_JournalLines:")
 	public void createGLJournalLines(@NonNull final DataTable dataTable)
 	{
-		final int[] lineNo = { 0 };
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_GL_Journal journal = row.getAsIdentifier(I_GL_JournalLine.COLUMNNAME_GL_Journal_ID).lookupNotNullIn(glJournalTable);
-			final BigDecimal amount = row.getAsBigDecimal("Amount");
+		DataTableRows.of(dataTable).forEach((row, index) -> createGLJournalLine(row, 10 * (index + 1)));
+	}
 
-			final I_GL_JournalLine line = InterfaceWrapperHelper.newInstance(I_GL_JournalLine.class);
-			line.setAD_Org_ID(journal.getAD_Org_ID());
-			line.setGL_Journal_ID(journal.getGL_Journal_ID());
-			line.setLine(10 * (++lineNo[0]));
-			line.setType(X_GL_JournalLine.TYPE_Normal);
-			line.setC_Currency_ID(journal.getC_Currency_ID());
-			line.setC_ConversionType_ID(journal.getC_ConversionType_ID());
-			line.setCurrencyRate(BigDecimal.ONE);
-			line.setDateAcct(journal.getDateAcct());
-			line.setAccount_DR_ID(getValidCombinationId(row.getAsIdentifier("Account_DR_ID").lookupNotNullIdIn(elementValueTable), journal));
-			line.setAccount_CR_ID(getValidCombinationId(row.getAsIdentifier("Account_CR_ID").lookupNotNullIdIn(elementValueTable), journal));
-			line.setAmtSourceDr(amount);
-			line.setAmtSourceCr(amount);
-			line.setAmtAcctDr(amount);
-			line.setAmtAcctCr(amount);
-			InterfaceWrapperHelper.saveRecord(line);
-		});
+	private void createGLJournalLine(@NonNull final DataTableRow row, final int lineNo)
+	{
+		final I_GL_Journal journal = row.getAsIdentifier(I_GL_JournalLine.COLUMNNAME_GL_Journal_ID).lookupNotNullIn(glJournalTable);
+		final BigDecimal amount = row.getAsBigDecimal("Amount");
+
+		final I_GL_JournalLine line = InterfaceWrapperHelper.newInstance(I_GL_JournalLine.class);
+		line.setAD_Org_ID(journal.getAD_Org_ID());
+		line.setGL_Journal_ID(journal.getGL_Journal_ID());
+		line.setLine(lineNo);
+		line.setType(X_GL_JournalLine.TYPE_Normal);
+		line.setC_Currency_ID(journal.getC_Currency_ID());
+		line.setC_ConversionType_ID(journal.getC_ConversionType_ID());
+		line.setCurrencyRate(BigDecimal.ONE);
+		line.setDateAcct(journal.getDateAcct());
+		line.setAccount_DR_ID(getValidCombinationId(row.getAsIdentifier("Account_DR_ID").lookupNotNullIdIn(elementValueTable), journal));
+		line.setAccount_CR_ID(getValidCombinationId(row.getAsIdentifier("Account_CR_ID").lookupNotNullIdIn(elementValueTable), journal));
+		line.setAmtSourceDr(amount);
+		line.setAmtSourceCr(amount);
+		line.setAmtAcctDr(amount);
+		line.setAmtAcctCr(amount);
+		InterfaceWrapperHelper.saveRecord(line);
 	}
 
 	private int getValidCombinationId(@NonNull final ElementValueId elementValueId, @NonNull final I_GL_Journal journal)
@@ -244,7 +247,7 @@ public class GL_Journal_StepDef
 
 		final Set<Integer> idsBefore = retrieveYearEndingJournalIds(dateAcctTs);
 
-		runProcessAsWebUIRole(GL_Journal_GenerateYearEnding.class, null, 0, builder -> builder
+		runProcessAsWebUIRole(GL_Journal_GenerateYearEnding.class, null, builder -> builder
 				.addParameter(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, acctSchema.getId().getRepoId())
 				.addParameter(I_GL_Journal.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID.getRepoId())
 				.addParameter(I_GL_Journal.COLUMNNAME_DateAcct, dateAcctTs));
@@ -274,19 +277,18 @@ public class GL_Journal_StepDef
 	public void invokeChangePostingType(@NonNull final String identifier, @NonNull final String postingType)
 	{
 		final I_GL_Journal journal = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
-		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, I_GL_Journal.Table_Name, journal.getGL_Journal_ID(), builder -> builder.addParameter("PostingType", postingType));
+		runProcessAsWebUIRole(GL_Journal_ChangePostingType.class, TableRecordReference.of(journal), builder -> builder.addParameter("PostingType", postingType));
 	}
 
 	private void runProcessAsWebUIRole(
 			@NonNull final Class<?> processClass,
-			@Nullable final String recordTableName,
-			final int recordId,
+			@Nullable final TableRecordReference record,
 			@NonNull final Consumer<ProcessInfo.ProcessInfoBuilder> parameterSetter)
 	{
 		final ProcessInfo.ProcessInfoBuilder builder = processRunStepDef.newProcessInfoBuilder(adProcessDAO.retrieveProcessIdByClass(processClass));
-		if (recordTableName != null)
+		if (record != null)
 		{
-			builder.setRecord(recordTableName, recordId);
+			builder.setRecord(record);
 		}
 		parameterSetter.accept(builder);
 
@@ -313,7 +315,7 @@ public class GL_Journal_StepDef
 		{
 			StepDefUtil.tryAndWait(60, 500, () -> isPosted(record, postingType, expectedFactAcctCount));
 		}
-		catch (final AssertionError | RuntimeException e)
+		catch (final AssertionError e)
 		{
 			// the wait timed out (StepDefUtil.tryAndWait throws AssertionFailedError) - fall through to the assertions below, which describe the actual state
 		}

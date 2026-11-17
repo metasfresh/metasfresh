@@ -13,14 +13,11 @@ import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.calendar.IPeriodBL;
-import de.metas.document.DocBaseType;
-import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.ReferencedRecordRepository;
@@ -48,7 +45,6 @@ public class PostingService implements IPostingService
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	@NonNull private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	@NonNull private final IPeriodBL periodBL = Services.get(IPeriodBL.class);
-	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final Lazy<ReferencedRecordRepository> referencedRecordRepositoryHolder = SpringContextHolder.lazyBean(ReferencedRecordRepository.class);
 	@NonNull private final Lazy<DocumentPostingUserNotificationService> userNotificationsHolder = SpringContextHolder.lazyBean(DocumentPostingUserNotificationService.class);
 	@NonNull private final Lazy<AcctDocRegistry> acctDocRegistryHolder = SpringContextHolder.lazyBean(AcctDocRegistry.class);
@@ -87,26 +83,33 @@ public class PostingService implements IPostingService
 	{
 		final Object document = request.getDocument();
 
-		final DocBaseType docBaseType = request.getDocBaseType() != null
-				? request.getDocBaseType()
-				: docTypeDAO.getDocBaseTypeById(Check.assumeNotNull(request.getDocTypeId(), "docTypeId"));
-		final OrgId orgId = InterfaceWrapperHelper.getOrgId(document).orElse(OrgId.ANY);
-		periodBL.testPeriodOpen(InterfaceWrapperHelper.getCtx(document), TimeUtil.asTimestamp(request.getDateAcct()), docBaseType, orgId.getRepoId());
-
+		assertPeriodOpen(request);
 		factAcctDAO.deleteForDocumentModel(document);
-
 		factAcctDAO.setDocumentModelNotPosted(document);
+		scheduleRepostingIfCompletedClosedOrReversed(document);
+	}
 
+	private void assertPeriodOpen(@NonNull final DocumentUnpostRequest request)
+	{
+		final Object document = request.getDocument();
+		final OrgId orgId = InterfaceWrapperHelper.getOrgId(document).orElse(OrgId.ANY);
+		periodBL.testPeriodOpen(InterfaceWrapperHelper.getCtx(document), TimeUtil.asTimestamp(request.getDateAcct()), request.getDocBaseType(), orgId.getRepoId());
+	}
+
+	private void scheduleRepostingIfCompletedClosedOrReversed(@NonNull final Object document)
+	{
 		final DocStatus docStatus = DocStatus.ofNullableCode(InterfaceWrapperHelper.getValueOrNull(document, IDocument.COLUMNNAME_DocStatus));
-		if (docStatus != null && docStatus.isCompletedOrClosedOrReversed())
+		if (docStatus == null || !docStatus.isCompletedOrClosedOrReversed())
 		{
-			final UserId updatedBy = InterfaceWrapperHelper.getUpdatedBy(document);
-			schedule(DocumentPostRequest.builder()
-					.record(TableRecordReference.of(document))
-					.clientId(InterfaceWrapperHelper.getClientId(document).orElseThrow(() -> new AdempiereException("No AD_Client_ID in " + document)))
-					.onErrorNotifyUserId(updatedBy.isSystemUser() ? null : updatedBy)
-					.build());
+			return;
 		}
+
+		final UserId updatedBy = InterfaceWrapperHelper.getUpdatedBy(document);
+		schedule(DocumentPostRequest.builder()
+				.record(TableRecordReference.of(document))
+				.clientId(InterfaceWrapperHelper.getClientId(document).orElseThrow(() -> new AdempiereException("No AD_Client_ID in " + document)))
+				.onErrorNotifyUserId(updatedBy.isSystemUser() ? null : updatedBy)
+				.build());
 	}
 
 	@Override

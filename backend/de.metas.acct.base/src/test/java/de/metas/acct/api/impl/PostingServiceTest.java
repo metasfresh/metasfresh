@@ -218,13 +218,26 @@ public class PostingServiceTest
 
 		private I_C_Invoice createInvoice(final String docStatus, final boolean posted)
 		{
-			Env.setLoggedUserId(Env.getCtx(), NOTIFY_USER_ID); // the POJO layer sets UpdatedBy from the logged user, as a persisted record always has it
+			return createInvoice(docStatus, posted, NOTIFY_USER_ID);
+		}
+
+		private I_C_Invoice createInvoice(final String docStatus, final boolean posted, final UserId updatedBy)
+		{
+			Env.setLoggedUserId(Env.getCtx(), updatedBy); // the POJO layer sets UpdatedBy from the logged user, as a persisted record always has it
 			final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 			invoice.setDocStatus(docStatus);
 			invoice.setPosted(posted);
 			invoice.setDateAcct(dateAcct);
 			InterfaceWrapperHelper.save(invoice);
 			return invoice;
+		}
+
+		private DocumentPostRequest captureScheduledPosting()
+		{
+			final ArgumentCaptor<DocumentPostMultiRequest> captor = ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
+			verify(postingBusService).sendAfterCommit(captor.capture());
+			assertThat(captor.getValue().toSet()).hasSize(1);
+			return captor.getValue().toSet().iterator().next();
 		}
 
 		private DocumentUnpostRequest requestFor(final I_C_Invoice invoice)
@@ -254,6 +267,50 @@ public class PostingServiceTest
 			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
 			assertThat(posting.getClientId()).isEqualTo(ClientId.ofRepoId(invoice.getAD_Client_ID()));
 			assertThat(posting.getOnErrorNotifyUserId()).isEqualTo(NOTIFY_USER_ID);
+		}
+
+		@Test
+		void documentUpdatedBySystemUser_isScheduledWithoutErrorNotification()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true, UserId.SYSTEM);
+
+			postingService.unpost(requestFor(invoice));
+
+			final DocumentPostRequest posting = captureScheduledPosting();
+			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
+			assertThat(posting.getOnErrorNotifyUserId()).isNull();
+		}
+
+		@Test
+		void completedDocumentWithoutClient_failsInsteadOfScheduling()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
+			InterfaceWrapperHelper.setValue(invoice, "AD_Client_ID", -1);
+
+			assertThatThrownBy(() -> postingService.unpost(requestFor(invoice))).hasMessageContaining("No AD_Client_ID");
+
+			verify(postingBusService, never()).sendAfterCommit(any());
+		}
+
+		@Test
+		void readOnlyColumnCheck_isBypassedOnlyWhileResettingPosted()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Voided, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			assertThat(InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.getValue(invoice)).isNotEqualTo(true);
+		}
+
+		@Test
+		void readOnlyColumnCheck_whichWasDisabledByTheCaller_staysDisabled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Voided, true);
+			InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(invoice, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			assertThat(InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.getValue(invoice)).isEqualTo(true);
 		}
 
 		@Test

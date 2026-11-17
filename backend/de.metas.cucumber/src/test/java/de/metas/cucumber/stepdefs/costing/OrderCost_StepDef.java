@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -100,7 +101,7 @@ public class OrderCost_StepDef
 	@NonNull private final M_InOut_StepDefData inoutTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
-	private boolean orderCostElementUsed;
+	private boolean isOrderCostElementUsed;
 
 	/**
 	 * Creates order cost types ({@code C_Cost_Type}), each using the one shared non-material cost element (a material cost element would add a second cost amount to every stocked product).
@@ -110,28 +111,32 @@ public class OrderCost_StepDef
 	@Given("metasfresh contains C_Cost_Type:")
 	public void createCostTypes(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final StepDefDataIdentifier identifier = row.getAsIdentifier();
+		final I_M_CostElement costElement = activateSharedOrderCostElement();
+		DataTableRows.of(dataTable).forEach(row -> createCostType(row, costElement));
+	}
 
-			final I_C_Cost_Type record = InterfaceWrapperHelper.newInstance(I_C_Cost_Type.class);
-			record.setAD_Org_ID(0);
-			record.setValue("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
-			record.setName("cucumber cost type " + identifier.getAsString());
-			record.setM_CostElement_ID(getOrCreateNonMaterialCostElement().getM_CostElement_ID());
-			record.setCostCalculationMethod(row.getAsOptionalString(I_C_Cost_Type.COLUMNNAME_CostCalculationMethod).orElse(X_C_Cost_Type.COSTCALCULATIONMETHOD_FixedAmount));
-			record.setCostDistributionMethod(row.getAsOptionalString(I_C_Cost_Type.COLUMNNAME_CostDistributionMethod).orElse(X_C_Cost_Type.COSTDISTRIBUTIONMETHOD_Amount));
-			InterfaceWrapperHelper.saveRecord(record);
+	private void createCostType(@NonNull final DataTableRow row, @NonNull final I_M_CostElement costElement)
+	{
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 
-			costTypeTable.putOrReplace(identifier, record);
-		});
+		final I_C_Cost_Type record = InterfaceWrapperHelper.newInstance(I_C_Cost_Type.class);
+		record.setAD_Org_ID(0);
+		record.setValue("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
+		record.setName("cucumber cost type " + identifier.getAsString());
+		record.setM_CostElement_ID(costElement.getM_CostElement_ID());
+		record.setCostCalculationMethod(row.getAsOptionalString(I_C_Cost_Type.COLUMNNAME_CostCalculationMethod).orElse(X_C_Cost_Type.COSTCALCULATIONMETHOD_FixedAmount));
+		record.setCostDistributionMethod(row.getAsOptionalString(I_C_Cost_Type.COLUMNNAME_CostDistributionMethod).orElse(X_C_Cost_Type.COSTDISTRIBUTIONMETHOD_Amount));
+		InterfaceWrapperHelper.saveRecord(record);
+
+		costTypeTable.putOrReplace(identifier, record);
 	}
 
 	/**
-	 * Gets (or creates, or re-activates) THE one cucumber cost element for order costs, found by its fixed name.
+	 * Activates (creating it if needed) THE one cucumber cost element for order costs, found by its fixed name.
 	 * Manufacturing costing iterates all <i>active</i> non-material cost elements, so it must never grow per cost type or per run;
 	 * {@link #deactivateOrderCostElement()} deactivates it again after the scenario.
 	 */
-	private I_M_CostElement getOrCreateNonMaterialCostElement()
+	private I_M_CostElement activateSharedOrderCostElement()
 	{
 		I_M_CostElement costElement = queryBL.createQueryBuilder(I_M_CostElement.class)
 				.addEqualsFilter(I_M_CostElement.COLUMNNAME_Name, COST_ELEMENT_NAME)
@@ -148,7 +153,7 @@ public class OrderCost_StepDef
 		}
 		costElement.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(costElement);
-		orderCostElementUsed = true;
+		isOrderCostElementUsed = true;
 		return costElement;
 	}
 
@@ -156,11 +161,11 @@ public class OrderCost_StepDef
 	@After
 	public void deactivateOrderCostElement()
 	{
-		if (!orderCostElementUsed)
+		if (!isOrderCostElementUsed)
 		{
 			return;
 		}
-		orderCostElementUsed = false;
+		isOrderCostElementUsed = false;
 
 		queryBL.createQueryBuilder(I_M_CostElement.class)
 				.addEqualsFilter(I_M_CostElement.COLUMNNAME_Name, COST_ELEMENT_NAME)
@@ -180,20 +185,23 @@ public class OrderCost_StepDef
 	@And("metasfresh contains order costs:")
 	public void createOrderCosts(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
-			final I_C_Order order = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
-			final OrderCostTypeId costTypeId = OrderCostTypeId.ofRepoId(row.getAsIdentifier(I_C_Cost_Type.COLUMNNAME_C_Cost_Type_ID).lookupNotNullIn(costTypeTable).getC_Cost_Type_ID());
-			final BPartnerId bpartnerId = row.getAsIdentifier("C_BPartner_ID").lookupNotNullIdIn(bpartnerTable);
-			final Money amount = Money.of(row.getAsBigDecimal("Amount"), CurrencyId.ofRepoId(order.getC_Currency_ID()));
+		DataTableRows.of(dataTable).forEach(this::createOrderCost);
+	}
 
-			orderCostService.createOrderCost(OrderCostCreateRequest.builder()
-					.bpartnerId(bpartnerId)
-					.costTypeId(costTypeId)
-					.costCalculationMethodParams(FixedAmountCostCalculationMethodParams.builder().fixedAmount(amount).build())
-					.orderAndLineIds(ImmutableSet.of(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID())))
-					.build());
-		});
+	private void createOrderCost(@NonNull final DataTableRow row)
+	{
+		final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
+		final I_C_Order order = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
+		final OrderCostTypeId costTypeId = OrderCostTypeId.ofRepoId(row.getAsIdentifier(I_C_Cost_Type.COLUMNNAME_C_Cost_Type_ID).lookupNotNullIn(costTypeTable).getC_Cost_Type_ID());
+		final BPartnerId bpartnerId = row.getAsIdentifier("C_BPartner_ID").lookupNotNullIdIn(bpartnerTable);
+		final Money amount = Money.of(row.getAsBigDecimal("Amount"), CurrencyId.ofRepoId(order.getC_Currency_ID()));
+
+		orderCostService.createOrderCost(OrderCostCreateRequest.builder()
+				.bpartnerId(bpartnerId)
+				.costTypeId(costTypeId)
+				.costCalculationMethodParams(FixedAmountCostCalculationMethodParams.builder().fixedAmount(amount).build())
+				.orderAndLineIds(ImmutableSet.of(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID())))
+				.build());
 	}
 
 	/**

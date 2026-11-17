@@ -2159,17 +2159,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public void unpost(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	public void unpostIfPosted(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		if (!invoice.isPosted())
 		{
 			return;
 		}
 
+		final DocTypeId docTypeId = Check.assumeNotNull(getDocTypeIdEffectiveOrNull(invoice), "C_Invoice_ID={} has neither C_DocType_ID nor C_DocTypeTarget_ID", invoice.getC_Invoice_ID());
 		postingService.unpost(DocumentUnpostRequest.builder()
 				.document(invoice)
 				.dateAcct(TimeUtil.asInstant(invoice.getDateAcct()))
-				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+				.docBaseType(Services.get(IDocTypeDAO.class).getDocBaseTypeById(docTypeId))
 				.build());
 	}
 }

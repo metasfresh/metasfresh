@@ -467,5 +467,5 @@ public interface IInvoiceBL extends ISingletonService
 	 * Un-posts the invoice if it is posted, through {@link de.metas.acct.api.IPostingService#unpost(de.metas.acct.api.DocumentUnpostRequest)}:
 	 * deletes its accounting facts and, if the invoice is completed, closed or reversed (CO, CL or RE), queues it for posting again.
 	 */
-	void unpost(@NonNull I_C_Invoice invoice);
+	void unpostIfPosted(@NonNull I_C_Invoice invoice);
 }

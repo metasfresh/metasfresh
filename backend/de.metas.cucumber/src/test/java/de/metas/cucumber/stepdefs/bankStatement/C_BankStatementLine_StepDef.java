@@ -26,6 +26,7 @@ import de.metas.banking.BankStatementLineId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -116,25 +117,28 @@ public class C_BankStatementLine_StepDef
 	@And("metasfresh contains C_BankStatementLines:")
 	public void createBankStatementLines(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_C_BankStatement statement = row.getAsIdentifier(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID).lookupNotNullIn(bankStatementTable);
-			final BigDecimal stmtAmt = row.getAsBigDecimal(I_C_BankStatementLine.COLUMNNAME_StmtAmt);
-			final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(row.getAsString("C_Currency.ISO_Code")));
+		DataTableRows.of(dataTable).forEach(this::createBankStatementLine);
+	}
 
-			final I_C_BankStatementLine record = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
-			record.setAD_Org_ID(statement.getAD_Org_ID());
-			record.setC_BankStatement_ID(statement.getC_BankStatement_ID());
-			record.setLine(row.getAsInt(I_C_BankStatementLine.COLUMNNAME_Line));
-			record.setValutaDate(statement.getStatementDate());
-			record.setDateAcct(statement.getStatementDate());
-			record.setStatementLineDate(statement.getStatementDate());
-			record.setC_Currency_ID(currency.getId().getRepoId());
-			record.setStmtAmt(stmtAmt);
-			record.setTrxAmt(stmtAmt);
-			InterfaceWrapperHelper.saveRecord(record);
+	private void createBankStatementLine(@NonNull final DataTableRow row)
+	{
+		final I_C_BankStatement statement = row.getAsIdentifier(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID).lookupNotNullIn(bankStatementTable);
+		final BigDecimal stmtAmt = row.getAsBigDecimal(I_C_BankStatementLine.COLUMNNAME_StmtAmt);
+		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(row.getAsString("C_Currency.ISO_Code")));
 
-			bankStatementLineTable.putOrReplace(row.getAsIdentifier(), record);
-		});
+		final I_C_BankStatementLine record = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
+		record.setAD_Org_ID(statement.getAD_Org_ID());
+		record.setC_BankStatement_ID(statement.getC_BankStatement_ID());
+		record.setLine(row.getAsInt(I_C_BankStatementLine.COLUMNNAME_Line));
+		record.setValutaDate(statement.getStatementDate());
+		record.setDateAcct(statement.getStatementDate());
+		record.setStatementLineDate(statement.getStatementDate());
+		record.setC_Currency_ID(currency.getId().getRepoId());
+		record.setStmtAmt(stmtAmt);
+		record.setTrxAmt(stmtAmt);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		bankStatementLineTable.putOrReplace(row.getAsIdentifier(), record);
 	}
 
 	/**

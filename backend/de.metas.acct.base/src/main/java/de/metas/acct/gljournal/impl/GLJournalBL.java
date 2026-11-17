@@ -68,7 +68,7 @@ public class GLJournalBL implements IGLJournalBL
 		postingService.unpost(DocumentUnpostRequest.builder()
 				.document(glJournal)
 				.dateAcct(TimeUtil.asInstant(glJournal.getDateAcct()))
-				.docTypeId(DocTypeId.ofRepoId(glJournal.getC_DocType_ID()))
+				.docBaseType(docTypeDAO.getDocBaseTypeById(DocTypeId.ofRepoId(glJournal.getC_DocType_ID())))
 				.build());
 	}
 

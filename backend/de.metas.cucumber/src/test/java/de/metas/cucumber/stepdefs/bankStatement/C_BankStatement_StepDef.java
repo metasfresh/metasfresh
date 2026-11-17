@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.bankStatement;
 
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -151,27 +152,30 @@ public class C_BankStatement_StepDef
 	@Given("metasfresh contains C_BankStatement:")
 	public void createBankStatements(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final StepDefDataIdentifier identifier = row.getAsIdentifier();
-			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(DocBaseType.BankStatement)
-					.adClientId(StepDefConstants.CLIENT_ID.getRepoId())
-					.adOrgId(StepDefConstants.ORG_ID.getRepoId())
-					.build());
+		DataTableRows.of(dataTable).forEach(this::createBankStatement);
+	}
 
-			final I_C_BankStatement record = InterfaceWrapperHelper.newInstance(I_C_BankStatement.class);
-			record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			record.setC_DocType_ID(docTypeId.getRepoId());
-			record.setC_BP_BankAccount_ID(row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID).lookupNotNullIn(bankAccountTable).getC_BP_BankAccount_ID());
-			record.setStatementDate(row.getAsLocalDateTimestamp(I_C_BankStatement.COLUMNNAME_StatementDate));
-			record.setName("cucumber bank statement " + identifier.getAsString());
-			record.setDocumentNo("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
-			record.setDocStatus(IDocument.STATUS_Drafted);
-			record.setDocAction(IDocument.ACTION_Complete);
-			InterfaceWrapperHelper.saveRecord(record);
+	private void createBankStatement(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(DocBaseType.BankStatement)
+				.adClientId(StepDefConstants.CLIENT_ID.getRepoId())
+				.adOrgId(StepDefConstants.ORG_ID.getRepoId())
+				.build());
 
-			bankStatementTable.putOrReplace(identifier, record);
-		});
+		final I_C_BankStatement record = InterfaceWrapperHelper.newInstance(I_C_BankStatement.class);
+		record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		record.setC_DocType_ID(docTypeId.getRepoId());
+		record.setC_BP_BankAccount_ID(row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID).lookupNotNullIn(bankAccountTable).getC_BP_BankAccount_ID());
+		record.setStatementDate(row.getAsLocalDateTimestamp(I_C_BankStatement.COLUMNNAME_StatementDate));
+		record.setName("cucumber bank statement " + identifier.getAsString());
+		record.setDocumentNo("cucumber-" + identifier.getAsString() + "-" + System.nanoTime());
+		record.setDocStatus(IDocument.STATUS_Drafted);
+		record.setDocAction(IDocument.ACTION_Complete);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		bankStatementTable.putOrReplace(identifier, record);
 	}
 
 	@Given("^the C_BankStatement identified by (.*) is completed$")

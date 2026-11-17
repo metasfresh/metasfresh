@@ -35,6 +35,8 @@ public interface IPostingService extends ISingletonService
 	 * and, if the document is completed, closed or reversed ({@code DocStatus} CO, CL or RE; reversed documents are posted too), schedules it for posting again.
 	 * <p>
 	 * A document in another status (drafted, voided, in progress) is just un-posted, not queued.
+	 * <p>
+	 * The document model needs the columns {@code Posted}, {@code DocStatus}, {@code AD_Client_ID} and {@code UpdatedBy}; {@code AD_Org_ID} is read too, with {@code OrgId.ANY} as fallback.
 	 *
 	 * @throws org.adempiere.exceptions.AdempiereException if the period is closed
 	 */
