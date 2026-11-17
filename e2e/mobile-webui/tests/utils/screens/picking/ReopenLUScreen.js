@@ -56,6 +56,23 @@ export const ReopenLUScreen = {
         await page.unroute(CLOSED_LUS_ROUTE);
     }),
 
+    /**
+     * Serves the real closed-LU list with an empty attribute list per LU, like on instances whose LUs carry no HU attributes
+     * (the test database's LUs always get the template attributes). Test page only; no production change.
+     */
+    simulateClosedLUsWithoutAttributes: async () => await test.step(`${NAME} - Simulate closed LUs without attributes`, async () => {
+        await page.route(CLOSED_LUS_ROUTE, async route => {
+            const response = await route.fetch();
+            const json = await response.json();
+            const hus = (json.hus ?? []).map(hu => ({ ...hu, attributes2: { list: [] } }));
+            await route.fulfill({ response, json: { ...json, hus } });
+        });
+    }),
+
+    stopSimulatingClosedLUsWithoutAttributes: async () => await test.step(`${NAME} - Stop simulating closed LUs without attributes`, async () => {
+        await page.unroute(CLOSED_LUS_ROUTE);
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await page.locator(ID_BACK_BUTTON).tap();
     }),

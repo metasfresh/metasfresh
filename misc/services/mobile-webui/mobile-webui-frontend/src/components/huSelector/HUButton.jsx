@@ -18,15 +18,8 @@ const HUButton = ({ handlingUnitInfo, disabled, statusCaption, onClick }) => {
   };
 
   const getAttributes = () => {
-    if (
-      !handlingUnitInfo.attributes2 ||
-      !handlingUnitInfo.attributes2.list ||
-      !handlingUnitInfo.attributes2.list.length
-    ) {
-      return '';
-    }
-
-    return handlingUnitInfo.attributes2.list.filter((attribute) => ATTRIBUTE_CODES_TO_DISPLAY.includes(attribute.code));
+    const attributes = handlingUnitInfo.attributes2?.list ?? [];
+    return attributes.filter((attribute) => ATTRIBUTE_CODES_TO_DISPLAY.includes(attribute.code));
   };
   const getAttributeDisplayValue = (attribute) => {
     if (isNullOrUndefined(attribute.value)) {
