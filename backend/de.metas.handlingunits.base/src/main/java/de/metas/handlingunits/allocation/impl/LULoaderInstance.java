@@ -16,11 +16,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -60,6 +62,11 @@ import java.util.TreeSet;
 	 */
 	private final IHUBuilder huBuilder;
 
+	/**
+	 * The LU->TU item this LU was created for, if that item is restricted to a product; {@code null} otherwise.
+	 */
+	@Nullable private final I_M_HU_PI_Item productSpecificLUPIItem;
+
 	public LULoaderInstance(
 			final IHUContext huContext,
 			final BPartnerId bpartnerId,
@@ -67,7 +74,8 @@ import java.util.TreeSet;
 			final LocatorId locatorId,
 			final String huStatus,
 			final I_M_HU_PI_Version tuPIVersion,
-			final ClearanceStatusInfo huClearanceStatusInfo)
+			final ClearanceStatusInfo huClearanceStatusInfo,
+			@Nullable final ProductId productId)
 	{
 		this.huContext = huContext;
 		this.bpartnerId = bpartnerId;
@@ -80,11 +88,12 @@ import java.util.TreeSet;
 		//
 		// Retrieve LU PI to be used
 		final I_M_HU_PI tuPI = tuPIVersion.getM_HU_PI();
-		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
+		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId, productId);
 		if (luPIItem == null)
 		{
 			throw new AdempiereException("No LU found for TU: " + tuPI.getName());
 		}
+		this.productSpecificLUPIItem = luPIItem.getM_Product_ID() > 0 ? luPIItem : null;
 		final I_M_HU_PI_Version luPIVersion = luPIItem.getM_HU_PI_Version();
 
 		//
@@ -175,9 +184,11 @@ import java.util.TreeSet;
 		{
 			// #gh 460: the HUBuilder doesn't add just any possible HU item anymore, so chances are big that luHU does not yet have a HU-item to attach tuHU to.
 			// therefore we now need to identify the correct HU PI item and create that item on the fly.
-			final I_M_HU_PI_Item piItemForTU = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU,
-					Services.get(IHandlingUnitsBL.class).getPI(tuHU),
-					huContext);
+			final I_M_HU_PI tuPI = Services.get(IHandlingUnitsBL.class).getPI(tuHU);
+			// the LU was created for a product-specific item => keep using it for the TU (the query below has no product in context)
+			final I_M_HU_PI_Item piItemForTU = productSpecificLUPIItem != null && productSpecificLUPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
+					? productSpecificLUPIItem
+					: handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
 
 			if (piItemForTU != null)
 			{

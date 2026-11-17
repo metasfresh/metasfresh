@@ -269,7 +269,6 @@ public class SwatValidator implements ModelValidator
 				.register();
 
 		cachingService.addTableCacheConfigIfAbsent(I_C_BP_Group.class);
-
 		cachingService.addTableCacheConfigIfAbsent(I_C_PaymentTerm.class);
 		cachingService.addTableCacheConfigIfAbsent(I_C_PaySchedule.class);
 	}

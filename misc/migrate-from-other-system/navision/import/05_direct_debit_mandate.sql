@@ -20,7 +20,9 @@
  * #L%
  */
 
--- partners need to be imported first, from i_bpartner
+-- Prerequisites: partners imported via 04_partners.sql + the I_BPartner import (bank accounts included).
+-- The partner is found by C_BPartner.DebtorID, which 04_partners.sql sets only for numeric customer numbers; mandates
+-- that find no partner or bank account are not imported.
 --
 -- The source table "Navision$Bank Account Mandate" comes from a third-party SEPA add-on, not from standard Navision.
 -- The option values mapped below are that add-on's: "Mandate Type" 0 = CORE, 1 = B2B;
@@ -30,7 +32,7 @@
 DROP TABLE IF EXISTS migration_data.c_bp_bankaccount_directdebitmandate;
 CREATE TABLE migration_data.c_bp_bankaccount_directdebitmandate AS
 SELECT 1000000                AS ad_client_id,
-       1000000                AS ad_org_id,
+       1000000                AS ad_org_id, -- adapt per project
        bp.c_bpartner_id       AS c_bpartner_id,
        ba.c_bp_bankaccount_id AS c_bp_bankaccount_id,
        NOW()                  AS created,
@@ -64,7 +66,8 @@ SELECT 1000000                AS ad_client_id,
 FROM migration_data."Navision$Bank Account Mandate" AS T_BAM
          JOIN migration_data."Navision$Customer Bank Account" cba
               ON T_BAM."Mandate ID" = cba."Mandate ID"
-         JOIN c_bpartner bp ON bp.debtorid = NULLIF(cba."Customer No_", '')::numeric AND bp.ad_org_id = 1000000
+         JOIN c_bpartner bp ON bp.debtorid = CASE WHEN cba."Customer No_" ~ '^[0-9]+$' THEN cba."Customer No_"::numeric END
+                                   AND bp.ad_org_id = 1000000 -- adapt per project; debtorid = numeric Navision customer number, see 04_partners.sql
          JOIN c_bp_bankaccount ba ON ba.iban = cba."IBAN" AND ba.c_bpartner_id = bp.c_bpartner_id
 ;
 

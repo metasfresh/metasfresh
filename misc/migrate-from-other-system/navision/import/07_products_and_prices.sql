@@ -20,11 +20,37 @@
  * #L%
  */
 
+-- Navision stores a date formula (e.g. "Due Date Calculation") as a number followed by a unit control character:
+-- CHAR(2) = days, other control characters = other units (week, month, quarter, year, current period, ...),
+-- optionally with a leading '+'. Example: '+28' || CHR(2) = 28 days.
+-- Some staging generators already strip CHAR(2); a plain number is therefore also read as days.
+-- Returns the number of days, 0 for an empty formula, and NULL for any other formula (other units, combined formulas):
+-- such a formula cannot be expressed as a fixed number of days and must not be approximated.
+CREATE OR REPLACE FUNCTION migration_data.nav_dateformula_days(p_formula text)
+    RETURNS numeric
+    LANGUAGE sql
+    IMMUTABLE
+AS
+$$
+SELECT CASE
+           WHEN p_formula IS NULL OR BTRIM(p_formula) = ''                     THEN 0
+           WHEN BTRIM(p_formula) ~ ('^\+?[0-9]+' || CHR(2) || '?$')            THEN REGEXP_REPLACE(BTRIM(p_formula), '[^0-9]', '', 'g')::numeric
+                                                                               ELSE NULL
+       END
+$$
+;
+
+-- Prerequisites: 03_pricing_systems_lists_and_versions.sql, 06_uoms.sql.
+-- Products with their current regular sales prices as I_Product rows: first the prices of the customer price groups
+-- ("Sales Type" 1), then the customer-specific prices ("Sales Type" 0). Afterwards run the metasfresh product import (I_Product).
+-- Regular price = "Ending Date" is Navision's empty date 1753-01-01 or after 2027-01-01 (the project's "no end date" cut-off; adapt per project);
+-- prices with a real end date are campaign prices (08_campaign_prices.sql).
+-- ADAPT PER PROJECT: the mappings marked with ADAPT (base unit of measure, product category, VAT product posting group).
 
 DROP TABLE IF EXISTS migration_data.i_product_inserts;
 CREATE TABLE migration_data.i_product_inserts AS
 SELECT 1000000                                                                                 AS ad_client_id,
-       1000000                                                                                 AS ad_org_id,
+       1000000                                                                                 AS ad_org_id, -- adapt per project
        'Y'                                                                                     AS isactive,
        NOW()                                                                                   AS created,
        99                                                                                      AS createdby,
@@ -40,13 +66,13 @@ SELECT 1000000                                                                  
        NULL                                                                                    AS help,
        NULL                                                                                    AS upc,
        NULL                                                                                    AS sku,
-       CASE T_Item."Base Unit of Measure" -- x12de355: Map Navision "Base Unit of Measure"
+       CASE T_Item."Base Unit of Measure" -- ADAPT: map the Navision "Base Unit of Measure" codes of the project to X12DE355 (see 06_uoms.sql)
            WHEN 'KG' THEN 'KGM'
            WHEN 'STCK' THEN 'PCE'
            ELSE T_Item."Base Unit of Measure"
            END                                                                                 AS x12de355,
        NULL::numeric                                                                           AS c_uom_id,
-       'Standard'                                                                              AS productcategory_value,
+       'Standard'                                                                              AS productcategory_value, -- ADAPT: product category value
        NULL::numeric                                                                           AS m_product_category_id,
        CASE T_Item."Type" -- producttype: Map Navision Type (0 for Item, 1 for Service)
            WHEN 0 THEN 'I'
@@ -66,7 +92,7 @@ SELECT 1000000                                                                  
        NULL                                                                                    AS descriptionurl,
        NULL                                                                                    AS bpartner_value,
        NULL::numeric                                                                           AS c_bpartner_id,
-       COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR')                         AS iso_code,
+       COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR')                         AS iso_code, -- adapt per project
        NULL::numeric                                                                           AS pricelist,
        NULL::numeric                                                                           AS pricepo,
        0                                                                                       AS royaltyamt,
@@ -81,7 +107,7 @@ SELECT 1000000                                                                  
        'N'                                                                                     AS processed,
        RSP."Unit Price"                                                                        AS pricestd,
        NULL::numeric                                                                           AS pricelimit,
-       CASE
+       CASE -- ADAPT: Navision "VAT Prod_ Posting Group" codes of the project -> C_TaxCategory.InternalName
            WHEN T_Item."VAT Prod_ Posting Group" = '19ST' THEN (SELECT c_taxcategory_id
                                                                 FROM c_taxcategory
                                                                 WHERE internalname = 'Normal')
@@ -150,10 +176,7 @@ SELECT 1000000                                                                  
        NULL::numeric                                                                           AS qtycu,
        NULL                                                                                    AS qtycu_uom_code,
        'Y'                                                                                     AS isupdatename,
-       CASE
-           WHEN NULLIF(TRIM(T_Item."Expiration Calculation"), '') IS NULL THEN 0
-           ELSE regexp_replace(TRIM(T_Item."Expiration Calculation"), '\D', '', 'g')::numeric
-           END                                                                                 AS GuaranteeDaysMin
+       COALESCE(migration_data.nav_dateformula_days(T_Item."Expiration Calculation"), 0) AS GuaranteeDaysMin -- days only, see migration_data.nav_dateformula_days above; 0 for other units
 FROM "migration_data"."Navision$Item" AS T_Item
          LEFT JOIN
      "migration_data"."Navision$Product Group" AS T_PG
@@ -179,7 +202,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
           FROM "migration_data"."Navision$Sales Price" AS SP_inner
           WHERE SP_inner."Item No_" = T_Item."No_"
             AND SP_inner."Sales Type" = 1
-            AND "Ending Date" > '2027-01-01' --exclude campaign prices
+            AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
          ) AS SP
     WHERE SP.rn = 1
     ) AS RSP ON TRUE
@@ -190,10 +213,10 @@ FROM "migration_data"."Navision$Item" AS T_Item
          m_pricingsystem mps ON mpl.m_pricingsystem_id = mps.m_pricingsystem_id
              JOIN
          m_pricelist_version mpv ON mpl.m_pricelist_id = mpv.m_pricelist_id
-    WHERE mps.migration_key = ('001 - ' || RSP."Sales Code")
+    WHERE mps.migration_key = ('001 - ' || RSP."Sales Code") -- adapt per project
       AND mpl.c_currency_id = (SELECT c_currency_id
                                FROM c_currency
-                               WHERE iso_code = COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR'))
+                               WHERE iso_code = COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR')) -- adapt per project
 --       AND mpl.c_country_id IN (SELECT DISTINCT c_country.c_country_id
 --                                FROM c_country
 --                                WHERE c_country.countrycode IN
@@ -202,7 +225,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
 --                                       FROM "migration_data"."Navision$Customer" CUST
 --                                       WHERE CUST."Customer Price Group" = RSP."Sales Code"))
       AND mpl.issopricelist = 'Y'
-      AND mpv.validfrom = '2025-09-01 00:00:00'::timestamp
+      AND mpv.validfrom = '2025-09-01 00:00:00'::timestamp -- adapt per project
       AND mpv.createdby = 99
     ) AS PriceListVersionInfo ON TRUE
 ;
@@ -438,7 +461,7 @@ FROM "migration_data".i_product_inserts
 DROP TABLE IF EXISTS migration_data.i_product_inserts_partner_prices;
 CREATE TABLE migration_data.i_product_inserts_partner_prices AS
 SELECT 1000000                                                                                 AS ad_client_id,
-       1000000                                                                                 AS ad_org_id,
+       1000000                                                                                 AS ad_org_id, -- adapt per project
        'Y'                                                                                     AS isactive,
        NOW()                                                                                   AS created,
        99                                                                                      AS createdby,
@@ -454,13 +477,13 @@ SELECT 1000000                                                                  
        NULL                                                                                    AS help,
        NULL                                                                                    AS upc,
        NULL                                                                                    AS sku,
-       CASE T_Item."Base Unit of Measure" -- x12de355: Map Navision "Base Unit of Measure"
+       CASE T_Item."Base Unit of Measure" -- ADAPT: map the Navision "Base Unit of Measure" codes of the project to X12DE355 (see 06_uoms.sql)
            WHEN 'KG' THEN 'KGM'
            WHEN 'STCK' THEN 'PCE'
            ELSE T_Item."Base Unit of Measure"
            END                                                                                 AS x12de355,
        NULL::numeric                                                                           AS c_uom_id,
-       'Standard'                                                                              AS productcategory_value,
+       'Standard'                                                                              AS productcategory_value, -- ADAPT: product category value
        NULL::numeric                                                                           AS m_product_category_id,
        CASE T_Item."Type" -- producttype: Map Navision Type (0 for Item, 1 for Service)
            WHEN 0 THEN 'I'
@@ -480,7 +503,7 @@ SELECT 1000000                                                                  
        NULL                                                                                    AS descriptionurl,
        NULL                                                                                    AS bpartner_value,
        NULL::numeric                                                                           AS c_bpartner_id,
-       COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR')                         AS iso_code,
+       COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR')                         AS iso_code, -- adapt per project
        NULL::numeric                                                                           AS pricelist,
        NULL::numeric                                                                           AS pricepo,
        0                                                                                       AS royaltyamt,
@@ -495,7 +518,7 @@ SELECT 1000000                                                                  
        'N'                                                                                     AS processed,
        RSP."Unit Price"                                                                        AS pricestd,
        NULL::numeric                                                                           AS pricelimit,
-       CASE
+       CASE -- ADAPT: Navision "VAT Prod_ Posting Group" codes of the project -> C_TaxCategory.InternalName
            WHEN T_Item."VAT Prod_ Posting Group" = '19ST' THEN (SELECT c_taxcategory_id
                                                                 FROM c_taxcategory
                                                                 WHERE internalname = 'Normal')
@@ -564,10 +587,7 @@ SELECT 1000000                                                                  
        NULL::numeric                                                                           AS qtycu,
        NULL::numeric                                                                           AS qtycu_uom_code,
        'Y'                                                                                     AS isupdatename,
-       CASE
-           WHEN NULLIF(TRIM(T_Item."Expiration Calculation"), '') IS NULL THEN 0
-           ELSE regexp_replace(TRIM(T_Item."Expiration Calculation"), '\D', '', 'g')::numeric
-           END                                                                                 AS GuaranteeDaysMin
+       COALESCE(migration_data.nav_dateformula_days(T_Item."Expiration Calculation"), 0) AS GuaranteeDaysMin -- days only, see migration_data.nav_dateformula_days above; 0 for other units
 FROM "migration_data"."Navision$Item" AS T_Item
          LEFT JOIN
      "migration_data"."Navision$VAT Product Posting Group" AS T_VPT
@@ -590,7 +610,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
           FROM "migration_data"."Navision$Sales Price" AS SP_inner
           WHERE SP_inner."Item No_" = T_Item."No_"
             AND SP_inner."Sales Type" = 0
-            AND "Ending Date" > '2027-01-01' --exclude campaign prices
+            AND ("Ending Date" = '1753-01-01' OR "Ending Date" > '2027-01-01') -- adapt per project; regular price = no end date; excludes campaign prices
          ) AS SP
     WHERE SP.rn = 1
     ) AS RSP ON TRUE
@@ -601,10 +621,10 @@ FROM "migration_data"."Navision$Item" AS T_Item
          m_pricingsystem mps ON mpl.m_pricingsystem_id = mps.m_pricingsystem_id
              JOIN
          m_pricelist_version mpv ON mpl.m_pricelist_id = mpv.m_pricelist_id
-    WHERE mps.migration_key = ('001 - ' || RSP."Sales Code")
+    WHERE mps.migration_key = ('001 - ' || RSP."Sales Code") -- adapt per project
       AND mpl.c_currency_id = (SELECT c_currency_id
                                FROM c_currency
-                               WHERE iso_code = COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR'))
+                               WHERE iso_code = COALESCE(NULLIF(TRIM(LEFT(RSP."Currency Code", 3)), ''), 'EUR')) -- adapt per project
 --           AND mpl.c_country_id IN (
 --             SELECT DISTINCT c_country.c_country_id
 --             FROM c_country
@@ -614,7 +634,7 @@ FROM "migration_data"."Navision$Item" AS T_Item
 --                    WHERE CUST."No_" = RSP."Sales Code")
 --         )
       AND mpl.issopricelist = 'Y'
-      AND mpv.validfrom = '2025-09-01 00:00:00'::timestamp
+      AND mpv.validfrom = '2025-09-01 00:00:00'::timestamp -- adapt per project
       AND mpv.createdby = 99
     ) AS PriceListVersionInfo ON TRUE
 ;

@@ -201,7 +201,7 @@ public class MProductImportTableSqlUpdater
 		final String sql = "UPDATE "
 				+ targetTableName + " i "
 				+ " SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p"
-				+ " WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND i.UPC IS NOT NULL) "
+				+ " WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) AND i.UPC IS NOT NULL) "
 				+ "WHERE M_Product_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
 				+ selection.toSqlWhereClause("i");

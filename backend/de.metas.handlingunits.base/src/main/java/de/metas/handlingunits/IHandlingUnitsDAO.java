@@ -25,6 +25,7 @@ package de.metas.handlingunits;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.impl.CreateTUPackingInstructionsRequest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -200,6 +201,16 @@ public interface IHandlingUnitsDAO extends ISingletonService
 			@NonNull HuPackingInstructionsId includedPIId,
 			@Nullable BPartnerId bpartnerId);
 
+	/**
+	 * Like {@link #retrieveFirstPIItem(HuPackingInstructionsId, HuPackingInstructionsId, BPartnerId)}, but product-aware:
+	 * an item with {@code M_Product_ID} is eligible only if that product equals {@code productId}; product-specific items come first.
+	 */
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull HuPackingInstructionsId includedPIId,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ProductId productId);
+
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
 	/**
@@ -270,10 +281,21 @@ public interface IHandlingUnitsDAO extends ISingletonService
 		return retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
 	}
 
+	/**
+	 * Product-aware variant: items with {@code M_Product_ID} are returned only if it equals {@code productId} (none if {@code productId} is {@code null}), and come first.
+	 */
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, @Nullable HuUnitType huUnitType, BPartnerId bpartnerId, @Nullable ProductId productId);
+
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull HuPackingInstructionsId packingInstructionsId,
 			@Nullable HuUnitType huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull HuPackingInstructionsId packingInstructionsId,
+			@Nullable HuUnitType huUnitType,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ProductId productId);
 
 	/**
 	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(HuPackingInstructionsId, HuUnitType, BPartnerId)}
@@ -289,6 +311,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
+	 * <p>
+	 * A parent built from a product-specific PI item keeps that item for any further child of the given PI (single-product parent assumption; the child's own product is not considered).
 	 */
 	@Nullable
 	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, IContextAware ctx);
@@ -298,6 +322,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
+
+	/**
+	 * Product-aware variant: a product-specific item matching {@code productId} wins over partner-specific and generic items.
+	 */
+	@Nullable
+	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId, @Nullable ProductId productId);
 
 	@NonNull
 	Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
@@ -409,4 +439,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
 
 	Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(@Nullable final BPartnerId bpartnerId, @NonNull final HuPackingInstructionsId luPIId, @NonNull final HUPIItemProductId piItemProductId);
+
+	Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(@Nullable final BPartnerId bpartnerId, @NonNull final HuPackingInstructionsId luPIId, @NonNull final HUPIItemProductId piItemProductId, @Nullable final ProductId productId);
 }

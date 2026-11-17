@@ -30,10 +30,10 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
         -- "Description" VARCHAR(50) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE(Description, '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE(Description, '''', '''''') + '''' +
     ');'
 FROM
     [Navision$VAT Product Posting Group];

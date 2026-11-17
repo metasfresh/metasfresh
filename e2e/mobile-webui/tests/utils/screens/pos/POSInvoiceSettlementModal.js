@@ -71,10 +71,10 @@ export const POSInvoiceSettlementModal = {
     }),
 
     /**
-     * Asserts the result row at `index` (0-based). `openAmt` is the rendered display string, in the
-     * spec's login language, e.g. `'107,00 €'` for a `de_DE` login.
+     * Asserts the result row at `index` (0-based). `openAmt` and `dateInvoiced` are the rendered display strings,
+     * in the spec's login language, e.g. `'107,00 €'` and `'04.11.2026'` for a `de_DE` login.
      */
-    expectResult: async ({ index = 0, documentNo, bpartnerName, openAmt }) => await test.step(`${NAME} - Expect result #${index}`, async () => {
+    expectResult: async ({ index = 0, documentNo, bpartnerName, dateInvoiced, openAmt }) => await test.step(`${NAME} - Expect result #${index}`, async () => {
         const row = rowElement(index);
         await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
@@ -83,6 +83,9 @@ export const POSInvoiceSettlementModal = {
         }
         if (bpartnerName != null) {
             await expect(row.getByTestId('pos-invoice-settlement-row-bpartnerName')).toHaveText(bpartnerName);
+        }
+        if (dateInvoiced != null) {
+            await expect(row.getByTestId('pos-invoice-settlement-row-dateInvoiced')).toHaveText(dateInvoiced);
         }
         if (openAmt != null) {
             await expect(row.getByTestId('pos-invoice-settlement-row-openAmt')).toContainText(exactTextMatch(openAmt));

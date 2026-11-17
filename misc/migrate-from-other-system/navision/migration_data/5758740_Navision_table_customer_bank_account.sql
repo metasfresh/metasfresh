@@ -30,97 +30,97 @@ SELECT
     'E''\\x' + SUBSTRING(sys.fn_varbintohexstr(timestamp), 3, DATALENGTH(timestamp) * 2) + '''' + ', ' +
 
         -- "Customer No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Customer No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Customer No_], '''', '''''') + '''' + ', ' +
 
         -- "Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE(Code, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Code, '''', '''''') + '''' + ', ' +
 
         -- "Name" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Name, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Name, '''', '''''') + '''' + ', ' +
 
         -- "Name 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Name 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Name 2], '''', '''''') + '''' + ', ' +
 
         -- "Address" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Address, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Address, '''', '''''') + '''' + ', ' +
 
         -- "Address 2" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Address 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Address 2], '''', '''''') + '''' + ', ' +
 
         -- "City" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(City, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(City, '''', '''''') + '''' + ', ' +
 
         -- "Post Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Post Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Post Code], '''', '''''') + '''' + ', ' +
 
         -- "Contact" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Contact, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Contact, '''', '''''') + '''' + ', ' +
 
         -- "Phone No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Phone No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Phone No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Telex No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex No_], '''', '''''') + '''' + ', ' +
 
         -- "Bank Branch No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Bank Branch No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Bank Branch No_], '''', '''''') + '''' + ', ' +
 
         -- "Bank Account No_" VARCHAR(34) NOT NULL
-    '''' + REPLACE(REPLACE([Bank Account No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Bank Account No_], '''', '''''') + '''' + ', ' +
 
         -- "Transit No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Transit No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Transit No_], '''', '''''') + '''' + ', ' +
 
         -- "Currency Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Currency Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Currency Code], '''', '''''') + '''' + ', ' +
 
         -- "Country_Region Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Country_Region Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Country_Region Code], '''', '''''') + '''' + ', ' +
 
         -- "County" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE(County, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(County, '''', '''''') + '''' + ', ' +
 
         -- "Fax No_" VARCHAR(30) NOT NULL
-    '''' + REPLACE(REPLACE([Fax No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Fax No_], '''', '''''') + '''' + ', ' +
 
         -- "Telex Answer Back" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Telex Answer Back], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Telex Answer Back], '''', '''''') + '''' + ', ' +
 
         -- "Language Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Language Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Language Code], '''', '''''') + '''' + ', ' +
 
         -- "E-Mail" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([E-Mail], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([E-Mail], '''', '''''') + '''' + ', ' +
 
         -- "Home Page" VARCHAR(80) NOT NULL
-    '''' + REPLACE(REPLACE([Home Page], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Home Page], '''', '''''') + '''' + ', ' +
 
         -- "IBAN" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(IBAN, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(IBAN, '''', '''''') + '''' + ', ' +
 
         -- "SWIFT Code" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([SWIFT Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([SWIFT Code], '''', '''''') + '''' + ', ' +
 
         -- "Inserted by Bank Import" BOOLEAN NOT NULL
     CASE WHEN [Inserted by Bank Import] = 1 THEN 'TRUE' ELSE 'FALSE' END + ', ' +
 
         -- "Payment Type Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Payment Type Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Payment Type Code], '''', '''''') + '''' + ', ' +
 
         -- "Owner" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE(Owner, '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE(Owner, '''', '''''') + '''' + ', ' +
 
         -- "Mandate ID" VARCHAR(35) NOT NULL
-    '''' + REPLACE(REPLACE([Mandate ID], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Mandate ID], '''', '''''') + '''' + ', ' +
 
         -- "Mandate Date" TIMESTAMP NOT NULL
     '''' + CONVERT(NVARCHAR(MAX), [Mandate Date], 120) + '''' + ', ' +
 
         -- "Routing No_" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Routing No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Routing No_], '''', '''''') + '''' + ', ' +
 
         -- "Payment Method Code" VARCHAR(10) NOT NULL
-    '''' + REPLACE(REPLACE([Payment Method Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Payment Method Code], '''', '''''') + '''' + ', ' +
 
         -- "Mandate Type" INTEGER NOT NULL
     CAST([Mandate Type] AS NVARCHAR(MAX)) + ', ' +
@@ -141,31 +141,31 @@ SELECT
     CAST([Mandate Status] AS NVARCHAR(MAX)) + ', ' +
 
         -- "Alt_ Reason Row 1" VARCHAR(35) NOT NULL
-    '''' + REPLACE(REPLACE([Alt_ Reason Row 1], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Alt_ Reason Row 1], '''', '''''') + '''' + ', ' +
 
         -- "Alt_ Reason Row 2" VARCHAR(35) NOT NULL
-    '''' + REPLACE(REPLACE([Alt_ Reason Row 2], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Alt_ Reason Row 2], '''', '''''') + '''' + ', ' +
 
         -- "Owner Contact" VARCHAR(20) NOT NULL
-    '''' + REPLACE(REPLACE([Owner Contact], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Owner Contact], '''', '''''') + '''' + ', ' +
 
         -- "Alt_ Creditor Identifier" VARCHAR(38) NOT NULL
-    '''' + REPLACE(REPLACE([Alt_ Creditor Identifier], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Alt_ Creditor Identifier], '''', '''''') + '''' + ', ' +
 
         -- "Bank Clearing Code" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Bank Clearing Code], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Bank Clearing Code], '''', '''''') + '''' + ', ' +
 
         -- "Bank Clearing Standard" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Bank Clearing Standard], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Bank Clearing Standard], '''', '''''') + '''' + ', ' +
 
         -- "Hash Value Branch _ Acc_ No_" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Hash Value Branch _ Acc_ No_], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Hash Value Branch _ Acc_ No_], '''', '''''') + '''' + ', ' +
 
         -- "Hash Value IBAN" VARCHAR(50) NOT NULL
-    '''' + REPLACE(REPLACE([Hash Value IBAN], '''', ''''''), '\', '\\') + '''' + ', ' +
+    '''' + REPLACE([Hash Value IBAN], '''', '''''') + '''' + ', ' +
 
         -- "Hash Value SWIFT _ Acc_ No_" VARCHAR(50) NOT NULL (LAST COLUMN, no comma after)
-    '''' + REPLACE(REPLACE([Hash Value SWIFT _ Acc_ No_], '''', ''''''), '\', '\\') + '''' +
+    '''' + REPLACE([Hash Value SWIFT _ Acc_ No_], '''', '''''') + '''' +
     ');'
 FROM
     [Navision$Customer Bank Account];

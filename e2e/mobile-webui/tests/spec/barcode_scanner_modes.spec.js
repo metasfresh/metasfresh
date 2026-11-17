@@ -26,6 +26,13 @@ const modeSysconfigs = ({
     ...(hardwareInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly': hardwareInputReadOnly }),
 });
 
+// The tests below write GLOBAL AD_SysConfig scanner knobs (e.g. the CT60 test sets
+// mode.hardware.input.readOnly=Y, the manual-typing test sets defaultMode=manual). No manual
+// restore is needed here: Backend.createMasterdata / setSysconfigs already remember the keys each
+// call overwrote (from the response's previousSysconfigs) and the page fixture restores them, each
+// to its own row, after every test via the restoreSysconfigs endpoint. So a knob can't leak into a
+// later test, spec or run on the same DB.
+
 // Minimal masterdata: login only, no HU/orders. Used by the attribute-guard tests,
 // which only need the barcode input to render — so they run in seconds.
 const createLoginMasterdata = async ({ extraSysconfigs } = {}) => {
