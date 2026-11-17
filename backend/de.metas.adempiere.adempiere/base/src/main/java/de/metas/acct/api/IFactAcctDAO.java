@@ -53,6 +53,12 @@ public interface IFactAcctDAO extends ISingletonService
 
 	void deleteForDocumentModel(final Object documentObj);
 
+	/**
+	 * Sets {@code Posted=false} on the given document record and saves it.
+	 * {@code Posted} is not updateable on every document table (e.g. {@code GL_Journal}), so the read-only column check is bypassed.
+	 */
+	void setDocumentModelNotPosted(@NonNull Object documentObj);
+
 	void deleteForRecordRef(@NonNull TableRecordReference recordRef);
 
 	/**

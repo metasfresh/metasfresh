@@ -45,6 +45,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -84,6 +85,7 @@ public class RemittanceAdviceServiceTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 
 		bpartnerId = createBPartnerId();
 		invoiceDocTypes = new HashMap<>();

@@ -23,7 +23,8 @@ package de.metas.acct.gljournal.impl;
  */
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.DocumentUnpostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.gljournal.IGLJournalBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -40,13 +41,15 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_GL_Journal;
+import org.compiere.util.TimeUtil;
 
 import java.util.List;
 import java.util.Properties;
 
 public class GLJournalBL implements IGLJournalBL
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IPostingService postingService = Services.get(IPostingService.class);
 
 	private static final AdMessageKey MSG_HeaderAndLinePeriodMismatchError = AdMessageKey.of("GL_Journal.HeaderAndLinePeriodMismatch");
 
@@ -62,14 +65,11 @@ public class GLJournalBL implements IGLJournalBL
 	@Override
 	public void unpost(final I_GL_Journal glJournal)
 	{
-		// Make sure the period is open
-		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournal);
-		MPeriod.testPeriodOpen(ctx, glJournal.getDateAcct(), glJournal.getC_DocType_ID(), glJournal.getAD_Org_ID());
-
-		Services.get(IFactAcctDAO.class).deleteForDocumentModel(glJournal);
-
-		glJournal.setPosted(false);
-		InterfaceWrapperHelper.save(glJournal);
+		postingService.unpost(DocumentUnpostRequest.builder()
+				.document(glJournal)
+				.dateAcct(TimeUtil.asInstant(glJournal.getDateAcct()))
+				.docBaseType(docTypeDAO.getDocBaseTypeById(DocTypeId.ofRepoId(glJournal.getC_DocType_ID())))
+				.build());
 	}
 
 	@Override

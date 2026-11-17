@@ -12,6 +12,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -61,6 +62,7 @@ public class InvoiceBLTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 

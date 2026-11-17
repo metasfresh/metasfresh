@@ -462,4 +462,9 @@ public interface IInvoiceBL extends ISingletonService
 	Amount retrieveOpenAmt(InvoiceId invoiceId);
 
 	void save(@NonNull I_C_Invoice invoice);
+
+	/**
+	 * Un-posts the invoice through {@link de.metas.acct.api.IPostingService#unpost(de.metas.acct.api.DocumentUnpostRequest)} if it is posted.
+	 */
+	void unpostIfPosted(@NonNull I_C_Invoice invoice);
 }

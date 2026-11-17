@@ -10,6 +10,7 @@ import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
@@ -29,6 +30,7 @@ public class InvoiceBLSortLinesTests
 	public final void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

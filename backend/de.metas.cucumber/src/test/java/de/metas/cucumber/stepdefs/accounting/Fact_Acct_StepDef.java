@@ -46,6 +46,17 @@ import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.new
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for the accounting facts ({@code Fact_Acct}): waiting for a document to be posted, asserting the booked
+ * accounts and amounts, and asserting that documents are (not) posted.
+ *
+ * <p><b>Gherkin usage example</b>:
+ * <pre>{@code
+ * And Wait until documents invoice is posted
+ * And the documents invoice are unposted
+ * And the documents invoice are not posted
+ * }</pre>
+ */
 public class Fact_Acct_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -58,6 +69,7 @@ public class Fact_Acct_StepDef
 	@NonNull private final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+	@NonNull private final PostingQueueChecks postingQueueChecks;
 
 	public Fact_Acct_StepDef(
 			@NonNull final IdentifiersResolver identifiersResolver,
@@ -69,13 +81,15 @@ public class Fact_Acct_StepDef
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_ElementValue_StepDefData elementValueTable,
 			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final C_AcctSchema_StepDefData acctSchemaTable
+			@NonNull final C_AcctSchema_StepDefData acctSchemaTable,
+			@NonNull final PostingQueueChecks postingQueueChecks
 	)
 	{
 		this.identifiersResolver = identifiersResolver;
 		this.ppOrderTable = ppOrderTable;
 		this.productTable = productTable;
 		this.acctSchemaTable = acctSchemaTable;
+		this.postingQueueChecks = postingQueueChecks;
 
 		@NonNull final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 		@NonNull final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
@@ -307,6 +321,72 @@ public class Fact_Acct_StepDef
 					.create()
 					.count();
 			assertThat(count).as("Fact_Acct count of %s", recordRef).isZero();
+		}
+	}
+
+	/**
+	 * Does not wait: the posting status is read right away, so it also checks a document that stays unposted. Combine with {@code no Fact_Acct records exist for documents}.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the documents invoice are not posted
+	 * </pre>
+	 */
+	@And("^the documents (.*) (?:is|are) not posted$")
+	public void assertNotPosted(@NonNull final String commaSeparatedIdentifiers)
+	{
+		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
+		{
+			assertThat(AccountingCucumberHelper.retrievePostingStatus(recordRef).isNotPosted()).as("%s is not posted", recordRef).isTrue();
+		}
+	}
+
+	/**
+	 * Remembers the number of posting requests ({@code Document_Acct_Log}) and notes ({@code AD_Note}) of each document,
+	 * for {@code documents ... got no new posting request and no note}.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the posting requests of documents invoice,invoiceReversal are remembered
+	 * </pre>
+	 */
+	@And("^the posting requests of documents (.*) are remembered$")
+	public void rememberPostingRequests(@NonNull final String commaSeparatedIdentifiers)
+	{
+		identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers).forEach(postingQueueChecks::remember);
+	}
+
+	/**
+	 * Waits until the counts are stable (posting is asynchronous), then asserts that no posting request and no note was created since {@code the posting requests of documents ... are remembered}.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then documents invoice,invoiceReversal got no new posting request and no note
+	 * </pre>
+	 */
+	@And("^documents (.*) got no new posting request and no note$")
+	public void assertNoNewPostingRequest(@NonNull final String commaSeparatedIdentifiers) throws InterruptedException
+	{
+		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
+		{
+			postingQueueChecks.assertNothingNewSinceRemembered(recordRef);
+		}
+	}
+
+	/**
+	 * Asserts that at least one new posting request ({@code Document_Acct_Log}) was created for each document since {@code the posting requests of documents ... are remembered}.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then documents invoice,invoiceReversal got a new posting request
+	 * </pre>
+	 */
+	@And("^documents (.*) got a new posting request$")
+	public void assertNewPostingRequest(@NonNull final String commaSeparatedIdentifiers) throws InterruptedException
+	{
+		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
+		{
+			postingQueueChecks.assertNewPostingRequestSinceRemembered(recordRef);
 		}
 	}
 
