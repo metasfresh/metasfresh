@@ -2,7 +2,6 @@ package de.metas.payment.sumup;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.error.AdIssueId;
@@ -29,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.function.UnaryOperator;
 
@@ -40,7 +40,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 /**
  * Refreshing a transaction metasfresh already stores ({@link SumUpService#updateTransactionFromRemote}, also run by the SumUp poller
- * for every PENDING transaction metasfresh created in the last 24 h). SumUp answers the lookup of a reader checkout with HTTP 404 until the card is
+ * for every PENDING transaction, see {@link SumUpServicePollerTest}). SumUp answers the lookup of a reader checkout with HTTP 404 until the card is
  * presented on the reader (and forever, if the reader times out): for a PENDING transaction that is SumUp's answer, not a
  * failed lookup.
  * <p>
@@ -136,30 +136,21 @@ class SumUpServiceUpdateFromRemoteTest
 	}
 
 	/**
-	 * The SumUp poller's cycle asks SumUp only for the PENDING transactions metasfresh created in the last 24 h: a reader
-	 * checkout whose card was never presented is not looked up for ever.
+	 * The SumUp poller's cycle asks SumUp for the PENDING transactions, except those for which SumUp confirmed that it has no
+	 * transaction by a lookup made at least 24 h after metasfresh created them (see {@link SumUpServicePollerTest}).
 	 */
 	@Test
-	void poller_refreshesOnlyPendingTransactionsCreatedInTheLast24h()
+	void poller_refreshesPendingTransactions_exceptThoseConfirmedNotFoundAt24h()
 	{
-		try
-		{
-			SystemTime.setFixedTimeSource("2026-11-17T12:00:00Z");
+		service.bulkUpdatePendingTransactionsToPoll();
 
-			service.bulkUpdateRecentPendingTransactions();
-
-			Mockito.verify(trxRepository).bulkUpdateByQuery(
-					ArgumentMatchers.eq(SumUpTransactionQuery.builder()
-							.status(SumUpTransactionStatus.PENDING)
-							.createdAfter(Instant.parse("2026-11-16T12:00:00Z"))
-							.build()),
-					ArgumentMatchers.eq(false),
-					ArgumentMatchers.any());
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		Mockito.verify(trxRepository).bulkUpdateByQuery(
+				ArgumentMatchers.eq(SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.excludeNotFoundConfirmedAtAge(Duration.ofHours(24))
+						.build()),
+				ArgumentMatchers.eq(false),
+				ArgumentMatchers.any());
 	}
 
 	@Test

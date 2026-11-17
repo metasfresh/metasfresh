@@ -117,7 +117,7 @@ public class SumUpPendingTransactionContinuousUpdater implements SumUpTransactio
 	{
 		try
 		{
-			final BulkUpdateByQueryResult result = sumUpService.bulkUpdateRecentPendingTransactions();
+			final BulkUpdateByQueryResult result = sumUpService.bulkUpdatePendingTransactionsToPoll();
 			if (!result.isZero())
 			{
 				logger.debug("Pending transactions updated: {}", result);

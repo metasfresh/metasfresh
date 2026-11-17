@@ -357,9 +357,9 @@ public class SumUpTransactionRepository
 		{
 			sqlQueryBuilder.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_Status, query.getStatus().getCode());
 		}
-		if (query.getCreatedAfter() != null)
+		if (query.getExcludeNotFoundConfirmedAtAge() != null)
 		{
-			sqlQueryBuilder.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER, Timestamp.from(query.getCreatedAfter()));
+			sqlQueryBuilder.filter(new ExcludeNotFoundConfirmedAtAgeFilter(query.getExcludeNotFoundConfirmedAtAge()));
 		}
 		if (query.getPosRef() != null)
 		{

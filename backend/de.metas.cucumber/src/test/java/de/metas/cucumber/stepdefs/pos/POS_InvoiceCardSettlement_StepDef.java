@@ -454,7 +454,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
-	 * Runs one poller cycle, or the given number of cycles one after the other: updates the PENDING SumUp transactions of the last 24 h
+	 * Runs one poller cycle, or the given number of cycles one after the other: updates the PENDING SumUp transactions the poller asks for
 	 * from the stub, then calls every {@link SumUpPollerCycleListener} (the card settlement sweep) in an empty context,
 	 * as the poller's own thread has no login context. SumUp status events are handled asynchronously; each cycle
 	 * returns only after every event it fired was handled (see {@link SumUpEventsTestProbe#waitUntilFiredEventsAreHandled}).
@@ -472,7 +472,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		final int cycles = times != null ? Integer.parseInt(times) : 1;
 		for (int i = 0; i < cycles; i++)
 		{
-			sumUpService.get().bulkUpdateRecentPendingTransactions();
+			sumUpService.get().bulkUpdatePendingTransactionsToPoll();
 			try (final IAutoCloseable ignored = Env.switchContext(Env.newTemporaryCtx()))
 			{
 				SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class)

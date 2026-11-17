@@ -10,6 +10,7 @@ import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
+import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.common.util.time.SystemTime;
@@ -21,10 +22,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -104,25 +109,75 @@ class SumUpTransactionRepositoryTest
 		assertThat(result).extracting(SumUpTransaction::getExternalId).containsExactly(trx1.getExternalId());
 	}
 
+	/**
+	 * Saves a PENDING transaction that metasfresh created at {@code 2026-11-16T10:00:00Z}, with the given last lookup.
+	 *
+	 * @param posPaymentId identifies the transaction in the assertions
+	 * @param lastSync     the last lookup, null if it was never looked up
+	 * @param json         SumUp's stored answer, null if SumUp never reported the transaction
+	 */
+	private SumUpTransaction newPendingTrxCreatedAt10(final int posPaymentId, @Nullable final LastSync lastSync, @Nullable final String json)
+	{
+		SystemTime.setFixedTimeSource("2026-11-16T10:00:00Z");
+		final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(posPaymentId).build());
+		repository.saveNew(trx);
+		final SumUpTransaction withLastSync = trx.toBuilder().lastSync(lastSync).json(json).build();
+		repository.save(withLastSync);
+		return withLastSync;
+	}
+
+	private static LastSync lastSync(final LastSyncStatus status, final String timestamp)
+	{
+		return LastSync.builder().status(status).timestamp(Instant.parse(timestamp)).build();
+	}
+
+	private List<Integer> listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()
+	{
+		return repository.list(SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.excludeNotFoundConfirmedAtAge(Duration.ofHours(24))
+						.build())
+				.stream()
+				.map(trx -> Objects.requireNonNull(trx.getPosRef()).getPosPaymentId())
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Created at 10:00 on the 16th, so the 24 h mark is 10:00 on the 17th. Left out is only a transaction that SumUp never
+	 * reported and whose last lookup succeeded (SumUp's "not found") at or after the 24 h mark.
+	 */
 	@Test
-	void query_createdAfter_findsOnlyTheTransactionsCreatedLater()
+	void query_excludeNotFoundConfirmedAtAge_leavesOutOnlyThoseSumUpConfirmedNotFoundAtOrAfterThatAge()
 	{
 		try
 		{
-			SystemTime.setFixedTimeSource("2026-11-16T09:00:00Z");
-			final SumUpTransaction older = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
-			repository.saveNew(older);
+			newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), null); // not found, 25 h after creation
+			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.Error, "2026-11-17T11:00:00Z"), null); // lookup failed after 24 h
+			newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // not found only before the 24 h mark
+			newPendingTrxCreatedAt10(4, null, null); // never looked up (e.g. the server was down)
+			newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), "{\"status\":\"PENDING\"}"); // SumUp knows it, still PENDING
+			newPendingTrxCreatedAt10(6, lastSync(LastSyncStatus.OK, "2026-11-16T10:30:00Z"), null); // young: not found 30 min after creation
 
-			SystemTime.setFixedTimeSource("2026-11-16T11:00:00Z");
-			final SumUpTransaction newer = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(7).build());
-			repository.saveNew(newer);
+			assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2, 3, 4, 5, 6);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
 
-			final List<SumUpTransaction> result = repository.list(SumUpTransactionQuery.builder()
-					.status(SumUpTransactionStatus.PENDING)
-					.createdAfter(Instant.parse("2026-11-16T10:00:00Z"))
-					.build());
+	/**
+	 * A "not found" exactly 24 h after creation is final; one second before it is not.
+	 */
+	@Test
+	void query_excludeNotFoundConfirmedAtAge_boundary()
+	{
+		try
+		{
+			newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T10:00:00Z"), null); // exactly at 24 h
+			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-17T09:59:59Z"), null); // 1 s before
 
-			assertThat(result).extracting(SumUpTransaction::getExternalId).containsExactly(newer.getExternalId());
+			assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2);
 		}
 		finally
 		{

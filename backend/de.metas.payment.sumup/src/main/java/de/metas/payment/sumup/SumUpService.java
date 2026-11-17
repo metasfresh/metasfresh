@@ -45,8 +45,9 @@ public class SumUpService
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpService.class);
 
 	/**
-	 * How long after metasfresh created a PENDING transaction the SumUp poller keeps asking SumUp for it
-	 * ({@link #bulkUpdateRecentPendingTransactions()})
+	 * How long after metasfresh created a PENDING transaction SumUp's "not found" answer becomes final for the SumUp poller
+	 * ({@link #bulkUpdatePendingTransactionsToPoll()}), and how long after its checkout the card-sale sweep imports an unknown
+	 * card payment's transaction
 	 */
 	public static final Duration BACKGROUND_LOOKUP_MAX_AGE = Duration.ofHours(24);
 
@@ -476,18 +477,19 @@ public class SumUpService
 	}
 
 	/**
-	 * The SumUp poller's cycle: refreshes the PENDING transactions that metasfresh created at most
-	 * {@link #BACKGROUND_LOOKUP_MAX_AGE} ago (by {@link SystemTime}). An older PENDING transaction is no longer asked for in
-	 * the background, e.g. a reader checkout whose card was never presented, which SumUp keeps answering with "not found":
-	 * it stays PENDING, and an explicit lookup (the till's check, back office's update processes) still asks SumUp.
-	 * Status change events are not force-sent.
+	 * The SumUp poller's cycle: refreshes the PENDING transactions, except those for which a lookup made at least
+	 * {@link #BACKGROUND_LOOKUP_MAX_AGE} after metasfresh created them was answered by SumUp with "not found" (e.g. a reader
+	 * checkout whose card was never presented): those are no longer asked for in the background. They stay PENDING, and an
+	 * explicit lookup (the till's check, back office's update processes) still asks SumUp. A transaction whose last lookup
+	 * failed, or that was never looked up (e.g. while the server was down), keeps being polled, so the first lookup that gets
+	 * through after an outage still stores a charge SumUp approved meanwhile. Status change events are not force-sent.
 	 */
-	public BulkUpdateByQueryResult bulkUpdateRecentPendingTransactions()
+	public BulkUpdateByQueryResult bulkUpdatePendingTransactionsToPoll()
 	{
 		return bulkUpdateTransactions(
 				SumUpTransactionQuery.builder()
 						.status(SumUpTransactionStatus.PENDING)
-						.createdAfter(SystemTime.asInstant().minus(BACKGROUND_LOOKUP_MAX_AGE))
+						.excludeNotFoundConfirmedAtAge(BACKGROUND_LOOKUP_MAX_AGE)
 						.build(),
 				false);
 	}
