@@ -39,8 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Copies of an order checkup printing-queue item ({@link OrderCheckupBL#getNumberOfCopies}): the Plant order checkup (PL)
- * prints the same number of copies as the delivery note (shipment) of its order - shipper (Lieferweg) count, else the
- * ship-to address print format for the shipment document type, else the shipment document type's copies.
+ * prints the order shipper's (Lieferweg) count N &gt; 0; without a shipper count (or with 0) the sysconfig, as before.
  * The Warehouse order checkup (WH) keeps its sysconfig.
  */
 public class OrderCheckupCopiesTest
@@ -64,7 +63,7 @@ public class OrderCheckupCopiesTest
 				new DefaultPrintFormatsRepository(),
 				new BPartnerPrintFormatRepository()));
 
-		setSysConfig(SYSCONFIG_PLANT_COPIES, 5); // never the expected value: proves the sysconfig is not used for the Plant checkup
+		setSysConfig(SYSCONFIG_PLANT_COPIES, 5); // distinct from every shipper / print-format value used here
 		setSysConfig(SYSCONFIG_WAREHOUSE_COPIES, 1);
 
 		shipmentDocType = newInstance(I_C_DocType.class);
@@ -86,41 +85,30 @@ public class OrderCheckupCopiesTest
 		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, new BigDecimal("2"), null)).isEqualTo(2);
 	}
 
-	/** The shipper count wins over the address print format, exactly as for the shipment. */
 	@Test
-	public void plant_shipperCopies2_winsOverAddressPrintFormat3()
+	public void plant_shipperCopies2_ignoresAddressPrintFormat3()
 	{
 		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, new BigDecimal("2"), 3)).isEqualTo(2);
 	}
 
-	/** 0 suppresses only the automatic print (report advisor); a manual print prints one copy. */
+	/** 0 suppresses only the automatic print (report advisor); a manual print gets the sysconfig. */
 	@Test
-	public void plant_shipperCopies0_manualPrintsOne()
+	public void plant_shipperCopies0_manualPrintGetsSysConfig()
 	{
-		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, BigDecimal.ZERO, 3)).isEqualTo(1);
+		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, BigDecimal.ZERO, 3)).isEqualTo(5);
 	}
 
-	/** No shipper count: the customer's own delivery-note count from its ship-to address print format. */
+	/** Shipper count empty (NULL, the default): the sysconfig as before - the delivery note's print format is not used. */
 	@Test
-	public void plant_shipperCopiesNull_addressPrintFormat()
+	public void plant_shipperCopiesNull_sysConfig()
 	{
-		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, null, 3)).isEqualTo(3);
+		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, null, 3)).isEqualTo(5);
 	}
 
 	@Test
-	public void plant_orderWithoutShipper_addressPrintFormat()
+	public void plant_orderWithoutShipper_sysConfig()
 	{
-		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, false, null, 2)).isEqualTo(2);
-	}
-
-	/** Neither shipper count nor print format: the shipment document type's copies, not the sysconfig. */
-	@Test
-	public void plant_nothingConfigured_shipmentDocTypeCopies()
-	{
-		shipmentDocType.setDocumentCopies(2);
-		save(shipmentDocType);
-
-		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, false, null, null)).isEqualTo(2);
+		assertThat(copiesFor(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, false, null, 2)).isEqualTo(5);
 	}
 
 	/** The shipper count applies to customer (sales) documents only, as for the delivery note. */

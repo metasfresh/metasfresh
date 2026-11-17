@@ -6,9 +6,9 @@ Feature: Plant order checkup (PL) copies from the shipper (Lieferweg) of the ord
 ## F8005: Order Checkup
   The ship-to address references a shipper (Lieferweg) that carries a copy count; the sales order takes the shipper over.
   - Copy count N > 0: the Plant order checkup (PL) prints N copies, automatically and on a manual reprint.
-  - Copy count 0: the Plant order checkup (PL) is archived but not printed automatically; a manual reprint prints one copy.
-  - The Plant order checkup (PL) always prints as many copies as the delivery note of its order: shipper count, else the ship-to address
-    print format, else the shipment document type. The Warehouse order checkup (WH) is never affected.
+  - Copy count 0: the Plant order checkup (PL) is archived but not printed automatically; a manual reprint prints the sysconfig copies.
+  - No copy count on the shipper (NULL, the default) or no shipper: the sysconfig de.metas.fresh.ordercheckup.Copies, as before.
+    The Warehouse order checkup (WH) is never affected.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -189,7 +189,7 @@ Feature: Plant order checkup (PL) copies from the shipper (Lieferweg) of the ord
 # ####################################################################################################################
 # ####################################################################################################################
   @Id:S33610_TC2_TC3
-  Scenario: Shipper with 0 copies: archived, not enqueued automatically; a manual reprint enqueues it with one copy
+  Scenario: Shipper with 0 copies: archived, not enqueued automatically; a manual reprint enqueues it with the sysconfig copies
     Given contains M_Shippers
       | Identifier | DocumentCopies |
       | noPrint    | 0              |
@@ -219,7 +219,7 @@ Feature: Plant order checkup (PL) copies from the shipper (Lieferweg) of the ord
     And after not more than 60s, an AD_Archive exists for the record identified by "plantRpt4"
     And C_Printing_Queue contains 0 items for the record identified by "plantRpt4"
 
-    # manual reprint (fresh archive, through the auto-print gate): enqueued, with one copy
+    # manual reprint (fresh archive, through the auto-print gate): enqueued, with the sysconfig copies (1)
     When after not more than 60s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name               |
       | plantLog4                        | plantRpt4            | C_Order_MFGWarehouse_Report |
@@ -267,7 +267,7 @@ Feature: Plant order checkup (PL) copies from the shipper (Lieferweg) of the ord
 # ####################################################################################################################
 # ####################################################################################################################
   @Id:S33610_TC4
-  Scenario: Shipper without copy count: the customer's own delivery-note copies (address print format 3 -> 3; nothing configured -> shipment doc type copies)
+  Scenario: Shipper without copy count, or no shipper: the sysconfig copies as before (a delivery-note print format of 3 is not used)
     Given contains M_Shippers
       | Identifier | DocumentCopies |
       | noCount    |                |
@@ -279,7 +279,7 @@ Feature: Plant order checkup (PL) copies from the shipper (Lieferweg) of the ord
       | Identifier | C_BPartner_ID     | GLN           | IsShipTo | IsBillTo | M_Shipper_ID |
       | location6  | bpartnerAddress3  | 4008123433106 | true     | true     | noCount      |
       | location7  | bpartnerNoShipper | 4008123433107 | true     | true     |              |
-    # the customer's delivery-note copies on its ship-to address (as the per-address copies migrated from the legacy system)
+    # a delivery-note copy count on the ship-to address must NOT influence the order checkup
     And metasfresh contains C_BP_PrintFormat:
       | C_BPartner_ID    | C_BPartner_Location_ID | DocumentCopies_Override |
       | bpartnerAddress3 | location6              | 3                       |
@@ -308,5 +308,5 @@ Feature: Plant order checkup (PL) copies from the shipper (Lieferweg) of the ord
 
     Then C_Printing_Queue has Copies:
       | C_Printing_Queue_ID | Copies |
-      | plantQueue6         | 3      |
+      | plantQueue6         | 1      |
       | plantQueue7         | 1      |

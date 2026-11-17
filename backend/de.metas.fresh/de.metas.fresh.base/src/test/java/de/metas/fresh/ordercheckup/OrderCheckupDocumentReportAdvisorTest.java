@@ -34,9 +34,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The Bestellkontrolle report advisor answers like the generic fallback, except for a Plant order checkup (PL): its archive copies
- * are always 1 (the print handler sets the delivery-note copies, the printing queue's archive multiplier must not turn them into k x N),
- * and a shipper (Lieferweg) count of 0 suppresses the automatic print.
+ * The order checkup report advisor answers like the generic fallback, except for a Plant order checkup (PL) whose order shipper
+ * (Lieferweg) has a copy count: 0 suppresses the automatic print; N > 0 sets the archive copies to 1, so the printing queue's
+ * archive multiplier cannot turn the N copies of the print handler into k x N.
  */
 public class OrderCheckupDocumentReportAdvisorTest
 {
@@ -80,7 +80,7 @@ public class OrderCheckupDocumentReportAdvisorTest
 		final DocumentReportInfo info = advisor().getDocumentReportInfo(report, printFormatId, null);
 
 		assertThat(info.isSuppressAutoPrint()).isTrue();
-		assertThat(info).isEqualTo(fallback(report).toBuilder().copies(PrintCopies.ONE).suppressAutoPrint(true).build());
+		assertThat(info).isEqualTo(fallback(report).toBuilder().suppressAutoPrint(true).build());
 	}
 
 	@Test
@@ -110,19 +110,19 @@ public class OrderCheckupDocumentReportAdvisorTest
 		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null).getCopies()).isEqualTo(PrintCopies.ONE);
 	}
 
-	/** No shipper count: the copies come from the shipment rule in the print handler; the archive copies stay 1, nothing suppressed. */
+	/** No shipper count (NULL, the default): unchanged, as before. */
 	@Test
-	public void plant_shipperCopiesNull_archiveCopies1_notSuppressed()
+	public void plant_shipperCopiesNull_asFallback()
 	{
 		final TableRecordReference report = createReport(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, true, null);
-		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report).toBuilder().copies(PrintCopies.ONE).build());
+		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report));
 	}
 
 	@Test
-	public void plant_orderWithoutShipper_archiveCopies1_notSuppressed()
+	public void plant_orderWithoutShipper_asFallback()
 	{
 		final TableRecordReference report = createReport(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, false, null);
-		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report).toBuilder().copies(PrintCopies.ONE).build());
+		assertThat(advisor().getDocumentReportInfo(report, printFormatId, null)).isEqualTo(fallback(report));
 	}
 
 	@Test

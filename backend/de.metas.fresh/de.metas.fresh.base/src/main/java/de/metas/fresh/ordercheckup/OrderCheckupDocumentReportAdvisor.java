@@ -17,14 +17,15 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 
 /**
- * Report info for the order checkup ({@code C_Order_MFGWarehouse_Report}): the generic result, adjusted for a Plant order checkup (PL),
- * which prints the same number of copies as the delivery note of its order ({@link IOrderCheckupBL#getPlantCopiesOrNull}):
+ * Report info for the order checkup ({@code C_Order_MFGWarehouse_Report}): the generic result, adjusted for a Plant order checkup (PL)
+ * whose order shipper (Lieferweg) carries a copy count ({@link IOrderCheckupBL#getPlantCopiesOrNull}):
  * <ul>
- * <li>the archive copies are 1: the copies are set by the print handler on every enqueue ({@link IOrderCheckupBL#getNumberOfCopies});
- * the printing queue multiplies them by the archive copies, so anything else (e.g. a partner print-format count) would print k x N</li>
- * <li>shipper (Lieferweg) count 0: the automatic print is suppressed (the PDF is still archived; a manual print from the outbound
- * documents still works, because the suppress flag lives only on the archive instance created here)</li>
+ * <li>0: the automatic print is suppressed (the PDF is still archived; a manual print from the outbound documents still works,
+ * because the suppress flag lives only on the archive instance created here)</li>
+ * <li>N &gt; 0: the archive copies are 1. The N copies are set by the print handler on every enqueue ({@link IOrderCheckupBL#getNumberOfCopies});
+ * the printing queue multiplies them by the archive copies, so anything else (e.g. a partner print-format count) would print k x N.</li>
  * </ul>
+ * Without a shipper count the generic result is returned unchanged.
  * Found by table name only (no standard report type), like the generic advisor it replaces for this table.
  */
 @Component
@@ -62,15 +63,15 @@ public class OrderCheckupDocumentReportAdvisor implements DocumentReportAdvisor
 		final DocumentReportInfo reportInfo = fallbackAdvisor.getDocumentReportInfo(recordRef, adPrintFormatToUseId, reportProcessIdToUse);
 
 		final I_C_Order_MFGWarehouse_Report report = recordRef.getModel(I_C_Order_MFGWarehouse_Report.class);
-		if (!OrderCheckupDocumentType.ofCode(report.getDocumentType()).isPlant())
+		final OrderCheckupCopies plantCopies = orderCheckupBL.getPlantCopiesOrNull(report);
+		if (plantCopies == null)
 		{
+			// no shipper count: unchanged, the sysconfig decides as before
 			return reportInfo;
 		}
 
-		final OrderCheckupCopies plantCopies = orderCheckupBL.getPlantCopiesOrNull(report);
-		return reportInfo.toBuilder()
-				.copies(PrintCopies.ONE)
-				.suppressAutoPrint(plantCopies != null && plantCopies.isShipperSaysNoPrint())
-				.build();
+		return plantCopies.isShipperSaysNoPrint()
+				? reportInfo.toBuilder().suppressAutoPrint(true).build()
+				: reportInfo.toBuilder().copies(PrintCopies.ONE).build();
 	}
 }

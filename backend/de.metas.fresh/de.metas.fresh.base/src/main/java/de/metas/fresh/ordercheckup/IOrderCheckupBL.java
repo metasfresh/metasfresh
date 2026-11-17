@@ -48,8 +48,8 @@ public interface IOrderCheckupBL extends ISingletonService
 	I_C_Order_MFGWarehouse_Report getReportOrNull(I_AD_Archive printOut);
 
 	/**
-	 * @return for a Plant order checkup (PL) report: the copies the delivery note (shipment) of its order gets (shipper count incl. 0,
-	 * else ship-to address print format, else shipment document type); {@code null} for any other report kind or a report without order
+	 * @return for a Plant order checkup (PL) of a sales order: the order shipper's (Lieferweg) copy count, incl. 0;
+	 * {@code null} if there is none (no shipper, shipper without count, other report kind, not a sales order) - then the sysconfig applies
 	 */
 	@Nullable
 	OrderCheckupCopies getPlantCopiesOrNull(I_C_Order_MFGWarehouse_Report report);

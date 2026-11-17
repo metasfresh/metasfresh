@@ -43,23 +43,12 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
 import de.metas.fresh.ordercheckup.OrderCheckupCopies;
 import de.metas.report.PrintCopies;
 import de.metas.shipping.IShipperDAO;
-import de.metas.bpartner.service.BPPrintFormatQuery;
-import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Shipper;
 import java.math.RoundingMode;
-import de.metas.report.DocumentReportAdvisorUtil;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
 import de.metas.shipping.ShipperId;
 import de.metas.organization.OrgId;
 import de.metas.printing.model.I_C_Printing_Queue;
@@ -99,7 +88,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@NonNull final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
 	@NonNull final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	@NonNull final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -414,12 +402,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		}
 
-		// Plant order checkup (PL): the same copies as the delivery note (shipment) of its order, on automatic and manual prints alike.
-		// A shipper count of 0 only suppresses the automatic print (OrderCheckupDocumentReportAdvisor), so a manual print prints one copy.
+		// Plant order checkup (PL): the order shipper's (Lieferweg) count N > 0, on automatic and manual prints alike.
+		// No count, or 0 (which only suppresses the automatic print, see OrderCheckupDocumentReportAdvisor): the sysconfig, as before.
 		final OrderCheckupCopies plantCopies = report != null ? getPlantCopiesOrNull(report) : null;
-		if (plantCopies != null)
+		if (plantCopies != null && !plantCopies.getCopies().isZero())
 		{
-			return plantCopies.getCopiesToPrint();
+			return plantCopies.getCopies().toInt();
 		}
 
 		return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
@@ -452,25 +440,11 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		final PrintCopies shipperCopies = getShipperCopiesOrNull(ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID()));
 		if (shipperCopies != null)
 		{
-			return OrderCheckupCopies.builder().copies(shipperCopies).fromShipper(true).build();
+			return OrderCheckupCopies.builder().copies(shipperCopies).build();
 		}
 
-		// 2. + 3. the delivery note's partner/address print format, else its document type.
-		// Note: the order header's ship-to address is used; a shipment schedule with an overridden or line-specific address can deviate.
-		final DocumentReportAdvisorUtil util = SpringContextHolder.instance.getBean(DocumentReportAdvisorUtil.class);
-		final I_C_DocType shipmentDocType = getShipmentDocTypeOrNull(order);
-		final BPPrintFormatQuery deliveryNotePrintFormatQuery = BPPrintFormatQuery.builder()
-				.adTableId(AdTableId.ofRepoId(tableDAO.retrieveTableId(I_M_InOut.Table_Name)))
-				.bpartnerId(bpartnerId)
-				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, order.getC_BPartner_Location_ID()))
-				.docTypeId(shipmentDocType != null ? DocTypeId.ofRepoId(shipmentDocType.getC_DocType_ID()) : null)
-				.onlyCopiesGreaterZero(true)
-				.isDropShip(util.isDropShip(order))
-				.build();
-		return OrderCheckupCopies.builder()
-				.copies(util.getDocumentCopies(shipmentDocType, deliveryNotePrintFormatQuery))
-				.fromShipper(false)
-				.build();
+		// no shipper count: the sysconfig, as before
+		return null;
 	}
 
 	/**
@@ -493,31 +467,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		// the column is a Quantity; a fraction can only come from a non-UI write and is rounded up, so a positive count never becomes 0
 		return PrintCopies.ofInt(shipper.getDocumentCopies().setScale(0, RoundingMode.CEILING).intValueExact());
-	}
-
-	/**
-	 * The document type the order's shipment gets: the order document type's shipment document type, else the default delivery document type
-	 * (same as {@code InOutProducerFromShipmentScheduleWithHU#getInoutDoctypeID}).
-	 */
-	@Nullable
-	private I_C_DocType getShipmentDocTypeOrNull(@NonNull final I_C_Order order)
-	{
-		final DocTypeId orderDocTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
-		if (orderDocTypeId != null)
-		{
-			final DocTypeId shipmentDocTypeId = DocTypeId.ofRepoIdOrNull(docTypeDAO.getById(orderDocTypeId).getC_DocTypeShipment_ID());
-			if (shipmentDocTypeId != null)
-			{
-				return docTypeDAO.getById(shipmentDocTypeId);
-			}
-		}
-
-		final DocTypeId defaultShipmentDocTypeId = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
-				.adClientId(order.getAD_Client_ID())
-				.adOrgId(order.getAD_Org_ID())
-				.build());
-		return defaultShipmentDocTypeId != null ? docTypeDAO.getById(defaultShipmentDocTypeId) : null;
 	}
 
 	@Override
