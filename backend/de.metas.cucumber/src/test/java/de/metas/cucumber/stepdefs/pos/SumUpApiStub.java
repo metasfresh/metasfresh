@@ -44,6 +44,9 @@ import java.util.concurrent.TimeUnit;
  *   <li>{@code GET /v2.1/merchants/{merchant}/transactions?client_transaction_id=} - the programmed transaction state, or the programmed lookup failure, an unreadable answer ({@link #answerLookupUnreadable}), or HTTP 404 ({@link #answerLookupNotFound}) (each request is counted per id, see {@link #getStatusLookupCount}); an unknown id (e.g. a PENDING row left by an earlier scenario, since {@link #reset()} forgets all transactions) is answered as PENDING with a synthetic body</li>
  *   <li>{@code POST /merchants/{merchant}/readers/{reader}/terminate} - answers 202 Accepted with no body (as documented: the reader aborts asynchronously) or the programmed 4xx; the reader of each request is recorded</li>
  * </ul>
+ * {@code {merchant}} must be {@link #MERCHANT_CODE}; a request for another merchant, and a request no endpoint above
+ * serves, is answered 501.
+ * <p>
  * A transaction's timestamp (when SumUp created it) is taken from metasfresh's clock ({@link SystemTime}), which a scenario
  * may freeze or advance: SumUp's clock runs with the till's, unless a scenario sets it behind ({@link #setClockBehind}).
  * <p>
@@ -79,6 +82,12 @@ public final class SumUpApiStub
 		@NonNull String status;
 		@Nullable BigDecimal amountRefunded;
 	}
+
+	/**
+	 * The only merchant the stub serves: the merchant code of the SumUp config the scenarios create. A request for any other
+	 * merchant is answered 501, so a client that sends a wrong or empty merchant code fails the scenario.
+	 */
+	public static final String MERCHANT_CODE = "STUBMERCHANT";
 
 	private static final ObjectMapper jsonMapper = new ObjectMapper();
 	private static final Object lock = new Object();
@@ -369,7 +378,12 @@ public final class SumUpApiStub
 			final String[] segments = uri.getPath().replaceFirst("^/+", "").split("/");
 			// segments[0] is the version prefix: "v0.1" for the reader calls, "v2.1" for the transaction lookup
 
-			if ("POST".equals(method) && segments.length == 6 && "merchants".equals(segments[1]) && "readers".equals(segments[3]) && "checkout".equals(segments[5]))
+			if (segments.length >= 3 && "merchants".equals(segments[1]) && !MERCHANT_CODE.equals(segments[2]))
+			{
+				// not 404, for the same reason as below: a lookup for a wrong merchant would pass as a programmed not-found answer
+				respond(exchange, 501, "{\"error\":\"stub: unknown merchant in " + method + " " + uri.getPath().replace('"', '\'') + "\"}");
+			}
+			else if ("POST".equals(method) && segments.length == 6 && "merchants".equals(segments[1]) && "readers".equals(segments[3]) && "checkout".equals(segments[5]))
 			{
 				handleCheckout(exchange, segments[2], segments[4]);
 			}
@@ -533,7 +547,7 @@ public final class SumUpApiStub
 			trx = TransactionState.builder()
 					.externalId(UUID.nameUUIDFromBytes(String.valueOf(clientTransactionId).getBytes(StandardCharsets.UTF_8)).toString())
 					.clientTransactionId(String.valueOf(clientTransactionId))
-					.merchantCode("STUBMERCHANT")
+					.merchantCode(MERCHANT_CODE)
 					.amount(BigDecimal.ZERO)
 					.currency("EUR")
 					.timestamp(SystemTime.asInstant().toString())

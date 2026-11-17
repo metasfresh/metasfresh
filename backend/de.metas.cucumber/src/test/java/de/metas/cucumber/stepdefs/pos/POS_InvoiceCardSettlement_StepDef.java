@@ -140,7 +140,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class POS_InvoiceCardSettlement_StepDef
 {
 	private static final String STUB_API_KEY = "stub-api-key";
-	private static final String STUB_MERCHANT_CODE = "STUBMERCHANT";
+	private static final String STUB_MERCHANT_CODE = SumUpApiStub.MERCHANT_CODE;
 	private static final ImmutableSet<POSInvoiceCardSettlementStatus> STATUSES_WAITING_FOR_BOOKING = ImmutableSet.of(
 			POSInvoiceCardSettlementStatus.PENDING,
 			POSInvoiceCardSettlementStatus.UNKNOWN,

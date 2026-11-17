@@ -383,10 +383,7 @@ public class SumUpService
 
 	private SumUpTransaction updateTransactionFromRemote(final SumUpTransaction trx, final boolean isCreateIssueOnError)
 	{
-		final SumUpConfigId configId = trx.getConfigId();
-		final SumUpConfig config = configRepository.getById(configId);
-		final SumUpClient client = clientFactory.newClient(config);
-		client.setPosRef(trx.getPosRef());
+		final SumUpClient client = newClientForTransaction(trx);
 		client.setCreateIssueOnError(isCreateIssueOnError);
 
 		try
@@ -433,6 +430,18 @@ public class SumUpService
 					.lastSync(LastSync.error(errorId))
 					.build();
 		}
+	}
+
+	/**
+	 * @return a client for the given stored transaction: it calls SumUp for the merchant the transaction was made for, not
+	 * the config's current merchant code (SumUp knows a transaction only under its own merchant), with the config's API key
+	 */
+	private SumUpClient newClientForTransaction(@NonNull final SumUpTransaction trx)
+	{
+		final SumUpConfig config = configRepository.getById(trx.getConfigId());
+		final SumUpClient client = clientFactory.newClient(config, trx.getMerchantCode());
+		client.setPosRef(trx.getPosRef());
+		return client;
 	}
 
 	private static SumUpTransaction updateTransactionFromRemote(@NonNull SumUpTransaction trx, @NonNull final JsonGetTransactionResponse remote)
@@ -558,10 +567,7 @@ public class SumUpService
 	public SumUpTransaction refundTransaction(@NonNull final SumUpTransactionExternalId id)
 	{
 		return trxRepository.updateById(id, trx -> {
-			final SumUpConfig config = configRepository.getById(trx.getConfigId());
-			final SumUpClient client = clientFactory.newClient(config);
-			client.setPosRef(trx.getPosRef());
-
+			final SumUpClient client = newClientForTransaction(trx);
 			client.refundTransaction(trx.getExternalId());
 			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getExternalId());
 			return updateTransactionFromRemote(trx, remoteTrx);

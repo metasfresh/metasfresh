@@ -23,6 +23,15 @@ public class SumUpClientFactory
 
 	public SumUpClient newClient(@NonNull final SumUpConfig config)
 	{
+		return newClient(config, config.getMerchantCode());
+	}
+
+	/**
+	 * @return a client that authenticates with the config's API key and calls SumUp for the given merchant, e.g. the
+	 * merchant a stored transaction was made for, which can differ from the config's current merchant code
+	 */
+	public SumUpClient newClient(@NonNull final SumUpConfig config, @NonNull final SumUpMerchantCode merchantCode)
+	{
 		return SumUpClient.builder()
 				.errorManager(errorManager)
 				.logRepository(logRepository)
@@ -31,7 +40,7 @@ public class SumUpClientFactory
 				//
 				.configId(config.getId())
 				.apiKey(config.getApiKey())
-				.merchantCode(config.getMerchantCode())
+				.merchantCode(merchantCode)
 				//
 				.build();
 	}

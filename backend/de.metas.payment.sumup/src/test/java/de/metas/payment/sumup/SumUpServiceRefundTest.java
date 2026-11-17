@@ -34,7 +34,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 /**
  * {@link SumUpService#refundTransaction(SumUpClientTransactionId)} refunds the named transaction, also when another approved
- * transaction carries the same POS reference. The SumUp API is served by a stubbed {@link RestTemplate}, as in
+ * transaction carries the same POS reference, and both the refund and the lookup of a stored transaction call SumUp for the
+ * merchant the transaction was made for. The SumUp API is served by a stubbed {@link RestTemplate}, as in
  * {@link SumUpServiceImportTest}; nothing reaches the live SumUp API.
  */
 class SumUpServiceRefundTest
@@ -44,7 +45,9 @@ class SumUpServiceRefundTest
 	private static final SumUpConfigId CONFIG_ID = SumUpConfigId.ofRepoId(1);
 	private static final SumUpPOSRef POS_REF = SumUpPOSRef.builder().posOrderId(11).posPaymentId(12).build();
 
+	private RestTemplate restTemplate;
 	private MockRestServiceServer server;
+	private SumUpConfigRepository configRepository;
 	private SumUpTransactionRepository trxRepository;
 	private SumUpService service;
 
@@ -53,34 +56,46 @@ class SumUpServiceRefundTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final RestTemplate restTemplate = new RestTemplate();
+		restTemplate = new RestTemplate();
 		server = MockRestServiceServer.bindTo(restTemplate).build();
-		final SumUpConfig config = SumUpConfig.builder()
-				.id(CONFIG_ID)
-				.isActive(true)
-				.apiKey("key")
-				.merchantCode(SumUpMerchantCode.ofString("M1"))
-				.cardReaders(ImmutableList.of())
-				.build();
 
-		final SumUpClient client = SumUpClient.builder()
+		// like the real factory: the client calls SumUp for the config's merchant, unless a merchant is given
+		final SumUpClientFactory clientFactory = Mockito.mock(SumUpClientFactory.class);
+		Mockito.when(clientFactory.newClient(ArgumentMatchers.any(SumUpConfig.class)))
+				.thenAnswer(invocation -> newClient(invocation.<SumUpConfig>getArgument(0).getMerchantCode()));
+		Mockito.when(clientFactory.newClient(ArgumentMatchers.any(SumUpConfig.class), ArgumentMatchers.any(SumUpMerchantCode.class)))
+				.thenAnswer(invocation -> newClient(invocation.getArgument(1)));
+		configRepository = Mockito.mock(SumUpConfigRepository.class);
+		givenConfigMerchantCode("M1");
+		trxRepository = Mockito.mock(SumUpTransactionRepository.class);
+
+		service = new SumUpService(Mockito.mock(MoneyService.class), clientFactory, configRepository, trxRepository);
+	}
+
+	private SumUpClient newClient(final SumUpMerchantCode merchantCode)
+	{
+		return SumUpClient.builder()
 				.errorManager(Mockito.mock(IErrorManager.class))
 				.logRepository(Mockito.mock(SumUpLogRepository.class))
 				.jsonObjectMapper(JsonObjectMapperHolder.sharedJsonObjectMapper())
 				.configId(CONFIG_ID)
 				.apiKey("key")
-				.merchantCode(config.getMerchantCode())
+				.merchantCode(merchantCode)
 				.baseUrl(BASE_URL)
 				.restTemplate(restTemplate)
 				.build();
+	}
 
-		final SumUpClientFactory clientFactory = Mockito.mock(SumUpClientFactory.class);
-		Mockito.when(clientFactory.newClient(config)).thenReturn(client);
-		final SumUpConfigRepository configRepository = Mockito.mock(SumUpConfigRepository.class);
+	private void givenConfigMerchantCode(final String merchantCode)
+	{
+		final SumUpConfig config = SumUpConfig.builder()
+				.id(CONFIG_ID)
+				.isActive(true)
+				.apiKey("key")
+				.merchantCode(SumUpMerchantCode.ofString(merchantCode))
+				.cardReaders(ImmutableList.of())
+				.build();
 		Mockito.when(configRepository.getById(CONFIG_ID)).thenReturn(config);
-		trxRepository = Mockito.mock(SumUpTransactionRepository.class);
-
-		service = new SumUpService(Mockito.mock(MoneyService.class), clientFactory, configRepository, trxRepository);
 	}
 
 	private static SumUpTransaction successfulTrx(final String externalId, final String clientTransactionId)
@@ -126,5 +141,51 @@ class SumUpServiceRefundTest
 		assertThat(refunded.getClientTransactionId()).isEqualTo(named.getClientTransactionId());
 		assertThat(refunded.getStatus()).isEqualTo(SumUpTransactionStatus.REFUNDED);
 		Mockito.verify(trxRepository, Mockito.never()).updateById(ArgumentMatchers.eq(notBooked.getExternalId()), ArgumentMatchers.<UnaryOperator<SumUpTransaction>>any());
+	}
+
+	/**
+	 * The config's merchant code was changed after the payment: the refund and the follow-up lookup still go to the
+	 * merchant the payment was made for (SumUp answers 404 for a transaction of another merchant).
+	 */
+	@Test
+	void refund_configMerchantCodeChangedAfterPayment_usesTheTransactionsMerchantCode()
+	{
+		givenConfigMerchantCode("M-NEW");
+		final SumUpTransaction trx = successfulTrx("ext-1", "ctid-1"); // made for merchant M1
+		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(trx.getClientTransactionId()))).thenReturn(ImmutableList.of(trx));
+		Mockito.when(trxRepository.updateById(ArgumentMatchers.eq(trx.getExternalId()), ArgumentMatchers.<UnaryOperator<SumUpTransaction>>any()))
+				.thenAnswer(invocation -> invocation.<UnaryOperator<SumUpTransaction>>getArgument(1).apply(trx));
+		server.expect(requestTo("http://stub/v1.0/merchants/M1/payments/ext-1/refunds")).andExpect(method(HttpMethod.POST))
+				.andRespond(withStatus(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body("{}"));
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?id=ext-1")).andExpect(method(HttpMethod.GET))
+				.andRespond(withSuccess(refundedRemoteTrxJson("ext-1", "ctid-1"), MediaType.APPLICATION_JSON));
+
+		final SumUpTransaction refunded = service.refundTransaction(trx.getClientTransactionId());
+
+		server.verify();
+		assertThat(refunded.getStatus()).isEqualTo(SumUpTransactionStatus.REFUNDED);
+	}
+
+	/**
+	 * The config's merchant code was changed after the payment: refreshing the stored transaction (e.g. by the pending
+	 * transactions poller) still looks it up at the merchant the payment was made for.
+	 */
+	@Test
+	void updateFromRemote_configMerchantCodeChangedAfterPayment_looksUpAtTheTransactionsMerchant()
+	{
+		givenConfigMerchantCode("M-NEW");
+		final SumUpTransaction trx = successfulTrx("ext-1", "ctid-1"); // made for merchant M1
+		final SumUpTransaction[] updated = new SumUpTransaction[1];
+		Mockito.doAnswer(invocation -> {
+			updated[0] = invocation.<UnaryOperator<SumUpTransaction>>getArgument(1).apply(trx);
+			return null;
+		}).when(trxRepository).updateById(ArgumentMatchers.eq(trx.getClientTransactionId()), ArgumentMatchers.<UnaryOperator<SumUpTransaction>>any());
+		server.expect(requestTo("http://stub/v2.1/merchants/M1/transactions?client_transaction_id=ctid-1")).andExpect(method(HttpMethod.GET))
+				.andRespond(withSuccess(refundedRemoteTrxJson("ext-1", "ctid-1"), MediaType.APPLICATION_JSON));
+
+		service.updateTransactionFromRemote(trx.getClientTransactionId());
+
+		server.verify();
+		assertThat(updated[0].getStatus()).isEqualTo(SumUpTransactionStatus.REFUNDED);
 	}
 }
