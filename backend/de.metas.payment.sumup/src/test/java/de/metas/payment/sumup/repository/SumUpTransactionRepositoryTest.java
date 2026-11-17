@@ -105,6 +105,32 @@ class SumUpTransactionRepositoryTest
 	}
 
 	@Test
+	void query_createdAfter_findsOnlyTheTransactionsCreatedLater()
+	{
+		try
+		{
+			SystemTime.setFixedTimeSource("2026-11-16T09:00:00Z");
+			final SumUpTransaction older = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
+			repository.saveNew(older);
+
+			SystemTime.setFixedTimeSource("2026-11-16T11:00:00Z");
+			final SumUpTransaction newer = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(7).build());
+			repository.saveNew(newer);
+
+			final List<SumUpTransaction> result = repository.list(SumUpTransactionQuery.builder()
+					.status(SumUpTransactionStatus.PENDING)
+					.createdAfter(Instant.parse("2026-11-16T10:00:00Z"))
+					.build());
+
+			assertThat(result).extracting(SumUpTransaction::getExternalId).containsExactly(newer.getExternalId());
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
+	@Test
 	void recordedAt_whenMetasfreshFirstSavedTheTransaction_alsoOnTheTransactionsOfItsEvents()
 	{
 		final SumUpEventsDispatcher eventsDispatcher = Mockito.mock(SumUpEventsDispatcher.class);

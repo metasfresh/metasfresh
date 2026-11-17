@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +42,12 @@ import java.util.stream.Collectors;
 public class SumUpService
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpService.class);
+
+	/**
+	 * How long after metasfresh created a PENDING transaction the SumUp poller keeps asking SumUp for it
+	 * ({@link #bulkUpdateRecentPendingTransactions()})
+	 */
+	public static final Duration BACKGROUND_LOOKUP_MAX_AGE = Duration.ofHours(24);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final SumUpClientFactory clientFactory;
@@ -459,6 +466,25 @@ public class SumUpService
 				.build();
 	}
 
+	/**
+	 * The SumUp poller's cycle: refreshes the PENDING transactions that metasfresh created at most
+	 * {@link #BACKGROUND_LOOKUP_MAX_AGE} ago (by {@link SystemTime}). An older PENDING transaction is no longer asked for in
+	 * the background, e.g. a reader checkout whose card was never presented, which SumUp keeps answering with "not found":
+	 * it stays PENDING, and an explicit lookup (the till's check, back office's update processes) still asks SumUp.
+	 */
+	public BulkUpdateByQueryResult bulkUpdateRecentPendingTransactions()
+	{
+		return bulkUpdateTransactions(
+				SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.createdAfter(SystemTime.asInstant().minus(BACKGROUND_LOOKUP_MAX_AGE))
+						.build(),
+				false);
+	}
+
+	/**
+	 * Refreshes every PENDING transaction, whatever its age (back office's "update all pending").
+	 */
 	public BulkUpdateByQueryResult bulkUpdatePendingTransactions(boolean isForceSendingChangeEvents)
 	{
 		return bulkUpdateTransactions(SumUpTransactionQuery.ofStatus(SumUpTransactionStatus.PENDING), isForceSendingChangeEvents);

@@ -13,6 +13,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Set;
 
 @Value
@@ -24,6 +25,10 @@ public class SumUpTransactionQuery
 	@Nullable Set<SumUpTransactionId> localIds;
 	@Nullable SumUpTransactionStatus status;
 	@Nullable SumUpPOSRef posRef;
+	/**
+	 * Only transactions that metasfresh created (column {@code Created}) after this time, if set
+	 */
+	@Nullable Instant createdAfter;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.ofInt(1000);
 

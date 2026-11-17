@@ -2,6 +2,7 @@ package de.metas.payment.sumup;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.error.AdIssueId;
@@ -36,8 +37,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
- * Refreshing a transaction metasfresh already stores ({@link SumUpService#updateTransactionFromRemote}, also run for every
- * PENDING transaction by the SumUp poller). SumUp answers the lookup of a reader checkout with HTTP 404 until the card is
+ * Refreshing a transaction metasfresh already stores ({@link SumUpService#updateTransactionFromRemote}, also run by the SumUp poller
+ * for every PENDING transaction metasfresh created in the last 24 h). SumUp answers the lookup of a reader checkout with HTTP 404 until the card is
  * presented on the reader (and forever, if the reader times out): for a PENDING transaction that is SumUp's answer, not a
  * failed lookup.
  * <p>
@@ -132,6 +133,33 @@ class SumUpServiceUpdateFromRemoteTest
 		return updater.getValue().apply(stored);
 	}
 
+	/**
+	 * The SumUp poller's cycle asks SumUp only for the PENDING transactions metasfresh created in the last 24 h: a reader
+	 * checkout whose card was never presented is not looked up for ever.
+	 */
+	@Test
+	void poller_refreshesOnlyPendingTransactionsCreatedInTheLast24h()
+	{
+		try
+		{
+			SystemTime.setFixedTimeSource("2026-11-17T12:00:00Z");
+
+			service.bulkUpdateRecentPendingTransactions();
+
+			Mockito.verify(trxRepository).bulkUpdateByQuery(
+					ArgumentMatchers.eq(SumUpTransactionQuery.builder()
+							.status(SumUpTransactionStatus.PENDING)
+							.createdAfter(Instant.parse("2026-11-16T12:00:00Z"))
+							.build()),
+					ArgumentMatchers.eq(false),
+					ArgumentMatchers.any());
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
 	@Test
 	void pending_notFound404_staysPending_lastSyncOk_noIssue()
 	{
@@ -160,10 +188,10 @@ class SumUpServiceUpdateFromRemoteTest
 	}
 
 	/**
-	 * The SumUp poller's path: every PENDING transaction is refreshed in every cycle.
+	 * Back office's "update all pending" path: every PENDING transaction is refreshed, whatever its age.
 	 */
 	@Test
-	void poller_pending_notFound404_lastSyncOk_noIssue()
+	void updateAllPending_pending_notFound404_lastSyncOk_noIssue()
 	{
 		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(SUMUP_NOT_FOUND_BODY));
 

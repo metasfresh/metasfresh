@@ -357,6 +357,10 @@ public class SumUpTransactionRepository
 		{
 			sqlQueryBuilder.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_Status, query.getStatus().getCode());
 		}
+		if (query.getCreatedAfter() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER, Timestamp.from(query.getCreatedAfter()));
+		}
 		if (query.getPosRef() != null)
 		{
 			final SumUpPOSRef posRef = query.getPosRef();
