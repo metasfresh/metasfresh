@@ -110,8 +110,8 @@ public class ContractCompensationGroupService
 	@NonNull private final ContractSettingsTakeOverService takeOverService;
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
 
@@ -297,9 +297,9 @@ public class ContractCompensationGroupService
 						invoiceCandidate -> !invoiceCandidate.isProcessed(),
 						Boolean::logicalOr));
 
-		final boolean lineWithoutInvoiceCandidateCountsAsOpen = true;
+		final boolean isOpenWithoutInvoiceCandidate = true;
 		return orderLines.stream()
-				.filter(orderLine -> hasOpenInvoiceCandidateByOrderLineId.getOrDefault(extractOrderLineId(orderLine), lineWithoutInvoiceCandidateCountsAsOpen))
+				.filter(orderLine -> hasOpenInvoiceCandidateByOrderLineId.getOrDefault(extractOrderLineId(orderLine), isOpenWithoutInvoiceCandidate))
 				.collect(ImmutableList.toImmutableList());
 	}
 

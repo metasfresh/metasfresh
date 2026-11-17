@@ -7,6 +7,7 @@ import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupCompensationBase;
 import de.metas.product.ProductCategoryId;
 import de.metas.project.ProjectId;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -43,31 +44,6 @@ class CandidateSelectionTest
 	private static final GroupCompensationBase PACKAGING = GroupCompensationBase.of(null, ProductCategoryId.ofRepoId(20));
 
 	@Test
-	void splitByPosition_onePerPosition_inTheOrderOfThePositionsFirstLine_linesWithoutPositionTogether()
-	{
-		final CandidateSelection selection = new CandidateSelection(ImmutableList.of(
-				line(1, POSITION_B, GOODS),
-				line(2, null, GOODS),
-				line(3, POSITION_A, GOODS),
-				line(4, POSITION_B, PACKAGING),
-				line(5, null, PACKAGING)));
-
-		final ImmutableList<PositionSelection> positionSelections = selection.splitByPosition();
-
-		assertThat(positionSelections).extracting(PositionSelection::getPositionId).containsExactly(POSITION_B, null, POSITION_A);
-		assertThat(positionSelections).extracting(positionSelection -> positionSelection.getCandidates().getLineIds()).containsExactly(
-				ImmutableList.of(OrderLineId.ofRepoId(1), OrderLineId.ofRepoId(4)),
-				ImmutableList.of(OrderLineId.ofRepoId(2), OrderLineId.ofRepoId(5)),
-				ImmutableList.of(OrderLineId.ofRepoId(3)));
-	}
-
-	@Test
-	void splitByPosition_none_givesNoSelection()
-	{
-		assertThat(CandidateSelection.NONE.splitByPosition()).isEmpty();
-	}
-
-	@Test
 	void getMatchedBases_unionOfTheLinesBases()
 	{
 		final CandidateSelection selection = new CandidateSelection(ImmutableList.of(
@@ -78,16 +54,45 @@ class CandidateSelectionTest
 		assertThat(selection.getMatchedBases()).containsExactlyInAnyOrder(GOODS, PACKAGING);
 	}
 
-	@Test
-	void splitByPosition_eachPositionKeepsOnlyItsOwnLinesBases()
+	@Nested
+	class SplitByPosition
 	{
-		final CandidateSelection selection = new CandidateSelection(ImmutableList.of(
-				line(1, POSITION_A, GOODS),
-				line(2, POSITION_B, PACKAGING)));
+		@Test
+		void onePerPosition_inTheOrderOfThePositionsFirstLine_linesWithoutPositionTogether()
+		{
+			final CandidateSelection selection = new CandidateSelection(ImmutableList.of(
+					line(1, POSITION_B, GOODS),
+					line(2, null, GOODS),
+					line(3, POSITION_A, GOODS),
+					line(4, POSITION_B, PACKAGING),
+					line(5, null, PACKAGING)));
 
-		assertThat(selection.splitByPosition()).extracting(positionSelection -> positionSelection.getCandidates().getMatchedBases()).containsExactly(
-				ImmutableSet.of(GOODS),
-				ImmutableSet.of(PACKAGING));
+			final ImmutableList<PositionSelection> positionSelections = selection.splitByPosition();
+
+			assertThat(positionSelections).extracting(PositionSelection::getPositionId).containsExactly(POSITION_B, null, POSITION_A);
+			assertThat(positionSelections).extracting(positionSelection -> positionSelection.getCandidates().getLineIds()).containsExactly(
+					ImmutableList.of(OrderLineId.ofRepoId(1), OrderLineId.ofRepoId(4)),
+					ImmutableList.of(OrderLineId.ofRepoId(2), OrderLineId.ofRepoId(5)),
+					ImmutableList.of(OrderLineId.ofRepoId(3)));
+		}
+
+		@Test
+		void none_givesNoSelection()
+		{
+			assertThat(CandidateSelection.NONE.splitByPosition()).isEmpty();
+		}
+
+		@Test
+		void eachPositionKeepsOnlyItsOwnLinesBases()
+		{
+			final CandidateSelection selection = new CandidateSelection(ImmutableList.of(
+					line(1, POSITION_A, GOODS),
+					line(2, POSITION_B, PACKAGING)));
+
+			assertThat(selection.splitByPosition()).extracting(positionSelection -> positionSelection.getCandidates().getMatchedBases()).containsExactly(
+					ImmutableSet.of(GOODS),
+					ImmutableSet.of(PACKAGING));
+		}
 	}
 
 	private static CandidateLine line(final int lineId, @Nullable final ProjectId positionId, final GroupCompensationBase... matchedBases)

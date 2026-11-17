@@ -7,6 +7,7 @@ import de.metas.project.ProjectId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -58,12 +59,12 @@ class ContractCompensationGroupRepositoryTest
 		return OrderGroupRepository.createGroupId(OrderId.ofRepoId(ORDER_ID), orderCompensationGroupId);
 	}
 
-	private static I_C_OrderLine line(final int orderCompensationGroupId, final boolean compensationLine, @Nullable final Integer projectRepoId)
+	private static I_C_OrderLine line(final int orderCompensationGroupId, final boolean isCompensationLine, @Nullable final Integer projectRepoId)
 	{
 		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
 		line.setC_Order_ID(ORDER_ID);
 		line.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
-		line.setIsGroupCompensationLine(compensationLine);
+		line.setIsGroupCompensationLine(isCompensationLine);
 		if (projectRepoId != null)
 		{
 			line.setC_Project_ID(projectRepoId);
@@ -106,30 +107,34 @@ class ContractCompensationGroupRepositoryTest
 				.containsExactly(otherGroupCompensationLine.getC_OrderLine_ID());
 	}
 
-	@Test
-	void setProjectOnCompensationLines_setsThePositionOnLinesWithNoOrOtherPositionAndKeepsTheOthers()
+	@Nested
+	class SetProjectOnCompensationLines
 	{
-		final I_C_OrderLine withoutPosition = line(GROUP_ID, true, null);
-		final I_C_OrderLine withOtherPosition = line(GROUP_ID, true, 7);
-		final I_C_OrderLine withSamePosition = line(GROUP_ID, true, 5);
-		final I_C_OrderLine regularLine = line(GROUP_ID, false, null);
+		@Test
+		void setsThePositionOnLinesWithNoOrOtherPositionAndKeepsTheOthers()
+		{
+			final I_C_OrderLine withoutPosition = line(GROUP_ID, true, null);
+			final I_C_OrderLine withOtherPosition = line(GROUP_ID, true, 7);
+			final I_C_OrderLine withSamePosition = line(GROUP_ID, true, 5);
+			final I_C_OrderLine regularLine = line(GROUP_ID, false, null);
 
-		repository.setProjectOnCompensationLines(groupId(GROUP_ID), ProjectId.ofRepoId(5));
+			repository.setProjectOnCompensationLines(groupId(GROUP_ID), ProjectId.ofRepoId(5));
 
-		assertThat(positionOf(withoutPosition)).isEqualTo(ProjectId.ofRepoId(5));
-		assertThat(positionOf(withOtherPosition)).isEqualTo(ProjectId.ofRepoId(5));
-		assertThat(positionOf(withSamePosition)).isEqualTo(ProjectId.ofRepoId(5));
-		assertThat(positionOf(regularLine)).isNull();
-	}
+			assertThat(positionOf(withoutPosition)).isEqualTo(ProjectId.ofRepoId(5));
+			assertThat(positionOf(withOtherPosition)).isEqualTo(ProjectId.ofRepoId(5));
+			assertThat(positionOf(withSamePosition)).isEqualTo(ProjectId.ofRepoId(5));
+			assertThat(positionOf(regularLine)).isNull();
+		}
 
-	@Test
-	void setProjectOnCompensationLines_withoutPosition_clearsThePositionOfTheLines()
-	{
-		final I_C_OrderLine withPosition = line(GROUP_ID, true, 7);
+		@Test
+		void withoutPosition_clearsThePositionOfTheLines()
+		{
+			final I_C_OrderLine withPosition = line(GROUP_ID, true, 7);
 
-		repository.setProjectOnCompensationLines(groupId(GROUP_ID), null);
+			repository.setProjectOnCompensationLines(groupId(GROUP_ID), null);
 
-		assertThat(positionOf(withPosition)).isNull();
+			assertThat(positionOf(withPosition)).isNull();
+		}
 	}
 
 	@Test
