@@ -182,6 +182,7 @@ public class C_OrderLine_StepDef
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
 	 *   <li>{@code C_CompensationGroup_CalibrationRule_ID} (optional, identifier-ref) — the calibration rule the line refers to</li>
+	 *   <li>{@code OPT.BPartner_QtyItemCapacity} (optional, BigDecimal) — the CUs-per-TU capacity of the line as seen by the business partner</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -257,6 +258,12 @@ public class C_OrderLine_StepDef
 		if (qtyItemCapacity != null)
 		{
 			orderLine.setQtyItemCapacity(qtyItemCapacity);
+		}
+
+		final BigDecimal bPartnerQtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
+		if (bPartnerQtyItemCapacity != null)
+		{
+			orderLine.setBPartner_QtyItemCapacity(bPartnerQtyItemCapacity);
 		}
 
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);

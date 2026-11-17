@@ -94,8 +94,7 @@ FROM edi_cctop_invoic_v invoic_v
                                )) AS json_data
                     FROM edi_cctop_140_v
                     GROUP BY c_invoice_id) edi_140_v ON edi_140_v.c_invoice_id = invoic_v.c_invoice_id
-         LEFT JOIN (SELECT c_invoice_id,
-                           JSON_AGG(JSON_BUILD_OBJECT(
+         LEFT JOIN LATERAL (SELECT JSON_AGG(JSON_BUILD_OBJECT(
                                             'Invoice_Line', v.line,
                                             'Invoice_QtyInvoiced', v.QtyInvoiced,
                                             'Invoice_QtyInvoiced_UOM', v.eancom_uom,
@@ -129,12 +128,15 @@ FROM edi_cctop_invoic_v invoic_v
                                             'Line_Type', CASE WHEN ol_t.isgroupcompensationline = 'Y' AND ol_t.groupcompensationtype = 'S' THEN 'Charge'
                                                               WHEN ol_t.isgroupcompensationline = 'Y' THEN 'Allowance'
                                                               ELSE 'Item'
-                                                         END
-                                        ) ORDER BY v.line) AS json_data
-                    FROM edi_cctop_invoic_500_incl_packaging_v v
-                             LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
-                             LEFT JOIN c_orderline ol_t ON ol_t.c_orderline_id = v.c_orderline_id AND ol_t.isactive = 'Y'
-                    GROUP BY c_invoice_id) edi_500_v ON edi_500_v.c_invoice_id = invoic_v.c_invoice_id
+                                                         END,
+                                            'QtyCUsPerTU', v.QtyCUsPerTU,
+                                            'QtyCUsPerTU_UOM', v.QtyCUsPerTU_UOM,
+                                            'Shipment_DocumentNo', v.Shipment_DocumentNo
+                                        ) ORDER BY v.line, v.m_inout_id NULLS LAST) AS json_data
+                                   FROM edi_invoic_json_line_v v
+                                            LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
+                                            LEFT JOIN c_orderline ol_t ON ol_t.c_orderline_id = v.c_orderline_id AND ol_t.isactive = 'Y'
+                                   WHERE v.c_invoice_id = invoic_v.c_invoice_id) edi_500_v ON TRUE
          LEFT JOIN (SELECT c_invoice_id,
                            JSON_AGG(JSON_BUILD_OBJECT(
                                             'TotalAmt', TotalAmt,

@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.match_inv;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -24,6 +25,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_MatchInv;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class M_MatchInv_StepDef
@@ -67,6 +70,30 @@ public class M_MatchInv_StepDef
 				.ifPresent(soTrx -> softly.assertThat(matchInvoice.getSoTrx()).as("IsSOTrx").isEqualTo(soTrx));
 
 		softly.assertAll();
+	}
+
+	/**
+	 * Asserts that no {@code M_MatchInv} of any type exists for the given invoice line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_InvoiceLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And no M_MatchInv exists for C_InvoiceLine invoiceLine_1
+	 * </pre>
+	 */
+	@And("^no M_MatchInv exists for C_InvoiceLine (.*)$")
+	public void assertNoMatchInvForInvoiceLine(@NonNull final String invoiceLineIdentifier)
+	{
+		final InvoiceAndLineId invoiceLineId = invoiceLineTable.getInvoiceAndLineId(StepDefDataIdentifier.ofString(invoiceLineIdentifier));
+
+		final MatchInvCollection matchInvoices = matchInvoiceRepository.list(MatchInvQuery.builder()
+				.invoiceAndLineId(invoiceLineId)
+				.build());
+
+		assertThat(matchInvoices.isEmpty())
+				.as("Expected no M_MatchInv for %s but found: %s", invoiceLineId, matchInvoices)
+				.isTrue();
 	}
 
 	private MatchInv retrieveMatchInv(final @NonNull DataTableRow row)
