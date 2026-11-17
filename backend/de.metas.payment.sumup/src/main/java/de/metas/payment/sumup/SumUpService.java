@@ -490,8 +490,8 @@ public class SumUpService
 	 * {@link #BACKGROUND_LOOKUP_MAX_AGE} after metasfresh created them was answered by SumUp with "not found" (e.g. a reader
 	 * checkout whose card was never presented): those are no longer asked for in the background. They stay PENDING, and an
 	 * explicit lookup (the till's check, back office's update processes) still asks SumUp. A transaction whose last lookup
-	 * failed, or that was never looked up (e.g. while the server was down), keeps being polled, so the first lookup that gets
-	 * through after an outage still stores a charge SumUp approved meanwhile. This covers the transactions metasfresh stores;
+	 * failed, or that was never looked up (e.g. while the server was down), keeps being polled (on the schedule below), so the
+	 * first lookup that gets through after an outage still stores a charge SumUp approved meanwhile. This covers the transactions metasfresh stores;
 	 * a card payment whose transaction metasfresh does not store is looked up by the POS card-sale sweep, with its own rule.
 	 * A transaction is asked for only when it is due by {@link SumUpPollSchedule} (every cycle in its first 5 min, then less
 	 * often as it ages), also after a failed lookup. Status change events are not force-sent.
