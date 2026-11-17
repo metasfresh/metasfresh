@@ -596,6 +596,42 @@ test('Close LU / Reopen LU', async ({ page }) => {
     await expect(page.getByTestId('targetLU-button')).toContainText(masterdata.packingInstructions.PI.luName); // the reopened LU is the current target
 });
 
+// "LU wieder öffnen" crashed ("Oops") when the closed LUs carry no HU attributes. Such an LU must be listed and reopenable.
+// noinspection JSUnusedLocalSymbols
+test('Reopen LU: a closed LU without attributes is listed and can be reopened', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Reopen LU without attributes');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ language: 'de_DE' });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startPickingApplication();
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.closeTargetLU();
+
+    await ReopenLUScreen.simulateClosedLUsWithoutAttributes();
+
+    await PickingJobScreen.clickReopenLUButton();
+    await ReopenLUScreen.waitForScreen();
+    await ReopenLUScreen.expectClosedLUs({ total: 1, enabled: 1, disabled: 0 });
+    await ReopenLUScreen.expectEnabledLUWithName({ name: masterdata.packingInstructions.PI.luName });
+    await ReopenLUScreen.clickFirstEnabledLU();
+    await PickingJobScreen.waitForScreen();
+    await expect(page.getByTestId('targetLU-button')).toContainText(masterdata.packingInstructions.PI.luName); // the reopened LU is the current target
+
+    await ReopenLUScreen.stopSimulatingClosedLUsWithoutAttributes();
+});
+
 // "LU wieder öffnen" showed an empty list when another closed LU of the job was already shipped
 // (the server threw "Not a physical HU" for the whole list). A shipped LU stays listed, greyed out, with a status label.
 // noinspection JSUnusedLocalSymbols
