@@ -121,7 +121,7 @@ public class IdentifiersResolver
 	{
 		return ImmutableList.of(invoiceTable, paymentTable, allocationTable, matchInvTable, inOutTable, inventoryTable, orderTable, orderLineTable,
 				dunningDocTable, ppCostCollectorTable, costRevaluationTable, shipperTransportationTable, ppOrderTable, sapGLJournalTable,
-				customsInvoiceTable, locatorTable, bpartnerTable, bankAccountTable, mandateTable);
+				customsInvoiceTable, locatorTable, bpartnerTable, bankAccountTable, mandateTable, glJournalTable, bankStatementTable);
 	}
 
 	@NonNull
