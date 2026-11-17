@@ -1,5 +1,7 @@
 package de.metas.pos;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.util.Services;
@@ -10,8 +12,13 @@ import org.compiere.model.I_AD_Issue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -114,5 +121,71 @@ class POSOrdersRepositoryTest
 
 		assertThat(repository.listIssueErrorCodesByPaymentId(payment)).containsExactly("CodeA", POSOrdersRepository.NO_ERROR_CODE);
 		assertThat(repository.listIssueErrorCodesByPaymentId(otherPayment)).containsExactly("CodeOther");
+	}
+
+	/**
+	 * A card payment with an unknown result naming a SumUp transaction that metasfresh does not have, saved at the given time
+	 *
+	 * @param checkoutStartedAt the start of its checkout, or null if none was recorded
+	 */
+	private POSPaymentId newUnknownCardPaymentToImport(final String savedAt, @Nullable final String checkoutStartedAt, final String clientTransactionId)
+	{
+		SystemTime.setFixedTimeSource(savedAt);
+		final I_C_POS_Payment payment = InterfaceWrapperHelper.newInstance(I_C_POS_Payment.class);
+		payment.setC_POS_Order_ID(newOrder(TERMINAL_1));
+		payment.setPOSPaymentMethod(POSPaymentMethod.CARD.getCode());
+		payment.setPOSPaymentProcessingStatus(POSPaymentProcessingStatus.UNKNOWN.getCode());
+		payment.setSUMUP_ClientTransactionID(clientTransactionId);
+		payment.setCardCheckoutStartedAt(checkoutStartedAt != null ? Timestamp.from(Instant.parse(checkoutStartedAt)) : null);
+		InterfaceWrapperHelper.saveRecord(payment);
+		return POSPaymentId.ofRepoId(payment.getC_POS_Payment_ID());
+	}
+
+	private List<POSPaymentId> streamCardPaymentsToImport(final String checkoutStartedAfter)
+	{
+		try (final Stream<POSOrderAndPaymentId> stream = repository.streamCardPaymentsToImport(Instant.parse(checkoutStartedAfter)))
+		{
+			return stream.map(POSOrderAndPaymentId::getPaymentId).collect(Collectors.toList());
+		}
+	}
+
+	@Test
+	void streamCardPaymentsToImport_onlyThoseWhoseCheckoutStartedAfterTheGivenTime()
+	{
+		try
+		{
+			final POSPaymentId startedBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-started-before");
+			final POSPaymentId startedAfter = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T11:00:00Z", "ctid-started-after");
+			// without a recorded checkout start: its creation counts
+			final POSPaymentId createdBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", null, "ctid-created-before");
+			final POSPaymentId createdAfter = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", null, "ctid-created-after");
+
+			assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
+					.containsExactly(startedAfter, createdAfter)
+					.doesNotContain(startedBefore, createdBefore);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
+	@Test
+	void streamCardPaymentsToImport_notThoseWhoseSumUpTransactionMetasfreshHas()
+	{
+		try
+		{
+			final POSPaymentId withoutTransaction = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-missing");
+			newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-stored");
+			final I_SUMUP_Transaction trx = InterfaceWrapperHelper.newInstance(I_SUMUP_Transaction.class);
+			trx.setSUMUP_ClientTransactionId("ctid-stored");
+			InterfaceWrapperHelper.saveRecord(trx);
+
+			assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z")).containsExactly(withoutTransaction);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
 	}
 }

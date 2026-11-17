@@ -1,11 +1,13 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
@@ -113,16 +115,27 @@ public class POSOrdersRepository
 	 */
 	public Stream<POSOrderAndPaymentId> streamCardPaymentsToImport(@NonNull final Instant checkoutStartedAfter)
 	{
+		final Timestamp after = Timestamp.from(checkoutStartedAfter);
+		final ICompositeQueryFilter<I_C_POS_Payment> checkoutStartedLater = queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
+				.addNotNull(I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt) // as in SQL; the in-memory compare filter would accept null
+				.addCompareFilter(I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt, CompareQueryFilter.Operator.GREATER, after);
+		final ICompositeQueryFilter<I_C_POS_Payment> noCheckoutStartCreatedLater = queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt, null)
+				.addCompareFilter(I_C_POS_Payment.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER, after);
+
 		return queryBL.createQueryBuilder(I_C_POS_Payment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus.UNKNOWN.getCode())
 				.addNotNull(I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID)
-				.filter(TypedSqlQueryFilter.of("NOT EXISTS (SELECT 1 FROM SUMUP_Transaction t"
-						+ " WHERE t.SUMUP_ClientTransactionId = " + I_C_POS_Payment.Table_Name + "." + I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID + ")"))
-				.filter(TypedSqlQueryFilter.of("COALESCE(" + I_C_POS_Payment.Table_Name + "." + I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt
-								+ ", " + I_C_POS_Payment.Table_Name + "." + I_C_POS_Payment.COLUMNNAME_Created + ") > ?",
-						ImmutableList.of(Timestamp.from(checkoutStartedAfter))))
+				.addNotInSubQueryFilter(
+						I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID,
+						I_SUMUP_Transaction.COLUMNNAME_SUMUP_ClientTransactionId,
+						queryBL.createQueryBuilder(I_SUMUP_Transaction.class).create())
+				.filter(queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
+						.setJoinOr()
+						.addFilter(checkoutStartedLater)
+						.addFilter(noCheckoutStartCreatedLater))
 				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
 				.create()
 				.stream()
