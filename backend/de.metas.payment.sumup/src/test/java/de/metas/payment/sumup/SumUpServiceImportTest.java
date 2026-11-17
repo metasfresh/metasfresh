@@ -240,6 +240,12 @@ class SumUpServiceImportTest
 		assertLookupErrorForStatus(HttpStatus.FORBIDDEN);
 	}
 
+	@Test
+	void import_bare404WithoutSumUpNotFoundErrorCode_returnsLookupError_notNotFound()
+	{
+		assertLookupErrorForStatus(HttpStatus.NOT_FOUND);
+	}
+
 	private void assertLookupErrorForStatus(final HttpStatus status)
 	{
 		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
