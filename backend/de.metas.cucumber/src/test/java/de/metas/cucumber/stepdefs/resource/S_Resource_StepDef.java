@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.resource;
 
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -51,6 +52,7 @@ public class S_Resource_StepDef
 	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final AD_User_StepDefData userTable;
 
 	@And("load S_Resource:")
 	public void load_S_Resource(@NonNull final DataTable dataTable)
@@ -102,6 +104,8 @@ public class S_Resource_StepDef
 	 *     segment, reached via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode}</li>
 	 *     <li>{@code PlanningHorizon}</li>
 	 *     <li>{@code CapacityPerProductionCycle} (+ its UOM column)</li>
+	 *     <li>{@code AD_User_ID} — identifier of an {@code AD_User}: the resource's responsible user (for a plant: the user
+	 *     the Plant order checkup (PL) is printed for; without one its printing-queue item is cancelled)</li>
 	 * </ul>
 	 * <pre>
 	 * And create S_Resource:
@@ -136,6 +140,9 @@ public class S_Resource_StepDef
 				.ifPresent(record::setManufacturingResourceType);
 		row.getAsOptionalString(I_S_Resource.COLUMNNAME_LotNumberCode).ifPresent(record::setLotNumberCode);
 		row.getAsOptionalInt(I_S_Resource.COLUMNNAME_PlanningHorizon).ifPresent(record::setPlanningHorizon);
+		row.getAsOptionalIdentifier(I_S_Resource.COLUMNNAME_AD_User_ID)
+				.map(identifier -> identifier.lookupNotNullIdIn(userTable))
+				.ifPresent(userId -> record.setAD_User_ID(userId.getRepoId()));
 
 		row.getAsOptionalQuantity(
 						I_S_Resource.COLUMNNAME_CapacityPerProductionCycle,

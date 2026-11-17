@@ -6,6 +6,8 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 
+import javax.annotation.Nullable;
+
 public interface IOrderCheckupBL extends ISingletonService
 {
 	/**
@@ -44,4 +46,11 @@ public interface IOrderCheckupBL extends ISingletonService
 	int getNumberOfCopies(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
 
 	I_C_Order_MFGWarehouse_Report getReportOrNull(I_AD_Archive printOut);
+
+	/**
+	 * @return for a Plant order checkup (PL) of a sales order: the order shipper's (Lieferweg) copy count, incl. 0;
+	 * {@code null} if there is none (no shipper, shipper without count, other report kind, not a sales order) - then the sysconfig applies
+	 */
+	@Nullable
+	OrderCheckupCopies getPlantCopiesOrNull(I_C_Order_MFGWarehouse_Report report);
 }
