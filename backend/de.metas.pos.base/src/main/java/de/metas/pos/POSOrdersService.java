@@ -706,8 +706,10 @@ public class POSOrdersService
 	/**
 	 * @return the card payments whose SumUp transaction is to be imported by the background sweep, case (a), oldest first:
 	 * their result is unknown and they name a SumUp transaction metasfresh does not have (see {@link #importCardPaymentSumUpTransaction}),
-	 * and their checkout started at most {@link SumUpService#BACKGROUND_LOOKUP_MAX_AGE} ago (by {@link SystemTime}). An older
-	 * payment keeps its state and is no longer looked up in the background; the till's check still asks SumUp.
+	 * and their checkout started at most {@link SumUpService#BACKGROUND_LOOKUP_MAX_AGE} ago (by {@link SystemTime}) or their
+	 * SumUp lookups are failing (an outage, see {@link #recordCardLookupOutcome}). An older payment for which SumUp answered
+	 * (it does not know the transaction) keeps its state and is no longer looked up in the background; the till's check
+	 * still asks SumUp.
 	 */
 	public ImmutableList<POSOrderAndPaymentId> getCardPaymentIdsToImport()
 	{

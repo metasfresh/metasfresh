@@ -170,6 +170,32 @@ class POSOrdersRepositoryTest
 		}
 	}
 
+	/**
+	 * A payment whose SumUp lookups are failing (an outage recorded on the payment) is still looked up, however long ago its
+	 * checkout started: only a lookup that SumUp answered ends the background lookups after the cutoff, so a charge SumUp
+	 * approved during the outage is still imported.
+	 */
+	@Test
+	void streamCardPaymentsToImport_alsoThoseCheckedOutBeforeTheGivenTime_whoseLookupsAreFailing()
+	{
+		try
+		{
+			final POSPaymentId failing = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-failing");
+			final I_C_POS_Payment failingRecord = InterfaceWrapperHelper.load(failing, I_C_POS_Payment.class);
+			failingRecord.setCardLookupFailingSince(Timestamp.from(Instant.parse("2026-11-16T09:01:00Z")));
+			InterfaceWrapperHelper.saveRecord(failingRecord);
+			final POSPaymentId answered = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-answered");
+
+			assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
+					.containsExactly(failing)
+					.doesNotContain(answered);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
 	@Test
 	void streamCardPaymentsToImport_notThoseWhoseSumUpTransactionMetasfreshHas()
 	{

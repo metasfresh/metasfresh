@@ -111,7 +111,8 @@ public class POSOrdersRepository
 	 * The card payments whose result is unknown and that name SumUp's client transaction id, but for which metasfresh has
 	 * no SumUp transaction with that id yet (SumUp accepted the checkout, but saving its transaction failed): their
 	 * transaction is to be imported from SumUp. Only the payments whose checkout started (or, without a recorded checkout
-	 * start, which were created) after the given time. Oldest first. The caller must close the stream.
+	 * start, which were created) after the given time, and those whose SumUp lookups are failing ({@code CardLookupFailingSince}
+	 * set), however old: SumUp has not answered for them yet. Oldest first. The caller must close the stream.
 	 */
 	public Stream<POSOrderAndPaymentId> streamCardPaymentsToImport(@NonNull final Instant checkoutStartedAfter)
 	{
@@ -135,7 +136,8 @@ public class POSOrdersRepository
 				.filter(queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
 						.setJoinOr()
 						.addFilter(checkoutStartedLater)
-						.addFilter(noCheckoutStartCreatedLater))
+						.addFilter(noCheckoutStartCreatedLater)
+						.addNotNull(I_C_POS_Payment.COLUMNNAME_CardLookupFailingSince))
 				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
 				.create()
 				.stream()
