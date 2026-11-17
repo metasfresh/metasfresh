@@ -1333,6 +1333,38 @@ Feature: POS invoice card settlement
     And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
     And the cash journal of POS terminal till has 1 card payment line referencing card settlement settlement1
 
+  # Until the card is presented on the reader, SumUp has no transaction for the checkout and answers its lookup with
+  # HTTP 404 (forever, if the reader times out). That is SumUp's answer, not a failed lookup: the SumUp polls and the
+  # till's check record no AD_Issue, the settlement keeps waiting, and the check does not report a failure.
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:POS_CARD_TC19_3
+  Scenario: SumUp has no transaction yet because the card was not presented, so SumUp polls and the till's check keep the settlement waiting without AD_Issues and the later approval is booked
+    Given POS terminal till is configured with SumUp and a default card reader
+    And card settlement settlement1 is started for invoice invoice1 at POS terminal till by cashier metasfresh
+    And SumUp API stub does not know the transaction of card settlement settlement1
+
+    When metasfresh polls SumUp 2 times
+
+    Then card settlement settlement1 has status PENDING
+    And the SumUp transaction of card settlement settlement1 has status PENDING
+    And card settlement settlement1 has 0 AD_Issues
+
+    When card settlement settlement1 is checked
+
+    Then the check of card settlement settlement1 returned status PENDING with checkFailed false
+    And card settlement settlement1 has 0 AD_Issues
+    And nothing is booked for invoice invoice1 and its open amount is 16.07
+
+    When SumUp API stub reports transaction of card settlement settlement1 as SUCCESSFUL
+    And card settlement settlement1 is checked
+
+    Then the check of card settlement settlement1 returned status SUCCESSFUL with checkFailed false
+    And card settlement settlement1 has payment cardPayment
+    And the card payment of card settlement settlement1 is allocated with 16.07 to its invoice
+    And card settlement settlement1 has 0 AD_Issues
+
   # The background check handles every settlement on its own: the booking of one settlement fails (its invoice row is
   # locked by another transaction beyond the booking's lock timeout), and another settlement is still booked in the
   # same poll; the next poll books the first one.

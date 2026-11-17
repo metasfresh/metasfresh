@@ -408,6 +408,25 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
+	 * From now on, the stub answers the status lookup of the settlement's SumUp transaction with HTTP 404, as SumUp does for
+	 * a reader checkout until the card is presented (and forever, if the reader times out). Reporting a status for the
+	 * transaction ({@code SumUp API stub reports transaction of card settlement ...}) ends it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the settlement's checkout was sent (its SumUp transaction exists)
+	 * @cucumber.example
+	 * <pre>
+	 * And SumUp API stub does not know the transaction of card settlement settlement1
+	 * </pre>
+	 */
+	@And("^SumUp API stub does not know the transaction of card settlement (\\S+)$")
+	public void stubDoesNotKnowTransaction(@NonNull final String settlementIdentifier)
+	{
+		final SumUpTransaction trx = getSumUpTransaction(loadSettlement(settlementIdentifier).getId());
+		SumUpApiStub.answerLookupNotFound(trx.getClientTransactionId().getAsString());
+	}
+
+	/**
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
