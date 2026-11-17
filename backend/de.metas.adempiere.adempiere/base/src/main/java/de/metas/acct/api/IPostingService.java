@@ -31,14 +31,8 @@ public interface IPostingService extends ISingletonService
 	void postNowAndThrow(@NonNull DocumentPostRequest request);
 
 	/**
-	 * Un-posts the document: checks that the accounting period is open, deletes the document's accounting records ({@code Fact_Acct}), sets {@code Posted=false}
-	 * and, if the document is completed, closed or reversed ({@code DocStatus} CO, CL or RE; reversed documents are posted too), schedules it for posting again.
-	 * <p>
-	 * A document in another status (drafted, voided, in progress) is just un-posted, not queued.
-	 * <p>
-	 * The document model needs the columns {@code Posted}, {@code DocStatus}, {@code AD_Client_ID} and {@code UpdatedBy}; {@code AD_Org_ID} is read too, with {@code OrgId.ANY} as fallback.
-	 *
-	 * @throws org.adempiere.exceptions.AdempiereException if the period is closed
+	 * Checks that the accounting period is open, deletes the document's {@code Fact_Acct}, sets {@code Posted=false} and schedules it for posting again if its {@code DocStatus} is CO, CL or RE.
+	 * The document needs the columns {@code Posted}, {@code DocStatus}, {@code AD_Client_ID} and {@code UpdatedBy} ({@code AD_Org_ID} optional).
 	 */
 	void unpost(@NonNull DocumentUnpostRequest request);
 }
