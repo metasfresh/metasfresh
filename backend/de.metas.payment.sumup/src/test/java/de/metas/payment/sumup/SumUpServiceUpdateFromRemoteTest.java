@@ -99,6 +99,8 @@ class SumUpServiceUpdateFromRemoteTest
 
 		final SumUpClientFactory clientFactory = Mockito.mock(SumUpClientFactory.class);
 		Mockito.when(clientFactory.newClient(config)).thenReturn(client);
+		// a stored transaction is looked up for the merchant it was made for
+		Mockito.when(clientFactory.newClient(config, SumUpMerchantCode.ofString("M1"))).thenReturn(client);
 		final SumUpConfigRepository configRepository = Mockito.mock(SumUpConfigRepository.class);
 		Mockito.when(configRepository.getById(CONFIG_ID)).thenReturn(config);
 		trxRepository = Mockito.mock(SumUpTransactionRepository.class);
