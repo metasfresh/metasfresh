@@ -182,7 +182,6 @@ class IssueRawMaterialsCommandTest
 		{
 			final I_C_UOM uom = newInstance(I_C_UOM.class);
 			uom.setUOMSymbol("kg");
-			uom.setStdPrecision(3);
 			return Quantity.of(new BigDecimal(value), uom);
 		}
 
@@ -210,17 +209,28 @@ class IssueRawMaterialsCommandTest
 		@Test
 		void qtyIssuedWithFloatNoiseAtBoundary_doesNotThrow()
 		{
-			// an on-scale weightable issue can arrive as 5.200000000000001 (unrounded JS subtraction);
-			// rounding to the UOM precision absorbs the noise, so it is not refused as an over-issue.
+			// an on-scale weightable issue can arrive as 5.200000000000001 (unrounded JS subtraction); the
+			// float-noise tolerance absorbs it, so it is not refused as an over-issue.
 			IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("5.2"), new BigDecimal("5.200000000000001"));
 			// no exception
 		}
 
 		@Test
-		void qtyIssuedGenuinelyOverAtUomPrecision_throws()
+		void qtyIssuedFractionallyOver_throws()
 		{
-			assertThatThrownBy(() -> IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("5.2"), new BigDecimal("5.201")))
+			// a real sub-unit over-issue (0.4 over a demand of 10) must be refused regardless of UOM
+			// precision -- a UOM-precision HALF_UP round would have admitted it at precision 0.
+			assertThatThrownBy(() -> IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("10"), new BigDecimal("10.4")))
 					.isInstanceOf(AdempiereException.class);
+		}
+
+		@Test
+		void qtyIssuedEqualsFinerScaledRemaining_doesNotThrow()
+		{
+			// issuing exactly a finer-scaled remaining demand (5.25) must be allowed -- a UOM-precision round
+			// of the request could have pushed it above the ceiling and falsely refused it.
+			IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("5.25"), new BigDecimal("5.25"));
+			// no exception
 		}
 	}
 }

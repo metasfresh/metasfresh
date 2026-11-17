@@ -28,12 +28,17 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 
 public class IssueRawMaterialsCommand
 {
 	private static final AdMessageKey MSG_EmptyingNotAllowedForHU = AdMessageKey.of("de.metas.manufacturing.job.service.EmptyingNotAllowedForHU");
+
+	// Float-noise tolerance for the over-issue cap: an on-scale weightable issue is submitted as an
+	// unrounded JS subtraction (double arithmetic), so a legitimate boundary issue can arrive a few ULP
+	// above the remaining demand. 1e-9 is far below any realistic UOM precision, so a genuine over-issue
+	// (which exceeds the demand by at least the UOM's smallest unit) still exceeds it.
+	private static final BigDecimal QTY_OVER_ISSUE_TOLERANCE = new BigDecimal("0.000000001");
 
 	// Services
 	@NonNull private static final Logger logger = LogManager.getLogger(IssueRawMaterialsCommand.class);
@@ -156,14 +161,13 @@ public class IssueRawMaterialsCommand
 			@NonNull final Quantity remainingQtyToIssueMax,
 			@NonNull final BigDecimal qtyIssued)
 	{
-		// Round the requested qty to the UOM's precision (HALF_UP) before comparing: an on-scale weightable
-		// issue is submitted as an unrounded JS subtraction (e.g. 5.200000000000001), so an exact compare
-		// would wrongly refuse a legitimate issue sitting exactly on the remaining-demand boundary. HALF_UP
-		// absorbs that sub-precision float noise while a genuine over-issue (at the UOM precision) still
-		// exceeds the ceiling. (Quantity.roundToUOMPrecision rounds UP, which would not absorb the noise.)
-		final int uomPrecision = remainingQtyToIssueMax.getUOM().getStdPrecision();
-		final BigDecimal qtyIssuedRounded = qtyIssued.setScale(uomPrecision, RoundingMode.HALF_UP);
-		if (qtyIssuedRounded.compareTo(remainingQtyToIssueMax.toBigDecimal()) > 0)
+		// Allow only a tiny float-noise tolerance: an on-scale weightable issue is submitted as an unrounded
+		// JS subtraction (e.g. 5.200000000000001), so an exact compare would wrongly refuse a legitimate
+		// issue on the remaining-demand boundary. A genuine over-issue exceeds the demand by far more than
+		// QTY_OVER_ISSUE_TOLERANCE and still throws. (Rounding to UOM precision instead would mishandle a
+		// coarse precision -- e.g. precision 0 would admit a 10.4 issue against a 10 demand -- and could
+		// falsely reject a finer-scaled remaining value.)
+		if (qtyIssued.subtract(remainingQtyToIssueMax.toBigDecimal()).compareTo(QTY_OVER_ISSUE_TOLERANCE) > 0)
 		{
 			throw new AdempiereException("Cannot issue more than the line's remaining demand")
 					.markAsUserValidationError()
