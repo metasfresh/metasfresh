@@ -24,6 +24,7 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -83,8 +84,8 @@ public class JsonPickingJobLine
 	@NonNull String cuQtyEntryMode;
 	/** The effective CU label format of this line (customer, else profile); null = none. */
 	@Nullable Integer cuLabelFormatId;
-	/** The TU packing instructions the line's packing names (repo id); null = the packing names no TU PI (e.g. virtual). */
-	@Nullable String packingTuPIId;
+	/** The TU packing instructions the line's packing names; null = the packing names no TU PI (e.g. virtual). */
+	@Nullable HuPackingInstructionsId packingTuPIId;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
@@ -153,11 +154,11 @@ public class JsonPickingJobLine
 	}
 
 	@Nullable
-	private static String toPackingTuPIId(@NonNull final HUPIItemProduct packingInfo, @NonNull final IHandlingUnitsBL handlingUnitsBL)
+	private static HuPackingInstructionsId toPackingTuPIId(@NonNull final HUPIItemProduct packingInfo, @NonNull final IHandlingUnitsBL handlingUnitsBL)
 	{
 		return packingInfo.getId().isVirtualHU()
 				? null
-				: String.valueOf(handlingUnitsBL.getPackingInstructionsId(packingInfo.getPiItemId()).getRepoId());
+				: handlingUnitsBL.getPackingInstructionsId(packingInfo.getPiItemId());
 	}
 
 	public static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)

@@ -98,7 +98,7 @@ class JsonPickingJobLinePackingTuPITest
 				.qtyCUsPerTU(Quantity.of(BigDecimal.valueOf(4), uom))
 				.build();
 
-		assertThat(toJson(packingInfo).getPackingTuPIId()).isEqualTo(String.valueOf(TU_PI_ID.getRepoId()));
+		assertThat(toJson(packingInfo).getPackingTuPIId()).isEqualTo(TU_PI_ID);
 		verify(handlingUnitsBL).getPackingInstructionsId(PI_ITEM_ID);
 	}
 
@@ -107,7 +107,7 @@ class JsonPickingJobLinePackingTuPITest
 	{
 		final HUPIItemProduct packingInfo = packing(540011).build(); // qtyCUsPerTU == null: infinite capacity
 
-		assertThat(toJson(packingInfo).getPackingTuPIId()).isEqualTo(String.valueOf(TU_PI_ID.getRepoId()));
+		assertThat(toJson(packingInfo).getPackingTuPIId()).isEqualTo(TU_PI_ID);
 	}
 
 	@Test

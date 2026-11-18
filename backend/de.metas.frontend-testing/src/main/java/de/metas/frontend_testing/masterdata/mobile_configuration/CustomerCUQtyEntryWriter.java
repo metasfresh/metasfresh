@@ -10,6 +10,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -25,17 +26,13 @@ import java.util.stream.StreamSupport;
  * <p>
  * All persistence goes through {@link MobileUIPickingUserProfileService}.
  */
+@RequiredArgsConstructor
 final class CustomerCUQtyEntryWriter
 {
 	/** Name prefix of the rows created here; {@link MobileConfigCommand} deletes the ones that no customer references any more. */
 	static final String JOB_OPTIONS_NAME_PREFIX = "E2E customer ";
 
 	@NonNull private final MobileUIPickingUserProfileService profileService;
-
-	CustomerCUQtyEntryWriter(@NonNull final MobileUIPickingUserProfileService profileService)
-	{
-		this.profileService = profileService;
-	}
 
 	void write(
 			@NonNull final BPartnerId customerId,

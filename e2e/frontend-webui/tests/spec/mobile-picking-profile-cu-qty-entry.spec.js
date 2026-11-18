@@ -117,6 +117,9 @@ save + reload, and show in the grid.
     const masterdata = await Backend.createMasterdata({
       request: {
         login: { user: {} },
+        // The grid check below needs the one active picking profile. A fresh DB has none until a
+        // picking config is written, so write one here instead of relying on an earlier spec.
+        mobileConfig: { picking: { pickTo: ['LU_TU'] } },
         customQRCodeFormats: [
           {
             name: formatName,
@@ -190,7 +193,7 @@ save + reload, and show in the grid.
           // profile is inactive), so the grid check runs on the seed profile: set both values on
           // it, assert them in its grid row, and restore its original values afterwards (also
           // when an assertion fails).
-          await page.locator('tbody tr').first().dblclick();
+          await page.locator('tbody tr').first().dblclick({ timeout: SLOW_ACTION_TIMEOUT });
           await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
           const seedId = page.url().split('/').pop();
           expect(seedId, 'the seed profile is the only active row').not.toBe(recordId);
@@ -211,7 +214,7 @@ save + reload, and show in the grid.
             await gotoWindowList(page, windowId);
             const row = page.locator('tbody tr').first();
             await expect(row, 'grid row of the seed profile').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-            // the exact saved value: the caption the WebAPI returns in the session language (no hard-coded UI text)
+            // the saved value's caption: the caption the WebAPI returns in the session language (no hard-coded UI text)
             const seedModeSaved = await getFieldData(String(windowId), seedId, FIELD_MODE);
             expect(keyOf(seedModeSaved)).toBe(MODE_SCAN_ONCE);
             await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').toContainText(seedModeSaved.value.caption);
@@ -249,7 +252,7 @@ save + reload, and show in the grid.
         } else {
           const row = page.locator('tr', { hasText: recordName }).first();
           await expect(row, `grid row of ${recordName}`).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-          await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').toContainText(mode.value.caption); // exact saved value, in the session language
+          await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').toContainText(mode.value.caption); // the saved value's caption, in the session language
           await expect(gridCell(row, FIELD_FORMAT), 'grid cell C_ScannableCode_Format_ID').toContainText(formatName);
         }
 

@@ -89,6 +89,7 @@ public class CreateMasterdataCommand
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
 	@NonNull private final JsonCreateMasterdataRequest request;
 
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final MasterdataContext context = new MasterdataContext();
 
 	public JsonCreateMasterdataResponse execute()
@@ -526,7 +527,7 @@ public class CreateMasterdataCommand
 			return;
 		}
 
-		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+		trxManager.runInThreadInheritedTrx(() -> {
 			MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService, services.mobilePickingConfigService); // the generated formats are deleted by the command below
 			CustomQRCodeFormatCommand.builder()
 					.scannableCodeFormatService(services.scannableCodeFormatService)

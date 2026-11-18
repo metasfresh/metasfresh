@@ -39,6 +39,7 @@ import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
@@ -52,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -542,21 +542,21 @@ public class MobileUIPickingUserProfileRepository
 		}
 	}
 
-	/** Deletes the picking job options rows whose name starts with the given prefix and that no customer row of any profile references. */
+	/**
+	 * Deletes the picking job options rows whose name starts with the given prefix and that no customer row of any profile references.
+	 * Used by the masterdata test API ({@code de.metas.frontend-testing}) to remove the rows of earlier E2E runs.
+	 */
 	public void deleteUnusedPickingJobOptions(@NonNull final String namePrefix)
 	{
-		final Set<Integer> usedIds = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
-				.create()
-				.listDistinct(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, Integer.class)
-				.stream()
-				.collect(Collectors.toSet());
+		final IQuery<I_MobileUI_UserProfile_Picking_BPartner> usedRefs = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
+				.addNotNull(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID)
+				.create();
 
 		final List<I_MobileUI_UserProfile_Picking_Job> unused = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
+				.addStringLikeFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_Name, namePrefix + "%", false)
+				.addNotInSubQueryFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, usedRefs)
 				.create()
-				.stream()
-				.filter(record -> record.getName() != null && record.getName().startsWith(namePrefix))
-				.filter(record -> !usedIds.contains(record.getMobileUI_UserProfile_Picking_Job_ID()))
-				.collect(Collectors.toList());
+				.list();
 		InterfaceWrapperHelper.deleteAll(unused);
 	}
 
