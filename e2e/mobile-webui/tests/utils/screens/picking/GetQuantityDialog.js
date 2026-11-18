@@ -49,9 +49,6 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
     }),
 
-    /** Plan name for `typeQtyEntered`. */
-    typeQty: async (qty) => await GetQuantityDialog.typeQtyEntered(qty),
-
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
         const field = page.getByTestId('lotNo');
         await clickAndType(field, lotNo);

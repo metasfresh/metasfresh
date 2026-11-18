@@ -60,7 +60,7 @@ export const PickLineScanScreen = {
     /** Taps "Weitere Kiste" / "Next box": opens the next TU (box) of the line. */
     nextBox: async () => await step(`${NAME} - Next box`, tapNextBox),
 
-    /** Opens box 1 before the first booking of a new-mode line (same tap as nextBox, named for the step). */
+    /** Opens the first box of a line in CU quantity entry mode, before its first booking (same tap as nextBox). */
     openBox: async () => await step(`${NAME} - Open box`, tapNextBox),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
