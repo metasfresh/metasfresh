@@ -17,6 +17,7 @@ import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -209,16 +210,25 @@ class ScannableCodeFormatRepositoryTest
 				.allSatisfy(issue -> assertThat(issue.getIssueSummary()).contains("broken format"));
 	}
 
-	@Test
-	void loadAll_keepsTheValidFormat_whenRecordingTheAdIssueFails()
+	@Nested
+	class WhenRecordingTheAdIssueFails
 	{
-		final IErrorManager failingErrorManager = Mockito.mock(IErrorManager.class);
-		Mockito.doThrow(new RuntimeException("cannot create AD_Issue")).when(failingErrorManager).createIssue(ArgumentMatchers.any(Throwable.class));
-		repository = new ScannableCodeFormatRepository(failingErrorManager);
-		createValidAndBrokenFormat();
+		@BeforeEach
+		void beforeEach()
+		{
+			final IErrorManager failingErrorManager = Mockito.mock(IErrorManager.class);
+			Mockito.doThrow(new RuntimeException("cannot create AD_Issue")).when(failingErrorManager).createIssue(ArgumentMatchers.any(Throwable.class));
+			repository = new ScannableCodeFormatRepository(failingErrorManager);
+		}
 
-		final ScannableCodeFormatsCollection all = repository.getAll();
+		@Test
+		void loadAll_keepsTheValidFormat()
+		{
+			createValidAndBrokenFormat();
 
-		assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
+			final ScannableCodeFormatsCollection all = repository.getAll();
+
+			assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
+		}
 	}
 }

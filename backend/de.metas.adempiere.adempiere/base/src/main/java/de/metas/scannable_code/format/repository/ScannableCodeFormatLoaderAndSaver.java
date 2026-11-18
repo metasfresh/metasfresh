@@ -12,6 +12,7 @@ import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,7 +34,7 @@ class ScannableCodeFormatLoaderAndSaver
 	private static final Logger logger = LogManager.getLogger(ScannableCodeFormatLoaderAndSaver.class);
 
 	@NotNull private final IQueryBL queryBL;
-	@lombok.NonNull private final IErrorManager errorManager;
+	@NonNull private final IErrorManager errorManager;
 
 	private final HashMap<ScannableCodeFormatId, I_C_ScannableCode_Format> formatRecordsCache = new HashMap<>();
 	private final ArrayListMultimap<ScannableCodeFormatId, I_C_ScannableCode_Format_Part> partRecordsCache = ArrayListMultimap.create();
