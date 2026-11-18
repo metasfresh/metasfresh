@@ -59,8 +59,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   | fmt                       | 5       | 10    | BEST_BEFORE_DATE | yyMMdd     |
  *   | fmt                       | 11      | 0     | PACK_ID          |            |
  * Then parse scanned code and expect:
- *   | ScannedCode    | ProductNo | BestBeforeDate | PackId | IsMatching |
- *   | P10026113077   | P100      | 2026-11-30     | 77     | true    |
+ *   | ScannedCode   | ProductNo | BestBeforeDate | PackId | IsMatching |
+ *   | P10026113077  | P100      | 2026-11-30     | 77     | true       |
  * </pre>
  */
 public class C_ScannableCode_Format_StepDef
@@ -119,7 +119,6 @@ public class C_ScannableCode_Format_StepDef
 				.description(DESCRIPTION_CUCUMBER)
 				.parts(parts)
 				.build());
-
 	}
 
 	private static ScannableCodeFormatCreateRequest.Part toPart(@NonNull final DataTableRow row)
