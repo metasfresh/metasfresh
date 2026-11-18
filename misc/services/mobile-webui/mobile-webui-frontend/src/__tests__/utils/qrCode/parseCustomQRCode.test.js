@@ -207,7 +207,7 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
 
   test('old label without a pack ID: not recognized', () => {
     const result = parseCustomQRCode({ string: OLD_LABEL, format: F_POS });
-    expect(result.error).toBeDefined();
+    expect(result.error).toBe('Cannot extract part PACK_ID[47-]');
     expect(result.formatPart?.type).toBe('PACK_ID');
   });
 
@@ -249,6 +249,7 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
       const result = parseCustomQRCode({ string: shifted, format: F_POS_GUARDED });
       expect(result.error).toBeDefined();
       expect(result.formatPart?.type).toBe('CONSTANT');
+      expect(result.error).toBe("Expected constant '17' but got ']1'");
     });
   });
 });

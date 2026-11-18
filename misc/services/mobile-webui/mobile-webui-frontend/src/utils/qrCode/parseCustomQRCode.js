@@ -75,7 +75,9 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     endPosition: formatPart.endPosition,
   });
   if (valueStr === null) {
-    return { error: `Cannot extract part ${this}` };
+    return {
+      error: `Cannot extract part ${formatPart.type}[${formatPart.startPosition}-${formatPart.endPosition || ''}]`,
+    };
   }
   // console.log('parseCustomQRCodePart', { formatPart, valueStr, string });
 
