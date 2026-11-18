@@ -174,8 +174,24 @@ save + reload, and show in the grid.
           'grid column C_ScannableCode_Format_ID',
         ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         if (createInactive) {
-          // the inactive test profile is not listed: the active seed profile shows its default mode
-          await expect(page.locator('tr', { hasText: /Manuell|Manual/ }).first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+          // The inactive test profile is not listed (grid shows active rows only; only one active
+          // profile may exist, see WINDOWS). The saved values are asserted in the single view above
+          // and via the REST read; here the grid must show the seed profile's default mode in the
+          // CUQtyEntryMode column itself (not just anywhere in the row).
+          const headers = page.locator('th');
+          const count = await headers.count();
+          let modeColumn = -1;
+          for (let i = 0; i < count; i++) {
+            if (/CU-Mengenerfassung|CU quantity entry/.test(await headers.nth(i).innerText())) {
+              modeColumn = i;
+              break;
+            }
+          }
+          expect(modeColumn, 'grid column index of CUQtyEntryMode').toBeGreaterThanOrEqual(0);
+          await expect(
+            page.locator('tbody tr').first().locator('td').nth(modeColumn),
+            'seed profile default mode shown in the CUQtyEntryMode grid column',
+          ).toHaveText(/Manuell|Manual/, { timeout: SLOW_ACTION_TIMEOUT });
         } else {
           const row = page.locator('tr', { hasText: recordName }).first();
           await expect(row, `grid row of ${recordName}`).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
