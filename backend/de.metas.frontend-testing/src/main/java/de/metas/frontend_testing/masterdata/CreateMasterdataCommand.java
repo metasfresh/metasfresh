@@ -107,6 +107,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
+		createCustomQRCodeFormats(); // before mobileConfig: the CU label format names of the mobile config refer to these formats
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
@@ -121,7 +122,6 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
-		createCustomQRCodeFormats();
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
@@ -320,6 +320,7 @@ public class CreateMasterdataCommand
 				.mobilePickingConfigService(services.mobilePickingConfigService)
 				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
 				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
+				.scannableCodeFormatService(services.scannableCodeFormatService)
 				//
 				.context(context)
 				.request(request.getMobileConfig())
@@ -522,6 +523,8 @@ public class CreateMasterdataCommand
 		{
 			return;
 		}
+
+		MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService); // the generated formats are deleted below
 
 		CustomQRCodeFormatCommand.builder()
 				.scannableCodeFormatService(services.scannableCodeFormatService)

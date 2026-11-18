@@ -1,14 +1,30 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
+import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
+import de.metas.scannable_code.format.ScannableCodeFormat;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_MobileUI_UserProfile_Picking;
+import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
+import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 @Builder
 public class MobileConfigCommand
@@ -17,6 +33,7 @@ public class MobileConfigCommand
 	@NonNull private final MobileUIPickingUserProfileService mobilePickingConfigService;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonMobileConfigRequest request;
@@ -25,6 +42,7 @@ public class MobileConfigCommand
 	{
 		final MobileConfig config = updateMobileConfig();
 		final JsonMobileConfigResponse.Picking picking = updatePickingConfig();
+		updatePickingCUQtyEntry();
 		final JsonMobileConfigResponse.Distribution distribution = updateDistributionConfig();
 		final JsonMobileConfigResponse.Manufacturing manufacturing = updateManufacturingConfig();
 
@@ -65,6 +83,137 @@ public class MobileConfigCommand
 				.context(context)
 				.request(request.getPicking())
 				.build().execute();
+	}
+
+	/**
+	 * Writes the CU quantity entry mode and CU label format (by name) of the profile and of its customers.
+	 * Runs after {@link #updatePickingConfig()}, so the profile header and customer rows exist.
+	 */
+	private void updatePickingCUQtyEntry()
+	{
+		final JsonMobileConfigRequest.Picking picking = request.getPicking();
+		if (picking == null)
+		{
+			return;
+		}
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.runInThreadInheritedTrx(() -> {
+			final I_MobileUI_UserProfile_Picking profileRecord = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.first();
+			if (profileRecord == null)
+			{
+				throw new AdempiereException("No active mobile picking profile exists after the picking config was written");
+			}
+
+			if (picking.getCuQtyEntryMode() != null)
+			{
+				profileRecord.setCUQtyEntryMode(picking.getCuQtyEntryMode());
+			}
+			if (picking.getCuLabelFormatName() != null)
+			{
+				profileRecord.setC_ScannableCode_Format_ID(resolveFormatId(picking.getCuLabelFormatName()).getRepoId());
+			}
+			InterfaceWrapperHelper.saveRecord(profileRecord);
+
+			if (picking.getCustomers() != null)
+			{
+				for (final JsonMobileConfigRequest.Picking.Customer customer : picking.getCustomers())
+				{
+					if (customer.getCuQtyEntryMode() == null && customer.getCuLabelFormatName() == null)
+					{
+						continue;
+					}
+					updateCustomerCUQtyEntry(profileRecord, customer);
+				}
+			}
+		});
+	}
+
+	private void updateCustomerCUQtyEntry(
+			@NonNull final I_MobileUI_UserProfile_Picking profileRecord,
+			@NonNull final JsonMobileConfigRequest.Picking.Customer customer)
+	{
+		final BPartnerId customerId = context.getId(customer.getCustomer(), BPartnerId.class);
+
+		final I_MobileUI_UserProfile_Picking_BPartner customerRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
+				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_C_BPartner_ID, customerId.getRepoId())
+				.create()
+				.first();
+		if (customerRecord == null || customerRecord.getMobileUI_UserProfile_Picking_Job_ID() <= 0)
+		{
+			// the CU settings of a customer are stored on its job options row; the masterdata request has no way to create that row
+			throw new AdempiereException("Customer " + customer.getCustomer() + " has no picking job options row to hold its CU quantity entry settings");
+		}
+
+		final I_MobileUI_UserProfile_Picking_Job jobRecord = InterfaceWrapperHelper.load(customerRecord.getMobileUI_UserProfile_Picking_Job_ID(), I_MobileUI_UserProfile_Picking_Job.class);
+		if (customer.getCuQtyEntryMode() != null)
+		{
+			jobRecord.setCUQtyEntryMode(customer.getCuQtyEntryMode());
+		}
+		if (customer.getCuLabelFormatName() != null)
+		{
+			jobRecord.setC_ScannableCode_Format_ID(resolveFormatId(customer.getCuLabelFormatName()).getRepoId());
+		}
+		InterfaceWrapperHelper.saveRecord(jobRecord);
+	}
+
+	/**
+	 * Unlinks the profile and job options rows from the CU label formats tagged by {@link CustomQRCodeFormatCommand},
+	 * so that these formats can be deleted (and re-created) by the masterdata request.
+	 */
+	public static void unlinkTaggedCULabelFormats(@NonNull final ScannableCodeFormatService scannableCodeFormatService)
+	{
+		final List<Integer> taggedFormatIds = scannableCodeFormatService.getAll().toList()
+				.stream()
+				.filter(format -> CustomQRCodeFormatCommand.TAGGING_DESCRIPTION.equals(format.getDescription()))
+				.map(format -> format.getId().getRepoId())
+				.collect(java.util.stream.Collectors.toList());
+		if (taggedFormatIds.isEmpty())
+		{
+			return;
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		for (final I_MobileUI_UserProfile_Picking record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
+				.addInArrayFilter(I_MobileUI_UserProfile_Picking.COLUMNNAME_C_ScannableCode_Format_ID, taggedFormatIds)
+				.create()
+				.list())
+		{
+			InterfaceWrapperHelper.setValue(record, I_MobileUI_UserProfile_Picking.COLUMNNAME_C_ScannableCode_Format_ID, null);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+		for (final I_MobileUI_UserProfile_Picking_Job record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
+				.addInArrayFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_C_ScannableCode_Format_ID, taggedFormatIds)
+				.create()
+				.list())
+		{
+			InterfaceWrapperHelper.setValue(record, I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_C_ScannableCode_Format_ID, null);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+	}
+
+	/**
+	 * Resolves a CU label format by its name among the formats created by the masterdata (see {@link CustomQRCodeFormatCommand}).
+	 */
+	private ScannableCodeFormatId resolveFormatId(@NonNull final String formatName)
+	{
+		final List<ScannableCodeFormat> matches = scannableCodeFormatService.getAll().toList()
+				.stream()
+				.filter(format -> formatName.equals(format.getName()))
+				.filter(format -> CustomQRCodeFormatCommand.TAGGING_DESCRIPTION.equals(format.getDescription()))
+				.collect(java.util.stream.Collectors.toList());
+		if (matches.size() != 1)
+		{
+			throw new AdempiereException("CU label format '" + formatName + "' must match exactly one custom QR code format, found " + matches.size());
+		}
+		return matches.get(0).getId();
 	}
 
 	private JsonMobileConfigResponse.Distribution updateDistributionConfig()
