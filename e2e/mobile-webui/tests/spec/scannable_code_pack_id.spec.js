@@ -144,12 +144,7 @@ test('Scan a pack ID label (47 characters): the product is read from the label a
     });
 
     await test.step('The app posted the pick with the complete 47-character label, and the HU is picked', async () => {
-        // The app posts this pick TWICE per scan, ~60 ms apart (pre-existing base behaviour, not caused by the pack ID format):
-        // PickLineScanScreen.jsx `if (isTargetsLoading) return <Spinner />` (:157) unmounts ScanHUAndGetQtyComponent right after its first mount,
-        // because useAvailablePickingTargets (api/picking.js:14-27) goes loading=false -> true -> false; the remounted component's
-        // useEffect on `scannedBarcode` (ScanHUAndGetQtyComponent.jsx:154) runs the same pick again. Both are untouched by this change.
-        // The server ends with the HU picked once (qtyPicked 5 of 5, checked below).
-        await PickingJobScreen.expectPickPostedWithHUQRCode({ huQRCode: label, expectedCount: 2 });
+        await PickingJobScreen.expectPickPostedWithHUQRCode({ huQRCode: label, expectedCount: 1 });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 Stk', qtyPicked: '5 Stk', waitForColor: 'green' });
     });
 });
