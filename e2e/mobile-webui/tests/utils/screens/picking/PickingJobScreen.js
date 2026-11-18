@@ -23,6 +23,14 @@ const ACTIVITY_ID_ScanPickFromHU = 'scanPickFromHU'; // keep in sync with Pickin
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
 
 let pickEvents = [];
+let pickEventsListener = null;
+
+const stopCollectingPickEvents = () => {
+    if (pickEventsListener) {
+        page.off('request', pickEventsListener);
+        pickEventsListener = null;
+    }
+};
 
 export const PickingJobScreen = {
 
@@ -31,27 +39,34 @@ export const PickingJobScreen = {
      * Call before the scan; read with expectPickPostedWithHUQRCode / expectNoPickPosted.
      */
     startCollectingPickEvents: () => {
+        stopCollectingPickEvents();
         const events = [];
         pickEvents = events;
-        page.on('request', (request) => {
+        pickEventsListener = (request) => {
             if (request.method() === 'POST' && request.url().includes('/picking/event')) {
                 const body = request.postDataJSON();
                 if (body?.type === 'PICK') {
                     events.push(body);
                 }
             }
-        });
+        };
+        page.on('request', pickEventsListener);
     },
 
     /** Waits for the pick POST(s) of one scan and checks every one carries the scanned code as huQRCode. */
     expectPickPostedWithHUQRCode: async ({ huQRCode, expectedCount = 1 }) => await step(`${NAME} - Expect ${expectedCount} PICK event(s) with huQRCode ${huQRCode}`, async () => {
-        await expect.poll(() => pickEvents.length, { timeout: SLOW_ACTION_TIMEOUT }).toBe(expectedCount);
-        for (const pickEvent of pickEvents) {
-            expect(pickEvent).toMatchObject({ type: 'PICK', huQRCode });
+        try {
+            await expect.poll(() => pickEvents.length, { timeout: SLOW_ACTION_TIMEOUT }).toBe(expectedCount);
+            for (const pickEvent of pickEvents) {
+                expect(pickEvent).toMatchObject({ type: 'PICK', huQRCode });
+            }
+        } finally {
+            stopCollectingPickEvents();
         }
     }),
 
     expectNoPickPosted: () => {
+        stopCollectingPickEvents();
         expect(pickEvents).toHaveLength(0);
     },
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
