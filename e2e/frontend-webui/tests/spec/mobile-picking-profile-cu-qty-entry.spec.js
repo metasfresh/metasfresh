@@ -168,9 +168,18 @@ save + reload, and show in the grid.
         }
         await ListWidget.setByValue(FIELD_MODE, MODE_SCAN_ONCE);
         await ListWidget.setValue(FIELD_FORMAT, formatName, { exactMatch: true });
+        // Setting the Name saves the record. Wait for that PATCH response before reading the save
+        // status: the status read must not overtake the save request, which can take seconds.
+        const nameSaved = page.waitForResponse(
+          (response) => response.request().method() === 'PATCH'
+            && response.url().endsWith(`/window/${windowId}/${recordId}`)
+            && (response.request().postData() ?? '').includes(`"path":"${FIELD_NAME}"`),
+          { timeout: VERY_SLOW_ACTION_TIMEOUT },
+        );
         await TextWidget.setValue(FIELD_NAME, recordName);
         await expect(WidgetCommon.getFieldContainer(FIELD_NAME).locator('input').first()).toHaveValue(recordName);
         await WidgetCommon.triggerBlur();
+        expect((await nameSaved).ok(), 'the Name PATCH (first save) succeeds').toBe(true);
         await WidgetCommon.waitForSaveComplete();
         await waitForRecordSaved(String(windowId), recordId);
 
