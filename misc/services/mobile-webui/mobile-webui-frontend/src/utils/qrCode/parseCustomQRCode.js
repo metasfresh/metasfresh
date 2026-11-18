@@ -127,7 +127,7 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
 const extractAsString = ({ string, startPosition, endPosition }) => {
   const startIndex = startPosition - 1;
 
-  // open end (the backend sends 0; null/undefined defensively): the part reads to the end of the code, needs at least 1 character
+  // open end (the backend sends 0): the part reads to the end of the code, needs at least 1 character
   if (!endPosition) {
     return startIndex < string.length ? string.substring(startIndex) : null;
   }

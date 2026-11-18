@@ -2,6 +2,7 @@ package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
@@ -9,6 +10,7 @@ import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
+import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -109,7 +111,11 @@ class ScannableCodeFormatLoaderAndSaver
 		catch (final Exception ex)
 		{
 			final I_C_ScannableCode_Format formatRecord = formatRecordsCache.get(formatId);
-			logger.warn("Skipping invalid scannable code format {} (ID={}): {}", formatRecord != null ? formatRecord.getName() : "?", formatId.getRepoId(), ex.getLocalizedMessage(), ex);
+			final String formatName = formatRecord != null ? formatRecord.getName() : "?";
+			logger.warn("Skipping invalid scannable code format {} (ID={}): {}", formatName, formatId.getRepoId(), ex.getLocalizedMessage(), ex);
+			// a log line alone leaves no trace for the admin: record an AD_Issue (once per cache load, not per scan)
+			Services.get(IErrorManager.class).createIssue(
+					new AdempiereException("Skipping invalid scannable code format " + formatName + " (ID=" + formatId.getRepoId() + "): " + ex.getLocalizedMessage(), ex));
 			return null;
 		}
 	}
@@ -190,17 +196,12 @@ class ScannableCodeFormatLoaderAndSaver
 				throw new AdempiereException("Part starting at " + partRecord.getStartNo() + " has no End No, but another part starts at the same position");
 			}
 		}
-		if (index < 0 || index == partRecordsSortedByStartNo.size() - 1)
+		if (index == partRecordsSortedByStartNo.size() - 1)
 		{
 			return ScannableCodeFormatPart.OPEN_END; // last part: to the end of the code
 		}
 
-		final int endNo = partRecordsSortedByStartNo.get(index + 1).getStartNo() - 1;
-		if (endNo < partRecord.getStartNo())
-		{
-			throw new AdempiereException("Part starting at " + partRecord.getStartNo() + " has no End No, but the next part starts at " + (endNo + 1));
-		}
-		return endNo;
+		return partRecordsSortedByStartNo.get(index + 1).getStartNo() - 1;
 	}
 
 	private static ScannableCodeFormatPart fromRecord(@NotNull final I_C_ScannableCode_Format_Part record, final int endNo)
