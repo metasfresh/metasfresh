@@ -85,4 +85,7 @@ public class AttributeConstants
 
 	public static final AttributeCode ATTR_ExternalBarcode = AttributeCode.ofString("ExternalBarcode");
 	public static final AttributeCode ATTR_Project = AttributeCode.ofString("ProjectValue");
+
+	/** Pack ID of the CU label, set when a CU is picked in CU quantity entry mode (CU level, virtual PI 101). */
+	public static final AttributeCode PackId = AttributeCode.ofString("PackId");
 }
