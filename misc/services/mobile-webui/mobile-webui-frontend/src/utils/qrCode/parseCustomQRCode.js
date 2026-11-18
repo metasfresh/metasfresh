@@ -85,7 +85,7 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     case 'CONSTANT':
       if (valueStr !== formatPart.constantValue)
         return {
-          error: `Expected constant '${formatPart.constant}' but got '${valueStr}'`,
+          error: `Expected constant '${formatPart.constantValue}' but got '${valueStr}'`,
         };
       break;
     case 'PRODUCT_CODE':

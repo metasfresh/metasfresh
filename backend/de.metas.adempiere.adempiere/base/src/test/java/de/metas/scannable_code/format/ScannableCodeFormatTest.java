@@ -267,6 +267,32 @@ class ScannableCodeFormatTest
 					.hasMessageStartingWith("Invalid constant marker, expected `17` but was `]");
 		}
 
+		@Test
+		void onlyTheConstantGuard92_refusesCodeWithoutMarker92()
+		{
+			final ScannableCodeFormat onlyGuard92 = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(45).endPosition(46).type(ScannableCodeFormatPartType.Constant).constantValue("92").build(),
+							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
+							ScannableCodeFormatPart.builder().startPosition(47).endPosition(ScannableCodeFormatPart.OPEN_END).type(ScannableCodeFormatPartType.PackId).build()
+					))
+					.build();
+			final String wrongMarker = label("2").substring(0, 44) + "XX" + "2"; // same length, `XX` instead of `92`; everything else parseable
+			assertThatThrownBy(() -> onlyGuard92.parse(ScannedCode.ofString(wrongMarker)).orElseThrow())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Invalid constant marker, expected `92` but was `XX`");
+		}
+
+		@Test
+		void packIdIsNotTrimmed()
+		{
+			// leading blank only: ScannedCode itself trims the whole code, so a trailing blank never reaches the part
+			final ParsedScannedCode parsed = formatWithPackId().parse(ScannedCode.ofString(label(" 2"))).orElseThrow();
+			assertThat(parsed.getPackId()).isEqualTo(" 2");
+		}
+
 		// the same label as the scanner may send it: group separators (char 29) after the variable-length fields
 		// (01)GTIN 1..16 | (91)productNo 17..25 | GS 26 | (17)yyMMdd 27..34 | (10)lot 35..45 | GS 46 | (92)packId 47..
 		private ScannableCodeFormat format49()
