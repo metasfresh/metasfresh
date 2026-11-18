@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.pos;
 
+import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -112,6 +113,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -192,6 +194,8 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final SpringContextHolder.Lazy<POSInvoiceCardSettlementBooking> settlementBooking = SpringContextHolder.lazyBean(POSInvoiceCardSettlementBooking.class);
 	@NonNull private final SpringContextHolder.Lazy<POSService> posService = SpringContextHolder.lazyBean(POSService.class);
 	@NonNull private final SpringContextHolder.Lazy<CurrencyRepository> currencyRepository = SpringContextHolder.lazyBean(CurrencyRepository.class);
+	@NonNull private final Supplier<Collection<SumUpPollerCycleListener>> pollerCycleListeners = Suppliers.memoize(() -> SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class));
+	@NonNull private final Supplier<Collection<SumUpTransactionStatusChangedListener>> statusChangedListeners = Suppliers.memoize(() -> SpringContextHolder.instance.getBeansOfType(SumUpTransactionStatusChangedListener.class));
 
 	/**
 	 * Every scenario starts with a clean stub: no programmed answers, no recorded checkouts, no known transactions.
@@ -475,8 +479,7 @@ public class POS_InvoiceCardSettlement_StepDef
 			sumUpService.get().bulkUpdatePendingTransactionsToPoll();
 			try (final IAutoCloseable ignored = Env.switchContext(Env.newTemporaryCtx()))
 			{
-				SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class)
-						.forEach(SumUpPollerCycleListener::afterPollCycle);
+				pollerCycleListeners.get().forEach(SumUpPollerCycleListener::afterPollCycle);
 			}
 			SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 		}
@@ -974,8 +977,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		return () -> {
 			try (final IAutoCloseable ignored = Env.switchContext(eventCtx))
 			{
-				SpringContextHolder.instance.getBeansOfType(SumUpTransactionStatusChangedListener.class)
-						.forEach(listener -> listener.onStatusChanged(event));
+				statusChangedListeners.get().forEach(listener -> listener.onStatusChanged(event));
 			}
 		};
 	}

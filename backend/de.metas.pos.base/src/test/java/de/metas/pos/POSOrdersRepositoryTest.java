@@ -29,11 +29,13 @@ class POSOrdersRepositoryTest
 	private static final POSTerminalId TERMINAL_2 = POSTerminalId.ofRepoId(2);
 
 	private POSOrdersRepository repository;
+	private IADTableDAO adTableDAO;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		adTableDAO = Services.get(IADTableDAO.class);
 		repository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource());
 	}
 
@@ -74,7 +76,7 @@ class POSOrdersRepositoryTest
 	private void newIssue(final String tableName, final int recordId, final String errorCode)
 	{
 		final I_AD_Issue issue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class);
-		issue.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(tableName));
+		issue.setAD_Table_ID(adTableDAO.retrieveTableId(tableName));
 		issue.setRecord_ID(recordId);
 		issue.setErrorCode(errorCode);
 		InterfaceWrapperHelper.saveRecord(issue);
