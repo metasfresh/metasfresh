@@ -174,11 +174,11 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
   const F_POS_GUARDED = {
     name: 'F_POS_GUARDED',
     parts: [
-      ...F_POS.parts.slice(0, 3),
+      // guards first: on a shifted string the date part would otherwise fail before any guard is checked
       { type: 'CONSTANT', startPosition: 26, endPosition: 27, constantValue: '17' },
       { type: 'CONSTANT', startPosition: 34, endPosition: 35, constantValue: '10' },
       { type: 'CONSTANT', startPosition: 45, endPosition: 46, constantValue: '92' },
-      F_POS.parts[3],
+      ...F_POS.parts,
     ],
   };
 
@@ -195,6 +195,10 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
     expect(parseCustomQRCode({ string: LABEL('007'), format: F_POS }).packId).toBe('007');
   });
 
+  test('pack ID is not trimmed', () => {
+    expect(parseCustomQRCode({ string: LABEL(' 2 '), format: F_POS }).packId).toBe(' 2 ');
+  });
+
   test('zero-led lot: leading zero stripped, pack ID read', () => {
     const result = parseCustomQRCode({ string: LABEL_Z(2), format: F_POS });
     expect(result.lotNo).toBe('A1/B002C');
@@ -202,7 +206,9 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
   });
 
   test('old label without a pack ID: not recognized', () => {
-    expect(parseCustomQRCode({ string: OLD_LABEL, format: F_POS }).error).toBeDefined();
+    const result = parseCustomQRCode({ string: OLD_LABEL, format: F_POS });
+    expect(result.error).toBeDefined();
+    expect(result.formatPart?.type).toBe('PACK_ID');
   });
 
   test('a format without a PACK_ID part leaves packId unset', () => {
@@ -225,7 +231,9 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
 
   test('LABEL49 without the final character 29 + 92n: not recognized', () => {
     const s = withInserted(2, GS);
-    expect(parseCustomQRCode({ string: s.substring(0, 45), format: F49 }).error).toBeDefined();
+    const result = parseCustomQRCode({ string: s.substring(0, 45), format: F49 });
+    expect(result.error).toBeDefined();
+    expect(result.formatPart?.type).toBe('PACK_ID');
   });
 
   describe('guards (CONSTANT parts)', () => {
@@ -238,7 +246,9 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
     test('LABEL(2) with ] inserted at 26 and 46 (49 characters) is refused', () => {
       const shifted = withInserted(2, ']');
       expect(shifted).toHaveLength(49);
-      expect(parseCustomQRCode({ string: shifted, format: F_POS_GUARDED }).error).toBeDefined();
+      const result = parseCustomQRCode({ string: shifted, format: F_POS_GUARDED });
+      expect(result.error).toBeDefined();
+      expect(result.formatPart?.type).toBe('CONSTANT');
     });
   });
 });
