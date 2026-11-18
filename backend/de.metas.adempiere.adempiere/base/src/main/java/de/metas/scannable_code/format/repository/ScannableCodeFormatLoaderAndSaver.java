@@ -10,7 +10,6 @@ import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
-import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,6 +33,7 @@ class ScannableCodeFormatLoaderAndSaver
 	private static final Logger logger = LogManager.getLogger(ScannableCodeFormatLoaderAndSaver.class);
 
 	@NotNull private final IQueryBL queryBL;
+	@NotNull private final IErrorManager errorManager;
 
 	private final HashMap<ScannableCodeFormatId, I_C_ScannableCode_Format> formatRecordsCache = new HashMap<>();
 	private final ArrayListMultimap<ScannableCodeFormatId, I_C_ScannableCode_Format_Part> partRecordsCache = ArrayListMultimap.create();
@@ -116,7 +116,7 @@ class ScannableCodeFormatLoaderAndSaver
 			// a log line alone leaves no trace for the admin: record an AD_Issue (once per cache load, not per scan)
 			try
 			{
-				Services.get(IErrorManager.class).createIssue(
+				errorManager.createIssue(
 						new AdempiereException("Skipping invalid scannable code format " + formatName + " (ID=" + formatId.getRepoId() + "): " + ex.getLocalizedMessage(), ex));
 			}
 			catch (final Exception issueEx)

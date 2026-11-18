@@ -1,6 +1,7 @@
 package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.error.IErrorManager;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
@@ -17,6 +18,8 @@ import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -164,8 +167,7 @@ class ScannableCodeFormatRepositoryTest
 				.isInstanceOf(AdempiereException.class);
 	}
 
-	@Test
-	void loadAll_skipsAnInvalidFormat_andKeepsTheValidOne()
+	private void createValidAndBrokenFormat()
 	{
 		// valid format (all ends filled) created through the normal path
 		repository.create(ScannableCodeFormatCreateRequest.builder()
@@ -189,6 +191,12 @@ class ScannableCodeFormatRepositoryTest
 		brokenPart.setEndNo(2);
 		brokenPart.setDataType(ScannableCodeFormatPartType.LotNo.getCode());
 		InterfaceWrapperHelper.saveRecord(brokenPart);
+	}
+
+	@Test
+	void loadAll_skipsAnInvalidFormat_andKeepsTheValidOne()
+	{
+		createValidAndBrokenFormat();
 
 		final ScannableCodeFormatsCollection all = repository.getAll();
 
@@ -199,5 +207,18 @@ class ScannableCodeFormatRepositoryTest
 		assertThat(POJOLookupMap.get().getRecords(I_AD_Issue.class))
 				.hasSize(1)
 				.allSatisfy(issue -> assertThat(issue.getIssueSummary()).contains("broken format"));
+	}
+
+	@Test
+	void loadAll_keepsTheValidFormat_whenRecordingTheAdIssueFails()
+	{
+		final IErrorManager failingErrorManager = Mockito.mock(IErrorManager.class);
+		Mockito.doThrow(new RuntimeException("cannot create AD_Issue")).when(failingErrorManager).createIssue(ArgumentMatchers.any(Throwable.class));
+		repository = new ScannableCodeFormatRepository(failingErrorManager);
+		createValidAndBrokenFormat();
+
+		final ScannableCodeFormatsCollection all = repository.getAll();
+
+		assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
 	}
 }
