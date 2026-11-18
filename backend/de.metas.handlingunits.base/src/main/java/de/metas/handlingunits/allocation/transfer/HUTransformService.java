@@ -638,8 +638,8 @@ public class HUTransformService
 	}
 
 	/**
-	 * @param luPIItem the LU item via which the TUs shall be attached (e.g. the product-specific item the LU was created with);
-	 *                 {@code null} means that it's looked up, which never returns a product-specific item.
+	 * @param luPIItem the LU item via which TUs split off an aggregated TU shall be added (e.g. the product-specific item the LU was created with);
+	 *                 {@code null} means that the producer looks it up, which never returns a product-specific item.
 	 */
 	private LUTUResult tuToExistingLU(
 			@NonNull final I_M_HU sourceTuHU,
@@ -714,9 +714,8 @@ public class HUTransformService
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(tuToAttach);
 
-			final I_M_HU_PI_Item parentPIItem = luPIItem != null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
-					? luPIItem
-					: handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+			// note: this also returns a product-specific item, if luHU already has one for tuPI
+			final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
 			if (parentPIItem == null)
 			{
 				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
