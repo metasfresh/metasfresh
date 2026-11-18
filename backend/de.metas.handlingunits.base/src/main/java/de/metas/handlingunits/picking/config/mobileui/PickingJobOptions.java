@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -33,6 +34,8 @@ public class PickingJobOptions
 	@NonNull OptionalBoolean completeJobAutomatically;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
+	@Nullable CUQtyEntryMode cuQtyEntryMode; // null = not set (customer: use the profile's)
+	@Nullable ScannableCodeFormatId cuLabelFormatId; // null = not set (customer: use the profile's)
 
 	@Builder(toBuilder = true)
 	private PickingJobOptions(
@@ -53,7 +56,9 @@ public class PickingJobOptions
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final OptionalBoolean completeJobAutomatically,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
-			@Nullable final PickingLineSortBy pickingLineSortBy)
+			@Nullable final PickingLineSortBy pickingLineSortBy,
+			@Nullable final CUQtyEntryMode cuQtyEntryMode,
+			@Nullable final ScannableCodeFormatId cuLabelFormatId)
 	{
 		this.aggregationType = aggregationType;
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
@@ -73,11 +78,24 @@ public class PickingJobOptions
 		this.completeJobAutomatically = completeJobAutomatically != null ? completeJobAutomatically : OptionalBoolean.UNKNOWN;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;
+		this.cuQtyEntryMode = cuQtyEntryMode;
+		this.cuLabelFormatId = cuLabelFormatId;
 	}
 
 	public Optional<PickingLineGroupBy> getPickingLineGroupBy() {return Optional.ofNullable(pickingLineGroupBy);}
 
 	public Optional<PickingLineSortBy> getPickingLineSortBy() {return Optional.ofNullable(pickingLineSortBy);}
+
+	/** @return the mode; never null: {@link CUQtyEntryMode#MANUAL} when none is set */
+	@NonNull
+	public CUQtyEntryMode getCuQtyEntryMode() {return cuQtyEntryMode != null ? cuQtyEntryMode : CUQtyEntryMode.DEFAULT;}
+
+	/** @return the mode if one is set (a customer's options may leave it empty = use the profile's) */
+	public Optional<CUQtyEntryMode> getCuQtyEntryModeIfSet() {return Optional.ofNullable(cuQtyEntryMode);}
+
+	public Optional<ScannableCodeFormatId> getCuLabelFormatId() {return Optional.ofNullable(cuLabelFormatId);}
+
+	public boolean isStrictlyAllowed(@NonNull final PickToStructure pickToStructure) {return allowedPickToStructures.isStrictlyAllowed(pickToStructure);}
 
 	public PickingJobOptions fallbackTo(@NonNull final PickingJobOptions fallback)
 	{
@@ -86,6 +104,8 @@ public class PickingJobOptions
 				.pickAttributes(this.pickAttributes.fallbackTo(fallback.pickAttributes))
 				.displayPickingSlotSuggestions(this.displayPickingSlotSuggestions.ifUnknown(fallback.getDisplayPickingSlotSuggestions()))
 				.completeJobAutomatically(this.completeJobAutomatically.ifUnknown(fallback.getCompleteJobAutomatically()))
+				.cuQtyEntryMode(this.cuQtyEntryMode != null ? this.cuQtyEntryMode : fallback.cuQtyEntryMode)
+				.cuLabelFormatId(this.cuLabelFormatId != null ? this.cuLabelFormatId : fallback.cuLabelFormatId)
 				.build();
 
 		return Objects.equals(this, newValue) ? this : newValue;

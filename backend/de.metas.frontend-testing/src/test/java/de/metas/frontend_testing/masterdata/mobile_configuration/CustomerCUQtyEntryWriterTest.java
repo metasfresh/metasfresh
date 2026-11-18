@@ -1,6 +1,9 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -17,13 +20,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CustomerCUQtyEntryWriterTest
 {
 	private static final BPartnerId CUSTOMER_ID = BPartnerId.ofRepoId(1000);
+	private static final ScannableCodeFormatId PROFILE_FORMAT_ID = ScannableCodeFormatId.ofRepoId(77);
 
 	private I_MobileUI_UserProfile_Picking profile;
+	private MobileUIPickingUserProfileService service;
+	private CustomerCUQtyEntryWriter writer;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		service = MobileUIPickingUserProfileService.newInstanceForUnitTesting();
+		writer = new CustomerCUQtyEntryWriter(service);
 
 		profile = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
 		profile.setName("test profile");
@@ -32,6 +41,8 @@ class CustomerCUQtyEntryWriterTest
 		profile.setIsAllowSkippingRejectedReason(true);
 		profile.setIsShowConfirmationPromptWhenOverPick(true);
 		profile.setPickingJobAggregationType("sales_order");
+		profile.setAllowPickToStructure_TU(true);
+		profile.setC_ScannableCode_Format_ID(PROFILE_FORMAT_ID.getRepoId());
 		profile.setCreateShipmentPolicy("CO");
 		InterfaceWrapperHelper.saveRecord(profile);
 	}
@@ -64,20 +75,24 @@ class CustomerCUQtyEntryWriterTest
 	{
 		final I_MobileUI_UserProfile_Picking_BPartner customerRecord = createCustomerRecord(null);
 
-		CustomerCUQtyEntryWriter.write(profile, CUSTOMER_ID, X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY, 0);
+		writer.write(CUSTOMER_ID, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null);
 
 		assertThat(countJobRecords()).isEqualTo(1);
 		final int jobId = reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID();
 		assertThat(jobId).isGreaterThan(0);
 		final I_MobileUI_UserProfile_Picking_Job job = InterfaceWrapperHelper.load(jobId, I_MobileUI_UserProfile_Picking_Job.class);
 		assertThat(job.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY);
-		assertThat(job.getC_ScannableCode_Format_ID()).isZero();
+		assertThat(job.getC_ScannableCode_Format_ID()).isZero(); // empty on the row = the profile's
 		// the new row must not change the customer's other options: they start as a copy of the profile's
 		assertThat(job.isAllowSkippingRejectedReason()).isTrue();
 		assertThat(job.isShowConfirmationPromptWhenOverPick()).isTrue();
 		assertThat(job.getPickingJobAggregationType()).isEqualTo("sales_order");
 		assertThat(job.getCreateShipmentPolicy()).isEqualTo("CO");
-		assertThat(job.getName()).isNotBlank();
+		assertThat(job.getName()).startsWith(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
+		assertThat(job.getAllowPickToStructure_TU()).isEqualTo("Y");
+		// the mode / format of the new row are what was asked; the effective values fall back to the profile
+		assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+		assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCuLabelFormatId()).contains(PROFILE_FORMAT_ID);
 	}
 
 	@Test
@@ -85,7 +100,7 @@ class CustomerCUQtyEntryWriterTest
 	{
 		final I_MobileUI_UserProfile_Picking_BPartner customerRecord = createCustomerRecord(null);
 
-		CustomerCUQtyEntryWriter.write(profile, CUSTOMER_ID, null, 0);
+		writer.write(CUSTOMER_ID, null, null);
 
 		assertThat(countJobRecords()).isZero();
 		assertThat(reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID()).isZero();
@@ -100,7 +115,7 @@ class CustomerCUQtyEntryWriterTest
 		InterfaceWrapperHelper.saveRecord(existing);
 		final I_MobileUI_UserProfile_Picking_BPartner customerRecord = createCustomerRecord(existing.getMobileUI_UserProfile_Picking_Job_ID());
 
-		CustomerCUQtyEntryWriter.write(profile, CUSTOMER_ID, null, 0);
+		writer.write(CUSTOMER_ID, null, null);
 
 		assertThat(countJobRecords()).isEqualTo(1);
 		assertThat(reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID()).isEqualTo(existing.getMobileUI_UserProfile_Picking_Job_ID());

@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.function.UnaryOperator;
 
 @Service
@@ -50,5 +52,26 @@ public class MobileUIPickingUserProfileService
 	public void update(@NonNull UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		profileRepository.update(updater);
+	}
+
+	@NonNull
+	public PickingJobOptionsId createPickingJobOptions(@NonNull final String name, @NonNull final PickingJobOptions from)
+	{
+		return profileRepository.createPickingJobOptions(name, from);
+	}
+
+	public void updatePickingJobOptionsCUQtyEntry(@NonNull final PickingJobOptionsId id, @Nullable final CUQtyEntryMode mode, @Nullable final ScannableCodeFormatId formatId)
+	{
+		profileRepository.updatePickingJobOptionsCUQtyEntry(id, mode, formatId);
+	}
+
+	public void deleteUnusedPickingJobOptions(@NonNull final String namePrefix)
+	{
+		profileRepository.deleteUnusedPickingJobOptions(namePrefix);
+	}
+
+	public void unlinkCULabelFormats(@NonNull final Collection<ScannableCodeFormatId> formatIds)
+	{
+		profileRepository.unlinkCULabelFormats(formatIds);
 	}
 }

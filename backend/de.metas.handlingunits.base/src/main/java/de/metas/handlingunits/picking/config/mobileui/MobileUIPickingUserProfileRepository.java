@@ -30,9 +30,11 @@ import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,11 +46,15 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Repository
@@ -134,6 +140,8 @@ public class MobileUIPickingUserProfileRepository
 				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
+				.cuQtyEntryMode(CUQtyEntryMode.ofNullableCode(profileRecord.getCUQtyEntryMode()))
+				.cuLabelFormatId(ScannableCodeFormatId.ofRepoIdOrNull(profileRecord.getC_ScannableCode_Format_ID()))
 				.build();
 	}
 
@@ -350,6 +358,8 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
+		record.setCUQtyEntryMode(from.getCuQtyEntryMode().getCode());
+		record.setC_ScannableCode_Format_ID(toRepoIdOrZero(from.getCuLabelFormatId().orElse(null)));
 	}
 
 	private static void updateRecord(final @NonNull I_MobileUI_UserProfile_Picking record, final AllowedPickToStructures from)
@@ -450,9 +460,104 @@ public class MobileUIPickingUserProfileRepository
 				.displayPickingSlotSuggestions(OptionalBoolean.ofNullableString(record.getIsDisplayPickingSlotSuggestions()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
+				.cuQtyEntryMode(CUQtyEntryMode.ofNullableCode(record.getCUQtyEntryMode()))
+				.cuLabelFormatId(ScannableCodeFormatId.ofRepoIdOrNull(record.getC_ScannableCode_Format_ID()))
 				.build();
 
 		return GuavaCollectors.entry(pickingJobOptionsId, pickingJobOptions);
+	}
+
+	/**
+	 * Creates a new picking job options row (the options a customer of the profile can have) from all the given options.
+	 * Pick attributes and {@code completeJobAutomatically} are not stored on the row (they always fall back to the profile's).
+	 */
+	@NonNull
+	public PickingJobOptionsId createPickingJobOptions(@NonNull final String name, @NonNull final PickingJobOptions from)
+	{
+		final I_MobileUI_UserProfile_Picking_Job record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_Job.class);
+		record.setName(name);
+		record.setPickingJobAggregationType(from.getAggregationType() != null ? from.getAggregationType().getCode() : null);
+		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
+		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
+		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
+		record.setAllowPickToStructure_LU_TU(StringUtils.ofBoolean(from.isStrictlyAllowed(PickToStructure.LU_TU)));
+		record.setAllowPickToStructure_TU(StringUtils.ofBoolean(from.isStrictlyAllowed(PickToStructure.TU)));
+		record.setAllowPickToStructure_LU_CU(StringUtils.ofBoolean(from.isStrictlyAllowed(PickToStructure.LU_CU)));
+		record.setAllowPickToStructure_CU(StringUtils.ofBoolean(from.isStrictlyAllowed(PickToStructure.CU)));
+		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
+		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
+		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
+		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
+		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
+		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
+		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
+		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().toBooleanString());
+		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
+		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
+		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
+		record.setCUQtyEntryMode(from.getCuQtyEntryModeIfSet().map(CUQtyEntryMode::getCode).orElse(null)); // empty = use the profile's
+		record.setC_ScannableCode_Format_ID(toRepoIdOrZero(from.getCuLabelFormatId().orElse(null)));
+		InterfaceWrapperHelper.saveRecord(record);
+		return PickingJobOptionsId.ofRepoId(record.getMobileUI_UserProfile_Picking_Job_ID());
+	}
+
+	private static int toRepoIdOrZero(@Nullable final ScannableCodeFormatId id) {return id != null ? id.getRepoId() : 0;}
+
+	/** Sets the CU quantity entry mode / CU label format of an existing picking job options row; null = empty (use the profile's). Other options are untouched. */
+	public void updatePickingJobOptionsCUQtyEntry(
+			@NonNull final PickingJobOptionsId id,
+			@Nullable final CUQtyEntryMode mode,
+			@Nullable final ScannableCodeFormatId formatId)
+	{
+		final I_MobileUI_UserProfile_Picking_Job record = InterfaceWrapperHelper.load(id, I_MobileUI_UserProfile_Picking_Job.class);
+		record.setCUQtyEntryMode(mode != null ? mode.getCode() : null);
+		record.setC_ScannableCode_Format_ID(toRepoIdOrZero(formatId));
+		InterfaceWrapperHelper.saveRecord(record);
+	}
+
+	/** Clears the CU label format on the profile(s) and on the picking job options rows that use one of the given formats (so those formats can be deleted). */
+	public void unlinkCULabelFormats(@NonNull final Collection<ScannableCodeFormatId> formatIds)
+	{
+		if (formatIds.isEmpty())
+		{
+			return;
+		}
+		final List<Integer> formatRepoIds = formatIds.stream().map(ScannableCodeFormatId::getRepoId).collect(Collectors.toList());
+
+		for (final I_MobileUI_UserProfile_Picking record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
+				.addInArrayFilter(I_MobileUI_UserProfile_Picking.COLUMNNAME_C_ScannableCode_Format_ID, formatRepoIds)
+				.create()
+				.list())
+		{
+			record.setC_ScannableCode_Format_ID(0);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+		for (final I_MobileUI_UserProfile_Picking_Job record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
+				.addInArrayFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_C_ScannableCode_Format_ID, formatRepoIds)
+				.create()
+				.list())
+		{
+			record.setC_ScannableCode_Format_ID(0);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+	}
+
+	/** Deletes the picking job options rows whose name starts with the given prefix and that no customer row of any profile references. */
+	public void deleteUnusedPickingJobOptions(@NonNull final String namePrefix)
+	{
+		final Set<Integer> usedIds = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
+				.create()
+				.listDistinct(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, Integer.class)
+				.stream()
+				.collect(Collectors.toSet());
+
+		final List<I_MobileUI_UserProfile_Picking_Job> unused = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
+				.create()
+				.stream()
+				.filter(record -> record.getName() != null && record.getName().startsWith(namePrefix))
+				.filter(record -> !usedIds.contains(record.getMobileUI_UserProfile_Picking_Job_ID()))
+				.collect(Collectors.toList());
+		InterfaceWrapperHelper.deleteAll(unused);
 	}
 
 	private static AllowedPickToStructures extractAllowedPickToStructures(final I_MobileUI_UserProfile_Picking_Job record)

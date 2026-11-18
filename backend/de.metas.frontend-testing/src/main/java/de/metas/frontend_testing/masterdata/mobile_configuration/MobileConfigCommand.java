@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.mobile.MobileConfig;
@@ -16,13 +17,8 @@ import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_MobileUI_UserProfile_Picking;
-import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
-import org.compiere.model.X_MobileUI_UserProfile_Picking;
 
 import javax.annotation.Nullable;
 
@@ -34,7 +30,6 @@ public class MobileConfigCommand
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final MasterdataContext context;
@@ -101,80 +96,61 @@ public class MobileConfigCommand
 		}
 
 		trxManager.runInThreadInheritedTrx(() -> {
-			final I_MobileUI_UserProfile_Picking profileRecord = queryBL
-					.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.firstOnlyNotNull(I_MobileUI_UserProfile_Picking.class);
+			// the rows of earlier runs' customers (replaced by MobileConfigPickingCommand above) are not referenced any more
+			mobilePickingConfigService.deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
 
-			profileRecord.setCUQtyEntryMode(cuQtyEntryModeOrDefault(picking.getCuQtyEntryMode()));
-			profileRecord.setC_ScannableCode_Format_ID(resolveFormatIdOrNoFormat(picking.getCuLabelFormatName()));
-			InterfaceWrapperHelper.saveRecord(profileRecord);
+			final CUQtyEntryMode mode = cuQtyEntryModeOrDefault(picking.getCuQtyEntryMode());
+			final ScannableCodeFormatId formatId = resolveFormatIdOrNull(picking.getCuLabelFormatName());
+			mobilePickingConfigService.update(profile -> profile.toBuilder()
+					.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+							.cuQtyEntryMode(mode)
+							.cuLabelFormatId(formatId)
+							.build())
+					.build());
 
 			if (picking.getCustomers() != null)
 			{
+				final CustomerCUQtyEntryWriter customerWriter = new CustomerCUQtyEntryWriter(mobilePickingConfigService);
 				for (final JsonMobileConfigRequest.Picking.Customer customer : picking.getCustomers())
 				{
-					updateCustomerCUQtyEntry(profileRecord, customer);
+					customerWriter.write(
+							context.getId(customer.getCustomer(), BPartnerId.class),
+							CUQtyEntryMode.ofNullableCode(customer.getCuQtyEntryMode()),
+							resolveFormatIdOrNull(customer.getCuLabelFormatName()));
 				}
 			}
 		});
 	}
 
-	private void updateCustomerCUQtyEntry(
-			@NonNull final I_MobileUI_UserProfile_Picking profileRecord,
-			@NonNull final JsonMobileConfigRequest.Picking.Customer customer)
-	{
-		final BPartnerId customerId = context.getId(customer.getCustomer(), BPartnerId.class);
-		CustomerCUQtyEntryWriter.write(profileRecord, customerId, customer.getCuQtyEntryMode(), resolveFormatIdOrNoFormat(customer.getCuLabelFormatName()));
-	}
-
-	/** The profile column is mandatory with default MANUAL. */
+	/** The profile's mode is mandatory: absent = {@link CUQtyEntryMode#MANUAL}. */
 	@NonNull
-	private static String cuQtyEntryModeOrDefault(@Nullable final String cuQtyEntryMode)
+	private static CUQtyEntryMode cuQtyEntryModeOrDefault(@Nullable final String cuQtyEntryMode)
 	{
-		return cuQtyEntryMode != null ? cuQtyEntryMode : X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_MANUAL;
+		final CUQtyEntryMode mode = CUQtyEntryMode.ofNullableCode(cuQtyEntryMode);
+		return mode != null ? mode : CUQtyEntryMode.MANUAL;
 	}
 
-	/** Returns the format repo id, or 0 (= no format) when the name is absent. */
-	private int resolveFormatIdOrNoFormat(@Nullable final String formatName)
+	/** Returns the format id, or null (= no format) when the name is absent. */
+	@Nullable
+	private ScannableCodeFormatId resolveFormatIdOrNull(@Nullable final String formatName)
 	{
-		return formatName != null ? resolveFormatId(formatName).getRepoId() : 0;
+		return formatName != null ? resolveFormatId(formatName) : null;
 	}
 
 	/**
 	 * Unlinks the profile and job options rows from the CU label formats tagged by {@link CustomQRCodeFormatCommand},
 	 * so that these formats can be deleted (and re-created) by the masterdata request.
 	 */
-	public static void unlinkTaggedCULabelFormats(@NonNull final ScannableCodeFormatService scannableCodeFormatService)
+	public static void unlinkTaggedCULabelFormats(
+			@NonNull final ScannableCodeFormatService scannableCodeFormatService,
+			@NonNull final MobileUIPickingUserProfileService mobilePickingConfigService)
 	{
-		final ImmutableList<Integer> taggedFormatIds = scannableCodeFormatService.getAll().toList()
+		final ImmutableList<ScannableCodeFormatId> taggedFormatIds = scannableCodeFormatService.getAll().toList()
 				.stream()
 				.filter(format -> CustomQRCodeFormatCommand.TAGGING_DESCRIPTION.equals(format.getDescription()))
-				.map(format -> format.getId().getRepoId())
+				.map(ScannableCodeFormat::getId)
 				.collect(ImmutableList.toImmutableList());
-		if (taggedFormatIds.isEmpty())
-		{
-			return;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		for (final I_MobileUI_UserProfile_Picking record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
-				.addInArrayFilter(I_MobileUI_UserProfile_Picking.COLUMNNAME_C_ScannableCode_Format_ID, taggedFormatIds)
-				.create()
-				.list())
-		{
-			record.setC_ScannableCode_Format_ID(0);
-			InterfaceWrapperHelper.saveRecord(record);
-		}
-		for (final I_MobileUI_UserProfile_Picking_Job record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
-				.addInArrayFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_C_ScannableCode_Format_ID, taggedFormatIds)
-				.create()
-				.list())
-		{
-			record.setC_ScannableCode_Format_ID(0);
-			InterfaceWrapperHelper.saveRecord(record);
-		}
+		mobilePickingConfigService.unlinkCULabelFormats(taggedFormatIds);
 	}
 
 	/**

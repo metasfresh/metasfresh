@@ -527,7 +527,7 @@ public class CreateMasterdataCommand
 		}
 
 		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
-			MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService); // the generated formats are deleted by the command below
+			MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService, services.mobilePickingConfigService); // the generated formats are deleted by the command below
 			CustomQRCodeFormatCommand.builder()
 					.scannableCodeFormatService(services.scannableCodeFormatService)
 					.context(context)

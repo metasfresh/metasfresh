@@ -137,6 +137,7 @@ class JsonPickingJobTest
 				))
 				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.manuallyClosed(true)
+				.cuQtyEntryMode("MANUAL")
 				.build();
 	}
 

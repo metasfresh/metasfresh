@@ -211,7 +211,10 @@ save + reload, and show in the grid.
             await gotoWindowList(page, windowId);
             const row = page.locator('tbody tr').first();
             await expect(row, 'grid row of the seed profile').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-            await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').not.toBeEmpty();
+            // the exact saved value: the caption the WebAPI returns in the session language (no hard-coded UI text)
+            const seedModeSaved = await getFieldData(String(windowId), seedId, FIELD_MODE);
+            expect(keyOf(seedModeSaved)).toBe(MODE_SCAN_ONCE);
+            await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').toContainText(seedModeSaved.value.caption);
             await expect(gridCell(row, FIELD_FORMAT), 'grid cell C_ScannableCode_Format_ID').toContainText(formatName);
           } finally {
             await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}/${seedId}`);
@@ -246,7 +249,7 @@ save + reload, and show in the grid.
         } else {
           const row = page.locator('tr', { hasText: recordName }).first();
           await expect(row, `grid row of ${recordName}`).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-          await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').not.toBeEmpty();
+          await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').toContainText(mode.value.caption); // exact saved value, in the session language
           await expect(gridCell(row, FIELD_FORMAT), 'grid cell C_ScannableCode_Format_ID').toContainText(formatName);
         }
 

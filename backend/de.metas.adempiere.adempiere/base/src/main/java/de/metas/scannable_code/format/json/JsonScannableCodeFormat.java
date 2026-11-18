@@ -15,12 +15,14 @@ import java.util.List;
 @Jacksonized
 public class JsonScannableCodeFormat
 {
+	int id;
 	@NonNull String name;
 	@NonNull ImmutableList<JsonScannableCodeFormatPart> parts;
 
 	public static JsonScannableCodeFormat of(@NonNull final ScannableCodeFormat format)
 	{
 		return builder()
+				.id(format.getId().getRepoId())
 				.name(format.getName())
 				.parts(format.getParts()
 						.stream()

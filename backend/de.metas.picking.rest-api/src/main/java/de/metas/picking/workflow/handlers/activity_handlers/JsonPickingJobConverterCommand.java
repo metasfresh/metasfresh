@@ -2,7 +2,9 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
@@ -23,7 +25,9 @@ import de.metas.picking.rest_api.json.JsonRejectReasonsList;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
@@ -52,6 +56,7 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@NonNull private final PickingJob pickingJob;
 	@NonNull private final JsonOpts jsonOpts;
@@ -60,6 +65,7 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final PickingJobOptions pickingJobOptions;
 	@NonNull private final DisplayValueProvider displayValueProvider;
 	@NonNull private final HUCache huCache;
+	private final Map<BPartnerId, PickingJobOptions> lineOptionsByCustomerId = new ConcurrentHashMap<>();
 
 	@Builder
 	private JsonPickingJobConverterCommand(
@@ -109,8 +115,10 @@ public class JsonPickingJobConverterCommand
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
+					.map(line -> JsonPickingJobLine.builderFrom(line, handlingUnitsBL, this::getUOMSymbolById, jsonOpts)
 							.displayGroupKey(group.getKey())
+							.cuQtyEntryMode(getLineOptions(line).getCuQtyEntryMode().getCode())
+							.cuLabelFormatId(getLineOptions(line).getCuLabelFormatId().map(ScannableCodeFormatId::getRepoId).orElse(null))
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
 									getAdditionalHeaderProperties(line), jsonOpts))
@@ -119,6 +127,13 @@ public class JsonPickingJobConverterCommand
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
+	}
+
+	/** The options of the line's own customer: a mixed product job can hold lines of different customers, each with its own mode / format. */
+	@NonNull
+	private PickingJobOptions getLineOptions(@NonNull final PickingJobLine line)
+	{
+		return lineOptionsByCustomerId.computeIfAbsent(line.getCustomerId(), pickingJobRestService::getPickingJobOptions);
 	}
 
 	@Nullable
