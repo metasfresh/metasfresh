@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
@@ -362,11 +363,11 @@ public class HUTransformServiceReservationTests
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 
-		final I_M_HU reservedPiece = createStandaloneSaladCU(data, FOUR);
+		final I_M_HU reservedPiece = testsBase.createStandaloneSaladCU(FOUR);
 		reservedPiece.setIsReserved(true);
 		InterfaceWrapperHelper.save(reservedPiece);
-		final I_M_HU piece1 = createStandaloneSaladCU(data, THREE);
-		final I_M_HU piece2 = createStandaloneSaladCU(data, THREE);
+		final I_M_HU piece1 = testsBase.createStandaloneSaladCU(THREE);
+		final I_M_HU piece2 = testsBase.createStandaloneSaladCU(THREE);
 
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
 				.sourceHU(reservedPiece)
@@ -382,16 +383,14 @@ public class HUTransformServiceReservationTests
 
 		assertThat(singleCU).isTopLevelHU();
 		assertThat(singleCU).hasStorage(data.helper.pSaladProductId, Quantity.of(FIVE, data.helper.uomKg));
+		// the merged CU carries the status, locator and partner of the pieces it was merged from, as a single split CU does
+		assertThat(singleCU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
+		assertThat(IHandlingUnitsBL.extractLocatorIdOrNull(singleCU)).isEqualTo(testsBase.getStandaloneCUMasterData().locatorId);
+		assertThat(singleCU.getC_BPartner_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerId.getRepoId());
+		assertThat(singleCU.getC_BPartner_Location_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerLocationId);
 		// the reserved piece is untouched
 		assertThat(reservedPiece).hasStorage(data.helper.pSaladProductId, Quantity.of(FOUR, data.helper.uomKg));
 		assertThat(piece2).hasStorage(data.helper.pSaladProductId, Quantity.of(ONE, data.helper.uomKg));
-	}
-
-	private I_M_HU createStandaloneSaladCU(final LUTUProducerDestinationTestSupport data, final BigDecimal qty)
-	{
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSaladProductId, qty, data.helper.uomKg);
-		return producer.getCreatedHUs().get(0);
 	}
 
 	/**

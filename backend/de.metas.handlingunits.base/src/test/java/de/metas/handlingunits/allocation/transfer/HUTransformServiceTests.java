@@ -1174,8 +1174,8 @@ public class HUTransformServiceTests
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 
-		final I_M_HU piece1 = createStandaloneSaladCU(data, FOUR);
-		final I_M_HU piece2 = createStandaloneSaladCU(data, FOUR);
+		final I_M_HU piece1 = testsBase.createStandaloneSaladCU(FOUR);
+		final I_M_HU piece2 = testsBase.createStandaloneSaladCU(FOUR);
 
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
 				.sourceHU(piece1)
@@ -1189,16 +1189,14 @@ public class HUTransformServiceTests
 
 		assertThat(singleCU).isTopLevelHU();
 		assertThat(singleCU).hasStorage(data.helper.pSaladProductId, Quantity.of(FIVE, data.helper.uomKg));
+		// the merged CU carries the status, locator and partner of the pieces it was merged from, as a single split CU does
+		assertThat(singleCU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
+		assertThat(IHandlingUnitsBL.extractLocatorIdOrNull(singleCU)).isEqualTo(testsBase.getStandaloneCUMasterData().locatorId);
+		assertThat(singleCU.getC_BPartner_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerId.getRepoId());
+		assertThat(singleCU.getC_BPartner_Location_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerLocationId);
 
 		// the 3 kg left over (4 + 4 - 5) stay in the second source piece
 		assertThat(piece2).hasStorage(data.helper.pSaladProductId, Quantity.of(THREE, data.helper.uomKg));
-	}
-
-	private I_M_HU createStandaloneSaladCU(final LUTUProducerDestinationTestSupport data, final BigDecimal qty)
-	{
-		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSaladProductId, qty, data.helper.uomKg);
-		return producer.getCreatedHUs().get(0);
 	}
 
 	@Test

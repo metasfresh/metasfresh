@@ -552,11 +552,13 @@ public class MobileUIPickingUserProfileRepository
 				.addNotNull(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID)
 				.create();
 
+		// the name is compared here: a SQL LIKE filter on the query builder is a "contains" filter (it prepends a wildcard)
 		final List<I_MobileUI_UserProfile_Picking_Job> unused = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
-				.addStringLikeFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_Name, namePrefix + "%", false)
 				.addNotInSubQueryFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, usedRefs)
 				.create()
-				.list();
+				.stream()
+				.filter(record -> record.getName() != null && record.getName().startsWith(namePrefix))
+				.collect(java.util.stream.Collectors.toList());
 		InterfaceWrapperHelper.deleteAll(unused);
 	}
 

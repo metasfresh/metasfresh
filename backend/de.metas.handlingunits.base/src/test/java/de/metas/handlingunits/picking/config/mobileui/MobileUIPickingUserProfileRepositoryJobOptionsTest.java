@@ -112,6 +112,7 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 		final PickingJobOptionsId referenced = repository.createPickingJobOptions("E2E customer used", options);
 		repository.createPickingJobOptions("E2E customer unused", options);
 		final PickingJobOptionsId otherName = repository.createPickingJobOptions("Customer config unused", options);
+		final PickingJobOptionsId prefixInTheMiddle = repository.createPickingJobOptions("X E2E customer unused", options); // contains the prefix but does not start with it
 
 		final I_MobileUI_UserProfile_Picking_BPartner customer = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_BPartner.class);
 		customer.setMobileUI_UserProfile_Picking_ID(profile.getMobileUI_UserProfile_Picking_ID());
@@ -121,9 +122,10 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 
 		repository.deleteUnusedPickingJobOptions("E2E customer ");
 
-		assertThat(countJobRecords()).isEqualTo(2);
+		assertThat(countJobRecords()).isEqualTo(3);
 		assertThat(load(referenced)).isNotNull();
 		assertThat(load(otherName)).isNotNull();
+		assertThat(load(prefixInTheMiddle)).isNotNull();
 	}
 
 	@Test

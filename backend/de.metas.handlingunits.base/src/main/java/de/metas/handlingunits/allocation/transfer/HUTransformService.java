@@ -1533,27 +1533,35 @@ public class HUTransformService
 
 	/**
 	 * Like {@link #husToNewCUs(HUsToNewCUsRequest)}, but always returns exactly ONE new standalone CU:
-	 * if the requested quantity had to be taken from more than one source piece, the resulting CUs are merged into one.
+	 * if the requested quantity had to be taken from more than one source piece, the other new CUs are merged into the first one
+	 * (so the result keeps the status, locator, partner and clearance that the split propagated from the source, like a single split CU).
 	 * The request's {@link ReservedHUsPolicy} is honored, i.e. reserved pieces are skipped or refused as in {@link #husToNewCUs(HUsToNewCUsRequest)}.
+	 * <p>
+	 * Like {@link #husToNewCUs(HUsToNewCUsRequest)}, the result may hold less than the requested quantity if the source HUs don't hold enough
+	 * (the caller has to check or to create the missing quantity). {@link HUsToNewCUsRequest#isKeepNewCUsUnderSameParent()} is not supported (the result is a standalone CU).
 	 */
 	public I_M_HU husToNewSingleCU(@NonNull final HUsToNewCUsRequest request)
+	{
+		Check.assume(!request.isKeepNewCUsUnderSameParent(), "keepNewCUsUnderSameParent is not supported, the result is a standalone CU: {}", request);
+
+		return trxManager.callInThreadInheritedTrx(() -> husToNewSingleCU_InTrx(request));
+	}
+
+	private I_M_HU husToNewSingleCU_InTrx(@NonNull final HUsToNewCUsRequest request)
 	{
 		final List<I_M_HU> newCUs = husToNewCUs(request).getNewCUs();
 		if (newCUs.isEmpty())
 		{
 			throw new AdempiereException("No CU could be created from the given source HUs; request=" + request);
 		}
-		if (newCUs.size() == 1)
+
+		final I_M_HU singleCU = newCUs.get(0);
+		if (newCUs.size() > 1)
 		{
-			return newCUs.get(0);
+			// never load straight from the source HUs (that would bypass the reservation guard); only merge the CUs we just split off
+			cusToExistingCU(newCUs.subList(1, newCUs.size()), singleCU);
 		}
-
-		// never load straight from the source HUs (that would bypass the reservation guard); only from the CUs we just split off
-		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
-		HULoader.of(HUListAllocationSourceDestination.of(newCUs).setDestroyEmptyHUs(true), destination)
-				.unloadAllFromSource();
-
-		return CollectionUtils.singleElement(destination.getCreatedHUs());
+		return singleCU;
 	}
 
 	/**

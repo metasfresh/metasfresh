@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs.TestHUsBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -75,6 +76,46 @@ public class HUTransformTestsBase
 
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
+	}
+
+	/** The partner / location / locator the CUs of {@link #createStandaloneSaladCU(BigDecimal)} carry. */
+	public static final class StandaloneCUMasterData
+	{
+		public final BPartnerId bpartnerId;
+		public final int bpartnerLocationId;
+		public final LocatorId locatorId;
+
+		private StandaloneCUMasterData()
+		{
+			final I_C_BPartner bpartner = createBPartner("standaloneCUVendor");
+			bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+			bpartnerLocationId = createBPartnerLocation(bpartner).getC_BPartner_Location_ID();
+			locatorId = LocatorId.ofRecord(createLocator("standaloneCULocator", createWarehouse("standaloneCUWarehouse")));
+		}
+	}
+
+	private StandaloneCUMasterData standaloneCUMasterData;
+
+	public StandaloneCUMasterData getStandaloneCUMasterData()
+	{
+		if (standaloneCUMasterData == null)
+		{
+			standaloneCUMasterData = new StandaloneCUMasterData();
+		}
+		return standaloneCUMasterData;
+	}
+
+	/** An ACTIVE standalone salad CU with a locator and a business partner + location, like a CU in stock. */
+	public final I_M_HU createStandaloneSaladCU(final BigDecimal qty)
+	{
+		final StandaloneCUMasterData masterData = getStandaloneCUMasterData();
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		producer.setHUStatus(X_M_HU.HUSTATUS_Active);
+		producer.setLocatorId(masterData.locatorId);
+		producer.setBPartnerId(masterData.bpartnerId);
+		producer.setC_BPartner_Location_ID(masterData.bpartnerLocationId);
+		data.helper.load(producer, data.helper.pSaladProductId, qty, data.helper.uomKg);
+		return producer.getCreatedHUs().get(0);
 	}
 
 	public final TestHUs testCU_To_NewCU_1Tomato_DoIt()
