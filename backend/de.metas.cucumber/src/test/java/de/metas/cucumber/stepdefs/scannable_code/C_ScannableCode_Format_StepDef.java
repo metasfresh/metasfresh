@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.scannable_code;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
@@ -12,13 +13,12 @@ import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.time.PatternedDateTimeFormatter;
-import io.cucumber.java.After;
-import lombok.RequiredArgsConstructor;
-import com.google.common.collect.ImmutableList;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;

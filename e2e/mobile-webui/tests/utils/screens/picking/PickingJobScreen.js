@@ -35,7 +35,6 @@ const stopCollectingPickEvents = () => {
 };
 
 export const PickingJobScreen = {
-
     /**
      * Starts recording the PICK events the app posts (api/picking.js postStepPicked -> POST .../picking/event).
      * Call before the scan; read with expectPickPostedWithHUQRCode / expectNoPickPosted.
@@ -75,6 +74,7 @@ export const PickingJobScreen = {
         stopCollectingPickEvents();
         expect(pickEvents).toHaveLength(0);
     },
+
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
