@@ -1065,6 +1065,7 @@ public class PickingJobPickCommand
 					.sourceLU(pickFromHU)
 					.qtyTU(qtyToPickTUs)
 					.targetLU(targetLU)
+					.expectedProductId(productId) // the pick-from LU only has to contain the picked product; never move TUs of other products
 					.newLUProductId(productId) // picked product: lets a new LU use its product-specific LU->TU packing item
 					.build());
 			InterfaceWrapperHelper.setThreadInheritedTrxName(result.getAllTURecords()); // workaround because the returned HUs have trxName=null
