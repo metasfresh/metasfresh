@@ -34,6 +34,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -118,13 +119,17 @@ public class AssertExpectationsCommandServices
 		return handlingUnitsDAO.retrieveIncludedHUs(huId);
 	}
 
-	/** @return the TU count of the packing instruction item (of the parent LU) via which the given HU is attached to its LU */
-	public int getParentPIItemQtyTUs(@NonNull final HuId huId)
+	/**
+	 * @return the TU count of the packing instruction item (of the parent LU) via which the given HU is attached to its LU,
+	 * or {@code null} if the HU has no parent item or that item has no packing instruction item
+	 */
+	@Nullable
+	public Integer getParentPIItemQtyTUs(@NonNull final HuId huId)
 	{
 		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(handlingUnitsBL.getById(huId));
 		return parentItem != null && parentItem.getM_HU_PI_Item_ID() > 0
 				? parentItem.getM_HU_PI_Item().getQty().intValueExact()
-				: -1;
+				: null;
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
