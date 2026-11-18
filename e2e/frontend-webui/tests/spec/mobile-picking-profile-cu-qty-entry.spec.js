@@ -113,6 +113,7 @@ save + reload, and show in the grid.
 
     const stamp = `${Date.now()}`;
     const formatName = `CU entry test format ${stamp}`;
+    const formatMarker = `CUQTYTEST${stamp}`;
 
     const masterdata = await Backend.createMasterdata({
       request: {
@@ -124,7 +125,13 @@ save + reload, and show in the grid.
         customQRCodeFormats: [
           {
             name: formatName,
-            parts: [{ startPosition: 1, endPosition: 7, type: 'PRODUCT_CODE' }],
+            // The mobile UI tries custom formats before all others. A format that matches any code
+            // would take over the HU QR codes of the next specs if it were left behind, so it only
+            // matches a code that starts with this run's own marker (no other label carries it).
+            parts: [
+              { startPosition: 1, endPosition: formatMarker.length, type: 'CONSTANT', constantValue: formatMarker },
+              { startPosition: formatMarker.length + 1, endPosition: formatMarker.length + 7, type: 'PRODUCT_CODE' },
+            ],
           },
         ],
       },
@@ -274,10 +281,11 @@ save + reload, and show in the grid.
       for (const { windowId, recordId } of createdRecords.reverse()) {
         await deleteTestRecord(page, windowId, recordId);
       }
-      // Remove the generated format too. Its only part is a product code at positions 1-7, so it
-      // matches any scanned code: left behind, the mobile UI would read the next spec's HU QR codes
-      // with it (a custom format is tried first) and pick a whole TU instead of the HU.
-      await Backend.createMasterdata({ request: { customQRCodeFormats: [] } });
     }
+  });
+
+  // Remove the generated format. afterEach also runs when the test times out, unlike the end of a `finally` block.
+  test.afterEach(async () => {
+    await Backend.createMasterdata({ request: { customQRCodeFormats: [] } });
   });
 });
