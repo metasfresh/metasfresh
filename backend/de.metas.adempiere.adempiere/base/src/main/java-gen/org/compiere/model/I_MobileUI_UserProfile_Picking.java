@@ -204,6 +204,48 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_CreateShipmentPolicy = "CreateShipmentPolicy";
 
 	/**
+	 * Set Scannable Code Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ScannableCode_Format_ID (int C_ScannableCode_Format_ID);
+
+	/**
+	 * Get Scannable Code Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ScannableCode_Format_ID();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, org.compiere.model.I_C_ScannableCode_Format> COLUMN_C_ScannableCode_Format_ID = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "C_ScannableCode_Format_ID", org.compiere.model.I_C_ScannableCode_Format.class);
+	String COLUMNNAME_C_ScannableCode_Format_ID = "C_ScannableCode_Format_ID";
+
+	/**
+	 * Set CU quantity entry.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCUQtyEntryMode (java.lang.String CUQtyEntryMode);
+
+	/**
+	 * Get CU quantity entry.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCUQtyEntryMode();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_CUQtyEntryMode = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "CUQtyEntryMode", null);
+	String COLUMNNAME_CUQtyEntryMode = "CUQtyEntryMode";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -334,8 +376,8 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowQuickPackAll = "IsAllowQuickPackAll";
 
 	/**
-	 * Set Allow picking with no rejected qty reason.
-	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 * Set Allow under-pick w/o reason.
+	 * When enabled, the picker can record a lower quantity without specifying a reason (the dropdown gets an additional «Without reason» option).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -344,8 +386,8 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsAllowSkippingRejectedReason (boolean IsAllowSkippingRejectedReason);
 
 	/**
-	 * Get Allow picking with no rejected qty reason.
-	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 * Get Allow under-pick w/o reason.
+	 * When enabled, the picker can record a lower quantity without specifying a reason (the dropdown gets an additional «Without reason» option).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -468,8 +510,8 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsideredOnlyScheduledJobs = "IsConsideredOnlyScheduledJobs";
 
 	/**
-	 * Set Consider sales order capacity.
-	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 * Set Cap TU content to remaining qty.
+	 * When enabled, the CU quantity taken from a scanned TU is capped to the remaining order qty (a TU may be picked partially). When disabled, the full TU capacity is always picked, even if that exceeds the order qty.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -478,8 +520,8 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsConsiderSalesOrderCapacity (boolean IsConsiderSalesOrderCapacity);
 
 	/**
-	 * Get Consider sales order capacity.
-	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 * Get Cap TU content to remaining qty.
+	 * When enabled, the CU quantity taken from a scanned TU is capped to the remaining order qty (a TU may be picked partially). When disabled, the full TU capacity is always picked, even if that exceeds the order qty.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -554,7 +596,9 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
 
 	/**
-	 * Set Ask User when Over Picking.
+	 * Set Allow over-pick with prompt.
+	 * When enabled, the picker can record more than the ordered qty;
+ the over-delivery must be confirmed via a prompt. When disabled, over-picking is hard-blocked in the frontend ("N above max").
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -563,7 +607,9 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsShowConfirmationPromptWhenOverPick (boolean IsShowConfirmationPromptWhenOverPick);
 
 	/**
-	 * Get Ask User when Over Picking.
+	 * Get Allow over-pick with prompt.
+	 * When enabled, the picker can record more than the ordered qty;
+ the over-delivery must be confirmed via a prompt. When disabled, over-picking is hard-blocked in the frontend ("N above max").
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
