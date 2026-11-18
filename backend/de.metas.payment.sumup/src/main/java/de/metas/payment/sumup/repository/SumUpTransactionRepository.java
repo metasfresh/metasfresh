@@ -29,7 +29,9 @@ import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.AddDurationQueryFilterModifier;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,6 +43,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -361,7 +364,7 @@ public class SumUpTransactionRepository
 		}
 		if (query.getExcludeNotFoundConfirmedAtAge() != null)
 		{
-			sqlQueryBuilder.filter(new ExcludeNotFoundConfirmedAtAgeFilter(query.getExcludeNotFoundConfirmedAtAge()));
+			sqlQueryBuilder.filter(createExcludeNotFoundConfirmedAtAgeFilter(query.getExcludeNotFoundConfirmedAtAge()));
 		}
 		if (query.getPollDueAt() != null)
 		{
@@ -385,6 +388,30 @@ public class SumUpTransactionRepository
 		}
 
 		return sqlQueryBuilder;
+	}
+
+	/**
+	 * Leaves out the transactions for which SumUp confirmed that it has no transaction by a lookup made at least {@code age}
+	 * after metasfresh created them: SumUp never reported the transaction (no stored answer, {@code JsonResponse}), and its
+	 * last lookup succeeded ({@code SUMUP_LastSync_Status} OK, i.e. SumUp's "not found") at or after {@code Created + age}.
+	 * Every other transaction is kept, in particular one whose last lookup failed, one never looked up, one SumUp knows (even
+	 * if still PENDING), and one whose last "not found" came earlier than that.
+	 */
+	ICompositeQueryFilter<I_SUMUP_Transaction> createExcludeNotFoundConfirmedAtAgeFilter(@NonNull final Duration age)
+	{
+		final String lastLookupAt = I_SUMUP_Transaction.COLUMNNAME_SUMUP_LastSync_Timestamp;
+		return queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+				.setJoinOr()
+				// SumUp reported the transaction
+				.addNotNull(I_SUMUP_Transaction.COLUMNNAME_JsonResponse)
+				// the last lookup failed, or none was made
+				.addNotEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_SUMUP_LastSync_Status, LastSyncStatus.OK.getCode())
+				.addEqualsFilter(lastLookupAt, null)
+				// SumUp's "not found" came before Created + age
+				.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Created,
+						CompareQueryFilter.Operator.GREATER,
+						ModelColumnNameValue.forColumnName(lastLookupAt),
+						new AddDurationQueryFilterModifier(age));
 	}
 
 	/**

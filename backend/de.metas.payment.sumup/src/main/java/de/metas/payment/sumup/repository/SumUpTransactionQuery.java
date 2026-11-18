@@ -28,7 +28,7 @@ public class SumUpTransactionQuery
 	@Nullable SumUpPOSRef posRef;
 	/**
 	 * If set: leaves out the transactions for which SumUp confirmed that it has no transaction by a lookup made at least this
-	 * long after metasfresh created them, see {@link ExcludeNotFoundConfirmedAtAgeFilter}
+	 * long after metasfresh created them, see {@link SumUpTransactionRepository#createExcludeNotFoundConfirmedAtAgeFilter}
 	 */
 	@Nullable Duration excludeNotFoundConfirmedAtAge;
 	/**

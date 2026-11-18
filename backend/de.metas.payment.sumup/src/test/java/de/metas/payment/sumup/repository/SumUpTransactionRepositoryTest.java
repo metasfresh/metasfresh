@@ -14,7 +14,9 @@ import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -143,6 +145,23 @@ class SumUpTransactionRepositoryTest
 				.stream()
 				.map(trx -> Objects.requireNonNull(trx.getPosRef()).getPosPaymentId())
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * The SQL side of the 24 h stop filter: the in-memory database of the other tests runs only its Java side. The SQL was
+	 * checked against PostgreSQL on rows matching {@code query_excludeNotFoundConfirmedAtAge_*}.
+	 */
+	@Test
+	void excludeNotFoundConfirmedAtAgeFilter_sql()
+	{
+		final ICompositeQueryFilter<I_SUMUP_Transaction> filter = repository.createExcludeNotFoundConfirmedAtAgeFilter(Duration.ofHours(24));
+
+		// kept: SumUp reported it, or the last lookup was not SumUp's "not found", or none, or it came before the 24 h mark
+		assertThat(filter.getSqlFiltersWhereClause()).isEqualTo("(JsonResponse IS NOT NULL)"
+				+ " OR ((SUMUP_LastSync_Status <> ? OR SUMUP_LastSync_Status IS NULL))"
+				+ " OR (SUMUP_LastSync_Timestamp IS NULL)"
+				+ " OR ((Created + INTERVAL '86400 seconds') > SUMUP_LastSync_Timestamp)");
+		assertThat(filter.getSqlFiltersParams(null)).containsExactly("OK");
 	}
 
 	/**
