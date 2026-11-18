@@ -1004,7 +1004,9 @@ public class HUTransformService
 		I_M_HU lastNewLU = null; // only relevant if targetLU is a new LU: the LU that was created last, which might still have room for more TUs
 
 		//
-		// Check if we can take the LU as is
+		// Check if we can take the LU as is.
+		// Note: in this case the source LU keeps its current LU item (e.g. the generic one), even if a product-specific item would exist for request.newLUProductId;
+		// the LU is not rebuilt, because it already has the requested packing instructions and exactly the requested TUs.
 		if (!sourceLU.containsAnyOfHUIds(alreadyExtractedTUIds) // sourceLU shall not (soon to) be modified, it must be intact
 				&& QtyTU.equals(sourceLU.getQtyTU(), qtyTU) // expected number of TUs
 				&& isSourceLUMatching_TargetLU(sourceLU, targetLU) // expected packing
