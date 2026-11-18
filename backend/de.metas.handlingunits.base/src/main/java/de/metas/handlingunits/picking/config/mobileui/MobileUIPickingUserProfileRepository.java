@@ -558,7 +558,7 @@ public class MobileUIPickingUserProfileRepository
 				.create()
 				.stream()
 				.filter(record -> record.getName() != null && record.getName().startsWith(namePrefix))
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 		InterfaceWrapperHelper.deleteAll(unused);
 	}
 

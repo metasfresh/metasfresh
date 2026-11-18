@@ -10,7 +10,6 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
@@ -69,7 +68,6 @@ public class PackToHUsProducer
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final IHandlingUnitsBL handlingUnitsBL;
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPIItemProductBL huPIItemProductBL;
 	private final IUOMConversionBL uomConversionBL;
 	private final InventoryService inventoryService;
@@ -334,11 +332,11 @@ public class PackToHUsProducer
 	{
 		if (!producedResult.isSingleTopLevelTUOnly() || !producedResult.isSingleFullTU())
 		{
-			return producedResult;
+			throw new AdempiereException("Expected the new box to be exactly one full top-level TU but got: " + producedResult);
 		}
 
 		final I_M_HU tuRecord = producedResult.getSingleTopLevelTURecord();
-		final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(tuRecord);
+		final List<I_M_HU> cus = handlingUnitsBL.retrieveIncludedHUs(tuRecord);
 		if (cus.size() != 1)
 		{
 			throw new AdempiereException("Expected exactly one CU in the new box but found " + cus.size() + ": " + tuRecord);

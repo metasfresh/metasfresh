@@ -8,7 +8,6 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.model.I_M_HU;
@@ -26,6 +25,7 @@ import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
@@ -37,6 +37,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Task A8 of the CU quantity entry work: {@link PackToHURequest#isConsolidateToSingleCU()} and
@@ -46,9 +47,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class PackToHUsProducerCUQtyEntryTest
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private IHandlingUnitsBL handlingUnitsBL;
+	private IHUPIItemProductBL huPIItemProductBL;
 
 	private ProcessPickingCandidatesCommandTestHelper helper;
 	private I_C_UOM uomEach;
@@ -60,6 +60,8 @@ public class PackToHUsProducerCUQtyEntryTest
 	public void beforeEach()
 	{
 		helper = new ProcessPickingCandidatesCommandTestHelper();
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 		uomEach = helper.uomEach;
 		productId = helper.createProduct("P-0001", uomEach);
 
@@ -124,7 +126,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.build());
 	}
 
-	private List<I_M_HU> cusOf(final I_M_HU tu) {return handlingUnitsDAO.retrieveIncludedHUs(tu);}
+	private List<I_M_HU> cusOf(final I_M_HU tu) {return handlingUnitsBL.retrieveIncludedHUs(tu);}
 
 	private BigDecimal qtyOf(final I_M_HU hu)
 	{
@@ -137,9 +139,7 @@ public class PackToHUsProducerCUQtyEntryTest
 	public void newBox_scanOnceN5_fromTwoPieces_partialTUWithOneCUOf5()
 	{
 		// source = a box (TU) holding two pieces 4 + 4: 5 are taken across both pieces (no inventory needed)
-		final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("4")));
-		final IHUContext sourceContext = helper.huTestHelper.createMutableHUContextOutOfTransaction();
-		HUTransformService.newInstance(sourceContext).addCUsToTU(ImmutableList.of(vhu("4")), sourceTU);
+		final I_M_HU sourceTU = sourceTUWithTwoPieces();
 		assertThat(cusOf(sourceTU)).hasSize(2);
 		final I_M_HU piece1 = sourceTU;
 
@@ -264,7 +264,7 @@ public class PackToHUsProducerCUQtyEntryTest
 		assertThat(result.getSingleTU().getId()).isEqualTo(HuId.ofRepoId(sourceTU.getM_HU_ID()));
 	}
 
-	/** TC29 flags off, open box: 1 + 4 CUs as today (the open-box branch splits the source into CUs and adds them). */
+	/** TC29 flags off, open box: full TU as today; the 5 pieces are added as CUs (one source CU of 8 -> 5 taken). */
 	@Test
 	public void openBox_flagsOff_fullTUAsToday()
 	{
@@ -273,5 +273,42 @@ public class PackToHUsProducerCUQtyEntryTest
 		final LUTUResult result = pack(vhu("8"), "5", openBox(box), false);
 
 		assertThat(result.getSingleTU().isFullTU()).isTrue();
+		assertThat(cusOf(box)).extracting(this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+				.containsExactlyInAnyOrder(new BigDecimal("3"), new BigDecimal("5"));
+	}
+
+	/** TC29 flags off, open box, the source holds several pieces (4 + 4): today's error. */
+	@Test
+	public void openBox_fromTwoPieces_flagsOff_failsAsToday()
+	{
+		final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
+		final I_M_HU sourceTU = sourceTUWithTwoPieces();
+
+		assertThatThrownBy(() -> pack(sourceTU, "5", openBox(box), false))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("exactly one");
+	}
+
+	/** open box holding 3, the source holds two pieces 4 + 4, N=5 -> one new CU of 5 in the box (needs consolidateToSingleCU). */
+	@Test
+	public void openBox_fromTwoPieces_n5_oneCUOf5()
+	{
+		final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
+		final I_M_HU sourceTU = sourceTUWithTwoPieces();
+
+		final LUTUResult result = pack(sourceTU, "5", openBox(box), true);
+
+		assertThat(result.getSingleTU().isFullTU()).isFalse();
+		assertThat(cusOf(box)).extracting(this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+				.containsExactlyInAnyOrder(new BigDecimal("3"), new BigDecimal("5"));
+		assertThat(result.getSingleTU().getCUsNotEmpty()).hasSize(1);
+	}
+
+	private I_M_HU sourceTUWithTwoPieces()
+	{
+		final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("4")));
+		final IHUContext sourceContext = helper.huTestHelper.createMutableHUContextOutOfTransaction();
+		HUTransformService.newInstance(sourceContext).addCUsToTU(ImmutableList.of(vhu("4")), sourceTU);
+		return sourceTU;
 	}
 }
