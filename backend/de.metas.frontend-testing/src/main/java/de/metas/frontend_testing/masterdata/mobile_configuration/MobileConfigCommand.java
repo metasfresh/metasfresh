@@ -1,20 +1,19 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
-import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
+import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfigService;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
-import javax.annotation.Nullable;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -24,6 +23,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
+
+import javax.annotation.Nullable;
 
 
 @Builder
@@ -106,7 +107,7 @@ public class MobileConfigCommand
 					.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
 					.addOnlyActiveRecordsFilter()
 					.create()
-					.firstOnly(I_MobileUI_UserProfile_Picking.class);
+					.firstOnlyNotNull(I_MobileUI_UserProfile_Picking.class);
 
 			profileRecord.setCUQtyEntryMode(cuQtyEntryModeOrDefault(picking.getCuQtyEntryMode()));
 			profileRecord.setC_ScannableCode_Format_ID(resolveFormatIdOrNoFormat(picking.getCuLabelFormatName()));
@@ -146,7 +147,7 @@ public class MobileConfigCommand
 		}
 
 		final I_MobileUI_UserProfile_Picking_Job jobRecord = InterfaceWrapperHelper.load(customerRecord.getMobileUI_UserProfile_Picking_Job_ID(), I_MobileUI_UserProfile_Picking_Job.class);
-		jobRecord.setCUQtyEntryMode(cuQtyEntryModeOrNull(customer.getCuQtyEntryMode()));
+		jobRecord.setCUQtyEntryMode(customer.getCuQtyEntryMode());
 		jobRecord.setC_ScannableCode_Format_ID(resolveFormatIdOrNoFormat(customer.getCuLabelFormatName()));
 		InterfaceWrapperHelper.saveRecord(jobRecord);
 	}
@@ -156,13 +157,6 @@ public class MobileConfigCommand
 	private static String cuQtyEntryModeOrDefault(@Nullable final String cuQtyEntryMode)
 	{
 		return cuQtyEntryMode != null ? cuQtyEntryMode : CU_QTY_ENTRY_MODE_DEFAULT;
-	}
-
-	/** The job options column is optional, no default: absent = null. */
-	@Nullable
-	private static String cuQtyEntryModeOrNull(@Nullable final String cuQtyEntryMode)
-	{
-		return cuQtyEntryMode;
 	}
 
 	/** Returns the format repo id, or 0 (= no format) when the name is absent. */

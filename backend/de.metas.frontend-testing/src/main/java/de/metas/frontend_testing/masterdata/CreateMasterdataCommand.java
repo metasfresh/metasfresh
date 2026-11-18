@@ -1,7 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.util.Services;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
@@ -21,6 +20,11 @@ import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRespon
 import de.metas.frontend_testing.masterdata.inventory.InventoryCreateCommand;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
+import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
+import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
@@ -36,47 +40,43 @@ import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.frontend_testing.masterdata.product_planning.CreateProductPlanningCommand;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
-import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
-import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
-import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
-import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
-import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
-import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.PurchaseOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateRequest;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateResponse;
 import de.metas.frontend_testing.masterdata.receipt.ReceiptCreateCommand;
+import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
-import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
-import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
-import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
-import org.adempiere.ad.trx.api.ITrxManager;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.BiFunction;
+import javax.annotation.Nullable;
 
 /**
  * @implNote This class is intentionally kept as a thin orchestrator — it routes to dedicated command classes
