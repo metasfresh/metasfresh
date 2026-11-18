@@ -3,12 +3,14 @@ package de.metas.handlingunits.allocation.transfer;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -157,6 +159,42 @@ public class HUTransformService_LuExtractTUs_ProductSpecificLUItemTest
 		assertThat(result.getQtyTUs()).isEqualTo(QtyTU.ofInt(7));
 		assertThat(result.getLURecords()).extracting(I_M_HU::getM_HU_ID).containsExactly(existingLU.getM_HU_ID());
 		assertThat(countTUs(existingLU)).isEqualTo(11);
+	}
+
+	/**
+	 * The source LU holds real TUs of two TU packing instructions (IFCO, bag), each with a product-specific item in the LU packing instruction.
+	 * The IFCO TU starts the new LU; the bag TU is added to that LU (capacity left) and must hang on the bag's product-specific item,
+	 * although the LU has no item for bags yet.
+	 */
+	@Test
+	public void luExtractTUs_newLU_realTUsOfTwoTUPIs_eachAttachedViaItsProductSpecificItem()
+	{
+		createSpecificItem(data.helper.pTomatoProductId, 8); // IFCO
+		final I_M_HU_PI_Item specificBagItem = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_Bag, new BigDecimal("6"));
+		specificBagItem.setM_Product_ID(data.helper.pTomatoProductId.getRepoId());
+		save(specificBagItem);
+
+		final I_M_HU sourceLU = data.createLU(2, 40);
+		huTransformService.tuToExistingLU(handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("40")), QtyTU.ONE, sourceLU);
+		huTransformService.tuToExistingLU(createRealBagTU(), QtyTU.ONE, sourceLU);
+
+		final LUTUResult result = extractIntoNewLUs(sourceLU, 2, data.helper.pTomatoProductId);
+
+		final I_M_HU newLU = CollectionUtils.singleElement(result.getLURecords());
+		final I_M_HU bagTU = CollectionUtils.singleElement(handlingUnitsDAO.retrieveIncludedHUs(newLU).stream()
+				.filter(tu -> tu.getM_HU_PI_Version().getM_HU_PI_ID() == data.piTU_Bag.getM_HU_PI_ID())
+				.collect(Collectors.toList()));
+		assertThat(bagTU.getM_HU_Item_Parent().getM_HU_PI_Item_ID()).isEqualTo(specificBagItem.getM_HU_PI_Item_ID());
+	}
+
+	private I_M_HU createRealBagTU()
+	{
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(data.defaultLocatorId);
+		lutuProducer.setNoLU();
+		lutuProducer.setTUPI(data.piTU_Bag);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("8"), data.helper.uomKg);
+		return CollectionUtils.singleElement(lutuProducer.getCreatedHUs());
 	}
 
 	@Test
