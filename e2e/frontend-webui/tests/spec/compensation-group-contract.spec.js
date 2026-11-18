@@ -675,7 +675,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const orderX = await completeSalesOrder(page, customer, goods, x);
       const linesX = await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB);
       expect(linesX, 'order X: goods line + one discount line').toHaveLength(2);
-      const discountX = discountLineOf(linesX, masterdata.products.DISCOUNT_A);
+      const discountX = lineOfProduct(linesX, masterdata.products.DISCOUNT_A);
       expect(discountX, 'order X: the 3 % discount line').toBeTruthy();
       expect(Number(discountX.fieldsByName.LineNetAmt.value)).toBeCloseTo(-30, 2);
       await expectOrderGridAmount(page, orderX, masterdata.products.DISCOUNT_A, '-30,00');
@@ -684,7 +684,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const orderX1 = await completeSalesOrder(page, customer, goods, addDays(x, 1));
       const linesX1 = await getTabRows(SALES_ORDER_WINDOW_ID, orderX1, ORDER_LINE_TAB);
       expect(linesX1, 'order X + 1: goods line + one discount line').toHaveLength(2);
-      const discountX1 = discountLineOf(linesX1, masterdata.products.DISCOUNT_B);
+      const discountX1 = lineOfProduct(linesX1, masterdata.products.DISCOUNT_B);
       expect(discountX1, 'order X + 1: the 5 % discount line').toBeTruthy();
       expect(Number(discountX1.fieldsByName.LineNetAmt.value)).toBeCloseTo(-50, 2);
       await expectOrderGridAmount(page, orderX1, masterdata.products.DISCOUNT_B, '-50,00');
@@ -763,10 +763,10 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     let groupX1;
     await test.step('3. One order per contract, each with its compensation group', async () => {
       orderX = await completeSalesOrder(page, customer, goods, x);
-      const discountX = discountLineOf(await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB), masterdata.products.DISCOUNT_A);
+      const discountX = lineOfProduct(await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB), masterdata.products.DISCOUNT_A);
       expect(discountX, 'order X: the 3 % discount line').toBeTruthy();
       const orderX1 = await completeSalesOrder(page, customer, goods, addDays(x, 1));
-      const discountX1 = discountLineOf(await getTabRows(SALES_ORDER_WINDOW_ID, orderX1, ORDER_LINE_TAB), masterdata.products.DISCOUNT_B);
+      const discountX1 = lineOfProduct(await getTabRows(SALES_ORDER_WINDOW_ID, orderX1, ORDER_LINE_TAB), masterdata.products.DISCOUNT_B);
       expect(discountX1, 'order X + 1: the 5 % discount line').toBeTruthy();
 
       groupX = lookupKey(discountX.fieldsByName.C_Order_CompensationGroup_ID.value);
@@ -844,12 +844,15 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         await expect(groupPage.locator(`th[data-testid="column-${hidden}"]`), `column ${hidden} not shown`).toHaveCount(0);
       }
       // all shown fields are read-only
-      const discountLineRow = discountLineOf(lines, masterdata.products.DISCOUNT_A);
+      const discountLineRow = lineOfProduct(lines, masterdata.products.DISCOUNT_A);
       expect(discountLineRow, 'discount line row on the tab').toBeTruthy();
       for (const shown of ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS) {
         expect(discountLineRow.fieldsByName[shown], `field ${shown} present on the row`).toBeTruthy();
         expect(discountLineRow.fieldsByName[shown].readonly, `field ${shown} read-only`).toBe(true);
       }
+      // the values shown equal those of the same order line in the sales order window
+      const salesOrderLines = await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB);
+      expectValuesEqualOrderLines(lines, salesOrderLines);
       // zoom on the product opens that product
       const productPage = await zoomIntoFromCell(groupPage, discountRow.locator('[data-cy="cell-M_Product_ID"]'));
       await productPage.waitForURL(new RegExp(`/window/\\d+/${masterdata.products.DISCOUNT_A.id}$`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
@@ -865,16 +868,19 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       // the material-cockpit detail, so the expected side is polled until it has at least one entry)
       const readExpectedReferences = async () => relatedDocumentsComparable(
         await getDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId));
-      await expect.poll(async () => (await readExpectedReferences()).length,
-        { message: 'the line has at least one related document other than 270/540394/363 (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
-        .toBeGreaterThanOrEqual(1);
-      const expectedReferences = await readExpectedReferences();
-      const actualReferences = relatedDocumentsComparable(
+      // (both sides are compared inside the poll: the expected side has at least one entry, and the two lists agree; an entry that
+      // arrives between two reads only makes the poll read again)
+      const readActualReferences = async () => relatedDocumentsComparable(
         await getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId));
-      expect(actualReferences, 'related documents of the line row (without windows 270, 540394, 363)').toEqual(expectedReferences);
+      await expect.poll(async () => {
+        const expected = await readExpectedReferences();
+        const actual = await readActualReferences();
+        return expected.length >= 1 && JSON.stringify(actual) === JSON.stringify(expected) ? 'equal' : JSON.stringify({ expected, actual });
+      }, { message: 'related documents of the line row (without windows 270, 540394, 363) equal those of the order line, and the line has at least one (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
+        .toBe('equal');
 
       // Single view (Advanced edit) of a line row of the sales group: the same nine fields, read-only
-      await expectLineRowSingleView(groupPage, discountRow, masterdata.products.DISCOUNT_A);
+      await expectLineRowSingleView(groupPage, discountRow, masterdata.products.DISCOUNT_A, 'sales-discount');
     });
 
     await test.step('4c. List: filter "Vertrag" narrows the groups to the ones of that contract', async () => {
@@ -887,8 +893,9 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       // test orders are digits, which the database orders character by character)
       const orderNos = unfiltered.rows.map((row) => String(row.fieldsByName.C_Order_ID?.value?.caption));
       expect(orderNos, 'sorted by order document number, descending').toEqual([...orderNos].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
-      // the two sales orders of this test share one number sequence, so for them "newest first" holds: order X + 1 (created
-      // after order X) is listed above order X
+      // the two sales orders of this test get consecutive document numbers of the same sequence: order X + 1 (created after
+      // order X) has the higher number, so its group is listed above the group of order X (all rows of the view are read,
+      // so the position does not depend on how many other groups exist)
       const listedIds = unfiltered.rows.map((row) => String(row.id));
       expect(listedIds, 'the group of order X is listed').toContain(String(groupX));
       expect(listedIds, 'the group of order X + 1 is listed').toContain(String(groupX1));
@@ -974,7 +981,6 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         request: {
           productCategories: { P_CATEGORY: {} },
           bpartners: { VENDOR: { isVendor: true, isCustomer: false, isSoPriceList: false } },
-          warehouses: { pwh: {} },
           products: {
             P_GOODS: { productCategory: 'P_CATEGORY', prices: [{ price: GOODS_PRICE }] },
             P_DISCOUNT: { type: 'Item', isStocked: false, productCategory: 'P_CATEGORY', prices: [{ price: 1 }] },
@@ -1003,13 +1009,13 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       await completePurchaseOrder(page, purchaseOrderId, purchaseGoods, x);
       const lines = await getTabRows(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID_PATH);
-      expect(discountLineOf(lines, purchaseDiscount), 'purchase order: the 3 % discount line').toBeTruthy();
+      expect(lineOfProduct(lines, purchaseDiscount), 'purchase order: the 3 % discount line').toBeTruthy();
     });
 
     await test.step('4g. Purchase group, opened from the vendor contract: order-lines tab (grid and single view), related documents', async () => {
       const purchaseLines = await getTabRows(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID_PATH);
       expect(purchaseLines, 'goods line + discount line of the purchase order').toHaveLength(2);
-      expect(discountLineOf(purchaseLines, purchaseDiscount), 'the purchase order carries the discount line').toBeTruthy();
+      expect(lineOfProduct(purchaseLines, purchaseDiscount), 'the purchase order carries the discount line').toBeTruthy();
 
       // The purchase order's line grid has no compensation-group column (its layout lists none), so the group is reached the way an
       // operator reaches it from the purchase side: the vendor contract's Related Documents entry to its order compensation groups
@@ -1068,24 +1074,35 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         }
       }
 
+      // zoom on the product opens that product
+      const purchaseProductPage = await zoomIntoFromCell(purchaseGroupPage, goodsRow.locator('[data-cy="cell-M_Product_ID"]'));
+      await purchaseProductPage.waitForURL(new RegExp(`/window/\\d+/${purchaseGoods.id}$`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await purchaseProductPage.close();
+
+      // the values shown equal those of the same order line in the purchase order window
+      // (the purchase order's line tab has no field for the two group columns, so these seven are compared; the two group columns
+      // are asserted on the discount row above)
+      expectValuesEqualOrderLines(lines, purchaseLines, ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS.filter((column) => !column.startsWith('GroupCompensation')));
+
       // single view of both line rows
-      await expectLineRowSingleView(purchaseGroupPage, goodsRow, purchaseGoods);
-      await expectLineRowSingleView(purchaseGroupPage, discountRow, purchaseDiscount);
+      await expectLineRowSingleView(purchaseGroupPage, goodsRow, purchaseGoods, 'purchase-goods');
+      await expectLineRowSingleView(purchaseGroupPage, discountRow, purchaseDiscount, 'purchase-discount');
 
       // R-REL: the related documents of the goods line row equal those of the same order line in the purchase order window
-      const goodsLine = discountLineOf(lines, purchaseGoods);
+      const goodsLine = lineOfProduct(lines, purchaseGoods);
       expect(goodsLine, 'goods line row on the tab').toBeTruthy();
       const goodsRowId = String(goodsLine.rowId);
       expect(purchaseLines.map((row) => String(row.rowId)), 'the same C_OrderLine in the purchase order window').toContain(goodsRowId);
       const readExpectedReferences = async () => relatedDocumentsComparable(
         await getDocumentReferences(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID_PATH, goodsRowId));
-      await expect.poll(async () => (await readExpectedReferences()).length,
-        { message: 'the purchase line has at least one related document other than 270/540394/363 (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
-        .toBeGreaterThanOrEqual(1);
-      const expectedReferences = await readExpectedReferences();
-      const actualReferences = relatedDocumentsComparable(
+      const readActualReferences = async () => relatedDocumentsComparable(
         await getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, purchaseGroupId, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, goodsRowId));
-      expect(actualReferences, 'related documents of the purchase line row (without windows 270, 540394, 363)').toEqual(expectedReferences);
+      await expect.poll(async () => {
+        const expected = await readExpectedReferences();
+        const actual = await readActualReferences();
+        return expected.length >= 1 && JSON.stringify(actual) === JSON.stringify(expected) ? 'equal' : JSON.stringify({ expected, actual });
+      }, { message: 'related documents of the purchase line row (without windows 270, 540394, 363) equal those of the order line, and the line has at least one (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
+        .toBe('equal');
     });
 
     await test.step('5. Schema window: the line condition fields read "Bedingung" (Vertrag / Umsatzstaffel), "Umsatz ab", "Vertragsbedingungen"; no organisation on the lines', async () => {
@@ -1336,8 +1353,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const orderId = await completeSalesOrder(page, customer, goods, today);
       const lines = await getTabRows(SALES_ORDER_WINDOW_ID, orderId, ORDER_LINE_TAB);
       expect(lines, 'goods line + two discount lines').toHaveLength(3);
-      const discount1 = discountLineOf(lines, masterdata.products.DISCOUNT_1);
-      const discount2 = discountLineOf(lines, masterdata.products.DISCOUNT_2);
+      const discount1 = lineOfProduct(lines, masterdata.products.DISCOUNT_1);
+      const discount2 = lineOfProduct(lines, masterdata.products.DISCOUNT_2);
       expect(discount1, '3,15 % discount line').toBeTruthy();
       expect(discount2, '0,25 % discount line').toBeTruthy();
       expect(Number(discount1.fieldsByName.LineNetAmt.value)).toBeCloseTo(-31.5, 2);
@@ -1828,7 +1845,7 @@ async function getMenuNode(page, nodeId, depth = 1) {
   return await response.json();
 }
 
-/** The unfiltered grid view of the order compensation group window, read from the backend: { size, rows (first page) } */
+/** The unfiltered grid view of the order compensation group window, read from the backend: { size, rows (all of the view's rows) } */
 async function readOrderCompensationGroupView(page) {
   const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${ORDER_COMPENSATION_GROUP_WINDOW_ID}`, {
     data: { documentType: String(ORDER_COMPENSATION_GROUP_WINDOW_ID), viewType: 'grid', filters: [] },
@@ -1836,7 +1853,7 @@ async function readOrderCompensationGroupView(page) {
   });
   expect(viewResponse.ok(), 'the order compensation group view opens').toBe(true);
   const view = await viewResponse.json();
-  const rowsResponse = await page.request.get(`${WEBAPI_BASE_URL}/documentView/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=20`);
+  const rowsResponse = await page.request.get(`${WEBAPI_BASE_URL}/documentView/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=${Math.max(view.size, 1)}`);
   expect(rowsResponse.ok(), 'the order compensation group view rows are read').toBe(true);
   return { size: view.size, rows: (await rowsResponse.json()).result ?? [] };
 }
@@ -1877,7 +1894,18 @@ async function fillDateIfChanged(page, scope, fieldName, date) {
   await fillDate(page, scope, fieldName, date);
 }
 
-function discountLineOf(lines, discountProduct) {
+/** Every row of the group's order-lines tab shows, in each of the given columns (default: the nine), the value of the same C_OrderLine (same row key) in the order window. */
+function expectValuesEqualOrderLines(groupLines, orderLines, columns = ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS) {
+  for (const line of groupLines) {
+    const orderLine = orderLines.find((row) => String(row.rowId) === String(line.rowId));
+    expect(orderLine, `the same C_OrderLine (${line.rowId}) in the order window`).toBeTruthy();
+    for (const column of columns) {
+      expect(line.fieldsByName[column].value, `order line ${line.rowId}: value of ${column} equals the order window's`).toEqual(orderLine.fieldsByName[column]?.value);
+    }
+  }
+}
+
+function lineOfProduct(lines, discountProduct) {
   return lines.find((l) => lookupKey(l.fieldsByName.M_Product_ID.value) === String(discountProduct.id));
 }
 
@@ -1916,7 +1944,7 @@ async function expectOrderGridAmount(page, orderId, discountProduct, amountText)
  * Single view of a line row on the group's order-lines tab: select the row, open it with Alt+E ("Erweiterte Erfassung").
  * It shows exactly the nine order-line fields of the tab, in order, all read-only, and none of the seven that need order context.
  */
-async function expectLineRowSingleView(page, row, product) {
+async function expectLineRowSingleView(page, row, product, label) {
   // a context menu left open by an earlier right-click (e.g. "Zoom into") would intercept the click
   await page.mouse.click(2, 2);
   await expect(page.locator('.context-menu')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
@@ -1939,7 +1967,7 @@ async function expectLineRowSingleView(page, row, product) {
   }
   await expectLabel(modal, 'Line', DE.orderCompensationGroupLineNo);
   await expect(modal.locator('.form-field-M_Product_ID input').first()).toHaveValue(new RegExp(product.productCode));
-  await snap(page, 'order-line-single-view');
+  await snap(page, `order-line-single-view-${label}`);
   await page.keyboard.press('Escape');
   await modal.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
 }

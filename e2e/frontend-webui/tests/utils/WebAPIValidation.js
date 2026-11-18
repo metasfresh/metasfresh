@@ -167,13 +167,13 @@ export function getFieldLabelFromLayout(layout, fieldName) {
  * @returns {Promise<Object[]>} the references (`internalName`, `id`, `targetWindowId`, `documentsCount`, ...)
  */
 export async function getDocumentReferences(windowId, recordId, tabId, rowId) {
-  if ((tabId === undefined) !== (rowId === undefined)) {
+  if ((tabId == null) !== (rowId == null)) {
     // one of the two alone would silently read the references of the whole document instead of the row's
     throw new Error(`getDocumentReferences(${windowId}, ${recordId}): pass both tabId and rowId (row references) or neither (document references); got tabId=${tabId}, rowId=${rowId}`);
   }
   const page = getPage();
 
-  const included = tabId !== undefined ? `/${tabId}/${rowId}` : '';
+  const included = tabId != null ? `/${tabId}/${rowId}` : '';
   const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}${included}/references/sse`, {
     headers: { Accept: 'text/event-stream' },
   });
