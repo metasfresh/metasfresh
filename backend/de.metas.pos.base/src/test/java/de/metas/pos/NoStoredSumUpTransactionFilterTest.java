@@ -1,6 +1,8 @@
 package de.metas.pos;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,9 +16,11 @@ class NoStoredSumUpTransactionFilterTest
 	@Test
 	void sql_isACorrelatedNotExistsOnTheClientTransactionId()
 	{
-		assertThat(NoStoredSumUpTransactionFilter.INSTANCE.getSql()).isEqualTo(
+		final NoStoredSumUpTransactionFilter filter = new NoStoredSumUpTransactionFilter(Mockito.mock(IQueryBL.class));
+
+		assertThat(filter.getSql()).isEqualTo(
 				"NOT EXISTS (SELECT 1 FROM SUMUP_Transaction t"
 						+ " WHERE t.SUMUP_ClientTransactionId = C_POS_Payment.SUMUP_ClientTransactionID)");
-		assertThat(NoStoredSumUpTransactionFilter.INSTANCE.getSqlParams(null)).isEmpty();
+		assertThat(filter.getSqlParams(null)).isEmpty();
 	}
 }

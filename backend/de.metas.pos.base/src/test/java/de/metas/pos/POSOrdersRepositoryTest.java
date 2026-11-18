@@ -9,6 +9,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Issue;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +35,12 @@ class POSOrdersRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		repository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource());
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	private int newOrder(final POSTerminalId terminalId)
@@ -152,22 +159,15 @@ class POSOrdersRepositoryTest
 	@Test
 	void streamCardPaymentsToImport_onlyThoseWhoseCheckoutStartedAfterTheGivenTime()
 	{
-		try
-		{
-			final POSPaymentId startedBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-started-before");
-			final POSPaymentId startedAfter = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T11:00:00Z", "ctid-started-after");
-			// without a recorded checkout start: its creation counts
-			final POSPaymentId createdBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", null, "ctid-created-before");
-			final POSPaymentId createdAfter = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", null, "ctid-created-after");
+		final POSPaymentId startedBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-started-before");
+		final POSPaymentId startedAfter = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T11:00:00Z", "ctid-started-after");
+		// without a recorded checkout start: its creation counts
+		final POSPaymentId createdBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", null, "ctid-created-before");
+		final POSPaymentId createdAfter = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", null, "ctid-created-after");
 
-			assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
-					.containsExactly(startedAfter, createdAfter)
-					.doesNotContain(startedBefore, createdBefore);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
+				.containsExactly(startedAfter, createdAfter)
+				.doesNotContain(startedBefore, createdBefore);
 	}
 
 	/**
@@ -178,22 +178,15 @@ class POSOrdersRepositoryTest
 	@Test
 	void streamCardPaymentsToImport_alsoThoseCheckedOutBeforeTheGivenTime_whoseLookupsAreFailing()
 	{
-		try
-		{
-			final POSPaymentId failing = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-failing");
-			final I_C_POS_Payment failingRecord = InterfaceWrapperHelper.load(failing, I_C_POS_Payment.class);
-			failingRecord.setCardLookupFailingSince(Timestamp.from(Instant.parse("2026-11-16T09:01:00Z")));
-			InterfaceWrapperHelper.saveRecord(failingRecord);
-			final POSPaymentId answered = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-answered");
+		final POSPaymentId failing = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-failing");
+		final I_C_POS_Payment failingRecord = InterfaceWrapperHelper.load(failing, I_C_POS_Payment.class);
+		failingRecord.setCardLookupFailingSince(Timestamp.from(Instant.parse("2026-11-16T09:01:00Z")));
+		InterfaceWrapperHelper.saveRecord(failingRecord);
+		final POSPaymentId answered = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-answered");
 
-			assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
-					.containsExactly(failing)
-					.doesNotContain(answered);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
+				.containsExactly(failing)
+				.doesNotContain(answered);
 	}
 
 	/**
@@ -203,39 +196,25 @@ class POSOrdersRepositoryTest
 	@Test
 	void streamCardPaymentsToImport_carriesTheCheckoutStart_orTheCreationTime()
 	{
-		try
-		{
-			newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T10:59:00Z", "ctid-started");
-			newUnknownCardPaymentToImport("2026-11-16T11:30:00Z", null, "ctid-created");
+		newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T10:59:00Z", "ctid-started");
+		newUnknownCardPaymentToImport("2026-11-16T11:30:00Z", null, "ctid-created");
 
-			try (final Stream<POSCardPaymentToImport> stream = repository.streamCardPaymentsToImport(Instant.parse("2026-11-16T10:00:00Z")))
-			{
-				assertThat(stream.map(POSCardPaymentToImport::getCheckoutStartedAt).collect(Collectors.toList()))
-						.containsExactly(Instant.parse("2026-11-16T10:59:00Z"), Instant.parse("2026-11-16T11:30:00Z"));
-			}
-		}
-		finally
+		try (final Stream<POSCardPaymentToImport> stream = repository.streamCardPaymentsToImport(Instant.parse("2026-11-16T10:00:00Z")))
 		{
-			SystemTime.resetTimeSource();
+			assertThat(stream.map(POSCardPaymentToImport::getCheckoutStartedAt).collect(Collectors.toList()))
+					.containsExactly(Instant.parse("2026-11-16T10:59:00Z"), Instant.parse("2026-11-16T11:30:00Z"));
 		}
 	}
 
 	@Test
 	void streamCardPaymentsToImport_notThoseWhoseSumUpTransactionMetasfreshHas()
 	{
-		try
-		{
-			final POSPaymentId withoutTransaction = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-missing");
-			newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-stored");
-			final I_SUMUP_Transaction trx = InterfaceWrapperHelper.newInstance(I_SUMUP_Transaction.class);
-			trx.setSUMUP_ClientTransactionId("ctid-stored");
-			InterfaceWrapperHelper.saveRecord(trx);
+		final POSPaymentId withoutTransaction = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-missing");
+		newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-stored");
+		final I_SUMUP_Transaction trx = InterfaceWrapperHelper.newInstance(I_SUMUP_Transaction.class);
+		trx.setSUMUP_ClientTransactionId("ctid-stored");
+		InterfaceWrapperHelper.saveRecord(trx);
 
-			assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z")).containsExactly(withoutTransaction);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z")).containsExactly(withoutTransaction);
 	}
 }

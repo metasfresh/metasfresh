@@ -133,7 +133,7 @@ public class POSOrdersRepository
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus.UNKNOWN.getCode())
 				.addNotNull(I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID)
-				.filter(NoStoredSumUpTransactionFilter.INSTANCE)
+				.filter(new NoStoredSumUpTransactionFilter(queryBL))
 				.filter(queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
 						.setJoinOr()
 						.addFilter(checkoutStartedLater)

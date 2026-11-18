@@ -21,6 +21,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -48,6 +49,12 @@ class SumUpTransactionRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		repository = new SumUpTransactionRepository(Mockito.mock(SumUpEventsDispatcher.class));
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	private static SumUpTransaction newTrx(final SumUpPOSRef posRef)
@@ -171,21 +178,14 @@ class SumUpTransactionRepositoryTest
 	@Test
 	void query_excludeNotFoundConfirmedAtAge_leavesOutOnlyThoseSumUpConfirmedNotFoundAtOrAfterThatAge()
 	{
-		try
-		{
-			newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), null); // not found, 25 h after creation
-			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.Error, "2026-11-17T11:00:00Z"), null); // lookup failed after 24 h
-			newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // not found only before the 24 h mark
-			newPendingTrxCreatedAt10(4, null, null); // never looked up (e.g. the server was down)
-			newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), "{\"status\":\"PENDING\"}"); // SumUp knows it, still PENDING
-			newPendingTrxCreatedAt10(6, lastSync(LastSyncStatus.OK, "2026-11-16T10:30:00Z"), null); // young: not found 30 min after creation
+		newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), null); // not found, 25 h after creation
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.Error, "2026-11-17T11:00:00Z"), null); // lookup failed after 24 h
+		newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // not found only before the 24 h mark
+		newPendingTrxCreatedAt10(4, null, null); // never looked up (e.g. the server was down)
+		newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), "{\"status\":\"PENDING\"}"); // SumUp knows it, still PENDING
+		newPendingTrxCreatedAt10(6, lastSync(LastSyncStatus.OK, "2026-11-16T10:30:00Z"), null); // young: not found 30 min after creation
 
-			assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2, 3, 4, 5, 6);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2, 3, 4, 5, 6);
 	}
 
 	/**
@@ -194,17 +194,10 @@ class SumUpTransactionRepositoryTest
 	@Test
 	void query_excludeNotFoundConfirmedAtAge_boundary()
 	{
-		try
-		{
-			newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T10:00:00Z"), null); // exactly at 24 h
-			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-17T09:59:59Z"), null); // 1 s before
+		newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T10:00:00Z"), null); // exactly at 24 h
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-17T09:59:59Z"), null); // 1 s before
 
-			assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2);
 	}
 
 	/**
@@ -217,24 +210,17 @@ class SumUpTransactionRepositoryTest
 	@Test
 	void query_pollDueAt_onlyTheTransactionsDueByThePollSchedule()
 	{
-		try
-		{
-			newPendingTrxCreatedAt10(1, null, null); // never looked up
-			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:00Z"), null); // 1 min ago, 30 min old
-			newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:01Z"), null); // 59 s ago, 30 min old
-			newPendingTrxCreatedAt10(4, lastSync(LastSyncStatus.Error, "2026-11-16T10:29:30Z"), null); // 30 s ago, failed
-			newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // for the slow phase
+		newPendingTrxCreatedAt10(1, null, null); // never looked up
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:00Z"), null); // 1 min ago, 30 min old
+		newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:01Z"), null); // 59 s ago, 30 min old
+		newPendingTrxCreatedAt10(4, lastSync(LastSyncStatus.Error, "2026-11-16T10:29:30Z"), null); // 30 s ago, failed
+		newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // for the slow phase
 
-			// 30 min old: once a minute
-			assertThat(listPaymentIdsDueAt("2026-11-16T10:30:00Z")).containsExactly(1, 2);
-			// over 1 h old: once every 15 min
-			assertThat(listPaymentIdsDueAt("2026-11-16T11:14:59Z")).containsExactly(1, 2, 3, 4);
-			assertThat(listPaymentIdsDueAt("2026-11-16T11:15:00Z")).containsExactly(1, 2, 3, 4, 5);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		// 30 min old: once a minute
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:30:00Z")).containsExactly(1, 2);
+		// over 1 h old: once every 15 min
+		assertThat(listPaymentIdsDueAt("2026-11-16T11:14:59Z")).containsExactly(1, 2, 3, 4);
+		assertThat(listPaymentIdsDueAt("2026-11-16T11:15:00Z")).containsExactly(1, 2, 3, 4, 5);
 	}
 
 	/**
@@ -244,20 +230,13 @@ class SumUpTransactionRepositoryTest
 	@Test
 	void query_pollDueAt_phaseBoundaries()
 	{
-		try
-		{
-			newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-16T10:04:58Z"), null);
-			assertThat(listPaymentIdsDueAt("2026-11-16T10:04:59Z")).containsExactly(1); // age 4:59: every cycle
-			assertThat(listPaymentIdsDueAt("2026-11-16T10:05:00Z")).isEmpty(); // age 5:00, 2 s after the last lookup
+		newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-16T10:04:58Z"), null);
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:04:59Z")).containsExactly(1); // age 4:59: every cycle
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:05:00Z")).isEmpty(); // age 5:00, 2 s after the last lookup
 
-			newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:58:59Z"), null);
-			assertThat(listPaymentIdsDueAt("2026-11-16T10:59:59Z")).containsExactly(1, 2); // age 59:59, 60 s after #2's lookup
-			assertThat(listPaymentIdsDueAt("2026-11-16T11:00:00Z")).containsExactly(1); // age 1 h: #2 looked up 61 s ago
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:58:59Z"), null);
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:59:59Z")).containsExactly(1, 2); // age 59:59, 60 s after #2's lookup
+		assertThat(listPaymentIdsDueAt("2026-11-16T11:00:00Z")).containsExactly(1); // age 1 h: #2 looked up 61 s ago
 	}
 
 	/**
@@ -272,28 +251,21 @@ class SumUpTransactionRepositoryTest
 	void query_pollDueAt_agreesWithSumUpPollSchedule()
 	{
 		final String cases = "2:1 299:1 299:-1 300:1 300:59 300:60 300:-1 1800:59 1800:60 3599:59 3599:60 3600:60 3600:899 3600:900 86400:899 86400:900 86400:-1";
-		try
+		final Instant created = Instant.parse("2026-11-16T10:00:00Z");
+		int paymentId = 0;
+		for (final String c : cases.split(" "))
 		{
-			final Instant created = Instant.parse("2026-11-16T10:00:00Z");
-			int paymentId = 0;
-			for (final String c : cases.split(" "))
-			{
-				final long ageSeconds = Long.parseLong(c.split(":")[0]);
-				final long sinceLastLookupSeconds = Long.parseLong(c.split(":")[1]);
-				final Instant now = created.plusSeconds(ageSeconds);
-				final Instant lastLookupAt = sinceLastLookupSeconds < 0 ? null : now.minusSeconds(sinceLastLookupSeconds);
+			final long ageSeconds = Long.parseLong(c.split(":")[0]);
+			final long sinceLastLookupSeconds = Long.parseLong(c.split(":")[1]);
+			final Instant now = created.plusSeconds(ageSeconds);
+			final Instant lastLookupAt = sinceLastLookupSeconds < 0 ? null : now.minusSeconds(sinceLastLookupSeconds);
 
-				paymentId++;
-				newPendingTrxCreatedAt10(paymentId, lastLookupAt != null ? LastSync.builder().status(LastSyncStatus.OK).timestamp(lastLookupAt).build() : null, null);
+			paymentId++;
+			newPendingTrxCreatedAt10(paymentId, lastLookupAt != null ? LastSync.builder().status(LastSyncStatus.OK).timestamp(lastLookupAt).build() : null, null);
 
-				assertThat(listPaymentIdsDueAt(now.toString()).contains(paymentId))
-						.as("case %s", c)
-						.isEqualTo(SumUpPollSchedule.isDue(created, lastLookupAt, now));
-			}
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
+			assertThat(listPaymentIdsDueAt(now.toString()).contains(paymentId))
+					.as("case %s", c)
+					.isEqualTo(SumUpPollSchedule.isDue(created, lastLookupAt, now));
 		}
 	}
 
@@ -338,31 +310,24 @@ class SumUpTransactionRepositoryTest
 	{
 		final SumUpEventsDispatcher eventsDispatcher = Mockito.mock(SumUpEventsDispatcher.class);
 		final SumUpTransactionRepository repository = new SumUpTransactionRepository(eventsDispatcher);
-		try
-		{
-			SystemTime.setFixedTimeSource("2026-11-10T10:00:00Z");
-			final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
-			repository.saveNew(trx);
+		SystemTime.setFixedTimeSource("2026-11-10T10:00:00Z");
+		final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
+		repository.saveNew(trx);
 
-			// a later status change, e.g. SumUp's approval, does not change when metasfresh first saved it
-			SystemTime.setFixedTimeSource("2026-11-10T10:05:00Z");
-			repository.save(trx.toBuilder().status(SumUpTransactionStatus.SUCCESSFUL).build());
+		// a later status change, e.g. SumUp's approval, does not change when metasfresh first saved it
+		SystemTime.setFixedTimeSource("2026-11-10T10:05:00Z");
+		repository.save(trx.toBuilder().status(SumUpTransactionStatus.SUCCESSFUL).build());
 
-			final Instant recordedAt = Instant.parse("2026-11-10T10:00:00Z");
-			assertThat(repository.getById(trx.getExternalId()).getRecordedAt()).isEqualTo(recordedAt);
+		final Instant recordedAt = Instant.parse("2026-11-10T10:00:00Z");
+		assertThat(repository.getById(trx.getExternalId()).getRecordedAt()).isEqualTo(recordedAt);
 
-			final ArgumentCaptor<SumUpTransaction> newTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
-			Mockito.verify(eventsDispatcher).fireNewTransaction(newTrx.capture());
-			assertThat(newTrx.getValue().getRecordedAt()).as("transaction of the creation event").isEqualTo(recordedAt);
+		final ArgumentCaptor<SumUpTransaction> newTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
+		Mockito.verify(eventsDispatcher).fireNewTransaction(newTrx.capture());
+		assertThat(newTrx.getValue().getRecordedAt()).as("transaction of the creation event").isEqualTo(recordedAt);
 
-			final ArgumentCaptor<SumUpTransaction> changedTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
-			Mockito.verify(eventsDispatcher).fireStatusChangedIfNeeded(changedTrx.capture(), Mockito.any());
-			assertThat(changedTrx.getValue().getRecordedAt()).as("transaction of the status event").isEqualTo(recordedAt);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		final ArgumentCaptor<SumUpTransaction> changedTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
+		Mockito.verify(eventsDispatcher).fireStatusChangedIfNeeded(changedTrx.capture(), Mockito.any());
+		assertThat(changedTrx.getValue().getRecordedAt()).as("transaction of the status event").isEqualTo(recordedAt);
 	}
 
 	@Test

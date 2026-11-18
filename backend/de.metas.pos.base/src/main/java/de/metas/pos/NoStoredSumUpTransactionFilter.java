@@ -3,8 +3,8 @@ package de.metas.pos;
 import com.google.common.collect.ImmutableList;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.pos.repository.model.I_C_POS_Payment;
-import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -23,16 +23,19 @@ import java.util.Properties;
 @ToString
 final class NoStoredSumUpTransactionFilter implements IQueryFilter<I_C_POS_Payment>, ISqlQueryFilter
 {
-	static final NoStoredSumUpTransactionFilter INSTANCE = new NoStoredSumUpTransactionFilter();
+	@EqualsAndHashCode.Exclude @ToString.Exclude @NonNull private final IQueryBL queryBL;
 
-	private NoStoredSumUpTransactionFilter() {}
+	NoStoredSumUpTransactionFilter(@NonNull final IQueryBL queryBL)
+	{
+		this.queryBL = queryBL;
+	}
 
 	@Override
 	public boolean accept(final I_C_POS_Payment payment)
 	{
 		final String clientTransactionId = payment.getSUMUP_ClientTransactionID();
 		return clientTransactionId == null // as in SQL: NULL matches no row
-				|| !Services.get(IQueryBL.class).createQueryBuilder(I_SUMUP_Transaction.class)
+				|| !queryBL.createQueryBuilder(I_SUMUP_Transaction.class)
 				.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_SUMUP_ClientTransactionId, clientTransactionId)
 				.create()
 				.anyMatch();
