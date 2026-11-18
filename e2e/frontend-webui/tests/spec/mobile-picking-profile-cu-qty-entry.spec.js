@@ -285,7 +285,7 @@ save + reload, and show in the grid.
   });
 
   // Remove the generated format. afterEach also runs when the test times out, unlike the end of a `finally` block.
-  test.afterEach(async () => {
+  test.afterEach(async ({ page }) => {
     await Backend.createMasterdata({ request: { customQRCodeFormats: [] } });
   });
 });
