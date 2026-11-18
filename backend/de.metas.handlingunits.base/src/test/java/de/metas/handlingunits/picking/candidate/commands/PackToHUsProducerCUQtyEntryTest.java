@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Task A8 of the CU quantity entry work: {@link PackToHURequest#isConsolidateToSingleCU()} and
+ * CU quantity entry: {@link PackToHURequest#isConsolidateToSingleCU()} and
  * {@link PackToHURequest#isCuLevelAttributesWithoutLU()}.
  * Every case builds the request like the pick command does: checkIfAlreadyPacked(true), createInventoryForMissingQty(true).
  */
@@ -174,7 +174,7 @@ public class PackToHUsProducerCUQtyEntryTest
 
 	/**
 	 * (ii) lots A then B into one box (new box, then the open box): each CU keeps its lot and each result names its CU as the picked HU.
-	 * Emptying the TU lot (mixed lots) is done afterwards by {@code PickedHUAttributesUpdater} recomputing it from the partial TU's CUs (task A10);
+	 * Emptying the TU lot (mixed lots) is done afterwards by {@code PickedHUAttributesUpdater} recomputing it from the partial TU's CUs;
 	 * without it the HU framework leaves the first lot on the TU, which is not asserted here.
 	 */
 	@Test
@@ -264,7 +264,7 @@ public class PackToHUsProducerCUQtyEntryTest
 		assertThat(result.getSingleTU().getId()).isEqualTo(HuId.ofRepoId(sourceTU.getM_HU_ID()));
 	}
 
-	/** TC29 flags off, open box: full TU as today; the 5 pieces are added as CUs (one source CU of 8 -> 5 taken). */
+	/** Flags off, open box: full TU as today; the 5 pieces are added as CUs (one source CU of 8 -> 5 taken). */
 	@Test
 	public void openBox_flagsOff_fullTUAsToday()
 	{
@@ -277,7 +277,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.containsExactlyInAnyOrder(new BigDecimal("3"), new BigDecimal("5"));
 	}
 
-	/** TC29 flags off, open box, the source holds several pieces (4 + 4): today's error. */
+	/** Flags off, open box, the source holds several pieces (4 + 4): today's error. */
 	@Test
 	public void openBox_fromTwoPieces_flagsOff_failsAsToday()
 	{

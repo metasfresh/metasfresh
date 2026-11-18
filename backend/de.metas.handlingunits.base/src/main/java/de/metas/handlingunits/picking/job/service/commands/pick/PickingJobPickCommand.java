@@ -49,8 +49,8 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingCULabelService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
-import de.metas.handlingunits.picking.job.service.ResolvedCULabel;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.ResolvedCULabel;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
@@ -149,13 +149,13 @@ public class PickingJobPickCommand
 	@NonNull private final PickAttributes _manualPickAttributes;
 	@NonNull private final CUQtyEntryMode cuQtyEntryMode;
 	@Nullable private final ScannedCode cuLabel;
-	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, new modes only
 
 	//
 	// State
 	@NonNull private PickingJob _pickingJob;
 	@Nullable private PickingJobStepId _stepId;
 	@Nullable PickAttributes _pickAttributes; // lazy
+	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, new modes only
 	@Nullable private HUInfo _pickFromHUIdAndQRCode; // lazy
 	@NonNull private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 
@@ -399,7 +399,7 @@ public class PickingJobPickCommand
 	{
 		_pickingJob.assertNotProcessed();
 
-		assertCanBookIntoOpenBox();
+		assertNewModeBookingAllowed();
 
 		assertNotAboveOrderedQtyWhenOverPickBlocked();
 
@@ -428,7 +428,7 @@ public class PickingJobPickCommand
 		return pickingJobService.getById(_pickingJob.getId());
 	}
 
-	private void assertCanBookIntoOpenBox()
+	private void assertNewModeBookingAllowed()
 	{
 		if (!cuQtyEntryMode.isNewMode())
 		{

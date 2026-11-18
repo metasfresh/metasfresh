@@ -1167,7 +1167,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC28 (CU quantity entry): 2 unreserved source pieces (4 + 4) are merged into ONE CU of the requested quantity (5).
+	 * CU quantity entry: 2 unreserved source pieces (4 + 4) are merged into ONE CU of the requested quantity (5).
 	 */
 	@Test
 	public void husToNewSingleCU_twoUnreservedPieces_oneCUOfTheSum()

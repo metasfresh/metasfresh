@@ -355,7 +355,7 @@ public class HUTransformServiceReservationTests
 	// =========================================================
 
 	/**
-	 * TC28 (CU quantity entry): with {@link ReservedHUsPolicy#CONSIDER_ONLY_NOT_RESERVED} a reserved source piece is skipped
+	 * CU quantity entry: with {@link ReservedHUsPolicy#CONSIDER_ONLY_NOT_RESERVED} a reserved source piece is skipped
 	 * and ONE CU is made from the rest.
 	 */
 	@Test

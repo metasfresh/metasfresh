@@ -7,16 +7,19 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
@@ -24,6 +27,8 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
@@ -37,18 +42,16 @@ import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
-import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest.Part;
+import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -62,10 +65,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 /**
  * The new-mode pick ({@code SCAN_ONCE_ENTER_QTY}) through the real pick command path
@@ -222,7 +227,7 @@ class PickingJobCUQtyEntryPickTest
 
 	/** the scope the pick command writes the target to: the line for line-level jobs, else the job (as the app sets it) */
 	@Nullable
-	private static de.metas.handlingunits.picking.job.model.PickingJobLineId targetScope(final PickingJob job)
+	private static PickingJobLineId targetScope(final PickingJob job)
 	{
 		return job.isLineLevelPickTarget() ? CollectionUtils.singleElement(job.getLines()).getId() : null;
 	}
@@ -247,6 +252,16 @@ class PickingJobCUQtyEntryPickTest
 				.lotNo(manualLotNo)
 				.cuLabel(cuLabel)
 				.build());
+	}
+
+	/** the source of a pick: a box holding two pieces of 4 (the pick takes N across the pieces) */
+	private HUInfo sourceBox(final String qrCodeId)
+	{
+		final HuId boxId = helper.createHU(tuPIId, productId, helper.qty("4", productId));
+		final HuId secondPiece = helper.createVHU(productId, "4");
+		HUTransformService.newInstance(huTestHelper.createMutableHUContextOutOfTransaction())
+				.addCUsToTU(ImmutableList.of(handlingUnitsBL.getById(secondPiece)), handlingUnitsBL.getById(boxId));
+		return HUInfo.builder().id(boxId).qrCode(helper.createQRCode(boxId, qrCodeId)).build();
 	}
 
 	private HuId openBoxId(final PickingJob job)
@@ -303,7 +318,7 @@ class PickingJobCUQtyEntryPickTest
 	void a_tuLine_scanOnce_n5_oneBoxOnLinePacking_oneCUOf5_withLotAndBestBefore()
 	{
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-A");
+		final HUInfo source = sourceBox("QR-A");
 		PickingJob job = createJob(tuPiipId, true);
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickingUnit().isTU()).as("TU line").isTrue();
 		job = openBoxFromLinePacking(job);
@@ -316,7 +331,7 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(cus).as("one CU in the box").hasSize(1);
 		assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("5");
 		assertThat(lotOf(cus.get(0))).isEqualTo(LOT_A);
-		assertThat(attributesOf(cus.get(0)).getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate)).isEqualTo(java.time.LocalDate.of(2026, 11, 7));
+		assertThat(attributesOf(cus.get(0)).getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate)).isEqualTo(LocalDate.of(2026, 11, 7));
 		final ImmutableSet<HuId> pickedHUIds = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
 		assertThat(pickedHUIds).as("the picked HU is the CU").containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
 	}
@@ -326,7 +341,7 @@ class PickingJobCUQtyEntryPickTest
 	void b_secondPickIntoTheOpenBox_secondCUOf3()
 	{
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-B");
+		final HUInfo source = sourceBox("QR-B");
 		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 		job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
 
@@ -346,13 +361,13 @@ class PickingJobCUQtyEntryPickTest
 		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.load(tuPiipId.getRepoId(), I_M_HU_PI_Item_Product.class);
 		piip.setIsInfiniteCapacity(true);
 		InterfaceWrapperHelper.save(piip);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-C");
+		final HUInfo source = sourceBox("QR-C");
 		final PickingJob job = createJob(tuPiipId, true);
 
 		assertFails(() -> pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).as("nothing booked").isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source untouched").isEqualByComparingTo("100");
+		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source untouched").isEqualByComparingTo("8");
 	}
 
 	/** (d) virtual-packing line (no TU PI), no TU target: refused CU_NO_OPEN_BOX (no loose CU). */
@@ -360,13 +375,13 @@ class PickingJobCUQtyEntryPickTest
 	void d_virtualPackingLine_noTarget_refused()
 	{
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-D");
+		final HUInfo source = sourceBox("QR-D");
 		final PickingJob job = createJob(null, true);
 
 		assertFails(() -> pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("100");
+		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 	}
 
 	/** (e) Manual: no flag and no refusal: a TU line without a TU target is booked as today (the full TU, not a partial one). */
@@ -386,18 +401,50 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(qtyOf(pickedHU)).isEqualByComparingTo("4");
 	}
 
+	/** (e2) Manual, virtual-packing line, no TU target, 5 from a box holding two pieces of 4: today's result, one picked HU of 5 without CUs. */
+	@Test
+	void e2_manual_fiveFromTwoPieces_noTarget_onePickedHUOf5()
+	{
+		setProfile(CUQtyEntryMode.MANUAL);
+		final HUInfo source = sourceBox("QR-E2");
+		PickingJob job = createJob(null, true);
+
+		job = pick(job, source, "5", null, false, null);
+
+		final ImmutableSet<HuId> picked = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
+		assertThat(picked).hasSize(1);
+		final HuId pickedId = picked.iterator().next();
+		assertThat(qtyOf(handlingUnitsBL.getById(pickedId))).isEqualByComparingTo("5");
+		assertThat(cusOf(pickedId)).as("no CU split per source piece").isEmpty();
+	}
+
+	/** (e3) Manual, virtual-packing line, open box, 5 from a box holding two pieces of 4: today's result, one CU per source piece (4 + 1) in the box. */
+	@Test
+	void e3_manual_fiveFromTwoPieces_openBox_oneCUPerSourcePiece()
+	{
+		setProfile(CUQtyEntryMode.MANUAL);
+		final HUInfo source = sourceBox("QR-E3");
+		PickingJob job = openBoxFromLinePacking(createJob(null, true));
+
+		job = pick(job, source, "5", null, false, null);
+
+		final HuId pickedBoxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+		assertThat(cusOf(pickedBoxId)).as("one CU per source piece").extracting(this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+				.containsExactlyInAnyOrder(new BigDecimal("4"), new BigDecimal("1"));
+	}
+
 	/** (f) cuLabel of another product: HU_PRODUCT_NOT_MATCHING, nothing booked. */
 	@Test
 	void f_labelOfAnotherProduct_refused()
 	{
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-F");
+		final HUInfo source = sourceBox("QR-F");
 		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 
 		assertFails(() -> pick(job, source, "5", label("OTHER99", LOT_A), false, null), HU_PRODUCT_NOT_MATCHING);
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("100");
+		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 	}
 
 	/** (g) TU target set by a GRAI scan: booked into it, the GRAI stays on the TU. */
@@ -415,7 +462,7 @@ class PickingJobCUQtyEntryPickTest
 		huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(graiAttribute)
 				.setM_HU_PI(graiTuPI)
 				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-G");
+		final HUInfo source = sourceBox("QR-G");
 		PickingJob job = createJob(tuPiipId, true);
 		job = helper.pickingJobService.createTUFromGRAI(job, targetScope(job), ScannedCode.ofString(GRAI_CANONICAL));
 
@@ -433,13 +480,13 @@ class PickingJobCUQtyEntryPickTest
 	void h_scanEachCU_noTarget_refused()
 	{
 		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-H");
+		final HUInfo source = sourceBox("QR-H");
 		final PickingJob job = createJob(tuPiipId, true);
 
 		assertFails(() -> pick(job, source, "1", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("100");
+		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 	}
 
 	/** (i) Scan once with isPickWholeTU = true and an open box: one CU of N into the box, no whole TU taken. */
@@ -447,7 +494,7 @@ class PickingJobCUQtyEntryPickTest
 	void i_isPickWholeTU_ignored_oneCUOfN()
 	{
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-I");
+		final HUInfo source = sourceBox("QR-I");
 		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 
 		job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), true, null);
@@ -457,6 +504,8 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(cus).hasSize(1);
 		assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("5");
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the source box is not the picked HU").doesNotContain(source.getId());
+		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("the source box keeps the rest").isEqualByComparingTo("3");
 	}
 
 	/** (j) new mode, open box, PICK with cuLabel = null: refused CU_LABEL_FORMAT_MISMATCH, nothing booked. */
@@ -464,21 +513,21 @@ class PickingJobCUQtyEntryPickTest
 	void j_newMode_noCuLabel_refused()
 	{
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-J");
+		final HUInfo source = sourceBox("QR-J");
 		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 
 		assertFails(() -> pick(job, source, "5", null, false, null), CU_LABEL_FORMAT_MISMATCH);
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("100");
+		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 	}
 
-	/** (k, added 2026-11-19 from review-A8 finding 3) Scan once, lots A then B into one open box: each CU keeps its lot AND the TU's lot is empty. */
+	/** (k) Scan once, lots A then B into one open box: each CU keeps its lot AND the TU's lot is empty. */
 	@Test
 	void k_lotsAThenB_intoOneBox_eachCUKeepsItsLot_tuLotEmpty()
 	{
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-K");
+		final HUInfo source = sourceBox("QR-K");
 		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 
 		job = pick(job, source, "2", label(PRODUCT_NO, LOT_A), false, null);
@@ -490,7 +539,7 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot empty (mixed lots)").isNull();
 	}
 
-	/** (l, added 2026-11-19 from review-A8 finding 4) flags off (Manual, TC29): lot overwritten as today. */
+	/** (l) Manual (new-mode flags off), lots A then B into one open box: the TU lot is overwritten as today. */
 	@Test
 	void l_manual_lotsAThenB_intoOneBox_lotOverwrittenAsToday()
 	{
@@ -565,9 +614,9 @@ class PickingJobCUQtyEntryPickTest
 		cus.forEach(cu -> assertThat(qtyOf(cu)).as("each CU is 1 pack").isEqualByComparingTo("1"));
 		assertThat(cus).extracting(this::lotOf, this::packIdOf)
 				.containsExactlyInAnyOrder(
-						org.assertj.core.groups.Tuple.tuple(LOT_A, "1"),
-						org.assertj.core.groups.Tuple.tuple(LOT_A, "2"),
-						org.assertj.core.groups.Tuple.tuple(LOT_B, "3"));
+						tuple(LOT_A, "1"),
+						tuple(LOT_A, "2"),
+						tuple(LOT_B, "3"));
 		assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot empty (mixed lots)").isNull();
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).hasSize(3);
 	}
@@ -619,7 +668,7 @@ class PickingJobCUQtyEntryPickTest
 		final List<I_M_HU> cus = cusOf(openBoxId(job));
 		assertThat(cus).hasSize(2);
 		assertThat(cus).extracting(this::lotOf, this::packIdOf)
-				.containsExactlyInAnyOrder(org.assertj.core.groups.Tuple.tuple(LOT_A, "1"), org.assertj.core.groups.Tuple.tuple(LOT_B, "1"));
+				.containsExactlyInAnyOrder(tuple(LOT_A, "1"), tuple(LOT_B, "1"));
 	}
 
 	/** (q) the same label in another job is booked: the lookup reads only the job's own picked HUs. */
@@ -661,7 +710,7 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
 
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
-		final de.metas.handlingunits.picking.job.model.PickingJobStep stepOfCU1 = line.streamSteps()
+		final PickingJobStep stepOfCU1 = line.streamSteps()
 				.filter(step -> step.getPickedHUIds().contains(cu1Id))
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("no step with the CU of pack 1"));
