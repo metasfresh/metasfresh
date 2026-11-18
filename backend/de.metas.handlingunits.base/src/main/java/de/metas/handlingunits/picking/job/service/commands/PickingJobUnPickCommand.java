@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -28,6 +29,7 @@ import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUServic
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -173,6 +175,9 @@ public class PickingJobUnPickCommand
 
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
+		// a picked CU that still sits in a box (CU quantity entry) has its own QtyPicked records; the top-level lookup below does not find them
+		huIdAndQRCodeList.forEach(huIdAndQRCode -> deleteQtyPickedOfCUInBox(huIdAndQRCode.getHuId(), step.getScheduleId().getShipmentScheduleId()));
+
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
 		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
 		changeHUStatusFromPickedToActive(topLevelHUs);
@@ -186,6 +191,15 @@ public class PickingJobUnPickCommand
 				pickFromKey,
 				PickingJobStepUnpickInfo.ofUnpickedHUs(pickedToHUs)
 		);
+	}
+
+	private void deleteQtyPickedOfCUInBox(@NonNull final HuId huId, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_HU hu = huService.getById(huId);
+		if (huService.isVirtual(hu) && !Services.get(IHandlingUnitsBL.class).isTopLevel(hu))
+		{
+			shipmentScheduleService.deleteByVHUAndShipmentScheduleId(huId, shipmentScheduleId);
+		}
 	}
 
 	private ImmutableSet<HUIdAndQRCode> toCurrentHuIdAndQRCodes(@NonNull final Collection<I_M_HU> hus)

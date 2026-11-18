@@ -971,6 +971,17 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 	}
 
+	@Override
+	public void deleteByVHUAndShipmentScheduleId(@NonNull final HuId vhuId, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = huShipmentScheduleDAO.retrieveSchedsQtyPickedForVHU(handlingUnitsBL.getById(vhuId))
+				.stream()
+				.filter(record -> record.getM_ShipmentSchedule_ID() == shipmentScheduleId.getRepoId())
+				.collect(ImmutableList.toImmutableList());
+		assertNotAlreadyShipped(qtyPickedRecords, vhuId);
+		shipmentScheduleAllocBL.deleteRecords(qtyPickedRecords);
+	}
+
 	private static void assertNotAlreadyShipped(final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords, @NonNull final HuId huIdInScope)
 	{
 		for (final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)

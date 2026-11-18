@@ -1,7 +1,12 @@
 package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
+import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
@@ -13,9 +18,14 @@ import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +42,11 @@ public class PickingCULabelService
 {
 	public static final AdMessageKey MSG_CU_LABEL_NO_PACK_ID = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_PACK_ID");
 	public static final AdMessageKey MSG_CU_LABEL_FORMAT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_FORMAT_MISMATCH");
+	public static final AdMessageKey MSG_CU_LABEL_ALREADY_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED");
 	public static final AdMessageKey MSG_CU_LABEL_NO_FORMAT = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_FORMAT");
+
+	/** HU attribute that carries the pack ID of a CU picked in {@code SCAN_EACH_CU} mode (migration 5836530) */
+	public static final AttributeCode ATTR_PackId = AttributeCode.ofString("PackId");
 
 	/** the constant marker in front of the pack ID in the label */
 	private static final String PACK_ID_MARKER = "92";
@@ -67,7 +81,7 @@ public class PickingCULabelService
 		final ExplainedOptional<ParsedScannedCode> parsed = format.parse(label);
 		if (parsed.isPresent())
 		{
-			return resolve(line, toCULabelData(parsed.get()), mode);
+			return resolve(line, readCULabelData(parsed.get(), label), mode);
 		}
 
 		if (mode.isScanEachCU() && isEndingBeforePackId(format, label))
@@ -106,6 +120,12 @@ public class PickingCULabelService
 				.build();
 	}
 
+	/** Seam for unit tests: they override it to supply fake {@link CULabelData} (the pack ID part type comes from the label reader, not from this task). */
+	protected CULabelData readCULabelData(@NonNull final ParsedScannedCode parsed, @NonNull final ScannedCode label)
+	{
+		return toCULabelData(parsed);
+	}
+
 	/** The only place that reads the pack ID of a parsed label. */
 	public CULabelData toCULabelData(@NonNull final ParsedScannedCode parsed)
 	{
@@ -115,6 +135,36 @@ public class PickingCULabelService
 				.bestBeforeDate(parsed.getBestBeforeDate())
 				.packId(null)
 				.build();
+	}
+
+	/**
+	 * @return true if one of the job's CURRENT picked HUs (any {@code HUStatus}, any step) of that product carries this lot and pack ID
+	 */
+	public boolean isAlreadyPickedInJob(
+			@NonNull final PickingJob job,
+			@NonNull final ProductId productId,
+			@Nullable final String lotNo,
+			@NonNull final String packId)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
+
+		return job.streamLines()
+				.filter(line -> ProductId.equals(line.getProductId(), productId))
+				.flatMap(line -> line.getPickedHUIds().stream())
+				.map(handlingUnitsBL::getById)
+				.anyMatch(hu -> {
+					final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+					if (!attributes.hasAttribute(ATTR_PackId) || !packId.equals(StringUtils.trimBlankToNull(attributes.getValueAsString(ATTR_PackId))))
+					{
+						return false;
+					}
+					final String huLotNo = attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
+							? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
+							: null;
+					return Objects.equals(huLotNo, lotNoNorm);
+				});
 	}
 
 	/**

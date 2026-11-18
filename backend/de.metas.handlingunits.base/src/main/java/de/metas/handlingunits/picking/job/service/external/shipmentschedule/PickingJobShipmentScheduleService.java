@@ -5,6 +5,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
@@ -132,6 +133,11 @@ public class PickingJobShipmentScheduleService
 	public void deleteByTopLevelHUsAndShipmentScheduleId(@NonNull final Collection<I_M_HU> topLevelHUs, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
+	}
+
+	public void deleteByVHUAndShipmentScheduleId(@NonNull final HuId vhuId, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		huShipmentScheduleBL.deleteByVHUAndShipmentScheduleId(vhuId, shipmentScheduleId);
 	}
 
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)

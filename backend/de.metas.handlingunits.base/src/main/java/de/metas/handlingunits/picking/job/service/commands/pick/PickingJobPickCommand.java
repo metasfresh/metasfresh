@@ -15,6 +15,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.LUExtractTUsRequest;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
@@ -259,7 +260,8 @@ public class PickingJobPickCommand
 		}
 		else if (this.pickingUnit.isCU())
 		{
-			this.qtyToPickCUs = Quantity.of(qtyToPickBD, uom);
+			// Scan each CU: one pack per label, whatever quantity the client sent
+			this.qtyToPickCUs = Quantity.of(cuQtyEntryMode.isScanEachCU() ? BigDecimal.ONE : qtyToPickBD, uom);
 			this.qtyToPickTUs = null;
 
 			if (qtyRejectedReasonCode != null)
@@ -438,7 +440,12 @@ public class PickingJobPickCommand
 			throw new AdempiereException(CU_NO_OPEN_BOX_ERROR_MSG).markAsUserValidationError();
 		}
 
-		getResolvedCULabel();
+		final ResolvedCULabel label = getResolvedCULabel();
+		if (cuQtyEntryMode.isScanEachCU()
+				&& cuLabelService.isAlreadyPickedInJob(getPickingJob(), label.getProductId(), label.getLotNo(), Check.assumeNotNull(label.getPackId(), "packId is set in SCAN_EACH_CU")))
+		{
+			throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, label.getPackId()).markAsUserValidationError();
+		}
 	}
 
 	@NonNull
@@ -906,6 +913,10 @@ public class PickingJobPickCommand
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
 		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
+		if (cuQtyEntryMode.isScanEachCU())
+		{
+			setPackIdOnNewCUs(packedHUs, getResolvedCULabel().getPackId());
+		}
 
 		//
 		// Add shipment schedule QtyPicked records
@@ -1045,7 +1056,8 @@ public class PickingJobPickCommand
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
+		// New modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the box's code is assigned to the box only)
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryMode.isNewMode() ? cu.getId() : tu1.getId());
 		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
@@ -1169,6 +1181,19 @@ public class PickingJobPickCommand
 		huService.setHUStatusPicked(result.getAllLUAndTURecords());
 
 		return result;
+	}
+
+	private static void setPackIdOnNewCUs(@NonNull final LUTUResult packedHUs, @Nullable final String packId)
+	{
+		for (final TU tu : packedHUs.getAllTUs())
+		{
+			for (final TUPart cu : tu.getCUsNotEmpty())
+			{
+				final IAttributeStorage cuAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(cu.toHU());
+				cuAttributes.setSaveOnChange(true);
+				cuAttributes.setValue(PickingCULabelService.ATTR_PackId, packId);
+			}
+		}
 	}
 
 	private LUTUResult pickCUsAndPackTo(

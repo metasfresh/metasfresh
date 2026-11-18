@@ -160,6 +160,12 @@ public class PickingJobTestHelper
 
 	public PickingJobTestHelper()
 	{
+		this(PickingCULabelService::newInstanceForUnitTesting);
+	}
+
+	/** @param cuLabelServiceSupplier called after the unit-test context is initialised; lets a test supply its own label service (e.g. with fake pack IDs) */
+	public PickingJobTestHelper(@NonNull final java.util.function.Supplier<PickingCULabelService> cuLabelServiceSupplier)
+	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 		SystemTime.setFixedTimeSource(LocalDate.parse("2021-01-01").atStartOfDay(MockedPickingJobLoaderSupportingServices.ZONE_ID));
 
@@ -246,7 +252,7 @@ public class PickingJobTestHelper
 				pickingJobScheduleService,
 				huService,
 				new PickingJobGraiTargetService(huService),
-				PickingCULabelService.newInstanceForUnitTesting()
+				cuLabelServiceSupplier.get()
 		);
 
 		huTracer = new HUTracerInstance()
