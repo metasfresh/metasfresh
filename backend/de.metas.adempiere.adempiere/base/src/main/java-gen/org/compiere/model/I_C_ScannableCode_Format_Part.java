@@ -232,7 +232,7 @@ public interface I_C_ScannableCode_Format_Part
 	 * Set End No.
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setEndNo (int EndNo);
@@ -241,7 +241,7 @@ public interface I_C_ScannableCode_Format_Part
 	 * Get End No.
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getEndNo();

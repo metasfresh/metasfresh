@@ -102,7 +102,7 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
       };
     case 'LOT':
       return {
-        [ATTR_lotNo]: trimLeadingZeros(valueStr),
+        [ATTR_lotNo]: trimLeadingZeros(valueStr.trim()),
       };
     case 'BEST_BEFORE_DATE':
       return {
@@ -120,7 +120,7 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
       };
     case 'GTIN':
       return {
-        [ATTR_GTIN]: valueStr,
+        [ATTR_GTIN]: valueStr.trim(),
       };
     default:
       return {
@@ -131,6 +131,12 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
 
 const extractAsString = ({ string, startPosition, endPosition }) => {
   const startIndex = startPosition - 1;
+
+  // open end (the backend sends 0): the part reads to the end of the code, needs at least 1 character
+  if (!endPosition) {
+    return startIndex < string.length ? string.substring(startIndex) : null;
+  }
+
   const endIndex = endPosition;
 
   if (endIndex > string.length) {

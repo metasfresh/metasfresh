@@ -172,6 +172,31 @@ class ScannableCodeFormatTest
 		}
 
 		@Test
+		void gtinPart_lookAlikeLabel_readsGtinAtPositions3To16()
+		{
+			// look-alike of the real label: 01 <GTIN 14> 91 <product> 17 <yyMMdd> 10 <lot> 92 <pack>
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(3).endPosition(16).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
+							ScannableCodeFormatPart.builder().startPosition(28).endPosition(33).type(ScannableCodeFormatPartType.BestBeforeDate).build(),
+							ScannableCodeFormatPart.builder().startPosition(36).endPosition(44).type(ScannableCodeFormatPartType.LotNo).build()
+					))
+					.build();
+
+			for (final String n : new String[] { "1", "2", "3", "10" })
+			{
+				final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("010950600013435291P0000421726110710A1/B002C392" + n)).orElseThrow();
+				assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("09506000134352"));
+				assertThat(parsed.getProductNo()).isEqualTo("P000042");
+				assertThat(parsed.getBestBeforeDate()).isEqualTo("2026-11-07");
+				assertThat(parsed.getLotNo()).isEqualTo("A1/B002C3");
+			}
+		}
+
+		@Test
 		void allPartTypes_constantMismatch_notRecognized()
 		{
 			final ScannableCodeFormat format = ScannableCodeFormat.builder()
@@ -187,5 +212,75 @@ class ScannableCodeFormatTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Invalid constant marker, expected `A` but was `X`");
 		}
+	}
+
+	@Nested
+	class open_end_last_part
+	{
+		// (01)          ProdCode(14)      (11)         yyMMdd   (10)       lot (open end)
+		// 1..4          5..18           19..22       23..28   29..32     33..to the end
+		private ScannableCodeFormat format()
+		{
+			return ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(4).type(ScannableCodeFormatPartType.Constant).constantValue("(01)").build(),
+							ScannableCodeFormatPart.builder().startPosition(5).endPosition(18).type(ScannableCodeFormatPartType.ProductCode).build(),
+							ScannableCodeFormatPart.builder().startPosition(19).endPosition(22).type(ScannableCodeFormatPartType.Constant).constantValue("(11)").build(),
+							ScannableCodeFormatPart.builder().startPosition(23).endPosition(28).type(ScannableCodeFormatPartType.ProductionDate).build(),
+							ScannableCodeFormatPart.builder().startPosition(29).endPosition(32).type(ScannableCodeFormatPartType.Constant).constantValue("(10)").build(),
+							ScannableCodeFormatPart.builder().startPosition(33).endPosition(0).type(ScannableCodeFormatPartType.LotNo).build()
+					))
+					.build();
+		}
+
+		private String label(final String lot)
+		{
+			return "(01)04012345678901(11)250101(10)" + lot;
+		}
+
+		@Test
+		void lotOf6Characters()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("123456"))).orElseThrow().getLotNo()).isEqualTo("123456");
+		}
+
+		@Test
+		void lotOf7Characters()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("1234567"))).orElseThrow().getLotNo()).isEqualTo("1234567");
+		}
+
+		@Test
+		void lotOf1Character()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("7"))).orElseThrow().getLotNo()).isEqualTo("7");
+		}
+
+		@Test
+		void lotOf20AlphanumericCharacters()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("AB12CD34EF56GH78IJ90"))).orElseThrow().getLotNo()).isEqualTo("AB12CD34EF56GH78IJ90");
+		}
+
+		@Test
+		void noLotCharacter_notRecognized()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label(""))).isPresent()).isFalse();
+		}
+
+		@Test
+		void leadingZerosStillStripped()
+		{
+			assertThat(format().parse(ScannedCode.ofString(label("012345"))).orElseThrow().getLotNo()).isEqualTo("12345");
+		}
+	}
+
+	@Test
+	void negativeEndPosition_isInvalid()
+	{
+		assertThatThrownBy(() -> ScannableCodeFormatPart.builder().startPosition(5).endPosition(-1).type(ScannableCodeFormatPartType.LotNo).build())
+				.isInstanceOf(RuntimeException.class);
 	}
 }
