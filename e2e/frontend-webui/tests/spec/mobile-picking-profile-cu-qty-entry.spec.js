@@ -119,6 +119,7 @@ save + reload, and show in the grid.
         login: { user: {} },
         // The grid check below needs the one active picking profile. A fresh DB has none until a
         // picking config is written, so write one here instead of relying on an earlier spec.
+        // This resets the profile's other picking settings to defaults; every mobile picking spec writes its own.
         mobileConfig: { picking: { pickTo: ['LU_TU'] } },
         customQRCodeFormats: [
           {
@@ -173,7 +174,7 @@ save + reload, and show in the grid.
         const nameSaved = page.waitForResponse(
           (response) => response.request().method() === 'PATCH'
             && response.url().endsWith(`/window/${windowId}/${recordId}`)
-            && (response.request().postData() ?? '').includes(`"path":"${FIELD_NAME}"`),
+            && (response.request().postData() ?? '').includes(`"path":"${FIELD_NAME}","value":"${recordName}"`),
           { timeout: VERY_SLOW_ACTION_TIMEOUT },
         );
         await TextWidget.setValue(FIELD_NAME, recordName);
@@ -273,6 +274,10 @@ save + reload, and show in the grid.
       for (const { windowId, recordId } of createdRecords.reverse()) {
         await deleteTestRecord(page, windowId, recordId);
       }
+      // Remove the generated format too. Its only part is a product code at positions 1-7, so it
+      // matches any scanned code: left behind, the mobile UI would read the next spec's HU QR codes
+      // with it (a custom format is tried first) and pick a whole TU instead of the HU.
+      await Backend.createMasterdata({ request: { customQRCodeFormats: [] } });
     }
   });
 });
