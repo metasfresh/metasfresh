@@ -233,7 +233,7 @@ class ScannableCodeFormatTest
 			assertThat(parsed.getPackId()).isNull();
 		}
 
-		// card line 4: CONSTANT guards (17 at 26-27, 10 at 34-35, 92 at 45-46) listed FIRST, so that they, not a later part, refuse a shifted code
+		// CONSTANT guards (17 at 26-27, 10 at 34-35, 92 at 45-46) are listed first, so that they, not a later part, refuse a shifted code
 		private ScannableCodeFormat formatWithGuards()
 		{
 			return ScannableCodeFormat.builder()
