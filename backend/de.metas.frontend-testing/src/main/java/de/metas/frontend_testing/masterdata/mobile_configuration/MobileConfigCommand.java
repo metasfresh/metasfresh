@@ -7,8 +7,8 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
-import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfig;
+import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
@@ -21,11 +21,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
-import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
+import org.compiere.model.X_MobileUI_UserProfile_Picking;
 
 import javax.annotation.Nullable;
-
 
 @Builder
 public class MobileConfigCommand
@@ -37,7 +36,6 @@ public class MobileConfigCommand
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private static final String CU_QTY_ENTRY_MODE_DEFAULT = "MANUAL";
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonMobileConfigRequest request;
@@ -128,35 +126,14 @@ public class MobileConfigCommand
 			@NonNull final JsonMobileConfigRequest.Picking.Customer customer)
 	{
 		final BPartnerId customerId = context.getId(customer.getCustomer(), BPartnerId.class);
-
-		final I_MobileUI_UserProfile_Picking_BPartner customerRecord = queryBL
-				.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
-				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_C_BPartner_ID, customerId.getRepoId())
-				.create()
-				.firstOnly(I_MobileUI_UserProfile_Picking_BPartner.class);
-		if (customerRecord == null || customerRecord.getMobileUI_UserProfile_Picking_Job_ID() <= 0)
-		{
-			if (customer.getCuQtyEntryMode() == null && customer.getCuLabelFormatName() == null)
-			{
-				return; // nothing to reset: the customer has no own job options row
-			}
-			// the CU settings of a customer are stored on its job options row; the masterdata request has no way to create that row
-			throw new AdempiereException("Customer " + customer.getCustomer() + " has no picking job options row to hold its CU quantity entry settings");
-		}
-
-		final I_MobileUI_UserProfile_Picking_Job jobRecord = InterfaceWrapperHelper.load(customerRecord.getMobileUI_UserProfile_Picking_Job_ID(), I_MobileUI_UserProfile_Picking_Job.class);
-		jobRecord.setCUQtyEntryMode(customer.getCuQtyEntryMode());
-		jobRecord.setC_ScannableCode_Format_ID(resolveFormatIdOrNoFormat(customer.getCuLabelFormatName()));
-		InterfaceWrapperHelper.saveRecord(jobRecord);
+		CustomerCUQtyEntryWriter.write(profileRecord, customerId, customer.getCuQtyEntryMode(), resolveFormatIdOrNoFormat(customer.getCuLabelFormatName()));
 	}
 
 	/** The profile column is mandatory with default MANUAL. */
 	@NonNull
 	private static String cuQtyEntryModeOrDefault(@Nullable final String cuQtyEntryMode)
 	{
-		return cuQtyEntryMode != null ? cuQtyEntryMode : CU_QTY_ENTRY_MODE_DEFAULT;
+		return cuQtyEntryMode != null ? cuQtyEntryMode : X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_MANUAL;
 	}
 
 	/** Returns the format repo id, or 0 (= no format) when the name is absent. */

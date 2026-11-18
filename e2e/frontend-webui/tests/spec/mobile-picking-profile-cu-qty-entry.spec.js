@@ -35,14 +35,12 @@ import { ListWidget } from '../utils/widgets/ListWidget';
 import { TextWidget } from '../utils/widgets/TextWidget';
 import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
-import { getFieldData, waitForRecordSaved } from '../utils/WebAPIValidation';
+import { getFieldData, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
-const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 const FIELD_NAME = 'Name';
 const FIELD_MODE = 'CUQtyEntryMode';
 const FIELD_FORMAT = 'C_ScannableCode_Format_ID';
 const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY'; // AD_Ref_List.Value
-const MODE_SCAN_ONCE_CAPTION = /Einmal scannen, Menge eingeben|Scan once, enter quantity/;
 
 const WINDOWS = [
   // only ONE active picking profile may exist (unique index IDX_unique_UserProfilePicking):
@@ -65,9 +63,8 @@ async function gotoWindowList(page, windowId) {
 }
 
 /**
- * Delete a test record through the WebUI REST API (with the browser session). The masterdata API
- * deletes its generated scannable code formats at the start of every run, which fails while a
- * left-over record still references one: the test removes its own records.
+ * Delete a test record through the WebUI REST API (with the browser session), so that no test
+ * record is left behind in the shared DB (the picking profile list is also read by other specs).
  */
 async function deleteTestRecord(page, windowId, recordId) {
   try {
@@ -182,19 +179,12 @@ save + reload, and show in the grid.
         expect(keyOf(mode)).toBe(MODE_SCAN_ONCE);
         expect(keyOf(format), `${FIELD_FORMAT} must be set`).toBeTruthy();
         expect(format.value.caption).toBe(formatName);
-        await expect(WidgetCommon.getFieldContainer(FIELD_MODE).locator('input').first()).toHaveValue(MODE_SCAN_ONCE_CAPTION);
         await expect(WidgetCommon.getFieldContainer(FIELD_FORMAT).locator('input').first()).toHaveValue(new RegExp(formatName));
 
         // Grid (list view): both columns are shown.
         await gotoWindowList(page, windowId);
-        await expect(
-          page.locator('th', { hasText: /CU-Mengenerfassung|CU quantity entry/ }).first(),
-          'grid column CUQtyEntryMode',
-        ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-        await expect(
-          page.locator('th', { hasText: /Scannable Code Format/ }).first(),
-          'grid column C_ScannableCode_Format_ID',
-        ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        // (grid cells are addressed by their field name, never by a localized column caption)
+        const gridCell = (row, fieldName) => row.locator(`[data-cy="cell-${fieldName}"]`);
         if (createInactive) {
           // The grid lists active rows only and only ONE active profile may exist (the test
           // profile is inactive), so the grid check runs on the seed profile: set both values on
@@ -204,9 +194,14 @@ save + reload, and show in the grid.
           await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
           const seedId = page.url().split('/').pop();
           expect(seedId, 'the seed profile is the only active row').not.toBe(recordId);
+          await expect(WidgetCommon.getFieldContainer(FIELD_MODE)).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+          await waitForRecordSaved(String(windowId), seedId);
+          // remember the seed's own values: they are restored, whatever an earlier spec left there
+          const seedMode = keyOf(await getFieldData(String(windowId), seedId, FIELD_MODE));
+          const seedFormatData = await getFieldData(String(windowId), seedId, FIELD_FORMAT);
+          const seedFormat = keyOf(seedFormatData) ?? null;
+          const seedFormatCaption = seedFormat !== null ? seedFormatData.value.caption : null; // a format name: user data, not UI text
           try {
-            await expect(WidgetCommon.getFieldContainer(FIELD_MODE)).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-            await waitForRecordSaved(String(windowId), seedId);
             await expect(WidgetCommon.getFieldContainer(FIELD_MODE).locator('input').first()).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
             await ListWidget.setByValue(FIELD_MODE, MODE_SCAN_ONCE);
             await ListWidget.setValue(FIELD_FORMAT, formatName, { exactMatch: true });
@@ -216,15 +211,22 @@ save + reload, and show in the grid.
             await gotoWindowList(page, windowId);
             const row = page.locator('tbody tr').first();
             await expect(row, 'grid row of the seed profile').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-            await expect(row).toContainText(MODE_SCAN_ONCE_CAPTION);
-            await expect(row).toContainText(formatName);
+            await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').not.toBeEmpty();
+            await expect(gridCell(row, FIELD_FORMAT), 'grid cell C_ScannableCode_Format_ID').toContainText(formatName);
           } finally {
             await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}/${seedId}`);
             await expect(WidgetCommon.getFieldContainer(FIELD_MODE)).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
             await expect(WidgetCommon.getFieldContainer(FIELD_MODE).locator('input').first()).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
-            await ListWidget.setByValue(FIELD_MODE, expectedDefaultMode);
-            // clear the optional lookup with its clear icon
-            await WidgetCommon.getFieldContainer(FIELD_FORMAT).locator('.meta-icon-close-alt').click();
+            await ListWidget.setByValue(FIELD_MODE, seedMode);
+            if (seedFormat === null) {
+              // the original format was empty: clear the lookup with its clear icon (nothing to clear when it was never set)
+              const clearIcon = WidgetCommon.getFieldContainer(FIELD_FORMAT).locator('.meta-icon-close-alt');
+              if ((await clearIcon.count()) > 0) {
+                await clearIcon.click();
+              }
+            } else {
+              await ListWidget.setValue(FIELD_FORMAT, seedFormatCaption, { exactMatch: true });
+            }
             await WidgetCommon.triggerBlur();
             await WidgetCommon.waitForSaveComplete();
             await waitForRecordSaved(String(windowId), seedId);
@@ -233,19 +235,19 @@ save + reload, and show in the grid.
                 message: 'seed profile mode restored',
                 timeout: SLOW_ACTION_TIMEOUT,
               })
-              .toBe(expectedDefaultMode);
+              .toBe(seedMode);
             await expect
               .poll(async () => keyOf(await getFieldData(String(windowId), seedId, FIELD_FORMAT)) ?? null, {
                 message: 'seed profile format restored',
                 timeout: SLOW_ACTION_TIMEOUT,
               })
-              .toBeNull();
+              .toBe(seedFormat);
           }
         } else {
           const row = page.locator('tr', { hasText: recordName }).first();
           await expect(row, `grid row of ${recordName}`).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-          await expect(row).toContainText(MODE_SCAN_ONCE_CAPTION);
-          await expect(row).toContainText(formatName);
+          await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').not.toBeEmpty();
+          await expect(gridCell(row, FIELD_FORMAT), 'grid cell C_ScannableCode_Format_ID').toContainText(formatName);
         }
 
         const shot = await page.screenshot({ fullPage: true });

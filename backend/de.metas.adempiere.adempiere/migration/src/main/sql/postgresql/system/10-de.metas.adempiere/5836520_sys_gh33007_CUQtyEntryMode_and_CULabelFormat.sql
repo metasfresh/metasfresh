@@ -147,12 +147,48 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585621)
 ;
--- Field-level descriptions: an empty customer option means the value of the profile (after all element propagation)
-UPDATE AD_Field SET Description='Wie die CU-Menge beim Kommissionieren erfasst wird. Leer = Wert des Profils.' WHERE AD_Field_ID=788187
+-- Per-field name/description elements (AD_Field.AD_Name_ID). The hint "empty = the profile's value" belongs to the customer-level fields only,
+-- so it lives in a name-only AD_Element per field. A description written straight onto AD_Field / AD_Field_Trl would be overwritten by the next
+-- propagation of the column's element (update_FieldTranslation_From_AD_Name_Element); fields with an AD_Name_ID are not touched by that.
+
+-- Element for field 788187 (customer CU quantity entry mode): the name of the column's element + the field-specific description
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Description,Updated,UpdatedBy) VALUES (0,585622 /*From ID Server*/,0,NULL,TO_TIMESTAMP('2026-11-18 20:43:09.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','CU-Mengenerfassung','CU-Mengenerfassung','Wie die CU-Menge beim Kommissionieren erfasst wird. Leer = Wert des Profils.',TO_TIMESTAMP('2026-11-18 20:43:09.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
-UPDATE AD_Field_Trl SET Description=CASE WHEN AD_Language='en_US' THEN 'How the CU quantity is entered when picking. Empty = the profile''s value.' ELSE 'Wie die CU-Menge beim Kommissionieren erfasst wird. Leer = Wert des Profils.' END WHERE AD_Field_ID=788187
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Name,PrintName,Description, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.Name,t.PrintName,t.Description, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585622 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
-UPDATE AD_Field SET Description='Leer = Format des Profils.' WHERE AD_Field_ID=788189
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='CU-Mengenerfassung', PrintName='CU-Mengenerfassung', Description='Wie die CU-Menge beim Kommissionieren erfasst wird. Leer = Wert des Profils.', Updated=TO_TIMESTAMP('2026-11-18 20:43:16.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language IN ('de_DE','de_CH') AND AD_Element_ID=585622
 ;
-UPDATE AD_Field_Trl SET Description=CASE WHEN AD_Language='en_US' THEN 'Empty = the profile''s format.' ELSE 'Leer = Format des Profils.' END WHERE AD_Field_ID=788189
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='CU quantity entry', PrintName='CU quantity entry', Description='How the CU quantity is entered when picking. Empty = the profile''s value.', Updated=TO_TIMESTAMP('2026-11-18 20:43:23.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=585622
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585622)
+;
+UPDATE AD_Field SET AD_Name_ID=585622, Updated=TO_TIMESTAMP('2026-11-18 20:43:30.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Field_ID=788187
+;
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(585622)
+;
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=788187
+;
+/* DDL */ select AD_Element_Link_Create_Missing_Field(788187)
+;
+-- Element for field 788189 (customer scannable code format): Name / PrintName are copied, per language, from the column's element
+-- C_ScannableCode_Format_ID (583610), so the field label stays the label of that element; only the description is field-specific
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Description,Updated,UpdatedBy) SELECT 0,585623 /*From ID Server*/,0,NULL,TO_TIMESTAMP('2026-11-18 20:43:37.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y',e.Name,e.PrintName,'Leer = Format des Profils.',TO_TIMESTAMP('2026-11-18 20:43:37.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100 FROM AD_Element e WHERE e.AD_Element_ID=583610
+;
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Name,PrintName,Description, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.Name,t.PrintName,t.Description, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585623 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+UPDATE AD_Element_Trl t SET Name=src.Name, PrintName=src.PrintName, IsTranslated=src.IsTranslated, Updated=TO_TIMESTAMP('2026-11-18 20:43:44.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 FROM AD_Element_Trl src WHERE src.AD_Element_ID=583610 AND src.AD_Language=t.AD_Language AND t.AD_Element_ID=585623
+;
+UPDATE AD_Element_Trl SET Description='Leer = Format des Profils.', Updated=TO_TIMESTAMP('2026-11-18 20:43:51.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language IN ('de_DE','de_CH') AND AD_Element_ID=585623
+;
+UPDATE AD_Element_Trl SET Description='Empty = the profile''s format.', Updated=TO_TIMESTAMP('2026-11-18 20:43:58.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=585623
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585623)
+;
+UPDATE AD_Field SET AD_Name_ID=585623, Updated=TO_TIMESTAMP('2026-11-18 20:44:05.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Field_ID=788189
+;
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(585623)
+;
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=788189
+;
+/* DDL */ select AD_Element_Link_Create_Missing_Field(788189)
 ;
