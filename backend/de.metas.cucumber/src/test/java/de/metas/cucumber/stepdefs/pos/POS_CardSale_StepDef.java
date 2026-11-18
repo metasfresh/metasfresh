@@ -126,6 +126,7 @@ public class POS_CardSale_StepDef
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final POSService posService = SpringContextHolder.instance.getBean(POSService.class);
 	@NonNull private final POSOrdersService posOrdersService = SpringContextHolder.instance.getBean(POSOrdersService.class);
 	@NonNull private final SumUpService sumUpService = SpringContextHolder.instance.getBean(SumUpService.class);
@@ -995,7 +996,6 @@ public class POS_CardSale_StepDef
 		SumUpApiStub.setNextCheckoutBehavior(SumUpApiStub.CheckoutBehavior.SUCCESS);
 		SumUpApiStub.holdNextCheckout();
 
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final Properties ctx = Env.getCtx();
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		try
