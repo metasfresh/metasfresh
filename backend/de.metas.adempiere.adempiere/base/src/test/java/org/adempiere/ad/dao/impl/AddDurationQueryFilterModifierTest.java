@@ -2,6 +2,7 @@ package org.adempiere.ad.dao.impl;
 
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests {@link AddDurationQueryFilterModifier} through a {@link CompareQueryFilter}, in SQL and in memory.
@@ -101,6 +103,32 @@ class AddDurationQueryFilterModifierTest
 
 		assertThat(modifier.convertValue(AddDurationQueryFilterModifier.COLUMNNAME_Constant, value, null)).isSameAs(value);
 		assertThat(modifier.convertValue(ITestModel.COLUMNNAME_Date, value, null)).isEqualTo(Timestamp.from(DATE.plusSeconds(3 * 3600)));
+	}
+
+	/**
+	 * The SQL interval is in whole seconds; a sub-second part would make SQL and in-memory results differ.
+	 */
+	@Test
+	void subSecondDuration_rejected()
+	{
+		assertThatThrownBy(() -> new AddDurationQueryFilterModifier(Duration.ofMillis(1500)))
+				.isInstanceOf(AdempiereException.class);
+		assertThatThrownBy(() -> new AddDurationQueryFilterModifier(Duration.ofMillis(-1500)))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
+	void negativeWholeSeconds_sqlAndMemoryAgree()
+	{
+		final CompareQueryFilter<ITestModel> filter = new CompareQueryFilter<>(
+				ITestModel.COLUMNNAME_Date,
+				Operator.LESS_OR_EQUAL,
+				ModelColumnNameValue.forColumnName(ITestModel.COLUMNNAME_OtherDate),
+				new AddDurationQueryFilterModifier(Duration.ofHours(-2)));
+
+		assertThat(filter.getSql()).isEqualTo("(Date + INTERVAL '-7200 seconds') <= OtherDate");
+		assertThat(filter.accept(createModel(Timestamp.from(DATE), Timestamp.from(DATE.minusSeconds(7200))))).isTrue();
+		assertThat(filter.accept(createModel(Timestamp.from(DATE), Timestamp.from(DATE.minusSeconds(7201))))).isFalse();
 	}
 
 	@Test

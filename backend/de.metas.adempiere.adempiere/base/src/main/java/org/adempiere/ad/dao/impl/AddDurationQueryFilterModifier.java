@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -26,8 +27,16 @@ public final class AddDurationQueryFilterModifier implements IQueryFilterModifie
 {
 	@NonNull private final Duration duration;
 
+	/**
+	 * @param duration whole seconds (may be negative): the SQL interval is in seconds, so a sub-second part would make the SQL
+	 *                 and the in-memory results differ
+	 */
 	public AddDurationQueryFilterModifier(@NonNull final Duration duration)
 	{
+		if (duration.getNano() != 0)
+		{
+			throw new AdempiereException("Duration must be whole seconds: " + duration);
+		}
 		this.duration = duration;
 	}
 
