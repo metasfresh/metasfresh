@@ -73,6 +73,7 @@ public class JsonPickingStepEvent
 	boolean isCloseTarget;
 	boolean setGrais;
 	@Nullable List<String> graiCodes;
+	@Nullable String cuLabel;
 
 	// Event Type: UNPICK
 	@Nullable String unpickToTargetQRCode;

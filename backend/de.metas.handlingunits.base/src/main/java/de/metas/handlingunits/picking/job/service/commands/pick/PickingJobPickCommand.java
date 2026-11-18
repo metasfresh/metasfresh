@@ -27,6 +27,7 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
@@ -45,7 +46,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingCULabelService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.service.ResolvedCULabel;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
@@ -108,6 +111,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
+	private final static AdMessageKey CU_NO_OPEN_BOX_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
 	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	//
@@ -123,6 +127,7 @@ public class PickingJobPickCommand
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
+	@NonNull private final PickingCULabelService cuLabelService;
 
 	//
 	// Params
@@ -141,6 +146,9 @@ public class PickingJobPickCommand
 	private final boolean isSetGrais;
 	@Nullable private final GRAISet graiCodes;
 	@NonNull private final PickAttributes _manualPickAttributes;
+	@NonNull private final CUQtyEntryMode cuQtyEntryMode;
+	@Nullable private final ScannedCode cuLabel;
+	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, new modes only
 
 	//
 	// State
@@ -161,6 +169,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUService huService,
+			final @NonNull PickingCULabelService cuLabelService,
 			//
 			final @NonNull PickingJob pickingJob,
 			//
@@ -181,7 +190,8 @@ public class PickingJobPickCommand
 			final @Nullable String lotNo,
 			final boolean isCloseTarget,
 			final boolean isSetGrais,
-			final @Nullable GRAISet graiCodes)
+			final @Nullable GRAISet graiCodes,
+			final @Nullable ScannedCode cuLabel)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -192,6 +202,7 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
+		this.cuLabelService = cuLabelService;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
@@ -207,11 +218,14 @@ public class PickingJobPickCommand
 		this.pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
-		this.isPickWholeTU = isPickWholeTU;
+		this.cuQtyEntryMode = pickingJobOptions.getCuQtyEntryMode();
+		this.cuLabel = cuLabel;
+		// new modes always book CUs into the open box: never a whole TU, and TU lines count CUs
+		this.isPickWholeTU = isPickWholeTU && !cuQtyEntryMode.isNewMode();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
-		this.pickingUnit = line.getPickingUnit();
+		this.pickingUnit = cuQtyEntryMode.isNewMode() ? PickingUnit.CU : line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
@@ -383,6 +397,8 @@ public class PickingJobPickCommand
 	{
 		_pickingJob.assertNotProcessed();
 
+		assertCanBookIntoOpenBox();
+
 		assertNotAboveOrderedQtyWhenOverPickBlocked();
 
 		checkOrAllocatePickingSlot();
@@ -408,6 +424,35 @@ public class PickingJobPickCommand
 
 		// Try loading it again to make sure we persisted a consistent/valid model
 		return pickingJobService.getById(_pickingJob.getId());
+	}
+
+	private void assertCanBookIntoOpenBox()
+	{
+		if (!cuQtyEntryMode.isNewMode())
+		{
+			return;
+		}
+
+		if (!getTUPickingTarget().isPresent())
+		{
+			throw new AdempiereException(CU_NO_OPEN_BOX_ERROR_MSG).markAsUserValidationError();
+		}
+
+		getResolvedCULabel();
+	}
+
+	@NonNull
+	private ResolvedCULabel getResolvedCULabel()
+	{
+		if (_resolvedCULabel == null)
+		{
+			if (cuLabel == null)
+			{
+				throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH).markAsUserValidationError();
+			}
+			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryMode, pickingJobOptions.getCuLabelFormatId().orElse(null));
+		}
+		return _resolvedCULabel;
 	}
 
 	private PickingJob getPickingJob()
@@ -711,9 +756,20 @@ public class PickingJobPickCommand
 	}
 
 	@NonNull
+	private static PickAttributes toPickAttributes(@NonNull final ResolvedCULabel label)
+	{
+		return PickAttributes.builder()
+				.isSetLotNo(label.getLotNo() != null).lotNo(label.getLotNo())
+				.isSetBestBeforeDate(label.getBestBeforeDate() != null).bestBeforeDate(label.getBestBeforeDate())
+				.build();
+	}
+
+	@NonNull
 	private PickAttributes computePickAttributes()
 	{
-		PickAttributes pickAttributes = this._manualPickAttributes;
+		PickAttributes pickAttributes = cuQtyEntryMode.isNewMode()
+				? toPickAttributes(getResolvedCULabel()).fallbackTo(this._manualPickAttributes)
+				: this._manualPickAttributes;
 		boolean isCatchWeightRequired = false;
 		if (pickFromHUQRCode != null)
 		{
@@ -1132,6 +1188,8 @@ public class PickingJobPickCommand
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
+						.consolidateToSingleCU(cuQtyEntryMode.isNewMode())
+						.cuLevelAttributesWithoutLU(cuQtyEntryMode.isNewMode())
 						.build()
 		);
 	}

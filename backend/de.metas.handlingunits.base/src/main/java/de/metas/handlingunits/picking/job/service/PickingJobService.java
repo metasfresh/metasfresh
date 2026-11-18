@@ -114,6 +114,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
+	@NonNull private final PickingCULabelService cuLabelService;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -350,6 +351,7 @@ public class PickingJobService implements PickingSlotListener
 						.isCloseTarget(event.isCloseTarget())
 						.isSetGrais(event.isSetGrais())
 						.graiCodes(event.getGraiCodes())
+						.cuLabel(event.getCuLabel())
 						//
 						.build()
 						.execute();
@@ -388,7 +390,8 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
-				.huService(huService);
+				.huService(huService)
+				.cuLabelService(cuLabelService);
 	}
 
 	public void unassignAllByUserId(@NonNull final UserId userId)
