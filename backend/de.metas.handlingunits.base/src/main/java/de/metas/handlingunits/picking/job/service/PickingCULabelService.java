@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.scannable_code.ScannedCode;
@@ -15,6 +16,7 @@ import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -31,7 +33,6 @@ public class PickingCULabelService
 	public static final AdMessageKey MSG_CU_LABEL_NO_PACK_ID = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_PACK_ID");
 	public static final AdMessageKey MSG_CU_LABEL_FORMAT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_FORMAT_MISMATCH");
 	public static final AdMessageKey MSG_CU_LABEL_NO_FORMAT = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_FORMAT");
-	public static final AdMessageKey MSG_PRODUCT_NOT_MATCHING = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
 
 	/** the constant marker in front of the pack ID in the label */
 	private static final String PACK_ID_MARKER = "92";
@@ -40,7 +41,10 @@ public class PickingCULabelService
 
 	public static PickingCULabelService newInstanceForUnitTesting()
 	{
-		return new PickingCULabelService(ScannableCodeFormatService.newInstanceForUnitTesting());
+		SpringContextHolder.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				PickingCULabelService.class,
+				() -> new PickingCULabelService(ScannableCodeFormatService.newInstanceForUnitTesting()));
 	}
 
 	/**
@@ -85,7 +89,7 @@ public class PickingCULabelService
 		}
 		if (!Objects.equals(labelData.getProductNo(), line.getProductNo()))
 		{
-			throw userError(MSG_PRODUCT_NOT_MATCHING, line.getProductValueAndName().getName());
+			throw userError(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductValueAndName().getName());
 		}
 
 		final String packId = mode.isScanEachCU() ? labelData.getPackId() : null;
@@ -102,43 +106,45 @@ public class PickingCULabelService
 				.build();
 	}
 
-	/** The only reader of the pack ID part (filled from the label format's pack ID part type, task A12). */
+	/** The only place that reads the pack ID of a parsed label. */
 	public CULabelData toCULabelData(@NonNull final ParsedScannedCode parsed)
 	{
 		return CULabelData.builder()
 				.productNo(parsed.getProductNo())
 				.lotNo(parsed.getLotNo())
 				.bestBeforeDate(parsed.getBestBeforeDate())
-				.packId(null) // TODO A12: parsed.getPackId()
+				.packId(null)
 				.build();
 	}
 
 	/**
-	 * @return true if the label is too short to hold the pack ID zone (the "92" marker or, without a marker, the last part)
-	 * while every part before that zone reads.
+	 * @return true if the label is too short to hold the pack ID zone (the part after the "92" marker) while every part before the marker reads.
+	 * A format without the marker has no pack ID zone: false.
 	 */
 	private static boolean isEndingBeforePackId(@NonNull final ScannableCodeFormat format, @NonNull final ScannedCode label)
 	{
 		final ImmutableList<ScannableCodeFormatPart> parts = format.getParts();
-		if (parts.isEmpty())
+		final ScannableCodeFormatPart marker = parts.stream()
+				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
+				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
+				.orElse(null);
+		if (marker == null)
 		{
 			return false;
 		}
 
-		final int lastPartStart = parts.stream().mapToInt(ScannableCodeFormatPart::getStartPosition).max().orElse(0);
-		final int zoneStart = parts.stream()
-				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
-				.map(ScannableCodeFormatPart::getStartPosition)
-				.min(Comparator.naturalOrder())
-				.orElse(lastPartStart);
-
-		if (label.length() >= lastPartStart)
+		final int zoneEnd = parts.stream()
+				.mapToInt(ScannableCodeFormatPart::getStartPosition)
+				.filter(start -> start > marker.getStartPosition())
+				.min()
+				.orElse(marker.getStartPosition() + PACK_ID_MARKER.length());
+		if (label.length() >= zoneEnd)
 		{
 			return false;
 		}
 
 		final ImmutableList<ScannableCodeFormatPart> partsBefore = parts.stream()
-				.filter(part -> part.getStartPosition() < zoneStart)
+				.filter(part -> part.getStartPosition() < marker.getStartPosition())
 				.filter(part -> part.getType() != ScannableCodeFormatPartType.Ignored) // separators: the scanned code is trimmed, a trailing one is lost
 				.collect(ImmutableList.toImmutableList());
 		if (partsBefore.isEmpty())

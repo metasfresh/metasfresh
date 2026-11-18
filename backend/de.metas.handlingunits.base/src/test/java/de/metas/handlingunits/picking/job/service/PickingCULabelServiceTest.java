@@ -9,6 +9,7 @@ import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderAndLineId;
@@ -45,7 +46,7 @@ class PickingCULabelServiceTest
 	private static final String LOT = "LOT123456"; // 9 characters
 	private static final String GTIN = "04012345678901";
 
-	private static final AdMessageKey HU_PRODUCT_NOT_MATCHING = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+	private static final AdMessageKey HU_PRODUCT_NOT_MATCHING = MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING;
 	private static final AdMessageKey CU_LABEL_NO_PACK_ID = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_PACK_ID");
 	private static final AdMessageKey CU_LABEL_FORMAT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_FORMAT_MISMATCH");
 	private static final AdMessageKey CU_LABEL_NO_FORMAT = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_FORMAT");
@@ -60,7 +61,7 @@ class PickingCULabelServiceTest
 	{
 		AdempiereTestHelper.get().init();
 		formatService = ScannableCodeFormatService.newInstanceForUnitTesting();
-		service = new PickingCULabelService(formatService);
+		service = PickingCULabelService.newInstanceForUnitTesting();
 
 		uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("Stk");
@@ -255,5 +256,32 @@ class PickingCULabelServiceTest
 		assertThat(resolved).isNotNull();
 		assertThat(resolved.getProductId()).isEqualTo(ProductId.ofRepoId(10));
 		assertFails(() -> resolve(otherOnly, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
+	}
+
+	@Test
+	void formatWithoutPackIdMarker_labelEndingBeforeItsLastPart_isFormatMismatchNotNoPackId()
+	{
+		final ScannableCodeFormat noMarkerFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
+				.name("CU label without pack ID zone")
+				.parts(ImmutableList.of(
+						constant(1, 2, "01"),
+						part(3, 16, ScannableCodeFormatPartType.Ignored),
+						constant(17, 18, "91"),
+						part(19, 25, ScannableCodeFormatPartType.ProductCode),
+						part(26, 26, ScannableCodeFormatPartType.Ignored),
+						constant(27, 28, "17"),
+						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(35, 36, "10"),
+						part(37, 45, ScannableCodeFormatPartType.LotNo)))
+				.build());
+		final String beforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 36);
+
+		assertFails(() -> resolve(beforeLot, CUQtyEntryMode.SCAN_EACH_CU, noMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
+	}
+
+	@Test
+	void formatIdSetButNotResolvable_hasNoFormat()
+	{
+		assertFails(() -> resolve(label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, ScannableCodeFormatId.ofRepoId(999999)), CU_LABEL_NO_FORMAT);
 	}
 }
