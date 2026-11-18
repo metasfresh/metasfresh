@@ -75,9 +75,8 @@ export const GetQuantityDialog = {
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
         const prevQtyTarget = await page.locator('[data-testid="qty-target"]').innerText();
 
-        // Scan like a hardware scanner: all keys in one burst, then Enter.
-        // Typing key by key (locator.type) is not a scan: the scanner reader ends a scan when two keys
-        // are more than the debounce time apart (300 ms), so a slow test browser delivered half a code.
+        // Send the code like a hardware scanner: all keys in one burst, then Enter. Never type it key by key:
+        // the scanner reader ends a scan at a pause longer than barcodeScanner.inputText.debounceMillis (default 300 ms).
         await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'qrCode-input' });
         await page.locator('[data-testid="qrCode-input"]').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
