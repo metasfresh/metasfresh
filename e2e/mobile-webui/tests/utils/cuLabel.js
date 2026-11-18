@@ -5,6 +5,8 @@
 //   01 GTIN(14) | 91 product value (variable, GS) | 17 best-before yyMMdd | 10 lot (variable) | [GS 92 pack ID (variable)]
 // Raw scanner form: AI digits, GS = \u001d, no "]d2" prefix.
 
+import { computeGS1CheckDigit, randomDigits } from './gs1.js';
+
 export const GS = '\u001d';
 
 /** Product value length in the label. */
@@ -13,8 +15,8 @@ const PRODUCT_VALUE_LENGTH = 7;
 const LOT_LENGTH = 9;
 
 /**
- * Type code of the pack-ID scannable-code part. Stays null until the part type is merged into the
- * worktree; `buildCULabelFormat({withPackId: true})` refuses to build a format before that.
+ * Type code of the pack-ID scannable-code part; null while that part type is not available,
+ * then `buildCULabelFormat({withPackId: true})` throws.
  */
 export const PACK_ID_PART_TYPE = null;
 
@@ -28,22 +30,17 @@ const randomChars = (length, alphabet) => {
     return result;
 };
 
-/** GS1 GTIN-14 check digit over the first 13 digits (weights 3 and 1 counted from the right). */
+/** GS1 GTIN-14 check digit over the first 13 digits. */
 export const computeGTIN14CheckDigit = (first13Digits) => {
     if (!/^\d{13}$/.test(first13Digits)) {
         throw new Error(`computeGTIN14CheckDigit: need 13 digits, got '${first13Digits}'`);
     }
-    let sum = 0;
-    for (let i = 0; i < 13; i++) {
-        const digit = parseInt(first13Digits[12 - i], 10);
-        sum += digit * (i % 2 === 0 ? 3 : 1);
-    }
-    return (10 - (sum % 10)) % 10;
+    return computeGS1CheckDigit(first13Digits);
 };
 
 /** Random 14-digit GTIN with a valid check digit (indicator digit 0). */
 export const uniqueGTIN = () => {
-    const first13 = '0' + randomChars(12, '0123456789');
+    const first13 = '0' + randomDigits(12);
     return `${first13}${computeGTIN14CheckDigit(first13)}`;
 };
 

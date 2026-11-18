@@ -1,4 +1,5 @@
 import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step } from '../../common';
+import { expect } from '@playwright/test';
 import { test } from '../../../../playwright.config';
 import { GetQuantityDialog } from './GetQuantityDialog';
 import { PickingJobScreen } from './PickingJobScreen';
@@ -8,6 +9,11 @@ import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponen
 const NAME = 'PickLineScanScreen';
 
 const containerElement = () => page.locator('#PickLineScanScreen');
+const nextBoxButton = () => page.getByRole('button', { name: /Weitere Kiste|Next box/ });
+const tapNextBox = async () => {
+    await PickLineScanScreen.waitForScreen();
+    await nextBoxButton().tap();
+};
 
 export const PickLineScanScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -33,29 +39,29 @@ export const PickLineScanScreen = {
         }
     }),
 
-    /** CU quantity entry mode of the line, read from the S5 root attribute `data-cu-qty-entry-mode`. */
+    /** Reads the CU quantity entry mode of the line from the screen's `data-cu-qty-entry-mode` attribute (one-shot; assert with expectCUQtyEntryMode). */
     cuQtyEntryMode: async () => await step(`${NAME} - Read CU quantity entry mode`, async () => {
         await PickLineScanScreen.waitForScreen();
         return await containerElement().getAttribute('data-cu-qty-entry-mode');
     }),
 
-    /** Scans one raw CU label on S5 (the label step of the new modes). */
+    /** Asserts (auto-retrying) the CU quantity entry mode of the line. */
+    expectCUQtyEntryMode: async (expected) => await step(`${NAME} - Expect CU quantity entry mode '${expected}'`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await expect(containerElement()).toHaveAttribute('data-cu-qty-entry-mode', expected);
+    }),
+
+    /** Scans one raw CU label on the pick-line scan screen. */
     scanCULabel: async (label) => await step(`${NAME} - Scan CU label`, async () => {
         await PickLineScanScreen.waitForScreen();
         await PickLineScanScreen.typeQRCode(label);
     }),
 
     /** Taps "Weitere Kiste" / "Next box": opens the next TU (box) of the line. */
-    nextBox: async () => await step(`${NAME} - Next box`, async () => {
-        await PickLineScanScreen.waitForScreen();
-        await page.getByRole('button', { name: /Weitere Kiste|Next box/ }).tap();
-    }),
+    nextBox: async () => await step(`${NAME} - Next box`, tapNextBox),
 
     /** Opens box 1 before the first booking of a new-mode line (same tap as nextBox, named for the step). */
-    openBox: async () => await step(`${NAME} - Open box`, async () => {
-        await PickLineScanScreen.waitForScreen();
-        await page.getByRole('button', { name: /Weitere Kiste|Next box/ }).tap();
-    }),
+    openBox: async () => await step(`${NAME} - Open box`, tapNextBox),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await PickLineScanScreen.waitForScreen();
