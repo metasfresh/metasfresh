@@ -171,6 +171,55 @@ public class ReceiptScheduleDocumentLUTUConfigurationHandlerTest
 		assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(otherLUItem.getM_HU_PI_Item_ID());
 	}
 
+	/**
+	 * The schedule's TU packing instruction changed after the configuration was stored; the new TU has no LU item in the stored LU packing instruction.
+	 * The derivation would use the schedule's TU and so could not reach the product-specific LU item => the stored configuration (with its LU) is kept.
+	 */
+	@Test
+	public void keeps_stored_config_when_product_specific_LU_item_is_not_reachable_with_the_schedules_current_TU()
+	{
+		createLUItemOfProduct(piLU, productId, "4"); // product-specific item for the stored config's TU
+		final I_M_HU_PI_Item_Product otherTUItemProduct = createOtherTUItemProduct();
+		receiptSchedule.setM_HU_PI_Item_Product_ID(otherTUItemProduct.getM_HU_PI_Item_Product_ID());
+		save(receiptSchedule);
+
+		assertThat(handler.getCurrentLUTUConfigurationOrNull(receiptSchedule)).isNotNull()
+				.extracting(I_M_HU_LUTU_Configuration::getM_HU_LUTU_Configuration_ID)
+				.isEqualTo(storedConfig.getM_HU_LUTU_Configuration_ID());
+	}
+
+	/**
+	 * The schedule's TU packing instruction changed after the configuration was stored; the new TU has a product-specific LU item in the stored LU packing instruction.
+	 * The check uses the TU the derivation uses => stale, and the derived configuration is on that product-specific item, in the stored LU packing instruction.
+	 */
+	@Test
+	public void drops_stored_config_when_product_specific_LU_item_is_reachable_with_the_schedules_current_TU()
+	{
+		final I_M_HU_PI_Item_Product otherTUItemProduct = createOtherTUItemProduct();
+		final I_M_HU_PI otherTU = otherTUItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+		huTestHelper.createHU_PI_Item_IncludedHU(piLU, otherTU, new BigDecimal("6")); // generic item for the other TU
+		final I_M_HU_PI_Item otherTUItemOfProduct = huTestHelper.createHU_PI_Item_IncludedHU(piLU, otherTU, new BigDecimal("8"));
+		otherTUItemOfProduct.setM_Product_ID(productId.getRepoId());
+		save(otherTUItemOfProduct);
+
+		receiptSchedule.setM_HU_PI_Item_Product_ID(otherTUItemProduct.getM_HU_PI_Item_Product_ID());
+		save(receiptSchedule);
+
+		assertThat(handler.getCurrentLUTUConfigurationOrNull(receiptSchedule)).isNull();
+
+		final I_M_HU_LUTU_Configuration newConfig = handler.createNewLUTUConfiguration(receiptSchedule);
+		assertThat(newConfig.getM_HU_PI_Item_Product_ID()).isEqualTo(otherTUItemProduct.getM_HU_PI_Item_Product_ID());
+		assertThat(newConfig.getM_LU_HU_PI_ID()).isEqualTo(piLU.getM_HU_PI_ID());
+		assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(otherTUItemOfProduct.getM_HU_PI_Item_ID());
+	}
+
+	private I_M_HU_PI_Item_Product createOtherTUItemProduct()
+	{
+		final I_M_HU_PI otherTU = huTestHelper.createHUDefinition("otherTU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		final I_M_HU_PI_Item otherTUMaterialItem = huTestHelper.createHU_PI_Item_Material(otherTU);
+		return huTestHelper.assignProduct(otherTUMaterialItem, productId, new BigDecimal("5"), productUOM);
+	}
+
 	private I_M_HU_PI_Item createLUItemOfProduct(final I_M_HU_PI lu, final ProductId itemProductId, final String qtyTUs)
 	{
 		final I_M_HU_PI_Item item = huTestHelper.createHU_PI_Item_IncludedHU(lu, piTU, new BigDecimal(qtyTUs));

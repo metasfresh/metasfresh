@@ -279,6 +279,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	@Nullable
 	public HuPackingInstructionsId getLUPIIdSupersededByProductSpecificLUItem(
 			@Nullable final I_M_HU_LUTU_Configuration storedLUTUConfiguration,
+			@Nullable final HUPIItemProductId tuPIItemProductId,
 			@NonNull final ProductId productId,
 			@Nullable final BPartnerId bpartnerId)
 	{
@@ -288,7 +289,6 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 
 		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(storedLUTUConfiguration.getM_LU_HU_PI_ID());
-		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(storedLUTUConfiguration.getM_HU_PI_Item_Product_ID());
 		if (luPIId == null || tuPIItemProductId == null || storedLUTUConfiguration.getM_LU_HU_PI_Item_ID() <= 0)
 		{
 			return null;

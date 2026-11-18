@@ -119,13 +119,19 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	/**
 	 * A stored LU/TU configuration is stale if it uses a generic LU->TU item although the product has an LU->TU item of its own in the same LU packing instruction.
 	 * The caller then derives a new configuration instead of reusing the stored one, and keeps the stored LU packing instruction for it.
+	 * <p>
+	 * The check looks for the item that the derivation would pick in the stored LU packing instruction, so the parameters have to be the ones the caller derives with;
+	 * otherwise the check could find a product-specific item that the derivation cannot reach, and the derived configuration would silently lose its LU.
+	 * A user-chosen generic LU item is replaced as well; the product-specific item wins.
 	 *
-	 * @param bpartnerId the partner the caller derives the new configuration for; it has to be the same one that is used for the derivation, so that this check and the derivation cannot disagree
+	 * @param tuPIItemProductId the TU packing instruction (item product) the caller derives the new configuration with; not necessarily the stored configuration's one
+	 * @param bpartnerId        the partner the caller derives the new configuration for
 	 * @return the stored configuration's LU packing instruction if it is superseded by a product-specific LU item; {@code null} otherwise
 	 */
 	@Nullable
 	HuPackingInstructionsId getLUPIIdSupersededByProductSpecificLUItem(
 			@Nullable I_M_HU_LUTU_Configuration storedLUTUConfiguration,
+			@Nullable HUPIItemProductId tuPIItemProductId,
 			@NonNull ProductId productId,
 			@Nullable BPartnerId bpartnerId);
 

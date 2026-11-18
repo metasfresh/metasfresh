@@ -2,6 +2,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -16,6 +17,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import javax.annotation.Nullable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
@@ -58,6 +60,8 @@ import java.util.Properties;
 {
 	public static final transient PPOrderDocumentLUTUConfigurationHandler instance = new PPOrderDocumentLUTUConfigurationHandler();
 
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
 	private PPOrderDocumentLUTUConfigurationHandler()
 	{
 		super();
@@ -73,14 +77,13 @@ import java.util.Properties;
 
 		//
 		// LU/TU COnfiguration
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
 				cuUOMId,
 				bpartnerId,
 				true, // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
-				lutuConfigurationFactory.getLUPIIdSupersededByProductSpecificLUItem(ppOrder.getM_HU_LUTU_Configuration(), cuProductId, bpartnerId), // stay on the stored LU packing instruction
+				getLUPIIdSupersededByProductSpecificLUItem(ppOrder, tuPIItemProduct), // stay on the stored LU packing instruction
 				BigDecimal.ZERO);
 
 		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();
@@ -189,11 +192,25 @@ import java.util.Properties;
 			return null;
 		}
 
-		if (Services.get(ILUTUConfigurationFactory.class).getLUPIIdSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID()), BPartnerId.ofRepoIdOrNull(documentLine.getC_BPartner_ID())) != null)
+		if (getLUPIIdSupersededByProductSpecificLUItem(documentLine, getM_HU_PI_Item_Product(documentLine)) != null)
 		{
 			return null; // a new configuration is derived, which uses the product-specific LU item
 		}
 
 		return lutuConfiguration;
+	}
+
+	/**
+	 * Checks the stored configuration with the TU packing instruction, product and partner that {@link #createNewLUTUConfiguration(I_PP_Order)} derives with.
+	 *
+	 * @param tuPIItemProduct the TU packing instruction the new configuration is derived with, see {@link #getM_HU_PI_Item_Product(I_PP_Order)}
+	 */
+	@Nullable
+	private HuPackingInstructionsId getLUPIIdSupersededByProductSpecificLUItem(@NonNull final I_PP_Order ppOrder, @NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
+	{
+		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+		return lutuConfigurationFactory.getLUPIIdSupersededByProductSpecificLUItem(ppOrder.getM_HU_LUTU_Configuration(), tuPIItemProductId, productId, bpartnerId);
 	}
 }
