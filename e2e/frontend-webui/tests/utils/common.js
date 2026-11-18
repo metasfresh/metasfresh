@@ -80,7 +80,6 @@ export const expectErrorToast = async (title, func) =>
     }
   });
 
-
 /**
  * True only for a deliberate evidence-capture run (`UAT_CAPTURE=1 npx playwright test ...`).
  * Unset in normal and CI runs.
