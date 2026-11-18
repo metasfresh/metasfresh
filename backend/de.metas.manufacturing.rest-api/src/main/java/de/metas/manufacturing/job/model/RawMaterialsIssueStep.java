@@ -42,6 +42,11 @@ public class RawMaterialsIssueStep
 	@With
 	boolean isAllowEmptying;
 
+	// Whether the issue-from HU is a free-standing, top-level HU (not a TU nested on a pallet/LU). Only a
+	// top-level HU is an independent issue source the operator may engage as an alternative to the FEFO
+	// default; a nested TU stays a locked placeholder on this line (it is issued/emptied via its pallet).
+	boolean isIssueFromTopLevelHU;
+
 	public boolean isIssued()
 	{
 		return issued != null;
