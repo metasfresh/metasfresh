@@ -71,9 +71,9 @@ class CandidateSelectionTest
 
 			assertThat(positionSelections).extracting(PositionSelection::getPositionId).containsExactly(POSITION_B, null, POSITION_A);
 			assertThat(positionSelections).extracting(positionSelection -> positionSelection.getCandidates().getLineIds()).containsExactly(
-					ImmutableList.of(OrderLineId.ofRepoId(1), OrderLineId.ofRepoId(4)),
-					ImmutableList.of(OrderLineId.ofRepoId(2), OrderLineId.ofRepoId(5)),
-					ImmutableList.of(OrderLineId.ofRepoId(3)));
+					ImmutableSet.of(OrderLineId.ofRepoId(1), OrderLineId.ofRepoId(4)),
+					ImmutableSet.of(OrderLineId.ofRepoId(2), OrderLineId.ofRepoId(5)),
+					ImmutableSet.of(OrderLineId.ofRepoId(3)));
 		}
 
 		@Test

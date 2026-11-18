@@ -45,11 +45,11 @@ class CandidateSelection
 		return lines.isEmpty();
 	}
 
-	ImmutableList<OrderLineId> getLineIds()
+	ImmutableSet<OrderLineId> getLineIds()
 	{
 		return lines.stream()
 				.map(CandidateLine::getLineId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/** @return the schema bases that at least one of the lines falls into */
