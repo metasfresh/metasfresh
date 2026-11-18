@@ -5,6 +5,7 @@ import {
   ATTR_isTUToBePickedAsWhole,
   ATTR_isUnique,
   ATTR_lotNo,
+  ATTR_packId,
   ATTR_productionDate,
   ATTR_productNo,
   ATTR_weightNet,
@@ -102,6 +103,10 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     case 'LOT':
       return {
         [ATTR_lotNo]: trimLeadingZeros(valueStr.trim()),
+      };
+    case 'PACK_ID':
+      return {
+        [ATTR_packId]: valueStr,
       };
     case 'BEST_BEFORE_DATE':
       return {
