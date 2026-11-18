@@ -22,6 +22,8 @@ const containerElement = () => page.locator('#WFProcessScreen');
 const ACTIVITY_ID_ScanPickFromHU = 'scanPickFromHU'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickFromHU
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
 
+const PICKING_XHR = /\/picking\//;
+
 let pickEvents = [];
 let pickEventsListener = null;
 
@@ -57,6 +59,10 @@ export const PickingJobScreen = {
     expectPickPostedWithHUQRCode: async ({ huQRCode, expectedCount = 1 }) => await step(`${NAME} - Expect ${expectedCount} PICK event(s) with huQRCode ${huQRCode}`, async () => {
         try {
             await expect.poll(() => pickEvents.length, { timeout: SLOW_ACTION_TIMEOUT }).toBe(expectedCount);
+            // Reaching the count is not enough: a late extra PICK (e.g. from a re-mounted screen) would come after.
+            // Wait until every picking XHR has been handled by the app and the page has painted, then re-check.
+            await waitForNoInFlightXhr(page, { urlPattern: PICKING_XHR, timeout: SLOW_ACTION_TIMEOUT });
+            expect(pickEvents).toHaveLength(expectedCount);
             for (const pickEvent of pickEvents) {
                 expect(pickEvent).toMatchObject({ type: 'PICK', huQRCode });
             }

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { render, screen, waitFor } from '@testing-library/react';
 import { useQuery } from '../../hooks/useQuery';
 
@@ -11,6 +12,12 @@ const Probe = ({ queryFn, enabled, renders }) => {
   const { isPending } = useQuery({ queryFn, enabled });
   renders.push(isPending);
   return <div data-testid="state">{isPending ? 'pending' : 'idle'}</div>;
+};
+
+Probe.propTypes = {
+  queryFn: PropTypes.func.isRequired,
+  enabled: PropTypes.bool,
+  renders: PropTypes.array.isRequired,
 };
 
 describe('useQuery initial pending state', () => {
