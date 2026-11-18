@@ -254,6 +254,23 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	/**
+	 * Runs the given document action on the invoice through the document engine and checks the resulting doc status.
+	 * Unlike {@code the invoice identified by ... is (completed|reversed|voided)}, the action and the expected status are free,
+	 * so it can pin e.g. that {@code VO} on a completed invoice ends in {@code RE}.
+	 * <p>
+	 * Example: {@code And the invoice identified by invoice is processed with DocAction VO expecting DocStatus RE}
+	 */
+	@And("^the invoice identified by (.*) is processed with DocAction (\\w+) expecting DocStatus (\\w+)$")
+	public void invoice_processed_with_docAction(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String docAction,
+			@NonNull final String expectedDocStatus)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		documentBL.processEx(invoice, docAction, expectedDocStatus);
+	}
+
 	@And("^the reversal of invoice (.*) is identified by (.*)$")
 	public void identify_reversal_invoice(
 			@NonNull final String invoiceIdentifier,
@@ -265,6 +282,32 @@ public class C_Invoice_StepDef
 		Check.assume(reversalId > 0, "Invoice {} must have a reversal", invoiceIdentifier);
 		final I_C_Invoice reversal = InterfaceWrapperHelper.load(reversalId, I_C_Invoice.class);
 		invoiceTable.putOrReplace(StepDefDataIdentifier.ofString(reversalIdentifier), reversal);
+	}
+
+	/**
+	 * Stores the ID and the document number of an already identified invoice in the {@link TestContext}, so that API requests can reference them as
+	 * {@code @idVariable@} and {@code @documentNoVariable@}. Needed for an invoice that no step can find by its invoice candidate, e.g. a reversal:
+	 * it and its original both end as {@code RE} and share the same invoice candidates.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   none (inline arguments: the invoice identifier, the ID variable name, the document-number variable name)
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData; for a reversal, step {@code the reversal of invoice ... is identified by ...} first
+	 * @cucumber.example
+	 * <pre>
+	 * And the reversal of invoice invoice is identified by reversal
+	 * And the ID and document number of invoice reversal are stored in the REST context as reversalInvoiceID and reversalDocNo
+	 * </pre>
+	 */
+	@And("^the ID and document number of invoice (.*) are stored in the REST context as (.*) and (.*)$")
+	public void store_invoice_in_rest_context(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String idVariableName,
+			@NonNull final String documentNoVariableName)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		restTestContext.setVariable(idVariableName, invoice.getC_Invoice_ID());
+		restTestContext.setVariable(documentNoVariableName, invoice.getDocumentNo());
 	}
 
 	@And("load C_Invoice:")

@@ -116,7 +116,7 @@ public class CostRevaluationDocActionOptionsCustomizerTest
 
 	/**
 	 * Input actions of a completed document: besides Re-Activate and Close also Reverse-Correct and Reverse-Accrual,
-	 * so the tests pin that Storno is never offered, even if the defaults offer it.
+	 * so the tests pin that Annullieren (Void, VO) is never offered, even if the defaults offer it.
 	 */
 	private static final ImmutableSet<String> COMPLETED_INPUT_ACTIONS = ImmutableSet.of(
 			IDocument.ACTION_ReActivate,

@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
@@ -46,6 +47,13 @@ import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.document.DocTypeId;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocuments;
+import de.metas.document.references.related_documents.RelatedDocumentsEvaluationContext;
+import de.metas.document.references.related_documents.RelatedDocumentsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.invoice.InvoiceId;
@@ -70,11 +78,14 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.PInstanceId;
 import de.metas.project.ProjectId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -83,6 +94,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -116,6 +128,8 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -181,6 +195,8 @@ public class C_Invoice_Candidate_StepDef
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -850,10 +866,10 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
-	private static final String INVOICING_PROCESS_ROLE_NAME = "WebUI";
-
 	/** Summary returned by the last invoicing-process run. */
 	private String lastInvoicingRunSummary;
+	/** Whether the last invoicing-process run ended in error. */
+	private boolean lastInvoicingRunWasError;
 
 	/**
 	 * Runs the {@code C_Invoice_Candidate_EnqueueSelectionForInvoicing} AD_Process and keeps its summary.
@@ -870,34 +886,192 @@ public class C_Invoice_Candidate_StepDef
 				.as("the invoicing run must not fail; summary=" + result.getSummary())
 				.isFalse();
 
+		recordInvoicingRun(result, "invoice candidates");
+	}
+
+	private void recordInvoicingRun(@NonNull final ProcessExecutionResult result, @NonNull final String label)
+	{
+		lastInvoicingRunWasError = result.isError();
 		lastInvoicingRunSummary = result.getSummary();
-		logger.info("Invoicing run summary: {}", lastInvoicingRunSummary);
+		logger.info("INVOICING RUN FOR {}: isError={}, summary={}", label, lastInvoicingRunWasError, lastInvoicingRunSummary);
 	}
 
 	private ProcessExecutionResult executeInvoicingProcess(@NonNull final DataTable dataTable)
 	{
-		final List<Integer> invoiceCandidateIds = new ArrayList<>();
-		DataTableRows.of(dataTable).forEach(row -> row
-				.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
-				.toCommaSeparatedList()
-				.forEach(identifier -> invoiceCandidateIds.add(invoiceCandTable.getId(identifier).getRepoId())));
+		return executeInvoicingProcess(extractInvoiceCandidateIds(dataTable));
+	}
 
-		Check.assumeNotEmpty(invoiceCandidateIds, "at least one C_Invoice_Candidate_ID.Identifier is required");
+	/** The invoice candidates of the {@code C_Invoice_Candidate_ID} column (comma-separated identifiers allowed) of all rows. */
+	private Set<InvoiceCandidateId> extractInvoiceCandidateIds(@NonNull final DataTable dataTable)
+	{
+		final List<StepDefDataIdentifier> identifiers = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> identifiers.addAll(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).toCommaSeparatedList()));
+		return invoiceCandTable.getIds(identifiers);
+	}
+
+	/**
+	 * The "related documents" entries of the shipment that open {@code C_Invoice_Candidate}s, as the WebUI shows them:
+	 * the backend publishes every reference (no "seen window" tracking), the frontend merges references with the same
+	 * key (target window + category) and keeps the one with the higher priority
+	 * (see {@code DocumentReferencesRestController#evaluateAndPublishNow} and {@code frontend/src/utils/documentReferencesHelper.js}).
+	 * Evaluated with the permissions of the WebUI user's role, like the WebUI does: the role's access SQL is added to the
+	 * related-documents query, so a target where clause the access-SQL parser cannot handle fails here as it fails in the WebUI.
+	 */
+	private Map<RelatedDocumentsTargetWindow, RelatedDocuments> retrieveInvoiceCandidateEntriesOpenedFromShipment(@NonNull final String shipmentIdentifier)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.ofRolePermissions(retrieveWebUIUserRolePermissions());
+		final RelatedDocumentsEvaluationContext context = RelatedDocumentsEvaluationContext.builder()
+				.permissions(permissions)
+				.doNotTrackSeenWindows(true)
+				.build();
+
+		final Map<RelatedDocumentsTargetWindow, RelatedDocuments> entriesByKey = new LinkedHashMap<>();
+		relatedDocumentsFactory
+				.getRelatedDocumentsCandidates(POZoomSource.of(InterfaceWrapperHelper.getPO(shipment)), permissions)
+				.stream()
+				.flatMap(candidateGroup -> candidateGroup.evaluateAndStream(context))
+				.filter(relatedDocuments -> I_C_Invoice_Candidate.Table_Name.equals(relatedDocuments.getQuery().getZoomTableName()))
+				.forEach(relatedDocuments -> entriesByKey.merge(
+						relatedDocuments.getTargetWindow(),
+						relatedDocuments,
+						(existing, toAdd) -> toAdd.getPriority().isHigherThan(existing.getPriority()) ? toAdd : existing));
+		return entriesByKey;
+	}
+
+	/** Permissions of the user {@code metasfresh} with the role {@code WebUI} (the user and role the WebUI logs in with). */
+	private IUserRolePermissions retrieveWebUIUserRolePermissions()
+	{
+		return userRolePermissionsDAO.getUserRolePermissions(RoleId.WEBUI, UserId.METASFRESH, StepDefConstants.CLIENT_ID, SystemTime.asLocalDate());
+	}
+
+	/** The invoice candidates the user sees in the "related documents" entries of the shipment. */
+	private Set<InvoiceCandidateId> retrieveInvoiceCandidateIdsOpenedFromShipment(@NonNull final String shipmentIdentifier)
+	{
+		return retrieveInvoiceCandidateEntriesOpenedFromShipment(shipmentIdentifier)
+				.values()
+				.stream()
+				.flatMap(relatedDocuments -> getInvoiceCandidateIds(relatedDocuments).stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** The invoice candidates a "related documents" entry opens, i.e. those matching its target where clause. */
+	private ImmutableList<InvoiceCandidateId> getInvoiceCandidateIds(@NonNull final RelatedDocuments relatedDocuments)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.filter(TypedSqlQueryFilter.<I_C_Invoice_Candidate>of(relatedDocuments.getQuery().getWhereClause()))
+				.create()
+				.listIds(InvoiceCandidateId::ofRepoId);
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that the invoice candidates the WebUI lists in the shipment's "related documents"
+	 * (after the frontend merge of entries with the same target window and category) are exactly the given ones.
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref, comma-separated list allowed) the expected invoice candidates<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_Invoice_Candidate_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the related invoice candidates of shipment "shipment1" are:
+	 *   | C_Invoice_Candidate_ID |
+	 *   | ic_G1, ic_G2           |
+	 * </pre>
+	 */
+	@Then("the related invoice candidates of shipment {string} are:")
+	public void related_invoice_candidates_of_shipment_are(@NonNull final String shipmentIdentifier, @NonNull final DataTable dataTable)
+	{
+		assertThat(retrieveInvoiceCandidateIdsOpenedFromShipment(shipmentIdentifier))
+				.as("C_Invoice_Candidates listed in the related documents of shipment " + shipmentIdentifier)
+				.containsExactlyInAnyOrderElementsOf(extractInvoiceCandidateIds(dataTable));
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts how many related-documents entries (distinct target window + category, after the
+	 * frontend merge) open invoice candidates for the shipment.
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then shipment "shipment1" has 1 related documents entry to the invoice candidates
+	 * </pre>
+	 */
+	@Then("shipment {string} has {int} related documents entry/entries to the invoice candidates")
+	public void shipment_has_n_related_documents_entries_to_invoice_candidates(@NonNull final String shipmentIdentifier, final int expectedCount)
+	{
+		assertThat(retrieveInvoiceCandidateEntriesOpenedFromShipment(shipmentIdentifier))
+				.as("related documents entries to C_Invoice_Candidate of shipment " + shipmentIdentifier)
+				.hasSize(expectedCount);
+	}
+
+	/**
+	 * @cucumber.stepdef Invoices all invoice candidates the user gets when opening the shipment's "related documents"
+	 * entry to the invoice candidates, and records the outcome (asserts nothing).
+	 * Follow with {@code the invoicing run failed} / {@code the invoicing run succeeded}.
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When run the invoicing process for the invoice candidates opened from the shipment "shipment1"
+	 * </pre>
+	 */
+	@When("run the invoicing process for the invoice candidates opened from the shipment {string}")
+	public void run_invoicing_process_for_shipment_candidates(@NonNull final String shipmentIdentifier)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(retrieveInvoiceCandidateIdsOpenedFromShipment(shipmentIdentifier));
+		recordInvoicingRun(result, "shipment " + shipmentIdentifier);
+	}
+
+	/**
+	 * @cucumber.stepdef Invoices only the invoice candidates the user ticks (partial selection) and records the outcome, asserts nothing.
+	 * Follow with {@code the invoicing run failed} / {@code the invoicing run succeeded}.
+	 * @cucumber.depends StepDefData: C_Invoice_Candidate_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When run the invoicing process for the invoice candidates "ic_G1, ic_bonus"
+	 * </pre>
+	 */
+	@When("run the invoicing process for the invoice candidates {string}")
+	public void run_invoicing_process_for_invoice_candidates(@NonNull final String invoiceCandidateIdentifiers)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(invoiceCandTable.getIds(StepDefDataIdentifier.ofCommaSeparatedString(invoiceCandidateIdentifiers)));
+		recordInvoicingRun(result, invoiceCandidateIdentifiers);
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that the last invoicing-process run (started by one of the {@code run the invoicing process ...} steps) ended in error.
+	 * @cucumber.depends Step: a preceding {@code run the invoicing process for ...} step
+	 * @cucumber.example
+	 * <pre>
+	 * Then the invoicing run failed
+	 * </pre>
+	 */
+	@Then("the invoicing run failed")
+	public void invoicing_run_failed()
+	{
+		assertThat(lastInvoicingRunWasError).as("invoicing run isError; summary=" + lastInvoicingRunSummary).isTrue();
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that the last invoicing-process run (started by one of the {@code run the invoicing process ...} steps) ended without error.
+	 * @cucumber.depends Step: a preceding {@code run the invoicing process for ...} step
+	 * @cucumber.example
+	 * <pre>
+	 * Then the invoicing run succeeded
+	 * </pre>
+	 */
+	@Then("the invoicing run succeeded")
+	public void invoicing_run_succeeded()
+	{
+		assertThat(lastInvoicingRunWasError).as("invoicing run isError; summary=" + lastInvoicingRunSummary).isFalse();
+	}
+
+	private ProcessExecutionResult executeInvoicingProcess(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		Check.assumeNotEmpty(invoiceCandidateIds, "at least one C_Invoice_Candidate_ID is required");
 
 		final AdProcessId processId = Services.get(IADProcessDAO.class)
 				.retrieveProcessIdByValue("C_Invoice_Candidate_EnqueueSelectionForInvoicing");
 		assertThat(processId).as("AD_Process C_Invoice_Candidate_EnqueueSelectionForInvoicing must exist").isNotNull();
 
-		final StringBuilder idList = new StringBuilder();
-		for (final Integer id : invoiceCandidateIds)
-		{
-			if (idList.length() > 0)
-			{
-				idList.append(",");
-			}
-			idList.append(id);
-		}
-		final String whereClause = COLUMNNAME_C_Invoice_Candidate_ID + " IN (" + idList + ")";
+		final String whereClause = COLUMNNAME_C_Invoice_Candidate_ID + " IN (" + RepoIdAwares.toCommaSeparatedString(invoiceCandidateIds) + ")";
 
 		final ProcessExecutionResult result;
 		try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
@@ -935,14 +1109,11 @@ public class C_Invoice_Candidate_StepDef
 	 */
 	private Properties createInvoicingProcessCtx()
 	{
-		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
-		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, INVOICING_PROCESS_ROLE_NAME);
-
 		final Properties processCtx = Env.copyCtx(Env.getCtx());
 		Env.setClientId(processCtx, StepDefConstants.CLIENT_ID);
 		Env.setOrgId(processCtx, StepDefConstants.ORG_ID);
-		Env.setLoggedUserId(processCtx, userId);
-		Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+		Env.setLoggedUserId(processCtx, UserId.METASFRESH);
+		Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.WEBUI.getRepoId());
 
 		return processCtx;
 	}

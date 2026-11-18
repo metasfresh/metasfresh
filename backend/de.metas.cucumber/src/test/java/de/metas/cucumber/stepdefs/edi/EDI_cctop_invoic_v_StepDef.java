@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
@@ -49,9 +50,12 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -61,6 +65,9 @@ import org.w3c.dom.NodeList;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,12 +92,15 @@ public class EDI_cctop_invoic_v_StepDef
 	private static final String TAGNAME_LINE = "Line";
 	private static final String TAGNAME_VALUE = "Value";
 	private static final String TAGNAME_QTY_INVOICED = "QtyInvoiced";
+	private static final String TAGNAME_LINE_NET_AMT = "LineNetAmt";
+	private static final String TAGNAME_EDI_CCTOP_INVOIC_500_V_ID = "edi_cctop_invoic_500_v_id";
 
 	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final EDI_Desadv_StepDefData desadvTable;
 	private final M_Product_StepDefData productTable;
 	private final TestContext testContext;
@@ -98,12 +108,14 @@ public class EDI_cctop_invoic_v_StepDef
 	public EDI_cctop_invoic_v_StepDef(
 			@NonNull final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
 			@NonNull final EDI_Desadv_StepDefData desadvTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final TestContext testContext)
 	{
 		this.cctopInvoiceTable = cctopInvoiceTable;
 		this.invoiceTable = invoiceTable;
+		this.invoiceLineTable = invoiceLineTable;
 		this.desadvTable = desadvTable;
 		this.productTable = productTable;
 		this.testContext = testContext;
@@ -186,6 +198,66 @@ public class EDI_cctop_invoic_v_StepDef
 
 		assertThat(actualLines).as("EDI_cctop_invoic_500_v line items (Line|Value|QtyInvoiced) of %s", invoicIdentifier)
 				.containsExactlyInAnyOrderElementsOf(expectedLines);
+	}
+
+	/**
+	 * Asserts the complete set of {@code edi_cctop_invoic_500_v} rows of an invoice (the database view, not an exported document):
+	 * no row more, none less, in any order.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>edi_cctop_invoic_500_v_id</b> — (required, identifier-ref) the C_InvoiceLine the row belongs to; the view's id is min(C_InvoiceLine_ID) of a grouped row, so for a grouped row give the lowest invoice line's identifier<br>
+	 *   <b>Line</b> — (required) the row's {@code line}<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) product; compared with the row's {@code value}<br>
+	 *   <b>QtyInvoiced</b> — (required) the row's {@code qtyinvoiced}<br>
+	 *   <b>LineNetAmt</b> — (required) the row's {@code linenetamt}<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, C_InvoiceLine_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the edi_cctop_invoic_500_v rows of invoice invoice_1 are exactly:
+	 *   | edi_cctop_invoic_500_v_id | Line | M_Product_ID | QtyInvoiced | LineNetAmt |
+	 *   | invoiceLine_1             | 10   | goods        | 20          | 200        |
+	 * </pre>
+	 */
+	@And("^the edi_cctop_invoic_500_v rows of invoice (.*) are exactly:$")
+	public void validate_edi_cctop_invoic_500_v_rows_of_invoice(@NonNull final String invoiceIdentifier, @NonNull final DataTable dataTable)
+	{
+		final int invoiceId = invoiceTable.get(invoiceIdentifier).getC_Invoice_ID();
+
+		final String sql = "SELECT edi_cctop_invoic_500_v_id, line, value, qtyinvoiced, linenetamt FROM edi_cctop_invoic_500_v WHERE c_invoice_id = ?";
+		final List<String> actualRows = new ArrayList<>();
+		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
+		{
+			pstmt.setInt(1, invoiceId);
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				while (rs.next())
+				{
+					actualRows.add(viewRowKey(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getBigDecimal(4), rs.getBigDecimal(5)));
+				}
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed to query edi_cctop_invoic_500_v for C_Invoice_ID=" + invoiceId, e);
+		}
+
+		final List<String> expectedRows = DataTableRows.of(dataTable).stream()
+				.map(row -> viewRowKey(
+						row.getAsIdentifier(TAGNAME_EDI_CCTOP_INVOIC_500_V_ID).lookupNotNullIn(invoiceLineTable).getC_InvoiceLine_ID(),
+						row.getAsInt(TAGNAME_LINE),
+						row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable).getValue(),
+						row.getAsBigDecimal(TAGNAME_QTY_INVOICED),
+						row.getAsBigDecimal(TAGNAME_LINE_NET_AMT)))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actualRows).as("edi_cctop_invoic_500_v rows (id|line|value|qtyinvoiced|linenetamt) of invoice %s", invoiceIdentifier)
+				.containsExactlyInAnyOrderElementsOf(expectedRows);
+	}
+
+	private static String viewRowKey(final int invoiceLineId, final int line, @NonNull final String productValue, @NonNull final BigDecimal qtyInvoiced, @NonNull final BigDecimal lineNetAmt)
+	{
+		return invoiceLineId + "|" + line + "|" + productValue + "|" + qtyInvoiced.stripTrailingZeros().toPlainString() + "|" + lineNetAmt.stripTrailingZeros().toPlainString();
 	}
 
 	private static String lineKey(@NonNull final String line, @NonNull final String productValue, @NonNull final BigDecimal qtyInvoiced)
