@@ -890,9 +890,10 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       // (the view sorts by the order column as the list shows it, i.e. by the order's document number, descending: a purchase
       // order has its own number sequence, so its group sorts by that number, not by the order id. All digit-only captions are
       // compared with each other, across lengths and number sequences (e.g. purchase '820471' above sales '0050', '9999' above
-      // '10000'); see expectDigitOnlyOrderNosDescending for why that is the database's order and which captions are left out)
+      // '10000'), and captions with other characters with those of the same shape; see expectOrderNosDescending for why that
+      // is the database's order and which pairs are left out)
       const orderNos = unfiltered.rows.map((row) => String(row.fieldsByName.C_Order_ID?.value?.caption));
-      expectDigitOnlyOrderNosDescending(orderNos);
+      expectOrderNosDescending(orderNos);
       // the two sales orders of this test get consecutive numbers of the same zero-padded sequence: order X + 1 (created
       // after order X) gets the later number of the same length, so its group is listed above the group of order X (all rows
       // of the view are read, so the position does not depend on how many other groups exist)
@@ -1911,11 +1912,16 @@ async function fillDateIfChanged(page, scope, fieldName, date) {
  * `SELECT ol.<column>`, not by this check.)
  */
 function expectValuesEqualOrderLines(groupLines, orderLines, columns = ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS) {
+  expect(groupLines.length, 'the group has order lines to compare').toBeGreaterThan(0);
+  expect(columns.length, 'columns to compare').toBeGreaterThan(0);
   for (const line of groupLines) {
     const orderLine = orderLines.find((row) => String(row.rowId) === String(line.rowId));
     expect(orderLine, `the same C_OrderLine (${line.rowId}) in the order window`).toBeTruthy();
     for (const column of columns) {
-      expect(line.fieldsByName[column].value, `order line ${line.rowId}: value of ${column} equals the order window's`).toEqual(orderLine.fieldsByName[column]?.value);
+      // both rows must carry the column, else a missing column on both sides would compare undefined with undefined and pass
+      expect(line.fieldsByName[column], `order line ${line.rowId}: group row carries ${column}`).toBeTruthy();
+      expect(orderLine.fieldsByName[column], `order line ${line.rowId}: order window row carries ${column}`).toBeTruthy();
+      expect(line.fieldsByName[column].value, `order line ${line.rowId}: value of ${column} equals the order window's`).toEqual(orderLine.fieldsByName[column].value);
     }
   }
 }
@@ -2017,17 +2023,29 @@ test.describe('Order compensation group window: window health', () => {
  * order, are in the order the database gives for `ORDER BY C_Order.DocumentNo DESC`.
  * - All captions made of digits only are compared with each other, across lengths and number sequences. For such strings
  *   the database's libc collation orders character by character, as the JS compare below does (e.g. '9999' above '10000',
- *   purchase '820471' above sales '0050'). Within one number sequence a later number is also a later order id, so only
- *   the pairs across sequences tell "sorted by document number" from "sorted by C_Order_ID"; those pairs are kept.
- * - Captions with any other character are left out: the libc collation (de_DE.UTF-8) ignores punctuation at its first
- *   level and is case-insensitive there, so a JS compare would not be the database's order for them (a narrowing for
- *   soundness only; the test's own orders are checked to be digit-only, so they are always in the compared set).
+ *   purchase '820471' above sales '0050'). Within one number sequence and one length a later number is also a later order
+ *   id, so only the pairs across sequences or across lengths (a digit rollover, '9999' / '10000') tell "sorted by document
+ *   number" from "sorted by C_Order_ID"; those pairs are kept.
+ * - Captions with any other character are compared with the others of the same shape (digits masked: 'SO-0012' and
+ *   'SO-0047' are both 'SO-0000'): same length, same non-digit characters at the same places, so the libc collation, which
+ *   ignores punctuation at its first level and is case-insensitive there, decides by the first differing digit, as the JS
+ *   compare does. Only pairs of different shapes (or a non-digit caption against a digit-only one) are left out: for them
+ *   a JS compare is not the database's order (de_DE.UTF-8: 'A-2' sorts between 'A1' and 'a3').
+ * The test's own orders are checked to be digit-only, so they are always in the compared set.
  */
-function expectDigitOnlyOrderNosDescending(orderNos) {
+function expectOrderNosDescending(orderNos) {
+  const descending = (a, b) => (a < b ? 1 : a > b ? -1 : 0);
   const digitOnlyOrderNos = orderNos.filter((caption) => /^\d+$/.test(caption));
   expect(digitOnlyOrderNos.length, 'at least the test orders have digit-only document numbers').toBeGreaterThanOrEqual(2);
-  expect(digitOnlyOrderNos, 'digit-only order document numbers, all lengths together: descending').toEqual(
-    [...digitOnlyOrderNos].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
+  expect(digitOnlyOrderNos, 'digit-only order document numbers, all lengths together: descending').toEqual([...digitOnlyOrderNos].sort(descending));
+  const otherOrderNosByShape = new Map();
+  for (const caption of orderNos.filter((c) => !/^\d+$/.test(c))) {
+    const shape = caption.replace(/\d/g, '0');
+    otherOrderNosByShape.set(shape, [...(otherOrderNosByShape.get(shape) ?? []), caption]);
+  }
+  for (const [shape, sameShape] of otherOrderNosByShape) {
+    expect(sameShape, `order document numbers of shape '${shape}': descending`).toEqual([...sameShape].sort(descending));
+  }
 }
 
 // (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
