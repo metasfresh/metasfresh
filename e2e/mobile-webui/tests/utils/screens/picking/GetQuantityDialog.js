@@ -49,6 +49,10 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
     }),
 
+    typeQty: async (qty) => await test.step(`${NAME} - Type qty '${qty}'`, async () => {
+        await page.locator('#qty-input').fill(`${qty}`);
+    }),
+
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
         const field = page.getByTestId('lotNo');
         await clickAndType(field, lotNo);

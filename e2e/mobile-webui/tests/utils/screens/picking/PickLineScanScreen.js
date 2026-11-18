@@ -33,6 +33,30 @@ export const PickLineScanScreen = {
         }
     }),
 
+    /** CU quantity entry mode of the line, read from the S5 root attribute `data-cu-qty-entry-mode`. */
+    cuQtyEntryMode: async () => await step(`${NAME} - Read CU quantity entry mode`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        return await containerElement().getAttribute('data-cu-qty-entry-mode');
+    }),
+
+    /** Scans one raw CU label on S5 (the label step of the new modes). */
+    scanCULabel: async (label) => await step(`${NAME} - Scan CU label`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(label);
+    }),
+
+    /** Taps "Weitere Kiste" / "Next box": opens the next TU (box) of the line. */
+    nextBox: async () => await step(`${NAME} - Next box`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await page.getByRole('button', { name: /Weitere Kiste|Next box/ }).tap();
+    }),
+
+    /** Opens box 1 before the first booking of a new-mode line (same tap as nextBox, named for the step). */
+    openBox: async () => await step(`${NAME} - Open box`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await page.getByRole('button', { name: /Weitere Kiste|Next box/ }).tap();
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await PickLineScanScreen.waitForScreen();
         await page.locator(ID_BACK_BUTTON).tap();
