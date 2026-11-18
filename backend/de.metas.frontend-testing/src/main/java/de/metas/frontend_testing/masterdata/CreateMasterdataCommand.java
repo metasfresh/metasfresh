@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.util.Services;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
@@ -70,6 +71,7 @@ import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -524,14 +526,15 @@ public class CreateMasterdataCommand
 			return;
 		}
 
-		MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService); // the generated formats are deleted below
-
-		CustomQRCodeFormatCommand.builder()
-				.scannableCodeFormatService(services.scannableCodeFormatService)
-				.context(context)
-				.requests(request.getCustomQRCodeFormats())
-				.build()
-				.execute();
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService); // the generated formats are deleted by the command below
+			CustomQRCodeFormatCommand.builder()
+					.scannableCodeFormatService(services.scannableCodeFormatService)
+					.context(context)
+					.requests(request.getCustomQRCodeFormats())
+					.build()
+					.execute();
+		});
 
 	}
 
