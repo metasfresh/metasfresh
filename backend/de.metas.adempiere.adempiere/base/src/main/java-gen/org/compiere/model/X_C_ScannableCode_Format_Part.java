@@ -119,6 +119,8 @@ public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO impleme
 	public static final String DATATYPE_Constant = "CONSTANT";
 	/** ProductionDate = PRODUCTION_DATE */
 	public static final String DATATYPE_ProductionDate = "PRODUCTION_DATE";
+	/** PackId = PACK_ID */
+	public static final String DATATYPE_PackId = "PACK_ID";
 	@Override
 	public void setDataType (final java.lang.String DataType)
 	{
