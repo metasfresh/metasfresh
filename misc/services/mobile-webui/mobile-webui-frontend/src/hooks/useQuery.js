@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 let nextQueryId = 1;
 
 export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess, onError }) => {
-  const [isPending, setIsPending] = useState(false);
+  // pending from the first render when enabled: callers gate on it with a spinner; starting false mounts the gated content, unmounts it and mounts it again
+  const [isPending, setIsPending] = useState(enabled);
   const [isSuccess, setIsSuccess] = useState(false);
   const [data, setData] = useState();
   const [error, setError] = useState();
