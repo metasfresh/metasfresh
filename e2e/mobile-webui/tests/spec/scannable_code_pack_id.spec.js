@@ -109,7 +109,7 @@ const createMasterdata = async ({ productCode }) => {
     return masterdata;
 };
 
-const startPickingJob = async (masterdata, { stayOnScanScreen = false } = {}) => {
+const startPickingJob = async (masterdata, { isStayOnScanScreen = false } = {}) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
@@ -118,7 +118,7 @@ const startPickingJob = async (masterdata, { stayOnScanScreen = false } = {}) =>
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.waitForScreen();
     // scanning the picking slot opens the scan screen of the line; either stay there or go back to the job screen, where a scan picks directly
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: !stayOnScanScreen });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: !isStayOnScanScreen });
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -136,7 +136,7 @@ test('Scan a pack ID label (47 characters): the app posts the pick with the comp
     const masterdata = await createMasterdata({ productCode });
 
     // the real flow: the label is scanned on the scan screen of the pick line
-    await startPickingJob(masterdata, { stayOnScanScreen: true });
+    await startPickingJob(masterdata, { isStayOnScanScreen: true });
 
     // The label is recognized by the format (otherwise nothing would be posted). The backend looks for an active
     // top-level HU whose HU_QRCode attribute equals the label; none does (as in real stock) -> not found.
@@ -181,7 +181,7 @@ test('Scan a shifted 49-character label: refused, no pick is posted', async ({ p
         await BarcodeScannerComponent.type(shifted);
     });
 
-    PickingJobScreen.expectNoPickPosted();
+    await PickingJobScreen.expectNoPickPosted();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 Stk', qtyPicked: '0 Stk' });
 });
 
@@ -207,6 +207,6 @@ test('Scan a label with a wrong marker at positions 26-27: refused by the guard,
         await BarcodeScannerComponent.type(wrongMarker);
     });
 
-    PickingJobScreen.expectNoPickPosted();
+    await PickingJobScreen.expectNoPickPosted();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 Stk', qtyPicked: '0 Stk' });
 });

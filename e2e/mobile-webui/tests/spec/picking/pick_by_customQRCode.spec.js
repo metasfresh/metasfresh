@@ -218,7 +218,7 @@ test('Pick using custom QR code', async ({ page }) => {
 });
 
 // A whole-TU custom QR code scanned on the picking job screen reaches PickLineScanScreen via the qrCode URL parameter.
-// It must be picked exactly once (regression: the scan component was mounted twice and posted the PICK twice).
+// The scan posts exactly one PICK.
 // noinspection JSUnusedLocalSymbols
 test('Pick using custom QR code scanned on the job screen: picked exactly once', async ({ page }) => {
     // === ALLURE METADATA ===

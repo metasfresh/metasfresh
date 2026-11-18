@@ -2,30 +2,35 @@ package de.metas.handlingunits.qrcodes.custom;
 
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CustomHUQRCodeTest
 {
-	@Test
-	void getPackId_returnsParsedPackId()
+	@Nested
+	class getPackId
 	{
-		final CustomHUQRCode qrCode = CustomHUQRCode.ofParsedScannedCode(ParsedScannedCode.builder()
-				.scannedCode(ScannedCode.ofString("any"))
-				.packId("2")
-				.build());
+		@Test
+		void returnsParsedPackId()
+		{
+			final CustomHUQRCode qrCode = CustomHUQRCode.ofParsedScannedCode(ParsedScannedCode.builder()
+					.scannedCode(ScannedCode.ofString("any"))
+					.packId("2")
+					.build());
 
-		assertThat(qrCode.getPackId()).contains("2");
-	}
+			assertThat(qrCode.getPackId()).hasValue("2");
+		}
 
-	@Test
-	void getPackId_emptyWhenFormatHasNoPackId()
-	{
-		final CustomHUQRCode qrCode = CustomHUQRCode.ofParsedScannedCode(ParsedScannedCode.builder()
-				.scannedCode(ScannedCode.ofString("any"))
-				.build());
+		@Test
+		void emptyWhenFormatHasNoPackId()
+		{
+			final CustomHUQRCode qrCode = CustomHUQRCode.ofParsedScannedCode(ParsedScannedCode.builder()
+					.scannedCode(ScannedCode.ofString("any"))
+					.build());
 
-		assertThat(qrCode.getPackId()).isEmpty();
+			assertThat(qrCode.getPackId()).isEmpty();
+		}
 	}
 }

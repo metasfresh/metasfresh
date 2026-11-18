@@ -70,10 +70,15 @@ export const PickingJobScreen = {
         }
     }),
 
-    expectNoPickPosted: () => {
-        stopCollectingPickEvents();
-        expect(pickEvents).toHaveLength(0);
-    },
+    /** Waits until every picking XHR has been handled (a PICK posted after the error toast would show up), then checks that no PICK was posted. */
+    expectNoPickPosted: async () => await step(`${NAME} - Expect no PICK event`, async () => {
+        try {
+            await waitForNoInFlightXhr(page, { urlPattern: PICKING_XHR, timeout: SLOW_ACTION_TIMEOUT });
+            expect(pickEvents).toHaveLength(0);
+        } finally {
+            stopCollectingPickEvents();
+        }
+    }),
 
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });

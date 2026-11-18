@@ -7,7 +7,6 @@ import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.scannable_code.ScannedCode;
-import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
@@ -18,9 +17,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
@@ -44,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * optional: {@code EndNo} (empty or {@code 0} = open end), {@code ConstantValue}, {@code DateFormat} (pattern, e.g. {@code yyMMdd}, stored in {@code DataFormat}).
  * <p>
  * Step {@code parse scanned code and expect:} columns: required: {@code ScannedCode};
- * optional: {@code Matches} (default {@code true}; {@code false} = the result is not a custom code, or no reader recognizes the code at all),
+ * optional: {@code IsMatching} (default {@code true}; {@code false} = the result is not a custom code, or no reader recognizes the code at all),
  * {@code ProductNo}, {@code LotNo}, {@code PackId}, {@code BestBeforeDate} (yyyy-MM-dd).
  * <p>
  * An optional expectation column that is missing <b>or has an empty cell</b> is not checked: Cucumber passes empty cells as {@code null}
@@ -62,11 +59,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   | fmt                       | 5       | 10    | BEST_BEFORE_DATE | yyMMdd     |
  *   | fmt                       | 11      | 0     | PACK_ID          |            |
  * Then parse scanned code and expect:
- *   | ScannedCode    | ProductNo | BestBeforeDate | PackId | Matches |
+ *   | ScannedCode    | ProductNo | BestBeforeDate | PackId | IsMatching |
  *   | P10026113077   | P100      | 2026-11-30     | 77     | true    |
  * </pre>
  */
-@RequiredArgsConstructor
 public class C_ScannableCode_Format_StepDef
 {
 	/**
@@ -74,9 +70,8 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private static final String DESCRIPTION_CUCUMBER = "created by cucumber step C_ScannableCode_Format_StepDef";
 
-	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	private final ScannableCodeFormatService formatService = SpringContextHolder.instance.getBean(ScannableCodeFormatService.class);
-	@NonNull private final C_ScannableCode_Format_StepDefData formatTable;
+	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	@NonNull private final ScannableCodeFormatService formatService = SpringContextHolder.instance.getBean(ScannableCodeFormatService.class);
 
 	/**
 	 * A format and its parts are created together ({@link ScannableCodeFormatService#create}), so the names wait here until the parts step.
@@ -119,13 +114,12 @@ public class C_ScannableCode_Format_StepDef
 				.map(C_ScannableCode_Format_StepDef::toPart)
 				.collect(ImmutableList.toImmutableList());
 
-		final ScannableCodeFormat format = formatService.create(ScannableCodeFormatCreateRequest.builder()
+		formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name(name)
 				.description(DESCRIPTION_CUCUMBER)
 				.parts(parts)
 				.build());
 
-		formatTable.putOrReplace(formatIdentifier, InterfaceWrapperHelper.load(format.getId().getRepoId(), I_C_ScannableCode_Format.class));
 	}
 
 	private static ScannableCodeFormatCreateRequest.Part toPart(@NonNull final DataTableRow row)
@@ -150,7 +144,7 @@ public class C_ScannableCode_Format_StepDef
 	}
 
 	/**
-	 * Parses each {@code ScannedCode} and checks whether a format recognizes it ({@code Matches}) and the expected values.
+	 * Parses each {@code ScannedCode} and checks whether a format recognizes it ({@code IsMatching}) and the expected values.
 	 *
 	 * @see HUQRCodesService#parse
 	 */
@@ -163,7 +157,7 @@ public class C_ScannableCode_Format_StepDef
 	private void parseAndExpect(@NonNull final DataTableRow row)
 	{
 		final String scannedCodeStr = row.getAsString("ScannedCode");
-		final boolean matches = row.getAsOptionalBoolean("Matches").orElseTrue();
+		final boolean isMatching = row.getAsOptionalBoolean("IsMatching").orElseTrue();
 
 		final IHUQRCode qrCode;
 		try
@@ -173,11 +167,11 @@ public class C_ScannableCode_Format_StepDef
 		catch (final AdempiereException e)
 		{
 			// no reader (custom format or other) recognizes the code: that is "not a custom code" too
-			assertThat(matches).as("custom code expected but parse failed (" + e.getMessage() + "): " + scannedCodeStr).isFalse();
+			assertThat(isMatching).as("custom code expected but parse failed (" + e.getMessage() + "): " + scannedCodeStr).isFalse();
 			return;
 		}
 
-		if (!matches)
+		if (!isMatching)
 		{
 			assertThat(qrCode).as("not a custom code: " + scannedCodeStr).isNotInstanceOf(CustomHUQRCode.class);
 			return;
