@@ -15,6 +15,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
@@ -352,8 +353,9 @@ public class CreateHUCommand
 				? LocalDate.parse(request.getBestBeforeDate())
 				: null;
 		final String externalBarcode = request.getExternalBarcode();
+		final String qrCodeAttribute = request.getQrCodeAttribute();
 
-		if (CoalesceUtil.countNotNulls(weightNet, lotNo, bestBeforeDate, externalBarcode) <= 0)
+		if (CoalesceUtil.countNotNulls(weightNet, lotNo, bestBeforeDate, externalBarcode, qrCodeAttribute) <= 0)
 		{
 			return null;
 		}
@@ -380,6 +382,11 @@ public class CreateHUCommand
 		if (externalBarcode != null)
 		{
 			huAttributes.setValue(AttributeConstants.ATTR_ExternalBarcode, externalBarcode);
+		}
+
+		if (qrCodeAttribute != null)
+		{
+			huAttributes.setValue(HUAttributeConstants.ATTR_QRCode, qrCodeAttribute);
 		}
 
 		return huAttributes;

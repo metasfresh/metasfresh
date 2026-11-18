@@ -26,6 +26,8 @@ public class JsonCreateHURequest
 	@Nullable String lotNo;
 	@Nullable String bestBeforeDate;
 	@Nullable String externalBarcode;
+	/** Value of the {@code HU_QRCode} attribute: the (custom format) code a scan has to match to pick from this HU */
+	@Nullable String qrCodeAttribute;
 
 	@JsonIgnore
 	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
