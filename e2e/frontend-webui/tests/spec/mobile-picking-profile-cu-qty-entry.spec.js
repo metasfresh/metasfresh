@@ -13,7 +13,8 @@
  *      (first check: RED fails here while the AD migration is not applied);
  *   2. set CUQtyEntryMode = "Scan once, enter quantity" (SCAN_ONCE_ENTER_QTY) and a
  *      scannable code format, save, reload, assert both values (single view);
- *   3. assert both values in the grid (list view).
+ *   3. assert both values in the grid (list view); for the picking profile the grid lists active
+ *      rows only, so this check sets both values on the seed profile and restores them afterwards.
  *
  * The scannable code format is provisioned through the frontend-testing masterdata API
  * (`customQRCodeFormats`), never via the DB.
@@ -36,6 +37,7 @@ import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { getFieldData, waitForRecordSaved } from '../utils/WebAPIValidation';
 
+const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 const FIELD_NAME = 'Name';
 const FIELD_MODE = 'CUQtyEntryMode';
 const FIELD_FORMAT = 'C_ScannableCode_Format_ID';
@@ -60,6 +62,22 @@ async function gotoWindowList(page, windowId) {
     .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
     .catch(() => {});
   await page.waitForTimeout(500);
+}
+
+/**
+ * Delete a test record through the WebUI REST API (with the browser session). The masterdata API
+ * deletes its generated scannable code formats at the start of every run, which fails while a
+ * left-over record still references one: the test removes its own records.
+ */
+async function deleteTestRecord(page, windowId, recordId) {
+  try {
+    const response = await page.request.delete(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}`, { timeout: 20000 });
+    if (!response.ok()) {
+      console.error(`Could not delete test record ${windowId}/${recordId}: HTTP ${response.status()}`);
+    }
+  } catch (error) {
+    console.error(`Could not delete test record ${windowId}/${recordId}: ${error.message}`);
+  }
 }
 
 async function createNewRecord(page) {
@@ -115,12 +133,15 @@ save + reload, and show in the grid.
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
+    const createdRecords = [];
+    try {
     for (const { label, windowId, expectedDefaultMode, createInactive } of WINDOWS) {
       await test.step(`${label} (window ${windowId})`, async () => {
         const recordName = `CU entry ${label} ${stamp}`;
 
         await gotoWindowList(page, windowId);
         const recordId = await createNewRecord(page);
+        createdRecords.push({ windowId, recordId });
 
         // First check: both fields exist on the tab (RED while the migration is not applied).
         await expect(
@@ -148,6 +169,7 @@ save + reload, and show in the grid.
         await ListWidget.setByValue(FIELD_MODE, MODE_SCAN_ONCE);
         await ListWidget.setValue(FIELD_FORMAT, formatName, { exactMatch: true });
         await TextWidget.setValue(FIELD_NAME, recordName);
+        await expect(WidgetCommon.getFieldContainer(FIELD_NAME).locator('input').first()).toHaveValue(recordName);
         await WidgetCommon.triggerBlur();
         await WidgetCommon.waitForSaveComplete();
         await waitForRecordSaved(String(windowId), recordId);
@@ -174,24 +196,51 @@ save + reload, and show in the grid.
           'grid column C_ScannableCode_Format_ID',
         ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         if (createInactive) {
-          // The inactive test profile is not listed (grid shows active rows only; only one active
-          // profile may exist, see WINDOWS). The saved values are asserted in the single view above
-          // and via the REST read; here the grid must show the seed profile's default mode in the
-          // CUQtyEntryMode column itself (not just anywhere in the row).
-          const headers = page.locator('th');
-          const count = await headers.count();
-          let modeColumn = -1;
-          for (let i = 0; i < count; i++) {
-            if (/CU-Mengenerfassung|CU quantity entry/.test(await headers.nth(i).innerText())) {
-              modeColumn = i;
-              break;
-            }
+          // The grid lists active rows only and only ONE active profile may exist (the test
+          // profile is inactive), so the grid check runs on the seed profile: set both values on
+          // it, assert them in its grid row, and restore its original values afterwards (also
+          // when an assertion fails).
+          await page.locator('tbody tr').first().dblclick();
+          await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+          const seedId = page.url().split('/').pop();
+          expect(seedId, 'the seed profile is the only active row').not.toBe(recordId);
+          try {
+            await expect(WidgetCommon.getFieldContainer(FIELD_MODE)).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await waitForRecordSaved(String(windowId), seedId);
+            await expect(WidgetCommon.getFieldContainer(FIELD_MODE).locator('input').first()).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+            await ListWidget.setByValue(FIELD_MODE, MODE_SCAN_ONCE);
+            await ListWidget.setValue(FIELD_FORMAT, formatName, { exactMatch: true });
+            await WidgetCommon.triggerBlur();
+            await WidgetCommon.waitForSaveComplete();
+            await waitForRecordSaved(String(windowId), seedId);
+            await gotoWindowList(page, windowId);
+            const row = page.locator('tbody tr').first();
+            await expect(row, 'grid row of the seed profile').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+            await expect(row).toContainText(MODE_SCAN_ONCE_CAPTION);
+            await expect(row).toContainText(formatName);
+          } finally {
+            await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}/${seedId}`);
+            await expect(WidgetCommon.getFieldContainer(FIELD_MODE)).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await expect(WidgetCommon.getFieldContainer(FIELD_MODE).locator('input').first()).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+            await ListWidget.setByValue(FIELD_MODE, expectedDefaultMode);
+            // clear the optional lookup with its clear icon
+            await WidgetCommon.getFieldContainer(FIELD_FORMAT).locator('.meta-icon-close-alt').click();
+            await WidgetCommon.triggerBlur();
+            await WidgetCommon.waitForSaveComplete();
+            await waitForRecordSaved(String(windowId), seedId);
+            await expect
+              .poll(async () => keyOf(await getFieldData(String(windowId), seedId, FIELD_MODE)), {
+                message: 'seed profile mode restored',
+                timeout: SLOW_ACTION_TIMEOUT,
+              })
+              .toBe(expectedDefaultMode);
+            await expect
+              .poll(async () => keyOf(await getFieldData(String(windowId), seedId, FIELD_FORMAT)) ?? null, {
+                message: 'seed profile format restored',
+                timeout: SLOW_ACTION_TIMEOUT,
+              })
+              .toBeNull();
           }
-          expect(modeColumn, 'grid column index of CUQtyEntryMode').toBeGreaterThanOrEqual(0);
-          await expect(
-            page.locator('tbody tr').first().locator('td').nth(modeColumn),
-            'seed profile default mode shown in the CUQtyEntryMode grid column',
-          ).toHaveText(/Manuell|Manual/, { timeout: SLOW_ACTION_TIMEOUT });
         } else {
           const row = page.locator('tr', { hasText: recordName }).first();
           await expect(row, `grid row of ${recordName}`).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
@@ -202,6 +251,11 @@ save + reload, and show in the grid.
         const shot = await page.screenshot({ fullPage: true });
         await allure.attachment(`${label}: grid`, shot, 'image/png');
       });
+    }
+    } finally {
+      for (const { windowId, recordId } of createdRecords.reverse()) {
+        await deleteTestRecord(page, windowId, recordId);
+      }
     }
   });
 });

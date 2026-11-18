@@ -226,6 +226,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Set CU quantity entry.
+	 * How the CU quantity is entered when picking.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -235,6 +236,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Get CU quantity entry.
+	 * How the CU quantity is entered when picking.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

@@ -6,15 +6,15 @@
 -- Reused: AD_Element C_ScannableCode_Format_ID (583610).
 -- Fields + UI elements on window 541743 tab 547258 and window 541862 tab 547823 (single view and grid).
 
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Description,Updated,UpdatedBy) VALUES (0,585621 /*From ID Server*/,0,'CUQtyEntryMode',TO_TIMESTAMP('2026-11-18 20:40:07.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','CU-Mengenerfassung','CU-Mengenerfassung','Wie die CU-Menge beim Kommissionieren erfasst wird. In den Kunden-Optionen bedeutet leer: Wert des Profils.',TO_TIMESTAMP('2026-11-18 20:40:07.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Description,Updated,UpdatedBy) VALUES (0,585621 /*From ID Server*/,0,'CUQtyEntryMode',TO_TIMESTAMP('2026-11-18 20:40:07.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','CU-Mengenerfassung','CU-Mengenerfassung','Wie die CU-Menge beim Kommissionieren erfasst wird.',TO_TIMESTAMP('2026-11-18 20:40:07.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Name,PrintName,Description, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.Name,t.PrintName,t.Description, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585621 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
-UPDATE AD_Element_Trl SET IsTranslated='N', Name='CU-Mengenerfassung', PrintName='CU-Mengenerfassung', Description='Wie die CU-Menge beim Kommissionieren erfasst wird. In den Kunden-Optionen bedeutet leer: Wert des Profils.', Updated=TO_TIMESTAMP('2026-11-18 20:40:14.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=585621
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='CU-Mengenerfassung', PrintName='CU-Mengenerfassung', Description='Wie die CU-Menge beim Kommissionieren erfasst wird.', Updated=TO_TIMESTAMP('2026-11-18 20:40:14.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=585621
 ;
-UPDATE AD_Element_Trl SET IsTranslated='N', Name='CU-Mengenerfassung', PrintName='CU-Mengenerfassung', Description='Wie die CU-Menge beim Kommissionieren erfasst wird. In den Kunden-Optionen bedeutet leer: Wert des Profils.', Updated=TO_TIMESTAMP('2026-11-18 20:40:21.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585621
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='CU-Mengenerfassung', PrintName='CU-Mengenerfassung', Description='Wie die CU-Menge beim Kommissionieren erfasst wird.', Updated=TO_TIMESTAMP('2026-11-18 20:40:21.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585621
 ;
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='CU quantity entry', PrintName='CU quantity entry', Description='How the CU quantity is entered when picking. On the customer options, empty means the profile''s value.', Updated=TO_TIMESTAMP('2026-11-18 20:40:28.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=585621
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='CU quantity entry', PrintName='CU quantity entry', Description='How the CU quantity is entered when picking.', Updated=TO_TIMESTAMP('2026-11-18 20:40:28.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=585621
 ;
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage() AND base.AD_Element_ID=585621
 ;
@@ -146,4 +146,13 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=788189
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,788189,0,547823,552479,656508 /*From ID Server*/,'F',TO_TIMESTAMP('2026-11-18 20:43:02.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','Scannable Code Format',50,50,0,TO_TIMESTAMP('2026-11-18 20:43:02.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585621)
+;
+-- Field-level descriptions: an empty customer option means the value of the profile (after all element propagation)
+UPDATE AD_Field SET Description='Wie die CU-Menge beim Kommissionieren erfasst wird. Leer = Wert des Profils.' WHERE AD_Field_ID=788187
+;
+UPDATE AD_Field_Trl SET Description=CASE WHEN AD_Language='en_US' THEN 'How the CU quantity is entered when picking. Empty = the profile''s value.' ELSE 'Wie die CU-Menge beim Kommissionieren erfasst wird. Leer = Wert des Profils.' END WHERE AD_Field_ID=788187
+;
+UPDATE AD_Field SET Description='Leer = Format des Profils.' WHERE AD_Field_ID=788189
+;
+UPDATE AD_Field_Trl SET Description=CASE WHEN AD_Language='en_US' THEN 'Empty = the profile''s format.' ELSE 'Leer = Format des Profils.' END WHERE AD_Field_ID=788189
 ;

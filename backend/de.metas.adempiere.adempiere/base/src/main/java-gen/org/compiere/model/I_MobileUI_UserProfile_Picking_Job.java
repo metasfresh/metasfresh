@@ -205,6 +205,7 @@ public interface I_MobileUI_UserProfile_Picking_Job
 
 	/**
 	 * Set CU quantity entry.
+	 * How the CU quantity is entered when picking.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -214,6 +215,7 @@ public interface I_MobileUI_UserProfile_Picking_Job
 
 	/**
 	 * Get CU quantity entry.
+	 * How the CU quantity is entered when picking.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
