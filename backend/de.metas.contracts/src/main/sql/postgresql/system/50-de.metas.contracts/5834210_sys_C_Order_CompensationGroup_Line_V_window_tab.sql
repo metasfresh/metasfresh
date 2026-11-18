@@ -283,7 +283,7 @@ FROM AD_RelationType rt WHERE rt.AD_RelationType_ID = 540499
 UPDATE AD_Tab
 SET AD_Table_ID = 542660, AD_Column_ID = 593839 /* C_Order_CompensationGroup_Line_V.C_Order_CompensationGroup_ID */,
     Updated = TO_TIMESTAMP('2026-11-11 12:00:04', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Tab_ID = 549518
+WHERE AD_Tab_ID = 549518 AND AD_Table_ID = 260 /* C_OrderLine */ AND AD_Column_ID = 557744 /* C_OrderLine.C_Order_CompensationGroup_ID */
 ;
 -- ============================================================================
 -- 4) AD_Field.AD_Column_ID of the 10 configured fields -> the view's columns
