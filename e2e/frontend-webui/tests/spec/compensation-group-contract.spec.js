@@ -84,6 +84,11 @@ const ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS = [
 ];
 // related-document windows left out of the comparison: their entries are not generated for a view-backed row (change log, event log, issues)
 const RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS = ['270', '540394', '363'];
+// related-document windows an order line reaches only through the generic zoom of its key column C_OrderLine_ID
+// (AD_Column.IsGenericZoomOrigin): Lieferdisposition (M_ShipmentSchedule) for a sales line, Wareneingangsdisposition
+// (M_ReceiptSchedule) for a purchase line; their records are created async after the order is completed
+const SHIPMENT_SCHEDULE_WINDOW_ID = 500221;
+const RECEIPT_SCHEDULE_WINDOW_ID = 540196;
 // Bestellung (purchase order) and its line tab
 const PURCHASE_ORDER_WINDOW_ID = 181;
 const PURCHASE_ORDER_LINE_TAB_ID = 293;
@@ -864,20 +869,12 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const lineRowId = String(discountLineRow.rowId);
       const orderLineRow = (await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB)).find((row) => String(row.rowId) === lineRowId);
       expect(orderLineRow, 'the same C_OrderLine in the sales order window').toBeTruthy();
-      // (the entries of the line come from async work after the order is completed, e.g. the shipment schedule and
-      // the material-cockpit detail, so the expected side is polled until it has at least one entry)
-      const readExpectedReferences = async () => relatedDocumentsComparable(
-        await getDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId));
-      // (both sides are compared inside the poll: the expected side has at least one entry, and the two lists agree; an entry that
-      // arrives between two reads only makes the poll read again)
-      const readActualReferences = async () => relatedDocumentsComparable(
-        await getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId));
-      await expect.poll(async () => {
-        const expected = await readExpectedReferences();
-        const actual = await readActualReferences();
-        return expected.length >= 1 && JSON.stringify(actual) === JSON.stringify(expected) ? 'equal' : JSON.stringify({ expected, actual });
-      }, { message: 'related documents of the line row (without windows 270, 540394, 363) equal those of the order line, and the line has at least one (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
-        .toBe('equal');
+      await expectRelatedDocumentsEqualOrderLine({
+        readExpected: () => getDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId),
+        readActual: () => getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId),
+        requiredTargetWindowId: SHIPMENT_SCHEDULE_WINDOW_ID,
+        what: 'the sales line row',
+      });
 
       // Single view (Advanced edit) of a line row of the sales group: the same nine fields, read-only
       await expectLineRowSingleView(groupPage, discountRow, masterdata.products.DISCOUNT_A, 'sales-discount');
@@ -889,13 +886,25 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const unfiltered = await readOrderCompensationGroupView(groupPage);
       expect(unfiltered.size, 'both orders\' groups and possibly others are listed').toBeGreaterThanOrEqual(2);
       // (the view sorts by the order column as the list shows it, i.e. by the order's document number, descending: a purchase
-      // order has its own number sequence, so its group sorts by that number, not by the order id; document numbers of the
-      // test orders are digits, which the database orders character by character)
+      // order has its own number sequence, so its group sorts by that number, not by the order id. The database orders the
+      // captions with its collation, character by character; for document numbers made of digits only and of the same length
+      // that order is the numeric one, whatever the collation. So every run of such captions is checked: within each length,
+      // the digit-only captions appear in descending order. Captions with other characters, and numbers of different lengths
+      // (e.g. '9999' and '10000'), are not compared, as their order depends on the collation, not on the sort column.)
       const orderNos = unfiltered.rows.map((row) => String(row.fieldsByName.C_Order_ID?.value?.caption));
-      expect(orderNos, 'sorted by order document number, descending').toEqual([...orderNos].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
-      // the two sales orders of this test get consecutive document numbers of the same sequence: order X + 1 (created after
-      // order X) has the higher number, so its group is listed above the group of order X (all rows of the view are read,
-      // so the position does not depend on how many other groups exist)
+      const digitOrderNosByLength = new Map();
+      for (const orderNo of orderNos.filter((caption) => /^\d+$/.test(caption))) {
+        digitOrderNosByLength.set(orderNo.length, [...(digitOrderNosByLength.get(orderNo.length) ?? []), orderNo]);
+      }
+      expect(digitOrderNosByLength.size, 'at least the test orders have digit-only document numbers').toBeGreaterThanOrEqual(1);
+      for (const [length, sameLengthOrderNos] of digitOrderNosByLength) {
+        expect(sameLengthOrderNos, `digit-only order document numbers of length ${length}: descending`).toEqual([...sameLengthOrderNos].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
+      }
+      // the two sales orders of this test get consecutive numbers of the same zero-padded sequence: order X + 1 (created
+      // after order X) gets the later number of the same length, so its group is listed above the group of order X (all rows
+      // of the view are read, so the position does not depend on how many other groups exist)
+      const orderNoOfGroup = (groupId) => String(unfiltered.rows.find((row) => String(row.id) === String(groupId))?.fieldsByName.C_Order_ID?.value?.caption);
+      expect(orderNoOfGroup(groupX1).length, `order X + 1 (${orderNoOfGroup(groupX1)}) and order X (${orderNoOfGroup(groupX)}): numbers of the same length, else the sequence rolled over a digit and the position check below does not apply`).toBe(orderNoOfGroup(groupX).length);
       const listedIds = unfiltered.rows.map((row) => String(row.id));
       expect(listedIds, 'the group of order X is listed').toContain(String(groupX));
       expect(listedIds, 'the group of order X + 1 is listed').toContain(String(groupX1));
@@ -1080,29 +1089,33 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await purchaseProductPage.close();
 
       // the values shown equal those of the same order line in the purchase order window
-      // (the purchase order's line tab has no field for the two group columns, so these seven are compared; the two group columns
-      // are asserted on the discount row above)
+      // (the purchase order's line tab shows neither group column: its two fields have no UI element, so its rows do not carry
+      // them; these seven are compared with the purchase order window)
       expectValuesEqualOrderLines(lines, purchaseLines, ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS.filter((column) => !column.startsWith('GroupCompensation')));
+      // the two group columns, checked on both rows against the values of the group created in 4f (no purchase window shows
+      // them): the 3 % discount line is a discount (D) in percent (P), the goods line carries neither
+      const purchaseDiscountLine = lineOfProduct(lines, purchaseDiscount);
+      expect(purchaseDiscountLine, 'discount line row on the tab').toBeTruthy();
+      expect(lookupKey(purchaseDiscountLine.fieldsByName.GroupCompensationType.value), 'discount row: GroupCompensationType').toBe('D');
+      expect(lookupKey(purchaseDiscountLine.fieldsByName.GroupCompensationAmtType.value), 'discount row: GroupCompensationAmtType').toBe('P');
+      const purchaseGoodsLine = lineOfProduct(lines, purchaseGoods);
+      expect(purchaseGoodsLine, 'goods line row on the tab').toBeTruthy();
+      expect(lookupKey(purchaseGoodsLine.fieldsByName.GroupCompensationType.value) || null, 'goods row: no GroupCompensationType').toBeNull();
+      expect(lookupKey(purchaseGoodsLine.fieldsByName.GroupCompensationAmtType.value) || null, 'goods row: no GroupCompensationAmtType').toBeNull();
 
       // single view of both line rows
       await expectLineRowSingleView(purchaseGroupPage, goodsRow, purchaseGoods, 'purchase-goods');
       await expectLineRowSingleView(purchaseGroupPage, discountRow, purchaseDiscount, 'purchase-discount');
 
       // R-REL: the related documents of the goods line row equal those of the same order line in the purchase order window
-      const goodsLine = lineOfProduct(lines, purchaseGoods);
-      expect(goodsLine, 'goods line row on the tab').toBeTruthy();
-      const goodsRowId = String(goodsLine.rowId);
+      const goodsRowId = String(purchaseGoodsLine.rowId);
       expect(purchaseLines.map((row) => String(row.rowId)), 'the same C_OrderLine in the purchase order window').toContain(goodsRowId);
-      const readExpectedReferences = async () => relatedDocumentsComparable(
-        await getDocumentReferences(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID_PATH, goodsRowId));
-      const readActualReferences = async () => relatedDocumentsComparable(
-        await getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, purchaseGroupId, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, goodsRowId));
-      await expect.poll(async () => {
-        const expected = await readExpectedReferences();
-        const actual = await readActualReferences();
-        return expected.length >= 1 && JSON.stringify(actual) === JSON.stringify(expected) ? 'equal' : JSON.stringify({ expected, actual });
-      }, { message: 'related documents of the purchase line row (without windows 270, 540394, 363) equal those of the order line, and the line has at least one (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
-        .toBe('equal');
+      await expectRelatedDocumentsEqualOrderLine({
+        readExpected: () => getDocumentReferences(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID_PATH, goodsRowId),
+        readActual: () => getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, purchaseGroupId, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, goodsRowId),
+        requiredTargetWindowId: RECEIPT_SCHEDULE_WINDOW_ID,
+        what: 'the purchase goods line row',
+      });
     });
 
     await test.step('5. Schema window: the line condition fields read "Bedingung" (Vertrag / Umsatzstaffel), "Umsatz ab", "Vertragsbedingungen"; no organisation on the lines', async () => {
@@ -1894,7 +1907,13 @@ async function fillDateIfChanged(page, scope, fieldName, date) {
   await fillDate(page, scope, fieldName, date);
 }
 
-/** Every row of the group's order-lines tab shows, in each of the given columns (default: the nine), the value of the same C_OrderLine (same row key) in the order window. */
+/**
+ * Every row of the group's order-lines tab shows, in each of the given columns (default: the nine), the value of the same
+ * C_OrderLine (same row key) in the order window.
+ * (This does NOT catch a view column mapped from a sibling order-line column with the same value in the fixture: the test
+ * lines have C_UOM_ID = Price_UOM_ID and PriceEntered = PriceActual. That 1:1 mapping is guarded by the view DDL, a plain
+ * `SELECT ol.<column>`, not by this check.)
+ */
 function expectValuesEqualOrderLines(groupLines, orderLines, columns = ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS) {
   for (const line of groupLines) {
     const orderLine = orderLines.find((row) => String(row.rowId) === String(line.rowId));
@@ -1905,8 +1924,9 @@ function expectValuesEqualOrderLines(groupLines, orderLines, columns = ORDER_COM
   }
 }
 
-function lineOfProduct(lines, discountProduct) {
-  return lines.find((l) => lookupKey(l.fieldsByName.M_Product_ID.value) === String(discountProduct.id));
+/** The row of `lines` (order-line rows) whose product is `product` (goods or discount). */
+function lineOfProduct(lines, product) {
+  return lines.find((l) => lookupKey(l.fieldsByName.M_Product_ID.value) === String(product.id));
 }
 
 /**
@@ -2003,4 +2023,33 @@ function relatedDocumentsComparable(references) {
     .filter((reference) => !RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS.includes(String(reference.targetWindowId)))
     .map((reference) => `${reference.caption}|${reference.targetWindowId}|${reference.documentsCount}`)
     .sort();
+}
+
+/**
+ * R-REL: the related documents of a line row on the group's order-lines tab equal those of the same order line in the
+ * order window (the expected side), windows 270, 540394, 363 left out on both sides. Each read is a complete references
+ * stream (getDocumentReferences fails without its COMPLETED event). The entries of the order line come from async work
+ * after the order is completed, so the poll accepts the comparison only when
+ * - the expected list contains the entry of `requiredTargetWindowId`, the schedule that the line reaches only through the
+ *   generic zoom of its key column C_OrderLine_ID (a list read before that entry exists, e.g. only "Bestand pro Woche",
+ *   is never accepted, so a view row that loses the generic zoom fails here), and
+ * - the expected list is the same in two reads in a row (no other entry still arriving), and
+ * - the actual list equals it.
+ */
+async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, requiredTargetWindowId, what }) {
+  let previousExpected = null;
+  await expect.poll(async () => {
+    const expectedReferences = await readExpected();
+    const actual = relatedDocumentsComparable(await readActual());
+    const expected = relatedDocumentsComparable(expectedReferences);
+    const hasRequired = expectedReferences.some((reference) => String(reference.targetWindowId) === String(requiredTargetWindowId));
+    const isStable = previousExpected !== null && JSON.stringify(previousExpected) === JSON.stringify(expected);
+    previousExpected = expected;
+    return hasRequired && isStable && JSON.stringify(actual) === JSON.stringify(expected)
+      ? 'equal'
+      : JSON.stringify({ hasRequired, isStable, expected, actual });
+  }, {
+    message: `related documents of ${what} (without windows 270, 540394, 363) equal those of the order line, read once the order line lists window ${requiredTargetWindowId} and its list is the same in two reads in a row`,
+    timeout: VERY_SLOW_ACTION_TIMEOUT,
+  }).toBe('equal');
 }
