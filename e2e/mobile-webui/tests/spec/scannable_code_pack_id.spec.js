@@ -67,7 +67,7 @@ test.afterEach(async () => {
     }
 });
 
-const createMasterdata = async ({ productCode, huLabels }) => {
+const createMasterdata = async ({ productCode }) => {
     const masterdata = await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -89,9 +89,7 @@ const createMasterdata = async ({ productCode, huLabels }) => {
             pickingSlots: { slot1: {} },
             // 7 characters, like the product numbers on the label (positions 19-25)
             products: { P1: { price: 1, value: productCode } },
-            packingInstructions: { LU_CU: { cu: true, lu: 'LU', qtyTUsPerLU: 1 } },
-            // the HUs a scan resolves to: the scanned code is the HU's QR code attribute; the qty of the line is the qty of the HU
-            handlingUnits: Object.fromEntries(huLabels.map((huLabel, i) => [`HU${i + 1}`, { product: 'P1', warehouse: 'wh', qty: 5, packingInstructions: 'LU_CU', qrCodeAttribute: huLabel }])),
+            // no HU carries the label: in real stock no box has it (see test 'Scan a pack ID label (47 characters)')
             salesOrders: {
                 SO1: {
                     bpartner: 'BP1',
@@ -109,7 +107,7 @@ const createMasterdata = async ({ productCode, huLabels }) => {
     return masterdata;
 };
 
-const startProductPickingJob = async (masterdata) => {
+const startPickingJob = async (masterdata) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
@@ -122,7 +120,7 @@ const startProductPickingJob = async (masterdata) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Scan a pack ID label (47 characters): the product is read from the label and the HU is picked', async ({ page: _page }) => {
+test('Scan a pack ID label (47 characters): the app posts the pick with the complete label, the backend finds no HU for it', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -133,20 +131,27 @@ test('Scan a pack ID label (47 characters): the product is read from the label a
     const productCode = newProductCode();
     const label = buildLabel({ productCode, packId: '2' });
     expect(label).toHaveLength(47);
-    const masterdata = await createMasterdata({ productCode, huLabels: [label] });
+    const masterdata = await createMasterdata({ productCode });
 
     PickingJobScreen.startCollectingPickEvents();
-    await startProductPickingJob(masterdata);
+    await startPickingJob(masterdata);
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 Stk', qtyPicked: '0 Stk' });
 
-    await test.step(`Scan the label ${label} (hardware scanner: one keydown per character, then Enter)`, async () => {
+    // The label is recognized by the format (otherwise nothing would be posted). The backend looks for an active
+    // top-level HU whose HU_QRCode attribute equals the label; none does (as in real stock) -> not found.
+    // Same pattern as 'Scan custom QR code with unknown lot' in picking.spec.js.
+    await expectErrorToast(`Scan label ${label}: no HU carries it`, async () => {
         await BarcodeScannerComponent.type(label);
+    }, ({ textContent }) => {
+        expect(textContent).toContain('PICKING_QR_HU_NOT_FOUND_BY_ATTRIBUTE');
     });
 
-    await test.step('The app posted the pick with the complete 47-character label, and the HU is picked', async () => {
+    await test.step('The app posted the pick with the complete 47-character label', async () => {
         await PickingJobScreen.expectPickPostedWithHUQRCode({ huQRCode: label, expectedCount: 1 });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 Stk', qtyPicked: '5 Stk', waitForColor: 'green' });
     });
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 Stk', qtyPicked: '0 Stk' });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -161,11 +166,10 @@ test('Scan a shifted 49-character label: refused, no pick is posted', async ({ p
     const productCode = newProductCode();
     const shifted = buildShiftedLabel49({ productCode, packId: '2' });
     expect(shifted).toHaveLength(49);
-    // an HU carries exactly this shifted string, so the refusal comes from the scan handling, not from a missing HU
-    const masterdata = await createMasterdata({ productCode, huLabels: [shifted] });
+    const masterdata = await createMasterdata({ productCode });
 
     PickingJobScreen.startCollectingPickEvents();
-    await startProductPickingJob(masterdata);
+    await startPickingJob(masterdata);
 
     await expectErrorToast(`shifted label ${shifted} is refused`, async () => {
         await BarcodeScannerComponent.type(shifted);
@@ -188,10 +192,10 @@ test('Scan a label with a wrong marker at positions 26-27: refused by the guard,
     // 47 characters, every value readable, only the marker `17` at positions 26-27 is wrong: without the guard this label would be accepted
     const wrongMarker = buildLabel({ productCode, packId: '2' }).replace(`${productCode}17`, `${productCode}XX`);
     expect(wrongMarker).toHaveLength(47);
-    const masterdata = await createMasterdata({ productCode, huLabels: [wrongMarker] });
+    const masterdata = await createMasterdata({ productCode });
 
     PickingJobScreen.startCollectingPickEvents();
-    await startProductPickingJob(masterdata);
+    await startPickingJob(masterdata);
 
     await expectErrorToast(`label ${wrongMarker} is refused`, async () => {
         await BarcodeScannerComponent.type(wrongMarker);
