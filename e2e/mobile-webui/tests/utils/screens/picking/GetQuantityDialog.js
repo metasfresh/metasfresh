@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
 import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
+import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -74,7 +75,10 @@ export const GetQuantityDialog = {
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
         const prevQtyTarget = await page.locator('[data-testid="qty-target"]').innerText();
 
-        await page.getByTestId('qrCode-input').type(qrCode);
+        // Scan like a hardware scanner: all keys in one burst, then Enter.
+        // Typing key by key (locator.type) is not a scan: the scanner reader ends a scan when two keys
+        // are more than the debounce time apart (300 ms), so a slow test browser delivered half a code.
+        await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'qrCode-input' });
         await page.locator('[data-testid="qrCode-input"]').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
         await page.waitForFunction((prevQtyTarget) => {
