@@ -887,6 +887,12 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       // test orders are digits, which the database orders character by character)
       const orderNos = unfiltered.rows.map((row) => String(row.fieldsByName.C_Order_ID?.value?.caption));
       expect(orderNos, 'sorted by order document number, descending').toEqual([...orderNos].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
+      // the two sales orders of this test share one number sequence, so for them "newest first" holds: order X + 1 (created
+      // after order X) is listed above order X
+      const listedIds = unfiltered.rows.map((row) => String(row.id));
+      expect(listedIds, 'the group of order X is listed').toContain(String(groupX));
+      expect(listedIds, 'the group of order X + 1 is listed').toContain(String(groupX1));
+      expect(listedIds.indexOf(String(groupX1)), 'the group of order X + 1 (newer) is listed above the group of order X').toBeLessThan(listedIds.indexOf(String(groupX)));
 
       await groupPage.goto(`${FRONTEND_BASE_URL}/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}`);
       const rowOf = (groupId) => groupPage.getByTestId(`table-row-${groupId}`);
