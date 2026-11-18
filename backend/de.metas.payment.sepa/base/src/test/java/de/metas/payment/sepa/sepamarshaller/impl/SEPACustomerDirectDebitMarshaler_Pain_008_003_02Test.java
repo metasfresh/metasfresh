@@ -17,6 +17,8 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -110,6 +112,55 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("bankAccount.A_Name"));
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtrSchmeId().getId().getPrvtId().getOthr().getId()).isEqualTo("SEPA_CreditorIdentifier"));
+	}
+
+	@Test
+	public void createDocument_emitsMandateReferenceFromBankAccount_notDashOneDefault() throws Exception
+	{
+		// gh153 to212: when the debtor bank account has a SEPA direct-debit mandate, the export must emit
+		// the mandate's real MandateReference (here the bare customer number "10298"), NOT the standard
+		// metasfresh "<BPartnerValue>-1" synthesized default ("10298-1"), which would not match the bank's
+		// signed mandate.
+		final I_SEPA_Export sepaExport = createSEPAExport("Creditor", "SEPA_CreditorIdentifier", "INGBNL2A");
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setValue("10298");
+		bpartner.setName("Kunde 10298");
+		save(bpartner);
+
+		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		bankAccount.setC_Currency_ID(eur.getRepoId());
+		bankAccount.setIBAN("NL31INGB0000000044");
+		bankAccount.setIsEsrAccount(true);
+		bankAccount.setA_Name("Kunde 10298");
+		save(bankAccount);
+
+		final I_C_BP_BankAccount_DirectDebitMandate mandate = newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
+		mandate.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		mandate.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
+		mandate.setMandateReference("10298");
+		mandate.setIsActive(true);
+		save(mandate);
+
+		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
+		line.setIBAN("NL31INGB0000000044");
+		line.setSwiftCode("INGBNL2A");
+		line.setAmt(new BigDecimal("100"));
+		line.setC_Currency_ID(eur.getRepoId());
+		line.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		// SEPA_MandateRefNo intentionally NOT set -> must be resolved from the mandate, not defaulted to "-1".
+		line.setC_BP_BankAccount(bankAccount);
+		line.setSEPA_Export(sepaExport);
+		line.setIsActive(true);
+		line.setIsError(false);
+		save(line);
+
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
+
+		final String mndtId = xmlDocument.getCstmrDrctDbtInitn().getPmtInf().get(0)
+				.getDrctDbtTxInf().get(0).getDrctDbtTx().getMndtRltdInf().getMndtId();
+		assertThat(mndtId).isEqualTo("10298");
 	}
 
 	private I_SEPA_Export createSEPAExport(
