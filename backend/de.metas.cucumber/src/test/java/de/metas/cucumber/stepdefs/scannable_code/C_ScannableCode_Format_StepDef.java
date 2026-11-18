@@ -64,6 +64,11 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private final Map<String, String> pendingFormatNames = new LinkedHashMap<>();
 
+	/**
+	 * Declares the formats (identifier + {@code Name}); they are created by the parts step.
+	 *
+	 * @see #createParts(DataTable)
+	 */
 	@Given("metasfresh contains C_ScannableCode_Format:")
 	public void createFormats(@NonNull final DataTable dataTable)
 	{
@@ -72,6 +77,12 @@ public class C_ScannableCode_Format_StepDef
 				row.getAsString(I_C_ScannableCode_Format.COLUMNNAME_Name)));
 	}
 
+	/**
+	 * Creates each declared format together with its parts.
+	 *
+	 * @see ScannableCodeFormatService#create
+	 * @see #createFormats(DataTable)
+	 */
 	@And("metasfresh contains C_ScannableCode_Format_Part:")
 	public void createParts(@NonNull final DataTable dataTable)
 	{
@@ -119,6 +130,11 @@ public class C_ScannableCode_Format_StepDef
 		formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
 	}
 
+	/**
+	 * Parses each {@code ScannedCode} and checks whether a format recognizes it ({@code Matches}) and the expected values.
+	 *
+	 * @see HUQRCodesService#parse
+	 */
 	@Given("parse scanned code and expect:")
 	public void parseScannedCodeAndExpect(@NonNull final DataTable dataTable)
 	{

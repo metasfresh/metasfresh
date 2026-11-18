@@ -89,7 +89,6 @@ describe('huQRCodes tests', () => {
       expect(parseQRCodeString(code)).toEqual({
         code,
         barcodeType: 'HU',
-        // huUnitType: aligned with the current parser, see https://github.com/metasfresh/metasfresh/pull/24984
         huUnitType: 'LU',
         displayable: '05650',
         productId: '1000001',
@@ -217,6 +216,40 @@ describe('huQRCodes tests', () => {
         expect(result.productNo).toBe('P000042');
         expect(result.lotNo).toBe('A1/B002C3');
         expect(result.bestBeforeDate).toBe('2026-11-07');
+      });
+
+      it.each(['1', '3', '10'])('parseQRCodeString reads pack ID %s', (n) => {
+        const result = parseQRCodeString({
+          string: `${LABEL2.slice(0, 46)}${n}`,
+          customQRCodeFormats: [F_POS],
+          returnFalseOnError: false,
+        });
+        expect(result.barcodeType).toBe('CUSTOM');
+        expect(result.packId).toBe(n);
+      });
+
+      it('parseQRCodeString reads the 49-character form (character 29 at 26 and 46)', () => {
+        const GS = String.fromCharCode(29);
+        const F_POS_49 = {
+          name: 'F_POS_49',
+          parts: [
+            { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
+            { type: 'BEST_BEFORE_DATE', startPosition: 29, endPosition: 34, dateFormat: 'yyMMdd' },
+            { type: 'LOT', startPosition: 37, endPosition: 45 },
+            { type: 'PACK_ID', startPosition: 49, endPosition: 0 },
+          ],
+        };
+        const label49 = `${LABEL2.substring(0, 25)}${GS}${LABEL2.substring(25, 44)}${GS}${LABEL2.substring(44)}`;
+        expect(label49).toHaveLength(49);
+        const result = parseQRCodeString({
+          string: label49,
+          customQRCodeFormats: [F_POS_49],
+          returnFalseOnError: false,
+        });
+        expect(result.barcodeType).toBe('CUSTOM');
+        expect(result.packId).toBe('2');
+        expect(result.productNo).toBe('P000042');
+        expect(result.lotNo).toBe('A1/B002C3');
       });
 
       it('convertScannedBarcodeToResolvedResult passes the pack ID on in qrCode', async () => {

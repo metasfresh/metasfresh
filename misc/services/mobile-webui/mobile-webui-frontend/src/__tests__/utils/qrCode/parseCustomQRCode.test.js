@@ -1,7 +1,6 @@
 import { parseCustomQRCode, parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQRCode';
 import { ATTR_lotNo } from '../../../utils/qrCode/common';
 
-// parseNumber takes decimalPointPosition (renamed from decimalPoint in https://github.com/metasfresh/metasfresh/pull/24984)
 describe('parseNumber', () => {
   test('should return the number as is if decimalPoint is 0', () => {
     const result = parseNumber({ string: '123456', decimalPointPosition: 0 });

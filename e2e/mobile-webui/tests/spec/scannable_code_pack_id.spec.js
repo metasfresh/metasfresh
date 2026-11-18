@@ -135,13 +135,13 @@ test('Scan a pack ID label (47 characters): the app posts the pick with the comp
     expect(label).toHaveLength(47);
     const masterdata = await createMasterdata({ productCode });
 
-    PickingJobScreen.startCollectingPickEvents();
     // the real flow: the label is scanned on the scan screen of the pick line
     await startPickingJob(masterdata, { stayOnScanScreen: true });
 
     // The label is recognized by the format (otherwise nothing would be posted). The backend looks for an active
     // top-level HU whose HU_QRCode attribute equals the label; none does (as in real stock) -> not found.
     // Same pattern as 'Scan custom QR code with unknown lot' in picking.spec.js.
+    PickingJobScreen.startCollectingPickEvents();
     await expectErrorToast(`Scan label ${label}: no HU carries it`, async () => {
         await BarcodeScannerComponent.type(label);
     }, ({ textContent }) => {
@@ -174,9 +174,9 @@ test('Scan a shifted 49-character label: refused, no pick is posted', async ({ p
     expect(shifted).toHaveLength(49);
     const masterdata = await createMasterdata({ productCode });
 
-    PickingJobScreen.startCollectingPickEvents();
     await startPickingJob(masterdata);
 
+    PickingJobScreen.startCollectingPickEvents();
     await expectErrorToast(`shifted label ${shifted} is refused`, async () => {
         await BarcodeScannerComponent.type(shifted);
     });
@@ -200,9 +200,9 @@ test('Scan a label with a wrong marker at positions 26-27: refused by the guard,
     expect(wrongMarker).toHaveLength(47);
     const masterdata = await createMasterdata({ productCode });
 
-    PickingJobScreen.startCollectingPickEvents();
     await startPickingJob(masterdata);
 
+    PickingJobScreen.startCollectingPickEvents();
     await expectErrorToast(`label ${wrongMarker} is refused`, async () => {
         await BarcodeScannerComponent.type(wrongMarker);
     });
