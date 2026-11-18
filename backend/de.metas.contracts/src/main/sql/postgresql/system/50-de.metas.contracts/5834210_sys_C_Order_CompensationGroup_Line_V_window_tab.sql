@@ -269,6 +269,12 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
 INSERT INTO AD_Reference (AD_Client_ID, AD_Org_ID, AD_Reference_ID, Created, CreatedBy, EntityType, IsActive, IsOrderByValue, Name, Updated, UpdatedBy, ValidationType)
 VALUES (0, 0, 542156 /*From ID Server*/, TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y', 'N', 'RelType C_Order_CompensationGroup_Line_V (Quelle)', TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 'T')
 ;
+INSERT INTO AD_Reference_Trl (AD_Language, AD_Reference_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Reference_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Reference t
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Reference_ID = 542156
+  AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Reference_ID = t.AD_Reference_ID)
+;
 INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Org_ID, AD_Reference_ID, AD_Table_ID, AD_Key, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy)
 VALUES (0, 0, 542156, 542660, 593830 /* C_Order_CompensationGroup_Line_V.C_OrderLine_ID */, TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y', 'N', 'N', TO_TIMESTAMP('2026-11-11 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
