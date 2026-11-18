@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.pos;
 
+import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -112,6 +113,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -192,6 +194,8 @@ public class POS_InvoiceCardSettlement_StepDef
 	@NonNull private final SpringContextHolder.Lazy<POSInvoiceCardSettlementBooking> settlementBooking = SpringContextHolder.lazyBean(POSInvoiceCardSettlementBooking.class);
 	@NonNull private final SpringContextHolder.Lazy<POSService> posService = SpringContextHolder.lazyBean(POSService.class);
 	@NonNull private final SpringContextHolder.Lazy<CurrencyRepository> currencyRepository = SpringContextHolder.lazyBean(CurrencyRepository.class);
+	@NonNull private final Supplier<Collection<SumUpPollerCycleListener>> pollerCycleListeners = Suppliers.memoize(() -> SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class));
+	@NonNull private final Supplier<Collection<SumUpTransactionStatusChangedListener>> statusChangedListeners = Suppliers.memoize(() -> SpringContextHolder.instance.getBeansOfType(SumUpTransactionStatusChangedListener.class));
 
 	/**
 	 * Every scenario starts with a clean stub: no programmed answers, no recorded checkouts, no known transactions.
@@ -408,6 +412,25 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
+	 * From now on, the stub answers the status lookup of the settlement's SumUp transaction with HTTP 404, as SumUp does for
+	 * a reader checkout until the card is presented (and forever, if the reader times out). Reporting a status for the
+	 * transaction ({@code SumUp API stub reports transaction of card settlement ...}) ends it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the settlement's checkout was sent (its SumUp transaction exists)
+	 * @cucumber.example
+	 * <pre>
+	 * And SumUp API stub does not know the transaction of card settlement settlement1
+	 * </pre>
+	 */
+	@And("^SumUp API stub does not know the transaction of card settlement (\\S+)$")
+	public void stubDoesNotKnowTransaction(@NonNull final String settlementIdentifier)
+	{
+		final SumUpTransaction trx = getSumUpTransaction(loadSettlement(settlementIdentifier).getId());
+		SumUpApiStub.answerLookupNotFound(trx.getClientTransactionId().getAsString());
+	}
+
+	/**
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
@@ -435,7 +458,7 @@ public class POS_InvoiceCardSettlement_StepDef
 	}
 
 	/**
-	 * Runs one poller cycle, or the given number of cycles one after the other: updates the PENDING SumUp transactions
+	 * Runs one poller cycle, or the given number of cycles one after the other: updates the PENDING SumUp transactions the poller asks for
 	 * from the stub, then calls every {@link SumUpPollerCycleListener} (the card settlement sweep) in an empty context,
 	 * as the poller's own thread has no login context. SumUp status events are handled asynchronously; each cycle
 	 * returns only after every event it fired was handled (see {@link SumUpEventsTestProbe#waitUntilFiredEventsAreHandled}).
@@ -453,11 +476,10 @@ public class POS_InvoiceCardSettlement_StepDef
 		final int cycles = times != null ? Integer.parseInt(times) : 1;
 		for (int i = 0; i < cycles; i++)
 		{
-			sumUpService.get().bulkUpdatePendingTransactions(false);
+			sumUpService.get().bulkUpdatePendingTransactionsToPoll();
 			try (final IAutoCloseable ignored = Env.switchContext(Env.newTemporaryCtx()))
 			{
-				SpringContextHolder.instance.getBeansOfType(SumUpPollerCycleListener.class)
-						.forEach(SumUpPollerCycleListener::afterPollCycle);
+				pollerCycleListeners.get().forEach(SumUpPollerCycleListener::afterPollCycle);
 			}
 			SumUpEventsTestProbe.waitUntilFiredEventsAreHandled();
 		}
@@ -955,8 +977,7 @@ public class POS_InvoiceCardSettlement_StepDef
 		return () -> {
 			try (final IAutoCloseable ignored = Env.switchContext(eventCtx))
 			{
-				SpringContextHolder.instance.getBeansOfType(SumUpTransactionStatusChangedListener.class)
-						.forEach(listener -> listener.onStatusChanged(event));
+				statusChangedListeners.get().forEach(listener -> listener.onStatusChanged(event));
 			}
 		};
 	}

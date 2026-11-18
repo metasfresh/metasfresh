@@ -25,12 +25,12 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +43,14 @@ import java.util.stream.Collectors;
 public class SumUpService
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpService.class);
+
+	/**
+	 * How long after metasfresh created a PENDING transaction SumUp's "not found" answer becomes final for the SumUp poller
+	 * ({@link #bulkUpdatePendingTransactionsToPoll()}), and how long after its checkout the card-sale sweep imports an unknown
+	 * card payment's transaction
+	 */
+	public static final Duration BACKGROUND_LOOKUP_MAX_AGE = Duration.ofHours(24);
+
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final SumUpClientFactory clientFactory;
@@ -202,12 +210,16 @@ public class SumUpService
 		final JsonGetTransactionResponse remoteTrx;
 		try
 		{
-			remoteTrx = client.getTransactionById(clientTransactionId);
+			remoteTrx = client.findTransactionById(clientTransactionId).orElse(null);
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Could not get SumUp transaction {} from SumUp; nothing imported", clientTransactionId, ex);
-			return isNotFound(ex) ? SumUpImportResult.notFound() : SumUpImportResult.ofLookupError(ex);
+			return SumUpImportResult.ofLookupError(ex);
+		}
+		if (remoteTrx == null)
+		{
+			return SumUpImportResult.notFound();
 		}
 
 		final SumUpTransaction trx = toSumUpTransaction(remoteTrx, config, cardReader, posRef, clientAndOrgId);
@@ -261,16 +273,6 @@ public class SumUpService
 	public List<SumUpTransaction> listSuccessfulTransactionsByPOSRefUpdatedSince(@NonNull final SumUpPOSRef posRef, @NonNull final Instant updatedSince)
 	{
 		return trxRepository.listSuccessfulByPOSRefUpdatedSince(posRef, updatedSince);
-	}
-
-	/**
-	 * @return true if SumUp answered that it does not know the transaction (HTTP 404), as opposed to a failure of the call
-	 */
-	private static boolean isNotFound(@NonNull final Exception ex)
-	{
-		return ex instanceof SumUpCallException
-				&& ex.getCause() instanceof HttpClientErrorException
-				&& ((HttpClientErrorException)ex.getCause()).getStatusCode() == HttpStatus.NOT_FOUND;
 	}
 
 	private static SumUpTransaction toSumUpTransaction(
@@ -353,7 +355,9 @@ public class SumUpService
 
 	/**
 	 * Refreshes the transaction from SumUp; a failed lookup is recorded as AD_Issue and stored as the transaction's
-	 * {@link LastSync}.
+	 * {@link LastSync}. For a PENDING transaction, SumUp answering that it does not know it (HTTP 404) is no failed lookup:
+	 * SumUp creates the transaction of a reader checkout only once the card is presented on the reader, and never if the
+	 * reader timed out, so the transaction stays PENDING and the lookup counts as successful.
 	 */
 	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id)
 	{
@@ -384,8 +388,32 @@ public class SumUpService
 
 		try
 		{
-			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getClientTransactionId());
-			return updateTransactionFromRemote(trx, remoteTrx);
+			final JsonGetTransactionResponse remoteTrx = client.findTransactionById(trx.getClientTransactionId()).orElse(null);
+			if (remoteTrx != null)
+			{
+				return updateTransactionFromRemote(trx, remoteTrx);
+			}
+			else if (trx.getStatus().isPending())
+			{
+				// no card presented on the reader yet (or the reader timed out): SumUp has no transaction yet; still waiting
+				return trx.toBuilder()
+						.lastSync(LastSync.ok())
+						.build();
+			}
+			else
+			{
+				// SumUp reported this transaction before: not knowing it now is an anomaly, e.g. for the booking's refund check
+				final AdempiereException notKnownAnymore = new AdempiereException("SumUp does not know the transaction anymore")
+						.setParameter("clientTransactionId", trx.getClientTransactionId())
+						.setParameter("status", trx.getStatus());
+				// tagged with the settlement, as the client tags the AD_Issue of any other failed call
+				final TableRecordReference settlementRef = trx.getPosRef() != null ? trx.getPosRef().toPOSInvoiceCardSettlementRecordRefOrNull() : null;
+				if (settlementRef != null)
+				{
+					notKnownAnymore.setRecord(settlementRef);
+				}
+				throw notKnownAnymore;
+			}
 		}
 		catch (Exception ex)
 		{
@@ -457,6 +485,31 @@ public class SumUpService
 				.build();
 	}
 
+	/**
+	 * The SumUp poller's cycle: refreshes the PENDING transactions, except those for which a lookup made at least
+	 * {@link #BACKGROUND_LOOKUP_MAX_AGE} after metasfresh created them was answered by SumUp with "not found" (e.g. a reader
+	 * checkout whose card was never presented): those are no longer asked for in the background. They stay PENDING, and an
+	 * explicit lookup (the till's check, back office's update processes) still asks SumUp. A transaction whose last lookup
+	 * failed, or that was never looked up (e.g. while the server was down), keeps being polled (on the schedule below), so the
+	 * first lookup that gets through after an outage still stores a charge SumUp approved meanwhile. This covers the transactions metasfresh stores;
+	 * a card payment whose transaction metasfresh does not store is looked up by the POS card-sale sweep, with its own rule.
+	 * A transaction is asked for only when it is due by {@link SumUpPollSchedule} (every cycle in its first 5 min, then less
+	 * often as it ages), also after a failed lookup. Status change events are not force-sent.
+	 */
+	public BulkUpdateByQueryResult bulkUpdatePendingTransactionsToPoll()
+	{
+		return bulkUpdateTransactions(
+				SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.excludeNotFoundConfirmedAtAge(BACKGROUND_LOOKUP_MAX_AGE)
+						.pollDueAt(SystemTime.asInstant())
+						.build(),
+				false);
+	}
+
+	/**
+	 * Refreshes every PENDING transaction, whatever its age (back office's "update all pending").
+	 */
 	public BulkUpdateByQueryResult bulkUpdatePendingTransactions(boolean isForceSendingChangeEvents)
 	{
 		return bulkUpdateTransactions(SumUpTransactionQuery.ofStatus(SumUpTransactionStatus.PENDING), isForceSendingChangeEvents);

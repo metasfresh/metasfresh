@@ -46,6 +46,10 @@ class SumUpServiceImportTest
 	private static final SumUpClientTransactionId CLIENT_TRX_ID = SumUpClientTransactionId.ofString("ctid-1");
 	private static final SumUpPOSRef POS_REF = SumUpPOSRef.builder().posOrderId(11).posPaymentId(12).build();
 	private static final String GET_TRX_URL = "http://stub/v2.1/merchants/M1/transactions?client_transaction_id=ctid-1";
+	/**
+	 * SumUp's answer for a transaction it does not know
+	 */
+	private static final String SUMUP_NOT_FOUND_BODY = "{\"message\":\"Resource not found\",\"error_code\":\"NOT_FOUND\"}";
 
 	private MockRestServiceServer server;
 	private SumUpTransactionRepository trxRepository;
@@ -161,7 +165,7 @@ class SumUpServiceImportTest
 	void import_unknownId404_savesNothing_returnsNotFound()
 	{
 		Mockito.when(trxRepository.list(SumUpTransactionQuery.ofClientTransactionId(CLIENT_TRX_ID))).thenReturn(ImmutableList.of());
-		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND));
+		server.expect(requestTo(GET_TRX_URL)).andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(SUMUP_NOT_FOUND_BODY));
 
 		final SumUpImportResult result = service.importAcceptedCheckout(CONFIG_ID, CLIENT_TRX_ID, POS_REF, READER_ID, CLIENT_AND_ORG_ID);
 
@@ -234,6 +238,12 @@ class SumUpServiceImportTest
 	void import_forbidden403_returnsLookupError_notNotFound()
 	{
 		assertLookupErrorForStatus(HttpStatus.FORBIDDEN);
+	}
+
+	@Test
+	void import_bare404WithoutSumUpNotFoundErrorCode_returnsLookupError_notNotFound()
+	{
+		assertLookupErrorForStatus(HttpStatus.NOT_FOUND);
 	}
 
 	private void assertLookupErrorForStatus(final HttpStatus status)

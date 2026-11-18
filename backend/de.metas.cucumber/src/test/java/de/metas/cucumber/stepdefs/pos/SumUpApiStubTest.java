@@ -50,7 +50,8 @@ class SumUpApiStubTest
 	@Test
 	void transactionLookup_configuredMerchant_isServed()
 	{
-		final JsonGetTransactionResponse trx = newClient(SumUpApiStub.MERCHANT_CODE).getTransactionById(SumUpClientTransactionId.ofString("ctid-1"));
+		final JsonGetTransactionResponse trx = newClient(SumUpApiStub.MERCHANT_CODE).findTransactionById(SumUpClientTransactionId.ofString("ctid-1"))
+				.orElseThrow(() -> new AssertionError("the stub does not know ctid-1"));
 
 		assertThat(trx.getClient_transaction_id().getAsString()).isEqualTo("ctid-1");
 		assertThat(trx.getMerchant_code().getAsString()).isEqualTo(SumUpApiStub.MERCHANT_CODE);
@@ -59,7 +60,7 @@ class SumUpApiStubTest
 	@Test
 	void transactionLookup_otherMerchant_isAnswered501_notAsNotFound()
 	{
-		assertThatThrownBy(() -> newClient("OTHERMERCHANT").getTransactionById(SumUpClientTransactionId.ofString("ctid-1")))
+		assertThatThrownBy(() -> newClient("OTHERMERCHANT").findTransactionById(SumUpClientTransactionId.ofString("ctid-1")))
 				.isInstanceOf(SumUpCallException.class)
 				.hasCauseInstanceOf(HttpServerErrorException.class)
 				.hasMessageContaining("501");

@@ -227,6 +227,9 @@ public final class SumUpApiStub
 	}
 
 	/**
+	 * From now on, the status lookup of the given transaction is answered with the given state, also if it was answered with
+	 * HTTP 404 so far ({@link #answerLookupNotFound}): as SumUp does once the card is presented on the reader.
+	 *
 	 * @param status         as SumUp reports it: PENDING, SUCCESSFUL, FAILED, CANCELLED, or REFUNDED (refunded in full or in
 	 *                       part; per the SumUp API reference it comes with a REFUND event, so pass {@code amountRefunded})
 	 * @param amountRefunded if not null, the transaction reports a REFUND event of that amount
@@ -253,6 +256,7 @@ public final class SumUpApiStub
 					.status(status)
 					.amountRefunded(amountRefunded)
 					.build());
+			unknownLookupClientTransactionIds.remove(clientTransactionId);
 		}
 	}
 
