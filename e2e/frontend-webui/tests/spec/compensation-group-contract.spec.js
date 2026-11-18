@@ -7,7 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { getFieldData, getTabRows, getWindowLayout, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { getDocumentReferences, getFieldData, getTabRows, getWindowLayout, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { openRelatedDocument } from '../utils/DocumentReferences';
 
 /**
@@ -875,13 +875,13 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       // (the entries of the line come from async work after the order is completed, e.g. the shipment schedule and
       // the material-cockpit detail, so the expected side is polled until it has at least one entry)
       const readExpectedReferences = async () => relatedDocumentsComparable(
-        await getIncludedDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId));
+        await getDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId));
       await expect.poll(async () => (await readExpectedReferences()).length,
         { message: 'the line has at least one related document other than 270/540394/363 (an empty list on both sides proves nothing)', timeout: VERY_SLOW_ACTION_TIMEOUT })
         .toBeGreaterThanOrEqual(1);
       const expectedReferences = await readExpectedReferences();
       const actualReferences = relatedDocumentsComparable(
-        await getIncludedDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId));
+        await getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId));
       expect(actualReferences, 'related documents of the line row (without windows 270, 540394, 363)').toEqual(expectedReferences);
       // Only the SALES group is seeded by this spec (the purchase order of step 6 stays unsaved),
       // so the purchase side of this tab is not covered here.
@@ -1777,22 +1777,6 @@ test.describe('Order compensation group window: window health', () => {
     expect(health.countErrors, 'window health countErrors').toBe(0);
   });
 });
-
-/** The related documents of an included row (the right-click list), without the windows left out of the comparison, as comparable entries. */
-async function getIncludedDocumentReferences(windowId, documentId, tabId, rowId) {
-  const response = await getPage().request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${documentId}/${tabId}/${rowId}/references/sse`, {
-    headers: { Accept: 'text/event-stream' },
-  });
-  expect(response.ok(), `HTTP ${response.status()} reading references of ${windowId}/${documentId}/${tabId}/${rowId}`).toBe(true);
-  const events = (await response.text())
-    .split('\n')
-    .filter((line) => line.startsWith('data:'))
-    .map((line) => JSON.parse(line.substring('data:'.length).trim()));
-  expect(events.some((event) => event.type === 'COMPLETED'), 'references stream completed').toBe(true);
-  return events
-    .filter((event) => event.type === 'PARTIAL_RESULT' && event.partialGroup)
-    .flatMap((event) => event.partialGroup.references || []);
-}
 
 // (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
 // name of its source table, which differs between the line table and its view)
