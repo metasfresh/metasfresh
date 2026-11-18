@@ -89,6 +89,8 @@ const RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS = ['270', '540394', '363'];
 // (M_ReceiptSchedule) for a purchase line; their records are created async after the order is completed
 const SHIPMENT_SCHEDULE_WINDOW_ID = 500221;
 const RECEIPT_SCHEDULE_WINDOW_ID = 540196;
+// R-REL compare: the order line's related documents must stay unchanged this long before they count as complete
+const STABLE_RELATED_DOCUMENTS_MS = 1000;
 // Bestellung (purchase order) and its line tab
 const PURCHASE_ORDER_WINDOW_ID = 181;
 const PURCHASE_ORDER_LINE_TAB_ID = 293;
@@ -886,24 +888,18 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const unfiltered = await readOrderCompensationGroupView(groupPage);
       expect(unfiltered.size, 'both orders\' groups and possibly others are listed').toBeGreaterThanOrEqual(2);
       // (the view sorts by the order column as the list shows it, i.e. by the order's document number, descending: a purchase
-      // order has its own number sequence, so its group sorts by that number, not by the order id. The database orders the
-      // captions with its collation, character by character; for document numbers made of digits only and of the same length
-      // that order is the numeric one, whatever the collation. So every run of such captions is checked: within each length,
-      // the digit-only captions appear in descending order. Captions with other characters, and numbers of different lengths
-      // (e.g. '9999' and '10000'), are not compared, as their order depends on the collation, not on the sort column.)
+      // order has its own number sequence, so its group sorts by that number, not by the order id. All digit-only captions are
+      // compared with each other, across lengths and number sequences (e.g. purchase '820471' above sales '0050', '9999' above
+      // '10000'); see expectDigitOnlyOrderNosDescending for why that is the database's order and which captions are left out)
       const orderNos = unfiltered.rows.map((row) => String(row.fieldsByName.C_Order_ID?.value?.caption));
-      const digitOrderNosByLength = new Map();
-      for (const orderNo of orderNos.filter((caption) => /^\d+$/.test(caption))) {
-        digitOrderNosByLength.set(orderNo.length, [...(digitOrderNosByLength.get(orderNo.length) ?? []), orderNo]);
-      }
-      expect(digitOrderNosByLength.size, 'at least the test orders have digit-only document numbers').toBeGreaterThanOrEqual(1);
-      for (const [length, sameLengthOrderNos] of digitOrderNosByLength) {
-        expect(sameLengthOrderNos, `digit-only order document numbers of length ${length}: descending`).toEqual([...sameLengthOrderNos].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
-      }
+      expectDigitOnlyOrderNosDescending(orderNos);
       // the two sales orders of this test get consecutive numbers of the same zero-padded sequence: order X + 1 (created
       // after order X) gets the later number of the same length, so its group is listed above the group of order X (all rows
       // of the view are read, so the position does not depend on how many other groups exist)
       const orderNoOfGroup = (groupId) => String(unfiltered.rows.find((row) => String(row.id) === String(groupId))?.fieldsByName.C_Order_ID?.value?.caption);
+      for (const [name, groupId] of [['X', groupX], ['X + 1', groupX1]]) {
+        expect(orderNoOfGroup(groupId), `order ${name}: digit-only document number, so its group is in the sort check above`).toMatch(/^\d+$/);
+      }
       expect(orderNoOfGroup(groupX1).length, `order X + 1 (${orderNoOfGroup(groupX1)}) and order X (${orderNoOfGroup(groupX)}): numbers of the same length, else the sequence rolled over a digit and the position check below does not apply`).toBe(orderNoOfGroup(groupX).length);
       const listedIds = unfiltered.rows.map((row) => String(row.id));
       expect(listedIds, 'the group of order X is listed').toContain(String(groupX));
@@ -2016,6 +2012,24 @@ test.describe('Order compensation group window: window health', () => {
   });
 });
 
+/**
+ * Step 4c sort check: the order document numbers (captions of C_Order_ID) of the order compensation group view, in list
+ * order, are in the order the database gives for `ORDER BY C_Order.DocumentNo DESC`.
+ * - All captions made of digits only are compared with each other, across lengths and number sequences. For such strings
+ *   the database's libc collation orders character by character, as the JS compare below does (e.g. '9999' above '10000',
+ *   purchase '820471' above sales '0050'). Within one number sequence a later number is also a later order id, so only
+ *   the pairs across sequences tell "sorted by document number" from "sorted by C_Order_ID"; those pairs are kept.
+ * - Captions with any other character are left out: the libc collation (de_DE.UTF-8) ignores punctuation at its first
+ *   level and is case-insensitive there, so a JS compare would not be the database's order for them (a narrowing for
+ *   soundness only; the test's own orders are checked to be digit-only, so they are always in the compared set).
+ */
+function expectDigitOnlyOrderNosDescending(orderNos) {
+  const digitOnlyOrderNos = orderNos.filter((caption) => /^\d+$/.test(caption));
+  expect(digitOnlyOrderNos.length, 'at least the test orders have digit-only document numbers').toBeGreaterThanOrEqual(2);
+  expect(digitOnlyOrderNos, 'digit-only order document numbers, all lengths together: descending').toEqual(
+    [...digitOnlyOrderNos].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
+}
+
 // (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
 // name of its source table, which differs between the line table and its view)
 function relatedDocumentsComparable(references) {
@@ -2033,23 +2047,29 @@ function relatedDocumentsComparable(references) {
  * - the expected list contains the entry of `requiredTargetWindowId`, the schedule that the line reaches only through the
  *   generic zoom of its key column C_OrderLine_ID (a list read before that entry exists, e.g. only "Bestand pro Woche",
  *   is never accepted, so a view row that loses the generic zoom fails here), and
- * - the expected list is the same in two reads in a row (no other entry still arriving), and
+ * - the expected list has stayed the same for at least STABLE_RELATED_DOCUMENTS_MS (1 s) over successive reads. The other
+ *   entries of the line (e.g. "Material Cockpit Detail") arrived 40-230 ms after the schedule in local runs, so a list
+ *   read in that gap changes again before it counts as stable (a longer gap would still slip through: best effort), and
  * - the actual list equals it.
  */
 async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, requiredTargetWindowId, what }) {
   let previousExpected = null;
+  let expectedUnchangedSince = 0;
   await expect.poll(async () => {
     const expectedReferences = await readExpected();
     const actual = relatedDocumentsComparable(await readActual());
     const expected = relatedDocumentsComparable(expectedReferences);
     const hasRequired = expectedReferences.some((reference) => String(reference.targetWindowId) === String(requiredTargetWindowId));
-    const isStable = previousExpected !== null && JSON.stringify(previousExpected) === JSON.stringify(expected);
+    if (previousExpected === null || JSON.stringify(previousExpected) !== JSON.stringify(expected)) {
+      expectedUnchangedSince = Date.now();
+    }
+    const isStable = Date.now() - expectedUnchangedSince >= STABLE_RELATED_DOCUMENTS_MS;
     previousExpected = expected;
     return hasRequired && isStable && JSON.stringify(actual) === JSON.stringify(expected)
       ? 'equal'
       : JSON.stringify({ hasRequired, isStable, expected, actual });
   }, {
-    message: `related documents of ${what} (without windows 270, 540394, 363) equal those of the order line, read once the order line lists window ${requiredTargetWindowId} and its list is the same in two reads in a row`,
+    message: `related documents of ${what} (without windows 270, 540394, 363) equal those of the order line, read once the order line lists window ${requiredTargetWindowId} and its list is unchanged for ${STABLE_RELATED_DOCUMENTS_MS} ms`,
     timeout: VERY_SLOW_ACTION_TIMEOUT,
   }).toBe('equal');
 }
