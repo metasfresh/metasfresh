@@ -2,6 +2,7 @@ import {
   ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
+  ATTR_GTIN,
   ATTR_isTUToBePickedAsWhole,
   ATTR_isUnique,
   ATTR_lotNo,
@@ -116,6 +117,10 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
           string: valueStr,
           dateFormat: formatPart.dateFormat ?? DEFAULT_dateFormat,
         }),
+      };
+    case 'GTIN':
+      return {
+        [ATTR_GTIN]: valueStr,
       };
     default:
       return {
