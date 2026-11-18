@@ -1166,6 +1166,41 @@ public class HUTransformServiceTests
 		assertThat(huId2listenerFiredCounters.get(aggregateHU1.getM_HU_ID())).isEqualTo(1);
 	}
 
+	/**
+	 * TC28 (CU quantity entry): 2 unreserved source pieces (4 + 4) are merged into ONE CU of the requested quantity (5).
+	 */
+	@Test
+	public void husToNewSingleCU_twoUnreservedPieces_oneCUOfTheSum()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+
+		final I_M_HU piece1 = createStandaloneSaladCU(data, FOUR);
+		final I_M_HU piece2 = createStandaloneSaladCU(data, FOUR);
+
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+				.sourceHU(piece1)
+				.sourceHU(piece2)
+				.productId(data.helper.pSaladProductId)
+				.qtyCU(Quantity.of(FIVE, data.helper.uomKg))
+				.build();
+
+		// invoke the method under test
+		final I_M_HU singleCU = huTransformService.husToNewSingleCU(request);
+
+		assertThat(singleCU).isTopLevelHU();
+		assertThat(singleCU).hasStorage(data.helper.pSaladProductId, Quantity.of(FIVE, data.helper.uomKg));
+
+		// the 3 kg left over (4 + 4 - 5) stay in the second source piece
+		assertThat(piece2).hasStorage(data.helper.pSaladProductId, Quantity.of(THREE, data.helper.uomKg));
+	}
+
+	private I_M_HU createStandaloneSaladCU(final LUTUProducerDestinationTestSupport data, final BigDecimal qty)
+	{
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		data.helper.load(producer, data.helper.pSaladProductId, qty, data.helper.uomKg);
+		return producer.getCreatedHUs().get(0);
+	}
+
 	@Test
 	public void husToNewCUs_with_aggregate_source_HU_partial_TU()
 	{

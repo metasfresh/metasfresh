@@ -1532,6 +1532,31 @@ public class HUTransformService
 	}
 
 	/**
+	 * Like {@link #husToNewCUs(HUsToNewCUsRequest)}, but always returns exactly ONE new standalone CU:
+	 * if the requested quantity had to be taken from more than one source piece, the resulting CUs are merged into one.
+	 * The request's {@link ReservedHUsPolicy} is honored, i.e. reserved pieces are skipped or refused as in {@link #husToNewCUs(HUsToNewCUsRequest)}.
+	 */
+	public I_M_HU husToNewSingleCU(@NonNull final HUsToNewCUsRequest request)
+	{
+		final List<I_M_HU> newCUs = husToNewCUs(request).getNewCUs();
+		if (newCUs.isEmpty())
+		{
+			throw new AdempiereException("No CU could be created from the given source HUs; request=" + request);
+		}
+		if (newCUs.size() == 1)
+		{
+			return newCUs.get(0);
+		}
+
+		// never load straight from the source HUs (that would bypass the reservation guard); only from the CUs we just split off
+		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
+		HULoader.of(HUListAllocationSourceDestination.of(newCUs).setDestroyEmptyHUs(true), destination)
+				.unloadAllFromSource();
+
+		return CollectionUtils.singleElement(destination.getCreatedHUs());
+	}
+
+	/**
 	 * Creates new CUs (vhus) according to the given request
 	 */
 	public HUsToNewCUsResponse husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)

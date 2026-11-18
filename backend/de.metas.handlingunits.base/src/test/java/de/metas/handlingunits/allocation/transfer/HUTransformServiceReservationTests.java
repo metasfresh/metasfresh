@@ -354,6 +354,47 @@ public class HUTransformServiceReservationTests
 	// =========================================================
 
 	/**
+	 * TC28 (CU quantity entry): with {@link ReservedHUsPolicy#CONSIDER_ONLY_NOT_RESERVED} a reserved source piece is skipped
+	 * and ONE CU is made from the rest.
+	 */
+	@Test
+	public void husToNewSingleCU_reservedPieceSkipped_oneCUOfTheRest()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+
+		final I_M_HU reservedPiece = createStandaloneSaladCU(data, FOUR);
+		reservedPiece.setIsReserved(true);
+		InterfaceWrapperHelper.save(reservedPiece);
+		final I_M_HU piece1 = createStandaloneSaladCU(data, THREE);
+		final I_M_HU piece2 = createStandaloneSaladCU(data, THREE);
+
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+				.sourceHU(reservedPiece)
+				.sourceHU(piece1)
+				.sourceHU(piece2)
+				.productId(data.helper.pSaladProductId)
+				.qtyCU(Quantity.of(FIVE, data.helper.uomKg))
+				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+				.build();
+
+		// invoke the method under test
+		final I_M_HU singleCU = huTransformService.husToNewSingleCU(request);
+
+		assertThat(singleCU).isTopLevelHU();
+		assertThat(singleCU).hasStorage(data.helper.pSaladProductId, Quantity.of(FIVE, data.helper.uomKg));
+		// the reserved piece is untouched
+		assertThat(reservedPiece).hasStorage(data.helper.pSaladProductId, Quantity.of(FOUR, data.helper.uomKg));
+		assertThat(piece2).hasStorage(data.helper.pSaladProductId, Quantity.of(ONE, data.helper.uomKg));
+	}
+
+	private I_M_HU createStandaloneSaladCU(final LUTUProducerDestinationTestSupport data, final BigDecimal qty)
+	{
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		data.helper.load(producer, data.helper.pSaladProductId, qty, data.helper.uomKg);
+		return producer.getCreatedHUs().get(0);
+	}
+
+	/**
 	 * A VHU that is directly reserved must not be transformable via cuToNewCU.
 	 */
 	@Test
