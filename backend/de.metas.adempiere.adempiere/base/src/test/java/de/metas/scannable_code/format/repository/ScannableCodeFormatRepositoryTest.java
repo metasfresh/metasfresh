@@ -8,11 +8,11 @@ import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Issue;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.junit.jupiter.api.BeforeEach;
@@ -196,6 +196,8 @@ class ScannableCodeFormatRepositoryTest
 		assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
 
 		// the broken format must be recorded as AD_Issue, a log line alone is not enough
-		assertThat(POJOLookupMap.get().getRecords(I_AD_Issue.class)).hasSize(1);
+		assertThat(POJOLookupMap.get().getRecords(I_AD_Issue.class))
+				.hasSize(1)
+				.allSatisfy(issue -> assertThat(issue.getIssueSummary()).contains("broken format"));
 	}
 }

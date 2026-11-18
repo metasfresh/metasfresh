@@ -99,7 +99,7 @@ class ScannableCodeFormatLoaderAndSaver
 	}
 
 	/**
-	 * One broken format must not stop the other formats from working: log it and skip it.
+	 * One broken format must not stop the other formats from working: log it, record an AD_Issue and skip it.
 	 */
 	@Nullable
 	private ScannableCodeFormat getByIdOrNull(@NotNull final ScannableCodeFormatId formatId)
@@ -114,8 +114,16 @@ class ScannableCodeFormatLoaderAndSaver
 			final String formatName = formatRecord != null ? formatRecord.getName() : "?";
 			logger.warn("Skipping invalid scannable code format {} (ID={}): {}", formatName, formatId.getRepoId(), ex.getLocalizedMessage(), ex);
 			// a log line alone leaves no trace for the admin: record an AD_Issue (once per cache load, not per scan)
-			Services.get(IErrorManager.class).createIssue(
-					new AdempiereException("Skipping invalid scannable code format " + formatName + " (ID=" + formatId.getRepoId() + "): " + ex.getLocalizedMessage(), ex));
+			try
+			{
+				Services.get(IErrorManager.class).createIssue(
+						new AdempiereException("Skipping invalid scannable code format " + formatName + " (ID=" + formatId.getRepoId() + "): " + ex.getLocalizedMessage(), ex));
+			}
+			catch (final Exception issueEx)
+			{
+				// failing to record the issue must not make all other formats unusable
+				logger.warn("Failed recording an AD_Issue for invalid scannable code format {} (ID={})", formatName, formatId.getRepoId(), issueEx);
+			}
 			return null;
 		}
 	}
