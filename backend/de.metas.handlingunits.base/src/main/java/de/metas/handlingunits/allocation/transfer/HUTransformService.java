@@ -634,6 +634,19 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final I_M_HU luHU)
 	{
+		return tuToExistingLU(sourceTuHU, qtyTU, luHU, null);
+	}
+
+	/**
+	 * @param luPIItem the LU item via which the TUs shall be attached (e.g. the product-specific item the LU was created with);
+	 *                 {@code null} means that it's looked up, which never returns a product-specific item.
+	 */
+	private LUTUResult tuToExistingLU(
+			@NonNull final I_M_HU sourceTuHU,
+			@NonNull final QtyTU qtyTU,
+			@NonNull final I_M_HU luHU,
+			@Nullable final I_M_HU_PI_Item luPIItem)
+	{
 		assertNotReserved(sourceTuHU);
 		assertNotReserved(luHU);
 		LUTUResult result = LUTUResult.EMPTY;
@@ -668,6 +681,10 @@ public class HUTransformService
 				final Capacity tuCapacity = extractTUCapacity(sourceTuHU);
 				final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 				lutuProducer.setLU(luHU);
+				if (luPIItem != null)
+				{
+					lutuProducer.setLUItemPI(luPIItem);
+				}
 				lutuProducer.setMaxLUs(0);
 				lutuProducer.setMaxTUsPerLUInfinite();
 				lutuProducer.setTUPI(handlingUnitsBL.getEffectivePI(sourceTuHU));
@@ -697,8 +714,10 @@ public class HUTransformService
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(tuToAttach);
 
-			final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
-			if (luPIItem == null)
+			final I_M_HU_PI_Item parentPIItem = luPIItem != null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
+					? luPIItem
+					: handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+			if (parentPIItem == null)
 			{
 				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
 						.setParameter("tuToAttach", tuToAttach)
@@ -706,7 +725,7 @@ public class HUTransformService
 						.setParameter("luHU", luHU);
 			}
 
-			final I_M_HU_Item luItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, luPIItem).getLeft();
+			final I_M_HU_Item luItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
 
 			setParent(tuToAttach,
 					luItem,
@@ -979,9 +998,10 @@ public class HUTransformService
 		// Validate request
 		Check.assumeGreaterThanZero(qtyTU.toInt(), "qtyTU");
 
-		TargetLU targetLU = request.getTargetLU();
+		final TargetLU targetLU = request.getTargetLU();
 		QtyTU qtyTUsRemaining = qtyTU; // how many TUs we still have to extract
 		LUTUResult result = LUTUResult.EMPTY;
+		I_M_HU lastNewLU = null; // only relevant if targetLU is a new LU: the LU that was created last, which might still have room for more TUs
 
 		//
 		// Check if we can take the LU as is
@@ -1029,11 +1049,9 @@ public class HUTransformService
 				}
 				else if (targetLU.isNewLU())
 				{
-					extractedTUs = tuToNewLU(tu.toHU(), qtyTUsToExtract, targetLU.getNewLUIdNotNull(), request.getNewLUProductId());
-					extractedTUs.assertNoTopLevelTUs();
-					// the TUs might not fit on one LU; any further TUs go to the last one that was created
-					final List<I_M_HU> newLUs = extractedTUs.getLURecords();
-					targetLU = TargetLU.ofExistingLU(newLUs.get(newLUs.size() - 1));
+					final TUsToNewLUsResult tusToNewLUsResult = tuToLastNewLUThenNewLUs(tu.toHU(), qtyTUsToExtract, targetLU.getNewLUIdNotNull(), request.getNewLUProductId(), lastNewLU);
+					extractedTUs = tusToNewLUsResult.getResult();
+					lastNewLU = tusToNewLUsResult.getLastNewLU();
 				}
 				else if (targetLU.isNone())
 				{
@@ -1064,6 +1082,60 @@ public class HUTransformService
 		alreadyExtractedTUIds.addAll(result.getAllTUIds());
 
 		return result;
+	}
+
+	@Value
+	private static class TUsToNewLUsResult
+	{
+		@NonNull LUTUResult result;
+		@Nullable I_M_HU lastNewLU;
+	}
+
+	/**
+	 * Moves the given TUs onto new LUs, for one TU line of {@link #luExtractTUs(LUExtractTUsRequest)}:
+	 * first fills the {@code lastNewLU} (which was created for a previous TU line) up to the TU capacity of its LU item, then creates further new LUs for the rest.
+	 * Unlike {@link #tuToExistingLU(I_M_HU, QtyTU, I_M_HU)}, the capacity is respected, because the LUs are new LUs which we create.
+	 *
+	 * @param lastNewLU the LU that was created last for a previous TU line, or {@code null} if no new LU was created yet
+	 */
+	private TUsToNewLUsResult tuToLastNewLUThenNewLUs(
+			@NonNull final I_M_HU sourceTuHU,
+			@NonNull final QtyTU qtyTU,
+			@NonNull final HuPackingInstructionsId luPIId,
+			@Nullable final ProductId productId,
+			@Nullable final I_M_HU lastNewLU)
+	{
+		LUTUResult result = LUTUResult.EMPTY;
+		QtyTU qtyTUsRemaining = qtyTU;
+
+		if (lastNewLU != null)
+		{
+			// same LU item which tuToNewLU used (or would use) for this TU
+			final I_M_HU_PI_Item luPIItem = getLuPIItem(
+					luPIId,
+					handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU),
+					IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU),
+					productId);
+			final QtyTU qtyTUsFreeOnLastNewLU = QtyTU.ofBigDecimal(luPIItem.getQty()).subtractOrZero(retrieveLUWithTUs(lastNewLU).getQtyTU());
+			final QtyTU qtyTUsToLastNewLU = qtyTUsRemaining.min(qtyTUsFreeOnLastNewLU);
+			if (qtyTUsToLastNewLU.isPositive())
+			{
+				final LUTUResult resultOnLastNewLU = tuToExistingLU(sourceTuHU, qtyTUsToLastNewLU, lastNewLU, luPIItem);
+				result = result.mergeWith(resultOnLastNewLU);
+				qtyTUsRemaining = qtyTUsRemaining.subtractOrZero(resultOnLastNewLU.getQtyTUs());
+			}
+		}
+
+		if (qtyTUsRemaining.isZero())
+		{
+			return new TUsToNewLUsResult(result, lastNewLU);
+		}
+
+		final LUTUResult resultOnNewLUs = tuToNewLU(sourceTuHU, qtyTUsRemaining, luPIId, productId);
+		resultOnNewLUs.assertNoTopLevelTUs();
+		// LUTUProducerDestination returns the new LUs in creation order (unlike LUTUResult.mergeWith), so the last one is the one which might still have room
+		final List<I_M_HU> newLUs = resultOnNewLUs.getLURecords();
+		return new TUsToNewLUsResult(result.mergeWith(resultOnNewLUs), newLUs.get(newLUs.size() - 1));
 	}
 
 	private boolean isSourceLUMatching_TargetLU(
