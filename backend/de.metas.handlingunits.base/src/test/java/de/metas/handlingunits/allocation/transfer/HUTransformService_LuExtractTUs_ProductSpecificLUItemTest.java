@@ -17,7 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,7 +70,7 @@ public class HUTransformService_LuExtractTUs_ProductSpecificLUItemTest
 		assertThat(result.getQtyTUs()).isEqualTo(QtyTU.ofInt(10));
 		return result.getLURecords().stream()
 				.map(lu -> handlingUnitsDAO.retrieveIncludedHUs(lu).stream().mapToInt(tu -> huTransformService.getMaximumQtyTU(tu).toInt()).sum())
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -108,9 +110,9 @@ public class HUTransformService_LuExtractTUs_ProductSpecificLUItemTest
 	private List<Integer> countTUsPerLU(final LUTUResult result)
 	{
 		return result.getLURecords().stream()
-				.sorted(java.util.Comparator.comparing(I_M_HU::getM_HU_ID))
+				.sorted(Comparator.comparing(I_M_HU::getM_HU_ID))
 				.map(this::countTUs)
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 	}
 
 	/** Several TU lines (aggregate + real TUs) in the source LU, not all of them picked (else the source LU would be taken as is): the capacity of the product-specific item applies across all lines. */

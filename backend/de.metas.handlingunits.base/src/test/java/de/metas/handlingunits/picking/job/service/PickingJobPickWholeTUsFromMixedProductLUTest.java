@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -146,7 +148,7 @@ class PickingJobPickWholeTUsFromMixedProductLUTest
 	}
 
 	/** @return the products with a positive quantity on the given HUs */
-	private List<ProductId> productsOf(final java.util.Collection<HuId> huIds)
+	private List<ProductId> productsOf(final Collection<HuId> huIds)
 	{
 		return handlingUnitsDAO.getByIds(huIds)
 				.stream()
@@ -154,6 +156,6 @@ class PickingJobPickWholeTUsFromMixedProductLUTest
 				.filter(storage -> storage.getQty().isPositive()) // emptied storages remain as zero-qty records
 				.map(IHUProductStorage::getProductId)
 				.distinct()
-				.collect(com.google.common.collect.ImmutableList.toImmutableList());
+				.collect(ImmutableList.toImmutableList());
 	}
 }
