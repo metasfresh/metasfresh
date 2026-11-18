@@ -33,7 +33,7 @@ class ScannableCodeFormatLoaderAndSaver
 	private static final Logger logger = LogManager.getLogger(ScannableCodeFormatLoaderAndSaver.class);
 
 	@NotNull private final IQueryBL queryBL;
-	@NotNull private final IErrorManager errorManager;
+	@lombok.NonNull private final IErrorManager errorManager;
 
 	private final HashMap<ScannableCodeFormatId, I_C_ScannableCode_Format> formatRecordsCache = new HashMap<>();
 	private final ArrayListMultimap<ScannableCodeFormatId, I_C_ScannableCode_Format_Part> partRecordsCache = ArrayListMultimap.create();
