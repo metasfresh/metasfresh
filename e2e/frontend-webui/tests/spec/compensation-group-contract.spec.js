@@ -786,18 +786,12 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: masterdata.products.DISCOUNT_A.productCode }) });
       const groupCell = discountRow.locator('[data-cy="cell-C_Order_CompensationGroup_ID"]');
       await groupCell.scrollIntoViewIfNeeded();
-      await groupCell.click();
-      await groupCell.click({ button: 'right' });
-      const contextMenu = page.locator('.context-menu');
-      await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      const zoomInto = contextMenu.locator('.context-menu-item').filter({ has: page.locator('.meta-icon-share') }).first();
-      await snap(page, '143-order-line-zoom-into-group');
-      await page.locator('th[data-testid="column-C_Flatrate_Term_ID"]').scrollIntoViewIfNeeded();
-      await snap(page, '143-order-line-contract-columns');
       // "Zoom into" opens the target in a new browser tab
-      const popupOpened = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
-      await zoomInto.click();
-      groupPage = await popupOpened;
+      groupPage = await zoomIntoFromCell(page, groupCell, async () => {
+        await snap(page, '143-order-line-zoom-into-group');
+        await page.locator('th[data-testid="column-C_Flatrate_Term_ID"]').scrollIntoViewIfNeeded();
+        await snap(page, '143-order-line-contract-columns');
+      });
       await groupPage.waitForURL(new RegExp(`/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${groupX}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
       await groupPage.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
@@ -848,21 +842,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         await expect(groupPage.locator(`th[data-testid="column-${hidden}"]`), `column ${hidden} not shown`).toHaveCount(0);
       }
       // all shown fields are read-only
-      const discountLineRow = lines.find((row) => lookupKey(row.fieldsByName.M_Product_ID.value) === String(masterdata.products.DISCOUNT_A.id));
+      const discountLineRow = discountLineOf(lines, masterdata.products.DISCOUNT_A);
       expect(discountLineRow, 'discount line row on the tab').toBeTruthy();
       for (const shown of ORDER_COMPENSATION_GROUP_LINES_SHOWN_COLUMNS) {
         expect(discountLineRow.fieldsByName[shown], `field ${shown} present on the row`).toBeTruthy();
         expect(discountLineRow.fieldsByName[shown].readonly, `field ${shown} read-only`).toBe(true);
       }
       // zoom on the product opens that product
-      const productCell = discountRow.locator('[data-cy="cell-M_Product_ID"]');
-      await productCell.click();
-      await productCell.click({ button: 'right' });
-      const productMenu = groupPage.locator('.context-menu');
-      await productMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      const productZoomOpened = groupPage.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
-      await productMenu.locator('.context-menu-item').filter({ has: groupPage.locator('.meta-icon-share') }).first().click();
-      const productPage = await productZoomOpened;
+      const productPage = await zoomIntoFromCell(groupPage, discountRow.locator('[data-cy="cell-M_Product_ID"]'));
       await productPage.waitForURL(new RegExp(`/window/\\d+/${masterdata.products.DISCOUNT_A.id}$`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
       await productPage.close();
 
@@ -1739,6 +1726,24 @@ async function fillDateIfChanged(page, scope, fieldName, date) {
 
 function discountLineOf(lines, discountProduct) {
   return lines.find((l) => lookupKey(l.fieldsByName.M_Product_ID.value) === String(discountProduct.id));
+}
+
+/**
+ * Right-click a grid cell and choose "Zoom into" from the context menu; the target opens in a new browser tab, which is
+ * returned. `beforeZoom` (optional) runs with the menu open, before the item is clicked.
+ */
+async function zoomIntoFromCell(page, cell, beforeZoom) {
+  await cell.click();
+  await cell.click({ button: 'right' });
+  const contextMenu = page.locator('.context-menu');
+  await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  const zoomInto = contextMenu.locator('.context-menu-item').filter({ has: page.locator('.meta-icon-share') }).first();
+  if (beforeZoom) {
+    await beforeZoom();
+  }
+  const popupOpened = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
+  await zoomInto.click();
+  return popupOpened;
 }
 
 /** The discount line, as the operator sees it in the order-line grid. */
