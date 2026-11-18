@@ -88,6 +88,8 @@ describe('huQRCodes tests', () => {
       expect(parseQRCodeString(code)).toEqual({
         code,
         barcodeType: 'HU',
+        // huUnitType: aligned with the current parser, see https://github.com/metasfresh/metasfresh/pull/24984
+        huUnitType: 'LU',
         displayable: '05650',
         productId: '1000001',
         isUnique: true,
@@ -99,6 +101,7 @@ describe('huQRCodes tests', () => {
       expect(parseQRCodeString(code)).toEqual({
         code,
         barcodeType: 'HU',
+        huUnitType: 'V',
         displayable: '28193',
         productId: '2005577',
         weightNet: 2427.425,
