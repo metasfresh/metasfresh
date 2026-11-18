@@ -39,13 +39,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * Step {@code metasfresh contains C_ScannableCode_Format:} columns: {@code Identifier}, {@code Name}.
  * <p>
- * Step {@code metasfresh contains C_ScannableCode_Format_Part:} columns: {@code C_ScannableCode_Format_ID.Identifier} (the format),
- * {@code StartNo}, {@code OPT.EndNo} (empty = open end), {@code DataType} (the reference list code, e.g. {@code PRODUCT_CODE}, {@code PACK_ID}),
- * {@code OPT.ConstantValue}, {@code OPT.DateFormat} (pattern, e.g. {@code yyMMdd}, stored in {@code DataFormat}).
+ * Step {@code metasfresh contains C_ScannableCode_Format_Part:} columns: {@code C_ScannableCode_Format_ID} (the format identifier),
+ * {@code StartNo}, {@code EndNo} (empty = open end), {@code DataType} (the reference list code, e.g. {@code PRODUCT_CODE}, {@code PACK_ID}),
+ * {@code ConstantValue}, {@code DateFormat} (pattern, e.g. {@code yyMMdd}, stored in {@code DataFormat}).
  * <p>
- * Step {@code parse scanned code and expect:} columns: {@code ScannedCode}, {@code OPT.ProductNo}, {@code OPT.BestBeforeDate} (yyyy-MM-dd),
- * {@code OPT.LotNo}, {@code OPT.PackId}, {@code OPT.Matches} (default {@code true}; {@code false} = the result is not a custom code, or no reader recognizes the code at all).
- * An {@code OPT.} column that is present and empty expects the value to be absent.
+ * Step {@code parse scanned code and expect:} columns: {@code ScannedCode}, {@code ProductNo}, {@code BestBeforeDate} (yyyy-MM-dd),
+ * {@code LotNo}, {@code PackId}, {@code Matches} (default {@code true}; {@code false} = the result is not a custom code, or no reader recognizes the code at all).
+ * An optional column that is present and empty expects the value to be absent.
  */
 @RequiredArgsConstructor
 public class C_ScannableCode_Format_StepDef
@@ -76,7 +76,7 @@ public class C_ScannableCode_Format_StepDef
 	public void createParts(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.groupBy(I_C_ScannableCode_Format_Part.COLUMNNAME_C_ScannableCode_Format_ID + ".Identifier")
+				.groupBy(I_C_ScannableCode_Format_Part.COLUMNNAME_C_ScannableCode_Format_ID)
 				.forEach(this::createFormatWithParts);
 	}
 
