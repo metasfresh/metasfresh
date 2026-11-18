@@ -37,15 +37,34 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Intended use: features that prove a format reads the right values from real or look-alike scanned strings
  * (private customer features that run against the delivered strings).
  * <p>
- * Step {@code metasfresh contains C_ScannableCode_Format:} columns: {@code Identifier}, {@code Name}.
+ * Step {@code metasfresh contains C_ScannableCode_Format:} columns: {@code Identifier} (required), {@code Name} (required).
  * <p>
- * Step {@code metasfresh contains C_ScannableCode_Format_Part:} columns: {@code C_ScannableCode_Format_ID} (the format identifier),
- * {@code StartNo}, {@code EndNo} (empty = open end), {@code DataType} (the reference list code, e.g. {@code PRODUCT_CODE}, {@code PACK_ID}),
- * {@code ConstantValue}, {@code DateFormat} (pattern, e.g. {@code yyMMdd}, stored in {@code DataFormat}).
+ * Step {@code metasfresh contains C_ScannableCode_Format_Part:} columns, all plain names (no {@code .Identifier} suffix):
+ * required: {@code C_ScannableCode_Format_ID} (the format identifier), {@code StartNo}, {@code DataType} (the reference list code, e.g. {@code PRODUCT_CODE}, {@code PACK_ID});
+ * optional: {@code EndNo} (empty or {@code 0} = open end), {@code ConstantValue}, {@code DateFormat} (pattern, e.g. {@code yyMMdd}, stored in {@code DataFormat}).
  * <p>
- * Step {@code parse scanned code and expect:} columns: {@code ScannedCode}, {@code ProductNo}, {@code BestBeforeDate} (yyyy-MM-dd),
- * {@code LotNo}, {@code PackId}, {@code Matches} (default {@code true}; {@code false} = the result is not a custom code, or no reader recognizes the code at all).
- * An optional column that is present and empty expects the value to be absent.
+ * Step {@code parse scanned code and expect:} columns: required: {@code ScannedCode};
+ * optional: {@code Matches} (default {@code true}; {@code false} = the result is not a custom code, or no reader recognizes the code at all),
+ * {@code ProductNo}, {@code LotNo}, {@code PackId}, {@code BestBeforeDate} (yyyy-MM-dd).
+ * <p>
+ * An optional expectation column that is missing <b>or has an empty cell</b> is not checked: Cucumber passes empty cells as {@code null}
+ * ({@code ArgumentMatcher.emptyCellsToNull}), which {@code DataTableRow#getAsOptionalString} reports as absent.
+ * So an empty cell can not assert "no value"; write the expected value explicitly.
+ * <p>
+ * Example:
+ * <pre>
+ * Given metasfresh contains C_ScannableCode_Format:
+ *   | Identifier | Name       |
+ *   | fmt        | label_2026 |
+ * And metasfresh contains C_ScannableCode_Format_Part:
+ *   | C_ScannableCode_Format_ID | StartNo | EndNo | DataType         | DateFormat |
+ *   | fmt                       | 1       | 4     | PRODUCT_CODE     |            |
+ *   | fmt                       | 5       | 10    | BEST_BEFORE_DATE | yyMMdd     |
+ *   | fmt                       | 11      | 0     | PACK_ID          |            |
+ * Then parse scanned code and expect:
+ *   | ScannedCode    | ProductNo | BestBeforeDate | PackId | Matches |
+ *   | P10026113077   | P100      | 2026-11-30     | 77     | true    |
+ * </pre>
  */
 @RequiredArgsConstructor
 public class C_ScannableCode_Format_StepDef
@@ -171,8 +190,8 @@ public class C_ScannableCode_Format_StepDef
 		row.getAsOptionalString("LotNo").ifPresent(expected -> assertThat(custom.getLotNumber().orElse("")).as("LotNo of " + scannedCodeStr).isEqualTo(expected));
 		row.getAsOptionalString("PackId").ifPresent(expected -> assertThat(custom.getPackId().orElse("")).as("PackId of " + scannedCodeStr).isEqualTo(expected));
 		row.getAsOptionalString("BestBeforeDate").ifPresent(expected -> {
-			final LocalDate expectedDate = expected.trim().isEmpty() ? null : LocalDate.parse(expected);
-			assertThat(custom.getBestBeforeDate().orElse(null)).as("BestBeforeDate of " + scannedCodeStr).isEqualTo(expectedDate);
+			// an empty cell never reaches here: Cucumber passes it as null, i.e. "not checked"
+			assertThat(custom.getBestBeforeDate().orElse(null)).as("BestBeforeDate of " + scannedCodeStr).isEqualTo(LocalDate.parse(expected));
 		});
 	}
 }
