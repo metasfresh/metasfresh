@@ -155,6 +155,11 @@ class IssueRawMaterialsCommandTest
 	@Nested
 	class assertWithinRemainingDemand
 	{
+		// IMPORTANT: plain string, not a reference to the private
+		// IssueRawMaterialsCommand.MSG_CannotIssueMoreThanRemainingDemand field, so a refactoring that
+		// silently changes the message key also breaks this test.
+		private static final String MSG_CANNOT_ISSUE_MORE_THAN_REMAINING = "de.metas.manufacturing.job.service.CannotIssueMoreThanRemainingDemand";
+
 		private RawMaterialsIssueStep step()
 		{
 			final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -203,7 +208,9 @@ class IssueRawMaterialsCommandTest
 		void qtyIssuedExceedsRemaining_throws()
 		{
 			assertThatThrownBy(() -> IssueRawMaterialsCommand.assertWithinRemainingDemand(step(), qty("10"), new BigDecimal("11")))
-					.isInstanceOf(AdempiereException.class);
+					.isInstanceOf(AdempiereException.class)
+					.extracting(e -> ((AdempiereException)e).getErrorCode())
+					.isEqualTo(MSG_CANNOT_ISSUE_MORE_THAN_REMAINING);
 		}
 
 		@Test

@@ -33,6 +33,7 @@ import java.util.Objects;
 public class IssueRawMaterialsCommand
 {
 	private static final AdMessageKey MSG_EmptyingNotAllowedForHU = AdMessageKey.of("de.metas.manufacturing.job.service.EmptyingNotAllowedForHU");
+	private static final AdMessageKey MSG_CannotIssueMoreThanRemainingDemand = AdMessageKey.of("de.metas.manufacturing.job.service.CannotIssueMoreThanRemainingDemand");
 
 	// Float-noise tolerance for the over-issue cap: an on-scale weightable issue is submitted as an
 	// unrounded JS subtraction (double arithmetic), so a legitimate boundary issue can arrive a few ULP
@@ -169,7 +170,7 @@ public class IssueRawMaterialsCommand
 		// falsely reject a finer-scaled remaining value.)
 		if (qtyIssued.subtract(remainingQtyToIssueMax.toBigDecimal()).compareTo(QTY_OVER_ISSUE_TOLERANCE) > 0)
 		{
-			throw new AdempiereException("Cannot issue more than the line's remaining demand")
+			throw new AdempiereException(MSG_CannotIssueMoreThanRemainingDemand)
 					.markAsUserValidationError()
 					.setParameter("qtyIssued", qtyIssued)
 					.setParameter("remainingQtyToIssueMax", remainingQtyToIssueMax)
