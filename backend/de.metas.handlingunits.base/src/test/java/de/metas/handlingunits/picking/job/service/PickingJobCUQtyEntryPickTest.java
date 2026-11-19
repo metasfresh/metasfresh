@@ -315,6 +315,15 @@ class PickingJobCUQtyEntryPickTest
 				.orElseThrow(() -> new AssertionError("no CU of " + qty + " in box " + boxId));
 	}
 
+	/** a new-mode line counts CUs even when its packing is a box (TU) packing: the line's picking unit is CU and the quantities are in CUs (100 CU, not 25 TU) */
+	private void assertNewModeLineCountsCUs(final PickingJob job)
+	{
+		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
+		assertThat(line.getPickingUnit().isCU()).as("new mode: picking unit is CU").isTrue();
+		assertThat(line.getQtyToPick().toBigDecimal()).as("qty to pick in CUs").isEqualByComparingTo("100");
+		assertThat(line.getQtyRemainingToPick().toBigDecimal()).as("qty remaining in CUs").isEqualByComparingTo("100");
+	}
+
 	/** (a) TU line "TU x 4", Scan once, TU target from the line's packing, N=5: one TU on the line's PI with ONE CU of 5 carrying the label's lot and best-before. */
 	@Test
 	void a_tuLine_scanOnce_n5_oneBoxOnLinePacking_oneCUOf5_withLotAndBestBefore()
@@ -322,7 +331,7 @@ class PickingJobCUQtyEntryPickTest
 		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 		final HUInfo source = sourceBox("QR-A");
 		PickingJob job = createJob(tuPiipId, true);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickingUnit().isTU()).as("TU line").isTrue();
+		assertNewModeLineCountsCUs(job);
 		job = openBoxFromLinePacking(job);
 
 		job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
@@ -393,6 +402,7 @@ class PickingJobCUQtyEntryPickTest
 		setProfile(CUQtyEntryMode.MANUAL);
 		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-E");
 		PickingJob job = createJob(tuPiipId, true);
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickingUnit().isTU()).as("Manual: a TU packing line still counts TUs").isTrue();
 
 		job = pick(job, source, "1", null, false, null); // Manual on a TU line: 1 TU = 4 CUs
 
