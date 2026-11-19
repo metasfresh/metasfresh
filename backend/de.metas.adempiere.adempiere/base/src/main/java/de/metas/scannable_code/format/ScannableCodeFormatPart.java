@@ -118,6 +118,9 @@ public class ScannableCodeFormatPart
 				case ProductionDate:
 					result.productionDate(toLocalDate(valueStr));
 					break;
+				case PackId:
+					result.packId(valueStr);
+					break;
 			}
 
 			return BooleanWithReason.TRUE;

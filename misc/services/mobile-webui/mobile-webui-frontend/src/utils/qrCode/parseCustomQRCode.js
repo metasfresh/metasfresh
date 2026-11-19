@@ -5,6 +5,7 @@ import {
   ATTR_isTUToBePickedAsWhole,
   ATTR_isUnique,
   ATTR_lotNo,
+  ATTR_packId,
   ATTR_productionDate,
   ATTR_productNo,
   ATTR_weightNet,
@@ -74,7 +75,9 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     endPosition: formatPart.endPosition,
   });
   if (valueStr === null) {
-    return { error: `Cannot extract part ${this}` };
+    return {
+      error: `Cannot extract part ${formatPart.type}[${formatPart.startPosition}-${formatPart.endPosition || ''}]`,
+    };
   }
   // console.log('parseCustomQRCodePart', { formatPart, valueStr, string });
 
@@ -84,7 +87,7 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     case 'CONSTANT':
       if (valueStr !== formatPart.constantValue)
         return {
-          error: `Expected constant '${formatPart.constant}' but got '${valueStr}'`,
+          error: `Expected constant '${formatPart.constantValue}' but got '${valueStr}'`,
         };
       break;
     case 'PRODUCT_CODE':
@@ -102,6 +105,10 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     case 'LOT':
       return {
         [ATTR_lotNo]: trimLeadingZeros(valueStr.trim()),
+      };
+    case 'PACK_ID':
+      return {
+        [ATTR_packId]: valueStr,
       };
     case 'BEST_BEFORE_DATE':
       return {
