@@ -52,7 +52,8 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
 import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
-import { selectCULabelFormat } from '../../../utils/cuLabel';
+import { resolveCULabel, routeScannedCode, selectCULabelFormat, SCAN_TYPE_GRAI } from '../../../utils/cuLabel';
+import { isNewMode } from '../../../constants/CUQtyEntryMode';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
 export const NEXT_PickingJob = 'pickingJob';
@@ -136,15 +137,31 @@ const PickLineScanScreen = () => {
 
   const resolveScannedBarcode = useCallback(
     (scannedBarcode) =>
-      convertScannedBarcodeToResolvedResult({
-        scannedBarcode,
-        expectedProductId: productId,
-        expectedProductNo: productNo,
-        isShowPromptWhenOverPicking,
-        customQRCodeFormats,
-        pickingUnit,
-      }),
-    [productId, productNo, isShowPromptWhenOverPicking, customQRCodeFormats, pickingUnit]
+      isNewMode(cuQtyEntryMode)
+        ? convertScannedCULabelToResolvedResult({
+            scannedBarcode,
+            cuLabelFormat,
+            expectedProductNo: productNo,
+            expectedGS1ProductCodes: gs1ProductCodes,
+          })
+        : convertScannedBarcodeToResolvedResult({
+            scannedBarcode,
+            expectedProductId: productId,
+            expectedProductNo: productNo,
+            isShowPromptWhenOverPicking,
+            customQRCodeFormats,
+            pickingUnit,
+          }),
+    [
+      cuQtyEntryMode,
+      cuLabelFormat,
+      gs1ProductCodes,
+      productId,
+      productNo,
+      isShowPromptWhenOverPicking,
+      customQRCodeFormats,
+      pickingUnit,
+    ]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -296,6 +313,35 @@ export const convertScannedBarcodeToResolvedResult = async ({
     expectedProductNo,
     isShowPromptWhenOverPicking,
   });
+};
+
+/**
+ * A line with a CU quantity entry mode reads the scanned string as a CU label with the line's format only.
+ * Returns the label data for the quantity block (lot, best-before) and the raw label; refusals are thrown.
+ */
+// @VisibleForTesting
+export const convertScannedCULabelToResolvedResult = ({
+  scannedBarcode,
+  cuLabelFormat,
+  expectedProductNo,
+  expectedGS1ProductCodes,
+}) => {
+  if (routeScannedCode(scannedBarcode) === SCAN_TYPE_GRAI) {
+    // a GRAI opens a box, it is never read as a label
+    throw { messageKey: 'error.qrCode.invalid' };
+  }
+
+  const { errorKey, lotNo, bestBeforeDate, packId, cuLabel } = resolveCULabel({
+    string: scannedBarcode,
+    format: cuLabelFormat,
+    expectedProductNo,
+    expectedGS1ProductCodes,
+  });
+  if (errorKey) {
+    throw { messageKey: errorKey };
+  }
+
+  return { lotNo, bestBeforeDate, packId, cuLabel, isTUToBePickedAsWhole: false };
 };
 
 //

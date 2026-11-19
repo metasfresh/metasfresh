@@ -21,6 +21,7 @@ import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
+import { isNewMode } from '../../constants/CUQtyEntryMode';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
@@ -45,6 +46,7 @@ const GetQuantityDialog = ({
   customQRCodeFormats,
   //
   readAttributes = [],
+  cuQtyEntryMode,
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
@@ -54,8 +56,9 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
-  const isShowBestBeforeDate = readAttributes.includes(PickAttribute.BestBeforeDate);
-  const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
+  // a CU label carries lot and best-before: the quantity block of a new mode always shows them
+  const isShowBestBeforeDate = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.LotNo);
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({

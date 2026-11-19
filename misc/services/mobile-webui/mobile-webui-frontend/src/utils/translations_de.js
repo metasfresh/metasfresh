@@ -55,6 +55,16 @@ const translations = {
     workstation: 'Arbeitsstation',
     trolley: 'Wagen',
   },
+  picking: {
+    cuLabel: {
+      noPackId: 'Das Etikett enthält keine Packungs-ID. Es wurde nichts gebucht.',
+      formatMismatch: 'Das Etikett passt nicht zum Etikettenformat des Kommissionierprofils. Es wurde nichts gebucht.',
+      noFormat: 'Kein Etikettenformat im Kommissionierprofil hinterlegt.',
+      alreadyPicked:
+        'Diese Packung wurde in diesem Auftrag bereits kommissioniert (Packungs-ID %(packId)s). Es wurde nichts gebucht.',
+      noOpenBox: "Bitte öffnen Sie zuerst eine Kiste (GRAI scannen oder 'Weitere Kiste').",
+    },
+  },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Wechseln zu...',

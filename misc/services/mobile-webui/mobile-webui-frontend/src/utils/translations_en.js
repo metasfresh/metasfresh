@@ -51,6 +51,15 @@ const translations = {
     workstation: 'Workstation',
     trolley: 'Trolley',
   },
+  picking: {
+    cuLabel: {
+      noPackId: 'The label contains no pack ID. Nothing was booked.',
+      formatMismatch: 'The label does not match the label format of the picking profile. Nothing was booked.',
+      noFormat: 'No label format set on the picking profile.',
+      alreadyPicked: 'This pack was already picked in this job (pack ID %(packId)s). Nothing was booked.',
+      noOpenBox: "Please open a box first (scan a GRAI or 'Next box').",
+    },
+  },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Switch to...',

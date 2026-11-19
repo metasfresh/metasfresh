@@ -1,4 +1,7 @@
-import { convertScannedBarcodeToResolvedResult } from '../../../../containers/activities/picking/PickLineScanScreen';
+import {
+  convertScannedBarcodeToResolvedResult,
+  convertScannedCULabelToResolvedResult,
+} from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
   it('convertScannedBarcodeToResolvedResult', async () => {
@@ -23,5 +26,51 @@ describe('PickingLineScanScreen', () => {
       }),
       scannedHU: { huUnitType: 'V' },
     });
+  });
+});
+
+describe('PickingLineScanScreen: new mode label scan', () => {
+  const GS = '\u001d';
+  const label = `0109506000134352` + `91PTST001${GS}17261107` + `10LA0000001${GS}922`;
+  const constant = (startPosition, endPosition, constantValue) => ({
+    type: 'CONSTANT',
+    startPosition,
+    endPosition,
+    constantValue,
+  });
+  const cuLabelFormat = {
+    id: 7,
+    name: 'CU label',
+    parts: [
+      constant(1, 2, '01'),
+      constant(17, 18, '91'),
+      constant(27, 28, '17'),
+      constant(35, 36, '10'),
+      { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
+      { type: 'BEST_BEFORE_DATE', startPosition: 29, endPosition: 34, dateFormat: 'yyMMdd' },
+      { type: 'LOT', startPosition: 37, endPosition: 45 },
+    ],
+  };
+
+  it('fills lot and best-before and keeps the raw label', () => {
+    expect(
+      convertScannedCULabelToResolvedResult({ scannedBarcode: label, cuLabelFormat, expectedProductNo: 'PTST001' })
+    ).toEqual({
+      lotNo: 'LA0000001',
+      bestBeforeDate: '2026-11-07',
+      cuLabel: label,
+      isTUToBePickedAsWhole: false,
+    });
+  });
+
+  it.each([
+    ['another product', label, cuLabelFormat, 'OTHER01', 'activities.picking.qrcode.differentProduct'],
+    ['a code of another format', 'HU#1#{}', cuLabelFormat, 'PTST001', 'picking.cuLabel.formatMismatch'],
+    ['no format on the line', label, undefined, 'PTST001', 'picking.cuLabel.noFormat'],
+    ['a GRAI', '9506000.13435.SER1', cuLabelFormat, 'PTST001', 'error.qrCode.invalid'],
+  ])('refuses %s', (_name, scannedBarcode, format, expectedProductNo, messageKey) => {
+    expect(() =>
+      convertScannedCULabelToResolvedResult({ scannedBarcode, cuLabelFormat: format, expectedProductNo })
+    ).toThrow(expect.objectContaining({ messageKey }));
   });
 });
