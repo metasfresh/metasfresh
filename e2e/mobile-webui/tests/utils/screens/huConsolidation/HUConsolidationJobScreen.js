@@ -6,8 +6,13 @@ import { PickingSlotScreen } from './PickingSlotScreen';
 import { Backend } from '../Backend';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'HUConsolidationJobScreen';
+/** data-testid of the "Scan (GRAI)" button on the job screen */
+const SCAN_GRAI_BUTTON_TESTID = 'scanGRAI-button';
+/** data-testid of the GRAI scanner input opened by the "Scan (GRAI)" button (same input id as the slot screen's scanner) */
+const GRAI_SCANNER_TESTID = 'grai-scanner';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
 
@@ -89,6 +94,54 @@ export const HUConsolidationJobScreen = {
     clickPickingSlot: async ({ pickingSlotId }) => await step(`${NAME} - Click picking slot`, async () => {
         await page.locator(`[data-pickingslotid="${pickingSlotId}"]`).tap();
         await PickingSlotScreen.waitForScreen();
+    }),
+
+    /** Tap the job-level "Scan (GRAI)" button (opens the scanner on the job screen). */
+    clickScanGRAIButton: async () => await step(`${NAME} - Click Scan (GRAI) button`, async () => {
+        await page.getByTestId(SCAN_GRAI_BUTTON_TESTID).tap();
+    }),
+
+    /**
+     * Scan a crate's GRAI on the job screen (types into the scanner's manual input, as PickingSlotScreen.scanGRAI).
+     * @param {string} grai canonical dot form or GS1 AI 8003 form
+     */
+    scanGRAI: async ({ grai }) => await step(`${NAME} - Scan GRAI: ${grai}`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: grai, testId: GRAI_SCANNER_TESTID });
+    }),
+
+    /**
+     * Expect the "Scan (GRAI)" button to be shown or hidden; when shown, optionally also its disabled state.
+     * @param {{visible: boolean, disabled?: boolean}} params
+     */
+    expectScanGRAIButton: async ({ visible, disabled }) => await test.step(`${NAME} - Expect Scan (GRAI) button visible=${visible} disabled=${disabled}`, async () => {
+        const button = page.getByTestId(SCAN_GRAI_BUTTON_TESTID);
+        if (!visible) {
+            await expect(button).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+            return;
+        }
+        await expect(button).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        if (disabled != null) {
+            if (disabled) await expect(button).toBeDisabled();
+            else await expect(button).toBeEnabled();
+        }
+    }),
+
+    /** Expect the job screen's GRAI scanner input to be present / absent. */
+    expectScannerVisible: async (visible) => await test.step(`${NAME} - Expect GRAI scanner visible=${visible}`, async () => {
+        if (visible) await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
+        else await BarcodeScannerComponent.expectNotAttached({ testId: GRAI_SCANNER_TESTID });
+    }),
+
+    /** Expect the picking slot row caption to show the given HU count, e.g. "slot1 (2 HUs)" / "(1 HU)". */
+    expectPickingSlotHUCount: async ({ pickingSlotId, countHUs }) => await test.step(`${NAME} - Expect slot ${pickingSlotId} to hold ${countHUs} HU(s)`, async () => {
+        const unit = countHUs === 1 ? 'HU' : 'HUs';
+        await expect(page.locator(`[data-pickingslotid="${pickingSlotId}"]`))
+            .toContainText(`(${countHUs} ${unit})`, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Expect the pallet (target LU) button caption to no longer show the pallet TYPE name, i.e. it shows the open pallet's QR code. */
+    expectTargetLUCaptionNotContains: async ({ text }) => await test.step(`${NAME} - Expect target LU caption not to contain '${text}'`, async () => {
+        await expect(page.getByTestId('targetLU-button')).not.toContainText(text, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     consolidateAll: async ({ pickingSlotId }) => await step(`${NAME} - Consolidate All`, async () => {
