@@ -845,6 +845,7 @@ public class C_Order_StepDef
 	 *   <li>{@code PaymentRule} — optional string</li>
 	 *   <li>{@code OPT.M_Warehouse_ID.Identifier} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData};
 	 *       when absent the warehouse is not validated</li>
+	 *   <li>{@code IsPOReferenceBuyerOrderNo} — optional boolean</li>
 	 *   <li>(plus further optional columns: AD_User_ID, Bill_BPartner_ID, Bill_Location_ID, Bill_User_ID, EMail,
 	 *       ExternalId, ExternalSystem, AD_InputDataSource_ID, IsDropShip, DropShip_*, IsUseHandOver_Location,
 	 *       HandOver_*, C_Incoterms, IncotermLocation, C_PromotionCode_ID, C_PromotionCode2_ID, C_Project_ID, LC_Date)</li>
@@ -959,6 +960,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_POReference)
 				.ifPresent(poReference -> softly.assertThat(order.getPOReference()).as("POReference for Identifier=%s", identifierStr).isEqualTo(poReference));
+
+		row.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsPOReferenceBuyerOrderNo)
+				.ifPresent(expected -> softly.assertThat(order.isPOReferenceBuyerOrderNo()).as("IsPOReferenceBuyerOrderNo for Identifier=%s", identifierStr).isEqualTo(expected));
 
 		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
 				.ifPresent(externalSystemValue -> {

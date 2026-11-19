@@ -67,6 +67,8 @@ public class AD_InputDataSource_StepDef
 
 		tableRow.getAsOptionalString(I_AD_InputDataSource.COLUMNNAME_InternalName)
 				.ifPresent(inputDataSourceRecord::setInternalName);
+		tableRow.getAsOptionalBoolean(I_AD_InputDataSource.COLUMNNAME_IsEDIChannel)
+				.ifPresent(inputDataSourceRecord::setIsEDIChannel);
 
 		InterfaceWrapperHelper.saveRecord(inputDataSourceRecord);
 
