@@ -1,5 +1,6 @@
 import { getLinesArrayFromActivity } from '../reducers/wfProcesses';
 import * as CompleteStatus from '../constants/CompleteStatus';
+import { isNewMode } from '../constants/CUQtyEntryMode';
 
 export const isUserEditable = ({ activity }) => activity?.dataStored?.isUserEditable ?? false;
 
@@ -65,3 +66,53 @@ export const isLineNotCompleted = ({ line }) => line.completeStatus !== Complete
 export const isCatchWeight = ({ line }) => {
   return !!line.catchWeightUOM;
 };
+
+/**
+ * Scan once: the count the picker is offered for the next box = the last typed count, capped by the open quantity.
+ *
+ * @returns null before the first typed value
+ */
+export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
+  if (lastTypedQty == null) {
+    return null;
+  }
+  const last = Number(lastTypedQty);
+  return qtyOpen == null ? last : Math.min(last, qtyOpen);
+};
+
+/**
+ * The count to remember after a booking. Confirming the offered suggestion (also a capped one) keeps the count the
+ * picker typed; any other count is a newly typed one.
+ */
+export const computeLastTypedQty = ({ previousLastTypedQty, suggestedQty, qtyBooked }) => {
+  const booked = Number(qtyBooked);
+  if (previousLastTypedQty != null && suggestedQty != null && booked === Number(suggestedQty)) {
+    return Number(previousLastTypedQty);
+  }
+  return booked;
+};
+
+/** @returns true when the booking reaches (or exceeds) the open quantity, or when that quantity is unknown */
+export const isLineDoneAfterBooking = ({ qtyBooked, qtyOpen }) => qtyOpen == null || Number(qtyBooked) >= qtyOpen;
+
+/**
+ * What the screen remembers after a scan once booking of a line: the last typed count and the label (with its lot and
+ * best-before) the next booking uses.
+ */
+export const computeCUEntryToRemember = ({
+  previousLastTypedQty,
+  suggestedQty,
+  qtyBooked,
+  cuLabel,
+  lotNo,
+  bestBeforeDate,
+}) => ({
+  lastTypedQty: computeLastTypedQty({ previousLastTypedQty, suggestedQty, qtyBooked }),
+  label: { cuLabel, lotNo, bestBeforeDate },
+});
+
+/** @returns true if at least one of the lines enters CU quantities in a new mode (label scan); false for none / absent field */
+export const hasNewModeLine = (lines) => (lines ?? []).some((line) => isNewMode(line?.cuQtyEntryMode));
+
+/** Quick Pack All books whole lines without a CU label, so it is offered only when no line has a new mode. */
+export const isQuickPackAllAllowed = ({ allowQuickPackAll, lines }) => !!allowQuickPackAll && !hasNewModeLine(lines);

@@ -186,6 +186,26 @@ export const Backend = {
         return responseBody;
     }),
 
+    /**
+     * Calls `POST /picking/job/{wfProcessId}/pickAll` (Quick Pack All) directly with the logged-in user's token, like a
+     * client that bypasses the app's button. Does NOT fail on an error answer: returns it for the test to assert.
+     * @returns {Promise<{status: number, body: object}>}
+     */
+    postPickAll: async ({ wfProcessId }) => await test.step(`Backend: POST pickAll ${wfProcessId}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/picking/job/${wfProcessId}/pickAll`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': 'en_US',
+                'Authorization': getAuthToken(),
+            }
+        });
+        const status = response.status();
+        const text = await response.text();
+        console.log(`pickAll answer (${status}): ${text}`);
+        return { status, body: text };
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {

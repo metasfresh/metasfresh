@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { HUMoveScreen } from './HUMoveScreen';
 import { ChangeHUQtyDialog } from './ChangeHUQtyDialog';
@@ -95,6 +95,12 @@ export const HUManagerScreen = {
 
     expectButtonVisible: async ({ testId }) => await test.step(`${NAME} - Expect "${testId}" button visible`, async () => {
         await expect(page.getByTestId(testId)).toBeVisible();
+    }),
+
+    /** Back button: leaves the HU Manager for the applications list. */
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await HUManagerScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
     }),
 
     openGRAIScreen: async () => await test.step(`${NAME} - Open GRAI Screen`, async () => {

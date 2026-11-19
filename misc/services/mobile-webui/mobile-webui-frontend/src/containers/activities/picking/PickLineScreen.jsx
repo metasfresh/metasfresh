@@ -26,6 +26,7 @@ import { toastError } from '../../../utils/toast';
 import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
 import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
+import { isNewMode } from '../../../constants/CUQtyEntryMode';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -50,6 +51,7 @@ const PickLineScreen = () => {
     qtyToPickRemaining,
     uom,
     manuallyClosed,
+    cuQtyEntryMode,
     additionalHeaderProperties,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
@@ -107,6 +109,8 @@ const PickLineScreen = () => {
         activityId,
         lineId,
         qrCode: pickFromHUQRCode,
+        // a line in a CU quantity entry mode continues where the picker left it: the quantity block reopens
+        resume: isNewMode(cuQtyEntryMode),
       })
     );
   };
@@ -221,6 +225,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     manuallyClosed: line?.manuallyClosed,
+    cuQtyEntryMode: line?.cuQtyEntryMode,
     additionalHeaderProperties: line?.additionalHeaderProperties,
   };
 };
@@ -235,6 +240,7 @@ export const useHeaderUpdate = ({
   qtyToPick,
   qtyPicked,
   additionalHeaderProperties,
+  rootDataAttributes,
 }) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -268,9 +274,21 @@ export const useHeaderUpdate = ({
           },
           ...(additionalHeaderProperties?.entries || []),
         ],
+        rootDataAttributes,
       })
     );
-  }, [url, caption]);
+  }, [
+    url,
+    caption,
+    pickingSlot?.caption,
+    pickingUnit,
+    packingItemName,
+    uom,
+    qtyToPick,
+    qtyPicked,
+    JSON.stringify(rootDataAttributes ?? null),
+    JSON.stringify(additionalHeaderProperties?.entries ?? null),
+  ]);
 };
 
 export default PickLineScreen;

@@ -21,6 +21,7 @@ import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
+import { isNewMode, isScanOnce as isScanOnceMode } from '../../constants/CUQtyEntryMode';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
@@ -45,17 +46,25 @@ const GetQuantityDialog = ({
   customQRCodeFormats,
   //
   readAttributes = [],
+  cuQtyEntryMode,
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
+  nextBoxActions,
+  labelRescan,
   //
   validateQtyEntered,
   getConfirmationPromptForQty,
   onQtyChange,
   onCloseDialog,
 }) => {
-  const isShowBestBeforeDate = readAttributes.includes(PickAttribute.BestBeforeDate);
-  const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
+  // a CU label carries lot and best-before: the quantity block of a new mode always shows them
+  const isShowBestBeforeDate = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.LotNo);
+
+  // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
+  // smaller count than the open qty is not a rejection
+  const isScanOnce = isScanOnceMode(cuQtyEntryMode);
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -68,7 +77,12 @@ const GetQuantityDialog = ({
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
   const [qtyInfo, setQtyInfo] = useState(
-    qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
+    isScanOnce
+      ? // the offered count of the next box (last typed count, capped by the open qty); empty before the first one
+        qtyInitial != null
+        ? qtyInfos.invalidOfNumber(qtyInitial)
+        : qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null })
+      : qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
   );
   const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
@@ -97,7 +111,7 @@ const GetQuantityDialog = ({
     setLotNo(lotNoNew);
   };
 
-  const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
+  const isQtyRejectedRequired = !isScanOnce && Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
     isQtyRejectedRequired && qtyInfos.isValid(qtyInfo)
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
@@ -110,6 +124,8 @@ const GetQuantityDialog = ({
       (!useCatchWeight || catchWeight?.isQtyValid));
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
+  // lot and best-before come from the label; the backend takes them from there, so an edit would be dropped
+  const isLabelAttributeReadOnly = readOnly || isNewMode(cuQtyEntryMode);
 
   const getConfirmationPrompt = useCallback(
     async (qtyInput) => {
@@ -326,7 +342,11 @@ const GetQuantityDialog = ({
       <Dialog className="get-qty-dialog">
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
-          <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
+          <form
+            // the OK button's click (also the Enter key's implicit click) books once; a second, submit-triggered
+            // call would book the same quantity twice (and a native submit would reload the page)
+            onSubmit={(event) => event.preventDefault()}
+          >
             <div className="table-container">
               <table className="table">
                 <tbody>
@@ -376,6 +396,7 @@ const GetQuantityDialog = ({
                               'is-success': useScaleDevice,
                               'is-selected': useScaleDevice,
                             })}
+                            type="button"
                             onClick={() => setUseScaleDevice(true)}
                           >
                             {scaleDevice.caption}
@@ -385,6 +406,7 @@ const GetQuantityDialog = ({
                               'is-success': !useScaleDevice,
                               'is-selected': !useScaleDevice,
                             })}
+                            type="button"
                             onClick={() => setUseScaleDevice(false)}
                           >
                             Manual
@@ -403,7 +425,7 @@ const GetQuantityDialog = ({
                               testId="bestBeforeDate"
                               type="date"
                               value={bestBeforeDate}
-                              disabled={readOnly}
+                              disabled={isLabelAttributeReadOnly}
                               onChange={onBestBeforeDateEntered}
                             />
                           </div>
@@ -422,7 +444,7 @@ const GetQuantityDialog = ({
                               className="input"
                               type="text"
                               value={lotNo}
-                              disabled={readOnly}
+                              disabled={isLabelAttributeReadOnly}
                               onChange={onLotNoEntered}
                             />
                           </div>
@@ -445,6 +467,7 @@ const GetQuantityDialog = ({
                           <DialogButton
                             captionKey="activities.picking.switchToQrCodeInput"
                             className="button"
+                            type="button"
                             onClick={() => setShowCatchWeightQRCodeReader(true)}
                           />
                         </>
@@ -479,6 +502,7 @@ const GetQuantityDialog = ({
                     captionKey="activities.picking.confirmDoneAndCloseTarget"
                     className="is-success"
                     disabled={!allValid}
+                    type="button"
                     onClick={() => onDialogYes({ isCloseTarget: true })}
                   />
                   <br />
@@ -495,12 +519,16 @@ const GetQuantityDialog = ({
                 captionKey="general.cancelText"
                 className="is-danger"
                 disabled={isProcessing}
+                type="button"
                 onClick={onCloseDialog}
                 testId="cancel-button"
               />
+              {nextBoxActions}
             </div>
           </form>
         )}
+        {/* outside the form: a text input of the scanner (manual entry) must not submit the quantity form on Enter */}
+        {!isCustomView() && labelRescan}
       </Dialog>
     </div>
   );
@@ -549,9 +577,12 @@ GetQuantityDialog.propTypes = {
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
   readAttributes: PropTypes.array,
+  cuQtyEntryMode: PropTypes.string,
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
+  nextBoxActions: PropTypes.node,
+  labelRescan: PropTypes.node,
   customQRCodeFormats: PropTypes.array,
 
   // Callbacks
