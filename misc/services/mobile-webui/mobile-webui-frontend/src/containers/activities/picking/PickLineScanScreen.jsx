@@ -193,6 +193,8 @@ const PickLineScanScreen = () => {
     rememberedLastTypedQty: isScanOnce ? cuEntry?.lastTypedQty : undefined,
     suggestedQty,
     isRememberCUEntry: isScanOnce,
+    cuQtyEntryMode,
+    sourceHUQRCode: qrCode,
     onClose,
   });
 
@@ -280,6 +282,15 @@ export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
 // @VisibleForTesting
 export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
   isNewMode(cuQtyEntryMode) ? undefined : qrCode;
+
+/**
+ * The HU the PICK event takes the packs from (`huQRCode`). A line with a CU quantity entry mode takes them from the
+ * source HU of the screen URL ("Kommissionieren aus", or the pick-on-the-fly code); the scanned CU label only gives
+ * the attributes and travels as `cuLabel`. Manual keeps today: the scanned code is the source HU.
+ */
+// @VisibleForTesting
+export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }) =>
+  isNewMode(cuQtyEntryMode) ? sourceHUQRCode : scannedBarcode;
 
 /**
  * Only the hop back from the line screen ("HU verpacken") reopens the quantity block with the remembered label; every
@@ -546,6 +557,8 @@ const usePostQtyPicked = ({
   isRememberCUEntry = false,
   rememberedLastTypedQty,
   suggestedQty,
+  cuQtyEntryMode,
+  sourceHUQRCode,
   onClose,
 }) => {
   const dispatch = useDispatch();
@@ -590,7 +603,7 @@ const usePostQtyPicked = ({
         wfProcessId,
         activityId,
         lineId: lineIdEffective,
-        huQRCode: scannedBarcode,
+        huQRCode: computePickFromHUQRCode({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }),
         qtyPicked: qty,
         qtyRejectedReasonCode: reason,
         qtyRejected,

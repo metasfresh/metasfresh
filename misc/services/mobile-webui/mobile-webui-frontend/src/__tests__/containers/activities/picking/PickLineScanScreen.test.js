@@ -6,6 +6,7 @@ import {
   computeScannedBarcodeParam,
   computeOpenBoxHeaderEntries,
   computeRememberedCULabel,
+  computePickFromHUQRCode,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
@@ -188,5 +189,26 @@ describe('PickingLineScanScreen: re-entry with the remembered label', () => {
     expect(computeRememberedCULabel({ isScanOnce: true, isResume: true, cuEntry })).toEqual(cuEntry.label);
     expect(computeRememberedCULabel({ isScanOnce: true, isResume: false, cuEntry })).toBeUndefined();
     expect(computeRememberedCULabel({ isScanOnce: false, isResume: true, cuEntry })).toBeUndefined();
+  });
+});
+
+describe('PickingLineScanScreen: the HU the PICK event takes the packs from', () => {
+  const sourceHUQRCode = 'HU#1#{"id":"source"}';
+  const label = 'RAW-CU-LABEL';
+
+  it('a CU quantity entry mode picks from the "Kommissionieren aus" HU, never from the scanned label', () => {
+    expect(
+      computePickFromHUQRCode({ cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY', sourceHUQRCode, scannedBarcode: label })
+    ).toBe(sourceHUQRCode);
+    expect(computePickFromHUQRCode({ cuQtyEntryMode: 'SCAN_EACH_CU', sourceHUQRCode, scannedBarcode: label })).toBe(
+      sourceHUQRCode
+    );
+  });
+
+  it('Manual and an absent mode keep today: the scanned code is the pick-from HU', () => {
+    expect(computePickFromHUQRCode({ cuQtyEntryMode: 'MANUAL', sourceHUQRCode, scannedBarcode: 'HU#1#{}' })).toBe(
+      'HU#1#{}'
+    );
+    expect(computePickFromHUQRCode({ sourceHUQRCode, scannedBarcode: 'HU#1#{}' })).toBe('HU#1#{}');
   });
 });
