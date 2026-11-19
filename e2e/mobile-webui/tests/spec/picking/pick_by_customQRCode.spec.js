@@ -510,3 +510,51 @@ test('partial unpick with a GTIN of no product → falls through, no exception',
     expect(errorMessage).not.toContain('GTIN');
     await PickingJobScreen.expectOnProductScanStage();
 });
+
+// A whole-TU custom QR code scanned on the picking job screen reaches PickLineScanScreen via the qrCode URL parameter.
+// The scan posts exactly one PICK.
+// noinspection JSUnusedLocalSymbols
+test('Pick using custom QR code scanned on the job screen: picked exactly once', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick using custom QR code');
+    allure.severity('normal');
+
+    masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+
+    const catchWeightQRCode = `${masterdata.products.BOM.productCode}09999900000123250403260410`;
+    await manufactureBOMs({ catchWeightQRCode, count: 1 });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
+
+    PickingJobScreen.startCollectingPickEvents();
+    await PickingJobScreen.pickHU({ qrCode: catchWeightQRCode, isScanDirectly: true, expectedPickDirectly: true });
+
+    await test.step('One PICK was posted and one qty-picked row was booked', async () => {
+        await PickingJobScreen.expectPickPostedWithHUQRCode({ huQRCode: catchWeightQRCode, expectedCount: 1 });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '99.999 kg' });
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        BOM: {
+                            qtyPicked: [{ qtyPicked: '1 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
+                        },
+                    }
+                }
+            },
+        });
+    });
+
+    await PickingJobScreen.complete();
+});
