@@ -276,6 +276,37 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
   }
 }
 
+// === layout="strip" ===
+// Compact scanner for screens that must keep content below it visible (Verdichtung job screen:
+// the slot rows stay on a phone screen). Additive: every rule is scoped by .barcode-scanner-strip,
+// so callers without the layout prop keep the rules above unchanged.
+.barcode-scanner.barcode-scanner-strip {
+  .hardware-mode-panel.scan-prompt {
+    flex-direction: row;
+    min-height: $btn-height;
+    padding: 0 $panel-padding-x;
+
+    .scan-prompt-icon {
+      font-size: 1.5rem;
+      margin: 0 0.5rem 0 0;
+    }
+
+    .scan-prompt-text {
+      font-size: 1rem;
+    }
+  }
+
+  .barcode-scanner-footer {
+    flex-direction: row;
+    height: auto;
+    padding: $footer-padding-y-top $panel-padding-x;
+
+    .barcode-scanner-btn {
+      flex: 1;
+    }
+  }
+}
+
 @keyframes scan-prompt-pulse {
   from {
     opacity: 0.25;

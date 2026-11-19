@@ -30,6 +30,7 @@ import { PickingSlotScreen } from '../../utils/screens/huConsolidation/PickingSl
 import { HUConsolidationJobScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobScreen';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { pickOneGraiCrate, pickOneCrateWithoutGrai, stampGraiViaHUManager, pickOnePallet } from '../../utils/huConsolidationJobScanFlows';
+import { page } from '../../utils/common';
 import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
 
@@ -136,6 +137,85 @@ test('Scan 3 crates from 2 slots on the job screen, Fertigstellen', async ({ pag
             [slot1.qrCode]: { queue: [] },
             [slot2.qrCode]: { queue: [] },
         },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Phone-size screen (392x726): the scanner is a slim strip, both slot rows and Fertigstellen stay visible; typed entry and gun-style scans book one crate each', async ({ page: _page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan on the job screen');
+    await allure.severity('normal');
+
+    const masterdata = await createJobScanMasterdata({
+        sysconfigs: {
+            'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
+            'de.metas.handlingunit.GS1ExtensionDigit': '0',
+        },
+    });
+    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
+    const { slot1, slot2 } = masterdata.pickingSlots;
+    const { SO1, SO2, SO3 } = masterdata.salesOrders;
+
+    const serialBase = String(Date.now());
+    const grai1 = graiWithSerial(masterdata.packingInstructions.PI_P1.grai, `${serialBase}1`);
+    const grai2 = graiWithSerial(masterdata.packingInstructions.PI_P2.grai, `${serialBase}2`);
+    const grai3 = graiWithSerial(masterdata.packingInstructions.PI_P1.grai, `${serialBase}3`);
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai: grai1, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+    await pickOneGraiCrate({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, grai: grai2, huQrCode: masterdata.handlingUnits.HU2.qrCode });
+    await pickOneGraiCrate({ documentNo: SO3.documentNo, slotQrCode: slot2.qrCode, grai: grai3, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huConsolidation');
+    await HUConsolidationJobsListScreen.waitForScreen();
+    await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+    await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
+
+    await test.step('Phone size: scanner open, strip between the pallet button and the slot rows, everything in view', async () => {
+        await page.setViewportSize({ width: 392, height: 726 });
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 2 });
+        await HUConsolidationJobScreen.clickScanGRAIButton();
+        await HUConsolidationJobScreen.expectScannerOpen(true);
+
+        const boxes = await HUConsolidationJobScreen.getLayoutBoxes({ pickingSlotIds: [slot1.id, slot2.id] });
+        const slotBoxes = [boxes.slots[slot1.id], boxes.slots[slot2.id]];
+        const viewportHeight = boxes.viewport.height;
+        // the scanner sits below the pallet button and above the first slot row
+        expect(boxes.scanner.y).toBeGreaterThanOrEqual(boxes.targetLUButton.y + boxes.targetLUButton.height - 1);
+        expect(boxes.scanner.y + boxes.scanner.height).toBeLessThanOrEqual(slotBoxes[0].y + 1);
+        // both slot rows (with their crate counts) and Fertigstellen are fully inside the screen
+        for (const b of [...slotBoxes, boxes.complete]) {
+            expect(b.y).toBeGreaterThanOrEqual(0);
+            expect(b.y + b.height).toBeLessThanOrEqual(viewportHeight);
+        }
+        // the strip is slim: well under the old panel (12rem panel + 8rem reserved footer = about 320px)
+        expect(boxes.scanner.height).toBeLessThan(150);
+
+        if (process.env.STRIP_SCREENSHOT_PATH) {
+            await page.screenshot({ path: process.env.STRIP_SCREENSHOT_PATH });
+        }
+    });
+
+    await test.step('Typed entry: Enter manually, type the GRAI key by key, Enter -> exactly one crate booked, caption shows the last crate', async () => {
+        await HUConsolidationJobScreen.typeGRAIByHand({ grai: grai1 });
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
+        await HUConsolidationJobScreen.expectScannerCaption({ text: grai1.slice(-6) });
+    });
+
+    await test.step('Gun-style scan while manual entry is open books nothing; back to scanner, the same scan books one crate', async () => {
+        await HUConsolidationJobScreen.openManualEntry();
+        await HUConsolidationJobScreen.scanGRAI({ grai: grai2 });
+        // nothing is booked while the manual input owns the keyboard
+        await page.waitForTimeout(1500);
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
+        await HUConsolidationJobScreen.backToScanner();
+        await HUConsolidationJobScreen.scanGRAI({ grai: grai2 });
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 0 });
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot2.id, countHUs: 1 });
     });
 });
 

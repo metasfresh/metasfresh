@@ -19,6 +19,7 @@ const BarcodeScannerComponent = ({
   onResolvedResult,
   inputPlaceholderText,
   invisible,
+  layout,
 }) => {
   const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
     invisible,
@@ -104,7 +105,7 @@ const BarcodeScannerComponent = ({
   );
 
   return (
-    <div className="barcode-scanner">
+    <div className={'barcode-scanner' + (layout === 'strip' ? ' barcode-scanner-strip' : '')}>
       {!invisible && isProcessing && <Spinner />}
       {/* HardwareModePanel is rendered in EVERY visible mode:
             HARDWARE → full scan-prompt UI + off-screen <input>
@@ -162,10 +163,13 @@ BarcodeScannerComponent.propTypes = {
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
+  // 'strip' = compact one-row scanner for screens that must keep other content visible below it; default = full panel
+  layout: PropTypes.oneOf(['panel', 'strip']),
 };
 
 BarcodeScannerComponent.defaultProps = {
   invisible: false,
+  layout: 'panel',
 };
 
 export default BarcodeScannerComponent;

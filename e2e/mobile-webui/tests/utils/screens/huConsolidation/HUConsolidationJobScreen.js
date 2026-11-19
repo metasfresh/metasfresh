@@ -99,8 +99,10 @@ export const HUConsolidationJobScreen = {
     /** Tap the job-level "Scan (GRAI)" button (opens the scanner on the job screen). */
     clickScanGRAIButton: async () => await step(`${NAME} - Click Scan (GRAI) button`, async () => {
         await page.getByTestId(SCAN_GRAI_BUTTON_TESTID).tap();
-        // The scanner input is attached when React commits, but its window-level key listener is registered in a passive effect
-        // a moment later; a scan typed in between is silently lost. Two animation frames = the effects have run.
+        // An operator sees the scan strip appear before pulling the trigger of the gun (well over 100 ms). Playwright would type
+        // within the same millisecond as the tap: the first open of the scanner registers its window key listener a few ms after
+        // the input is attached (measured: a scan typed < 30 ms after the first tap is lost, 30 ms or more never), which a person cannot hit.
+        // So wait until the strip is shown and two animation frames have passed, as a person would.
         await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
         await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     }),
@@ -143,6 +145,57 @@ export const HUConsolidationJobScreen = {
         if (caption != null) {
             await expect(button).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
         }
+    }),
+
+    /**
+     * Type a GRAI by hand: tap "Enter manually" in the scanner, type the code key by key into the visible manual input
+     * (real key events, as a person on the soft keyboard), press Enter.
+     * @param {string} grai
+     */
+    typeGRAIByHand: async ({ grai }) => await step(`${NAME} - Type GRAI by hand: ${grai}`, async () => {
+        await page.getByTestId('barcode-scanner-enter-manually').tap();
+        const input = page.getByTestId('manual-entry-input');
+        await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await input.focus();
+        await input.pressSequentially(grai);
+        await input.press('Enter');
+    }),
+
+    /** In manual entry: tap "Enter manually" (without typing); the scanner switches to the manual input. */
+    openManualEntry: async () => await step(`${NAME} - Open manual entry`, async () => {
+        await page.getByTestId('barcode-scanner-enter-manually').tap();
+        await page.getByTestId('manual-entry-input').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** In manual entry: tap "back to scanner"; the strip with the scan prompt is shown again. */
+    backToScanner: async () => await step(`${NAME} - Back to scanner`, async () => {
+        await page.getByTestId('barcode-scanner-back-to-scanner').tap();
+        await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
+    }),
+
+    /** Bounding boxes (x, y, width, height in CSS px) of the job screen parts, for the layout checks on a phone-size screen. */
+    getLayoutBoxes: async ({ pickingSlotIds }) => await step(`${NAME} - Read layout boxes`, async () => {
+        const box = async (locator) => {
+            const b = await locator.boundingBox();
+            if (!b) throw new Error('Element has no bounding box: ' + locator);
+            return b;
+        };
+        const slots = {};
+        for (const id of pickingSlotIds) {
+            slots[id] = await box(page.locator(`[data-pickingslotid="${id}"]`));
+        }
+        return {
+            viewport: page.viewportSize(),
+            targetLUButton: await box(page.getByTestId('targetLU-button')),
+            scanner: await box(page.locator('.barcode-scanner')),
+            slots,
+            complete: await box(page.locator('#last-confirm-button')),
+        };
+    }),
+
+    /** Expect the scanner's idle caption (the line next to the barcode icon) to contain the text. */
+    expectScannerCaption: async ({ text }) => await test.step(`${NAME} - Expect scanner caption to contain '${text}'`, async () => {
+        await expect(page.locator('.barcode-scanner .scan-prompt-text-idle')).toContainText(text, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Expect the job screen's GRAI scanner to be open (its input is attached to the DOM; the input is not painted) / closed. */
