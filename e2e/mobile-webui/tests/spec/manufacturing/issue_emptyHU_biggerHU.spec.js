@@ -20,13 +20,17 @@ import { YesNoDialog } from '../../utils/dialogs/YesNoDialog';
  * operator could not declare a physically empty container empty; `computeIssueRequest.js` would also
  * have dropped `qtyRejected`/`qtyRejectedReasonCode` on the way to the backend.
  *
- * The two tests are the two halves of the new contract:
+ * The tests pin the new contract:
  *  - AC-A1: entering a shortfall (0.49 of the 0.5 target) DOES offer the reasons, and picking
  *    "empty (auto. inventory)" books the HU's whole remaining 0.012 KGM (0.502 - 0.49, NOT the 0.01
  *    shortfall) to zero and destroys the HU — and the confirmation prompt NAMES that same 12 g.
  *  - AC-A2: entering the full target (0.5) asks NOTHING — the reason group renders only once a
  *    shortfall exists (`qtyRejected > 0` in GetQuantityDialog.jsx) — and leaves the HU active with its
  *    0.002 KGM remainder, exactly as before this feature.
+ *  - AC-A3: picking a reason other than "empty" on such a step is accepted and leaves the HU alone.
+ *
+ * AC-A1 is also run at real-life size: an 86.75 KGM HU on a 15.4 KGM demand, 15.1 KGM issued, the HU's
+ * remaining 71.65 KGM written off.
  *
  * TC1-TC3 (whole-HU core case) live in issue_emptyHU_writeOff.spec.js; TC4-TC5 (scope) in
  * issue_emptyHU_offering.spec.js; TC6-TC8 in issue_emptyHU_otherReasonsUnchanged.spec.js;
@@ -44,7 +48,8 @@ const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu 
  * Same masterdata shape as issue_emptyHU_otherReasonsUnchanged.spec.js's `createManufacturingMasterdata`
  * (a KGM component with no packing instruction, a single-line BOM, one standalone HU, one manufacturing
  * order) — only the huQty/orderQty pair differs: here the HU deliberately holds MORE than the order
- * needs. No tolerance is needed: both tests enter at most the step's target, never above it.
+ * needs. The issuing tolerance defaults to none: the 0.502 / 0.5 tests enter at most the step's target,
+ * never above it. `issuingTolerancePerc` is set only to mirror a real-life BOM line.
  *
  * `isAllowEmptyingHUs` / `isConfirmEmptyingHU` are CLIENT-level config (MobileUI_MFG_Config), not
  * per-user, so every test sets them explicitly on its own masterdata request rather than relying on
@@ -52,7 +57,7 @@ const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu 
  * AC-A1 switches the confirmation ON because the prompt's WORDING is part of what it pins here; AC-A2
  * leaves it off, having nothing to confirm.
  */
-const createManufacturingMasterdata = async ({ huQty, orderQty, isConfirmEmptyingHU = false }) => {
+const createManufacturingMasterdata = async ({ huQty, orderQty, isConfirmEmptyingHU = false, issuingTolerancePerc }) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -64,7 +69,7 @@ const createManufacturingMasterdata = async ({ huQty, orderQty, isConfirmEmptyin
             warehouses: { wh: {} },
             products: {
                 COMP: { uom: 'KGM' },
-                BOM: { bom: { lines: [{ product: 'COMP', qty: orderQty, uom: 'KGM' }] } },
+                BOM: { bom: { lines: [{ product: 'COMP', qty: orderQty, uom: 'KGM', issuingTolerancePerc }] } },
             },
             handlingUnits: {
                 HU: { product: 'COMP', warehouse: 'wh', qty: huQty },
@@ -223,6 +228,55 @@ test('AC-A3: a non-emptied reason on a bigger HU is accepted and leaves the HU a
             [masterdata.handlingUnits.HU.qrCode]: {
                 isExists: false,
                 description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Single HU 86.75 kg, 15.4 kg demand, 15.1 kg issued, rest 71.65 kg written off', async ({ page }) => {
+    // AC-A1 at real-life size: the HU holds far MORE than the line needs, so the step's target is the
+    // order's 15.4 KGM, not the HU's 86.75 KGM content. The 1 % issuing tolerance only mirrors the real
+    // BOM line and does not change the outcome: 15.1 KGM is a shortfall with it (lower bound 15.246) or without.
+    const masterdata = await createManufacturingMasterdata({ huQty: 86.75, orderQty: 15.4, isConfirmEmptyingHU: true, issuingTolerancePerc: 1 });
+
+    await startIssueStep(masterdata);
+
+    await GetQuantityDialog.expectQtyEntered('15.4');
+    await GetQuantityDialog.typeQtyEntered('15.1');
+    await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: EMPTIED_REASON, offered: true });
+    await GetQuantityDialog.expectQtyNotFoundReasonCaption({ reason: EMPTIED_REASON, caption: EMPTIED_REASON_CAPTION });
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
+    await GetQuantityDialog.clickDone();
+
+    // Expect: the prompt names the HU's remainder 86.75 - 15.1 = 71.65 kg -- not the 0.3 kg order-side
+    // shortfall (15.4 - 15.1).
+    await YesNoDialog.waitForDialog();
+    await YesNoDialog.expectPromptContains('This will write off the remaining 71.65 kg and empty the HU. Continue?');
+    await YesNoDialog.clickYesButton();
+
+    await RawMaterialIssueLineScreen.waitForScreen();
+    await RawMaterialIssueLineScreen.goBack();
+
+    // Expect: 15.1 kg of the 15.4 kg demand issued.
+    await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '15.4 kg', qtyIssued: '15.1 kg' });
+
+    // Expect: the HU is closed (Destroyed) with nothing left, and exactly one completed write-off inventory
+    // booked its 71.65 KGM remainder down to 0.
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                huStatus: 'D',
+                storages: { COMP: '0 KGM' },
+            },
+        },
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                count: 1,
+                docStatus: 'CO',
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+                qtyBook: 71.65,
+                qtyCount: 0,
             },
         },
     });
