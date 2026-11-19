@@ -1,6 +1,7 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
+import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
@@ -97,22 +98,26 @@ test('TC12b: a second lot on the same line books a CU with that lot; the first C
 test('TC12c: the same pack in two jobs: job 1 picked it, job 2 books it without a warning (scope = the current job)', async ({ page }) => {
     allureMeta('Scan each CU two jobs');
 
+    // a product job holds every customer who ordered the product: job 1 = both orders; the picker packs customer A's line only
+    // and completes; customer B's still open order is offered again and becomes job 2 (same product, same lot, same pack)
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }] });
     const lot = uniqueLot();
     const label = packLabelOf({ masterdata, lot, packId: 2 });
 
-    const job1 = await startJob(masterdata, { qtyToDeliver: 1 });
+    const job1 = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1 });
     await scanPack(label);
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.complete();
     await Backend.expect({ pickings: { [job1.pickingJobId]: { docStatus: 'Completed' } } });
 
-    const job2 = await startJob(masterdata, { qtyToDeliver: 1 });
+    const { pickingJobId: job2Id } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 1, productId: masterdata.products.P1.id });
+    await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
     await openScanEachLine({ index: 1 });
     await scanPack(label); // no warning
     await PickingJobScreen.waitForScreen();
-    await Backend.expect({ pickings: { [job2.pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } } });
+    await Backend.expect({ pickings: { [job2Id]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -152,7 +157,9 @@ test('TC12e: the box\'s first pack: a rescan is warned; "Unpack" frees only that
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
         hus: { tu1: { storages: { P1: '1 PCE' } } },
     });
-    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobScreen.clickLineButton({ index: 1 });   // the other CU is still picked: the line screen opens
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.tapPickHUButton();            // "HU verpacken": back to the scan screen, the box is still open
     await PickLineScanScreen.waitForScreen();
     await scanPack(first);
     await Backend.expect({

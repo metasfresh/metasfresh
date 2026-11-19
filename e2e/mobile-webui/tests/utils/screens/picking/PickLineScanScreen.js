@@ -126,6 +126,8 @@ export const PickLineScanScreen = {
     scanGrai: async (graiString) => await step(`${NAME} - Scan GRAI ${graiString}`, async () => {
         await PickLineScanScreen.waitForScreen();
         await PickLineScanScreen.typeQRCode(graiString);
+        // the box is open once the app confirms it with the GRAI ("Box ... opened"); a label scanned before that has no open box
+        await expect(page.locator('.Toastify__toast--success', { hasText: graiString })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Scans a GRAI inside the open quantity block: opens a new box, the block stays. */

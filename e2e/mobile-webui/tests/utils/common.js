@@ -53,7 +53,9 @@ const runAndWatchForErrors = async (func) => {
                 async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
                         // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        return;
+                        // an inner expectErrorToast owns this toast: the step ends when func() ends, not now (resolving here
+                        // would end the step while func() is still validating / closing the toast)
+                        return await new Promise(() => {});
                     }
 
                     const textContent = await toastLocator.textContent();
@@ -129,7 +131,8 @@ export const expectErrorToast = async (title, func, toastValidator) => {
                 ErrorToast.waitToPopup(async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
                         // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        return;
+                        // an inner expectErrorToast owns this toast: do not end this race before func() does
+                        return await new Promise(() => {});
                     }
 
                     const textContent = await toastLocator.textContent();
