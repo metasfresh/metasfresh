@@ -231,16 +231,22 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
     expect(result.packId).toBe(n);
   });
 
-  test.each(['1', '2', '3', '10'])('LABEL(%s) with GTIN 3-16 and PACK_ID reads GTIN, product, best-before, lot and pack ID', (n) => {
-    const format = { name: 'F_GTIN_POS', parts: [{ type: 'GTIN', startPosition: 3, endPosition: 16 }, ...F_POS.parts] };
-    const result = parseCustomQRCode({ string: LABEL(n), format });
-    expect(result.error).toBeUndefined();
-    expect(result[ATTR_GTIN]).toBe('09506000134352');
-    expect(result.productNo).toBe('P000042');
-    expect(result.bestBeforeDate).toBe('2026-11-07');
-    expect(result.lotNo).toBe('A1/B002C3');
-    expect(result.packId).toBe(n);
-  });
+  test.each(['1', '2', '3', '10'])(
+    'LABEL(%s) with GTIN 3-16 and PACK_ID reads GTIN, product, best-before, lot and pack ID',
+    (n) => {
+      const format = {
+        name: 'F_GTIN_POS',
+        parts: [{ type: 'GTIN', startPosition: 3, endPosition: 16 }, ...F_POS.parts],
+      };
+      const result = parseCustomQRCode({ string: LABEL(n), format });
+      expect(result.error).toBeUndefined();
+      expect(result[ATTR_GTIN]).toBe('09506000134352');
+      expect(result.productNo).toBe('P000042');
+      expect(result.bestBeforeDate).toBe('2026-11-07');
+      expect(result.lotNo).toBe('A1/B002C3');
+      expect(result.packId).toBe(n);
+    }
+  );
 
   test('pack ID keeps leading zeros', () => {
     expect(parseCustomQRCode({ string: LABEL('007'), format: F_POS }).packId).toBe('007');
