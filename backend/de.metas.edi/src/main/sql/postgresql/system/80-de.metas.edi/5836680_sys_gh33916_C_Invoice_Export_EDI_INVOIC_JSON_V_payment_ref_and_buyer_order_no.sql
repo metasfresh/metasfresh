@@ -29,7 +29,7 @@ SELECT invoic_v.c_invoice_id,
                                                     WHERE rnd.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'C_Invoice')
                                                       AND rnd.record_id = invoic_v.c_invoice_id
                                                       AND rnd.isactive = 'Y'
-                                                      AND rn.c_referenceno_type_id = (SELECT c_referenceno_type_id FROM c_referenceno_type WHERE name = 'InvoiceReference' AND isactive = 'Y')
+                                                      AND rn.c_referenceno_type_id IN (SELECT c_referenceno_type_id FROM c_referenceno_type WHERE name = 'InvoiceReference' AND isactive = 'Y')
                                                     ORDER BY rnd.created DESC, rnd.c_referenceno_doc_id DESC
                                                     LIMIT 1),
                        'Order_Date', invoic_v.DateOrdered,

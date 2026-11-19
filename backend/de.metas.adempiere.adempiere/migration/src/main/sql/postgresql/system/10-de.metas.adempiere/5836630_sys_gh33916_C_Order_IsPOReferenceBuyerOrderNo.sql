@@ -48,5 +48,5 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585626)
 ;
 
 -- DDL: new column, existing rows get 'N'
-ALTER TABLE C_Order ADD COLUMN IsPOReferenceBuyerOrderNo CHAR(1) DEFAULT 'N' NOT NULL CHECK (IsPOReferenceBuyerOrderNo IN ('Y', 'N'))
+/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN IsPOReferenceBuyerOrderNo CHAR(1) DEFAULT ''N'' NOT NULL CHECK (IsPOReferenceBuyerOrderNo IN (''Y'', ''N''))')
 ;

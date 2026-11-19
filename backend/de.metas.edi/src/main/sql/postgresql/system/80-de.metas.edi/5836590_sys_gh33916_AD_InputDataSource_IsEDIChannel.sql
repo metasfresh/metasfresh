@@ -46,5 +46,5 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585625)
 ;
 
 -- DDL: new column, existing rows get 'N'
-ALTER TABLE AD_InputDataSource ADD COLUMN IsEDIChannel CHAR(1) DEFAULT 'N' NOT NULL CHECK (IsEDIChannel IN ('Y', 'N'))
+/* DDL */ SELECT public.db_alter_table('AD_InputDataSource','ALTER TABLE public.AD_InputDataSource ADD COLUMN IsEDIChannel CHAR(1) DEFAULT ''N'' NOT NULL CHECK (IsEDIChannel IN (''Y'', ''N''))')
 ;
