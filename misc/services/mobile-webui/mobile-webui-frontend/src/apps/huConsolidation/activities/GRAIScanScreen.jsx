@@ -24,7 +24,7 @@ export const GRAIScanScreen = () => {
     back: huConsolidationJobLocation,
   });
 
-  // the same rule as the button on the job screen: nothing left to scan -> back to the job screen
+  // the same visibility rule as the button on the job screen (the button is also disabled without a pallet): nothing left to scan -> back to the job screen
   // (not before the job is loaded, e.g. after a reload of this screen)
   const isJobLoaded = activity?.dataStored?.job != null;
   useEffect(() => {

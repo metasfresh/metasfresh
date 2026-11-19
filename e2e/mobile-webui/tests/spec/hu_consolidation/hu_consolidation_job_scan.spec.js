@@ -58,7 +58,7 @@ import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
 
-// GS1 sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
+// sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
 let sysconfigsToRestore = null;
 test.afterEach(async () => {
     const sysconfigs = sysconfigsToRestore;
@@ -293,6 +293,8 @@ test('Rejected scans: one right message per scan, nothing moves, the scan screen
 
     // Job 1 (BP1): 2 crates in slot1 (as in the reference flow: one is scanned, the other stays so the job keeps a GRAI crate and the scanner stays open) + a pallet (with 1 crate inside) in slot2. Job 2 (BP2): one crate in slot3.
     const masterdata = await createJobScanMasterdata({
+        // the same GRAI scanned twice must reach the backend both times (no duplicate-scan guard)
+        sysconfigs: { 'mobileui.frontend.barcodeScanner.scanDuplicatesIntervalMillis': '0' },
         pickTo: ['TU', 'LU_TU'],
         bpartners: { BP1: { graiRequired: 'Y' }, BP2: { graiRequired: 'Y' } },
         pickingSlots: { slot1: {}, slot2: {}, slot3: {} },
@@ -303,6 +305,8 @@ test('Rejected scans: one right message per scan, nothing moves, the scan screen
             SO4: { bpartner: 'BP1', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
         },
     });
+    // the values found BEFORE the masterdata call; restored by the afterEach above (also when the test failed)
+    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2, slot3 } = masterdata.pickingSlots;
     const { SO1, SO2, SO3, SO4 } = masterdata.salesOrders;
 
@@ -375,7 +379,6 @@ test('Rejected scans: one right message per scan, nothing moves, the scan screen
             hus: { [targetLUQRCode]: { tus: [{ storages: { P1: '4 PCE' }, attributes: { GRAI: graiOwn } }] } },
         });
     });
-    // the scanner swallows the same code within barcodeScanner.scanDuplicatesIntervalMillis (default 0 = off): keep it off on the e2e instance
     await test.step('the same GRAI again -> "No HU found" (crate already moved)', async () => {
         await GRAIScanScreen.scanGRAIExpectError({ grai: graiOwn, message: NO_HU });
         await expectScreenStaysOpen();
