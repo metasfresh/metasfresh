@@ -28,7 +28,7 @@ const MSG_NO_OPEN_BOX = "Please open a box first (scan a GRAI or 'Next box').";
 /**
  * @param {object} p
  * @param {string} p.formatName label format of the profile
- * @param {object[]} p.orders sales orders in the order of the job lines: `{ key, qty, isTUPacked }` (customer `key` is created per order)
+ * @param {object[]} p.orders sales orders in the order of the job lines: `{ key, qty }` (customer `key` is created per order)
  * @param {object[]} [p.customers] customer records of the mobile config (`{ customer, cuQtyEntryMode, cuLabelFormatName }`)
  * @param {string|null} [p.profileMode] profile CU quantity entry mode; null = not sent (Manual)
  * @param {object} [p.sysconfigs] sysconfigs to set for the test
@@ -37,13 +37,13 @@ const MSG_NO_OPEN_BOX = "Please open a box first (scan a GRAI or 'Next box').";
 const createMasterdata = async ({ formatName, orders, customers = [], profileMode = MODE_SCAN_ONCE, sysconfigs, anonymousPickHUsOnTheFly = false }) => {
     const bpartners = {};
     const salesOrders = {};
-    orders.forEach(({ key, qty, isTUPacked = true }) => {
+    orders.forEach(({ key, qty }) => {
         bpartners[`cust${key}`] = {};
         salesOrders[`SO_${key}`] = {
             bpartner: `cust${key}`,
             warehouse: 'wh',
             datePromised: '2025-03-01T00:00:00.000+02:00',
-            lines: [{ product: 'P1', qty, ...(isTUPacked ? { piItemProduct: 'P1_4CU' } : {}) }]
+            lines: [{ product: 'P1', qty, piItemProduct: 'P1_4CU' }]
         };
     });
     const slots = {};
@@ -210,6 +210,8 @@ test('TC5c (Scan once): OK without an open box is refused, nothing is booked; af
     await GetQuantityDialog.typeQtyEntered(5);
     await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_BOX });
 
+    await GetQuantityDialog.expectQtyTarget(10);  // line still open 10
+    // 'no pick-time GRAI screen' is not asserted: no customer of this data requires a GRAI, so that screen cannot appear anyway
     await Backend.expect({
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } },
     });
@@ -313,7 +315,8 @@ test('TC9: a count smaller than the open quantity is not a rejection', async ({ 
 
     await GetQuantityDialog.clickCancel();
     await PickingJobScreen.waitForScreen();
-    // picked-or-rejected total of the line is 4: nothing was booked as rejected (it would show 10)
+    // the line button shows the picked quantity only (4); that nothing was rejected is proven above:
+    // no reject field in the dialog and the open quantity dropped to 6 (a booked rejection would have dropped it to 0)
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '4 Stk' });
 
     await Backend.expect({
@@ -404,26 +407,36 @@ test('TC1c: a count above the open quantity is blocked as today, on a Manual lin
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC26: on a line whose packing is a box packing, a CU booking into the open box is accepted', async ({ page }) => {
+test('TC26: on a line whose packing is a box packing, a SECOND CU booking into the open box is accepted', async ({ page }) => {
     allureMeta('Scan once on a box-packed line');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10, isTUPacked: true }] });
+    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await PickLineScanScreen.openBox();
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(1);
-    // no "Cannot pick TUs when TU pick target is set!": the dialog goes on with the new open quantity
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
+    // the first booking turns the new box into a real box (TU); only a SECOND booking into it reaches the
+    // rule "Cannot pick TUs when TU pick target is set!" (PickingJobPickCommand: TU picking unit + existing TU target)
+    await test.step('second booking into the now existing box: no "Cannot pick TUs when TU pick target is set!"', async () => {
+        await GetQuantityDialog.typeQtyEntered(1);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
+    });
 
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu2', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                        ]
+                    }
                 }
             }
         },
-        hus: { tu1: { storages: { P1: '1 PCE' }, cus: [{ qty: '1 PCE' }] } },
+        hus: { tu1: { storages: { P1: '2 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }] } },
     });
 });

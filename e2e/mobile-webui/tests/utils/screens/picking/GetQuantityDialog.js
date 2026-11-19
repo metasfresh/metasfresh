@@ -27,6 +27,7 @@ export const GetQuantityDialog = {
 
     /** Asserts the open quantity shown by the dialog (`qty-target`, raw number). In Scan once it drops after every booking. */
     expectQtyTarget: async (expected) => await test.step(`${NAME} - Expect qty target '${expected}'`, async () => {
+        await expect(page.getByTestId('qty-target')).toBeVisible();
         await expect(page.getByTestId('qty-target')).toHaveAttribute('data-internalvalue', `${expected}`);
     }),
 
