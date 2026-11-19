@@ -6,6 +6,7 @@ import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
@@ -113,21 +114,37 @@ public class POSOrdersRepository
 	/**
 	 * The card payments whose result is unknown and that name SumUp's client transaction id, but for which metasfresh has
 	 * no SumUp transaction with that id yet (SumUp accepted the checkout, but saving its transaction failed): their
-	 * transaction is to be imported from SumUp. Oldest first. The caller must close the stream.
+	 * transaction is to be imported from SumUp. Only the payments whose checkout started (or, without a recorded checkout
+	 * start, which were created) after the given time, and those whose SumUp lookups are failing ({@code CardLookupFailingSince}
+	 * set), however old: SumUp has not answered for them yet. Oldest first. The caller must close the stream.
 	 */
-	public Stream<POSOrderAndPaymentId> streamCardPaymentsToImport()
+	public Stream<POSCardPaymentToImport> streamCardPaymentsToImport(@NonNull final Instant checkoutStartedAfter)
 	{
+		final Timestamp after = Timestamp.from(checkoutStartedAfter);
+		final ICompositeQueryFilter<I_C_POS_Payment> checkoutStartedLater = queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
+				.addNotNull(I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt) // as in SQL; the in-memory compare filter would accept null
+				.addCompareFilter(I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt, CompareQueryFilter.Operator.GREATER, after);
+		final ICompositeQueryFilter<I_C_POS_Payment> noCheckoutStartCreatedLater = queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
+				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_CardCheckoutStartedAt, null)
+				.addCompareFilter(I_C_POS_Payment.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER, after);
+
 		return queryBL.createQueryBuilder(I_C_POS_Payment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentMethod, POSPaymentMethod.CARD.getCode())
 				.addEqualsFilter(I_C_POS_Payment.COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus.UNKNOWN.getCode())
 				.addNotNull(I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID)
-				.filter(TypedSqlQueryFilter.of("NOT EXISTS (SELECT 1 FROM SUMUP_Transaction t"
-						+ " WHERE t.SUMUP_ClientTransactionId = " + I_C_POS_Payment.Table_Name + "." + I_C_POS_Payment.COLUMNNAME_SUMUP_ClientTransactionID + ")"))
+				.filter(new NoStoredSumUpTransactionFilter(queryBL))
+				.filter(queryBL.createCompositeQueryFilter(I_C_POS_Payment.class)
+						.setJoinOr()
+						.addFilter(checkoutStartedLater)
+						.addFilter(noCheckoutStartCreatedLater)
+						.addNotNull(I_C_POS_Payment.COLUMNNAME_CardLookupFailingSince))
 				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
 				.create()
 				.stream()
-				.map(POSOrdersRepository::toPOSOrderAndPaymentId);
+				.map(record -> POSCardPaymentToImport.of(
+						toPOSOrderAndPaymentId(record),
+						(record.getCardCheckoutStartedAt() != null ? record.getCardCheckoutStartedAt() : record.getCreated()).toInstant()));
 	}
 
 	/**
