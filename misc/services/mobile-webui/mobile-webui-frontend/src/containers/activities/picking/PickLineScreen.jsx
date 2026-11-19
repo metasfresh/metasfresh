@@ -65,6 +65,7 @@ const PickLineScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties,
+    liveRefresh: isNewMode(cuQtyEntryMode),
   });
 
   const onPickFromManufacturingOrderClicked = () => {
@@ -241,6 +242,8 @@ export const useHeaderUpdate = ({
   qtyPicked,
   additionalHeaderProperties,
   rootDataAttributes,
+  // new CU quantity entry modes only: refresh the header while the screen stays mounted; Manual refreshes on url/caption only, as before
+  liveRefresh = false,
 }) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -280,14 +283,18 @@ export const useHeaderUpdate = ({
   }, [
     url,
     caption,
-    pickingSlot?.caption,
-    pickingUnit,
-    packingItemName,
-    uom,
-    qtyToPick,
-    qtyPicked,
-    JSON.stringify(rootDataAttributes ?? null),
-    JSON.stringify(additionalHeaderProperties?.entries ?? null),
+    ...(liveRefresh
+      ? [
+          pickingSlot?.caption,
+          pickingUnit,
+          packingItemName,
+          uom,
+          qtyToPick,
+          qtyPicked,
+          JSON.stringify(rootDataAttributes ?? null),
+          JSON.stringify(additionalHeaderProperties?.entries ?? null),
+        ]
+      : []),
   ]);
 };
 

@@ -40,30 +40,45 @@ const lastHeaderValues = (actions) => {
 
 describe('useHeaderUpdate: additional header entries', () => {
   it('shows a box that is opened later, on the same screen, and the next box after it', () => {
-    const { actions, rerenderWith } = renderWithStore({ additionalHeaderProperties: { entries: [] } });
+    const { actions, rerenderWith } = renderWithStore({
+      additionalHeaderProperties: { entries: [] },
+      liveRefresh: true,
+    });
 
     const box1 = { entries: [{ caption: 'Box', value: 'BOX-1' }] };
-    rerenderWith({ additionalHeaderProperties: box1 });
+    rerenderWith({ additionalHeaderProperties: box1, liveRefresh: true });
     expect(lastHeaderValues(actions)).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-1' })]));
 
     const box2 = { entries: [{ caption: 'Box', value: 'BOX-2' }] };
-    rerenderWith({ additionalHeaderProperties: box2 });
+    rerenderWith({ additionalHeaderProperties: box2, liveRefresh: true });
     const values = lastHeaderValues(actions);
     expect(values).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-2' })]));
     expect(values).not.toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-1' })]));
   });
 
   it('refreshes the picked and to-pick quantities while staying on the line', () => {
-    const { actions, rerenderWith } = renderWithStore({ additionalHeaderProperties: { entries: [] } });
+    const { actions, rerenderWith } = renderWithStore({
+      additionalHeaderProperties: { entries: [] },
+      liveRefresh: true,
+    });
     const shown = () => JSON.stringify(lastHeaderValues(actions));
     expect(shown()).toContain('"10');
 
-    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 4, qtyToPick: 10 });
+    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 4, qtyToPick: 10, liveRefresh: true });
     expect(shown()).toContain('4');
     const afterPick = actions.length;
 
-    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 7, qtyToPick: 12 });
+    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 7, qtyToPick: 12, liveRefresh: true });
     expect(actions.length).toBeGreaterThan(afterPick);
     expect(shown()).toContain('12');
+  });
+
+  it('Manual (no liveRefresh): header refreshes on url / caption only, as on base', () => {
+    const { actions, rerenderWith } = renderWithStore({ additionalHeaderProperties: { entries: [] } });
+    const n = actions.length;
+    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 7, qtyToPick: 12 });
+    expect(actions.length).toBe(n);
+    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 7, qtyToPick: 12, caption: 'Line 2' });
+    expect(actions.length).toBeGreaterThan(n);
   });
 });

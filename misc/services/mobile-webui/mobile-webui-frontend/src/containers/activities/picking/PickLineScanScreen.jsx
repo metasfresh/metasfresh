@@ -155,6 +155,7 @@ const PickLineScanScreen = () => {
     qtyPicked,
     additionalHeaderProperties: { entries: computeOpenBoxHeaderEntries({ isNewModeLine, tuPickingTarget }) },
     rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode },
+    liveRefresh: isNewModeLine,
   });
 
   // not memoized: `nextBox.onGraiScanned` is a new function on every render

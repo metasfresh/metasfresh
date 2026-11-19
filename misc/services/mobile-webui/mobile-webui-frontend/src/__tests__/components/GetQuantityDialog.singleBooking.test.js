@@ -34,18 +34,49 @@ const renderManual = ({ onQtyChange, ...props } = {}) =>
     </Provider>
   );
 
-describe('GetQuantityDialog (Manual): one OK books once', () => {
-  it('a click on OK calls onQtyChange exactly once, although the button also submits the form', async () => {
+const payloads = (fn) => fn.mock.calls.map(([arg]) => arg.isCloseTarget);
+
+describe('GetQuantityDialog (Manual): as on base', () => {
+  it('the form submit (Enter in the quantity field) books with isCloseTarget:false', async () => {
     const onQtyChange = jest.fn(() => Promise.resolve());
-    renderManual({ onQtyChange });
+    const { container } = renderManual({ onQtyChange });
+    await act(async () => {
+      fireEvent.submit(container.querySelector('form'));
+    });
+    expect(payloads(onQtyChange)).toEqual([false]);
+  });
+
+  it('with an LU target, the close-target button is a default (submit) button, first in the form: Enter clicks it', () => {
+    renderManual({ onQtyChange: jest.fn(() => Promise.resolve()), isShowCloseTargetButton: true });
+    const closeTarget = screen.getByTestId('confirmDoneAndCloseTarget-button');
+    expect(closeTarget).not.toHaveAttribute('type', 'button');
+    expect(screen.getByTestId('done-button')).not.toHaveAttribute('type', 'button');
+    expect(screen.getByTestId('cancel-button')).not.toHaveAttribute('type', 'button');
+  });
+});
+
+describe('GetQuantityDialog (new CU mode): one OK books once', () => {
+  it('a click on OK calls onQtyChange exactly once', async () => {
+    const onQtyChange = jest.fn(() => Promise.resolve());
+    renderManual({ onQtyChange, cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' });
     await act(async () => {
       fireEvent.click(screen.getByTestId('done-button'));
     });
     expect(onQtyChange).toHaveBeenCalledTimes(1);
   });
 
-  it('the cancel button is a plain button: it does not submit the form', () => {
-    renderManual({ onQtyChange: jest.fn(() => Promise.resolve()) });
+  it('the form submit does not book; secondary buttons are plain buttons', async () => {
+    const onQtyChange = jest.fn(() => Promise.resolve());
+    const { container } = renderManual({
+      onQtyChange,
+      cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY',
+      isShowCloseTargetButton: true,
+    });
+    await act(async () => {
+      fireEvent.submit(container.querySelector('form'));
+    });
+    expect(onQtyChange).not.toHaveBeenCalled();
     expect(screen.getByTestId('cancel-button')).toHaveAttribute('type', 'button');
+    expect(screen.getByTestId('confirmDoneAndCloseTarget-button')).toHaveAttribute('type', 'button');
   });
 });

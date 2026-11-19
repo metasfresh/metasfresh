@@ -65,6 +65,8 @@ const GetQuantityDialog = ({
   // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
   // smaller count than the open qty is not a rejection
   const isScanOnce = isScanOnceMode(cuQtyEntryMode);
+  // new modes: no implicit form submit by secondary buttons; undefined = default submit, as in Manual before
+  const buttonType = isNewMode(cuQtyEntryMode) ? 'button' : undefined;
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -343,9 +345,13 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form
-            // the OK button's click (also the Enter key's implicit click) books once; a second, submit-triggered
-            // call would book the same quantity twice (and a native submit would reload the page)
-            onSubmit={(event) => event.preventDefault()}
+            // new modes: the OK button's click (also the Enter key's implicit click) books once; a second,
+            // submit-triggered call would book the same quantity twice. Manual keeps the form submit as before.
+            onSubmit={
+              isNewMode(cuQtyEntryMode)
+                ? (event) => event.preventDefault()
+                : () => onDialogYes({ isCloseTarget: false })
+            }
           >
             <div className="table-container">
               <table className="table">
@@ -396,7 +402,7 @@ const GetQuantityDialog = ({
                               'is-success': useScaleDevice,
                               'is-selected': useScaleDevice,
                             })}
-                            type="button"
+                            type={buttonType}
                             onClick={() => setUseScaleDevice(true)}
                           >
                             {scaleDevice.caption}
@@ -406,7 +412,7 @@ const GetQuantityDialog = ({
                               'is-success': !useScaleDevice,
                               'is-selected': !useScaleDevice,
                             })}
-                            type="button"
+                            type={buttonType}
                             onClick={() => setUseScaleDevice(false)}
                           >
                             Manual
@@ -467,7 +473,7 @@ const GetQuantityDialog = ({
                           <DialogButton
                             captionKey="activities.picking.switchToQrCodeInput"
                             className="button"
-                            type="button"
+                            type={buttonType}
                             onClick={() => setShowCatchWeightQRCodeReader(true)}
                           />
                         </>
@@ -502,7 +508,7 @@ const GetQuantityDialog = ({
                     captionKey="activities.picking.confirmDoneAndCloseTarget"
                     className="is-success"
                     disabled={!allValid}
-                    type="button"
+                    type={buttonType}
                     onClick={() => onDialogYes({ isCloseTarget: true })}
                   />
                   <br />
@@ -519,7 +525,7 @@ const GetQuantityDialog = ({
                 captionKey="general.cancelText"
                 className="is-danger"
                 disabled={isProcessing}
-                type="button"
+                type={buttonType}
                 onClick={onCloseDialog}
                 testId="cancel-button"
               />
