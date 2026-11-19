@@ -773,3 +773,29 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
       | ol_rtyGoodsBonus3         | orderRty              | discountGoods           | 1          | true                        | 3                               | -49.92 | rtyTerm                           |
       | ol_rtyCartonBonus3        | orderRty              | discountCarton          | 1          | true                        | 0.6                             | -9.98  | rtyTerm                           |
+
+
+  # ##############################################################################################
+  # A completion whose transaction runs into a DB deadlock when it is committed: the document engine
+  # had already saved the completed order in that transaction, so the deadlocked attempt's order save
+  # is rolled back with it. The retry must write the completed order again, with all its values.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32353_TC79
+  Scenario: A completion whose commit runs into a DB deadlock is retried and saves the completed order
+    Given metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderRtyCommit | true    | retryBP                  | 2026-07-01  |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_rtyCommit10 | orderRtyCommit        | goodsA                  | 10         |
+
+    And the next completion of the order identified by orderRtyCommit runs into a DB deadlock once when it is committed
+    When the order identified by orderRtyCommit is completed
+    Then the completion of the order identified by orderRtyCommit did run into the DB deadlock
+    And validate the created orders
+      | C_Order_ID.Identifier | processed | DocStatus | C_DocType_ID.Identifier | IsApproved |
+      | orderRtyCommit        | true      | CO        | docTypeSalesOrder       | true       |
