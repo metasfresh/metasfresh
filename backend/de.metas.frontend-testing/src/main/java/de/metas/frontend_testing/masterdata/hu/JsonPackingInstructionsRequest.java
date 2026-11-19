@@ -35,6 +35,12 @@ public class JsonPackingInstructionsRequest
 	int qtyTUsPerLU;
 
 	/**
+	 * When true, an {@code M_HU_PI_Attribute} for the {@code SSCC18} attribute is added to the LU packing instruction version,
+	 * so that LUs built from it carry an SSCC18. Requires {@link #lu}.
+	 */
+	boolean luSSCC18;
+
+	/**
 	 * Optional extra LU->TU items of the same LU packing instruction, each bound to a product
 	 * ({@code M_HU_PI_Item.M_Product_ID}), e.g. {@code additionalLUItems: [{product: "XY", qtyTUsPerLU: 40}]}.
 	 * They include the same TU packing instruction as the generic item ({@link #qtyTUsPerLU}). Requires {@link #lu}.

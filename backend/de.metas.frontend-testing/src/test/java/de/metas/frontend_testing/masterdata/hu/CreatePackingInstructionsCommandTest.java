@@ -4,13 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,5 +128,32 @@ public class CreatePackingInstructionsCommandTest
 		assertThatThrownBy(() -> luItems("{\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4,"
 				+ "\"additionalLUItems\":[{\"product\":\"XY\",\"qtyTUsPerLU\":40}]}"))
 				.hasMessageContaining("additionalLUItems");
+	}
+
+	@Test
+	public void execute_luSSCC18_createsSSCC18AttributeOnLUPIVersion() throws Exception
+	{
+		createProduct("P1");
+		final I_M_Attribute sscc18Attribute = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
+		sscc18Attribute.setValue("SSCC18");
+		sscc18Attribute.setName("SSCC18");
+		sscc18Attribute.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
+		InterfaceWrapperHelper.saveRecord(sscc18Attribute);
+
+		luItems("{\"lu\":\"LU\",\"qtyTUsPerLU\":30,\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4,\"luSSCC18\":true}");
+
+		final I_M_HU_PI_Version luVersion = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_PI_Version.class)
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, "LU")
+				.create()
+				.firstOnlyNotNull(I_M_HU_PI_Version.class);
+		final List<I_M_HU_PI_Attribute> luAttributes = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_PI_Attribute.class)
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, luVersion.getM_HU_PI_Version_ID())
+				.create()
+				.list();
+		assertThat(luAttributes).hasSize(1);
+		assertThat(luAttributes.get(0).getM_Attribute_ID()).isEqualTo(sscc18Attribute.getM_Attribute_ID());
+		assertThat(luAttributes.get(0).isActive()).isTrue();
 	}
 }
