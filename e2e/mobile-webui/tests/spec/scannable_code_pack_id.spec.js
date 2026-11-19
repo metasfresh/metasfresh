@@ -57,20 +57,12 @@ const HARDWARE_MODE_SYSCONFIGS = {
     'mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly': 'Y',
 };
 
-// The scanner sysconfigs are global: put back what the masterdata call found, also when the test failed
-// (same pattern as barcode_scanner_modes.spec.js).
-let sysconfigsToRestore = null;
-
-test.afterEach(async () => {
-    const sysconfigs = sysconfigsToRestore;
-    sysconfigsToRestore = null;
-    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
-        await Backend.setSysconfigs(sysconfigs);
-    }
-});
+// The scanner sysconfigs are global. No manual restore is needed here: Backend.createMasterdata already
+// remembers the keys it overwrote (from the response's previousSysconfigs) and the page fixture restores
+// them after every test, also when the test failed (same as barcode_scanner_modes.spec.js).
 
 const createMasterdata = async ({ productCode }) => {
-    const masterdata = await Backend.createMasterdata({
+    return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             sysconfigs: { ...HARDWARE_MODE_SYSCONFIGS },
@@ -103,10 +95,6 @@ const createMasterdata = async ({ productCode }) => {
             customQRCodeFormats: [{ name: FORMAT_NAME, parts: FORMAT_PARTS }],
         },
     });
-    if (sysconfigsToRestore == null) {
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? {};
-    }
-    return masterdata;
 };
 
 const startPickingJob = async (masterdata, { isStayOnScanScreen = false } = {}) => {
@@ -122,7 +110,7 @@ const startPickingJob = async (masterdata, { isStayOnScanScreen = false } = {}) 
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Scan a pack ID label (47 characters): the app posts the pick with the complete label, the backend finds no HU for it', async ({ page: _page }) => {
+test('Scan a pack ID label (47 characters): the app looks the HU up with the complete label, the backend finds no HU for it', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -138,18 +126,20 @@ test('Scan a pack ID label (47 characters): the app posts the pick with the comp
     // the real flow: the label is scanned on the scan screen of the pick line
     await startPickingJob(masterdata, { isStayOnScanScreen: true });
 
-    // The label is recognized by the format (otherwise nothing would be posted). The backend looks for an active
-    // top-level HU whose HU_QRCode attribute equals the label; none does (as in real stock) -> not found.
+    // The label is recognized by the format (otherwise nothing would be sent). A custom-format code is picked as a
+    // whole TU, so before posting a pick the app looks the HU up via picking/hu/byScannedCode (api/picking.js
+    // getScannedHUQRCodeInfo). The backend looks for an active top-level HU whose HU_QRCode attribute equals the
+    // label; none does (as in real stock) -> not found, the scan is refused and no pick is posted.
     // Same pattern as 'Scan custom QR code with unknown lot' in picking.spec.js.
-    PickingJobScreen.startCollectingPickEvents();
+    PickLineScanScreen.startCollectingHULookups();
     await expectErrorToast(`Scan label ${label}: no HU carries it`, async () => {
         await BarcodeScannerComponent.type(label);
     }, ({ textContent }) => {
         expect(textContent).toContain('PICKING_QR_HU_NOT_FOUND_BY_ATTRIBUTE');
     });
 
-    await test.step('The app posted the pick with the complete 47-character label', async () => {
-        await PickingJobScreen.expectPickPostedWithHUQRCode({ huQRCode: label, expectedCount: 1 });
+    await test.step('The app looked the HU up with the complete 47-character label', async () => {
+        await PickLineScanScreen.expectHULookedUpWithScannedCode({ scannedCode: label, expectedCount: 1 });
     });
 
     // the refused scan leaves the app on the scan screen of the line, and nothing is picked
