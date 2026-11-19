@@ -458,6 +458,71 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+  Scenario: Copy of a flagged order made the way a contract change does it keeps the POReference and is not flagged
+    Given metasfresh contains AD_InputDataSource:
+      | Identifier | Name                        | Value                       | InternalName                | IsEDIChannel |
+      | dataSource | poRefBuyerLegacyCopyChannel | poRefBuyerLegacyCopyChannel | poRefBuyerLegacyCopyChannel | Y            |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "poRefBuyerHeaderLegacyCopy",
+            "externalLineId": "poRefBuyerHeaderLegacyCopy_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-poRefBuyerLegacyCopyChannel",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4337010330019",
+                "bpartnerLocationIdentifier": "gln-4337010330019"
+            },
+            "dateRequired": "2022-05-02",
+            "dateOrdered": "2022-04-16",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-poRefBuyerProduct",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "0021234573",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "poRefBuyerHeaderLegacyCopy",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+    And validate the created orders
+      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | order_1               | 0021234573  | true                      |
+    When C_Order header is copied the way a contract change does it
+      | C_Order_ID.Identifier | CopiedOrder.C_Order_ID.Identifier |
+      | order_1               | copiedOrder                       |
+    Then validate the created orders
+      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | copiedOrder           | 0021234573  | false                     |
+      | order_1               | 0021234573  | true                      |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
   Scenario: Unticking the EDI channel keeps the flag of existing orders and affects only later orders
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                    | Value                   | InternalName            | IsEDIChannel |
