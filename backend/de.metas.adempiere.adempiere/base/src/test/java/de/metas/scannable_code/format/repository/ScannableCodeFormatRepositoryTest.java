@@ -6,6 +6,7 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
@@ -67,6 +68,22 @@ class ScannableCodeFormatRepositoryTest
 	private static String label(final String lot)
 	{
 		return "(01)04012345678901(11)250101(10)" + lot;
+	}
+
+	@Test
+	void getById_returnsTheFormat()
+	{
+		final ScannableCodeFormat format = createLabelFormat();
+
+		assertThat(repository.getById(format.getId())).contains(format);
+	}
+
+	@Test
+	void getById_unknownId_returnsEmpty()
+	{
+		createLabelFormat();
+
+		assertThat(repository.getById(ScannableCodeFormatId.ofRepoId(999999))).isEmpty();
 	}
 
 	@Test

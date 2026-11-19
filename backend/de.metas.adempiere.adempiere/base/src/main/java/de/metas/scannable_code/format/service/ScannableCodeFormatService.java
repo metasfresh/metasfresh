@@ -38,7 +38,7 @@ public class ScannableCodeFormatService
 
 	public ScannableCodeFormatsCollection getAll() {return repository.getAll();}
 
-	public Optional<ScannableCodeFormat> getById(@NonNull final ScannableCodeFormatId id) {return repository.getAll().getById(id);}
+	public Optional<ScannableCodeFormat> getById(@NonNull final ScannableCodeFormatId id) {return repository.getById(id);}
 
 	public ScannableCodeFormat create(@NonNull final ScannableCodeFormatCreateRequest request)
 	{
