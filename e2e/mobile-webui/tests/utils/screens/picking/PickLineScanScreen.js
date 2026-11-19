@@ -13,6 +13,9 @@ const nextBoxButton = () => page.getByRole('button', { name: /Weitere Kiste|Next
 const tapNextBox = async () => {
     await PickLineScanScreen.waitForScreen();
     await nextBoxButton().tap();
+    // the button is disabled while the box is being closed and opened; a booking before that is done is refused (no open box).
+    // Done = the button is usable again, or the screen was left for the box list.
+    await expect.poll(async () => (await nextBoxButton().count()) === 0 || await nextBoxButton().isEnabled(), { timeout: SLOW_ACTION_TIMEOUT }).toBe(true);
 };
 
 export const PickLineScanScreen = {
@@ -100,6 +103,37 @@ export const PickLineScanScreen = {
     /** Scans one raw CU label into the quantity block's own scanner (Scan once: a new label replaces the remembered one). */
     rescanCULabel: async (label) => await step(`${NAME} - Rescan CU label in the quantity block`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: label, testId: 'rescanCULabel-input' });
+    }),
+
+    /** Asserts that the open box shown in the header ("Current") carries the given caption (the TU type name of a GRAI box). */
+    expectOpenBoxCaption: async (caption) => await step(`${NAME} - Expect open box '${caption}'`, async () => {
+        await expect(page.locator('tr:has(th:has-text("Current"))').first()).toContainText(caption, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Asserts that "Weitere Kiste" / "Next box" sits in the quantity block's button row, next to OK. */
+    expectNextBoxButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next box button in the quantity block`, async () => {
+        await expect(page.locator('.get-qty-dialog').getByRole('button', { name: /Weitere Kiste|Next box/ })).toBeVisible();
+    }),
+
+    /** Scans a GRAI on the scan step (before the label): opens a new box. */
+    scanGrai: async (graiString) => await step(`${NAME} - Scan GRAI ${graiString}`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(graiString);
+    }),
+
+    /** Scans a GRAI inside the open quantity block: opens a new box, the block stays. */
+    rescanGrai: async (graiString) => await step(`${NAME} - Rescan GRAI ${graiString} in the quantity block`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: graiString, testId: 'rescanCULabel-input' });
+    }),
+
+    /** Scans a GRAI inside the open quantity block that must be refused: error toast with the text, the block stays. */
+    rescanGraiRefused: async (graiString, expectedText) => await step(`${NAME} - Rescan GRAI, expect refusal '${expectedText}'`, async () => {
+        await expectErrorToast(
+            `${NAME} GRAI refusal`,
+            async () => await BarcodeScannerComponent.type({ scannedCode: graiString, testId: 'rescanCULabel-input' }),
+            ({ textContent }) => expect(textContent).toContain(expectedText)
+        );
+        await GetQuantityDialog.waitForDialog();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

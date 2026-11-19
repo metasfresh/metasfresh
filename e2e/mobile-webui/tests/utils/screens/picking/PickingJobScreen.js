@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToast, FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -217,6 +217,10 @@ export const PickingJobScreen = {
         await PickingJobsListScreen.waitForScreen();
     }),
 
+    expectPickAllButtonVisible: async () => await step(`${NAME} - Expect Pick All button to be visible`, async () => {
+        await expect(page.getByTestId('pickAll-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     expectPickAllButtonHidden: async () => await step(`${NAME} - Expect Pick All button to be hidden`, async () => {
         let button = page.getByTestId('pickAll-button');
         await button.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
@@ -235,6 +239,21 @@ export const PickingJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Presses "Fertigstellen" and confirms; the backend must refuse: error toast with the text, the job screen stays. */
+    completeRefused: async ({ expectedError }) => await step(`${NAME} - Complete, expect refusal '${expectedError}'`, async () => {
+        await waitForJobScreenToSettle();
+        await expectErrorToast(
+            `${NAME} complete refusal`,
+            async () => {
+                await page.locator('#last-confirm-button').tap();
+                await YesNoDialog.waitForDialog();
+                await YesNoDialog.clickYesButton();
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+        await PickingJobScreen.waitForScreen();
     }),
 
     completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {

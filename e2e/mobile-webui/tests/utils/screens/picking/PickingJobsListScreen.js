@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
@@ -26,6 +26,30 @@ const containerElement = () => page.locator('#WFLaunchersScreen');
 /** @returns {import('@playwright/test').Locator} */
 const jobScreenElement = () => page.locator('#WFProcessScreen');
 
+
+/**
+ * Waits for a launcher that the test's own freshly created orders produce. The job candidates of new orders are
+ * created asynchronously: a launcher list loaded before that stays empty and is not always refreshed by the app. So
+ * if the launcher is still missing after a round, the picker re-opens the application (back to the applications list
+ * and in again), which loads the list afresh, like a user pulling it again. Bounded: `rounds` rounds of `roundTimeout`.
+ */
+const waitForLauncherWithReload = async (locator, { rounds = 4, roundTimeout = SLOW_ACTION_TIMEOUT } = {}) => {
+    for (let round = 1; ; round++) {
+        try {
+            await locator.waitFor({ state: 'visible', timeout: roundTimeout });
+            return;
+        } catch (error) {
+            if (round >= rounds) throw error;
+        }
+        await test.step(`${NAME} - Launcher not listed yet, reload the list (round ${round})`, async () => {
+            await page.locator(ID_BACK_BUTTON).tap();
+            await ApplicationsListScreen.waitForScreen();
+            await ApplicationsListScreen.startApplication('picking');
+            await PickingJobsListScreen.waitForScreen();
+        });
+    }
+};
+
 export const PickingJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout });
@@ -41,8 +65,13 @@ export const PickingJobsListScreen = {
     // filter, whose facets are computed from the listed jobs) must wait for the job to be present first.
     // Locate by an exact data attribute (e.g. customerId) — never by a documentNo substring, which
     // collides with other jobs in a shared/full-suite run.
-    waitForJobVisible: async ({ documentNo, salesOrderId, customerId, customerLocationId } = {}) => await test.step(`${NAME} - Wait for job visible`, async () => {
-        await locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    waitForJobVisible: async ({ documentNo, salesOrderId, customerId, customerLocationId, reloadIfMissing = false } = {}) => await test.step(`${NAME} - Wait for job visible`, async () => {
+        const button = locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId });
+        if (reloadIfMissing) {
+            await waitForLauncherWithReload(button);
+        } else {
+            await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        }
     }),
 
     /**
@@ -186,10 +215,12 @@ const resolveLauncherTapTarget = async ({ index, qtyToDeliver, productId, custom
     const identified = byAttribute
         ? locateJobButtons({ qtyToDeliver, productId, customerLocationId })
         : locateJobButtons({ index });
-    // a launcher pinned by the test's own product appears once the job candidates of its freshly created orders are
-    // computed, which can take longer than the generic settle budget (several orders, busy stack): wait for it longer
-    const launcherTimeout = productId != null ? Math.max(settleTimeout, VERY_SLOW_ACTION_TIMEOUT) : settleTimeout;
-    await identified.waitFor({ state: 'visible', timeout: launcherTimeout });
+    if (productId != null) {
+        // a launcher pinned by the test's own product: its job candidates are created asynchronously, wait for it and reload the list if needed
+        await waitForLauncherWithReload(identified, { roundTimeout: settleTimeout });
+    } else {
+        await identified.waitFor({ state: 'visible', timeout: settleTimeout });
+    }
 
     // Exactly one launcher must be addressed. A bare index (.nth is always ≤1) is reorder-safe only
     // against a single-candidate list (a prior filterByDocumentNo / single-order masterdata), so the

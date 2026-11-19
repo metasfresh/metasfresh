@@ -30,6 +30,11 @@ export const PickGraiScreen = {
      * Scan a GRAI barcode through the live scanner (the offscreen hardware-scan input).
      * Dispatches keyboard events at document level, terminated with Enter (DataWedge behaviour).
      */
+    /** Asserts the pick-time GRAI capture panel is not on screen. */
+    expectNotShown: async () => await test.step(`${NAME} - Expect screen not shown`, async () => {
+        await expect(containerElement()).toHaveCount(0);
+    }),
+
     scanGrai: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
         await BarcodeScannerComponent.type(graiString);
     }),
