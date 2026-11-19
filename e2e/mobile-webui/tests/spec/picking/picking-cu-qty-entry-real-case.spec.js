@@ -15,12 +15,11 @@ restoreSysconfigsAfterEach(test);
  *  - buyer B (GRAIRequired Y, record Scan each CU + format with pack-ID part): 6 CU, pack ID 3 scanned twice (one warning); 2 boxes.
  * Expected: 13 boxes, 56 CU, 1 warning, `M_Picking_Job.DocStatus` CO.
  *
- * Needs the pack-ID part type of the label-reader change (not merged yet): test.fixme until it is merged.
- * After the merge: replace `test.fixme` with `test`, rebuild the stack, run RED, then GREEN.
+ * Needs the pack-ID part type of the label-reader change (merged on soft_panda_hotfix).
  */
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC20 (waits for the pack-ID part type): real case, buyer A 50 CU in 11 boxes (Scan once), buyer B 6 CU in 2 boxes with one duplicate warning (Scan each CU): 13 boxes, 56 CU, job completed', async ({ page }) => {
+test('TC20: real case, buyer A 50 CU in 11 boxes (Scan once), buyer B 6 CU in 2 boxes with one duplicate warning (Scan each CU): 13 boxes, 56 CU, job completed', async ({ page }) => {
     allureMeta('Real case');
 
     const onceFormat = newFormatName();

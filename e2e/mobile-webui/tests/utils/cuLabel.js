@@ -15,10 +15,9 @@ const PRODUCT_VALUE_LENGTH = 7;
 const LOT_LENGTH = 9;
 
 /**
- * Type code of the pack-ID scannable-code part; null while that part type is not available,
- * then `buildCULabelFormat({withPackId: true})` throws.
+ * Type code of the pack-ID scannable-code part (`C_ScannableCode_Format_Part.DataType` PackId, merged on soft_panda_hotfix).
  */
-export const PACK_ID_PART_TYPE = null;
+export const PACK_ID_PART_TYPE = 'PACK_ID';
 
 const ALNUM = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -97,9 +96,6 @@ export const buildCULabel = ({ gtin, productValue, lot, bestBefore = '2026-11-07
 export const buildCULabelFormat = ({ name, withPackId = false }) => {
     if (!name) {
         throw new Error('buildCULabelFormat: name is required');
-    }
-    if (withPackId && PACK_ID_PART_TYPE === null) {
-        throw new Error('PackId type not merged: a pack-ID format needs the pack-ID part type merged (PACK_ID_PART_TYPE)');
     }
 
     const parts = [

@@ -1,7 +1,7 @@
 // Shared setup of the CU quantity entry specs that drive a product-based picking job in Scan each CU
 // ("scan every pack label"; every scan books one CU of 1 into the open box). Builds on cuQtyEntryScanOnce.js.
 // A Scan each CU label carries a pack ID, so these specs need a format with a pack-ID part
-// (buildCULabelFormat({ withPackId: true })), which waits for the pack-ID part type.
+// (buildCULabelFormat({ withPackId: true })).
 import { PickingJobScreen } from './screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from './screens/picking/PickLineScanScreen';
 import { buildCULabel, uniqueGTIN, uniqueLot } from './cuLabel';

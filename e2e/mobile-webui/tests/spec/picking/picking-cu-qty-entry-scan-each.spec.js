@@ -14,9 +14,8 @@ restoreSysconfigsAfterEach(test);
  * pack ID; the same pack twice in one job is warned; "Unpack" frees a CU (TC11 - TC13 chain, TC12b - TC12e, TC25, TC3 cases
  * "B, L0" and "C, L(1)", TC5c Scan each CU part, TC17, TC23 (i) / (ii), TC26, TC30 variant).
  *
- * Needs the pack-ID part type of the label-reader change (not merged yet): the label format of these specs has a
- * pack-ID part (`buildCULabelFormat({ withPackId: true })` throws until `PACK_ID_PART_TYPE` is set). Until that is merged
- * every case is test.fixme. After the merge: set `PACK_ID_PART_TYPE`, replace `test.fixme` with `test`, rebuild the stack, run RED.
+ * Needs the pack-ID part type of the label-reader change (merged on soft_panda_hotfix): the label format of these specs has a
+ * pack-ID part (`buildCULabelFormat({ withPackId: true })`).
  *
  * Source: one pallet of 20 boxes of 4 pieces (80 pieces). Every case opens box 1 first ("Next box"), except TC5c / TC17 (i) / TC23.
  */
@@ -35,7 +34,7 @@ const newMasterdata = async ({ orders = [{ key: 'A', qty: 3 }], ...rest } = {}) 
     await createScanEachMasterdata({ packFormatName: newFormatName(), orders, ...rest });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC11 -> TC12 -> TC13 (waits for the pack-ID part type): scan IDs 1 and 2 book one CU each into the open box, a rescan of ID 1 is warned, ID 3 books the last CU and finishes the line', async ({ page }) => {
+test('TC11 -> TC12 -> TC13: scan IDs 1 and 2 book one CU each into the open box, a rescan of ID 1 is warned, ID 3 books the last CU and finishes the line', async ({ page }) => {
     allureMeta('Scan each CU chain');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
@@ -79,7 +78,7 @@ test.fixme('TC11 -> TC12 -> TC13 (waits for the pack-ID part type): scan IDs 1 a
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC12b (waits for the pack-ID part type): a second lot on the same line books a CU with that lot; the first CU keeps its lot', async ({ page }) => {
+test('TC12b: a second lot on the same line books a CU with that lot; the first CU keeps its lot', async ({ page }) => {
     allureMeta('Scan each CU lots');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
@@ -95,7 +94,7 @@ test.fixme('TC12b (waits for the pack-ID part type): a second lot on the same li
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC12c (waits for the pack-ID part type): the same pack in two jobs: job 1 picked it, job 2 books it without a warning (scope = the current job)', async ({ page }) => {
+test('TC12c: the same pack in two jobs: job 1 picked it, job 2 books it without a warning (scope = the current job)', async ({ page }) => {
     allureMeta('Scan each CU two jobs');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }] });
@@ -117,7 +116,7 @@ test.fixme('TC12c (waits for the pack-ID part type): the same pack in two jobs: 
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC12d (waits for the pack-ID part type): "Unpack" of a booked CU, then the same label books again without a warning', async ({ page }) => {
+test('TC12d: "Unpack" of a booked CU, then the same label books again without a warning', async ({ page }) => {
     allureMeta('Scan each CU unpick');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
@@ -136,7 +135,7 @@ test.fixme('TC12d (waits for the pack-ID part type): "Unpack" of a booked CU, th
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC12e (waits for the pack-ID part type): the box\'s first pack: a rescan is warned; "Unpack" frees only that CU (the other CU stays), then the rescan books', async ({ page }) => {
+test('TC12e: the box\'s first pack: a rescan is warned; "Unpack" frees only that CU (the other CU stays), then the rescan books', async ({ page }) => {
     allureMeta('Scan each CU first pack of the box');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
@@ -162,7 +161,7 @@ test.fixme('TC12e (waits for the pack-ID part type): the box\'s first pack: a re
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC25 (waits for the pack-ID part type): lots A, A, B: 3 CUs, the box has no lot (mixed), PackId on no box, the first CU keeps lot A', async ({ page }) => {
+test('TC25: lots A, A, B: 3 CUs, the box has no lot (mixed), PackId on no box, the first CU keeps lot A', async ({ page }) => {
     allureMeta('Scan each CU mixed lots');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
@@ -184,7 +183,7 @@ test.fixme('TC25 (waits for the pack-ID part type): lots A, A, B: 3 CUs, the box
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC3 (waits for the pack-ID part type): buyer B line (Scan each CU, pack-ID format): a label without counter (L0) is refused with the pack-ID text; buyer C line (effective format has no pack-ID part): every label is refused with the pack-ID text', async ({ page }) => {
+test('TC3: buyer B line (Scan each CU, pack-ID format): a label without counter (L0) is refused with the pack-ID text; buyer C line (effective format has no pack-ID part): every label is refused with the pack-ID text', async ({ page }) => {
     allureMeta('Scan each CU needs a pack ID');
 
     const plainFormat = newFormatName();
@@ -212,7 +211,7 @@ test.fixme('TC3 (waits for the pack-ID part type): buyer B line (Scan each CU, p
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC5c (Scan each CU, waits for the pack-ID part type): a label scan without an open box is refused with the open-a-box text, nothing is booked; after "Next box" the same scan books', async ({ page }) => {
+test('TC5c (Scan each CU): a label scan without an open box is refused with the open-a-box text, nothing is booked; after "Next box" the same scan books', async ({ page }) => {
     allureMeta('Scan each CU needs an open box');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
@@ -228,7 +227,7 @@ test.fixme('TC5c (Scan each CU, waits for the pack-ID part type): a label scan w
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC17 (Scan each CU, waits for the pack-ID part type): customer GRAI required: no pick-time GRAI screen; (i) first scan without a box is refused, (ii) after "Next box" it books into the box', async ({ page }) => {
+test('TC17 (Scan each CU): customer GRAI required: no pick-time GRAI screen; (i) first scan without a box is refused, (ii) after "Next box" it books into the box', async ({ page }) => {
     allureMeta('Scan each CU GRAI required customer');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2, graiRequired: 'Y' }] });
@@ -242,7 +241,7 @@ test.fixme('TC17 (Scan each CU, waits for the pack-ID part type): customer GRAI 
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC23 (i) / (ii) (Scan each CU, waits for the pack-ID part type): box packing line: first scan refused without a box; "Next box", then every picked HU is a CU inside a TU of a TU packing (no loose CU)', async ({ page }) => {
+test('TC23 (i) / (ii) (Scan each CU): box packing line: first scan refused without a box; "Next box", then every picked HU is a CU inside a TU of a TU packing (no loose CU)', async ({ page }) => {
     allureMeta('Scan each CU open box first');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
@@ -261,7 +260,7 @@ test.fixme('TC23 (i) / (ii) (Scan each CU, waits for the pack-ID part type): box
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC26 (Scan each CU, waits for the pack-ID part type): line whose packing is "TU x 4 Stk", box open: a second CU is booked into the open box (no "Cannot pick TUs when TU pick target is set!")', async ({ page }) => {
+test('TC26 (Scan each CU): line whose packing is "TU x 4 Stk", box open: a second CU is booked into the open box (no "Cannot pick TUs when TU pick target is set!")', async ({ page }) => {
     allureMeta('Scan each CU box packing');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
@@ -275,7 +274,7 @@ test.fixme('TC26 (Scan each CU, waits for the pack-ID part type): line whose pac
 });
 
 // noinspection JSUnusedLocalSymbols
-test.fixme('TC30 variant (waits for the pack-ID part type): counters 9 and 10 give pack IDs "9" and "10" through the open-end pack-ID part', async ({ page }) => {
+test('TC30 variant: counters 9 and 10 give pack IDs "9" and "10" through the open-end pack-ID part', async ({ page }) => {
     allureMeta('Scan each CU open-end pack ID');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
