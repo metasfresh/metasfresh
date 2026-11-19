@@ -934,6 +934,7 @@ public class PickingJobService implements PickingSlotListener
 	{
 		return PickingJobPickAllCommand.builder()
 				.pickingJobService(this)
+				.configService(configService)
 				//
 				.pickingJobId(pickingJobId)
 				.callerId(callerId)
