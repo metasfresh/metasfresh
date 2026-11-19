@@ -13,6 +13,7 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
@@ -116,6 +117,7 @@ public class PickingJobHUService
 
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
@@ -132,7 +134,37 @@ public class PickingJobHUService
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
 	{
-		return huGraiService.getSnapshots(huIds);
+		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds));
+	}
+
+	/**
+	 * In the CU quantity entry modes the picked HU is the CU (a virtual, non-aggregate HU) inside a box (TU).
+	 * The GRAI of such a pick is stored on the box, and a CU has no GRAI snapshot of its own,
+	 * so a CU is replaced by its parent TU. Any other HU (TU, LU, aggregate VHU, CU without a TU parent) stays as is.
+	 */
+	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds)
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		for (final HuId huId : huIds)
+		{
+			result.add(getGraiCarrierHuId(huId));
+		}
+		return result.build();
+	}
+
+	@NonNull
+	private HuId getGraiCarrierHuId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if (!handlingUnitsBL.isVirtual(hu) || handlingUnitsBL.isAggregateHU(hu))
+		{
+			return huId;
+		}
+
+		final I_M_HU parentHU = handlingUnitsDAO.retrieveParent(hu);
+		return parentHU != null && handlingUnitsBL.isTransportUnit(parentHU)
+				? HuId.ofRepoId(parentHU.getM_HU_ID())
+				: huId;
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)

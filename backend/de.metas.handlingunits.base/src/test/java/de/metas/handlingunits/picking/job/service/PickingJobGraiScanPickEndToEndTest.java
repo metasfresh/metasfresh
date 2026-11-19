@@ -545,4 +545,70 @@ class PickingJobGraiScanPickEndToEndTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
 	}
+
+	/**
+	 * AC16 / TC19 (CU quantity entry modes): the picked HU of a new-mode line is the CU (virtual HU) inside the open box (TU).
+	 * The GRAI lives on the box, so the completion-time GRAI check must read the box: a box without GRAI is refused.
+	 */
+	@Test
+	void pickedCUInsideBox_boxWithoutGrai_isRefused()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+		final HuId cuId = createBoxWithCU(productId).cuId;
+
+		assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(cuId)).assertAllGraisAssigned())
+				.as("a CU in a box without GRAI must fail the GRAI count check")
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/** AC16 / TC19: same as above, but the box carries its GRAI: accepted. */
+	@Test
+	void pickedCUInsideBox_boxWithGrai_isAccepted()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+		final BoxWithCU box = createBoxWithCU(productId);
+		final GRAI grai = GRAI.parse(GRAI_CANONICAL);
+
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			try (final IAutoCloseable ignored = helper.huService.temporarySetNewHContextForProcessing())
+			{
+				helper.huService.setGrais(box.tuId, GRAISet.of(grai));
+			}
+		});
+
+		helper.huService.getGraiSnapshots(ImmutableSet.of(box.cuId)).assertAllGraisAssigned();
+	}
+
+	/** Manual / TU picks are unchanged: a picked TU without GRAI is still refused. */
+	@Test
+	void pickedTUWithoutGrai_isStillRefused()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+		final HuId tuId = createBoxWithCU(productId).tuId;
+
+		assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	private static final class BoxWithCU
+	{
+		private final HuId tuId;
+		private final HuId cuId;
+
+		private BoxWithCU(final HuId tuId, final HuId cuId)
+		{
+			this.tuId = tuId;
+			this.cuId = cuId;
+		}
+	}
+
+	private BoxWithCU createBoxWithCU(final ProductId productId)
+	{
+		createGraiTuPI(productId, true); // TU PI WITH the GRAI slot
+		final HuPackingInstructionsId tuPIId = helper.huService.resolveHuPackingInstructionsId(GRAI.parse(GRAI_CANONICAL));
+		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("5", productId));
+		final de.metas.handlingunits.model.I_M_HU cu = CollectionUtils.singleElement(
+				Services.get(de.metas.handlingunits.IHandlingUnitsDAO.class).retrieveIncludedHUs(tuId));
+		return new BoxWithCU(tuId, HuId.ofRepoId(cu.getM_HU_ID()));
+	}
 }
