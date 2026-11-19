@@ -17,6 +17,8 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -150,24 +153,25 @@ public class AssertExpectationsCommandServices
 				.create()
 				.list();
 
-		final Set<Integer> inOutLineIds = allocs.stream()
-				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
-				.filter(inOutLineId -> inOutLineId > 0)
+		final Set<InOutLineId> inOutLineIds = allocs.stream()
+				.map(alloc -> InOutLineId.ofRepoIdOrNull(alloc.getM_InOutLine_ID()))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		final Map<Integer, I_M_InOutLine> linesById = InterfaceWrapperHelper.loadByIds(inOutLineIds, I_M_InOutLine.class).stream()
-				.collect(Collectors.toMap(I_M_InOutLine::getM_InOutLine_ID, line -> line));
-		final Set<Integer> inOutIds = linesById.values().stream()
-				.map(I_M_InOutLine::getM_InOut_ID)
+		final Map<InOutLineId, I_M_InOutLine> linesById = InterfaceWrapperHelper.loadByRepoIdAwares(inOutLineIds, I_M_InOutLine.class).stream()
+				.collect(Collectors.toMap(line -> InOutLineId.ofRepoId(line.getM_InOutLine_ID()), line -> line));
+		final Set<InOutId> inOutIds = linesById.values().stream()
+				.map(line -> InOutId.ofRepoId(line.getM_InOut_ID()))
 				.collect(Collectors.toSet());
-		final Map<Integer, I_M_InOut> inOutsById = InterfaceWrapperHelper.loadByIds(inOutIds, I_M_InOut.class).stream()
-				.collect(Collectors.toMap(I_M_InOut::getM_InOut_ID, inout -> inout));
+		final Map<InOutId, I_M_InOut> inOutsById = InterfaceWrapperHelper.loadByRepoIdAwares(inOutIds, I_M_InOut.class).stream()
+				.collect(Collectors.toMap(inout -> InOutId.ofRepoId(inout.getM_InOut_ID()), inout -> inout));
 
 		final ArrayList<ShipmentAllocation> result = new ArrayList<>();
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
 		{
 			final HuId tuId = HuId.ofRepoIdOrNull(alloc.getM_TU_HU_ID());
-			final I_M_InOutLine line = linesById.get(alloc.getM_InOutLine_ID());
-			final I_M_InOut inout = line != null ? inOutsById.get(line.getM_InOut_ID()) : null;
+			final InOutLineId lineId = InOutLineId.ofRepoIdOrNull(alloc.getM_InOutLine_ID());
+			final I_M_InOutLine line = lineId != null ? linesById.get(lineId) : null;
+			final I_M_InOut inout = line != null ? inOutsById.get(InOutId.ofRepoId(line.getM_InOut_ID())) : null;
 			result.add(new ShipmentAllocation(tuId, inout != null ? DocStatus.ofNullableCode(inout.getDocStatus()) : null));
 		}
 		return result;

@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 
 /**
  * Moves the crate that the scanned code resolves to (searched in all slots of the job) onto the open pallet.
- * Rejects on error, so that the scanner can show the message.
+ * Rejects on error.
  */
 export const useConsolidateByScan = ({ wfProcessId }) => {
   const dispatch = useDispatch();

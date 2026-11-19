@@ -38,7 +38,7 @@ public class UpdateBPartnerCommandTest
 		// when
 		UpdateBPartnerCommand.builder()
 				.request(JsonUpdateBPartnerRequest.builder()
-						.bpartnerId(String.valueOf(created.getId().getRepoId()))
+						.bpartnerId(created.getId())
 						.graiRequired(GRAIRequired.Yes)
 						.build())
 				.build()

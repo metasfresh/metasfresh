@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
-import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,8 +12,7 @@ public class UpdateBPartnerCommand
 
 	public void execute()
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(Integer.parseInt(request.getBpartnerId()));
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(request.getBpartnerId(), I_C_BPartner.class);
 		bpartner.setGRAIRequired(request.getGraiRequired().getCode());
 		InterfaceWrapperHelper.saveRecord(bpartner);
 	}

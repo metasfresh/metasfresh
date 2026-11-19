@@ -7,8 +7,10 @@ import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotQueueQuery;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.picking.api.PickingSlotId;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -20,16 +22,12 @@ import java.util.Set;
  */
 @EqualsAndHashCode
 @ToString
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class HUConsolidationJobCrates
 {
 	public static final HUConsolidationJobCrates EMPTY = new HUConsolidationJobCrates(ImmutableMap.of());
 
-	private final ImmutableMap<HuId, PickingSlotId> pickingSlotIdsByHuId;
-
-	private HUConsolidationJobCrates(@NonNull final ImmutableMap<HuId, PickingSlotId> pickingSlotIdsByHuId)
-	{
-		this.pickingSlotIdsByHuId = pickingSlotIdsByHuId;
-	}
+	@NonNull private final ImmutableMap<HuId, PickingSlotId> pickingSlotIdsByHuId;
 
 	public static HUConsolidationJobCrates of(@NonNull final ImmutableMap<HuId, PickingSlotId> pickingSlotIdsByHuId)
 	{
@@ -63,6 +61,11 @@ public final class HUConsolidationJobCrates
 	}
 
 	public boolean isEmpty() {return pickingSlotIdsByHuId.isEmpty();}
+
+	public int getCountHUs(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return (int)pickingSlotIdsByHuId.values().stream().filter(pickingSlotId::equals).count();
+	}
 
 	public ImmutableSet<HuId> getHuIds() {return pickingSlotIdsByHuId.keySet();}
 

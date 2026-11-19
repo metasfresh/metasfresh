@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.grai.GRAIRequired;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,8 +16,8 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonUpdateBPartnerRequest
 {
-	/** The {@code C_BPartner_ID} from the createMasterdata response ({@code bpartners.<key>.id}), as a string. */
-	@NonNull String bpartnerId;
+	/** The {@code C_BPartner_ID} from the createMasterdata response ({@code bpartners.<key>.id}). */
+	@NonNull BPartnerId bpartnerId;
 
 	/** New {@code C_BPartner.GRAIRequired}, by code: {@code 'Y'}, {@code 'N'} or {@code 'D'}. */
 	@NonNull GRAIRequired graiRequired;

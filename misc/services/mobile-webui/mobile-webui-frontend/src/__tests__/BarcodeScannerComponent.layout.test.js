@@ -39,6 +39,45 @@ const pressKey = (key) => {
   fireEvent.keyUp(window, { key });
 };
 
+// Pins the DOM the shared scanner renders for a caller that passes no layout, per settings set.
+// Every other mobile screen uses the scanner this way, so the pinned markup must not change.
+const renderDomOf = (settings) => renderScanner({ settings }).container.innerHTML;
+
+describe('BarcodeScannerComponent default DOM (caller without layout)', () => {
+  it('hardware default, manual enabled', () => {
+    expect(
+      renderDomOf({
+        'barcodeScanner.mode.hardware.enabled': 'Y',
+        'barcodeScanner.mode.camera.enabled': 'N',
+        'barcodeScanner.mode.manual.enabled': 'Y',
+        'barcodeScanner.defaultMode': 'hardware',
+      })
+    ).toMatchSnapshot();
+  });
+
+  it('manual default', () => {
+    expect(
+      renderDomOf({
+        'barcodeScanner.mode.hardware.enabled': 'Y',
+        'barcodeScanner.mode.camera.enabled': 'N',
+        'barcodeScanner.mode.manual.enabled': 'Y',
+        'barcodeScanner.defaultMode': 'manual',
+      })
+    ).toMatchSnapshot();
+  });
+
+  it('hardware default, camera enabled', () => {
+    expect(
+      renderDomOf({
+        'barcodeScanner.mode.hardware.enabled': 'Y',
+        'barcodeScanner.mode.camera.enabled': 'Y',
+        'barcodeScanner.mode.manual.enabled': 'Y',
+        'barcodeScanner.defaultMode': 'hardware',
+      })
+    ).toMatchSnapshot();
+  });
+});
+
 describe('BarcodeScannerComponent layout="strip"', () => {
   it('adds the strip class to the root; the default root class stays exactly "barcode-scanner"', () => {
     const strip = renderScanner({ settings: SETTINGS(), props: { layout: 'strip' } });

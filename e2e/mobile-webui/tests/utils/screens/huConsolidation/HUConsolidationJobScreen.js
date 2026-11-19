@@ -1,4 +1,4 @@
-import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { captureScreenshotIfEnabled, expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUConsolidationJobsListScreen } from './HUConsolidationJobsListScreen';
 import { SelectHUConsolidationTargetScreen } from './SelectHUConsolidationTargetScreen';
@@ -99,10 +99,7 @@ export const HUConsolidationJobScreen = {
     /** Tap the job-level "Scan (GRAI)" button (opens the scanner on the job screen). */
     clickScanGRAIButton: async () => await step(`${NAME} - Click Scan (GRAI) button`, async () => {
         await page.getByTestId(SCAN_GRAI_BUTTON_TESTID).tap();
-        // An operator sees the scan strip appear before pulling the trigger of the gun (well over 100 ms). Playwright would type
-        // within the same millisecond as the tap: the first open of the scanner registers its window key listener a few ms after
-        // the input is attached (measured: a scan typed < 30 ms after the first tap is lost, 30 ms or more never), which a person cannot hit.
-        // So wait until the strip is shown and two animation frames have passed, as a person would.
+        // A person sees the strip before pulling the trigger: wait until it is attached and painted (two frames).
         await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
         await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     }),
@@ -192,6 +189,42 @@ export const HUConsolidationJobScreen = {
             complete: await box(page.locator('#last-confirm-button')),
         };
     }),
+
+    /**
+     * While manual entry is open, a gun-style scan (key events on the document) must not be booked by the background scanner:
+     * no consolidateByScan request is sent and the slot keeps its count.
+     * The observation window is the time a booking request would need to leave after the scan; there is no event for "nothing happens".
+     */
+    expectGunScanNotBooked: async ({ grai, pickingSlotId, countHUs }) => await step(`${NAME} - Gun-style scan during manual entry is not booked: ${grai}`, async () => {
+        const NO_BOOKING_OBSERVATION_MS = 1500;
+        let requests = 0;
+        const onRequest = (req) => { if (req.url().includes('/consolidateByScan')) requests++; };
+        page.on('request', onRequest);
+        try {
+            await BarcodeScannerComponent.type({ scannedCode: grai });
+            await page.waitForTimeout(NO_BOOKING_OBSERVATION_MS);
+        } finally {
+            page.off('request', onRequest);
+        }
+        expect(requests).toBe(0);
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId, countHUs });
+    }),
+
+    /** Expect the slot rows' crate counts (e.g. "(2 HUs)") to be fully on screen and inside their row, however long the slot name is. */
+    expectSlotCountsInView: async ({ pickingSlotIds }) => await step(`${NAME} - Expect slot crate counts in view`, async () => {
+        for (const id of pickingSlotIds) {
+            const row = page.locator(`[data-pickingslotid="${id}"]`);
+            const count = row.locator('.caption-suffix span');
+            await expect(count).toBeInViewport({ ratio: 1, timeout: SLOW_ACTION_TIMEOUT });
+            const rowBox = await row.boundingBox();
+            const countBox = await count.boundingBox();
+            expect(countBox.x + countBox.width).toBeLessThanOrEqual(rowBox.x + rowBox.width);
+            expect(countBox.width).toBeGreaterThan(0);
+        }
+    }),
+
+    /** Capture mode only (UAT_CAPTURE): screenshot of the whole window. */
+    captureScreenshot: async ({ name }) => await captureScreenshotIfEnabled(name),
 
     /** Expect the scanner's idle caption (the line next to the barcode icon) to contain the text. */
     expectScannerCaption: async ({ text }) => await test.step(`${NAME} - Expect scanner caption to contain '${text}'`, async () => {

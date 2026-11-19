@@ -11,7 +11,7 @@ const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+
  * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config.
  *
  * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object}} [overrides]
- *   optional replacements of the whole section of the same name (TC2 adds a second partner, a third slot and a pallet pick); `handlingUnits` is added to the two source HUs (TC17 adds an existing pallet); `language` replaces 'en_US' (user + masterdata).
+ *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata).
  */
 export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits } = {}) => {
     return await Backend.createMasterdata({

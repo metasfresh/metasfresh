@@ -176,13 +176,13 @@ export const Backend = {
      * between picking and consolidation.
      *
      * @param {Object} args
-     * @param {string} args.bpartnerId - the C_BPartner_ID returned by createMasterdata (`bpartners.<key>.id`).
+     * @param {number} args.bpartnerId - the C_BPartner_ID returned by createMasterdata (`bpartners.<key>.id`).
      * @param {'Y'|'N'|'D'} args.graiRequired - the new C_BPartner.GRAIRequired.
      */
     updateBPartner: async ({ bpartnerId, graiRequired }) => await test.step(`Backend: update bpartner ${bpartnerId} GRAIRequired=${graiRequired}`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/updateBPartner`, {
-            data: { bpartnerId: String(bpartnerId), graiRequired },
+            data: { bpartnerId, graiRequired },
             headers: {
                 'Content-Type': 'application/json',
             }

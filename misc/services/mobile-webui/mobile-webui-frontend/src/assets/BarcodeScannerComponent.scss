@@ -277,9 +277,8 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
 }
 
 // === layout="strip" ===
-// Compact scanner for screens that must keep content below it visible (Verdichtung job screen:
-// the slot rows stay on a phone screen). Additive: every rule is scoped by .barcode-scanner-strip,
-// so callers without the layout prop keep the rules above unchanged.
+// Compact one-row scanner for screens that must keep content below it visible.
+// Every rule is scoped by .barcode-scanner-strip, so the default layout is unchanged.
 .barcode-scanner.barcode-scanner-strip {
   .hardware-mode-panel.scan-prompt {
     flex-direction: row;

@@ -26,7 +26,7 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
   const [lastScannedGRAI, setLastScannedGRAI] = useState(null);
   // the scanner closes by itself when the pallet is closed or the last GRAI crate has left the slots
   const isScannerVisible = isScannerOpen && isCurrentTargetSet && isGRAIScanEnabled;
-  // forget the open state when the last GRAI crate has left the slots, so the scanner does not re-open by itself when the button comes back
+  // forget the open state and the last crate when the last GRAI crate has left the slots, so the scanner does not re-open by itself when the button comes back
   useEffect(() => {
     if (!isGRAIScanEnabled) {
       setScannerOpen(false);
@@ -73,7 +73,7 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
           onResolvedResult={({ scannedBarcode }) => setLastScannedGRAI(scannedBarcode)}
           inputPlaceholderText={
             lastScannedGRAI
-              ? trl('huConsolidation.HUConsolidationActivity.lastCrate', { code: lastScannedGRAI.slice(-6) })
+              ? trl('huConsolidation.HUConsolidationActivity.lastCrate', { code: lastScannedGRAI.trim().slice(-6) })
               : trl('huConsolidation.HUConsolidationActivity.scanGRAI')
           }
         />
@@ -111,13 +111,20 @@ const PickingSlots = ({ applicationId, wfProcessId, activityId, disabled }) => {
       {pickingSlots.map(({ pickingSlotId, pickingSlotQRCode, countHUs }) => (
         <ButtonWithIndicator
           key={pickingSlotId}
-          caption={computePickingSlotCaption({ pickingSlotQRCode, countHUs })}
+          caption={toQRCodeDisplayableNoFail(pickingSlotQRCode)}
+          additionalCssClass="has-caption-suffix"
           disabled={disabled}
           onClick={() =>
             history.push(pickingSlotScreenLocation({ applicationId, wfProcessId, activityId, pickingSlotId }))
           }
           data-pickingslotid={pickingSlotId}
-        />
+        >
+          {countHUs != null && (
+            <div className="row caption-suffix">
+              <span>{computeCountHUsText(countHUs)}</span>
+            </div>
+          )}
+        </ButtonWithIndicator>
       ))}
     </div>
   );
@@ -129,8 +136,4 @@ PickingSlots.propTypes = {
   disabled: PropTypes.bool.isRequired,
 };
 
-const computePickingSlotCaption = ({ pickingSlotQRCode, countHUs }) => {
-  let caption = toQRCodeDisplayableNoFail(pickingSlotQRCode);
-  if (countHUs != null) caption += ' (' + countHUs + ' ' + (countHUs === 1 ? 'HU' : 'HUs') + ')';
-  return caption;
-};
+const computeCountHUsText = (countHUs) => '(' + countHUs + ' ' + (countHUs === 1 ? 'HU' : 'HUs') + ')';

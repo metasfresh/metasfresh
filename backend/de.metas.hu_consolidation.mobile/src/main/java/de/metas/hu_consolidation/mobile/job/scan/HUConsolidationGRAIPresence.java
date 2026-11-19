@@ -20,19 +20,8 @@ public class HUConsolidationGRAIPresence
 
 	public boolean isAnyGRAIPresent(@NonNull final Collection<HuId> huIds)
 	{
-		// Without this guard HUQueryBuilder.addOnlyHUIds(empty) drops the filter and the query would run over all active HUs
-		if (huIds.isEmpty())
-		{
-			return false;
-		}
-
-		return handlingUnitsDAO
-				.createHUQueryBuilder()
-				.setOnlyActiveHUs(true)
-				.setOnlyTopLevelHUs()
-				.addOnlyHUIds(huIds)
-				.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_GRAI)
-				.firstId()
-				.isPresent();
+		return HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, huIds)
+				.map(query -> query.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_GRAI).firstId().isPresent())
+				.orElse(false);
 	}
 }

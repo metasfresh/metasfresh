@@ -33,6 +33,15 @@ export const holdForCaptureIfEnabled = async () => {
     await page.waitForTimeout(CAPTURE_HOLD_MS);
 };
 
+// Capture mode only (UAT_CAPTURE): save a full-window screenshot into the test's output folder and attach it to the report.
+// Called from screen objects, never from a spec. NO-OP unless UAT_CAPTURE is set.
+export const captureScreenshotIfEnabled = async (name) => {
+    if (!UAT_CAPTURE || page == null) return;
+    const path = test.info().outputPath(`${name}.png`);
+    await page.screenshot({ path });
+    await test.info().attach(name, { path, contentType: 'image/png' });
+};
+
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 
 let nextErrorWatcherId = 101;

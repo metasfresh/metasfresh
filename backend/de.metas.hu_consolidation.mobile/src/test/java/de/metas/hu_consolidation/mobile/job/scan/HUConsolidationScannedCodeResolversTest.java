@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * TC21 part 1: resolver chain "scanned code -> crate in this job's slots".
+ * Resolver chain "scanned code -> crate in this job's slots".
  * Runs on real (POJO) HU / attribute rows, so the query filters (active, top-level, HU ids of the job, GRAI value) are exercised:
  * a HU of another job that carries the same GRAI is planted and must never be reached.
  */

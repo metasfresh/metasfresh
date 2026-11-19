@@ -30,19 +30,9 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 			return Optional.empty();
 		}
 
-		// Without this guard HUQueryBuilder.addOnlyHUIds(empty) drops the filter and the query would run over all active HUs
-		if (jobCrates.isEmpty())
-		{
-			throw new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND).setParameter("grai", grai.toCanonicalString());
-		}
-
-		final ImmutableSet<HuId> huIds = handlingUnitsDAO
-				.createHUQueryBuilder()
-				.setOnlyActiveHUs(true)
-				.setOnlyTopLevelHUs()
-				.addOnlyHUIds(jobCrates.getHuIds())
-				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
-				.listIds();
+		final ImmutableSet<HuId> huIds = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, jobCrates.getHuIds())
+				.map(query -> query.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString()).listIds())
+				.orElse(ImmutableSet.of());
 
 		if (huIds.isEmpty())
 		{

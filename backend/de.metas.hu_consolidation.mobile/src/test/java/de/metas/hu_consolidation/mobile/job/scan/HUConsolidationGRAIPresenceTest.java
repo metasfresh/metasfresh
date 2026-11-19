@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * TC21 part 2: presence of a GRAI on an active top-level HU among the given crates (the "Scan (GRAI)" button rule).
+ * Presence of a GRAI on an active top-level HU among the given crates (the "Scan (GRAI)" button rule).
  * Runs on real (POJO) HU / attribute rows, so the query filters (active, top-level, attribute not null) are exercised.
  */
 class HUConsolidationGRAIPresenceTest
@@ -117,7 +117,7 @@ class HUConsolidationGRAIPresenceTest
 	@Test
 	void topLevelLUQueuedInSlotWithGRAI_counts()
 	{
-		// slot case (AC27): the queued HU is a top-level LU that itself carries the GRAI
+		// slot case: the queued HU is a top-level LU that itself carries the GRAI
 		final I_M_HU lu = createTopLevelHU(GRAI_CODE);
 		assertThat(presence.isAnyGRAIPresent(ImmutableList.of(id(lu)))).isTrue();
 	}

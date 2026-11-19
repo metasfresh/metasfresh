@@ -140,3 +140,20 @@
     font-size: 1rem;
   }
 }
+
+// Caption followed by a suffix on the same line: a long caption is shortened with "...", the suffix always stays visible.
+.button.has-caption-suffix .full-size-btn .caption-btn .rows {
+  flex-flow: row;
+  align-items: center;
+  justify-content: center;
+
+  .row {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .row.caption-suffix {
+    flex: 0 0 auto;
+    padding-left: 0.4em;
+  }
+}
