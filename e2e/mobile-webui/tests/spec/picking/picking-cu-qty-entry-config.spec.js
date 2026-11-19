@@ -12,7 +12,7 @@ import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
 const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
 const MODE_SCAN_EACH = 'SCAN_EACH_CU';
 
-const createMasterdata = async ({ formatName }) => {
+const createMasterdata = async ({ formatName, formatNameC }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -31,12 +31,13 @@ const createMasterdata = async ({ formatName }) => {
                         // buyer A: no record at all (not listed)
                         // buyer B: record with Scan each CU
                         { customer: "custB", cuQtyEntryMode: MODE_SCAN_EACH },
-                        // buyer C: record with empty mode and empty format -> profile values
-                        { customer: "custC" },
+                        // buyer C: a job-options record with an EMPTY mode (its own format only): the mode falls back to the profile's.
+                        // (a customer listed without any CU value gets no record at all, the same path as A)
+                        { customer: "custC", cuLabelFormatName: formatNameC },
                     ],
                 }
             },
-            customQRCodeFormats: [buildCULabelFormat({ name: formatName })],
+            customQRCodeFormats: [buildCULabelFormat({ name: formatName }), buildCULabelFormat({ name: formatNameC })],
             bpartners: { "custA": {}, "custB": {}, "custC": {} },
             warehouses: { "wh": {} },
             pickingSlots: { slot1: {}, slot2: {}, slot3: {} },
@@ -82,7 +83,7 @@ test('TC2: CU quantity entry mode per picking line (profile default, customer re
     allure.story('CU quantity entry mode per line');
     allure.severity('normal');
 
-    const masterdata = await createMasterdata({ formatName: `cuqe-cfg-${uniqueProductValue()}` });
+    const masterdata = await createMasterdata({ formatName: `cuqe-cfg-${uniqueProductValue()}`, formatNameC: `cuqe-cfg-c-${uniqueProductValue()}` });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -97,7 +98,7 @@ test('TC2: CU quantity entry mode per picking line (profile default, customer re
     const expectedModes = [
         { index: 1, customer: 'A (no record)', slot: masterdata.pickingSlots.slot1, mode: MODE_SCAN_ONCE },
         { index: 2, customer: 'B (record Scan each CU)', slot: masterdata.pickingSlots.slot2, mode: MODE_SCAN_EACH },
-        { index: 3, customer: 'C (record with empty values)', slot: masterdata.pickingSlots.slot3, mode: MODE_SCAN_ONCE },
+        { index: 3, customer: 'C (record with empty mode)', slot: masterdata.pickingSlots.slot3, mode: MODE_SCAN_ONCE },
     ];
     for (const { index, customer, slot, mode } of expectedModes) {
         await test.step(`Line ${index}, customer ${customer}: mode ${mode}`, async () => {

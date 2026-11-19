@@ -13,7 +13,8 @@ import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
 /**
  * Characterization of the Manual mode (AC2): these tests PASS before and after the CU quantity entry change.
  * The mobile config never sends `cuQtyEntryMode` / `cuLabelFormatName`, so the profile stays Manual.
- * A test format with the marker parts is active (created, not linked to the profile): Manual must ignore it.
+ * A test format with the marker parts is active (created, not linked to the profile) as a precondition; that Manual
+ * does not read labels with it is covered by TC1d (jest), not here: no label is scanned in these tests.
  */
 const createMasterdata = async ({ pickTo }) => {
     return await Backend.createMasterdata({
@@ -152,7 +153,14 @@ test('TC1b: Manual profile, partial pick asks a reason, "New TU" behaves as toda
             expectQtyEntered: '10',
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
         });
-        await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '10 TU', qtyPicked: '3 TU' });
+        // partial with a reason: the line is yellow and the 7 TU not found count as rejected (the next scan pre-fills 0)
+        await PickingJobScreen.expectLineButton({ index: 2, color: 'yellow', qtyToPick: '10 TU', qtyPicked: '3 TU' });
+        await openLineScanScreen({ index: 2 });
+        await PickLineScanScreen.typeQRCode(masterdata.handlingUnits.HU2.qrCode);
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered('0');
+        await GetQuantityDialog.clickCancel();
+        await PickingJobLineScreen.goBack(); // Cancel closes the scan screen: back on the line screen
     });
 
     await test.step('Line 3: "New TU" target, then pick', async () => {
