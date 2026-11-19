@@ -21,7 +21,7 @@ import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
-import { isNewMode } from '../../constants/CUQtyEntryMode';
+import { CUQtyEntryMode, isNewMode } from '../../constants/CUQtyEntryMode';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
@@ -60,6 +60,10 @@ const GetQuantityDialog = ({
   const isShowBestBeforeDate = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.LotNo);
 
+  // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
+  // smaller count than the open qty is not a rejection
+  const isScanOnce = cuQtyEntryMode === CUQtyEntryMode.SCAN_ONCE_ENTER_QTY;
+
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
     promptQuestion: '',
@@ -71,7 +75,9 @@ const GetQuantityDialog = ({
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
   const [qtyInfo, setQtyInfo] = useState(
-    qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
+    isScanOnce
+      ? qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null })
+      : qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
   );
   const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
@@ -100,7 +106,7 @@ const GetQuantityDialog = ({
     setLotNo(lotNoNew);
   };
 
-  const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
+  const isQtyRejectedRequired = !isScanOnce && Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
     isQtyRejectedRequired && qtyInfos.isValid(qtyInfo)
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)

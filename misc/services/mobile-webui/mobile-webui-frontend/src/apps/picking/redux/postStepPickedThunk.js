@@ -24,6 +24,7 @@ export const postStepPickedThunk =
     lotNo,
     setGrais,
     graiCodes,
+    cuLabel,
     isCloseTarget = false,
   }) =>
   async (dispatch, getState) => {
@@ -46,6 +47,7 @@ export const postStepPickedThunk =
       lotNo,
       setGrais,
       graiCodes,
+      cuLabel,
       isCloseTarget,
     });
 

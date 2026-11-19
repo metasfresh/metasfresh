@@ -492,6 +492,7 @@ const usePostQtyPicked = ({
     barcodeType,
     setGrais,
     graiCodes,
+    cuLabel,
   }) => {
     const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
 
@@ -520,7 +521,8 @@ const usePostQtyPicked = ({
         qtyRejectedReasonCode: reason,
         qtyRejected,
         catchWeight,
-        pickWholeTU: resolvedBarcodeData?.isTUToBePickedAsWhole ?? false,
+        // a CU label books packs, never a whole TU
+        pickWholeTU: cuLabel ? false : resolvedBarcodeData?.isTUToBePickedAsWhole ?? false,
         checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
         setBestBeforeDate: bestBeforeDate !== undefined,
         bestBeforeDate,
@@ -528,6 +530,7 @@ const usePostQtyPicked = ({
         lotNo,
         setGrais,
         graiCodes,
+        cuLabel,
         isCloseTarget,
       })
     ).then(({ isPickingJobCompleted }) => !isPickingJobCompleted && isDone && onClose());

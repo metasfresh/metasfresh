@@ -289,6 +289,7 @@ const ScanHUAndGetQtyComponent = ({
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
+      cuLabel: resolvedBarcodeData.cuLabel,
       bestBeforeDate,
       productionDate,
       lotNo,
