@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
@@ -27,6 +28,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
+import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
+import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -927,6 +931,62 @@ class PickingJobCUQtyEntryPickTest
 		helper.pickingJobService.closeLUAndTUPickingTargets(job);
 
 		assertThat(queuedSlotsOf(boxA)).as("Manual: the close queues the box on the slot scanned last, as before").contains(slotB);
+	}
+
+	/**
+	 * (x3) Mixed job: customer A uses a new mode (own job options row), customer B is Manual (the profile default). Closing all targets
+	 * queues A's box on A's line slot only and B's box on the slot scanned last, as today; B's target is closed.
+	 */
+	@Test
+	void x3_mixedJob_newModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
+	{
+		setProfile(CUQtyEntryMode.MANUAL);
+		final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
+		final BPartnerId customerAId = helper.shipToBPLocationId.getBpartnerId();
+		helper.updateMobileProfile(profile -> {
+			final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A new mode", profile.getDefaultPickingJobOptions());
+			helper.configService.updatePickingJobOptionsCUQtyEntry(optionsA, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId());
+			return profile.toBuilder()
+					.customerConfigs(PickingCustomerConfigsCollection.ofCollection(ImmutableList.of(
+							PickingCustomerConfig.builder().customerId(customerAId).pickingJobOptionsId(optionsA).build())))
+					.build();
+		});
+		final HUInfo sourceA = sourceBox("QR-X3A");
+		final HUInfo sourceB = sourceBox("QR-X3B");
+		createPackageable("salesOrder-x3-A", helper.shipToBPLocationId);
+		createPackageable("salesOrder-x3-B", customerB);
+		PickingJob job = helper.pickingJobService.createPickingJob(
+						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.PRODUCT)
+								.pickerId(UserId.ofRepoId(1234))
+								.isAllowPickingAnyHU(true)
+								.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+		assertThat(job.getLines()).as("one line per customer").hasSize(2);
+		final PickingJobLine lineA = job.getLines().stream()
+				.filter(line -> line.getCustomerId().equals(customerAId))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no line of customer A"));
+		final PickingJobLine lineB = job.getLines().stream()
+				.filter(line -> !line.getCustomerId().equals(customerAId))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no line of customer B"));
+		job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+		job = pickOnLine(job, lineA.getId(), sourceA, "3", label(PRODUCT_NO, LOT_A));
+		final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box of A")).getTuIdNotNull();
+		final PickingSlotId slotB = createPickingSlot("SLOT-B");
+		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
+		job = helper.pickingJobService.setTUPickingTarget(job, lineB.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+		job = pickOnLine(job, lineB.getId(), sourceB, "1", null);
+		final HuId boxB = job.getTuPickingTargetEffective(lineB.getId()).orElseThrow(() -> new AssertionError("no box of B")).getTuIdNotNull();
+		final PickingSlotId slotC = createPickingSlot("SLOT-C");
+		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotC, "SLOT-C")); // the picker scans this slot last
+
+		final PickingJob jobClosed = helper.pickingJobService.closeLUAndTUPickingTargets(job);
+
+		assertThat(queuedSlotsOf(boxA)).as("new-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
+		assertThat(queuedSlotsOf(boxB)).as("Manual customer B: the slot scanned last, as before").contains(slotC);
+		assertThat(jobClosed.getTuPickingTargetEffective(lineB.getId())).as("Manual line's target closed").isEmpty();
 	}
 
 	/**

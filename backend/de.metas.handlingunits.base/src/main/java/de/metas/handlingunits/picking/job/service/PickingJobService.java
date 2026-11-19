@@ -756,7 +756,7 @@ public class PickingJobService implements PickingSlotListener
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
 		final List<PickingJobLine> newModeLines = pickingJob.getLines().stream()
-				.filter(line -> configService.getPickingJobOptions(line.getCustomerId()).getCuQtyEntryMode().isNewMode())
+				.filter(line -> huService.isCUQtyEntryNewMode(line.getCustomerId()))
 				.collect(ImmutableList.toImmutableList());
 		if (newModeLines.isEmpty())
 		{
