@@ -5,7 +5,7 @@
 --
 -- Fix: for each of the two, a directed relation type from the view to C_Invoice_Candidate. Its target reference selects the invoice
 -- candidates of the order line by C_Invoice_Candidate.AD_Table_ID (C_OrderLine) + Record_ID (the line's key C_OrderLine_ID).
--- IsActive is copied from the original relation type, so a line row of the view and the order line agree on every database.
+-- IsActive is copied from the original relation type when this migration runs; a later change of 540221/540275 must be applied to 540514/540515 too.
 --
 -- IDs allocated from idserver.metas.de on 2026-11-19:
 --   AD_MigrationScript 5836580 (this script); AD_Reference 542158, 542159; AD_RelationType 540514, 540515
