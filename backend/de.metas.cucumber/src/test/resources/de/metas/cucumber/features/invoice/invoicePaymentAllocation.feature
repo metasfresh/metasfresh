@@ -2925,9 +2925,9 @@ Feature: invoice payment allocation
     And the reversal of invoice salesCM_cma_100 is identified by reversalCM_cma_100
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | OPT.IsPaid |
-      | salesInv_cma_100        | customer1               | bpartner_location_1               | 30 Tage netto | true      | CO        | false      |
-      | salesCM_cma_100         | customer1               | bpartner_location_1               | 30 Tage netto | true      | RE        | true       |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | OPT.IsPaid |
+      | salesInv_cma_100 | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false      |
+      | salesCM_cma_100  | customer1     | bpartner_location_1    | 30 Tage netto | true      | RE        | true       |
 
     # After reversal, the CM has allocations: alloc_cm (original, now reversed) + alloc_cm_reversed (reversal) + alloc_cm_rev_pair (CM vs its reversal)
     And validate C_AllocationLines for invoice salesCM_cma_100
@@ -3454,7 +3454,7 @@ Feature: invoice payment allocation
 
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
-      | salesCM                 | customer1               | bpartner_location_1               | 30 Tage netto | true      | RE        | true       |
+      | salesCM                 | customer1                | bpartner_location_1               | 30 Tage netto | true      | RE        | true       |
 
     And validate C_AllocationLines for invoice salesCM
       | OPT.C_AllocationHdr_ID.Identifier |
@@ -3512,7 +3512,7 @@ Feature: invoice payment allocation
 
     Then validate created invoices
       | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | OPT.IsPaid |
-      | purchaseInv             | vendor1               | bpartner_location_2               | 30 Tage netto | true      | RE        | true       |
+      | purchaseInv  | vendor1       | bpartner_location_2    | 30 Tage netto | true      | RE        | true       |
 
     And validate C_AllocationLines for invoice purchaseInv
       | OPT.Amount | OPT.C_AllocationHdr_ID |
@@ -3569,7 +3569,7 @@ Feature: invoice payment allocation
 
     Then validate created invoices
       | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | OPT.IsPaid |
-      | salesInv                | customer1               | bpartner_location_1               | 30 Tage netto | true      | RE        | true       |
+      | salesInv     | customer1     | bpartner_location_1    | 30 Tage netto | true      | RE        | true       |
 
     And validate C_AllocationLines for invoice salesInv
       | OPT.Amount | OPT.C_AllocationHdr_ID |
@@ -3626,7 +3626,7 @@ Feature: invoice payment allocation
 
     Then validate created invoices
       | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | OPT.IsPaid |
-      | purchaseCM              | vendor1               | bpartner_location_2               | 30 Tage netto | true      | RE        | true       |
+      | purchaseCM   | vendor1       | bpartner_location_2    | 30 Tage netto | true      | RE        | true       |
 
     And validate C_AllocationLines for invoice purchaseCM
       | OPT.Amount | OPT.C_AllocationHdr_ID |
