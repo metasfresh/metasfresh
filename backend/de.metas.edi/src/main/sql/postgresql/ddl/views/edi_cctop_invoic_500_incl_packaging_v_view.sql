@@ -21,7 +21,8 @@
  */
 
 -- View: public.edi_cctop_invoic_500_incl_packaging_v
--- Has dependents: c_invoice_export_edi_invoic_json_v; edi_cctop_invoic_500_v (-> historical_invoices_json_v): change it only via db_alter_view in a new migration script.
+-- Has dependents: edi_cctop_invoic_500_v (-> historical_invoices_json_v): change it only via db_alter_view in a new migration script.
+-- Twin: edi_invoic_json_line_v (the INVOIC JSON line source) is a copy of this view; a later fix to one must be mirrored to the other.
 
 CREATE OR REPLACE VIEW edi_cctop_invoic_500_incl_packaging_v AS
 SELECT il.ispackagingmaterial                                                  AS IsPackagingMaterial,
@@ -174,7 +175,8 @@ GROUP BY il.c_invoice_id,
          il.C_UOM_BPartner_ID, il.externalids, ol.externalseqno
 ;
 
-COMMENT ON VIEW edi_cctop_invoic_500_incl_packaging_v IS 'All INVOIC line items incl. packaging-material lines (IsPackagingMaterial=Y). Source of the INVOIC JSON lines; edi_cctop_invoic_500_v is the packaging-free subset.
+COMMENT ON VIEW edi_cctop_invoic_500_incl_packaging_v IS 'All INVOIC line items incl. packaging-material lines (IsPackagingMaterial=Y). Read by edi_cctop_invoic_500_v (the packaging-free subset).
+Twin: edi_invoic_json_line_v, the INVOIC JSON line source, is a copy of this view (one row per delivery note); a later fix to one must be mirrored to the other.
 Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;

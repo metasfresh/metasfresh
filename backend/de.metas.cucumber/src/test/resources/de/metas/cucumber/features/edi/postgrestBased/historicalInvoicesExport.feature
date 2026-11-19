@@ -1271,3 +1271,112 @@ Feature: Invoice export via postgREST
   }
 ]
     """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S27050_TC5
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00359_EDI_INVOICE_JSON
+  Scenario: 330 pieces shipped in two parts, handler allows different shipments in one invoice line: Historical Invoices JSON and edi_cctop_invoic_500_v keep one unsplit line
+    # Real case: the invoice candidate handler puts both shipments (110, then 220) on ONE invoice line (330).
+    # Historical Invoices JSON and the view edi_cctop_invoic_500_v do not split it per delivery note: one line, 330 pieces.
+    Given temporarily set IsAllowDifferentShipmentsInSameInvoiceLine=true on the C_ILCandHandler of table C_OrderLine
+    # Set first: the line aggregation key is stored on each invoice candidate when it is computed, i.e. at order completion.
+    And metasfresh contains M_Products:
+      | Identifier         | REST.Context.Value                     | REST.Context.Name                     | Description                                  |
+      | product_S27050_TC5 | postgRESTExportProductValue_S27050_TC5 | postgRESTExportProductName_S27050_TC5 | postgRESTExportProductDescription_S27050_TC5 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID |
+      | salesPLV               | product_S27050_TC5 | 1.45     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | REST.Context        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference        | ExternalSystem.Value |
+      | o_1        | order_S27050_TC5_ID | true    | customer1                | 2021-04-17  | po_ref_mock_S27050_TC5 | Shopware6            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | product_S27050_TC5      | 330        |
+    When the order identified by o_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | ol_1                      | N             |
+    # shipment 1: 110 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_s_1                            | D            | true                | false       | 110                                             |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.DocumentNo   |
+      | s_s_1                            | s_1                   | shipmentDocNo1_S27050_TC5 |
+    # the schedule must reflect the first delivery before the second run
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | ol_1                      | N             |
+    # shipment 2: the remaining 220 pieces
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_1                            | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.IgnoreCreated.M_InOut_ID.Identifier | REST.Context.DocumentNo   |
+      | s_s_1                            | s_2                   | s_1                                     | shipmentDocNo2_S27050_TC5 |
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID       | MovementQty |
+      | shipLine_1     | s_1        | product_S27050_TC5 | 110         |
+      | shipLine_2     | s_2        | product_S27050_TC5 | 220         |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | ol_1                      | 330          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context              | REST.Context.DocumentNo           |
+      | ic_1                              | invoice_1               | salesInvoiceS27050_TC5_ID | salesInvoiceS27050_TC5_DocumentNo |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | invoiceLine_1               | invoice_1               | product_S27050_TC5      | 330         | true      |
+    # one invoice line covers both shipments: one match per shipment line
+    And M_MatchInv are found
+      | M_MatchInv_ID | C_InvoiceLine_ID | M_InOutLine_ID | QtyInUOM |
+      | matchInv_1    | invoiceLine_1    | shipLine_1     | 110 PCE  |
+      | matchInv_2    | invoiceLine_1    | shipLine_2     | 220 PCE  |
+    # the view keeps the line unsplit as well
+    And the edi_cctop_invoic_500_v rows of invoice invoice_1 are exactly:
+      | edi_cctop_invoic_500_v_id | Line | M_Product_ID       | QtyInvoiced | LineNetAmt |
+      | invoiceLine_1             | 10   | product_S27050_TC5 | 330         | 478.50     |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Historical_Invoices_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "Order_ID",
+      "value": "@order_S27050_TC5_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "Invoice_ID": @salesInvoiceS27050_TC5_ID@,
+    "Invoice_DocumentNo": "@salesInvoiceS27050_TC5_DocumentNo@",
+    "Order_POReference": "po_ref_mock_S27050_TC5",
+    "Lines": [
+      {
+        "Invoice_Line": 10,
+        "Invoice_QtyInvoiced": 330,
+        "Invoice_QtyInvoiced_UOM": "PCE",
+        "NetAmt": 478.5,
+        "Product_Name": "@postgRESTExportProductName_S27050_TC5@"
+      }
+    ]
+  }
+]
+    """
