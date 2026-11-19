@@ -9,6 +9,9 @@
  *     form, dot form); each accepted scan puts the crate onto the pallet, drops its slot count by 1 and shows the pallet QR as
  *     caption; Fertigstellen -> Ja removes the ship-to from the job list, the pallet holds the 3 crates, has an SSCC18, belongs
  *     to the partner, its shipment is completed and one label was archived.
+ *   - phone-size screen (392x726): the scanner is a slim strip between the pallet button and the slot rows; slots, their crate
+ *     counts (uncut) and Fertigstellen are all in view; typed entry and a gun-style scan each book exactly one crate, and a
+ *     gun-style scan while manual entry is open books nothing.
  *   - rejected scans: every rejected scan on the job screen shows exactly one error toast with the right text, moves nothing
  *     and leaves the scanner armed.
  *   - button states (de_DE + en_US): "Scan (GRAI)" is disabled before a pallet is chosen, enabled after, and the scanner
@@ -261,11 +264,14 @@ test('Phone-size screen (392x726): the scanner is a slim strip, both slot rows a
     await allure.story('HU Consolidation - GRAI scan on the job screen');
     await allure.severity('normal');
 
+    // short slot codes like the customer's real ones (e.g. "4018"), so that "<code> (2 HUs)" has to fit on a phone
+    const shortSlotCode = () => String(100000 + Math.floor(Math.random() * 900000));
     const masterdata = await createJobScanMasterdata({
         sysconfigs: {
             'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
         },
+        pickingSlots: { slot1: { code: shortSlotCode() }, slot2: { code: shortSlotCode() } },
     });
     sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2 } = masterdata.pickingSlots;
@@ -309,21 +315,16 @@ test('Phone-size screen (392x726): the scanner is a slim strip, both slot rows a
         await HUConsolidationJobScreen.expectSlotCountsInView({ pickingSlotIds: [slot1.id, slot2.id] });
         // the strip is slim: far below the default panel height (~320 px)
         expect(boxes.scanner.height).toBeLessThan(150);
-        await HUConsolidationJobScreen.captureScreenshot({ name: 'strip-392x726' });
     });
 
-    await test.step('Typed entry: Enter manually, type the GRAI key by key, Enter -> exactly one crate booked, caption shows the last crate', async () => {
+    await test.step('Typed entry: Enter manually, type the GRAI key by key, Enter -> exactly one crate booked', async () => {
         await HUConsolidationJobScreen.typeGRAIByHand({ grai: grai1 });
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
-        await HUConsolidationJobScreen.expectScannerCaption({ text: grai1.slice(-6) });
     });
 
     await test.step('While manual entry is open the background scanner does not book a second time; back to scanner, a scan books one crate', async () => {
         await HUConsolidationJobScreen.openManualEntry();
-        await HUConsolidationJobScreen.expectGunScanNotBooked({ grai: grai2, pickingSlotId: slot1.id, countHUs: 1 });
-        await HUConsolidationJobScreen.backToScanner();
-        await HUConsolidationJobScreen.scanGRAI({ grai: grai2 });
-        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 0 });
+        await HUConsolidationJobScreen.expectOnlyLaterScanBooked({ grai: grai2, pickingSlotId: slot1.id, countHUsAfterScan: 0 });
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot2.id, countHUs: 1 });
     });
 });

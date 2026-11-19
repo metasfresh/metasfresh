@@ -23,7 +23,7 @@ public class PickingSlotCreateCommand
 
 	public JsonPickingSlotCreateResponse execute()
 	{
-		final String code = identifier.toUniqueString();
+		final String code = request.getCode() != null ? request.getCode() : identifier.toUniqueString();
 		final LocatorId locatorId = request.getLocator() != null
 				? context.getId(request.getLocator(), LocatorId.class)
 				: context.getIdOfType(LocatorId.class);

@@ -191,44 +191,36 @@ export const HUConsolidationJobScreen = {
     }),
 
     /**
-     * While manual entry is open, a gun-style scan (key events on the document) must not be booked by the background scanner:
-     * no consolidateByScan request is sent and the slot keeps its count.
-     * The observation window is the time a booking request would need to leave after the scan; there is no event for "nothing happens".
+     * While manual entry is open, a gun-style scan (key events on the document) must not be booked by the background scanner.
+     * Then: back to the scanner, a real scan of the same GRAI books exactly one crate. Every wrong booking request would leave
+     * before the real scan's request, so exactly one consolidateByScan request in total proves nothing was booked in between.
      */
-    expectGunScanNotBooked: async ({ grai, pickingSlotId, countHUs }) => await step(`${NAME} - Gun-style scan during manual entry is not booked: ${grai}`, async () => {
-        const NO_BOOKING_OBSERVATION_MS = 1500;
+    expectOnlyLaterScanBooked: async ({ grai, pickingSlotId, countHUsAfterScan }) => await step(`${NAME} - Gun-style scan during manual entry is not booked, the later scan books once: ${grai}`, async () => {
         let requests = 0;
         const onRequest = (req) => { if (req.url().includes('/consolidateByScan')) requests++; };
         page.on('request', onRequest);
         try {
             await BarcodeScannerComponent.type({ scannedCode: grai });
-            await page.waitForTimeout(NO_BOOKING_OBSERVATION_MS);
+            await HUConsolidationJobScreen.backToScanner();
+            await HUConsolidationJobScreen.scanGRAI({ grai });
+            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId, countHUs: countHUsAfterScan });
         } finally {
             page.off('request', onRequest);
         }
-        expect(requests).toBe(0);
-        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId, countHUs });
+        expect(requests).toBe(1);
     }),
 
-    /** Expect the slot rows' crate counts (e.g. "(2 HUs)") to be fully on screen and inside their row, however long the slot name is. */
-    expectSlotCountsInView: async ({ pickingSlotIds }) => await step(`${NAME} - Expect slot crate counts in view`, async () => {
+    /** Expect each slot row's caption, with its crate count (e.g. "4018 (2 HUs)"), to be fully on screen and not cut by an ellipsis. */
+    expectSlotCountsInView: async ({ pickingSlotIds }) => await step(`${NAME} - Expect slot captions with crate counts in view`, async () => {
         for (const id of pickingSlotIds) {
             const row = page.locator(`[data-pickingslotid="${id}"]`);
-            const count = row.locator('.caption-suffix span');
-            await expect(count).toBeInViewport({ ratio: 1, timeout: SLOW_ACTION_TIMEOUT });
-            const rowBox = await row.boundingBox();
-            const countBox = await count.boundingBox();
-            expect(countBox.x + countBox.width).toBeLessThanOrEqual(rowBox.x + rowBox.width);
-            expect(countBox.width).toBeGreaterThan(0);
+            const caption = row.locator('.caption-btn .rows .row span').first();
+            await expect(caption).toHaveText(/\(\d+ HUs?\)$/, { timeout: SLOW_ACTION_TIMEOUT });
+            await expect(caption).toBeInViewport({ ratio: 1 });
+            // the text is not cut (no ellipsis clipping)
+            expect(await caption.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
         }
-    }),
-
-    /** Capture mode only (UAT_CAPTURE): screenshot of the whole window. */
-    captureScreenshot: async ({ name }) => await captureScreenshotIfEnabled(name),
-
-    /** Expect the scanner's idle caption (the line next to the barcode icon) to contain the text. */
-    expectScannerCaption: async ({ text }) => await test.step(`${NAME} - Expect scanner caption to contain '${text}'`, async () => {
-        await expect(page.locator('.barcode-scanner .scan-prompt-text-idle')).toContainText(text, { timeout: SLOW_ACTION_TIMEOUT });
+        await captureScreenshotIfEnabled('strip-392x726');
     }),
 
     /** Expect the job screen's GRAI scanner to be open (its input is attached to the DOM; the input is not painted) / closed. */

@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonPickingSlotCreateRequest
 {
+	/** Picking slot code to use as is (must be unique); default = the identifier plus a timestamp. */
+	@Nullable String code;
 	@Nullable Identifier locator;
 	@Nullable Identifier bpartnerLocation;
 }

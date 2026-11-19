@@ -5,8 +5,7 @@
     "Current": "Current"
   },
   "HUConsolidationActivity": {
-    "scanGRAI": "Scan (GRAI)",
-    "lastCrate": "Last crate: ...%(code)s"
+    "scanGRAI": "Scan (GRAI)"
   },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",

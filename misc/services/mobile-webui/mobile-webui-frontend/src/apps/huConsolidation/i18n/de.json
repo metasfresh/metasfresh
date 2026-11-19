@@ -5,8 +5,7 @@
     "Current": "Offenes Gebinde"
   },
   "HUConsolidationActivity": {
-    "scanGRAI": "Scan (GRAI)",
-    "lastCrate": "Letzte Kiste: ...%(code)s"
+    "scanGRAI": "Scan (GRAI)"
   },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",

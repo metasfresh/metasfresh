@@ -23,14 +23,12 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
 
   const consolidateByScan = useConsolidateByScan({ wfProcessId });
   const [isScannerOpen, setScannerOpen] = useState(false);
-  const [lastScannedGRAI, setLastScannedGRAI] = useState(null);
   // the scanner closes by itself when the pallet is closed or the last GRAI crate has left the slots
   const isScannerVisible = isScannerOpen && isCurrentTargetSet && isGRAIScanEnabled;
-  // forget the open state and the last crate when the last GRAI crate has left the slots, so the scanner does not re-open by itself when the button comes back
+  // forget the open state when the last GRAI crate has left the slots, so the scanner does not re-open by itself when the button comes back
   useEffect(() => {
     if (!isGRAIScanEnabled) {
       setScannerOpen(false);
-      setLastScannedGRAI(null);
     }
   }, [isGRAIScanEnabled]);
 
@@ -59,10 +57,7 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
           testId="scanGRAI-button"
           caption={trl('huConsolidation.HUConsolidationActivity.scanGRAI')}
           disabled={!isUserEditable || !isCurrentTargetSet}
-          onClick={() => {
-            setScannerOpen((wasOpen) => !wasOpen);
-            setLastScannedGRAI(null);
-          }}
+          onClick={() => setScannerOpen((wasOpen) => !wasOpen)}
         />
       )}
       {isScannerVisible && (
@@ -70,12 +65,8 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
           testId="grai-scanner"
           resolveScannedBarcode={resolveScannedBarcode}
           layout="strip"
-          onResolvedResult={({ scannedBarcode }) => setLastScannedGRAI(scannedBarcode)}
-          inputPlaceholderText={
-            lastScannedGRAI
-              ? trl('huConsolidation.HUConsolidationActivity.lastCrate', { code: lastScannedGRAI.trim().slice(-6) })
-              : trl('huConsolidation.HUConsolidationActivity.scanGRAI')
-          }
+          onResolvedResult={() => {}}
+          inputPlaceholderText={trl('huConsolidation.HUConsolidationActivity.scanGRAI')}
         />
       )}
       <PickingSlots

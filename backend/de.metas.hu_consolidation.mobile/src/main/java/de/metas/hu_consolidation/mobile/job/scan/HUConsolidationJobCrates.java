@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
@@ -25,19 +26,47 @@ import java.util.Set;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class HUConsolidationJobCrates
 {
-	public static final HUConsolidationJobCrates EMPTY = new HUConsolidationJobCrates(ImmutableMap.of());
+	public static final HUConsolidationJobCrates EMPTY = new HUConsolidationJobCrates(ImmutableMap.of(), ImmutableMap.of());
 
 	@NonNull private final ImmutableMap<HuId, PickingSlotId> pickingSlotIdsByHuId;
+	/** per slot: the size of that slot's own queue (an HU queued in two slots counts in both) */
+	@NonNull private final ImmutableMap<PickingSlotId, Integer> countHUsByPickingSlotId;
 
 	public static HUConsolidationJobCrates of(@NonNull final ImmutableMap<HuId, PickingSlotId> pickingSlotIdsByHuId)
 	{
-		return pickingSlotIdsByHuId.isEmpty() ? EMPTY : new HUConsolidationJobCrates(pickingSlotIdsByHuId);
+		if (pickingSlotIdsByHuId.isEmpty())
+		{
+			return EMPTY;
+		}
+		final LinkedHashMap<PickingSlotId, Integer> counts = new LinkedHashMap<>();
+		pickingSlotIdsByHuId.values().forEach(slotId -> counts.merge(slotId, 1, Integer::sum));
+		return new HUConsolidationJobCrates(pickingSlotIdsByHuId, ImmutableMap.copyOf(counts));
+	}
+
+	/**
+	 * An HU seen in more than one queue keeps its first slot in {@link #getPickingSlotId(HuId)}, but counts in every slot whose queue holds it.
+	 */
+	public static HUConsolidationJobCrates ofQueues(@NonNull final Collection<PickingSlotQueue> queues)
+	{
+		final LinkedHashMap<HuId, PickingSlotId> pickingSlotIdsByHuId = new LinkedHashMap<>();
+		final LinkedHashMap<PickingSlotId, Integer> counts = new LinkedHashMap<>();
+		for (final PickingSlotQueue queue : queues)
+		{
+			counts.put(queue.getPickingSlotId(), queue.getCountHUs());
+			for (final HuId huId : queue.getHuIds())
+			{
+				pickingSlotIdsByHuId.putIfAbsent(huId, queue.getPickingSlotId());
+			}
+		}
+
+		return pickingSlotIdsByHuId.isEmpty()
+				? EMPTY
+				: new HUConsolidationJobCrates(ImmutableMap.copyOf(pickingSlotIdsByHuId), ImmutableMap.copyOf(counts));
 	}
 
 	/**
 	 * Loads the crates of the given slots with ONE queue read.
 	 * An empty slot set gives {@link #EMPTY} without any query ({@link PickingSlotQueueQuery#onlyPickingSlotIds(Set)} requires a non-empty set).
-	 * An HU seen in more than one slot keeps its first slot.
 	 */
 	public static HUConsolidationJobCrates load(
 			@NonNull final Set<PickingSlotId> pickingSlotIds,
@@ -48,23 +77,14 @@ public final class HUConsolidationJobCrates
 			return EMPTY;
 		}
 
-		final LinkedHashMap<HuId, PickingSlotId> pickingSlotIdsByHuId = new LinkedHashMap<>();
-		for (final PickingSlotQueue queue : pickingSlotService.getNotEmptyQueues(PickingSlotQueueQuery.onlyPickingSlotIds(pickingSlotIds)).getQueues())
-		{
-			for (final HuId huId : queue.getHuIds())
-			{
-				pickingSlotIdsByHuId.putIfAbsent(huId, queue.getPickingSlotId());
-			}
-		}
-
-		return of(ImmutableMap.copyOf(pickingSlotIdsByHuId));
+		return ofQueues(pickingSlotService.getNotEmptyQueues(PickingSlotQueueQuery.onlyPickingSlotIds(pickingSlotIds)).getQueues());
 	}
 
 	public boolean isEmpty() {return pickingSlotIdsByHuId.isEmpty();}
 
 	public int getCountHUs(@NonNull final PickingSlotId pickingSlotId)
 	{
-		return (int)pickingSlotIdsByHuId.values().stream().filter(pickingSlotId::equals).count();
+		return countHUsByPickingSlotId.getOrDefault(pickingSlotId, 0);
 	}
 
 	public ImmutableSet<HuId> getHuIds() {return pickingSlotIdsByHuId.keySet();}
