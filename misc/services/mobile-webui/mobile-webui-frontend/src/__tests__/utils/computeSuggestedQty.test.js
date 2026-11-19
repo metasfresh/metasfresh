@@ -82,8 +82,4 @@ describe('computeCUEntryToRemember', () => {
       computeCUEntryToRemember({ previousLastTypedQty: 5, suggestedQty: 2, qtyBooked: 2, ...booking }).lastTypedQty
     ).toBe(5);
   });
-
-  it('remembers nothing for a booking without a label', () => {
-    expect(computeCUEntryToRemember({ previousLastTypedQty: 5, suggestedQty: 5, qtyBooked: 5 })).toBeNull();
-  });
 });

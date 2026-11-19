@@ -3,13 +3,12 @@ import { render } from '@testing-library/react';
 
 import { useKeyboardBarcodeReader } from '../../hooks/useKeyboardBarcodeReader';
 
-const Harness = ({ onReadDone }) => {
+const Harness = ({ onReadDone, rateMs = 300 }) => {
   useKeyboardBarcodeReader({
     onReadDone,
-    rateMs: 300,
+    rateMs,
     minLength: 0,
     isTypedInputTarget: (target) => target?.id === 'count',
-    typedInputScanRateMs: 50,
   });
   return (
     <div>
@@ -75,5 +74,16 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     key(other, 'Enter', 120);
 
     expect(onReadDone).toHaveBeenCalledWith('12');
+  });
+
+  it('the scan speed of the instance (a scanner debounce of 20 ms) is the limit: keys 30 ms apart are typing', () => {
+    const onReadDone = jest.fn();
+    const { container } = render(<Harness onReadDone={onReadDone} rateMs={20} />);
+    const count = container.querySelector('#count');
+
+    const events = [key(count, '1', 500), key(count, '2', 30), key(count, 'Enter', 30)];
+
+    expect(events.every((e) => !e.defaultPrevented)).toBe(true);
+    expect(onReadDone).not.toHaveBeenCalled();
   });
 });

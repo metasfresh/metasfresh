@@ -9,7 +9,6 @@ export function pushHeaderEntry({
   isHomeStop,
   homeIconClassName,
   backLocation,
-  rootDataAttributes,
 }) {
   return {
     type: HEADER_PUSH_ENTRY,
@@ -22,7 +21,6 @@ export function pushHeaderEntry({
       isHomeStop,
       homeIconClassName,
       backLocation,
-      rootDataAttributes,
     },
   };
 }

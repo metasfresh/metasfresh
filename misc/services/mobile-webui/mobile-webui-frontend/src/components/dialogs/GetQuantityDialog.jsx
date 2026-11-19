@@ -452,11 +452,6 @@ const GetQuantityDialog = ({
                       </td>
                     </tr>
                   )}
-                  {labelRescan && (
-                    <tr>
-                      <td colSpan="2">{labelRescan}</td>
-                    </tr>
-                  )}
                   {useCatchWeight && (
                     <tr>
                       <th>{trl('general.CatchWeight')}</th>
@@ -532,6 +527,8 @@ const GetQuantityDialog = ({
             </div>
           </form>
         )}
+        {/* outside the form: a text input of the scanner (manual entry) must not submit the quantity form on Enter */}
+        {!isCustomView() && labelRescan}
       </Dialog>
     </div>
   );

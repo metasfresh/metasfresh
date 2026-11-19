@@ -280,6 +280,12 @@ export const useHeaderUpdate = ({
   }, [
     url,
     caption,
+    pickingSlot?.caption,
+    pickingUnit,
+    packingItemName,
+    uom,
+    qtyToPick,
+    qtyPicked,
     JSON.stringify(rootDataAttributes ?? null),
     JSON.stringify(additionalHeaderProperties?.entries ?? null),
   ]);

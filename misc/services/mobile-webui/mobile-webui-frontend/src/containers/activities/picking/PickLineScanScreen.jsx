@@ -616,9 +616,7 @@ const usePostQtyPicked = ({
           lotNo,
           bestBeforeDate,
         });
-        if (cuEntryToRemember) {
-          dispatch(rememberCUEntry({ wfProcessId, activityId, lineId: lineIdEffective, ...cuEntryToRemember }));
-        }
+        dispatch(rememberCUEntry({ wfProcessId, activityId, lineId: lineIdEffective, ...cuEntryToRemember }));
       }
 
       return !isPickingJobCompleted && isDone && onClose();

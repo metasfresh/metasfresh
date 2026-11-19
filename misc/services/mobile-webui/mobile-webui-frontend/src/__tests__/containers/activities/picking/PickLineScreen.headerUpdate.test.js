@@ -52,4 +52,18 @@ describe('useHeaderUpdate: additional header entries', () => {
     expect(values).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-2' })]));
     expect(values).not.toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-1' })]));
   });
+
+  it('refreshes the picked and to-pick quantities while staying on the line', () => {
+    const { actions, rerenderWith } = renderWithStore({ additionalHeaderProperties: { entries: [] } });
+    const shown = () => JSON.stringify(lastHeaderValues(actions));
+    expect(shown()).toContain('"10');
+
+    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 4, qtyToPick: 10 });
+    expect(shown()).toContain('4');
+    const afterPick = actions.length;
+
+    rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 7, qtyToPick: 12 });
+    expect(actions.length).toBeGreaterThan(afterPick);
+    expect(shown()).toContain('12');
+  });
 });

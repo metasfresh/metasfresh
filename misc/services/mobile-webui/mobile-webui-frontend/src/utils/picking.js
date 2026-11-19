@@ -98,8 +98,6 @@ export const isLineDoneAfterBooking = ({ qtyBooked, qtyOpen }) => qtyOpen == nul
 /**
  * What the screen remembers after a scan once booking of a line: the last typed count and the label (with its lot and
  * best-before) the next booking uses.
- *
- * @returns {{lastTypedQty, label}} or null when the booking carried no label
  */
 export const computeCUEntryToRemember = ({
   previousLastTypedQty,
@@ -108,14 +106,10 @@ export const computeCUEntryToRemember = ({
   cuLabel,
   lotNo,
   bestBeforeDate,
-}) =>
-  // the booking payload's `cuLabel` is optional: without it there is no label to reopen the quantity block with
-  cuLabel
-    ? {
-        lastTypedQty: computeLastTypedQty({ previousLastTypedQty, suggestedQty, qtyBooked }),
-        label: { cuLabel, lotNo, bestBeforeDate },
-      }
-    : null;
+}) => ({
+  lastTypedQty: computeLastTypedQty({ previousLastTypedQty, suggestedQty, qtyBooked }),
+  label: { cuLabel, lotNo, bestBeforeDate },
+});
 
 /** @returns true if at least one of the lines enters CU quantities in a new mode (label scan); false for none / absent field */
 export const hasNewModeLine = (lines) => (lines ?? []).some((line) => isNewMode(line?.cuQtyEntryMode));

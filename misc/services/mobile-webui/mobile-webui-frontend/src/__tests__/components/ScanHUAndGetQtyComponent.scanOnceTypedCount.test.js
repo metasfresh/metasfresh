@@ -108,4 +108,16 @@ describe('ScanHUAndGetQtyComponent: scan once, the count field is typed into', (
     const firstSubmitter = form.querySelector('button:not([type="button"])');
     expect(firstSubmitter).toBe(screen.getByTestId('done-button'));
   });
+
+  it('no text input of the label rescan scanner (manual entry included) sits inside the quantity form', async () => {
+    await renderOpenQuantityBlock({ resolveScannedBarcode: jest.fn().mockResolvedValue(label) });
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('barcode-scanner-enter-manually'));
+    });
+    const form = document.querySelector('form');
+    const manualInput = screen.getByTestId('manual-entry-input');
+    // Enter in a text field of the form is an implicit click on OK: it would book the count with the old label
+    expect(form.contains(manualInput)).toBe(false);
+    expect(form.contains(screen.getByTestId('rescanCULabel-input'))).toBe(false);
+  });
 });
