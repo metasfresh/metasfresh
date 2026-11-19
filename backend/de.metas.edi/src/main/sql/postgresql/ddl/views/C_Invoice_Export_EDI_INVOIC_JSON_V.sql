@@ -21,6 +21,13 @@ SELECT invoic_v.c_invoice_id,
                        'CreditMemo_ReasonText', invoic_v.CreditMemoReasonText,
                    -- order
                        'Order_POReference', invoic_v.POReference,
+                       'Invoice_PaymentReference', (SELECT rn.referenceno
+                                                    FROM c_referenceno_doc rnd
+                                                             JOIN c_referenceno rn ON rn.c_referenceno_id = rnd.c_referenceno_id AND rn.isactive = 'Y'
+                                                    WHERE rnd.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'C_Invoice')
+                                                      AND rnd.record_id = invoic_v.c_invoice_id
+                                                      AND rnd.isactive = 'Y'
+                                                      AND rn.c_referenceno_type_id = (SELECT c_referenceno_type_id FROM c_referenceno_type WHERE name = 'InvoiceReference' AND isactive = 'Y')),
                        'Order_Date', invoic_v.DateOrdered,
                    -- shipment
                        'Shipment_Date', invoic_v.MovementDate,
@@ -103,6 +110,7 @@ FROM edi_cctop_invoic_v invoic_v
                                             'ORDERS_QtyInvoiced', v.qtyEnteredInBPartnerUOM,
                                             'ORDERS_QtyInvoiced_UOM', uom.x12de355,
                                             'Order_POReference', v.orderporeference,
+                                            'Order_IsPOReferenceBuyerOrderNo', COALESCE(o.IsPOReferenceBuyerOrderNo = 'Y' AND NULLIF(o.poreference, '') IS NOT NULL, FALSE),
                                             'Order_Line', v.orderline,
                                             'Order_QtyInvoiced', v.QtyInvoicedInOrderedUOM,
                                             'Order_QtyInvoiced_UOM', v.eancom_ordered_uom,
@@ -126,6 +134,8 @@ FROM edi_cctop_invoic_v invoic_v
                                         ) ORDER BY v.line) AS json_data
                     FROM edi_cctop_invoic_500_v v
                              LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
+                             LEFT JOIN c_orderline ol ON ol.c_orderline_id = v.c_orderline_id AND ol.isactive = 'Y'
+                             LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
                     GROUP BY c_invoice_id) edi_500_v ON edi_500_v.c_invoice_id = invoic_v.c_invoice_id
          LEFT JOIN (SELECT c_invoice_id,
                            JSON_AGG(JSON_BUILD_OBJECT(
