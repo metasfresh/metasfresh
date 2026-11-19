@@ -47,7 +47,8 @@ const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu 
  * Same masterdata shape as issue_emptyHU_otherReasonsUnchanged.spec.js's `createManufacturingMasterdata`
  * (a KGM component with no packing instruction, a single-line BOM, one standalone HU, one manufacturing
  * order) — only the huQty/orderQty pair differs: here the HU deliberately holds MORE than the order
- * needs. No tolerance is needed: both tests enter at most the step's target, never above it.
+ * needs. The issuing tolerance defaults to none: the 0.502 / 0.5 tests enter at most the step's target,
+ * never above it. `issuingTolerancePerc` is set only to mirror a real-life BOM line.
  *
  * `isAllowEmptyingHUs` / `isConfirmEmptyingHU` are CLIENT-level config (MobileUI_MFG_Config), not
  * per-user, so every test sets them explicitly on its own masterdata request rather than relying on
@@ -234,8 +235,8 @@ test('AC-A3: a non-emptied reason on a bigger HU is accepted and leaves the HU a
 // noinspection JSUnusedLocalSymbols
 test('Single HU 86.75 kg, 15.4 kg demand, 15.1 kg issued, rest 71.65 kg written off', async ({ page }) => {
     // AC-A1 at real-life size: the HU holds far MORE than the line needs, so the step's target is the
-    // order's 15.4 KGM, not the HU's 86.75 KGM content. The line carries a 1 % issuing tolerance, as such
-    // real-life BOM lines do; 15.1 KGM is below its lower bound, so the shortfall still asks for a reason.
+    // order's 15.4 KGM, not the HU's 86.75 KGM content. The 1 % issuing tolerance only mirrors the real
+    // BOM line and does not change the outcome: 15.1 KGM is a shortfall with it (lower bound 15.246) or without.
     const masterdata = await createManufacturingMasterdata({ huQty: 86.75, orderQty: 15.4, isConfirmEmptyingHU: true, issuingTolerancePerc: 1 });
 
     await startIssueStep(masterdata);
