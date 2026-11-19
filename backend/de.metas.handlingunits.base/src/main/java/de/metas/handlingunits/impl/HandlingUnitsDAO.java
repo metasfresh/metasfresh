@@ -1496,14 +1496,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit)
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, luPIVersion.getM_HU_PI_Version_ID())
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, bpartnerId, null) // the LU item, too, has to be for our partner or for none
 				;
 
 		addProductFilter(luItemsQueryBuilder, productId);
 
+		// same filter and order as retrieveParentPIItemsForParentPI, so this method and retrieveDefaultParentPIItem pick the same item of an LU PI
 		return luItemsQueryBuilder
 				.orderBy()
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID, Direction.Descending, Nulls.Last) // lines with product set, first
-				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID)
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 				.endOrderBy()
 				.create()
 				.firstOptional(I_M_HU_PI_Item.class);

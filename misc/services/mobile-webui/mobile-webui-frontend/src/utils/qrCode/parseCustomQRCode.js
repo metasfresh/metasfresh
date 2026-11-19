@@ -2,9 +2,11 @@ import {
   ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
+  ATTR_GTIN,
   ATTR_isTUToBePickedAsWhole,
   ATTR_isUnique,
   ATTR_lotNo,
+  ATTR_packId,
   ATTR_productionDate,
   ATTR_productNo,
   ATTR_weightNet,
@@ -74,7 +76,9 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     endPosition: formatPart.endPosition,
   });
   if (valueStr === null) {
-    return { error: `Cannot extract part ${this}` };
+    return {
+      error: `Cannot extract part ${formatPart.type}[${formatPart.startPosition}-${formatPart.endPosition || ''}]`,
+    };
   }
   // console.log('parseCustomQRCodePart', { formatPart, valueStr, string });
 
@@ -84,7 +88,7 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     case 'CONSTANT':
       if (valueStr !== formatPart.constantValue)
         return {
-          error: `Expected constant '${formatPart.constant}' but got '${valueStr}'`,
+          error: `Expected constant '${formatPart.constantValue}' but got '${valueStr}'`,
         };
       break;
     case 'PRODUCT_CODE':
@@ -101,7 +105,11 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
       };
     case 'LOT':
       return {
-        [ATTR_lotNo]: trimLeadingZeros(valueStr),
+        [ATTR_lotNo]: trimLeadingZeros(valueStr.trim()),
+      };
+    case 'PACK_ID':
+      return {
+        [ATTR_packId]: valueStr,
       };
     case 'BEST_BEFORE_DATE':
       return {
@@ -117,6 +125,10 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
           dateFormat: formatPart.dateFormat ?? DEFAULT_dateFormat,
         }),
       };
+    case 'GTIN':
+      return {
+        [ATTR_GTIN]: valueStr.trim(),
+      };
     default:
       return {
         error: `Unknown type: ${formatPart.type}`,
@@ -126,6 +138,12 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
 
 const extractAsString = ({ string, startPosition, endPosition }) => {
   const startIndex = startPosition - 1;
+
+  // open end (the backend sends 0): the part reads to the end of the code, needs at least 1 character
+  if (!endPosition) {
+    return startIndex < string.length ? string.substring(startIndex) : null;
+  }
+
   const endIndex = endPosition;
 
   if (endIndex > string.length) {
