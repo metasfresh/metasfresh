@@ -214,7 +214,7 @@ class OLCandOrderFactory
 		final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoIdOrNull(candidate.getAD_InputDataSource_ID());
 		return inputDataSourceId != null
 				&& Check.isNotBlank(candidate.getPOReference())
-				&& inputDataSourceDAO.getById(inputDataSourceId).isEDIChannel();
+				&& inputDataSourceDAO.isEDIChannel(inputDataSourceId);
 	}
 
 	private I_C_Order newOrder(@NonNull final OLCand candidateOfGroup)
