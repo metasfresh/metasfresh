@@ -111,20 +111,13 @@ const PickingSlots = ({ applicationId, wfProcessId, activityId, disabled }) => {
       {pickingSlots.map(({ pickingSlotId, pickingSlotQRCode, countHUs }) => (
         <ButtonWithIndicator
           key={pickingSlotId}
-          caption={toQRCodeDisplayableNoFail(pickingSlotQRCode)}
-          additionalCssClass="has-caption-suffix"
+          caption={computePickingSlotCaption({ pickingSlotQRCode, countHUs })}
           disabled={disabled}
           onClick={() =>
             history.push(pickingSlotScreenLocation({ applicationId, wfProcessId, activityId, pickingSlotId }))
           }
           data-pickingslotid={pickingSlotId}
-        >
-          {countHUs != null && (
-            <div className="row caption-suffix">
-              <span>{computeCountHUsText(countHUs)}</span>
-            </div>
-          )}
-        </ButtonWithIndicator>
+        />
       ))}
     </div>
   );
@@ -136,4 +129,8 @@ PickingSlots.propTypes = {
   disabled: PropTypes.bool.isRequired,
 };
 
-const computeCountHUsText = (countHUs) => '(' + countHUs + ' ' + (countHUs === 1 ? 'HU' : 'HUs') + ')';
+const computePickingSlotCaption = ({ pickingSlotQRCode, countHUs }) => {
+  let caption = toQRCodeDisplayableNoFail(pickingSlotQRCode);
+  if (countHUs != null) caption += ' (' + countHUs + ' ' + (countHUs === 1 ? 'HU' : 'HUs') + ')';
+  return caption;
+};
