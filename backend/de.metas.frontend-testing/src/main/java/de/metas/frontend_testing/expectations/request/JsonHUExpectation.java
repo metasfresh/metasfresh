@@ -26,6 +26,11 @@ public class JsonHUExpectation
 	@Nullable List<CU> cus;
 	@Nullable Boolean isAggregatedTU;
 	@Nullable QtyTU qtyTUs;
+	/**
+	 * Expected TU count of the LU packing-instruction item (M_HU_PI_Item.Qty) via which this TU is attached to its LU,
+	 * e.g. 40 if it is attached via the product-specific item, 30 if via the generic one.
+	 */
+	@Nullable Integer parentPIItemQtyTUs;
 	
 	//
  	//
