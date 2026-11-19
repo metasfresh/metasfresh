@@ -27,6 +27,11 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Archive;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -48,6 +53,7 @@ public class AssertExpectationsCommandServices
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -122,5 +128,40 @@ public class AssertExpectationsCommandServices
 	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		return invalidationRepository.isAllValid(shipmentScheduleIds);
+	}
+
+	/**
+	 * @return the {@code M_InOut.DocStatus} of every shipment line that the picked-qty records of the given LU point to;
+	 * an allocation without a shipment line yet (shipment not generated) is reported as {@code null} entry.
+	 */
+	public List<String> getShipmentDocStatusesByLU(@NonNull final HuId luId)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> allocs = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_LU_HU_ID, luId)
+				.create()
+				.list();
+
+		final java.util.ArrayList<String> result = new java.util.ArrayList<>();
+		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
+		{
+			if (alloc.getM_InOutLine_ID() <= 0)
+			{
+				result.add(null);
+				continue;
+			}
+			final I_M_InOutLine line = InterfaceWrapperHelper.load(alloc.getM_InOutLine_ID(), I_M_InOutLine.class);
+			final I_M_InOut inout = InterfaceWrapperHelper.load(line.getM_InOut_ID(), I_M_InOut.class);
+			result.add(inout.getDocStatus());
+		}
+		return result;
+	}
+
+	public int countArchivesOfHU(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_AD_Archive.class)
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_HU.class))
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, huId)
+				.create()
+				.count();
 	}
 }

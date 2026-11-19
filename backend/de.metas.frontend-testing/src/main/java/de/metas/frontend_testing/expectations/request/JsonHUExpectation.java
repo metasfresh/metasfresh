@@ -26,7 +26,13 @@ public class JsonHUExpectation
 	@Nullable List<CU> cus;
 	@Nullable Boolean isAggregatedTU;
 	@Nullable QtyTU qtyTUs;
-	
+	/** Attribute codes that must exist on the HU and have a non-blank value (for values not known upfront, e.g. a generated SSCC18). */
+	@Nullable List<String> attributesNotEmpty;
+	/** If true: the HU has shipment-schedule allocations (by {@code M_LU_HU_ID}), all pointing to a completed shipment ({@code M_InOut.DocStatus=CO}). Waits for the async shipment generation. */
+	@Nullable Boolean isShipmentCompleted;
+	/** Number of {@code AD_Archive} records of this HU ({@code AD_Table_ID=M_HU}, {@code Record_ID}=HU), e.g. printed labels. */
+	@Nullable Integer archiveCount;
+
 	//
  	//
  	//

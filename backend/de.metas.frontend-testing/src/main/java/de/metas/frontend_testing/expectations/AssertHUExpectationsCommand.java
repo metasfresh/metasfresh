@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -29,6 +30,7 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +50,8 @@ class AssertHUExpectationsCommand
 	@NonNull private final AssertExpectationsCommandServices services;
 	@NonNull private final MasterdataContext context;
 	@NonNull final Map<String, JsonHUExpectation> expectations;
+
+	private static final Duration SHIPMENT_TIMEOUT = Duration.ofSeconds(60);
 
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
 
@@ -149,6 +153,21 @@ class AssertHUExpectationsCommand
 		if (expectation.getAttributes() != null)
 		{
 			assertAttributes(expectation.getAttributes(), huId);
+		}
+
+		if (expectation.getAttributesNotEmpty() != null)
+		{
+			assertAttributesNotEmpty(expectation.getAttributesNotEmpty(), huId);
+		}
+
+		if (expectation.getIsShipmentCompleted() != null)
+		{
+			assertShipmentCompleted(expectation.getIsShipmentCompleted(), huId);
+		}
+
+		if (expectation.getArchiveCount() != null)
+		{
+			assertThat(services.countArchivesOfHU(huId)).as("AD_Archive count").isEqualTo(expectation.getArchiveCount());
 		}
 
 		if (expectation.getTus() != null)
@@ -289,6 +308,54 @@ class AssertHUExpectationsCommand
 				}
 			});
 		});
+	}
+
+	private void assertAttributesNotEmpty(@NonNull final List<String> attributeCodes, @NonNull final HuId huId)
+	{
+		final ImmutableAttributeSet actualAttributes = services.getAttributes(services.getHUById(huId));
+		softly(() -> {
+			softlyPutContext("attributesNotEmpty", attributeCodes);
+			softlyPutContext("actualAttributes", actualAttributes);
+			for (final String attributeCodeStr : attributeCodes)
+			{
+				final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
+				softlyPutContext("attributeCode", attributeCode);
+				assertThat(actualAttributes.hasAttribute(attributeCode)).as("has attribute " + attributeCode).isEqualTo(true);
+				final String actualValue = actualAttributes.getValueAsString(attributeCode);
+				assertThat(actualValue != null && !actualValue.trim().isEmpty()).as("attribute " + attributeCode + " not empty (actual: " + actualValue + ")").isEqualTo(true);
+			}
+		});
+	}
+
+	/**
+	 * Completing the consolidation job only enqueues the shipment generation (async), so poll until all allocations of the LU
+	 * point to a completed shipment, or the timeout elapses.
+	 */
+	private void assertShipmentCompleted(final boolean expected, @NonNull final HuId huId)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		List<String> docStatuses;
+		while (true)
+		{
+			docStatuses = services.getShipmentDocStatusesByLU(huId);
+			final boolean completed = !docStatuses.isEmpty() && docStatuses.stream().allMatch("CO"::equals);
+			if (completed == expected || stopwatch.elapsed().compareTo(SHIPMENT_TIMEOUT) >= 0)
+			{
+				break;
+			}
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				break;
+			}
+		}
+
+		final boolean completed = !docStatuses.isEmpty() && docStatuses.stream().allMatch("CO"::equals);
+		assertThat(completed).as("Shipment completed (M_InOut.DocStatus of the LU's picked-qty records: " + docStatuses + ")").isEqualTo(expected);
 	}
 
 	private void assertAttributeValue_String(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
