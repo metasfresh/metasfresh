@@ -2,6 +2,7 @@ package de.metas.frontend_testing.expectations.request;
 
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.QtyTU;
+import de.metas.process.AdProcessId;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -35,7 +36,7 @@ public class JsonHUExpectation
 	/** Number of {@code AD_Archive} records of this HU ({@code AD_Table_ID=M_HU}, {@code Record_ID}=HU), e.g. printed labels. */
 	@Nullable Integer archiveCount;
 	/** Optional filter of {@link #archiveCount}: only {@code AD_Archive} records of this {@code AD_Process_ID} (e.g. the HU label process) are counted. Requires {@code archiveCount}. */
-	@Nullable Integer archiveProcessId;
+	@Nullable AdProcessId archiveProcessId;
 
 	//
  	//

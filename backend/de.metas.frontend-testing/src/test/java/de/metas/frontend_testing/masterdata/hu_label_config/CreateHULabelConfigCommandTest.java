@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.handlingunits.model.I_M_HU_Label_Config;
+import de.metas.process.AdProcessId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -58,7 +59,7 @@ public class CreateHULabelConfigCommandTest
 						.bpartner(Identifier.ofString("BP1"))
 						.huUnitType("LU")
 						.sourceDocType("PI")
-						.process(540412)
+						.process(AdProcessId.ofRepoId(540412))
 						.autoPrint(true)
 						.build())
 				.build()
@@ -85,7 +86,7 @@ public class CreateHULabelConfigCommandTest
 				.request(JsonHULabelConfigRequest.builder()
 						.bpartner(Identifier.ofString("BP1"))
 						.huUnitType("TU")
-						.process(540412)
+						.process(AdProcessId.ofRepoId(540412))
 						.build())
 				.build()
 				.execute();

@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.hu_label_config;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.process.AdProcessId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -28,7 +29,7 @@ public class JsonHULabelConfigRequest
 	@Nullable String sourceDocType;
 
 	/** {@code M_HU_Label_Config.LabelReport_Process_ID} (an AD_Process_ID). */
-	int process;
+	@NonNull AdProcessId process;
 
 	/** {@code M_HU_Label_Config.IsAutoPrint} */
 	boolean autoPrint;

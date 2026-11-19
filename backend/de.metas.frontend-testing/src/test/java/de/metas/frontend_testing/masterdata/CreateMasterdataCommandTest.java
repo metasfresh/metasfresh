@@ -20,6 +20,7 @@ import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequ
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
+import de.metas.process.AdProcessId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -165,7 +166,7 @@ public class CreateMasterdataCommandTest
 						.bpartner(Identifier.ofString("bp1"))
 						.huUnitType("LU")
 						.sourceDocType("PI")
-						.process(540412)
+						.process(AdProcessId.ofRepoId(540412))
 						.autoPrint(true)
 						.build()))
 				.build();
@@ -176,7 +177,7 @@ public class CreateMasterdataCommandTest
 		assertThat(labelConfig.getBpartner()).isEqualTo(Identifier.ofString("bp1"));
 		assertThat(labelConfig.getHuUnitType()).isEqualTo("LU");
 		assertThat(labelConfig.getSourceDocType()).isEqualTo("PI");
-		assertThat(labelConfig.getProcess()).isEqualTo(540412);
+		assertThat(labelConfig.getProcess()).isEqualTo(AdProcessId.ofRepoId(540412));
 		assertThat(labelConfig.isAutoPrint()).isTrue();
 		assertThat(JsonCreateMasterdataRequest.builder().build().getHuLabelConfigs()).isNull();
 	}

@@ -6,6 +6,7 @@ import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.HUItemType;
@@ -55,7 +56,7 @@ public class CreatePackingInstructionsCommand
 	private static final Logger logger = LogManager.getLogger(CreatePackingInstructionsCommand.class);
 
 	/** {@code AD_JavaClass_ID} of {@code CopyHUAttributeTransferStrategy}, as used by the live LU SSCC18 {@code M_HU_PI_Attribute}. */
-	private static final int HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID = 540027;
+	private static final JavaClassId HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID = JavaClassId.ofRepoId(540027);
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -240,7 +241,6 @@ public class CreatePackingInstructionsCommand
 	 * materialised from this PI get an SSCC18 (as the EUR pallet LU PI of a real instance does).
 	 * Column values mirror the standard EUR-pallet LU SSCC18 {@code M_HU_PI_Attribute} row (incl.
 	 * {@code IsOnlyIfInProductAttributeSet=Y}: its display in the WebUI HU editor depends on the product's attribute set).
-	 * Source: the local stack DB copy, row {@code M_HU_PI_Attribute_ID=1000018}; not a probe of a live instance.
 	 */
 	private void assignSSCC18Attribute(@NonNull final PIResult lu)
 	{
@@ -250,7 +250,7 @@ public class CreatePackingInstructionsCommand
 		piAttribute.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
 		piAttribute.setM_Attribute_ID(sscc18AttributeId.getRepoId());
 		piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
-		piAttribute.setHU_TansferStrategy_JavaClass_ID(HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID);
+		piAttribute.setHU_TansferStrategy_JavaClass_ID(HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID.getRepoId());
 		piAttribute.setIsDisplayed(true);
 		piAttribute.setIsReadOnly(true);
 		piAttribute.setIsOnlyIfInProductAttributeSet(true);

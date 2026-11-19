@@ -26,6 +26,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.process.AdProcessId;
+import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
@@ -44,7 +46,9 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -146,18 +150,25 @@ public class AssertExpectationsCommandServices
 				.create()
 				.list();
 
+		final Set<Integer> inOutLineIds = allocs.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
+				.filter(inOutLineId -> inOutLineId > 0)
+				.collect(Collectors.toSet());
+		final Map<Integer, I_M_InOutLine> linesById = InterfaceWrapperHelper.loadByIds(inOutLineIds, I_M_InOutLine.class).stream()
+				.collect(Collectors.toMap(I_M_InOutLine::getM_InOutLine_ID, line -> line));
+		final Set<Integer> inOutIds = linesById.values().stream()
+				.map(I_M_InOutLine::getM_InOut_ID)
+				.collect(Collectors.toSet());
+		final Map<Integer, I_M_InOut> inOutsById = InterfaceWrapperHelper.loadByIds(inOutIds, I_M_InOut.class).stream()
+				.collect(Collectors.toMap(I_M_InOut::getM_InOut_ID, inout -> inout));
+
 		final ArrayList<ShipmentAllocation> result = new ArrayList<>();
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
 		{
 			final HuId tuId = HuId.ofRepoIdOrNull(alloc.getM_TU_HU_ID());
-			if (alloc.getM_InOutLine_ID() <= 0)
-			{
-				result.add(new ShipmentAllocation(tuId, null));
-				continue;
-			}
-			final I_M_InOutLine line = InterfaceWrapperHelper.load(alloc.getM_InOutLine_ID(), I_M_InOutLine.class);
-			final I_M_InOut inout = InterfaceWrapperHelper.load(line.getM_InOut_ID(), I_M_InOut.class);
-			result.add(new ShipmentAllocation(tuId, inout.getDocStatus()));
+			final I_M_InOutLine line = linesById.get(alloc.getM_InOutLine_ID());
+			final I_M_InOut inout = line != null ? inOutsById.get(line.getM_InOut_ID()) : null;
+			result.add(new ShipmentAllocation(tuId, inout != null ? DocStatus.ofNullableCode(inout.getDocStatus()) : null));
 		}
 		return result;
 	}
@@ -168,15 +179,15 @@ public class AssertExpectationsCommandServices
 		/** {@code M_ShipmentSchedule_QtyPicked.M_TU_HU_ID}; may be null */
 		@Nullable HuId tuId;
 		/** {@code M_InOut.DocStatus} of the shipment; null if no shipment line yet */
-		@Nullable String docStatus;
+		@Nullable DocStatus docStatus;
 
-		public boolean isShipmentCompleted() {return "CO".equals(docStatus);}
+		public boolean isShipmentCompleted() {return docStatus != null && docStatus.isCompleted();}
 	}
 
 	/**
 	 * @param processId if not {@code null}, only archives of this {@code AD_Archive.AD_Process_ID} are counted
 	 */
-	public int countArchivesOfHU(@NonNull final HuId huId, @Nullable final Integer processId)
+	public int countArchivesOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
 	{
 		final IQueryBuilder<I_AD_Archive> queryBuilder = queryBL.createQueryBuilder(I_AD_Archive.class)
 				.addOnlyActiveRecordsFilter()

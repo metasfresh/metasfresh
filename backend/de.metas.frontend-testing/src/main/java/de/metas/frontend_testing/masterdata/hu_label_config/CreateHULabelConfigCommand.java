@@ -31,7 +31,7 @@ public class CreateHULabelConfigCommand
 		record.setIsApplyToLUs(huUnitType == HuUnitType.LU);
 		record.setIsApplyToTUs(huUnitType == HuUnitType.TU);
 		record.setIsApplyToCUs(huUnitType == HuUnitType.VHU);
-		record.setLabelReport_Process_ID(request.getProcess());
+		record.setLabelReport_Process_ID(request.getProcess().getRepoId());
 		record.setIsAutoPrint(request.isAutoPrint());
 		record.setAutoPrintCopies(1);
 		record.setIsActive(true);
