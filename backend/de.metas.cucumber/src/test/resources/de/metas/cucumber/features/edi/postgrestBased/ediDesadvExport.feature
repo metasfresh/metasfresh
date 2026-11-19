@@ -1441,7 +1441,16 @@ Feature: EDI DESADV export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario Outline: DESADV line of an order from the data source <dataSource> carries the buyer-order-number flag <flag>
-    Given metasfresh contains M_Products:
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier  | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customerGln | Y          | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | customerGln   | true                 | 1234567890            | edi_setting_postgrest_gln_1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
+      | customerGlnLocation | customerGln   | Y               | Y               | <gln>         |
+    And metasfresh contains M_Products:
       | Identifier | Name                      |
       | product    | desadvPoRefD1<key>Product |
     And metasfresh contains M_ProductPrices
@@ -1473,8 +1482,8 @@ Feature: EDI DESADV export via postgREST
             "externalSystemCode": "Shopware6",
             "dataSource": "int-<dataSource>",
             "bpartner": {
-                "bpartnerIdentifier": "gln-1234567890123",
-                "bpartnerLocationIdentifier": "gln-1234567890123"
+                "bpartnerIdentifier": "gln-<gln>",
+                "bpartnerLocationIdentifier": "gln-<gln>"
             },
             "dateRequired": "2025-05-16",
             "dateOrdered": "2025-05-15",
@@ -1554,10 +1563,10 @@ Feature: EDI DESADV export via postgREST
     """
 
     Examples:
-      | key     | dataSource                | ref        | flag  |
-      | Ecosio  | DEST.de.metas.edi.ecosio  | 0021234501 | true  |
-      | Eddyson | DEST.de.metas.edi.eddyson | 0021234502 | true  |
-      | Excel   | DEST.de.metas.edi.excel   | 0021234503 | false |
+      | key     | dataSource                | ref        | flag  | gln           |
+      | Ecosio  | DEST.de.metas.edi.ecosio  | 0021234501 | true  | 4337010332011 |
+      | Eddyson | DEST.de.metas.edi.eddyson | 0021234502 | true  | 4337010332012 |
+      | Excel   | DEST.de.metas.edi.excel   | 0021234503 | false | 4337010332013 |
 
 
 # ############################################################################################################################################
@@ -1565,7 +1574,16 @@ Feature: EDI DESADV export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: DESADV line of a flagged order whose POReference was changed before shipping has flag false next to the new reference
-    Given metasfresh contains M_Products:
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier  | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customerGln | Y          | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | customerGln   | true                 | 1234567890            | edi_setting_postgrest_gln_1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
+      | customerGlnLocation | customerGln   | Y               | Y               | 4337010332021 |
+    And metasfresh contains M_Products:
       | Identifier | Name                 |
       | product    | desadvPoRefD4Product |
     And metasfresh contains M_ProductPrices
@@ -1597,8 +1615,8 @@ Feature: EDI DESADV export via postgREST
             "externalSystemCode": "Shopware6",
             "dataSource": "int-DEST.de.metas.edi.ecosio",
             "bpartner": {
-                "bpartnerIdentifier": "gln-1234567890123",
-                "bpartnerLocationIdentifier": "gln-1234567890123"
+                "bpartnerIdentifier": "gln-4337010332021",
+                "bpartnerLocationIdentifier": "gln-4337010332021"
             },
             "dateRequired": "2025-05-16",
             "dateOrdered": "2025-05-15",
@@ -1686,7 +1704,16 @@ Feature: EDI DESADV export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: DESADV line of a flagged order keeps the flag when the POReference is changed on the shipment only
-    Given metasfresh contains M_Products:
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier  | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customerGln | Y          | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | customerGln   | true                 | 1234567890            | edi_setting_postgrest_gln_1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
+      | customerGlnLocation | customerGln   | Y               | Y               | 4337010332031 |
+    And metasfresh contains M_Products:
       | Identifier | Name                 |
       | product    | desadvPoRefD5Product |
     And metasfresh contains M_ProductPrices
@@ -1718,8 +1745,8 @@ Feature: EDI DESADV export via postgREST
             "externalSystemCode": "Shopware6",
             "dataSource": "int-DEST.de.metas.edi.ecosio",
             "bpartner": {
-                "bpartnerIdentifier": "gln-1234567890123",
-                "bpartnerLocationIdentifier": "gln-1234567890123"
+                "bpartnerIdentifier": "gln-4337010332031",
+                "bpartnerLocationIdentifier": "gln-4337010332031"
             },
             "dateRequired": "2025-05-16",
             "dateOrdered": "2025-05-15",
