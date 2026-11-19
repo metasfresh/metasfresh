@@ -1,4 +1,4 @@
-import { captureScreenshotIfEnabled, expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUConsolidationJobsListScreen } from './HUConsolidationJobsListScreen';
 import { SelectHUConsolidationTargetScreen } from './SelectHUConsolidationTargetScreen';
@@ -6,17 +6,13 @@ import { PickingSlotScreen } from './PickingSlotScreen';
 import { Backend } from '../Backend';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
-import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { GRAIScanScreen } from './GRAIScanScreen';
 
 const NAME = 'HUConsolidationJobScreen';
 /** data-testid of the "Scan (GRAI)" button on the job screen */
 const SCAN_GRAI_BUTTON_TESTID = 'scanGRAI-button';
-/** data-testid of the GRAI scanner input opened by the "Scan (GRAI)" button (same input id as the slot screen's scanner) */
-const GRAI_SCANNER_TESTID = 'grai-scanner';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
-/** Wait two animation frames: React's passive effects (e.g. the scanner's keyboard listener switch) have run after a paint. */
-const waitTwoFrames = async () => await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
 export const HUConsolidationJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
@@ -98,32 +94,10 @@ export const HUConsolidationJobScreen = {
         await PickingSlotScreen.waitForScreen();
     }),
 
-    /** Tap the job-level "Scan (GRAI)" button (opens the scanner on the job screen). */
+    /** Tap the job-level "Scan (GRAI)" button: opens the scan screen. */
     clickScanGRAIButton: async () => await step(`${NAME} - Click Scan (GRAI) button`, async () => {
         await page.getByTestId(SCAN_GRAI_BUTTON_TESTID).tap();
-        // A person sees the strip before pulling the trigger: wait until it is attached and painted (two frames).
-        await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
-        await waitTwoFrames();
-    }),
-
-    /**
-     * Scan a crate's GRAI on the job screen (types into the scanner's manual input, as PickingSlotScreen.scanGRAI).
-     * @param {string} grai canonical dot form or GS1 AI 8003 form
-     */
-    scanGRAI: async ({ grai }) => await step(`${NAME} - Scan GRAI: ${grai}`, async () => {
-        await BarcodeScannerComponent.type({ scannedCode: grai, testId: GRAI_SCANNER_TESTID });
-    }),
-
-    /**
-     * Scan a GRAI that the backend rejects: expects exactly one error toast containing the given message (the toast is closed).
-     * @param {{grai: string, message: string}} params message = expected text of the toast (in the user's language)
-     */
-    scanGRAIExpectError: async ({ grai, message }) => await test.step(`${NAME} - Scan GRAI ${grai}, expect error "${message}"`, async () => {
-        await expectErrorToast(`${NAME} scan ${grai} rejected`, async () => {
-            await HUConsolidationJobScreen.scanGRAI({ grai });
-        }, ({ textContent }) => {
-            expect(textContent).toContain(message);
-        });
+        await GRAIScanScreen.waitForScreen();
     }),
 
     /**
@@ -144,97 +118,6 @@ export const HUConsolidationJobScreen = {
         if (caption != null) {
             await expect(button).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
         }
-    }),
-
-    /**
-     * Type a GRAI by hand: tap "Enter manually" in the scanner, type the code key by key into the visible manual input
-     * (real key events, as a person on the soft keyboard), press Enter.
-     * @param {string} grai
-     */
-    typeGRAIByHand: async ({ grai }) => await step(`${NAME} - Type GRAI by hand: ${grai}`, async () => {
-        await page.getByTestId('barcode-scanner-enter-manually').tap();
-        const input = page.getByTestId('manual-entry-input');
-        await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await input.focus();
-        await input.pressSequentially(grai);
-        await input.press('Enter');
-    }),
-
-    /** In manual entry: tap "Enter manually" (without typing); the scanner switches to the manual input. */
-    openManualEntry: async () => await step(`${NAME} - Open manual entry`, async () => {
-        await page.getByTestId('barcode-scanner-enter-manually').tap();
-        await page.getByTestId('manual-entry-input').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        // The scanner's keyboard listener is detached in a passive effect after the switch: let it run before the next key events.
-        await waitTwoFrames();
-    }),
-
-    /** In manual entry: tap "back to scanner"; the strip with the scan prompt is shown again. */
-    backToScanner: async () => await step(`${NAME} - Back to scanner`, async () => {
-        await page.getByTestId('barcode-scanner-back-to-scanner').tap();
-        // #input-text exists in both modes; the manual input is gone only after the switch back.
-        await expect(page.getByTestId('manual-entry-input')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
-        await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
-        // The keyboard listener is re-attached in a passive effect after the switch: let it run before the next scan.
-        await waitTwoFrames();
-    }),
-
-    /** Bounding boxes (x, y, width, height in CSS px) of the job screen parts, for the layout checks on a phone-size screen. */
-    getLayoutBoxes: async ({ pickingSlotIds }) => await step(`${NAME} - Read layout boxes`, async () => {
-        const box = async (locator) => {
-            const b = await locator.boundingBox();
-            if (!b) throw new Error('Element has no bounding box: ' + locator);
-            return b;
-        };
-        const slots = {};
-        for (const id of pickingSlotIds) {
-            slots[id] = await box(page.locator(`[data-pickingslotid="${id}"]`));
-        }
-        return {
-            viewport: page.viewportSize(),
-            targetLUButton: await box(page.getByTestId('targetLU-button')),
-            scanner: await box(page.locator('.barcode-scanner')),
-            slots,
-            complete: await box(page.locator('#last-confirm-button')),
-        };
-    }),
-
-    /**
-     * While manual entry is open, a gun-style scan (key events on the document) must not be booked by the background scanner.
-     * Then: back to the scanner, a real scan of the same GRAI books exactly one crate. Every wrong booking request would leave
-     * before the real scan's request, so exactly one consolidateByScan request in total proves nothing was booked in between.
-     */
-    expectOnlyLaterScanBooked: async ({ grai, pickingSlotId, countHUsAfterScan }) => await step(`${NAME} - Gun-style scan during manual entry is not booked, the later scan books once: ${grai}`, async () => {
-        let requests = 0;
-        const onRequest = (req) => { if (req.url().includes('/consolidateByScan')) requests++; };
-        page.on('request', onRequest);
-        try {
-            await BarcodeScannerComponent.type({ scannedCode: grai });
-            await HUConsolidationJobScreen.backToScanner();
-            await HUConsolidationJobScreen.scanGRAI({ grai });
-            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId, countHUs: countHUsAfterScan });
-        } finally {
-            page.off('request', onRequest);
-        }
-        expect(requests).toBe(1);
-    }),
-
-    /** Expect each slot row's caption, with its crate count (e.g. "4018 (2 HUs)"), to be fully on screen and not cut by an ellipsis. */
-    expectSlotCountsInView: async ({ pickingSlotIds }) => await step(`${NAME} - Expect slot captions with crate counts in view`, async () => {
-        for (const id of pickingSlotIds) {
-            const row = page.locator(`[data-pickingslotid="${id}"]`);
-            const caption = row.locator('.caption-btn .rows .row span').first();
-            await expect(caption).toHaveText(/\(\d+ HUs?\)$/, { timeout: SLOW_ACTION_TIMEOUT });
-            await expect(caption).toBeInViewport({ ratio: 1 });
-            // the text is not cut (no ellipsis clipping)
-            expect(await caption.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
-        }
-        await captureScreenshotIfEnabled('strip-392x726');
-    }),
-
-    /** Expect the job screen's GRAI scanner to be open (its input is attached to the DOM; the input is not painted) / closed. */
-    expectScannerOpen: async (open) => await test.step(`${NAME} - Expect GRAI scanner open=${open}`, async () => {
-        if (open) await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
-        else await BarcodeScannerComponent.expectNotAttached({ testId: GRAI_SCANNER_TESTID });
     }),
 
     /** Expect the picking slot row caption to show the given HU count, e.g. "slot1 (2 HUs)" / "(1 HU)". */
