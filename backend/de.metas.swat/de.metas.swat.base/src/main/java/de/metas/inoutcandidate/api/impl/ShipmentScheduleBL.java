@@ -643,7 +643,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
 	{
-		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
+		final ImmutableList<I_M_ShipmentSchedule> records = getByReferencesLockedInIdOrder(recordRefs);
 		for (final I_M_ShipmentSchedule record : records)
 		{
 			if (record.isClosed())
@@ -661,7 +661,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void openShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
 	{
-		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
+		final ImmutableList<I_M_ShipmentSchedule> records = getByReferencesLockedInIdOrder(recordRefs);
 		for (final I_M_ShipmentSchedule record : records)
 		{
 			if (record.isClosed())
@@ -669,6 +669,19 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				openShipmentSchedule(record);
 			}
 		}
+	}
+
+	/**
+	 * Locks the schedules before updating them, in the same order as the recompute pass does; otherwise e.g. an order's reactivation and a
+	 * concurrent recompute of the order's schedules deadlock (see {@link IShipmentSchedulePA#getByIdsLockedInIdOrder(Set)}).
+	 */
+	private ImmutableList<I_M_ShipmentSchedule> getByReferencesLockedInIdOrder(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	{
+		final ImmutableSet<ShipmentScheduleId> ids = shipmentSchedulePA.getByReferences(recordRefs)
+				.stream()
+				.map(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		return shipmentSchedulePA.getByIdsLockedInIdOrder(ids);
 	}
 
 	@Override
