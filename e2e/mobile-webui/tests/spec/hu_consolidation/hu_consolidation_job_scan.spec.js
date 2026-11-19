@@ -265,13 +265,13 @@ test('Phone-size screen (392x726): the scanner is a slim strip, both slot rows a
     await allure.severity('normal');
 
     // short slot codes like the customer's real ones (e.g. "4018"), so that "<code> (2 HUs)" has to fit on a phone
-    const shortSlotCode = () => String(100000 + Math.floor(Math.random() * 900000));
+    const slotCodeBase = 100000 + (Date.now() % 899999); // the two codes of one run are base and base+1, never equal
     const masterdata = await createJobScanMasterdata({
         sysconfigs: {
             'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
         },
-        pickingSlots: { slot1: { code: shortSlotCode() }, slot2: { code: shortSlotCode() } },
+        pickingSlots: { slot1: { code: String(slotCodeBase) }, slot2: { code: String(slotCodeBase + 1) } },
     });
     sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2 } = masterdata.pickingSlots;
