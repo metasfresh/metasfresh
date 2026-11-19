@@ -17,3 +17,8 @@ export const getPickingSlotById = ({ activity, pickingSlotId }) => {
     (pickingSlot) => String(pickingSlot.pickingSlotId) === String(pickingSlotId)
   );
 };
+
+/** true when a crate in the job's slots carries a GRAI, i.e. the "Scan (GRAI)" button is offered */
+export const isGRAIScanEnabled = ({ activity }) => {
+  return getHUConsolidationJob({ activity }).graiScanEnabled ?? false;
+};

@@ -1,7 +1,6 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
@@ -10,6 +9,7 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateComm
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
 import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationJobCrates;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
@@ -33,7 +33,7 @@ public class HUConsolidationJobService
 {
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final PickingSlotService pickingSlotService;
-	@NonNull private final PickingJobBPartnerService pickingJobBPartnerService;
+	@NonNull private final HUConsolidationGRAIPresence graiPresence;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HUConsolidationAvailableTargetsFinder availableTargetsFinder;
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
@@ -173,7 +173,7 @@ public class HUConsolidationJobService
 				.jobRepository(jobRepository)
 				.huQRCodesService(huQRCodesService)
 				.pickingSlotService(pickingSlotService)
-				.pickingJobBPartnerService(pickingJobBPartnerService)
+				.graiPresence(graiPresence)
 				.jobId(jobId)
 				.pickingSlotId(pickingSlotId)
 				.build()

@@ -7,6 +7,8 @@ import de.metas.handlingunits.picking.slot.PickingSlotQueueQuery;
 import de.metas.handlingunits.picking.slot.PickingSlotQueuesSummary;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationJobCrates;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJob;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlot;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
@@ -39,6 +41,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final HUConsolidationGRAIPresence graiPresence;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -81,7 +84,17 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 				.shipToAddress(shipToAddress)
 				.pickingSlots(toJsonHUConsolidationJobPickingSlots(job.getPickingSlotIds()))
 				.currentTarget(JsonHUConsolidationTarget.ofNullable(job.getCurrentTarget()))
+				.graiScanEnabled(isGRAIScanEnabled(job))
 				.build();
+	}
+
+	/**
+	 * The button is offered iff a GRAI is present on an active top-level HU in the job's slots; the customer's GRAIRequired flag is not read.
+	 */
+	private boolean isGRAIScanEnabled(@NonNull final HUConsolidationJob job)
+	{
+		final HUConsolidationJobCrates jobCrates = HUConsolidationJobCrates.load(job.getPickingSlotIds(), pickingSlotService);
+		return graiPresence.isAnyGRAIPresent(jobCrates.getHuIds());
 	}
 
 	private ImmutableList<JsonHUConsolidationJobPickingSlot> toJsonHUConsolidationJobPickingSlots(final Set<PickingSlotId> pickingSlotIds)

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { isUserEditable as isUserEditableFunc } from '../reducers';
+import { isGRAIScanEnabled as isGRAIScanEnabledFunc, isUserEditable as isUserEditableFunc } from '../reducers';
 import { trl } from '../../../utils/translations';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { pickingSlotScreenLocation, selectTargetScreenLocation } from '../routes';
@@ -9,6 +9,8 @@ import { useWFActivity } from '../../../reducers/wfProcesses';
 import { useCurrentTarget } from '../actions/useCurrentTarget';
 import { toQRCodeDisplayableNoFail } from '../../../utils/qrCode/hu';
 import { usePickingSlots } from '../actions/usePickingSlots';
+import { useConsolidateByScan } from '../actions/useConsolidateByScan';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 
 const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => {
   const history = useMobileNavigation();
@@ -17,6 +19,16 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
 
   const isUserEditable = isUserEditableFunc({ activity });
   const isCurrentTargetSet = !!currentTarget;
+  const isGRAIScanEnabled = isGRAIScanEnabledFunc({ activity });
+
+  const consolidateByScan = useConsolidateByScan({ wfProcessId });
+  const [isScannerOpen, setScannerOpen] = useState(false);
+  // the scanner closes by itself when the pallet is closed or the last GRAI crate has left the slots
+  const isScannerVisible = isScannerOpen && isCurrentTargetSet && isGRAIScanEnabled;
+
+  // errors are not caught here: they reach the scanner, which shows the message and beeps
+  const resolveScannedBarcode = ({ scannedBarcode }) =>
+    consolidateByScan({ scannedCode: scannedBarcode }).then(() => ({ scannedBarcode, error: null }));
 
   const onSelectTargetClicked = () => {
     history.push(selectTargetScreenLocation({ applicationId, wfProcessId, activityId }));
@@ -34,6 +46,22 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
         disabled={!isUserEditable}
         onClick={onSelectTargetClicked}
       />
+      {isGRAIScanEnabled && (
+        <ButtonWithIndicator
+          testId="scanGRAI-button"
+          caption={trl('huConsolidation.HUConsolidationActivity.scanGRAI')}
+          disabled={!isUserEditable || !isCurrentTargetSet}
+          onClick={() => setScannerOpen((wasOpen) => !wasOpen)}
+        />
+      )}
+      {isScannerVisible && (
+        <BarcodeScannerComponent
+          testId="grai-scanner"
+          resolveScannedBarcode={resolveScannedBarcode}
+          onResolvedResult={() => {}}
+          inputPlaceholderText={trl('huConsolidation.HUConsolidationActivity.scanGRAI')}
+        />
+      )}
       <PickingSlots
         applicationId={applicationId}
         wfProcessId={wfProcessId}
