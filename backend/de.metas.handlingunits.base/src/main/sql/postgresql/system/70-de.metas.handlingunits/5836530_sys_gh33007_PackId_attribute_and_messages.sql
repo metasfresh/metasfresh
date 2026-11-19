@@ -2,7 +2,7 @@
 -- New:    M_Attribute PackId (string, read-only values, filled by the picking booking from the label's pack ID part).
 --         M_HU_PI_Attribute on M_HU_PI_Version_ID 101 only (not on the template PI 100). Transfer strategy Skip (as HU_QRCode), propagation NONE.
 --         AD_Message de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED, CU_LABEL_NO_PACK_ID, CU_LABEL_FORMAT_MISMATCH, CU_LABEL_NO_FORMAT, CU_NO_OPEN_BOX.
--- Pack ID part type (PACK_ID / PackId in ScannableCodeFormatPartType) is delivered by the label-reader issue 32733, not by this script.
+-- The pack ID part type of ScannableCodeFormatPartType is not created by this script.
 
 -- M_Attribute PackId (name German base; M_Attribute has no _Trl table)
 INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,Description,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value,ValueMax,ValueMin) VALUES (0,0,'S',TO_TIMESTAMP('2026-11-18 23:10:00','YYYY-MM-DD HH24:MI:SS'),100,'Pack ID of the CU label, set when the CU is picked in CU quantity entry mode','Y','N','N','N','Y','N','N','N','Y','N','N',540215 /*From ID Server*/,'Packungs-ID',TO_TIMESTAMP('2026-11-18 23:10:00','YYYY-MM-DD HH24:MI:SS'),100,'PackId',0,0)
