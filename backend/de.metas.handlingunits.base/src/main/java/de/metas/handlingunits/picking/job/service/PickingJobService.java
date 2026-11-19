@@ -746,7 +746,8 @@ public class PickingJobService implements PickingSlotListener
 	/**
 	 * Closes the job's targets and every line's targets. Each line's closed HUs go to that line's picking slot queue: in a job with
 	 * line-level targets (product job) every customer's line has its own slot, and the slot the picker scanned last belongs to another
-	 * customer (an HU queued on two slots cannot be shipped).
+	 * customer (an HU queued on two slots cannot be shipped). An existing HU that is the open target of two lines with different slots
+	 * would be queued on both; lines of different customers do not share a target.
 	 */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{

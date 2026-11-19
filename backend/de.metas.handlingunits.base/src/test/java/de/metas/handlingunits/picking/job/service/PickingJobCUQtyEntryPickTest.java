@@ -29,6 +29,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
@@ -892,6 +893,38 @@ class PickingJobCUQtyEntryPickTest
 		helper.pickingJobService.closeLUAndTUPickingTargets(job);
 
 		assertThat(queuedSlotsOf(boxA)).as("customer A's box is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
+	}
+
+	/**
+	 * (y) Manual with a pallet (LU) and a box (TU) target: a booking of 2 (box capacity 4) books the box on the pallet as the picked HU,
+	 * not a CU in a box, so the un-pick's CU-in-box delete does not apply; "Entpacken" leaves no QtyPicked row of the box and nothing
+	 * picked (the Manual un-pick of a box, unchanged).
+	 */
+	@Test
+	void y_manual_palletAndBox_pickedHUIsTheBox_undoLeavesNothingPicked()
+	{
+		setProfile(CUQtyEntryMode.MANUAL);
+		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-Y");
+		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Y", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
+		PickingJob job = createJob(null, true); // virtual packing = a CU line
+		job = helper.pickingJobService.setLUPickingTarget(job, targetScope(job), LUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()), "LU-Y"));
+		job = openBoxFromLinePacking(job);
+
+		job = pick(job, source, "2", null, false, LOT_A);
+
+		final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+		final I_M_HU box = handlingUnitsBL.getById(boxId);
+		assertThat(handlingUnitsBL.isTransportUnit(box)).as("Manual: the picked HU is the box").isTrue();
+		assertThat(helper.huService.isCUInsideBox(box)).isFalse();
+		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(1);
+		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
+
+		job = undo(job, boxId, source.getQrCode(), null);
+
+		assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row of the box left").isEqualTo(0);
+		assertThat(pickedQtyOfLine(job)).as("nothing picked any more").isEqualByComparingTo("0");
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
 	}
 
 	private OrderAndLineId createPackageable(final String orderDocNo, final BPartnerLocationId shipToBPLocationId)

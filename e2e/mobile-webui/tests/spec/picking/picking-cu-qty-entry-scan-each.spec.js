@@ -140,6 +140,33 @@ test('TC12d: "Unpack" of a booked CU, then the same label books again without a 
 });
 
 // noinspection JSUnusedLocalSymbols
+test('TC12d (box opened by GRAI scan): "Unpack" of the box\'s only pack, then the same label books again into a box that carries the GRAI', async ({ page }) => {
+    allureMeta('Scan each CU unpick, GRAI box');
+
+    const masterdata = await newMasterdata({
+        orders: [{ key: 'A', qty: 2 }],
+        packingInstructions: { G1: { tu: 'TU_G1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true } },
+    });
+    const grai = masterdata.packingInstructions.G1.grai;
+    const lot = uniqueLot();
+    const label = packLabelOf({ masterdata, lot, packId: 2 });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
+    await openScanEachLine({ index: 1, openBox: false });
+    await PickLineScanScreen.scanGrai(grai);
+    await scanPack(label);
+    await unpackFirstPick({ lineIndex: 1 }); // the box's only pack: the box is emptied
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
+
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickLineScanScreen.waitForScreen();
+    await scanPack(label); // booked again, no warning, into the still open GRAI box
+    await Backend.expect({
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } },
+        hus: { tu1: { storages: { P1: '1 PCE' }, attributes: { GRAI: grai } } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('TC12e: the box\'s first pack: a rescan is warned; "Unpack" frees only that CU (the other CU stays), then the rescan books', async ({ page }) => {
     allureMeta('Scan each CU first pack of the box');
 
