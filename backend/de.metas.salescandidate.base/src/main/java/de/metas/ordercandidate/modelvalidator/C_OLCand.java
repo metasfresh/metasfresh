@@ -203,6 +203,11 @@ public class C_OLCand
 		}
 	}
 
+	/**
+	 * Copies a changed {@code POReference} of the given order candidate to the sales order(s) it was already allocated to,
+	 * i.e. the orders of the order lines referenced by the candidate's active {@code C_Order_Line_Alloc} records.
+	 * Does nothing if the candidate has no active allocation yet.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_POReference)
 	public void updatePOReferenceOnSalesOrder(@NonNull final I_C_OLCand olCand)
 	{
