@@ -327,8 +327,6 @@ public class PickingJobHUService
 
 	public boolean isVirtual(final I_M_HU hu) {return handlingUnitsBL.isVirtual(hu);}
 
-	public boolean isTopLevel(final I_M_HU hu) {return handlingUnitsBL.isTopLevel(hu);}
-
 	public boolean isDestroyed(final HuId huId) {return handlingUnitsBL.isDestroyed(huId);}
 
 	public boolean isDestroyedOrEmptyStorage(@NonNull final I_M_HU hu) {return handlingUnitsBL.isDestroyedOrEmptyStorage(hu);}

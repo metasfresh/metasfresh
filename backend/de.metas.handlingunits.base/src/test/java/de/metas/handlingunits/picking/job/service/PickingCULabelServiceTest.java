@@ -308,6 +308,35 @@ class PickingCULabelServiceTest
 		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
 
+	/**
+	 * Parity vector with the frontend `cuLabel.test.js` ("no PackId part, a gap between the 92 marker and the next part"): the zone of the "92" marker ends after the marker itself.
+	 */
+	@Test
+	void fallbackMarkerWithGapBeforeNextPart_labelEndingInsideTheGap_isAFormatMismatch()
+	{
+		final ScannableCodeFormat gapFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
+				.name("CU label, marker 92 and a gap before the next part")
+				.parts(ImmutableList.of(
+						constant(1, 2, "01"),
+						part(3, 16, ScannableCodeFormatPartType.Ignored),
+						constant(17, 18, "91"),
+						part(19, 25, ScannableCodeFormatPartType.ProductCode),
+						part(26, 26, ScannableCodeFormatPartType.Ignored),
+						constant(27, 28, "17"),
+						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(35, 36, "10"),
+						part(37, 45, ScannableCodeFormatPartType.LotNo),
+						part(46, 46, ScannableCodeFormatPartType.Ignored),
+						constant(47, 48, "92"),
+						constant(52, 53, "93")))
+				.build());
+		final String insideGap = label(GTIN, PRODUCT_NO, "2").substring(0, 49);
+		final String beforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 46);
+
+		assertFails(() -> resolve(insideGap, CUQtyEntryMode.SCAN_EACH_CU, gapFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
+		assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, gapFormat.getId()), CU_LABEL_NO_PACK_ID);
+	}
+
 	@Test
 	void packIdPartWithAnotherMarker_labelEndingBeforeIt_hasNoPackId()
 	{

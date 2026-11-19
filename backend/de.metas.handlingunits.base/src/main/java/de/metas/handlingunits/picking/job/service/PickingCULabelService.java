@@ -219,11 +219,13 @@ public class PickingCULabelService
 				return false;
 			}
 			zoneStart = marker.getStartPosition();
-			zoneEnd = parts.stream()
+			// same rule as the frontend cuLabel.js: the zone is the marker itself, cut short by a part starting inside it
+			final int markerEnd = zoneStart + PACK_ID_MARKER.length();
+			zoneEnd = Math.min(markerEnd, parts.stream()
 					.mapToInt(ScannableCodeFormatPart::getStartPosition)
 					.filter(start -> start > zoneStart)
 					.min()
-					.orElse(zoneStart + PACK_ID_MARKER.length());
+					.orElse(markerEnd));
 		}
 		if (label.length() >= zoneEnd)
 		{

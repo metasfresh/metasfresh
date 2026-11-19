@@ -23,33 +23,27 @@ const renderOnClose = (params) => {
   return onClose;
 };
 
-describe('PickLineScanScreen: where a finished line leaves to (the setting is honoured in every mode)', () => {
+describe('PickLineScanScreen useOnClose: where a closed line leaves to (decided by the setting gotoPickingJobOnClose and the next param only)', () => {
   beforeEach(() => {
     mockHistory.replace.mockClear();
     mockHistory.goBack.mockClear();
     mockGotoPickingJobOnClose = false; // the shipped sysconfig value (N)
   });
 
-  it('a scan-once line done keeps today: the sysconfig decides (N = back to the line screen)', () => {
-    renderOnClose({ cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY', isLineDone: true })();
+  it('setting N: closing goes back to the previous screen', () => {
+    renderOnClose({})();
     expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
     expect(mockHistory.replace).not.toHaveBeenCalled();
   });
 
-  it('a scan-each line done keeps today: the sysconfig decides (N = back to the line screen)', () => {
-    renderOnClose({ cuQtyEntryMode: 'SCAN_EACH_CU', isLineDone: true })();
-    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
-    expect(mockHistory.replace).not.toHaveBeenCalled();
-  });
-
-  it('a new-mode line done goes to the job screen when the sysconfig says Y', () => {
+  it('setting Y: closing goes to the picking job screen', () => {
     mockGotoPickingJobOnClose = true;
-    renderOnClose({ cuQtyEntryMode: 'SCAN_EACH_CU', isLineDone: true })();
+    renderOnClose({})();
     expect(mockHistory.goBack).not.toHaveBeenCalled();
     expect(mockHistory.replace).toHaveBeenCalledTimes(1);
   });
 
-  it('a finished new-mode line opened with next=NEXT_NextPickingLine goes to the next line', () => {
+  it('next=NEXT_NextPickingLine: closing goes to the next eligible line (setting N)', () => {
     const activity = {
       activityId: 'A1',
       dataStored: {
@@ -59,7 +53,7 @@ describe('PickLineScanScreen: where a finished line leaves to (the setting is ho
         },
       },
     };
-    renderOnClose({ activity, cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY', isLineDone: true, next: NEXT_NextPickingLine })();
+    renderOnClose({ activity, next: NEXT_NextPickingLine })();
     expect(mockHistory.goBack).not.toHaveBeenCalled();
     expect(mockHistory.replace).toHaveBeenCalledWith(
       pickingLineScanScreenLocation({
@@ -70,16 +64,5 @@ describe('PickLineScanScreen: where a finished line leaves to (the setting is ho
         next: NEXT_NextPickingLine,
       })
     );
-  });
-
-  it('a manual line keeps today: the sysconfig decides (N = back to the line screen)', () => {
-    renderOnClose({ cuQtyEntryMode: 'MANUAL', isLineDone: true })();
-    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
-    expect(mockHistory.replace).not.toHaveBeenCalled();
-  });
-
-  it('closing early (not done) on a scan-once line keeps today: the sysconfig decides', () => {
-    renderOnClose({ cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' })();
-    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
   });
 });
