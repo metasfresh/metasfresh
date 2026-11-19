@@ -94,6 +94,9 @@ export const RawMaterialIssueLineScreen = {
 
     expectStepsCount: async ({ count }) => await test.step(`${NAME} - Expect ${count} step(s)`, async () => {
         await expect(locateStepButtons()).toHaveCount(count);
+        if (count > 0) {
+            await expect(locateStepButtons().first()).toBeVisible();
+        }
     }),
 
     /**
