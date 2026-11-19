@@ -97,8 +97,9 @@ const RECEIPT_SCHEDULE_WINDOW_ID = 540196;
 // i.e. they are inactive on such a database too, so they are activated with the originals; they do not exist before that migration.
 const RELATION_TYPES_WINDOW_ID = 53102;
 const INVOICE_CANDIDATE_RELATION_TYPE_IDS = [540221, 540275, 540514, 540515];
-const INVOICE_CANDIDATE_SALES_CAPTION = 'Rechnungsdisposition';
-const INVOICE_CANDIDATE_PURCHASE_CAPTION = 'Rechnungsdisposition Einkauf';
+// target windows of the two entries ("Rechnungsdisposition" sales, "Rechnungsdisposition Einkauf" purchase)
+const INVOICE_CANDIDATE_SALES_WINDOW_ID = 540092;
+const INVOICE_CANDIDATE_PURCHASE_WINDOW_ID = 540983;
 // R-REL compare: the order line's related documents must stay unchanged this long before they count as complete
 const STABLE_RELATED_DOCUMENTS_MS = 1000;
 // Bestellung (purchase order) and its line tab
@@ -896,7 +897,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         readExpected: () => getDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId),
         readActual: () => getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId),
         requiredTargetWindowId: SHIPMENT_SCHEDULE_WINDOW_ID,
-        requiredCaption: INVOICE_CANDIDATE_SALES_CAPTION,
+        requiredInvoiceCandidateWindowId: INVOICE_CANDIDATE_SALES_WINDOW_ID,
         what: 'the sales line row',
       });
 
@@ -1133,7 +1134,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         readExpected: () => getDocumentReferences(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID_PATH, goodsRowId),
         readActual: () => getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, purchaseGroupId, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, goodsRowId),
         requiredTargetWindowId: RECEIPT_SCHEDULE_WINDOW_ID,
-        requiredCaption: INVOICE_CANDIDATE_PURCHASE_CAPTION,
+        requiredInvoiceCandidateWindowId: INVOICE_CANDIDATE_PURCHASE_WINDOW_ID,
         what: 'the purchase goods line row',
       });
     });
@@ -2071,8 +2072,6 @@ function expectOrderNosDescending(orderNos) {
   }
 }
 
-// (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
-// name of its source table, which differs between the line table and its view)
 /**
  * Activates the invoice-candidate relation types (INVOICE_CANDIDATE_RELATION_TYPE_IDS, see there) through the WebUI window
  * "Relationsart" as System Administrator, in a request context of their own (the page's session stays as it is).
@@ -2110,7 +2109,7 @@ async function activateInvoiceCandidateRelationTypes() {
         const response = await api.get(`${WEBAPI_BASE_URL}/window/${RELATION_TYPES_WINDOW_ID}/${relationTypeId}`);
         if (!response.ok()) {
           // not there (the relation types of the view row exist only with their migration); any other status is a failure
-          expect([404],`relation type ${relationTypeId}: read, HTTP ${response.status()}`).toContain(response.status());
+          expect([404], `relation type ${relationTypeId}: read, HTTP ${response.status()}`).toContain(response.status());
           continue;
         }
         const wasActive = (await response.json())[0].fieldsByName.IsActive.value === true;
@@ -2120,16 +2119,22 @@ async function activateInvoiceCandidateRelationTypes() {
         }
       }
     } catch (error) {
-      await restore();
+      try {
+        await restore();
+      } catch (restoreError) {
+        console.error(`relation types: put-back failed after an activation failure: ${restoreError.message}`);
+      }
       throw error;
     }
     return restore;
   } catch (error) {
-    await api.dispose();
+    await api.dispose(); // a no-op when restore() has disposed already
     throw error;
   }
 }
 
+// (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
+// name of its source table, which differs between the line table and its view)
 function relatedDocumentsComparable(references) {
   return references
     .filter((reference) => !RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS.includes(String(reference.targetWindowId)))
@@ -2148,10 +2153,11 @@ function relatedDocumentsComparable(references) {
  * - the expected list has stayed the same for at least STABLE_RELATED_DOCUMENTS_MS (1 s) over successive reads. The other
  *   entries of the line (e.g. "Material Cockpit Detail") arrived 40-230 ms after the schedule in local runs, so a list
  *   read in that gap changes again before it counts as stable (a longer gap would still slip through: best effort), and
- * - both lists show the entry `requiredCaption` (the invoice-candidate entry; the test has activated its relation types), and
+ * - both lists show the invoice-candidate entry, i.e. one that targets `requiredInvoiceCandidateWindowId` (the test has activated its
+ *   relation types), and
  * - the actual list equals it.
  */
-async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, requiredTargetWindowId, requiredCaption, what }) {
+async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, requiredTargetWindowId, requiredInvoiceCandidateWindowId, what }) {
   let previousExpected = null;
   let expectedUnchangedSince = 0;
   await expect.poll(async () => {
@@ -2160,20 +2166,20 @@ async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, 
     const expected = relatedDocumentsComparable(expectedReferences);
     const hasRequired = expectedReferences.some((reference) => String(reference.targetWindowId) === String(requiredTargetWindowId));
     // by name, on both sides, before the lists are compared: the order line and the view row each list the invoice-candidate entry
-    const lacksRequiredCaption = {
-      orderLine: !expected.some((entry) => entry.startsWith(`${requiredCaption} (#`)),
-      lineRowOfView: !actual.some((entry) => entry.startsWith(`${requiredCaption} (#`)),
+    const lacksInvoiceCandidateEntry = {
+      orderLine: !expected.some((entry) => entry.split('|')[1] === String(requiredInvoiceCandidateWindowId)),
+      lineRowOfView: !actual.some((entry) => entry.split('|')[1] === String(requiredInvoiceCandidateWindowId)),
     };
     if (previousExpected === null || JSON.stringify(previousExpected) !== JSON.stringify(expected)) {
       expectedUnchangedSince = Date.now();
     }
     const isStable = Date.now() - expectedUnchangedSince >= STABLE_RELATED_DOCUMENTS_MS;
     previousExpected = expected;
-    return hasRequired && isStable && !lacksRequiredCaption.orderLine && !lacksRequiredCaption.lineRowOfView && JSON.stringify(actual) === JSON.stringify(expected)
+    return hasRequired && isStable && !lacksInvoiceCandidateEntry.orderLine && !lacksInvoiceCandidateEntry.lineRowOfView && JSON.stringify(actual) === JSON.stringify(expected)
       ? 'equal'
-      : JSON.stringify({ hasRequired, isStable, requiredCaption, lacksRequiredCaption, expected, actual });
+      : JSON.stringify({ hasRequired, isStable, requiredInvoiceCandidateWindowId, lacksInvoiceCandidateEntry, expected, actual });
   }, {
-    message: `related documents of ${what} (without windows 270, 540394, 363) equal those of the order line, read once the order line lists window ${requiredTargetWindowId} and its list is unchanged for ${STABLE_RELATED_DOCUMENTS_MS} ms; both lists show ${requiredCaption}`,
+    message: `related documents of ${what} (without windows 270, 540394, 363) equal those of the order line, read once the order line lists window ${requiredTargetWindowId} and its list is unchanged for ${STABLE_RELATED_DOCUMENTS_MS} ms; both lists show the entry for window ${requiredInvoiceCandidateWindowId}`,
     timeout: VERY_SLOW_ACTION_TIMEOUT,
   }).toBe('equal');
 }
