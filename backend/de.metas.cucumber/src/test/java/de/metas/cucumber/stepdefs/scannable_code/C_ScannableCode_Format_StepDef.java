@@ -31,9 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Steps to define scannable code formats and to check how a scanned code is parsed with them.
  * <p>
- * Intended use: features that prove a format reads the right values from real or look-alike scanned strings
- * (private customer features that run against the delivered strings).
- * <p>
  * Step {@code metasfresh contains C_ScannableCode_Format:} columns: {@code Identifier} (required), {@code Name} (required).
  * <p>
  * Step {@code metasfresh contains C_ScannableCode_Format_Part:} columns, all plain names (no {@code .Identifier} suffix):
