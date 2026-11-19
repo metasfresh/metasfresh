@@ -162,16 +162,23 @@ export function getFieldLabelFromLayout(layout, fieldName) {
  *
  * @param {string} windowId - Window ID
  * @param {string} recordId - Record ID
+ * @param {string} [tabId] - Tab ID; with `rowId`, reads the references of that included row instead of the document
+ * @param {string} [rowId] - Row ID within the tab (requires `tabId`; exactly one of the two throws)
  * @returns {Promise<Object[]>} the references (`internalName`, `id`, `targetWindowId`, `documentsCount`, ...)
  */
-export async function getDocumentReferences(windowId, recordId) {
+export async function getDocumentReferences(windowId, recordId, tabId, rowId) {
+  if ((tabId == null) !== (rowId == null)) {
+    // one of the two alone would silently read the references of the whole document instead of the row's
+    throw new Error(`getDocumentReferences(${windowId}, ${recordId}): pass both tabId and rowId (row references) or neither (document references); got tabId=${tabId}, rowId=${rowId}`);
+  }
   const page = getPage();
 
-  const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}/references/sse`, {
+  const included = tabId != null ? `/${tabId}/${rowId}` : '';
+  const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}${included}/references/sse`, {
     headers: { Accept: 'text/event-stream' },
   });
   if (!response.ok()) {
-    throw new Error(`HTTP ${response.status()} reading references of window ${windowId} record ${recordId}`);
+    throw new Error(`HTTP ${response.status()} reading references of window ${windowId} record ${recordId}${included}`);
   }
 
   const events = (await response.text())
@@ -179,7 +186,7 @@ export async function getDocumentReferences(windowId, recordId) {
     .filter((line) => line.startsWith('data:'))
     .map((line) => JSON.parse(line.substring('data:'.length).trim()));
   if (!events.some((event) => event.type === 'COMPLETED')) {
-    throw new Error(`References stream of window ${windowId} record ${recordId} ended without its COMPLETED event`);
+    throw new Error(`References stream of window ${windowId} record ${recordId}${included} ended without its COMPLETED event`);
   }
   return events
     .filter((event) => event.type === 'PARTIAL_RESULT' && event.partialGroup)
