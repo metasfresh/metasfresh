@@ -901,7 +901,7 @@ Feature: EDI INVOIC export via postgREST
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234567  | true                      |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
@@ -1122,7 +1122,7 @@ Feature: EDI INVOIC export via postgREST
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234568  | true                      |
     And update order
       | C_Order_ID.Identifier | POReference |

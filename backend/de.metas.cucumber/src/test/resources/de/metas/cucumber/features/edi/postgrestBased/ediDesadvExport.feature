@@ -1509,7 +1509,7 @@ Feature: EDI DESADV export via postgREST
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | processed | DocStatus |
+      | C_Order_ID.Identifier | POReference | processed | DocStatus |
       | order_1               | <ref>       | true      | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
@@ -1633,7 +1633,7 @@ Feature: EDI DESADV export via postgREST
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | processed | DocStatus |
+      | C_Order_ID.Identifier | POReference | processed | DocStatus |
       | order_1               | 0021234568  | true      | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
@@ -1754,7 +1754,7 @@ Feature: EDI DESADV export via postgREST
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | processed | DocStatus |
+      | C_Order_ID.Identifier | POReference | processed | DocStatus |
       | order_1               | 0021234569  | true      | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |

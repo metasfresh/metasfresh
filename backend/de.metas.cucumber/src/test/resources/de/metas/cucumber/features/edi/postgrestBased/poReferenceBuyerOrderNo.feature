@@ -88,7 +88,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_1               |
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | poReference | OPT.AD_InputDataSource_ID.InternalName | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | POReference | OPT.AD_InputDataSource_ID.InternalName | IsPOReferenceBuyerOrderNo |
       | order_1               | customer                 | 0021234567  | <dataSource>                           | true                      |
 
     Examples:
@@ -106,7 +106,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
       | order_1    | true    | customer      | 2022-04-16  | 0027654321  |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0027654321  | false                     |
 
 
@@ -164,7 +164,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_1               |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | OPT.AD_InputDataSource_ID.InternalName | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | OPT.AD_InputDataSource_ID.InternalName | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234568  | poRefBuyerPlainChannel                 | false                     |
 
 
@@ -283,13 +283,13 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234569  | true                      |
     When update order
       | C_Order_ID.Identifier | POReference |
       | order_1               | 0029999991  |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0029999991  | false                     |
 
 
@@ -347,13 +347,13 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234570  | true                      |
     When update C_OLCand:
       | C_OLCand_ID | POReference |
       | olCand_1    | 0029999992  |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0029999992  | false                     |
 
 
@@ -369,7 +369,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier | IsPOReferenceBuyerOrderNo |
       | order_1               | true                      |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0027654321  | true                      |
 
 
@@ -385,7 +385,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0027654322  | true                      |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0027654322  | true                      |
 
 
@@ -443,7 +443,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234571  | true                      |
     When C_Order is cloned
       | C_Order_ID.Identifier | ClonedOrder.C_Order_ID.Identifier |
@@ -508,13 +508,13 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234573  | true                      |
     When C_Order header is copied the way a contract change does it
       | C_Order_ID.Identifier | CopiedOrder.C_Order_ID.Identifier |
       | order_1               | copiedOrder                       |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | copiedOrder           | 0021234573  | false                     |
       | order_1               | 0021234573  | true                      |
 
@@ -573,13 +573,13 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234572  | true                      |
     When metasfresh contains AD_InputDataSource:
       | Identifier | Name                    | Value                   | InternalName            | IsEDIChannel |
       | dataSource | poRefBuyerUntickChannel | poRefBuyerUntickChannel | poRefBuyerUntickChannel | N            |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234572  | true                      |
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
@@ -627,5 +627,5 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier |
       | order_2               |
     Then validate the created orders
-      | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
       | order_2               | 0021234573  | false                     |

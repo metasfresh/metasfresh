@@ -210,8 +210,8 @@ public class C_OLCand
 				.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID, olCand.getC_OLCand_ID())
-				.andCollectChildren(I_C_OrderLine.COLUMN_C_OrderLine_ID, I_C_OrderLine.class)
-				.andCollect(I_C_Order.COLUMN_C_Order_ID, I_C_Order.class);
+				.andCollect(I_C_Order_Line_Alloc.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.class)
+				.andCollect(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_Order.class);
 
 		final ICompositeQueryUpdater<I_C_Order> poReferenceUpdater = queryBL
 				.createCompositeQueryUpdater(I_C_Order.class)
