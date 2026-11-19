@@ -2,6 +2,7 @@ import {
   convertScannedBarcodeToResolvedResult,
   convertScannedCULabelToResolvedResult,
   isInlineGraiCaptureEnabled,
+  computeQtyUnitProps,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
@@ -12,7 +13,6 @@ describe('PickingLineScanScreen', () => {
       expectedProductId: '2009297',
     });
 
-    // the function is async and now also returns the parsed QR code and the scanned HU type
     expect(result).toEqual({
       bestBeforeDate: '2024-04-10',
       catchWeight: 180,
@@ -111,5 +111,24 @@ describe('PickingLineScanScreen: GRAI scan on a new-mode line', () => {
     await expect(
       convertScannedCULabelToResolvedResult({ scannedBarcode: A_GRAI, expectedProductNo: 'P1', onGrai })
     ).rejects.toThrow('boom');
+  });
+});
+
+describe('PickingLineScanScreen: quantity unit follows the line picking unit from the JSON', () => {
+  it('a TU line shows the TU caption and the packing item name', () => {
+    expect(computeQtyUnitProps({ pickingUnit: 'TU', packingItemName: 'TU x 4 Stk' })).toEqual({
+      qtyCaptionKey: 'general.QtyTU',
+      packingItemName: 'TU x 4 Stk',
+    });
+  });
+
+  it('a new-mode line that the backend reports in CU shows the CU caption and no packing item name', () => {
+    expect(
+      computeQtyUnitProps({
+        pickingUnit: 'CU',
+        packingItemName: 'TU x 4 Stk',
+        cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY',
+      })
+    ).toEqual({ qtyCaptionKey: 'general.Qty', packingItemName: null });
   });
 });

@@ -120,6 +120,8 @@ const GetQuantityDialog = ({
       (!useCatchWeight || catchWeight?.isQtyValid));
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
+  // lot and best-before come from the label; the backend takes them from there, so an edit would be dropped
+  const isLabelAttributeReadOnly = readOnly || isNewMode(cuQtyEntryMode);
 
   const getConfirmationPrompt = useCallback(
     async (qtyInput) => {
@@ -413,7 +415,7 @@ const GetQuantityDialog = ({
                               testId="bestBeforeDate"
                               type="date"
                               value={bestBeforeDate}
-                              disabled={readOnly}
+                              disabled={isLabelAttributeReadOnly}
                               onChange={onBestBeforeDateEntered}
                             />
                           </div>
@@ -432,7 +434,7 @@ const GetQuantityDialog = ({
                               className="input"
                               type="text"
                               value={lotNo}
-                              disabled={readOnly}
+                              disabled={isLabelAttributeReadOnly}
                               onChange={onLotNoEntered}
                             />
                           </div>

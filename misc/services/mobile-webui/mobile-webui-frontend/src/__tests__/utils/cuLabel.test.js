@@ -81,6 +81,10 @@ describe('cuLabel.readCULabel', () => {
     });
   });
 
+  it('reports formatMismatch for a label with a symbology prefix (positions shift)', () => {
+    expect(readCULabel({ string: ']d2' + LABEL, format })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
+  });
+
   it('reports formatMismatch for a label shorter than the format', () => {
     expect(readCULabel({ string: LABEL.substring(0, 30), format })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',

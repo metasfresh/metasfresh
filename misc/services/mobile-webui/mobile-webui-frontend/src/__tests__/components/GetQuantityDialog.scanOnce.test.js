@@ -135,3 +135,17 @@ describe('ScanHUAndGetQtyComponent: scan once passes the label', () => {
     expect(onResult).toHaveBeenCalledWith(expect.objectContaining({ qty: '4', cuLabel: 'RAW-LABEL' }));
   });
 });
+
+describe('GetQuantityDialog: lot and best-before come from the label', () => {
+  it('are read-only in scan once', async () => {
+    renderDialog({ cuQtyEntryMode: CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, lotNo: 'L1', bestBeforeDate: '2026-11-07' });
+    await act(async () => {});
+    expect(screen.getByTestId('lotNo')).toBeDisabled();
+  });
+
+  it('stay editable for Manual when the profile reads the lot', async () => {
+    renderDialog({ cuQtyEntryMode: undefined, readAttributes: ['LotNo'] });
+    await act(async () => {});
+    expect(screen.getByTestId('lotNo')).not.toBeDisabled();
+  });
+});

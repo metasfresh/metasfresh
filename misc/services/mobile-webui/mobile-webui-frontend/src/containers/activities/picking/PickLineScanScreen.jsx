@@ -129,6 +129,7 @@ const PickLineScanScreen = () => {
   const isInlineGraiCapture = isInlineGraiCaptureEnabled({ graiScanEnabled, tuPickingTarget, cuQtyEntryMode });
 
   const isNewModeLine = isNewMode(cuQtyEntryMode);
+  const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
   const nextBox = useNextBox({
     applicationId,
     wfProcessId,
@@ -214,8 +215,8 @@ const PickLineScanScreen = () => {
       graiScanEnabled={isInlineGraiCapture}
       existingLuGrais={existingLuGrais}
       qtyTargetCaption={trl('general.QtyToPick')}
-      qtyCaption={trl(pickingUnit === PICKING_UNIT_TU ? 'general.QtyTU' : 'general.Qty')}
-      packingItemName={pickingUnit === PICKING_UNIT_TU ? packingItemName : null}
+      qtyCaption={trl(qtyUnitProps.qtyCaptionKey)}
+      packingItemName={qtyUnitProps.packingItemName}
       qtyMax={qtyToPickRemaining}
       qtyTarget={qtyToPickRemaining}
       uom={uom}
@@ -247,6 +248,16 @@ export default PickLineScanScreen;
 // -------------------------------------------------------------------------------------
 //
 //
+
+/**
+ * Caption and packing name of the quantity block follow the picking unit the line JSON reports (a new-mode line is
+ * reported in CU, so it shows neither the TU caption nor the packing name).
+ */
+// @VisibleForTesting
+export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
+  pickingUnit === PICKING_UNIT_TU
+    ? { qtyCaptionKey: 'general.QtyTU', packingItemName }
+    : { qtyCaptionKey: 'general.Qty', packingItemName: null };
 
 /**
  * The pick-time GRAI capture (after OK) belongs to the Manual path; in the CU quantity entry modes the picker opens
@@ -552,8 +563,7 @@ const usePostQtyPicked = ({
         qtyRejectedReasonCode: reason,
         qtyRejected,
         catchWeight,
-        // a CU label books packs, never a whole TU
-        pickWholeTU: cuLabel ? false : resolvedBarcodeData?.isTUToBePickedAsWhole ?? false,
+        pickWholeTU: resolvedBarcodeData?.isTUToBePickedAsWhole ?? false,
         checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
         setBestBeforeDate: bestBeforeDate !== undefined,
         bestBeforeDate,
