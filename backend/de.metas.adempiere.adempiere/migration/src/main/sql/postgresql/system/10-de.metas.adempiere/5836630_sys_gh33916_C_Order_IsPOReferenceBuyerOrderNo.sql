@@ -26,10 +26,7 @@ SET Name = 'PO reference is customer''s order no.', PrintName = 'PO reference is
 WHERE AD_Element_ID = 585626 AND AD_Language = 'en_US'
 ;
 
-UPDATE AD_Element_Trl
-SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-19 15:00:18', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Element_ID = 585626 AND AD_Language IN ('de_DE', 'de_CH')
-;
+-- de_DE / de_CH keep IsTranslated='N' (German base text copied by the Trl seed), per docs/REVIEW.md
 
 -- AD_Column (C_Order = AD_Table 259, EntityType D, so no IsForceIncludeInGeneratedModel needed)
 INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID, AD_Reference_ID, AD_Table_ID, ColumnName, Created, CreatedBy, DefaultValue, Description, EntityType, FieldLength, IsActive, IsAllowLogging, IsAlwaysUpdateable, IsAutoApplyValidationRule, IsAutocomplete, IsCalculated, IsDimension, IsEncrypted, IsForceIncludeInGeneratedModel, IsGenericZoomKeyColumn, IsGenericZoomOrigin, IsIdentifier, IsKey, IsLazyLoading, IsMandatory, IsParent, IsSelectionColumn, IsStaleable, IsSyncDatabase, IsTranslated, IsUpdateable, IsUseDocSequence, Name, PersonalDataCategory, SeqNo, Updated, UpdatedBy, Version)
