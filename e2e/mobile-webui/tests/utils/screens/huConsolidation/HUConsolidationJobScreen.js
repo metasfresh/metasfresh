@@ -15,6 +15,8 @@ const SCAN_GRAI_BUTTON_TESTID = 'scanGRAI-button';
 const GRAI_SCANNER_TESTID = 'grai-scanner';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
+/** Wait two animation frames: React's passive effects (e.g. the scanner's keyboard listener switch) have run after a paint. */
+const waitTwoFrames = async () => await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
 export const HUConsolidationJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
@@ -101,7 +103,7 @@ export const HUConsolidationJobScreen = {
         await page.getByTestId(SCAN_GRAI_BUTTON_TESTID).tap();
         // A person sees the strip before pulling the trigger: wait until it is attached and painted (two frames).
         await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
-        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await waitTwoFrames();
     }),
 
     /**
@@ -162,12 +164,18 @@ export const HUConsolidationJobScreen = {
     openManualEntry: async () => await step(`${NAME} - Open manual entry`, async () => {
         await page.getByTestId('barcode-scanner-enter-manually').tap();
         await page.getByTestId('manual-entry-input').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        // The scanner's keyboard listener is detached in a passive effect after the switch: let it run before the next key events.
+        await waitTwoFrames();
     }),
 
     /** In manual entry: tap "back to scanner"; the strip with the scan prompt is shown again. */
     backToScanner: async () => await step(`${NAME} - Back to scanner`, async () => {
         await page.getByTestId('barcode-scanner-back-to-scanner').tap();
+        // #input-text exists in both modes; the manual input is gone only after the switch back.
+        await expect(page.getByTestId('manual-entry-input')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
         await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
+        // The keyboard listener is re-attached in a passive effect after the switch: let it run before the next scan.
+        await waitTwoFrames();
     }),
 
     /** Bounding boxes (x, y, width, height in CSS px) of the job screen parts, for the layout checks on a phone-size screen. */
