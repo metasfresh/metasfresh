@@ -12,14 +12,15 @@ import { toastErrorFromObj, toastNotification } from '../utils/toast';
 import { trl } from '../utils/translations';
 
 /**
- * The "next box" button of a CU quantity entry mode: one tap, shown beside the quantity block's Abbrechen / the scan
- * loop's Schließen, and under the scan field before the first booking.
+ * The "next box" button of a CU quantity entry mode: one tap, shown in the quantity block's button row (after
+ * Abbrechen) and under the scan field on the scan step. A plain button: it never submits the quantity form.
  */
 const NextBoxActions = ({ isProcessing = false, onNextBox }) => (
   <DialogButton
     captionKey="picking.nextBox"
     testId="next-box-button"
     className="is-link"
+    type="button"
     disabled={isProcessing}
     onClick={onNextBox}
   />
@@ -104,7 +105,9 @@ export const useNextBox = ({
       closePickingTarget({ wfProcessId, lineId, type: PickingTargetType.TU }).then((wfProcess) => updateWF(wfProcess)),
   };
 
-  const runExclusive = useCallback(async (action) => {
+  // a tap and a GRAI scan share the guard: two overlapping close + open runs would leave an extra empty box.
+  // `isRethrow`: the scanner's own flow reports the error, so it gets it back instead of a toast.
+  const runExclusive = useCallback(async (action, { isRethrow = false } = {}) => {
     if (isInFlightRef.current) {
       return;
     }
@@ -113,6 +116,7 @@ export const useNextBox = ({
     try {
       await action();
     } catch (error) {
+      if (isRethrow) throw error;
       toastErrorFromObj(error);
     } finally {
       isInFlightRef.current = false;
@@ -143,16 +147,19 @@ export const useNextBox = ({
       }
     });
 
-  // not exclusive-guarded here: the scanner's own flow awaits it and reports its errors
-  const onGraiScanned = async (graiString) => {
-    await openBoxFromGrai({
-      ...common,
-      graiString,
-      setTargetFromGrai: ({ graiString }) =>
-        setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess)),
-    });
-    toastNotification({ plainMessage: trl('picking.nextBoxOpened', { caption: graiString }) });
-  };
+  const onGraiScanned = (graiString) =>
+    runExclusive(
+      async () => {
+        await openBoxFromGrai({
+          ...common,
+          graiString,
+          setTargetFromGrai: ({ graiString }) =>
+            setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess)),
+        });
+        toastNotification({ plainMessage: trl('picking.nextBoxOpened', { caption: graiString }) });
+      },
+      { isRethrow: true }
+    );
 
   return { isProcessing, onNextBox, onGraiScanned };
 };

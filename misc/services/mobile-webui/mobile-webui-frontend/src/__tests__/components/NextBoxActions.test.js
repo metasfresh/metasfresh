@@ -4,7 +4,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import NextBoxActions, { openBoxFromGrai, openNextBox } from '../../components/NextBoxActions';
+import NextBoxActions, { openBoxFromGrai, openNextBox, useNextBox } from '../../components/NextBoxActions';
+import * as pickingApi from '../../api/picking';
+import { toastErrorFromObj, toastNotification } from '../../utils/toast';
 import GetQuantityDialog from '../../components/dialogs/GetQuantityDialog';
 import ScanHUAndGetQtyComponent from '../../components/ScanHUAndGetQtyComponent';
 import { reducer as settings } from '../../reducers/settings';
@@ -22,6 +24,13 @@ jest.mock('../../utils/toast', () => ({
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
 }));
+
+jest.mock('../../api/picking', () => ({
+  closePickingTarget: jest.fn(),
+  setTUPickingTargetFromGrai: jest.fn(),
+}));
+jest.mock('../../hooks/useMobileNavigation', () => ({ useMobileNavigation: () => ({ push: jest.fn() }) }));
+jest.mock('react-redux', () => ({ ...jest.requireActual('react-redux'), useDispatch: () => jest.fn() }));
 
 const BOX_TYPE_ID = 1000042;
 
@@ -163,13 +172,14 @@ describe('next box button placement', () => {
 
   it('a scan that only opened a box does not open the quantity block', async () => {
     const onResult = jest.fn();
+    const resolveScannedBarcode = jest.fn(async () => ({ isNextBoxOpened: true }));
     render(
       <Provider store={store()}>
         <ScanHUAndGetQtyComponent
           qtyMax={1}
           qtyTarget={1}
           uom="PCE"
-          resolveScannedBarcode={async () => ({ isNextBoxOpened: true })}
+          resolveScannedBarcode={resolveScannedBarcode}
           onResult={onResult}
         />
       </Provider>
@@ -181,8 +191,123 @@ describe('next box button placement', () => {
       fireEvent.keyUp(input, { key: 'Enter' });
     });
     await act(async () => {});
+    expect(resolveScannedBarcode).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();
     expect(screen.queryByTestId('done-button')).toBeNull();
     expect(onResult).not.toHaveBeenCalled();
+  });
+});
+
+describe('next box button inside the quantity block form', () => {
+  it('is a plain button: a tap books nothing, even with a valid count typed', () => {
+    const onQtyChange = jest.fn(() => Promise.resolve());
+    render(
+      <Provider store={store()}>
+        <GetQuantityDialog
+          qtyTarget={10}
+          qtyInitial={5}
+          uom="PCE"
+          cuQtyEntryMode={CUQtyEntryMode.SCAN_ONCE_ENTER_QTY}
+          nextBoxActions={<NextBoxActions onNextBox={jest.fn()} />}
+          onQtyChange={onQtyChange}
+          onCloseDialog={jest.fn()}
+        />
+      </Provider>
+    );
+    const button = screen.getByTestId('next-box-button');
+    expect(button).toHaveAttribute('type', 'button');
+    fireEvent.click(button);
+    expect(onQtyChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('useNextBox', () => {
+  const Harness = ({ exposed }) => {
+    const nextBox = useNextBox({
+      applicationId: 'picking',
+      wfProcessId: 'wf',
+      activityId: 'a',
+      lineId: 'l',
+      packingTuPIId: BOX_TYPE_ID,
+      packingItemName: 'Kiste',
+      tuPickingTarget: null,
+      setPickingTarget: exposed.setPickingTarget,
+    });
+    exposed.nextBox = nextBox;
+    return null;
+  };
+  const setup = (setPickingTarget) => {
+    const exposed = { setPickingTarget };
+    render(<Harness exposed={exposed} />);
+    return exposed;
+  };
+  const deferred = () => {
+    let resolve;
+    const promise = new Promise((r) => (resolve = r));
+    return { promise, resolve };
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    pickingApi.setTUPickingTargetFromGrai.mockResolvedValue({});
+  });
+
+  it('a second tap while the first is in flight opens no second box', async () => {
+    const gate = deferred();
+    const setPickingTarget = jest.fn(() => gate.promise);
+    const exposed = setup(setPickingTarget);
+    let first;
+    await act(async () => {
+      first = exposed.nextBox.onNextBox();
+      exposed.nextBox.onNextBox();
+    });
+    expect(setPickingTarget).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      gate.resolve({});
+      await first;
+    });
+  });
+
+  it('success: shows the opened box in a notification', async () => {
+    const exposed = setup(jest.fn().mockResolvedValue({}));
+    await act(async () => {
+      await exposed.nextBox.onNextBox();
+    });
+    expect(toastNotification).toHaveBeenCalledTimes(1);
+    expect(toastErrorFromObj).not.toHaveBeenCalled();
+  });
+
+  it('failure: shows the error', async () => {
+    const error = new Error('refused');
+    const exposed = setup(jest.fn().mockRejectedValue(error));
+    await act(async () => {
+      await exposed.nextBox.onNextBox();
+    });
+    expect(toastErrorFromObj).toHaveBeenCalledWith(error);
+    expect(toastNotification).not.toHaveBeenCalled();
+  });
+
+  it('a GRAI scan while a tap is in flight opens no second box', async () => {
+    const gate = deferred();
+    const setPickingTarget = jest.fn(() => gate.promise);
+    const exposed = setup(setPickingTarget);
+    let first;
+    await act(async () => {
+      first = exposed.nextBox.onNextBox();
+      await exposed.nextBox.onGraiScanned('1234567.12345.S1');
+    });
+    expect(pickingApi.setTUPickingTargetFromGrai).not.toHaveBeenCalled();
+    await act(async () => {
+      gate.resolve({});
+      await first;
+    });
+  });
+
+  it('a GRAI scan reports its failure to the scanner (rethrows)', async () => {
+    pickingApi.setTUPickingTargetFromGrai.mockRejectedValue(new Error('bad grai'));
+    const exposed = setup(jest.fn());
+    await act(async () => {
+      await expect(exposed.nextBox.onGraiScanned('1234567.12345.S1')).rejects.toThrow('bad grai');
+    });
   });
 });

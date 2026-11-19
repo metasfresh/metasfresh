@@ -152,39 +152,28 @@ const PickLineScanScreen = () => {
     uom,
     qtyToPick,
     qtyPicked,
+    additionalHeaderProperties: { entries: computeOpenBoxHeaderEntries({ isNewModeLine, tuPickingTarget }) },
     rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode },
   });
 
-  const resolveScannedBarcode = useCallback(
-    (scannedBarcode) =>
-      isNewModeLine
-        ? convertScannedCULabelToResolvedResult({
-            scannedBarcode,
-            cuLabelFormat,
-            expectedProductNo: productNo,
-            expectedGS1ProductCodes: gs1ProductCodes,
-            onGrai: nextBox.onGraiScanned,
-          })
-        : convertScannedBarcodeToResolvedResult({
-            scannedBarcode,
-            expectedProductId: productId,
-            expectedProductNo: productNo,
-            isShowPromptWhenOverPicking,
-            customQRCodeFormats,
-            pickingUnit,
-          }),
-    [
-      isNewModeLine,
-      nextBox.onGraiScanned,
-      cuLabelFormat,
-      gs1ProductCodes,
-      productId,
-      productNo,
-      isShowPromptWhenOverPicking,
-      customQRCodeFormats,
-      pickingUnit,
-    ]
-  );
+  // not memoized: `nextBox.onGraiScanned` is a new function on every render
+  const resolveScannedBarcode = (scannedBarcode) =>
+    isNewModeLine
+      ? convertScannedCULabelToResolvedResult({
+          scannedBarcode,
+          cuLabelFormat,
+          expectedProductNo: productNo,
+          expectedGS1ProductCodes: gs1ProductCodes,
+          onGrai: nextBox.onGraiScanned,
+        })
+      : convertScannedBarcodeToResolvedResult({
+          scannedBarcode,
+          expectedProductId: productId,
+          expectedProductNo: productNo,
+          isShowPromptWhenOverPicking,
+          customQRCodeFormats,
+          pickingUnit,
+        });
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
@@ -241,8 +230,6 @@ const PickLineScanScreen = () => {
       customQRCodeFormats={customQRCodeFormats}
       readAttributes={readAttributes}
       cuQtyEntryMode={cuQtyEntryMode}
-      cuLabelFormat={cuLabelFormat}
-      packingTuPIId={packingTuPIId}
       suggestedQty={suggestedQty}
       rememberedCULabel={isScanOnce ? cuEntry?.label : undefined}
       isShowCloseTargetButton={!!luPickingTarget}
@@ -265,6 +252,15 @@ export default PickLineScanScreen;
 // -------------------------------------------------------------------------------------
 //
 //
+
+/**
+ * The box open on a new-mode line stays visible in the header (a toast alone is gone when the picker looks back).
+ */
+// @VisibleForTesting
+export const computeOpenBoxHeaderEntries = ({ isNewModeLine, tuPickingTarget }) =>
+  isNewModeLine && tuPickingTarget?.caption
+    ? [{ caption: trl('activities.picking.tuPickingTarget.Current'), value: tuPickingTarget.caption }]
+    : [];
 
 /**
  * Caption and packing name of the quantity block follow the picking unit the line JSON reports (a new-mode line is
@@ -382,6 +378,7 @@ export const convertScannedBarcodeToResolvedResult = async ({
 /**
  * A line with a CU quantity entry mode reads the scanned string as a CU label with the line's format only.
  * Returns the label data for the quantity block (lot, best-before) and the raw label; refusals are thrown.
+ * A scanned GRAI is accepted on every such line: `onGrai` (required) opens the box from it.
  */
 // @VisibleForTesting
 export const convertScannedCULabelToResolvedResult = ({
@@ -393,9 +390,6 @@ export const convertScannedCULabelToResolvedResult = ({
 }) => {
   if (routeScannedCode(scannedBarcode) === SCAN_TYPE_GRAI) {
     // a GRAI opens a box, it is never read as a label
-    if (!onGrai) {
-      throw { messageKey: 'error.qrCode.invalid' };
-    }
     return onGrai(parseGraiFromRawInput(scannedBarcode)).then(() => ({ isNextBoxOpened: true }));
   }
 

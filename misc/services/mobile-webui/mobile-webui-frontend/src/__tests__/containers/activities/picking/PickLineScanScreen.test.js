@@ -4,6 +4,7 @@ import {
   isInlineGraiCaptureEnabled,
   computeQtyUnitProps,
   computeScannedBarcodeParam,
+  computeOpenBoxHeaderEntries,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
@@ -73,7 +74,6 @@ describe('PickingLineScanScreen: new mode label scan', () => {
     ['another product', label, cuLabelFormat, 'OTHER01', 'activities.picking.qrcode.differentProduct'],
     ['a code of another format', 'HU#1#{}', cuLabelFormat, 'PTST001', 'picking.cuLabel.formatMismatch'],
     ['no format on the line', label, undefined, 'PTST001', 'picking.cuLabel.noFormat'],
-    ['a GRAI', '9506000.13435.SER1', cuLabelFormat, 'PTST001', 'error.qrCode.invalid'],
   ])('refuses %s', (_name, scannedBarcode, format, expectedProductNo, messageKey) => {
     expect(() =>
       convertScannedCULabelToResolvedResult({ scannedBarcode, cuLabelFormat: format, expectedProductNo })
@@ -111,6 +111,20 @@ describe('PickingLineScanScreen: GRAI scan on a new-mode line', () => {
     expect(result).toEqual({ isNextBoxOpened: true });
   });
 
+  it('is accepted with and without a label format (never refused)', async () => {
+    for (const cuLabelFormat of [undefined, { id: 1, name: 'x', parts: [] }]) {
+      const onGrai = jest.fn().mockResolvedValue(undefined);
+      await expect(
+        convertScannedCULabelToResolvedResult({
+          scannedBarcode: A_GRAI,
+          cuLabelFormat,
+          expectedProductNo: 'P1',
+          onGrai,
+        })
+      ).resolves.toEqual({ isNextBoxOpened: true });
+    }
+  });
+
   it('a failing box opening is reported, not swallowed', async () => {
     const onGrai = jest.fn().mockRejectedValue(new Error('boom'));
     await expect(
@@ -132,7 +146,6 @@ describe('PickingLineScanScreen: quantity unit follows the line picking unit fro
       computeQtyUnitProps({
         pickingUnit: 'CU',
         packingItemName: 'TU x 4 Stk',
-        cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY',
       })
     ).toEqual({ qtyCaptionKey: 'general.Qty', packingItemName: null });
   });
@@ -148,5 +161,21 @@ describe('PickingLineScanScreen: re-entry hop', () => {
     expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryMode: 'MANUAL' })).toBe('HU#1#{}');
     expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}' })).toBe('HU#1#{}');
     expect(computeScannedBarcodeParam({ qrCode: null })).toBeNull();
+  });
+});
+
+describe('PickingLineScanScreen: the open box is shown in the header', () => {
+  it('a new-mode line with an open box shows its caption', () => {
+    expect(computeOpenBoxHeaderEntries({ isNewModeLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual([
+      { caption: expect.any(String), value: 'Kiste 7' },
+    ]);
+  });
+
+  it('no open box: no entry', () => {
+    expect(computeOpenBoxHeaderEntries({ isNewModeLine: true, tuPickingTarget: null })).toEqual([]);
+  });
+
+  it('Manual line: no entry, header unchanged', () => {
+    expect(computeOpenBoxHeaderEntries({ isNewModeLine: false, tuPickingTarget: { caption: 'x' } })).toEqual([]);
   });
 });

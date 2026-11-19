@@ -62,8 +62,6 @@ const ScanHUAndGetQtyComponent = ({
   customQRCodeFormats,
   readAttributes = [],
   cuQtyEntryMode,
-  cuLabelFormat,
-  packingTuPIId,
   isShowCloseTargetButton = false,
   nextBoxActions,
   suggestedQty,
@@ -454,8 +452,6 @@ const ScanHUAndGetQtyComponent = ({
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           readAttributes={readAttributes}
           cuQtyEntryMode={cuQtyEntryMode}
-          cuLabelFormat={cuLabelFormat}
-          packingTuPIId={packingTuPIId}
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
@@ -548,8 +544,6 @@ ScanHUAndGetQtyComponent.propTypes = {
   customQRCodeFormats: PropTypes.array,
   readAttributes: PropTypes.array,
   cuQtyEntryMode: PropTypes.string,
-  cuLabelFormat: PropTypes.object,
-  packingTuPIId: PropTypes.number,
   isShowCloseTargetButton: PropTypes.bool,
   nextBoxActions: PropTypes.node,
   // scan once: the count offered for the next box, and the label of the last booking of this line (re-entry)

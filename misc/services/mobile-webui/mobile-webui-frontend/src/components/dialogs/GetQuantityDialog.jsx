@@ -580,8 +580,6 @@ GetQuantityDialog.propTypes = {
   catchWeightUom: PropTypes.string,
   readAttributes: PropTypes.array,
   cuQtyEntryMode: PropTypes.string,
-  cuLabelFormat: PropTypes.object,
-  packingTuPIId: PropTypes.number,
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
