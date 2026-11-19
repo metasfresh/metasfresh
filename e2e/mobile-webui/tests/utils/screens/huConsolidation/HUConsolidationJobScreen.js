@@ -110,10 +110,10 @@ export const HUConsolidationJobScreen = {
     }),
 
     /**
-     * Expect the "Scan (GRAI)" button to be shown or hidden; when shown, optionally also its disabled state.
-     * @param {{visible: boolean, disabled?: boolean}} params
+     * Expect the "Scan (GRAI)" button to be shown or hidden; when shown, optionally also its disabled state and its caption.
+     * @param {{visible: boolean, disabled?: boolean, caption?: string}} params
      */
-    expectScanGRAIButton: async ({ visible, disabled }) => await test.step(`${NAME} - Expect Scan (GRAI) button visible=${visible} disabled=${disabled}`, async () => {
+    expectScanGRAIButton: async ({ visible, disabled, caption }) => await test.step(`${NAME} - Expect Scan (GRAI) button visible=${visible} disabled=${disabled} caption=${caption}`, async () => {
         const button = page.getByTestId(SCAN_GRAI_BUTTON_TESTID);
         if (!visible) {
             await expect(button).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
@@ -123,6 +123,9 @@ export const HUConsolidationJobScreen = {
         if (disabled != null) {
             if (disabled) await expect(button).toBeDisabled();
             else await expect(button).toBeEnabled();
+        }
+        if (caption != null) {
+            await expect(button).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
         }
     }),
 

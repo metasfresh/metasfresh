@@ -75,6 +75,20 @@ export const Backend = {
     }),
 
     /**
+     * Registers the picking slot's queue under the given HU aliases (in pick order) and returns { context, qrCodes }
+     * (the global QR code per alias). Fails when the slot's queue does not hold exactly these HUs.
+     */
+    getPickingSlotCrates: async ({ title, slotQrCode, aliases }) => {
+        const { context } = await Backend.expect({
+            title,
+            pickingSlots: { [slotQrCode]: { queue: aliases.map((hu) => ({ hu })) } },
+        });
+        const qrCodes = {};
+        for (const alias of aliases) qrCodes[alias] = await Backend.getHUQRCodeByIdentifier({ identifier: alias });
+        return { context, qrCodes };
+    },
+
+    /**
      * Resolve a masterdata identifier (e.g. `"lu1"`) to the underlying handling-unit's
      * global QR code string. Used by tests that need to scan an HU which was created
      * indirectly (typically by a picking flow) and therefore has no QR code under
