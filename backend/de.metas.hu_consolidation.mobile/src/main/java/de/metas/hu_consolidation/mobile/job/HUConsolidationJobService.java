@@ -2,6 +2,7 @@ package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
 import de.metas.hu_consolidation.mobile.job.commands.complete.CompleteCommand;
@@ -14,13 +15,12 @@ import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationJobCrates;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
-import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
-import de.metas.util.StringUtils;
-import org.adempiere.exceptions.AdempiereException;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 

@@ -19,6 +19,8 @@ import java.util.Optional;
 @Component
 public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolver
 {
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	@Override
 	public Optional<HUConsolidationScannedCrate> resolve(@NonNull final String scannedCode, @NonNull final HUConsolidationJobCrates jobCrates)
 	{
@@ -34,7 +36,7 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 			throw new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND).setParameter("grai", grai.toCanonicalString());
 		}
 
-		final ImmutableSet<HuId> huIds = Services.get(IHandlingUnitsDAO.class)
+		final ImmutableSet<HuId> huIds = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.setOnlyActiveHUs(true)
 				.setOnlyTopLevelHUs()

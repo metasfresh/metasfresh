@@ -1,12 +1,14 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
-import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.test.AdempiereTestHelper;
@@ -15,11 +17,10 @@ import org.compiere.model.X_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * TC21 part 2: presence of a GRAI on an active top-level HU among the given crates (the "Scan (GRAI)" button rule).
@@ -27,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class HUConsolidationGRAIPresenceTest
 {
-	private static final String GRAI = "7613204.00307.1234567890";
+	private static final String GRAI_CODE = "7613204.00307.1234567890";
 
 	private HUConsolidationGRAIPresence presence;
 	private I_M_Attribute graiAttribute;
@@ -93,7 +94,7 @@ class HUConsolidationGRAIPresenceTest
 	@Test
 	void topLevelCrateWithGRAI_counts()
 	{
-		final I_M_HU crate = createTopLevelHU(GRAI);
+		final I_M_HU crate = createTopLevelHU(GRAI_CODE);
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(crate)))).isTrue();
 	}
 
@@ -101,7 +102,7 @@ class HUConsolidationGRAIPresenceTest
 	void severalCratesWithGRAI_count_withoutException()
 	{
 		// regression: the real reference case has several GRAI crates in the slots, the check must not demand a unique match
-		final I_M_HU crate1 = createTopLevelHU(GRAI);
+		final I_M_HU crate1 = createTopLevelHU(GRAI_CODE);
 		final I_M_HU crate2 = createTopLevelHU("7613204.00307.1234567891");
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(crate1), id(crate2)))).isTrue();
 	}
@@ -117,7 +118,7 @@ class HUConsolidationGRAIPresenceTest
 	void topLevelLUQueuedInSlotWithGRAI_counts()
 	{
 		// slot case (AC27): the queued HU is a top-level LU that itself carries the GRAI
-		final I_M_HU lu = createTopLevelHU(GRAI);
+		final I_M_HU lu = createTopLevelHU(GRAI_CODE);
 		assertThat(presence.isAnyGRAIPresent(ImmutableList.of(id(lu)))).isTrue();
 	}
 
@@ -125,7 +126,7 @@ class HUConsolidationGRAIPresenceTest
 	void graiTUInsideQueuedLU_doesNotCount()
 	{
 		final I_M_HU lu = createTopLevelHU(null);
-		createTUInside(lu, GRAI);
+		createTUInside(lu, GRAI_CODE);
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(lu)))).isFalse();
 	}
 
@@ -139,7 +140,7 @@ class HUConsolidationGRAIPresenceTest
 	@Test
 	void inactiveCrateWithGRAI_doesNotCount()
 	{
-		final I_M_HU crate = createTopLevelHU(GRAI);
+		final I_M_HU crate = createTopLevelHU(GRAI_CODE);
 		crate.setIsActive(false);
 		save(crate);
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(crate)))).isFalse();
@@ -152,8 +153,8 @@ class HUConsolidationGRAIPresenceTest
 		final I_M_HU crate = createTopLevelHU("");
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(crate)))).isTrue();
 		// ... while the read side (HUGraiSnapshotLoader.readGRAI -> GRAI.ofNullableCanonicalString) sees no GRAI
-		assertThat(de.metas.handlingunits.grai.GRAI.ofNullableCanonicalString("")).isNull();
-		assertThat(de.metas.handlingunits.grai.GRAI.ofNullableCanonicalString("  ")).isNull();
+		assertThat(GRAI.ofNullableCanonicalString("")).isNull();
+		assertThat(GRAI.ofNullableCanonicalString("  ")).isNull();
 	}
 
 	@Test
@@ -161,14 +162,14 @@ class HUConsolidationGRAIPresenceTest
 	{
 		final I_M_HU crate = createTopLevelHU("not-canonical");
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(crate)))).isTrue();
-		org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> de.metas.handlingunits.grai.GRAI.ofNullableCanonicalString("not-canonical"));
+		assertThrows(RuntimeException.class, () -> GRAI.ofNullableCanonicalString("not-canonical"));
 	}
 
 	@Test
 	void emptyCrateList_isFalse_withoutQuery_evenIfAnotherActiveTopLevelHUCarriesAGRAI()
 	{
 		// a HU of another job carries a GRAI: without the guard addOnlyHUIds(empty) would drop the filter and find it
-		createTopLevelHU(GRAI);
+		createTopLevelHU(GRAI_CODE);
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of())).isFalse();
 	}
 
@@ -176,14 +177,14 @@ class HUConsolidationGRAIPresenceTest
 	void hUsOfOtherJobsAreNotSeen()
 	{
 		final I_M_HU mine = createTopLevelHU(null);
-		createTopLevelHU(GRAI); // other job
+		createTopLevelHU(GRAI_CODE); // other job
 		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(mine)))).isFalse();
 	}
 
 	@Test
 	void jobWithoutPickingSlots_hasNoCrates_noQueueQuery_noPresence()
 	{
-		createTopLevelHU(GRAI); // another job's crate
+		createTopLevelHU(GRAI_CODE); // another job's crate
 		final HUConsolidationJobCrates crates = HUConsolidationJobCrates.load(ImmutableSet.of(), PickingSlotService.newInstanceForUnitTesting());
 		assertThat(crates.isEmpty()).isTrue();
 		assertThat(presence.isAnyGRAIPresent(crates.getHuIds())).isFalse();

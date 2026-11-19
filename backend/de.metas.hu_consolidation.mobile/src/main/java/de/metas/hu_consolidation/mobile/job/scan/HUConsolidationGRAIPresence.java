@@ -16,6 +16,8 @@ import java.util.Collection;
 @Component
 public class HUConsolidationGRAIPresence
 {
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	public boolean isAnyGRAIPresent(@NonNull final Collection<HuId> huIds)
 	{
 		// Without this guard HUQueryBuilder.addOnlyHUIds(empty) drops the filter and the query would run over all active HUs
@@ -24,7 +26,7 @@ public class HUConsolidationGRAIPresence
 			return false;
 		}
 
-		return Services.get(IHandlingUnitsDAO.class)
+		return handlingUnitsDAO
 				.createHUQueryBuilder()
 				.setOnlyActiveHUs(true)
 				.setOnlyTopLevelHUs()
