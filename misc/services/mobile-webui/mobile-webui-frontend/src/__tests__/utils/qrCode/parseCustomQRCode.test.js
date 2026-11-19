@@ -1,5 +1,5 @@
 import { parseCustomQRCode, parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQRCode';
-import { ATTR_lotNo } from '../../../utils/qrCode/common';
+import { ATTR_GTIN, ATTR_lotNo } from '../../../utils/qrCode/common';
 
 describe('parseNumber', () => {
   test('should return the number as is if decimalPoint is 0', () => {
@@ -100,6 +100,47 @@ describe('parseLocalDate', () => {
   });
 });
 
+describe('parseCustomQRCode', () => {
+  test('GTIN part sets ATTR_GTIN', () => {
+    const result = parseCustomQRCode({
+      string: '02001234567893',
+      format: { name: 'Test', parts: [{ type: 'GTIN', startPosition: 1, endPosition: 14 }] },
+    });
+    expect(result.error).toBeUndefined();
+    expect(result[ATTR_GTIN]).toBe('02001234567893');
+  });
+
+  test('GTIN part with trailing blanks is trimmed', () => {
+    const result = parseCustomQRCode({
+      string: '02001234567893  ',
+      format: { name: 'Test', parts: [{ type: 'GTIN', startPosition: 1, endPosition: 16 }] },
+    });
+    expect(result[ATTR_GTIN]).toBe('02001234567893');
+  });
+
+  test('GTIN part 3-16 of a look-alike label reads 09506000134352', () => {
+    ['1', '2', '3', '10'].forEach((n) => {
+      const result = parseCustomQRCode({
+        string: `010950600013435291P0000421726110710A1/B002C392${n}`,
+        format: {
+          name: 'Test',
+          parts: [
+            { type: 'GTIN', startPosition: 3, endPosition: 16 },
+            { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
+            { type: 'BEST_BEFORE_DATE', startPosition: 28, endPosition: 33, dateFormat: 'yyMMdd' },
+            { type: 'LOT', startPosition: 36, endPosition: 44 },
+          ],
+        },
+      });
+      expect(result.error).toBeUndefined();
+      expect(result[ATTR_GTIN]).toBe('09506000134352');
+      expect(result.productNo).toBe('P000042');
+      expect(result.bestBeforeDate).toBe('2026-11-07');
+      expect(result.lotNo).toBe('A1/B002C3');
+    });
+  });
+});
+
 describe('parseCustomQRCode - part with an open end (reads to the end of the code)', () => {
   // 1..4 "(10)", lot from 5 to the end; the backend sends endPosition 0 for an open end
   const formatWithOpenEnd = (endPosition) => ({
@@ -189,6 +230,23 @@ describe('parseCustomQRCode - PACK_ID part (look-alike labels with the positions
     expect(result.lotNo).toBe('A1/B002C3');
     expect(result.packId).toBe(n);
   });
+
+  test.each(['1', '2', '3', '10'])(
+    'LABEL(%s) with GTIN 3-16 and PACK_ID reads GTIN, product, best-before, lot and pack ID',
+    (n) => {
+      const format = {
+        name: 'F_GTIN_POS',
+        parts: [{ type: 'GTIN', startPosition: 3, endPosition: 16 }, ...F_POS.parts],
+      };
+      const result = parseCustomQRCode({ string: LABEL(n), format });
+      expect(result.error).toBeUndefined();
+      expect(result[ATTR_GTIN]).toBe('09506000134352');
+      expect(result.productNo).toBe('P000042');
+      expect(result.bestBeforeDate).toBe('2026-11-07');
+      expect(result.lotNo).toBe('A1/B002C3');
+      expect(result.packId).toBe(n);
+    }
+  );
 
   test('pack ID keeps leading zeros', () => {
     expect(parseCustomQRCode({ string: LABEL('007'), format: F_POS }).packId).toBe('007');

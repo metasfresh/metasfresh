@@ -1,6 +1,7 @@
 package de.metas.scannable_code.format;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.gs1.GTIN;
 import de.metas.scannable_code.ScannedCode;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,6 +95,124 @@ class ScannableCodeFormatTest
 			assertThatThrownBy(() -> format.parse(scannedCode).orElseThrow())
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Invalid constant marker, expected `E` but was `X`");
+		}
+	}
+
+	@Nested
+	class gtin_part
+	{
+		@Test
+		void gtinPart_extractsGtin()
+		{
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("02001234567893"));
+		}
+
+		@Test
+		void gtinPart_nonNumericText_isKeptAsIs_noExceptionAtParseTime()
+		{
+			// GTIN.ofString accepts any non-blank text (GTIN.java), so an invalid GTIN is not rejected at parse time;
+			// the product lookup simply finds nothing for it.
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("ABCDEFGHIJKLMN")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("ABCDEFGHIJKLMN"));
+		}
+
+		@Test
+		void gtinPart_blankSegment_parsesWithoutGtin()
+		{
+			// a label whose GTIN area is blank must still be recognised (lot etc. kept), just without a GTIN
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(6).endPosition(19).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(5).type(ScannableCodeFormatPartType.LotNo).build(),
+							ScannableCodeFormatPart.builder().startPosition(20).endPosition(22).type(ScannableCodeFormatPartType.ProductCode).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("L2311              ABC")).orElseThrow();
+			assertThat(parsed.getGtin()).isNull();
+			assertThat(parsed.getLotNo()).isEqualTo("L2311");
+			assertThat(parsed.getProductNo()).isEqualTo("ABC");
+		}
+
+		@Test
+		void gtinPart_withLotAndBestBefore()
+		{
+			// [1..14] GTIN, [15..19] LOT, [20..25] BEST_BEFORE_DATE (yyMMdd)
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(15).endPosition(19).type(ScannableCodeFormatPartType.LotNo).build(),
+							ScannableCodeFormatPart.builder().startPosition(20).endPosition(25).type(ScannableCodeFormatPartType.BestBeforeDate).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893L2311271231")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("02001234567893"));
+			assertThat(parsed.getLotNo()).isEqualTo("L2311");
+			assertThat(parsed.getBestBeforeDate()).isEqualTo("2027-12-31");
+		}
+
+		@Test
+		void gtinPart_lookAlikeLabel_readsGtinAtPositions3To16()
+		{
+			// look-alike of the real label: 01 <GTIN 14> 91 <product> 17 <yyMMdd> 10 <lot> 92 <pack>
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(3).endPosition(16).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
+							ScannableCodeFormatPart.builder().startPosition(28).endPosition(33).type(ScannableCodeFormatPartType.BestBeforeDate).build(),
+							ScannableCodeFormatPart.builder().startPosition(36).endPosition(44).type(ScannableCodeFormatPartType.LotNo).build()
+					))
+					.build();
+
+			for (final String n : new String[] { "1", "2", "3", "10" })
+			{
+				final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("010950600013435291P0000421726110710A1/B002C392" + n)).orElseThrow();
+				assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("09506000134352"));
+				assertThat(parsed.getProductNo()).isEqualTo("P000042");
+				assertThat(parsed.getBestBeforeDate()).isEqualTo("2026-11-07");
+				assertThat(parsed.getLotNo()).isEqualTo("A1/B002C3");
+			}
+		}
+
+		@Test
+		void allPartTypes_constantMismatch_notRecognized()
+		{
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(1).type(ScannableCodeFormatPartType.Constant).constantValue("A").build(),
+							ScannableCodeFormatPart.builder().startPosition(2).endPosition(15).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			assertThatThrownBy(() -> format.parse(ScannedCode.ofString("X02001234567893")).orElseThrow())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Invalid constant marker, expected `A` but was `X`");
 		}
 	}
 
@@ -238,6 +357,20 @@ class ScannableCodeFormatTest
 			final ParsedScannedCode parsed = formatWithoutPackId().parse(ScannedCode.ofString(label("2"))).orElseThrow();
 			assertThat(parsed.getLotNo()).isEqualTo("A1/B002C3");
 			assertThat(parsed.getPackId()).isNull();
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings = { "1", "2", "3", "10" })
+		void gtinAndPackIdInOneFormat_bothValuesAreRead(final String packId)
+		{
+			final ScannableCodeFormat format = format(part(3, 16, ScannableCodeFormatPartType.GTIN), productPart(), bestBeforePart(), lotPart(), packIdPart());
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString(label(packId))).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("09506000134352"));
+			assertThat(parsed.getProductNo()).isEqualTo("P000042");
+			assertThat(parsed.getBestBeforeDate()).isEqualTo("2026-11-07");
+			assertThat(parsed.getLotNo()).isEqualTo("A1/B002C3");
+			assertThat(parsed.getPackId()).isEqualTo(packId);
 		}
 
 		// CONSTANT guards (17 at 26-27, 10 at 34-35, 92 at 45-46) are listed first, so that they, not a later part, refuse a shifted code
