@@ -309,6 +309,31 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
+	void packIdPartWithAnotherMarker_labelEndingBeforeIt_hasNoPackId()
+	{
+		final ScannableCodeFormat otherMarkerFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
+				.name("CU label with PackId behind marker 93")
+				.parts(ImmutableList.of(
+						constant(1, 2, "01"),
+						part(3, 16, ScannableCodeFormatPartType.Ignored),
+						constant(17, 18, "91"),
+						part(19, 25, ScannableCodeFormatPartType.ProductCode),
+						part(26, 26, ScannableCodeFormatPartType.Ignored),
+						constant(27, 28, "17"),
+						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(35, 36, "10"),
+						part(37, 45, ScannableCodeFormatPartType.LotNo),
+						part(46, 46, ScannableCodeFormatPartType.Ignored),
+						constant(47, 48, "93"),
+						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+				.build());
+		final String endsBeforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 46);
+
+		assertFails(() -> resolve(endsBeforeMarker, CUQtyEntryMode.SCAN_EACH_CU, otherMarkerFormat.getId()), CU_LABEL_NO_PACK_ID);
+		assertFails(() -> resolve(endsBeforeMarker, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, otherMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
+	}
+
+	@Test
 	void formatIdSetButNotResolvable_hasNoFormat()
 	{
 		assertFails(() -> resolve(label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, ScannableCodeFormatId.ofRepoId(999999)), CU_LABEL_NO_FORMAT);

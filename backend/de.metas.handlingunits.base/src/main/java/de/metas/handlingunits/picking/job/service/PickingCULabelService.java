@@ -184,33 +184,54 @@ public class PickingCULabelService
 	}
 
 	/**
-	 * @return true if the label is too short to hold the pack ID zone (the part after the "92" marker) while every part before the marker reads.
-	 * A format without the marker has no pack ID zone: false.
+	 * @return true if the label is too short to hold the pack ID zone while every part before the zone reads.
+	 * The zone starts at the constant marker directly in front of the {@link ScannableCodeFormatPartType#PackId} part (or at that part itself).
+	 * A format without a {@code PackId} part falls back to the constant "92" marker; a format with neither has no pack ID zone: false.
 	 */
 	private static boolean isEndingBeforePackId(@NonNull final ScannableCodeFormat format, @NonNull final ScannedCode label)
 	{
 		final ImmutableList<ScannableCodeFormatPart> parts = format.getParts();
-		final ScannableCodeFormatPart marker = parts.stream()
-				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
+		final int zoneStart;
+		final int zoneEnd;
+
+		final ScannableCodeFormatPart packIdPart = parts.stream()
+				.filter(part -> part.getType() == ScannableCodeFormatPartType.PackId)
 				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
 				.orElse(null);
-		if (marker == null)
+		if (packIdPart != null)
 		{
-			return false;
+			final ScannableCodeFormatPart precedingMarker = parts.stream()
+					.filter(part -> part.getStartPosition() < packIdPart.getStartPosition())
+					.max(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
+					.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant)
+					.orElse(null);
+			zoneStart = precedingMarker != null ? precedingMarker.getStartPosition() : packIdPart.getStartPosition();
+			zoneEnd = packIdPart.getStartPosition();
 		}
-
-		final int zoneEnd = parts.stream()
-				.mapToInt(ScannableCodeFormatPart::getStartPosition)
-				.filter(start -> start > marker.getStartPosition())
-				.min()
-				.orElse(marker.getStartPosition() + PACK_ID_MARKER.length());
+		else
+		{
+			final ScannableCodeFormatPart marker = parts.stream()
+					.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
+					.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
+					.orElse(null);
+			if (marker == null)
+			{
+				return false;
+			}
+			zoneStart = marker.getStartPosition();
+			zoneEnd = parts.stream()
+					.mapToInt(ScannableCodeFormatPart::getStartPosition)
+					.filter(start -> start > zoneStart)
+					.min()
+					.orElse(zoneStart + PACK_ID_MARKER.length());
+		}
 		if (label.length() >= zoneEnd)
 		{
 			return false;
 		}
 
 		final ImmutableList<ScannableCodeFormatPart> partsBefore = parts.stream()
-				.filter(part -> part.getStartPosition() < marker.getStartPosition())
+				.filter(part -> part.getStartPosition() < zoneStart)
 				.filter(part -> part.getType() != ScannableCodeFormatPartType.Ignored) // separators: the scanned code is trimmed, a trailing one is lost
 				.collect(ImmutableList.toImmutableList());
 		if (partsBefore.isEmpty())
