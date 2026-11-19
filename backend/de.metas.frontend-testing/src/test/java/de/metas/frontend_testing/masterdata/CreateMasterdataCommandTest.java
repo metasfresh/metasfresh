@@ -19,6 +19,7 @@ import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -163,7 +164,7 @@ public class CreateMasterdataCommandTest
 		final JsonCreateMasterdataRequest request = JsonCreateMasterdataRequest.builder()
 				.huLabelConfigs(ImmutableMap.of("lc1", JsonHULabelConfigRequest.builder()
 						.bpartner(Identifier.ofString("bp1"))
-						.huUnitType("LU")
+						.huUnitType(HuUnitType.LU)
 						.sourceDocType("PI")
 						.process(540412)
 						.autoPrint(true)
@@ -174,7 +175,7 @@ public class CreateMasterdataCommandTest
 		assertThat(request.getHuLabelConfigs()).hasSize(1);
 		final JsonHULabelConfigRequest labelConfig = request.getHuLabelConfigs().get("lc1");
 		assertThat(labelConfig.getBpartner()).isEqualTo(Identifier.ofString("bp1"));
-		assertThat(labelConfig.getHuUnitType()).isEqualTo("LU");
+		assertThat(labelConfig.getHuUnitType()).isEqualTo(HuUnitType.LU);
 		assertThat(labelConfig.getSourceDocType()).isEqualTo("PI");
 		assertThat(labelConfig.getProcess()).isEqualTo(540412);
 		assertThat(labelConfig.isAutoPrint()).isTrue();

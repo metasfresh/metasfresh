@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.hu_label_config;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.handlingunits.HuUnitType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -20,8 +21,8 @@ public class JsonHULabelConfigRequest
 	/** The business partner the config is scoped to ({@code M_HU_Label_Config.C_BPartner_ID}); never a global config. */
 	@NonNull Identifier bpartner;
 
-	/** HU unit type the config applies to: {@code LU}, {@code TU} or {@code VHU}. */
-	@NonNull String huUnitType;
+	/** HU unit type the config applies to: JSON codes {@code LU}, {@code TU} or {@code V} (virtual). */
+	@NonNull HuUnitType huUnitType;
 
 	/** {@code M_HU_Label_Config.HU_SourceDocType} code (e.g. {@code PI}=Picking). If null, the config matches any source document type. */
 	@Nullable String sourceDocType;

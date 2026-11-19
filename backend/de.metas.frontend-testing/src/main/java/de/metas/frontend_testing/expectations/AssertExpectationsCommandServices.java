@@ -18,6 +18,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -27,17 +29,18 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Archive;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Archive;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -131,29 +134,42 @@ public class AssertExpectationsCommandServices
 	}
 
 	/**
-	 * @return the {@code M_InOut.DocStatus} of every shipment line that the picked-qty records of the given LU point to;
-	 * an allocation without a shipment line yet (shipment not generated) is reported as {@code null} entry.
+	 * @return one entry per active picked-qty record ({@code M_ShipmentSchedule_QtyPicked}) of the given LU ({@code M_LU_HU_ID});
+	 * {@code docStatus} is the {@code M_InOut.DocStatus} of the record's shipment line, or {@code null} if no shipment line exists yet.
 	 */
-	public List<String> getShipmentDocStatusesByLU(@NonNull final HuId luId)
+	public List<ShipmentAllocation> getShipmentAllocationsByLU(@NonNull final HuId luId)
 	{
 		final List<I_M_ShipmentSchedule_QtyPicked> allocs = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_LU_HU_ID, luId)
 				.create()
 				.list();
 
-		final java.util.ArrayList<String> result = new java.util.ArrayList<>();
+		final ArrayList<ShipmentAllocation> result = new ArrayList<>();
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
 		{
+			final HuId tuId = HuId.ofRepoIdOrNull(alloc.getM_TU_HU_ID());
 			if (alloc.getM_InOutLine_ID() <= 0)
 			{
-				result.add(null);
+				result.add(new ShipmentAllocation(tuId, null));
 				continue;
 			}
 			final I_M_InOutLine line = InterfaceWrapperHelper.load(alloc.getM_InOutLine_ID(), I_M_InOutLine.class);
 			final I_M_InOut inout = InterfaceWrapperHelper.load(line.getM_InOut_ID(), I_M_InOut.class);
-			result.add(inout.getDocStatus());
+			result.add(new ShipmentAllocation(tuId, inout.getDocStatus()));
 		}
 		return result;
+	}
+
+	@Value
+	public static class ShipmentAllocation
+	{
+		/** {@code M_ShipmentSchedule_QtyPicked.M_TU_HU_ID}; may be null */
+		@Nullable HuId tuId;
+		/** {@code M_InOut.DocStatus} of the shipment; null if no shipment line yet */
+		@Nullable String docStatus;
+
+		public boolean isShipmentCompleted() {return "CO".equals(docStatus);}
 	}
 
 	public int countArchivesOfHU(@NonNull final HuId huId)

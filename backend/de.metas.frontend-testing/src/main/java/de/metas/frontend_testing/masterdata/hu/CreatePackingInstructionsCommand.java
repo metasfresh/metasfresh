@@ -238,8 +238,9 @@ public class CreatePackingInstructionsCommand
 	/**
 	 * Declares the {@code SSCC18} HU-attribute slot on the given LU packing-instruction version, so that LUs
 	 * materialised from this PI get an SSCC18 (as the EUR pallet LU PI of a real instance does).
-	 * Column values mirror a live LU SSCC18 {@code M_HU_PI_Attribute} row; {@code IsOnlyIfInProductAttributeSet} is
-	 * false because the LU carries no product.
+	 * Column values mirror the standard EUR-pallet LU SSCC18 {@code M_HU_PI_Attribute} row (incl.
+	 * {@code IsOnlyIfInProductAttributeSet=Y}: its display in the WebUI HU editor depends on the product's attribute set).
+	 * Source: the local stack DB copy, row {@code M_HU_PI_Attribute_ID=1000018}; not a probe of a live instance.
 	 */
 	private void assignSSCC18Attribute(@NonNull final PIResult lu)
 	{
@@ -252,7 +253,7 @@ public class CreatePackingInstructionsCommand
 		piAttribute.setHU_TansferStrategy_JavaClass_ID(HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID);
 		piAttribute.setIsDisplayed(true);
 		piAttribute.setIsReadOnly(true);
-		piAttribute.setIsOnlyIfInProductAttributeSet(false);
+		piAttribute.setIsOnlyIfInProductAttributeSet(true);
 		piAttribute.setUseInASI(true);
 		piAttribute.setIsActive(true);
 		saveRecord(piAttribute);

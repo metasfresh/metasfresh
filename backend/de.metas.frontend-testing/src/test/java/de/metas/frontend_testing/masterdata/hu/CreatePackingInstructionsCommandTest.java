@@ -7,6 +7,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -155,5 +156,21 @@ public class CreatePackingInstructionsCommandTest
 		assertThat(luAttributes).hasSize(1);
 		assertThat(luAttributes.get(0).getM_Attribute_ID()).isEqualTo(sscc18Attribute.getM_Attribute_ID());
 		assertThat(luAttributes.get(0).isActive()).isTrue();
+		// mirrors the standard EUR-pallet LU SSCC18 row
+		assertThat(luAttributes.get(0).getPropagationType()).isEqualTo(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
+		assertThat(luAttributes.get(0).getHU_TansferStrategy_JavaClass_ID()).isEqualTo(540027);
+		assertThat(luAttributes.get(0).isReadOnly()).isTrue();
+		assertThat(luAttributes.get(0).isDisplayed()).isTrue();
+		assertThat(luAttributes.get(0).isUseInASI()).isTrue();
+		assertThat(luAttributes.get(0).isOnlyIfInProductAttributeSet()).isTrue();
+	}
+
+	@Test
+	public void execute_luSSCC18_withoutLU_throws()
+	{
+		createProduct("P1");
+
+		assertThatThrownBy(() -> luItems("{\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4,\"luSSCC18\":true}"))
+				.hasMessageContaining("luSSCC18 requires lu");
 	}
 }

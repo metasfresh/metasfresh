@@ -20,13 +20,14 @@ public class CreateHULabelConfigCommand
 	public void execute()
 	{
 		final BPartnerId bpartnerId = context.getId(request.getBpartner(), BPartnerId.class);
-		final HuUnitType huUnitType = HuUnitType.ofCode(request.getHuUnitType());
+		final HuUnitType huUnitType = request.getHuUnitType();
 
 		final I_M_HU_Label_Config record = InterfaceWrapperHelper.newInstance(I_M_HU_Label_Config.class);
 		record.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
 		record.setSeqNo(10);
-		record.setHU_SourceDocType(request.getSourceDocType() != null ? HULabelSourceDocType.ofCode(request.getSourceDocType()).getCode() : null);
+		final HULabelSourceDocType sourceDocType = HULabelSourceDocType.ofNullableCode(request.getSourceDocType());
+		record.setHU_SourceDocType(sourceDocType != null ? sourceDocType.getCode() : null);
 		record.setIsApplyToLUs(huUnitType == HuUnitType.LU);
 		record.setIsApplyToTUs(huUnitType == HuUnitType.TU);
 		record.setIsApplyToCUs(huUnitType == HuUnitType.VHU);
