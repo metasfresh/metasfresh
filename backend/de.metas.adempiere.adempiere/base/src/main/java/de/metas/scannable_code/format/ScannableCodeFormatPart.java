@@ -1,5 +1,6 @@
 package de.metas.scannable_code.format;
 
+import de.metas.gs1.GTIN;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode.ParsedScannedCodeBuilder;
@@ -117,6 +118,12 @@ public class ScannableCodeFormatPart
 					break;
 				case ProductionDate:
 					result.productionDate(toLocalDate(valueStr));
+					break;
+				case GTIN:
+					result.gtin(GTIN.ofNullableString(valueStr));
+					break;
+				case PackId:
+					result.packId(valueStr);
 					break;
 			}
 

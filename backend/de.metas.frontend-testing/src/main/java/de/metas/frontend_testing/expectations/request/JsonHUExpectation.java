@@ -38,6 +38,12 @@ public class JsonHUExpectation
 	/** Optional filter of {@link #archiveCount}: only {@code AD_Archive} records of this {@code AD_Process_ID} (e.g. the HU label process) are counted. Requires {@code archiveCount}. */
 	@Nullable AdProcessId archiveProcessId;
 
+	/**
+	 * Expected TU count of the LU packing-instruction item (M_HU_PI_Item.Qty) via which this TU is attached to its LU,
+	 * e.g. 40 if it is attached via the product-specific item, 30 if via the generic one.
+	 */
+	@Nullable Integer parentPIItemQtyTUs;
+	
 	//
  	//
  	//

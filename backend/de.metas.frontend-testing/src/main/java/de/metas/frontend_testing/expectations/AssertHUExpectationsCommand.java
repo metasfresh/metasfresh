@@ -148,6 +148,21 @@ class AssertHUExpectationsCommand
 					.isEqualTo(expectation.getQtyTUs());
 		}
 
+		if (expectation.getParentPIItemQtyTUs() != null)
+		{
+			final Integer parentPIItemQtyTUs = services.getParentPIItemQtyTUs(huId);
+			if (parentPIItemQtyTUs == null)
+			{
+				fail("ParentPIItemQtyTUs: expected " + expectation.getParentPIItemQtyTUs() + " but the HU is not attached to a parent LU via a packing instruction item");
+			}
+			else
+			{
+				assertThat(parentPIItemQtyTUs)
+						.as("ParentPIItemQtyTUs")
+						.isEqualTo(expectation.getParentPIItemQtyTUs());
+			}
+		}
+
 		if (expectation.getStorages() != null)
 		{
 			assertHUStorages(expectation.getStorages(), huId);
