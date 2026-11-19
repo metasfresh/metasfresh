@@ -95,10 +95,18 @@ describe('openNextBox: the "Weitere Kiste" button', () => {
 });
 
 describe('openBoxFromGrai: a scanned GRAI', () => {
-  it('box open: closes it, then opens the new box from the GRAI', async () => {
+  it('box open: opens the new box from the GRAI without closing the open one first (the backend replaces it)', async () => {
     const deps = newDeps();
     await openBoxFromGrai({ ...deps, graiString: '1234567.12345.S1', isTargetOpen: true });
-    expect(deps.calls).toEqual(['close', ['setFromGrai', '1234567.12345.S1']]);
+    expect(deps.calls).toEqual([['setFromGrai', '1234567.12345.S1']]);
+    expect(deps.closeTarget).not.toHaveBeenCalled();
+  });
+
+  it('box open, backend refuses the GRAI: the open box is not closed and the error reaches the caller', async () => {
+    const deps = newDeps();
+    deps.setTargetFromGrai.mockRejectedValue(new Error('GRAI refused'));
+    await expect(openBoxFromGrai({ ...deps, graiString: 'bad', isTargetOpen: true })).rejects.toThrow('GRAI refused');
+    expect(deps.closeTarget).not.toHaveBeenCalled();
   });
 
   it('no box open: only opens the box from the GRAI', async () => {

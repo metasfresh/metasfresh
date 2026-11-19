@@ -65,12 +65,12 @@ export const openNextBox = async ({
   }
 };
 
-/** A scanned GRAI: closes the open box (if any), then opens the new box with that GRAI. */
+/**
+ * A scanned GRAI: opens the new box with that GRAI. The open box is NOT closed first: the backend replaces the line's
+ * box target in one step, so a GRAI it refuses leaves the open box as it was.
+ */
 // @VisibleForTesting
-export const openBoxFromGrai = async ({ graiString, isTargetOpen, closeTarget, setTargetFromGrai }) => {
-  if (isTargetOpen) {
-    await closeTarget();
-  }
+export const openBoxFromGrai = async ({ graiString, setTargetFromGrai }) => {
   await setTargetFromGrai({ graiString });
 };
 
