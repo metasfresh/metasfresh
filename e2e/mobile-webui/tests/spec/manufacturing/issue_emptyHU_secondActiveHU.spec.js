@@ -32,7 +32,8 @@ import { YesNoDialog } from '../../utils/dialogs/YesNoDialog';
  * PLANNED candidate, not an on-the-fly "any HU").
  *
  * The regression tests at the end of this file pin what the unlock must NOT change: the DEFAULT suggestion
- * (which HU gets the pre-filled, non-zero step) and emptying the PRIMARY HU while a second HU exists.
+ * (which HU gets the pre-filled, non-zero step) and emptying the PRIMARY HU while a second HU exists — also
+ * when the primary HU holds LESS than the line demand and the second HU covers the rest.
  */
 
 const EMPTIED_REASON = 'E';
@@ -46,9 +47,11 @@ const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu 
  * Two independent standalone HUs of the SAME component (no packing instruction), older/larger created
  * first (lower HuId -> the plan's FEFO default under the reserved-first / expiring-first / lowest-HuId
  * allocation order) and newer/smaller created second. The order needs `orderQty` KGM, below the older
- * HU's content, so the older HU alone covers the demand.
+ * HU's content, so the older HU alone covers the demand (the last test deviates: there the older HU holds
+ * LESS than the demand and the newer one covers the rest). The issuing tolerance defaults to none;
+ * `issuingTolerancePerc` is set only to mirror a real-life BOM line.
  */
-const createMasterdata = async ({ olderHuQty, newerHuQty, orderQty, olderBestBeforeDate, newerBestBeforeDate }) => {
+const createMasterdata = async ({ olderHuQty, newerHuQty, orderQty, olderBestBeforeDate, newerBestBeforeDate, issuingTolerancePerc }) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -64,7 +67,7 @@ const createMasterdata = async ({ olderHuQty, newerHuQty, orderQty, olderBestBef
             warehouses: { wh: {} },
             products: {
                 COMP: { uom: 'KGM' },
-                BOM: { bom: { lines: [{ product: 'COMP', qty: orderQty, uom: 'KGM' }] } },
+                BOM: { bom: { lines: [{ product: 'COMP', qty: orderQty, uom: 'KGM', issuingTolerancePerc }] } },
             },
             handlingUnits: {
                 // Created first -> lower HuId -> the plan's FEFO-default step (covers the whole demand).
@@ -336,6 +339,74 @@ test('The PRIMARY HU can still be EMPTIED while a second HU exists', async ({ pa
                 qtyCount: 0,
             },
             [alternativeHU.qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Two HUs, first 4.9498 kg on a 5 kg line: 4.5 kg issued, rest 449.8 g written off, second HU untouched', async ({ page }) => {
+    // Real-life plan shape: the line needs 5 KGM (1 % issuing tolerance, as on the real BOM line). The older HU
+    // (created first -> lowest HuId, no best-before date on either HU) holds only 4.9498 KGM, so the plan takes
+    // it WHOLE as the first step (target 4.9498) and the newer 10 KGM HU covers the missing 0.0502 KGM as the
+    // second step (`PPOrderIssuePlanCreateCommand.createAndCollectSteps`, cases 3 and 2). The plan needs the
+    // full 5 KGM allocated at job start — the tolerance does not lower that — hence the second HU.
+    const masterdata = await createMasterdata({ olderHuQty: 4.9498, newerHuQty: 10, orderQty: 5, issuingTolerancePerc: 1 });
+    const firstHU = masterdata.handlingUnits.HU_OLDER;
+    const secondHU = masterdata.handlingUnits.HU_NEWER;
+
+    await openIssueLine(masterdata);
+
+    // Expect: the plan described above — the first HU's step is its whole 4.9498 kg, the second covers 50.2 g.
+    await RawMaterialIssueLineScreen.expectStepsCount({ count: 2 });
+    await RawMaterialIssueLineScreen.expectStepForHU({ huQRCode: firstHU.qrCode, qtyToIssue: '4.9498 kg', qtyIssued: '0 kg' });
+    await RawMaterialIssueLineScreen.expectStepForHU({ huQRCode: secondHU.qrCode, qtyToIssue: '50.2 g', qtyIssued: '0 kg' });
+
+    // The operator scans the first HU: the dialog opens at its whole content, 4.9498 kg.
+    await scanHU(firstHU.qrCode);
+    await GetQuantityDialog.expectQtyEntered('4.9498');
+
+    // They take 4.5 kg and declare the HU empty.
+    await GetQuantityDialog.typeQtyEntered('4.5');
+    await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: EMPTIED_REASON, offered: true });
+    await GetQuantityDialog.expectQtyNotFoundReasonCaption({ reason: EMPTIED_REASON, caption: EMPTIED_REASON_CAPTION });
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
+    await GetQuantityDialog.clickDone();
+
+    // Expect: the prompt names the first HU's remainder 4.9498 - 4.5 = 449.8 g — not the 500 g order-side
+    // shortfall (5 - 4.5).
+    await YesNoDialog.waitForDialog();
+    await YesNoDialog.expectPromptContains('This will write off the remaining 449.8 g and empty the HU. Continue?');
+    await YesNoDialog.clickYesButton();
+
+    // Expect: the 4.5 kg came from the first HU; nothing was issued from the second.
+    await RawMaterialIssueLineScreen.waitForScreen();
+    await RawMaterialIssueLineScreen.expectStepForHU({ huQRCode: firstHU.qrCode, qtyIssued: '4.5 kg' });
+    await RawMaterialIssueLineScreen.expectStepForHU({ huQRCode: secondHU.qrCode, qtyIssued: '0 kg' });
+    await RawMaterialIssueLineScreen.goBack();
+
+    // Expect: 4.5 kg of the 5 kg demand issued.
+    await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 kg', qtyIssued: '4.5 kg' });
+
+    // Expect: the first HU is closed (Destroyed) with nothing left, and exactly one completed write-off inventory
+    // booked its 0.4498 KGM remainder down to 0. The second HU is untouched: still Active with its full 10 KGM and
+    // no write-off inventory.
+    await Backend.expect({
+        hus: {
+            [firstHU.qrCode]: { huStatus: 'D', storages: { COMP: '0 KGM' } },
+            [secondHU.qrCode]: { huStatus: 'A', storages: { COMP: '10 KGM' } },
+        },
+        inventories: {
+            [firstHU.qrCode]: {
+                count: 1,
+                docStatus: 'CO',
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+                qtyBook: 0.4498,
+                qtyCount: 0,
+            },
+            [secondHU.qrCode]: {
                 isExists: false,
                 description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
             },
