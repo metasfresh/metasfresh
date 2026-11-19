@@ -278,13 +278,14 @@ public class C_OLCand_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final I_C_OLCand olCand = row.getAsIdentifier(COLUMNNAME_C_OLCand_ID).lookupNotNullIn(olCandTable);
+			final StepDefDataIdentifier olCandIdentifier = row.getAsIdentifier(COLUMNNAME_C_OLCand_ID);
+			final I_C_OLCand olCand = olCandIdentifier.lookupNotNullIn(olCandTable);
 			InterfaceWrapperHelper.refresh(olCand);
 
 			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(olCand::setPOReference);
 
 			InterfaceWrapperHelper.saveRecord(olCand);
-			olCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_OLCand_ID), olCand);
+			olCandIdentifier.putOrReplace(olCandTable, olCand);
 		});
 	}
 

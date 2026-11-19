@@ -869,6 +869,23 @@ public class C_Invoice_StepDef
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
+	/**
+	 * Updates fields of an existing {@code C_Invoice} and saves it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required, identifier-ref) the invoice to update<br>
+	 *   <b>DateInvoiced</b> — (optional) new invoice date, e.g. 2021-04-08<br>
+	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 *   <b>C_PaymentTerm_ID</b> — (optional) value of the payment term to set<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice:
+	 *   | Identifier | DateInvoiced | POReference |
+	 *   | invoice_1  | 2021-04-08   | PO_4711     |
+	 * </pre>
+	 */
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{

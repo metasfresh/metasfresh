@@ -44,6 +44,22 @@ public class AD_InputDataSource_StepDef
 
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
+	/**
+	 * Creates an {@code AD_InputDataSource}, or updates the one with the same generated {@code Value}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>InternalName</b> — (optional) internal name, referenced as {@code int-<InternalName>} by the order candidate REST API<br>
+	 *   <b>IsEDIChannel</b> — (optional) whether orders created from this data source's order candidates are EDI orders<br>
+	 * @cucumber.depends StepDefData: AD_InputDataSource_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains AD_InputDataSource:
+	 *   | Identifier   | InternalName | IsEDIChannel |
+	 *   | dataSource_1 | testEdi      | Y            |
+	 * </pre>
+	 */
 	@Given("metasfresh contains AD_InputDataSource:")
 	public void metasfresh_contains_ad_input_data_source(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{

@@ -749,7 +749,22 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
-	/** Update fields (MovementDate, POReference) on an existing M_InOut record, e.g. before or after completion. */
+	/**
+	 * Updates fields of an existing {@code M_InOut} (e.g. before or after completion) and saves it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment/receipt to update<br>
+	 *   <b>MovementDate</b> — (optional) new movement date, e.g. 2022-05-17<br>
+	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_InOut:
+	 *   | M_InOut_ID | MovementDate | POReference |
+	 *   | shipment_1 | 2022-05-17   | PO_4711     |
+	 * </pre>
+	 */
 	@And("update M_InOut:")
 	public void update_M_InOut(@NonNull final DataTable dataTable)
 	{
