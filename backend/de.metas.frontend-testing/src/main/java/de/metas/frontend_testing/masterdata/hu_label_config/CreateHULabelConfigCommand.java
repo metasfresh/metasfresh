@@ -20,7 +20,7 @@ public class CreateHULabelConfigCommand
 	public void execute()
 	{
 		final BPartnerId bpartnerId = context.getId(request.getBpartner(), BPartnerId.class);
-		final HuUnitType huUnitType = request.getHuUnitType();
+		final HuUnitType huUnitType = HuUnitType.ofCode(request.getHuUnitType());
 
 		final I_M_HU_Label_Config record = InterfaceWrapperHelper.newInstance(I_M_HU_Label_Config.class);
 		record.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
