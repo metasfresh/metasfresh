@@ -762,6 +762,8 @@ public class C_Order_StepDef
 	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
 	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
 	 *       repeated local runs</li>
+	 *   <li>{@code IsPOReferenceBuyerOrderNo} – boolean; set in the same save as a {@code POReference}
+	 *       change when both columns are given</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -809,6 +811,8 @@ public class C_Order_StepDef
 		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
 		tableRow.getAsOptionalName(COLUMNNAME_POReference)
 				.ifPresent(order::setPOReference);
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsPOReferenceBuyerOrderNo)
+				.ifPresent(order::setIsPOReferenceBuyerOrderNo);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);

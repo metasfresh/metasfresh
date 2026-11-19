@@ -257,6 +257,37 @@ public class C_OLCand_StepDef
 		assertThat(olCand.getErrorMsg()).contains(errorMsg);
 	}
 
+	/**
+	 * Updates the {@code POReference} of a {@code C_OLCand} through a model save, like a user changing the
+	 * order candidate, so that the order candidate's model interceptors fire.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the order candidate to update<br>
+	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 * @cucumber.depends StepDefData: C_OLCand_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OLCand:
+	 *   | C_OLCand_ID | POReference |
+	 *   | olCand_1    | PO_4711     |
+	 * </pre>
+	 */
+	@And("update C_OLCand:")
+	public void update_C_OLCand(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final I_C_OLCand olCand = row.getAsIdentifier(COLUMNNAME_C_OLCand_ID).lookupNotNullIn(olCandTable);
+			InterfaceWrapperHelper.refresh(olCand);
+
+			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(olCand::setPOReference);
+
+			InterfaceWrapperHelper.saveRecord(olCand);
+			olCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_OLCand_ID), olCand);
+		});
+	}
+
 	@And("validate C_OLCand:")
 	public void validate_C_OLCand(@NonNull final DataTable dataTable)
 	{

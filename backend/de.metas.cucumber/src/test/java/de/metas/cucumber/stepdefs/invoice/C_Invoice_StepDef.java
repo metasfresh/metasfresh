@@ -872,25 +872,22 @@ public class C_Invoice_StepDef
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			updateInvoice(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateInvoice);
 	}
 
-	private void updateInvoice(@NonNull final Map<String, String> row)
+	private void updateInvoice(@NonNull final DataTableRow row)
 	{
-		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier();
 
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
-		if (dateInvoiced != null)
-		{
-			invoice.setDateInvoiced(dateInvoiced);
-		}
+		row.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateInvoiced)
+				.ifPresent(invoice::setDateInvoiced);
 
-		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
+		row.getAsOptionalString(COLUMNNAME_POReference)
+				.ifPresent(invoice::setPOReference);
+
+		final String paymentTerm = row.getAsOptionalString(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID).orElse(null);
 		if (Check.isNotBlank(paymentTerm))
 		{
 			final PaymentTermQuery query = PaymentTermQuery.builder()
@@ -908,7 +905,7 @@ public class C_Invoice_StepDef
 
 		InterfaceWrapperHelper.save(invoice);
 
-		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+		invoiceIdentifier.putOrReplace(invoiceTable, invoice);
 	}
 
 	@NonNull

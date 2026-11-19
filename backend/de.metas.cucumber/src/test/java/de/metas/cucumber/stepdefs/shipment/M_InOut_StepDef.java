@@ -749,7 +749,7 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
-	/** Update fields on an existing M_InOut record (e.g. MovementDate before completion). */
+	/** Update fields (MovementDate, POReference) on an existing M_InOut record, e.g. before or after completion. */
 	@And("update M_InOut:")
 	public void update_M_InOut(@NonNull final DataTable dataTable)
 	{
@@ -758,6 +758,8 @@ public class M_InOut_StepDef
 
 			row.getAsOptionalLocalDateTimestamp(I_M_InOut.COLUMNNAME_MovementDate)
 					.ifPresent(inOut::setMovementDate);
+			row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
+					.ifPresent(inOut::setPOReference);
 
 			InterfaceWrapperHelper.saveRecord(inOut);
 		});
