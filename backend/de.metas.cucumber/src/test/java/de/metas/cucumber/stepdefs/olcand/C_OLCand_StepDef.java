@@ -264,7 +264,7 @@ public class C_OLCand_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the order candidate to update<br>
-	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 *   <b>POReference</b> — (optional, null-allowed) new PO reference; {@code null} clears it<br>
 	 * @cucumber.depends StepDefData: C_OLCand_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -282,7 +282,7 @@ public class C_OLCand_StepDef
 			final I_C_OLCand olCand = olCandIdentifier.lookupNotNullIn(olCandTable);
 			InterfaceWrapperHelper.refresh(olCand);
 
-			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(olCand::setPOReference);
+			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(poReference -> olCand.setPOReference(DataTableUtil.nullToken2Null(poReference)));
 
 			InterfaceWrapperHelper.saveRecord(olCand);
 			olCandIdentifier.putOrReplace(olCandTable, olCand);

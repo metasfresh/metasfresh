@@ -45,10 +45,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
 @F00350
-  Scenario Outline: Order from order candidates of an EDI-channel data source with a POReference is flagged, data source <dataSource>
-    Given metasfresh contains AD_InputDataSource:
-      | Identifier | Name         | Value        | InternalName | IsEDIChannel |
-      | dataSource | <dataSource> | <dataSource> | <dataSource> | Y            |
+  Scenario Outline: Order from order candidates of the shipped EDI-ORDERS data source <dataSource> is flagged
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
@@ -99,9 +96,9 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | order_1               | customer                 | 0021234567  | <dataSource>                           | true                      |
 
     Examples:
-      | dataSource            | header            |
-      | poRefBuyerEdiChannelA | poRefBuyerHeaderA |
-      | poRefBuyerEdiChannelB | poRefBuyerHeaderB |
+      | dataSource                | header                  |
+      | DEST.de.metas.edi.ecosio  | poRefBuyerHeaderEcosio  |
+      | DEST.de.metas.edi.eddyson | poRefBuyerHeaderEddyson |
 
 
 # ############################################################################################################################################
@@ -139,8 +136,8 @@ Feature: Sales order flag - the order reference is the buyer's order number
     "requests": [
         {
             "orgCode": "001",
-            "externalHeaderId": "poRefBuyerHeaderC",
-            "externalLineId": "poRefBuyerHeaderC_1",
+            "externalHeaderId": "poRefBuyerHeaderPlain",
+            "externalLineId": "poRefBuyerHeaderPlain_1",
             "externalSystemCode": "Shopware6",
             "dataSource": "int-poRefBuyerPlainChannel",
             "bpartner": {
@@ -168,7 +165,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "poRefBuyerHeaderC",
+    "externalHeaderId": "poRefBuyerHeaderPlain",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
@@ -194,17 +191,17 @@ Feature: Sales order flag - the order reference is the buyer's order number
   Scenario: Order from an EDI-channel order candidate whose POReference was cleared is not flagged
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
-      | dataSource | poRefBuyerEdiChannelC | poRefBuyerEdiChannelC | poRefBuyerEdiChannelC | Y            |
+      | dataSource | poRefBuyerClearedChannel | poRefBuyerClearedChannel | poRefBuyerClearedChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
     "requests": [
         {
             "orgCode": "001",
-            "externalHeaderId": "poRefBuyerHeaderD",
-            "externalLineId": "poRefBuyerHeaderD_1",
+            "externalHeaderId": "poRefBuyerHeaderCleared",
+            "externalLineId": "poRefBuyerHeaderCleared_1",
             "externalSystemCode": "Shopware6",
-            "dataSource": "int-poRefBuyerEdiChannelC",
+            "dataSource": "int-poRefBuyerClearedChannel",
             "bpartner": {
                 "bpartnerIdentifier": "gln-4337010330019",
                 "bpartnerLocationIdentifier": "gln-4337010330019"
@@ -229,11 +226,11 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | olCand_1               |
     And update C_OLCand:
       | C_OLCand_ID | POReference |
-      | olCand_1    | [blank]     |
+      | olCand_1    | null        |
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "poRefBuyerHeaderD",
+    "externalHeaderId": "poRefBuyerHeaderCleared",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
@@ -245,7 +242,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | order_1               |
     Then validate the created orders
       | C_Order_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | IsPOReferenceBuyerOrderNo |
-      | order_1               | poRefBuyerEdiChannelC                  | false                     |
+      | order_1               | poRefBuyerClearedChannel                  | false                     |
 
 
 # ############################################################################################################################################
@@ -259,17 +256,17 @@ Feature: Sales order flag - the order reference is the buyer's order number
   Scenario: Changing the POReference on a flagged order resets the flag
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
-      | dataSource | poRefBuyerEdiChannelD | poRefBuyerEdiChannelD | poRefBuyerEdiChannelD | Y            |
+      | dataSource | poRefBuyerResetChannel | poRefBuyerResetChannel | poRefBuyerResetChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
     "requests": [
         {
             "orgCode": "001",
-            "externalHeaderId": "poRefBuyerHeaderE",
-            "externalLineId": "poRefBuyerHeaderE_1",
+            "externalHeaderId": "poRefBuyerHeaderReset",
+            "externalLineId": "poRefBuyerHeaderReset_1",
             "externalSystemCode": "Shopware6",
-            "dataSource": "int-poRefBuyerEdiChannelD",
+            "dataSource": "int-poRefBuyerResetChannel",
             "bpartner": {
                 "bpartnerIdentifier": "gln-4337010330019",
                 "bpartnerLocationIdentifier": "gln-4337010330019"
@@ -295,7 +292,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "poRefBuyerHeaderE",
+    "externalHeaderId": "poRefBuyerHeaderReset",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
@@ -327,17 +324,17 @@ Feature: Sales order flag - the order reference is the buyer's order number
   Scenario: Changing the POReference on the order candidate resets the flag of the order
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
-      | dataSource | poRefBuyerEdiChannelE | poRefBuyerEdiChannelE | poRefBuyerEdiChannelE | Y            |
+      | dataSource | poRefBuyerCandidateChannel | poRefBuyerCandidateChannel | poRefBuyerCandidateChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
     "requests": [
         {
             "orgCode": "001",
-            "externalHeaderId": "poRefBuyerHeaderF",
-            "externalLineId": "poRefBuyerHeaderF_1",
+            "externalHeaderId": "poRefBuyerHeaderCandidate",
+            "externalLineId": "poRefBuyerHeaderCandidate_1",
             "externalSystemCode": "Shopware6",
-            "dataSource": "int-poRefBuyerEdiChannelE",
+            "dataSource": "int-poRefBuyerCandidateChannel",
             "bpartner": {
                 "bpartnerIdentifier": "gln-4337010330019",
                 "bpartnerLocationIdentifier": "gln-4337010330019"
@@ -363,7 +360,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "poRefBuyerHeaderF",
+    "externalHeaderId": "poRefBuyerHeaderCandidate",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
@@ -435,17 +432,17 @@ Feature: Sales order flag - the order reference is the buyer's order number
   Scenario: Copy of a flagged order is not flagged
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
-      | dataSource | poRefBuyerEdiChannelF | poRefBuyerEdiChannelF | poRefBuyerEdiChannelF | Y            |
+      | dataSource | poRefBuyerCopyChannel | poRefBuyerCopyChannel | poRefBuyerCopyChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
     "requests": [
         {
             "orgCode": "001",
-            "externalHeaderId": "poRefBuyerHeaderG",
-            "externalLineId": "poRefBuyerHeaderG_1",
+            "externalHeaderId": "poRefBuyerHeaderCopy",
+            "externalLineId": "poRefBuyerHeaderCopy_1",
             "externalSystemCode": "Shopware6",
-            "dataSource": "int-poRefBuyerEdiChannelF",
+            "dataSource": "int-poRefBuyerCopyChannel",
             "bpartner": {
                 "bpartnerIdentifier": "gln-4337010330019",
                 "bpartnerLocationIdentifier": "gln-4337010330019"
@@ -471,7 +468,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "poRefBuyerHeaderG",
+    "externalHeaderId": "poRefBuyerHeaderCopy",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
@@ -504,17 +501,17 @@ Feature: Sales order flag - the order reference is the buyer's order number
   Scenario: Unticking the EDI channel keeps the flag of existing orders and affects only later orders
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
-      | dataSource | poRefBuyerEdiChannelG | poRefBuyerEdiChannelG | poRefBuyerEdiChannelG | Y            |
+      | dataSource | poRefBuyerUntickChannel | poRefBuyerUntickChannel | poRefBuyerUntickChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
     "requests": [
         {
             "orgCode": "001",
-            "externalHeaderId": "poRefBuyerHeaderH",
-            "externalLineId": "poRefBuyerHeaderH_1",
+            "externalHeaderId": "poRefBuyerHeaderUntick",
+            "externalLineId": "poRefBuyerHeaderUntick_1",
             "externalSystemCode": "Shopware6",
-            "dataSource": "int-poRefBuyerEdiChannelG",
+            "dataSource": "int-poRefBuyerUntickChannel",
             "bpartner": {
                 "bpartnerIdentifier": "gln-4337010330019",
                 "bpartnerLocationIdentifier": "gln-4337010330019"
@@ -540,7 +537,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "poRefBuyerHeaderH",
+    "externalHeaderId": "poRefBuyerHeaderUntick",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
@@ -555,7 +552,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | order_1               | 0021234572  | true                      |
     When metasfresh contains AD_InputDataSource:
       | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
-      | dataSource | poRefBuyerEdiChannelG | poRefBuyerEdiChannelG | poRefBuyerEdiChannelG | N            |
+      | dataSource | poRefBuyerUntickChannel | poRefBuyerUntickChannel | poRefBuyerUntickChannel | N            |
     Then validate the created orders
       | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234572  | true                      |
@@ -565,10 +562,10 @@ Feature: Sales order flag - the order reference is the buyer's order number
     "requests": [
         {
             "orgCode": "001",
-            "externalHeaderId": "poRefBuyerHeaderI",
-            "externalLineId": "poRefBuyerHeaderI_1",
+            "externalHeaderId": "poRefBuyerHeaderUntickAfter",
+            "externalLineId": "poRefBuyerHeaderUntickAfter_1",
             "externalSystemCode": "Shopware6",
-            "dataSource": "int-poRefBuyerEdiChannelG",
+            "dataSource": "int-poRefBuyerUntickChannel",
             "bpartner": {
                 "bpartnerIdentifier": "gln-4337010330019",
                 "bpartnerLocationIdentifier": "gln-4337010330019"
@@ -594,7 +591,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "poRefBuyerHeaderI",
+    "externalHeaderId": "poRefBuyerHeaderUntickAfter",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
