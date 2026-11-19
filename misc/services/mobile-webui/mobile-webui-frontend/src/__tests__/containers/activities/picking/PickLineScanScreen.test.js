@@ -1,4 +1,10 @@
+import React from 'react';
+import { render } from '@testing-library/react';
+import { toast } from 'react-toastify';
+import { setupCounterpart } from '../../../../utils/translations';
+import { toastErrorFromObj } from '../../../../utils/toast';
 import {
+  usePostQtyPicked,
   convertScannedBarcodeToResolvedResult,
   convertScannedCULabelToResolvedResult,
   isInlineGraiCaptureEnabled,
@@ -9,6 +15,12 @@ import {
   computePickFromHUQRCode,
   computeSourceHUQRCode,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
+
+const mockDispatch = jest.fn();
+const mockToastError = jest.fn();
+jest.mock('../../../../utils/ui_trace', () => ({ trace: jest.fn() }));
+jest.mock('react-redux', () => ({ ...jest.requireActual('react-redux'), useDispatch: () => mockDispatch }));
+jest.mock('../../../../hooks/useMobileNavigation', () => ({ useMobileNavigation: () => ({}) }));
 
 describe('PickingLineScanScreen', () => {
   it('convertScannedBarcodeToResolvedResult', async () => {
@@ -231,5 +243,34 @@ describe('PickingLineScanScreen: the HU the PICK event takes the packs from', ()
 
   it('Manual without a source HU is unchanged (no refusal)', () => {
     expect(computePickFromHUQRCode({ cuQtyEntryMode: 'MANUAL', scannedBarcode: 'HU#1#{}' })).toBe('HU#1#{}');
+  });
+});
+
+describe('PickingLineScanScreen: no-source refusal reaches the toast', () => {
+  it('a new-mode pick without a source HU rejects (so callers .catch it into the toast), shows the message, posts nothing', async () => {
+    setupCounterpart();
+    jest.spyOn(toast, 'error').mockImplementation(mockToastError);
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'trace').mockImplementation(() => {});
+
+    let postQty;
+    const Harness = () => {
+      postQty = usePostQtyPicked({ wfProcessId: 'wf', activityId: 'a', cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' });
+      return null;
+    };
+    render(<Harness />);
+
+    // same shape as the callers: onQtyChange(payload)?.catch?.(toastErrorFromObj)
+    const error = await postQty({ qty: 3, scannedBarcode: 'x', barcodeType: undefined }).then(
+      () => null,
+      (e) => e
+    );
+    expect(error).toEqual({ messageKey: 'picking.pickFromRequired' });
+    toastErrorFromObj(error);
+
+    expect(mockDispatch).not.toHaveBeenCalled();
+    expect(mockToastError).toHaveBeenCalledTimes(1);
+    const toastNode = mockToastError.mock.calls[0][0];
+    expect(toastNode.props.message).toBe("Please scan 'Pick From' first.");
   });
 });

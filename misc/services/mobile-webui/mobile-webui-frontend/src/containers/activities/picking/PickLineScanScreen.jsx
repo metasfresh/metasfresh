@@ -557,7 +557,7 @@ const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
 //
 //
 
-const usePostQtyPicked = ({
+export const usePostQtyPicked = ({
   wfProcessId,
   activityId,
   lineId: lineIdParam = null,
@@ -573,7 +573,7 @@ const usePostQtyPicked = ({
   const dispatch = useDispatch();
   const history = useMobileNavigation();
 
-  return ({
+  return async ({
     qty = 0,
     qtyRejected,
     reason = null,
