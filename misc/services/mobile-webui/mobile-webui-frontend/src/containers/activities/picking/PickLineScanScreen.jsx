@@ -36,6 +36,8 @@ import { PickingTargetType } from '../../../constants/PickingTargetType';
 import Spinner from '../../../components/Spinner';
 import { useBooleanSetting } from '../../../reducers/settings';
 import {
+  computeCUEntryToRemember,
+  computeSuggestedQty,
   getNextEligibleLineToPick,
   getQtyPickedOrRejectedTotalForLine,
   getQtyToPickForLine,
@@ -55,7 +57,9 @@ import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/pic
 import { resolveCULabel, routeScannedCode, selectCULabelFormat, SCAN_TYPE_GRAI } from '../../../utils/cuLabel';
 import { parseGraiFromRawInput } from '../../../utils/grai';
 import NextBoxActions, { useNextBox } from '../../../components/NextBoxActions';
-import { isNewMode } from '../../../constants/CUQtyEntryMode';
+import { CUQtyEntryMode, isNewMode } from '../../../constants/CUQtyEntryMode';
+import { rememberCUEntry } from '../../../actions/PickingActions';
+import { getCUEntry } from '../../../reducers/wfProcesses/picking';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
 export const NEXT_PickingJob = 'pickingJob';
@@ -91,6 +95,7 @@ const PickLineScanScreen = () => {
     cuQtyEntryMode,
     cuLabelFormatId,
     packingTuPIId,
+    cuEntry,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const cuLabelFormat = useMemo(
@@ -183,12 +188,21 @@ const PickLineScanScreen = () => {
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
+  // scan once: the count offered for the next box (the last typed count, capped by the open quantity)
+  const isScanOnce = cuQtyEntryMode === CUQtyEntryMode.SCAN_ONCE_ENTER_QTY;
+  const suggestedQty = isScanOnce
+    ? computeSuggestedQty({ lastTypedQty: cuEntry?.lastTypedQty, qtyOpen: qtyToPickRemaining }) ?? undefined
+    : undefined;
+
   const onResult = usePostQtyPicked({
     wfProcessId,
     activityId,
     lineId,
     expectedProductNo: productNo,
     expectedGS1ProductCodes: gs1ProductCodes,
+    rememberedLastTypedQty: isScanOnce ? cuEntry?.lastTypedQty : undefined,
+    suggestedQty,
+    isRememberCUEntry: isScanOnce,
     onClose,
   });
 
@@ -211,7 +225,8 @@ const PickLineScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
-      scannedBarcode={qrCode}
+      // the source HU of the hop from the line screen is never a CU label
+      scannedBarcode={computeScannedBarcodeParam({ qrCode, cuQtyEntryMode })}
       graiScanEnabled={isInlineGraiCapture}
       existingLuGrais={existingLuGrais}
       qtyTargetCaption={trl('general.QtyToPick')}
@@ -228,6 +243,8 @@ const PickLineScanScreen = () => {
       cuQtyEntryMode={cuQtyEntryMode}
       cuLabelFormat={cuLabelFormat}
       packingTuPIId={packingTuPIId}
+      suggestedQty={suggestedQty}
+      rememberedCULabel={isScanOnce ? cuEntry?.label : undefined}
       isShowCloseTargetButton={!!luPickingTarget}
       nextBoxActions={
         isNewModeLine ? <NextBoxActions isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} /> : undefined
@@ -258,6 +275,14 @@ export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
   pickingUnit === PICKING_UNIT_TU
     ? { qtyCaptionKey: 'general.QtyTU', packingItemName }
     : { qtyCaptionKey: 'general.Qty', packingItemName: null };
+
+/**
+ * The `qrCode` param of the screen URL is the source HU when the picker comes back through the line screen's
+ * "HU verpacken"; a line with a CU quantity entry mode reads labels only, so it never takes that param as a scan.
+ */
+// @VisibleForTesting
+export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
+  isNewMode(cuQtyEntryMode) ? undefined : qrCode;
 
 /**
  * The pick-time GRAI capture (after OK) belongs to the Manual path; in the CU quantity entry modes the picker opens
@@ -293,6 +318,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     cuQtyEntryMode: line?.cuQtyEntryMode,
     cuLabelFormatId: line?.cuLabelFormatId,
     packingTuPIId: line?.packingTuPIId, // null when the line's packing names no TU
+    cuEntry: getCUEntry({ activity, lineId }),
   };
 };
 
@@ -514,6 +540,9 @@ const usePostQtyPicked = ({
   lineId: lineIdParam = null,
   expectedProductNo,
   expectedGS1ProductCodes,
+  isRememberCUEntry = false,
+  rememberedLastTypedQty,
+  suggestedQty,
   onClose,
 }) => {
   const dispatch = useDispatch();
@@ -574,7 +603,23 @@ const usePostQtyPicked = ({
         cuLabel,
         isCloseTarget,
       })
-    ).then(({ isPickingJobCompleted }) => !isPickingJobCompleted && isDone && onClose());
+    ).then(({ isPickingJobCompleted }) => {
+      if (isRememberCUEntry && !isPickingJobCompleted) {
+        const cuEntryToRemember = computeCUEntryToRemember({
+          previousLastTypedQty: rememberedLastTypedQty,
+          suggestedQty,
+          qtyBooked: qty,
+          cuLabel,
+          lotNo,
+          bestBeforeDate,
+        });
+        if (cuEntryToRemember) {
+          dispatch(rememberCUEntry({ wfProcessId, activityId, lineId: lineIdEffective, ...cuEntryToRemember }));
+        }
+      }
+
+      return !isPickingJobCompleted && isDone && onClose();
+    });
     //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
   };
 };

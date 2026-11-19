@@ -65,3 +65,52 @@ export const isLineNotCompleted = ({ line }) => line.completeStatus !== Complete
 export const isCatchWeight = ({ line }) => {
   return !!line.catchWeightUOM;
 };
+
+/**
+ * Scan once: the count the picker is offered for the next box = the last typed count, capped by the open quantity.
+ *
+ * @returns null before the first typed value
+ */
+export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
+  if (lastTypedQty == null || lastTypedQty === '') {
+    return null;
+  }
+  const last = Number(lastTypedQty);
+  return qtyOpen == null ? last : Math.min(last, qtyOpen);
+};
+
+/**
+ * The count to remember after a booking. Confirming the offered suggestion (also a capped one) keeps the count the
+ * picker typed; any other count is a newly typed one.
+ */
+export const computeLastTypedQty = ({ previousLastTypedQty, suggestedQty, qtyBooked }) => {
+  const booked = Number(qtyBooked);
+  if (previousLastTypedQty != null && suggestedQty != null && booked === Number(suggestedQty)) {
+    return Number(previousLastTypedQty);
+  }
+  return booked;
+};
+
+/** @returns true when the booking reaches (or exceeds) the open quantity, or when that quantity is unknown */
+export const isLineDoneAfterBooking = ({ qtyBooked, qtyOpen }) => qtyOpen == null || Number(qtyBooked) >= qtyOpen;
+
+/**
+ * What the screen remembers after a scan once booking of a line: the last typed count and the label (with its lot and
+ * best-before) the next booking uses.
+ *
+ * @returns {{lastTypedQty, label}} or null when the booking carried no label
+ */
+export const computeCUEntryToRemember = ({
+  previousLastTypedQty,
+  suggestedQty,
+  qtyBooked,
+  cuLabel,
+  lotNo,
+  bestBeforeDate,
+}) =>
+  cuLabel
+    ? {
+        lastTypedQty: computeLastTypedQty({ previousLastTypedQty, suggestedQty, qtyBooked }),
+        label: { cuLabel, lotNo, bestBeforeDate },
+      }
+    : null;

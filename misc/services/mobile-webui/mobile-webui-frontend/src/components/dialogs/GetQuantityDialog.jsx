@@ -51,6 +51,7 @@ const GetQuantityDialog = ({
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
   nextBoxActions,
+  labelRescan,
   //
   validateQtyEntered,
   getConfirmationPromptForQty,
@@ -77,7 +78,10 @@ const GetQuantityDialog = ({
 
   const [qtyInfo, setQtyInfo] = useState(
     isScanOnce
-      ? qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null })
+      ? // the offered count of the next box (last typed count, capped by the open qty); empty before the first one
+        qtyInitial != null
+        ? qtyInfos.invalidOfNumber(qtyInitial)
+        : qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null })
       : qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
   );
   const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
@@ -338,7 +342,15 @@ const GetQuantityDialog = ({
       <Dialog className="get-qty-dialog">
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
-          <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
+          <form
+            onSubmit={
+              isScanOnce
+                ? // the OK button's click (also the Enter key's implicit click) books once; a second submit-triggered
+                  // call would book the same count twice
+                  (event) => event.preventDefault()
+                : () => onDialogYes({ isCloseTarget: false })
+            }
+          >
             <div className="table-container">
               <table className="table">
                 <tbody>
@@ -440,6 +452,11 @@ const GetQuantityDialog = ({
                           </div>
                         </div>
                       </td>
+                    </tr>
+                  )}
+                  {labelRescan && (
+                    <tr>
+                      <td colSpan="2">{labelRescan}</td>
                     </tr>
                   )}
                   {useCatchWeight && (
@@ -569,6 +586,7 @@ GetQuantityDialog.propTypes = {
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
   nextBoxActions: PropTypes.node,
+  labelRescan: PropTypes.node,
   customQRCodeFormats: PropTypes.array,
 
   // Callbacks

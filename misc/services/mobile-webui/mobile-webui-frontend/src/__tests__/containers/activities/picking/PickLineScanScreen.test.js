@@ -3,6 +3,7 @@ import {
   convertScannedCULabelToResolvedResult,
   isInlineGraiCaptureEnabled,
   computeQtyUnitProps,
+  computeScannedBarcodeParam,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
@@ -55,7 +56,11 @@ describe('PickingLineScanScreen: new mode label scan', () => {
 
   it('fills lot and best-before and keeps the raw label', () => {
     expect(
-      convertScannedCULabelToResolvedResult({ scannedBarcode: label, cuLabelFormat, expectedProductNo: 'PTST001' })
+      convertScannedCULabelToResolvedResult({
+        scannedBarcode: label,
+        cuLabelFormat,
+        expectedProductNo: 'PTST001',
+      })
     ).toEqual({
       lotNo: 'LA0000001',
       bestBeforeDate: '2026-11-07',
@@ -130,5 +135,18 @@ describe('PickingLineScanScreen: quantity unit follows the line picking unit fro
         cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY',
       })
     ).toEqual({ qtyCaptionKey: 'general.Qty', packingItemName: null });
+  });
+});
+
+describe('PickingLineScanScreen: re-entry hop', () => {
+  it('a CU quantity entry mode never reads the source HU of the hop as a scan', () => {
+    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' })).toBeUndefined();
+    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryMode: 'SCAN_EACH_CU' })).toBeUndefined();
+  });
+
+  it('Manual and an absent mode keep the param', () => {
+    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryMode: 'MANUAL' })).toBe('HU#1#{}');
+    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}' })).toBe('HU#1#{}');
+    expect(computeScannedBarcodeParam({ qrCode: null })).toBeNull();
   });
 });

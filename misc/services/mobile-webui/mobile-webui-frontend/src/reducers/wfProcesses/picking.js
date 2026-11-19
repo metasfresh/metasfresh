@@ -1,12 +1,33 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
+import { REMEMBER_CU_ENTRY } from '../../constants/PickingActionTypes';
 
 const COMPONENT_TYPE = 'picking/pickProducts';
 
-// export const pickingReducer = ({ draftState, action }) => {
-//   return draftState;
-// };
+export const pickingReducer = ({ draftState, action }) => {
+  switch (action.type) {
+    case REMEMBER_CU_ENTRY: {
+      const { wfProcessId, activityId, lineId, lastTypedQty, label } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored) {
+        draftActivity.dataStored.cuEntry = { lineId, lastTypedQty, label };
+      }
+      return draftState;
+    }
+    default:
+      return draftState;
+  }
+};
+
+/**
+ * @returns the count and label remembered for this line, or null (nothing remembered, or the memory belongs to
+ * another line)
+ */
+export const getCUEntry = ({ activity, lineId }) => {
+  const cuEntry = activity?.dataStored?.cuEntry;
+  return cuEntry && cuEntry.lineId === lineId ? cuEntry : null;
+};
 
 const extractDraftMapKeys = (draftMap) => {
   return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);

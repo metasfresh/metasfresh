@@ -17,6 +17,8 @@ import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickCon
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 import Spinner from './Spinner';
 import { doFinally } from '../utils';
+import { CUQtyEntryMode } from '../constants/CUQtyEntryMode';
+import { isLineDoneAfterBooking } from '../utils/picking';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
@@ -64,6 +66,8 @@ const ScanHUAndGetQtyComponent = ({
   packingTuPIId,
   isShowCloseTargetButton = false,
   nextBoxActions,
+  suggestedQty,
+  rememberedCULabel,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -75,7 +79,11 @@ const ScanHUAndGetQtyComponent = ({
   onResult,
   onClose: onCloseCallback,
 }) => {
+  const isScanOnce = cuQtyEntryMode === CUQtyEntryMode.SCAN_ONCE_ENTER_QTY;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
+  // scan once: the quantity block stays open after a booking (and after a label rescan); a new key (also a new
+  // suggestion) gives it the new suggestion and the new label values
+  const [quantityBlockKey, setQuantityBlockKey] = useState(0);
   const [isProcessing, setProcessing] = useState(false);
   // synchronous twin of isProcessing: state is only visible after the next render, so two taps handled
   // before that render would both pass a state-only check
@@ -163,6 +171,17 @@ const ScanHUAndGetQtyComponent = ({
           toastErrorFromObj(error);
           setProgressStatus(STATUS_READ_HU_BARCODE);
         });
+    } else if (isScanOnce && rememberedCULabel?.cuLabel) {
+      // back on a line the picker already booked on: the quantity block opens with the remembered label
+      setResolvedBarcodeData((prev) => ({
+        ...prev,
+        scannedBarcode: rememberedCULabel.cuLabel,
+        cuLabel: rememberedCULabel.cuLabel,
+        lotNo: rememberedCULabel.lotNo,
+        bestBeforeDate: rememberedCULabel.bestBeforeDate,
+        isTUToBePickedAsWhole: false,
+      }));
+      setProgressStatus(STATUS_READ_QTY);
     } else {
       setProgressStatus(STATUS_READ_HU_BARCODE);
     }
@@ -247,6 +266,15 @@ const ScanHUAndGetQtyComponent = ({
     }
   };
 
+  // a label scanned inside the quantity block replaces the remembered one; a scan that only opened a box changes nothing
+  const onCULabelRescanned = async (resolvedBarcodeDataNew) => {
+    if (resolvedBarcodeDataNew?.isNextBoxOpened) {
+      return;
+    }
+    setResolvedBarcodeData(resolvedBarcodeDataNew);
+    setQuantityBlockKey((key) => key + 1);
+  };
+
   const validateQtyEntered = (qtyEntered, uom) => {
     // Qty shall be positive
     if (qtyEntered <= 0) {
@@ -302,7 +330,10 @@ const ScanHUAndGetQtyComponent = ({
       lotNo,
       productNo,
       isCloseTarget,
-      isDone,
+      // scan once: the picker stays on the line until its open quantity is booked
+      isDone: isScanOnce
+        ? isLineDoneAfterBooking({ qtyBooked: qtyEnteredAndValidated, qtyOpen: resolvedBarcodeData.qtyMax })
+        : isDone,
     };
 
     // GRAI Flow-Through: when GRAI scanning is required, do not report the pick yet — auto-invoke the
@@ -318,7 +349,13 @@ const ScanHUAndGetQtyComponent = ({
       return undefined;
     }
 
-    return onResult(result);
+    const resultPromise = onResult(result);
+    return isScanOnce && resultPromise?.then
+      ? resultPromise.then((value) => {
+          setQuantityBlockKey((key) => key + 1);
+          return value;
+        })
+      : resultPromise;
   };
 
   // isProcessing suppresses the GRAI save button (and the scan target) while the pick's POST is in
@@ -397,11 +434,12 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_QTY: {
       return (
         <GetQuantityDialog
+          key={`${quantityBlockKey}_${suggestedQty ?? ''}`}
           userInfo={resolvedBarcodeData.userInfo}
           qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
-          qtyInitial={resolvedBarcodeData.qtyInitial}
+          qtyInitial={isScanOnce ? suggestedQty : resolvedBarcodeData.qtyInitial}
           packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
@@ -422,6 +460,15 @@ const ScanHUAndGetQtyComponent = ({
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           nextBoxActions={nextBoxActions}
+          labelRescan={
+            isScanOnce ? (
+              <BarcodeScannerComponent
+                testId="rescanCULabel-input"
+                resolveScannedBarcode={handleResolveHUScannedBarcode}
+                onResolvedResult={onCULabelRescanned}
+              />
+            ) : undefined
+          }
           //
           getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}
@@ -505,6 +552,13 @@ ScanHUAndGetQtyComponent.propTypes = {
   packingTuPIId: PropTypes.number,
   isShowCloseTargetButton: PropTypes.bool,
   nextBoxActions: PropTypes.node,
+  // scan once: the count offered for the next box, and the label of the last booking of this line (re-entry)
+  suggestedQty: PropTypes.number,
+  rememberedCULabel: PropTypes.shape({
+    cuLabel: PropTypes.string,
+    lotNo: PropTypes.string,
+    bestBeforeDate: PropTypes.string,
+  }),
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
