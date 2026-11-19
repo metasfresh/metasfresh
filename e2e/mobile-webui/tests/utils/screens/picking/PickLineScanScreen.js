@@ -51,6 +51,12 @@ export const PickLineScanScreen = {
         await expect(containerElement()).toHaveAttribute('data-cu-qty-entry-mode', expected);
     }),
 
+    /** Asserts that the "Weitere Kiste" / "Next box" button is not shown (Manual lines never show it). */
+    expectNextBoxButtonHidden: async () => await step(`${NAME} - Expect Next box button hidden`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await expect(nextBoxButton()).toHaveCount(0);
+    }),
+
     /** Scans one raw CU label on the pick-line scan screen. */
     scanCULabel: async (label) => await step(`${NAME} - Scan CU label`, async () => {
         await PickLineScanScreen.waitForScreen();
