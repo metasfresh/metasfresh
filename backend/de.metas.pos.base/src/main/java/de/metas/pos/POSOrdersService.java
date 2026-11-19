@@ -705,11 +705,16 @@ public class POSOrdersService
 
 	/**
 	 * @return the card payments whose SumUp transaction is to be imported by the background sweep, case (a), oldest first:
-	 * their result is unknown and they name a SumUp transaction metasfresh does not have (see {@link #importCardPaymentSumUpTransaction})
+	 * their result is unknown and they name a SumUp transaction metasfresh does not have (see {@link #importCardPaymentSumUpTransaction}),
+	 * and their checkout started at most {@link SumUpService#BACKGROUND_LOOKUP_MAX_AGE} ago (by {@link SystemTime}) or their
+	 * SumUp lookups are failing (an outage, see {@link #recordCardLookupOutcome}). Any other older payment keeps its state and
+	 * is no longer looked up in the background, whether SumUp answered its last lookup (it does not know the transaction) or it
+	 * was not looked up after its first 24 h at all (e.g. the server was down): the payment records no time of its last
+	 * answered lookup. The till's check still asks SumUp.
 	 */
-	public ImmutableList<POSOrderAndPaymentId> getCardPaymentIdsToImport()
+	public ImmutableList<POSCardPaymentToImport> getCardPaymentsToImport()
 	{
-		try (final Stream<POSOrderAndPaymentId> stream = ordersRepository.streamCardPaymentsToImport())
+		try (final Stream<POSCardPaymentToImport> stream = ordersRepository.streamCardPaymentsToImport(SystemTime.asInstant().minus(SumUpService.BACKGROUND_LOOKUP_MAX_AGE)))
 		{
 			return stream.collect(ImmutableList.toImmutableList());
 		}

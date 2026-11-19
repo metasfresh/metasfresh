@@ -8,23 +8,34 @@ import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpEventsDispatcher;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpPollSchedule;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
+import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,6 +49,12 @@ class SumUpTransactionRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		repository = new SumUpTransactionRepository(Mockito.mock(SumUpEventsDispatcher.class));
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	private static SumUpTransaction newTrx(final SumUpPOSRef posRef)
@@ -104,36 +121,213 @@ class SumUpTransactionRepositoryTest
 		assertThat(result).extracting(SumUpTransaction::getExternalId).containsExactly(trx1.getExternalId());
 	}
 
+	/**
+	 * Saves a PENDING transaction that metasfresh created at {@code 2026-11-16T10:00:00Z}, with the given last lookup.
+	 *
+	 * @param posPaymentId identifies the transaction in the assertions
+	 * @param lastSync     the last lookup, null if it was never looked up
+	 * @param json         SumUp's stored answer, null if SumUp never reported the transaction
+	 */
+	private SumUpTransaction newPendingTrxCreatedAt10(final int posPaymentId, @Nullable final LastSync lastSync, @Nullable final String json)
+	{
+		SystemTime.setFixedTimeSource("2026-11-16T10:00:00Z");
+		final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(posPaymentId).build());
+		repository.saveNew(trx);
+		final SumUpTransaction withLastSync = trx.toBuilder().lastSync(lastSync).json(json).build();
+		repository.save(withLastSync);
+		return withLastSync;
+	}
+
+	private static LastSync lastSync(final LastSyncStatus status, final String timestamp)
+	{
+		return LastSync.builder().status(status).timestamp(Instant.parse(timestamp)).build();
+	}
+
+	private List<Integer> listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()
+	{
+		return repository.list(SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.excludeNotFoundConfirmedAtAge(Duration.ofHours(24))
+						.build())
+				.stream()
+				.map(trx -> Objects.requireNonNull(trx.getPosRef()).getPosPaymentId())
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * The SQL side of the 24 h stop filter: the in-memory database of the other tests runs only its Java side. The SQL was
+	 * checked against PostgreSQL on rows matching {@code query_excludeNotFoundConfirmedAtAge_*}.
+	 */
+	@Test
+	void excludeNotFoundConfirmedAtAgeFilter_sql()
+	{
+		final ICompositeQueryFilter<I_SUMUP_Transaction> filter = repository.createExcludeNotFoundConfirmedAtAgeFilter(Duration.ofHours(24));
+
+		// kept: SumUp reported it, or the last lookup was not SumUp's "not found", or none, or it came before the 24 h mark
+		assertThat(filter.getSqlFiltersWhereClause()).isEqualTo("(JsonResponse IS NOT NULL)"
+				+ " OR ((SUMUP_LastSync_Status <> ? OR SUMUP_LastSync_Status IS NULL))"
+				+ " OR (SUMUP_LastSync_Timestamp IS NULL)"
+				+ " OR ((Created + INTERVAL '86400 seconds') > SUMUP_LastSync_Timestamp)");
+		assertThat(filter.getSqlFiltersParams(null)).containsExactly("OK");
+	}
+
+	/**
+	 * Created at 10:00 on the 16th, so the 24 h mark is 10:00 on the 17th. Left out is only a transaction that SumUp never
+	 * reported and whose last lookup succeeded (SumUp's "not found") at or after the 24 h mark.
+	 */
+	@Test
+	void query_excludeNotFoundConfirmedAtAge_leavesOutOnlyThoseSumUpConfirmedNotFoundAtOrAfterThatAge()
+	{
+		newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), null); // not found, 25 h after creation
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.Error, "2026-11-17T11:00:00Z"), null); // lookup failed after 24 h
+		newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // not found only before the 24 h mark
+		newPendingTrxCreatedAt10(4, null, null); // never looked up (e.g. the server was down)
+		newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-17T11:00:00Z"), "{\"status\":\"PENDING\"}"); // SumUp knows it, still PENDING
+		newPendingTrxCreatedAt10(6, lastSync(LastSyncStatus.OK, "2026-11-16T10:30:00Z"), null); // young: not found 30 min after creation
+
+		assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2, 3, 4, 5, 6);
+	}
+
+	/**
+	 * A "not found" exactly 24 h after creation is final; one second before it is not.
+	 */
+	@Test
+	void query_excludeNotFoundConfirmedAtAge_boundary()
+	{
+		newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-17T10:00:00Z"), null); // exactly at 24 h
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-17T09:59:59Z"), null); // 1 s before
+
+		assertThat(listPaymentIdsOfPendingNotConfirmedNotFoundAt24h()).containsExactly(2);
+	}
+
+	/**
+	 * The poller's query is limited (default 1000) and keeps transactions whose lookups keep failing, whatever their age: the
+	 * newest transactions come first, so a new payment is always polled even if more old ones than the limit are waiting.
+	 */
+	/**
+	 * Created at 10:00 on the 16th; see {@link de.metas.payment.sumup.SumUpPollSchedule}.
+	 */
+	@Test
+	void query_pollDueAt_onlyTheTransactionsDueByThePollSchedule()
+	{
+		newPendingTrxCreatedAt10(1, null, null); // never looked up
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:00Z"), null); // 1 min ago, 30 min old
+		newPendingTrxCreatedAt10(3, lastSync(LastSyncStatus.OK, "2026-11-16T10:29:01Z"), null); // 59 s ago, 30 min old
+		newPendingTrxCreatedAt10(4, lastSync(LastSyncStatus.Error, "2026-11-16T10:29:30Z"), null); // 30 s ago, failed
+		newPendingTrxCreatedAt10(5, lastSync(LastSyncStatus.OK, "2026-11-16T11:00:00Z"), null); // for the slow phase
+
+		// 30 min old: once a minute
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:30:00Z")).containsExactly(1, 2);
+		// over 1 h old: once every 15 min
+		assertThat(listPaymentIdsDueAt("2026-11-16T11:14:59Z")).containsExactly(1, 2, 3, 4);
+		assertThat(listPaymentIdsDueAt("2026-11-16T11:15:00Z")).containsExactly(1, 2, 3, 4, 5);
+	}
+
+	/**
+	 * The phase boundaries by age: under 5 min every cycle; from 5 min once a minute; from 1 h once every 15 min. Each row is
+	 * saved before the times it is queried at, with its last lookup before them.
+	 */
+	@Test
+	void query_pollDueAt_phaseBoundaries()
+	{
+		newPendingTrxCreatedAt10(1, lastSync(LastSyncStatus.OK, "2026-11-16T10:04:58Z"), null);
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:04:59Z")).containsExactly(1); // age 4:59: every cycle
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:05:00Z")).isEmpty(); // age 5:00, 2 s after the last lookup
+
+		newPendingTrxCreatedAt10(2, lastSync(LastSyncStatus.OK, "2026-11-16T10:58:59Z"), null);
+		assertThat(listPaymentIdsDueAt("2026-11-16T10:59:59Z")).containsExactly(1, 2); // age 59:59, 60 s after #2's lookup
+		assertThat(listPaymentIdsDueAt("2026-11-16T11:00:00Z")).containsExactly(1); // age 1 h: #2 looked up 61 s ago
+	}
+
+	/**
+	 * The poller's query and {@link SumUpPollSchedule#isDue} (which the POS card sale sweep uses) are one schedule: for each
+	 * age and time since the last lookup, the query lists the transaction exactly when {@code isDue} says it is due. So the
+	 * two cannot drift apart.
+	 *
+	 * The cases ("age seconds:seconds since the last lookup", -1 = never looked up) run by ascending age, so that every row's
+	 * last lookup lies before every later query time.
+	 */
+	@Test
+	void query_pollDueAt_agreesWithSumUpPollSchedule()
+	{
+		final String cases = "2:1 299:1 299:-1 300:1 300:59 300:60 300:-1 1800:59 1800:60 3599:59 3599:60 3600:60 3600:899 3600:900 86400:899 86400:900 86400:-1";
+		final Instant created = Instant.parse("2026-11-16T10:00:00Z");
+		int paymentId = 0;
+		for (final String c : cases.split(" "))
+		{
+			final long ageSeconds = Long.parseLong(c.split(":")[0]);
+			final long sinceLastLookupSeconds = Long.parseLong(c.split(":")[1]);
+			final Instant now = created.plusSeconds(ageSeconds);
+			final Instant lastLookupAt = sinceLastLookupSeconds < 0 ? null : now.minusSeconds(sinceLastLookupSeconds);
+
+			paymentId++;
+			newPendingTrxCreatedAt10(paymentId, lastLookupAt != null ? LastSync.builder().status(LastSyncStatus.OK).timestamp(lastLookupAt).build() : null, null);
+
+			assertThat(listPaymentIdsDueAt(now.toString()).contains(paymentId))
+					.as("case %s", c)
+					.isEqualTo(SumUpPollSchedule.isDue(created, lastLookupAt, now));
+		}
+	}
+
+	private List<Integer> listPaymentIdsDueAt(final String now)
+	{
+		return repository.list(SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.pollDueAt(Instant.parse(now))
+						.build())
+				.stream()
+				.map(trx -> Objects.requireNonNull(trx.getPosRef()).getPosPaymentId())
+				.collect(Collectors.toList());
+	}
+
+	@Test
+	void bulkUpdateByQuery_overTheLimit_updatesTheNewestTransactions()
+	{
+		final SumUpTransaction oldest = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(1).build());
+		final SumUpTransaction older = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(2).build());
+		final SumUpTransaction newest = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(3).build());
+		repository.saveNew(oldest);
+		repository.saveNew(older);
+		repository.saveNew(newest);
+
+		final List<Integer> updatedPaymentIds = new ArrayList<>();
+		repository.bulkUpdateByQuery(
+				SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.PENDING)
+						.limit(QueryLimit.ofInt(2))
+						.build(),
+				false,
+				trx -> {
+					updatedPaymentIds.add(Objects.requireNonNull(trx.getPosRef()).getPosPaymentId());
+					return trx;
+				});
+
+		assertThat(updatedPaymentIds).containsExactly(3, 2);
+	}
+
 	@Test
 	void recordedAt_whenMetasfreshFirstSavedTheTransaction_alsoOnTheTransactionsOfItsEvents()
 	{
 		final SumUpEventsDispatcher eventsDispatcher = Mockito.mock(SumUpEventsDispatcher.class);
 		final SumUpTransactionRepository repository = new SumUpTransactionRepository(eventsDispatcher);
-		try
-		{
-			SystemTime.setFixedTimeSource("2026-11-10T10:00:00Z");
-			final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
-			repository.saveNew(trx);
+		SystemTime.setFixedTimeSource("2026-11-10T10:00:00Z");
+		final SumUpTransaction trx = newTrx(SumUpPOSRef.builder().posOrderId(5).posPaymentId(6).build());
+		repository.saveNew(trx);
 
-			// a later status change, e.g. SumUp's approval, does not change when metasfresh first saved it
-			SystemTime.setFixedTimeSource("2026-11-10T10:05:00Z");
-			repository.save(trx.toBuilder().status(SumUpTransactionStatus.SUCCESSFUL).build());
+		// a later status change, e.g. SumUp's approval, does not change when metasfresh first saved it
+		SystemTime.setFixedTimeSource("2026-11-10T10:05:00Z");
+		repository.save(trx.toBuilder().status(SumUpTransactionStatus.SUCCESSFUL).build());
 
-			final Instant recordedAt = Instant.parse("2026-11-10T10:00:00Z");
-			assertThat(repository.getById(trx.getExternalId()).getRecordedAt()).isEqualTo(recordedAt);
+		final Instant recordedAt = Instant.parse("2026-11-10T10:00:00Z");
+		assertThat(repository.getById(trx.getExternalId()).getRecordedAt()).isEqualTo(recordedAt);
 
-			final ArgumentCaptor<SumUpTransaction> newTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
-			Mockito.verify(eventsDispatcher).fireNewTransaction(newTrx.capture());
-			assertThat(newTrx.getValue().getRecordedAt()).as("transaction of the creation event").isEqualTo(recordedAt);
+		final ArgumentCaptor<SumUpTransaction> newTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
+		Mockito.verify(eventsDispatcher).fireNewTransaction(newTrx.capture());
+		assertThat(newTrx.getValue().getRecordedAt()).as("transaction of the creation event").isEqualTo(recordedAt);
 
-			final ArgumentCaptor<SumUpTransaction> changedTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
-			Mockito.verify(eventsDispatcher).fireStatusChangedIfNeeded(changedTrx.capture(), Mockito.any());
-			assertThat(changedTrx.getValue().getRecordedAt()).as("transaction of the status event").isEqualTo(recordedAt);
-		}
-		finally
-		{
-			SystemTime.resetTimeSource();
-		}
+		final ArgumentCaptor<SumUpTransaction> changedTrx = ArgumentCaptor.forClass(SumUpTransaction.class);
+		Mockito.verify(eventsDispatcher).fireStatusChangedIfNeeded(changedTrx.capture(), Mockito.any());
+		assertThat(changedTrx.getValue().getRecordedAt()).as("transaction of the status event").isEqualTo(recordedAt);
 	}
 
 	@Test
