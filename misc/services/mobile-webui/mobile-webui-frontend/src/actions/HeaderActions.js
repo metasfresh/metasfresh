@@ -9,10 +9,21 @@ export function pushHeaderEntry({
   isHomeStop,
   homeIconClassName,
   backLocation,
+  rootDataAttributes,
 }) {
   return {
     type: HEADER_PUSH_ENTRY,
-    payload: { location, screenId, caption, values, userInstructions, isHomeStop, homeIconClassName, backLocation },
+    payload: {
+      location,
+      screenId,
+      caption,
+      values,
+      userInstructions,
+      isHomeStop,
+      homeIconClassName,
+      backLocation,
+      rootDataAttributes,
+    },
   };
 }
 
@@ -24,9 +35,19 @@ export function updateHeaderEntry({
   isHomeStop,
   homeIconClassName,
   backLocation,
+  rootDataAttributes,
 }) {
   return {
     type: HEADER_UPDATE_ENTRY,
-    payload: { location, caption, values, userInstructions, isHomeStop, homeIconClassName, backLocation },
+    payload: {
+      location,
+      caption,
+      values,
+      userInstructions,
+      isHomeStop,
+      homeIconClassName,
+      backLocation,
+      rootDataAttributes,
+    },
   };
 }

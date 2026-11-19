@@ -52,7 +52,7 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
 import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
-import { selectCULabelFormat } from '../../../constants/CUQtyEntryMode';
+import { selectCULabelFormat } from '../../../utils/cuLabel';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
 export const NEXT_PickingJob = 'pickingJob';
@@ -125,7 +125,14 @@ const PickLineScanScreen = () => {
   });
   const isInlineGraiCaptureEnabled = graiScanEnabled && tuPickingTarget == null;
 
-  useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
+  useHeaderUpdate({
+    url,
+    caption,
+    uom,
+    qtyToPick,
+    qtyPicked,
+    rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode },
+  });
 
   const resolveScannedBarcode = useCallback(
     (scannedBarcode) =>
@@ -230,7 +237,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     readAttributes: getReadAttributesFromActivity({ activity }),
     cuQtyEntryMode: line?.cuQtyEntryMode,
     cuLabelFormatId: line?.cuLabelFormatId,
-    packingTuPIId: line?.packingTuPIId, // JSON number or null/absent; never string-compared
+    packingTuPIId: line?.packingTuPIId, // null when the line's packing names no TU
   };
 };
 

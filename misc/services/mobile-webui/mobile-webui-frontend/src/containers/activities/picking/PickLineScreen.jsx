@@ -235,6 +235,7 @@ export const useHeaderUpdate = ({
   qtyToPick,
   qtyPicked,
   additionalHeaderProperties,
+  rootDataAttributes,
 }) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -268,9 +269,10 @@ export const useHeaderUpdate = ({
           },
           ...(additionalHeaderProperties?.entries || []),
         ],
+        rootDataAttributes,
       })
     );
-  }, [url, caption]);
+  }, [url, caption, JSON.stringify(rootDataAttributes ?? null)]);
 };
 
 export default PickLineScreen;
