@@ -1,6 +1,7 @@
 package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.error.IErrorManager;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
@@ -8,13 +9,18 @@ import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -162,8 +168,7 @@ class ScannableCodeFormatRepositoryTest
 				.isInstanceOf(AdempiereException.class);
 	}
 
-	@Test
-	void loadAll_skipsAnInvalidFormat_andKeepsTheValidOne()
+	private void createValidAndBrokenFormat()
 	{
 		// valid format (all ends filled) created through the normal path
 		repository.create(ScannableCodeFormatCreateRequest.builder()
@@ -187,10 +192,43 @@ class ScannableCodeFormatRepositoryTest
 		brokenPart.setEndNo(2);
 		brokenPart.setDataType(ScannableCodeFormatPartType.LotNo.getCode());
 		InterfaceWrapperHelper.saveRecord(brokenPart);
+	}
+
+	@Test
+	void loadAll_skipsAnInvalidFormat_andKeepsTheValidOne()
+	{
+		createValidAndBrokenFormat();
 
 		final ScannableCodeFormatsCollection all = repository.getAll();
 
 		assertThat(all.parse(ScannedCode.ofString(label("7654321"))).orElseThrow().getLotNo()).isEqualTo("7654321");
 		assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
+
+		// the broken format must be recorded as AD_Issue, a log line alone is not enough
+		assertThat(POJOLookupMap.get().getRecords(I_AD_Issue.class))
+				.hasSize(1)
+				.allSatisfy(issue -> assertThat(issue.getIssueSummary()).contains("broken format"));
+	}
+
+	@Nested
+	class WhenRecordingTheAdIssueFails
+	{
+		@BeforeEach
+		void beforeEach()
+		{
+			final IErrorManager failingErrorManager = Mockito.mock(IErrorManager.class);
+			Mockito.doThrow(new RuntimeException("cannot create AD_Issue")).when(failingErrorManager).createIssue(ArgumentMatchers.any(Throwable.class));
+			repository = new ScannableCodeFormatRepository(failingErrorManager);
+		}
+
+		@Test
+		void loadAll_keepsTheValidFormat()
+		{
+			createValidAndBrokenFormat();
+
+			final ScannableCodeFormatsCollection all = repository.getAll();
+
+			assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
+		}
 	}
 }

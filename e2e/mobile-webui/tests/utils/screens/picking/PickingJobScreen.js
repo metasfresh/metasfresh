@@ -27,7 +27,63 @@ const COMPLETE_CONFIRM_ATTEMPTS = 2;
 const ACTIVITY_ID_ScanPickFromHU = 'scanPickFromHU'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickFromHU
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
 
+const PICKING_XHR = /\/picking\//;
+
+let pickEvents = [];
+let pickEventsListener = null;
+
+const stopCollectingPickEvents = () => {
+    if (pickEventsListener) {
+        page.off('request', pickEventsListener);
+        pickEventsListener = null;
+    }
+};
+
 export const PickingJobScreen = {
+    /**
+     * Records every PICK event the app posts from now on (api/picking.js postStepPicked -> POST .../picking/event), replacing any earlier recording.
+     */
+    startCollectingPickEvents: () => {
+        stopCollectingPickEvents();
+        const events = [];
+        pickEvents = events;
+        pickEventsListener = (request) => {
+            if (request.method() === 'POST' && request.url().includes('/picking/event')) {
+                const body = request.postDataJSON();
+                if (body?.type === 'PICK') {
+                    events.push(body);
+                }
+            }
+        };
+        page.on('request', pickEventsListener);
+    },
+
+    /** Waits for the pick POST(s) of one scan and checks every one carries the scanned code as huQRCode. */
+    expectPickPostedWithHUQRCode: async ({ huQRCode, expectedCount = 1 }) => await step(`${NAME} - Expect ${expectedCount} PICK event(s) with huQRCode ${huQRCode}`, async () => {
+        try {
+            await expect.poll(() => pickEvents.length, { timeout: SLOW_ACTION_TIMEOUT }).toBe(expectedCount);
+            // Reaching the count is not enough: a late extra PICK (e.g. from a re-mounted screen) would come after.
+            // Wait until every picking XHR has been handled by the app and the page has painted, then re-check.
+            await waitForNoInFlightXhr(page, { urlPattern: PICKING_XHR, timeout: SLOW_ACTION_TIMEOUT });
+            expect(pickEvents).toHaveLength(expectedCount);
+            for (const pickEvent of pickEvents) {
+                expect(pickEvent).toMatchObject({ type: 'PICK', huQRCode });
+            }
+        } finally {
+            stopCollectingPickEvents();
+        }
+    }),
+
+    /** Waits until no picking XHR is in flight, then checks that no PICK was posted; stops the recording. */
+    expectNoPickPosted: async () => await step(`${NAME} - Expect no PICK event`, async () => {
+        try {
+            await waitForNoInFlightXhr(page, { urlPattern: PICKING_XHR, timeout: SLOW_ACTION_TIMEOUT });
+            expect(pickEvents).toHaveLength(0);
+        } finally {
+            stopCollectingPickEvents();
+        }
+    }),
+
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });

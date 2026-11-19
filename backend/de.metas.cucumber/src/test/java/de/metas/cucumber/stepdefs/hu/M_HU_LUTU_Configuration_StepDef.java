@@ -111,6 +111,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_HU_PI_Item_StepDefData huPiItemTable;
 
 	/**
 	 * Receives a {@code PP_Order} output into planning HUs, packed per the LU/TU configuration built from
@@ -370,6 +371,14 @@ public class M_HU_LUTU_Configuration_StepDef
 			assertThat(lutuConfig.getQtyLU()).isEqualTo(qtyLU);
 			assertThat(lutuConfig.getQtyTU()).isEqualTo(qtyTU);
 			assertThat(lutuConfig.getQtyCUsPerTU()).isEqualTo(qtyCUsPerTU);
+
+			final String luPIItemIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_HU_LUTU_Configuration.COLUMNNAME_M_LU_HU_PI_Item_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (luPIItemIdentifier != null)
+			{
+				assertThat(lutuConfig.getM_LU_HU_PI_Item_ID())
+						.as("M_LU_HU_PI_Item_ID of %s", lutuConfigIdentifier)
+						.isEqualTo(huPiItemTable.get(luPIItemIdentifier).getM_HU_PI_Item_ID());
+			}
 		}
 	}
 
@@ -390,6 +399,57 @@ public class M_HU_LUTU_Configuration_StepDef
 
 					generateHUsWithLUTUConfiguration(tableRow, huReceiptSchedule, lutuConfig);
 				});
+	}
+
+	/**
+	 * Receives HUs for a receipt schedule packed per its default LU/TU configuration, as the HU editor's
+	 * "Receive HUs" does: the configuration stored on the receipt schedule, else a new one derived from the
+	 * packing instructions, adjusted to the quantity still to be received.
+	 * <p>
+	 * Required columns: {@code M_ReceiptSchedule_ID} (identifier) and {@code M_HU_ID.Identifier}, one or several
+	 * comma-separated identifiers, bound positionally to the created top-level HUs in the order the producer returns them.
+	 * Optional: {@code IsSaveLUTUConfiguration} - stores the configuration on the receipt schedule (like the dialog's flag).
+	 * <pre>
+	 * And receive HUs for M_ReceiptSchedule with its default M_HU_LUTU_Configuration:
+	 *   | M_ReceiptSchedule_ID | M_HU_ID.Identifier | IsSaveLUTUConfiguration |
+	 *   | receiptSchedule_1    | lu_1,lu_2          | Y                       |
+	 * </pre>
+	 */
+	@And("receive HUs for M_ReceiptSchedule with its default M_HU_LUTU_Configuration:")
+	public void receive_HUs_for_receipt_schedule_with_default_M_HU_LUTU_Configuration(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(tableRow -> {
+			final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule = getReceiptSchedule(tableRow.getAsIdentifier(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID));
+			final boolean saveConfiguration = tableRow.getAsOptionalBoolean("IsSaveLUTUConfiguration").orElseFalse();
+
+			final I_M_HU_LUTU_Configuration storedOrNew = huReceiptScheduleBL
+					.createLUTUConfigurationManager(huReceiptSchedule)
+					.getCreateLUTUConfiguration();
+			final I_M_HU_LUTU_Configuration lutuConfig = InterfaceWrapperHelper.copy()
+					.setFrom(storedOrNew)
+					.copyToNew(I_M_HU_LUTU_Configuration.class);
+			huReceiptScheduleBL.adjustLUTUConfiguration(lutuConfig, huReceiptSchedule);
+			lutuConfig.setIsInfiniteQtyLU(false); // as the "Receive HUs" processes do: the adjusted QtyLU is the number of LUs to build
+			lutuConfigurationFactory.save(lutuConfig);
+
+			final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContext();
+			final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial)
+					.addM_ReceiptSchedule(huReceiptSchedule)
+					.setUpdateReceiptScheduleDefaultConfiguration(saveConfiguration);
+			huGenerator.setM_HU_LUTU_Configuration(lutuConfig);
+			huGenerator.setQtyToAllocateTarget(huGenerator.getLUTUProducerAllocationDestination().calculateTotalQtyCU());
+
+			final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
+
+			final List<StepDefDataIdentifier> huIdentifiers = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).toCommaSeparatedList();
+			assertThat(hus)
+					.as("received HUs must match the number of identifiers given in M_HU_ID.Identifier")
+					.hasSize(huIdentifiers.size());
+			for (int i = 0; i < huIdentifiers.size(); i++)
+			{
+				huTable.putOrReplace(huIdentifiers.get(i), hus.get(i));
+			}
+		});
 	}
 
 	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs")
