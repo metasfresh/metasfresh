@@ -65,4 +65,21 @@ describe('PickLineScanScreen useOnClose: where a closed line leaves to (decided 
       })
     );
   });
+
+  it('a scan-each line done keeps today: the sysconfig decides (N = back to the line screen)', () => {
+    renderOnClose({ cuQtyEntryMode: 'SCAN_EACH_CU', isLineDone: true })();
+    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
+    expect(mockHistory.replace).not.toHaveBeenCalled();
+  });
+
+  it('a manual line keeps today: the sysconfig decides (N = back to the line screen)', () => {
+    renderOnClose({ cuQtyEntryMode: 'MANUAL', isLineDone: true })();
+    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
+    expect(mockHistory.replace).not.toHaveBeenCalled();
+  });
+
+  it('closing early (not done) on a scan-once line keeps today: the sysconfig decides', () => {
+    renderOnClose({ cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' })();
+    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
+  });
 });
