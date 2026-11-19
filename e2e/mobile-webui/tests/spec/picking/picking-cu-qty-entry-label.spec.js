@@ -1,15 +1,12 @@
 import { test } from "../../../playwright.config";
-import { expect } from "@playwright/test";
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
-import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { expectErrorToast, page as appPage } from "../../utils/common";
 import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductValue } from "../../utils/cuLabel";
 
 /**
@@ -52,7 +49,7 @@ const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
             warehouses: { "wh": {} },
             pickingSlots: { slot1: {} },
             products: {
-                // product values of 7 characters, as the real label (REQUIREMENTS § 5 "Real data shape")
+                // product values of 7 characters, as on the real pack label
                 "P1": { price: 1, randomValue: { size: 7, isIncludeDigits: true } },
                 "P2": { price: 1, randomValue: { size: 7, isIncludeDigits: true }, ...p2 },
             },
@@ -74,30 +71,36 @@ const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
     });
 };
 
-/** Starts the picking job of the single line, scans the slot and opens the line's scan screen (S5). */
+/**
+ * Starts the picking job of the single line, scans the source HU ("Kommissionieren aus") and the picking slot,
+ * and opens the line's scan screen (S5): with a source HU known and nothing picked, the line tap goes there directly.
+ */
 const openLineScanScreen = async (masterdata) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: LINE_QTY });
+    await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-    await reopenLineScanScreen();
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickLineScanScreen.waitForScreen();
     return { pickingJobId };
 };
 
-const reopenLineScanScreen = async () => {
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickScanButton();
-    await PickLineScanScreen.waitForScreen();
-};
-
-/** Scan once: label scan, quantity block, OK; the app goes back to the job screen. */
-const scanAndBook = async ({ label, qty }) => {
-    await PickLineScanScreen.scanCULabel(label);
-    await GetQuantityDialog.fillAndPressDone({ qtyEntered: qty });
-    await PickingJobScreen.waitForScreen();
+/**
+ * Scan once: label scan (scan step) or rescan (inside the open quantity block), type the count, OK.
+ * The picker stays on the line with the block open; `expectedQtyTarget` = open quantity after the booking.
+ */
+const bookWithLabel = async ({ label, qty, expectedQtyTarget, isRescan = false }) => {
+    if (isRescan) {
+        await PickLineScanScreen.rescanCULabel(label);
+    } else {
+        await PickLineScanScreen.scanCULabel(label);
+    }
+    await GetQuantityDialog.waitForDialog();
+    await GetQuantityDialog.typeQtyEntered(qty);
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget });
 };
 
 const allureMeta = (story) => {
@@ -122,15 +125,12 @@ test('TC3 (buyer A): Scan once reads the label with the profile format without P
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
     await PickLineScanScreen.openBox();
 
-    await test.step('A, L(1): label with counter is booked, the counter is not stored', async () => {
-        await scanAndBook({ label: buildCULabel({ gtin, productValue, lot, packId: 1 }), qty: 1 });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${LINE_QTY} Stk`, qtyPicked: '1 Stk' });
+    await test.step('A, L(1): label with counter is booked', async () => {
+        await bookWithLabel({ label: buildCULabel({ gtin, productValue, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1 });
     });
 
     await test.step('A, L0: label without counter is booked too (the format has no PackId part)', async () => {
-        await reopenLineScanScreen();
-        await scanAndBook({ label: buildCULabel({ gtin, productValue, lot }), qty: 1 });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${LINE_QTY} Stk`, qtyPicked: '2 Stk' });
+        await bookWithLabel({ label: buildCULabel({ gtin, productValue, lot }), qty: 1, expectedQtyTarget: LINE_QTY - 2, isRescan: true });
     });
 
     await Backend.expect({
@@ -145,6 +145,11 @@ test('TC3 (buyer A): Scan once reads the label with the profile format without P
                     },
                 }
             }
+        },
+        hus: {
+            // the counter of L(1) is not stored: Scan once ignores the pack ID (the HU has no `PackId` attribute value)
+            vhu1: { attributes: { 'Lot-Nummer': lot, 'PackId': null } },
+            vhu2: { attributes: { 'Lot-Nummer': lot, 'PackId': null } },
         },
     });
 });
@@ -161,10 +166,10 @@ test('TC3b (i): no effective format on the line, another active format that read
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
     await PickLineScanScreen.openBox();
-    await expectRefusedNoDialog({ label, expectedText: MSG_NO_FORMAT, title: 'no effective format' });
+    await PickLineScanScreen.scanCULabelRefused(label, MSG_NO_FORMAT);
 
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: {} } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } },
     });
 });
 
@@ -179,10 +184,10 @@ test('TC3b (ii): label with a "]d2" prefix is refused by the linked format', asy
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
     await PickLineScanScreen.openBox();
-    await expectRefusedNoDialog({ label, expectedText: MSG_FORMAT_MISMATCH, title: 'prefixed label' });
+    await PickLineScanScreen.scanCULabelRefused(label, MSG_FORMAT_MISMATCH);
 
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: {} } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } },
     });
 });
 
@@ -200,17 +205,15 @@ test('TC4: label of the line product opens the quantity block, books lot and bes
     await PickLineScanScreen.openBox();
 
     await test.step('Label of the line product: quantity block opens, book 5', async () => {
-        await scanAndBook({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore: BEST_BEFORE, packId: 1 }), qty: 5 });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${LINE_QTY} Stk`, qtyPicked: '5 Stk' });
+        await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore: BEST_BEFORE, packId: 1 }), qty: 5, expectedQtyTarget: LINE_QTY - 5 });
     });
 
-    await test.step('Label of another product: refused with the app message, nothing booked', async () => {
-        await reopenLineScanScreen();
-        await expectRefusedNoDialog({
-            label: buildCULabel({ gtin, productValue: masterdata.products.P2.productCode, lot, bestBefore: BEST_BEFORE, packId: 2 }),
-            expectedText: MSG_DIFFERENT_PRODUCT,
-            title: 'other product',
-        });
+    await test.step('Label of another product: refused with the app message, the block stays, nothing more is booked', async () => {
+        await PickLineScanScreen.rescanCULabelRefused(
+            buildCULabel({ gtin, productValue: masterdata.products.P2.productCode, lot, bestBefore: BEST_BEFORE, packId: 2 }),
+            MSG_DIFFERENT_PRODUCT
+        );
+        await GetQuantityDialog.expectQtyTarget(LINE_QTY - 5);
     });
 
     await Backend.expect({
@@ -244,17 +247,15 @@ test('TC4b: product match uses the label product part against M_Product.Value, t
     await PickLineScanScreen.openBox();
 
     await test.step('(1) product part = P1 value, GTIN of P2: accepted', async () => {
-        await scanAndBook({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 }), qty: 1 });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${LINE_QTY} Stk`, qtyPicked: '1 Stk' });
+        await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1 });
     });
 
-    await test.step('(2) product part = P2 value: refused, nothing booked', async () => {
-        await reopenLineScanScreen();
-        await expectRefusedNoDialog({
-            label: buildCULabel({ gtin, productValue: masterdata.products.P2.productCode, lot, packId: 2 }),
-            expectedText: MSG_DIFFERENT_PRODUCT,
-            title: 'product part of P2',
-        });
+    await test.step('(2) product part = P2 value: refused, the block stays, nothing more is booked', async () => {
+        await PickLineScanScreen.rescanCULabelRefused(
+            buildCULabel({ gtin, productValue: masterdata.products.P2.productCode, lot, packId: 2 }),
+            MSG_DIFFERENT_PRODUCT
+        );
+        await GetQuantityDialog.expectQtyTarget(LINE_QTY - 1);
     });
 
     await Backend.expect({
@@ -269,17 +270,3 @@ test('TC4b: product match uses the label product part against M_Product.Value, t
         },
     });
 });
-
-/** Scans a label that must be refused: an error toast with the text, the quantity block never opens. */
-const expectRefusedNoDialog = async ({ label, expectedText, title }) => {
-    await expectErrorToast(
-        title,
-        async () => {
-            await PickLineScanScreen.scanCULabel(label);
-            // a refused scan keeps the scan screen; the toast races this wait
-            await PickLineScanScreen.waitForScreen();
-        },
-        ({ textContent }) => expect(textContent).toContain(expectedText)
-    );
-    await expect(appPage.locator('.get-qty-dialog')).toHaveCount(0);
-};
