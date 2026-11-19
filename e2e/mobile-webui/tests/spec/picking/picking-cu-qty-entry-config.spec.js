@@ -8,13 +8,15 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
-import { LAUNCHERS_LIMIT_SYSCONFIGS } from "../../utils/cuQtyEntryScanOnce";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryScanOnce";
+
+restoreSysconfigsAfterEach(test);
 
 const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
 const MODE_SCAN_EACH = 'SCAN_EACH_CU';
 
 const createMasterdata = async ({ formatName, formatNameC }) => {
-    return await Backend.createMasterdata({
+    return await createMasterdataRememberingSysconfigs({
         language: "en_US",
         request: {
             sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list

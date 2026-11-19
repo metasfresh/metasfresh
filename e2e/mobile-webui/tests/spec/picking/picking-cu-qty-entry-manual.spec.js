@@ -9,7 +9,9 @@ import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLine
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
-import { LAUNCHERS_LIMIT_SYSCONFIGS } from "../../utils/cuQtyEntryScanOnce";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryScanOnce";
+
+restoreSysconfigsAfterEach(test);
 
 /**
  * Characterization of the Manual mode (AC2): these tests PASS before and after the CU quantity entry change.
@@ -18,7 +20,7 @@ import { LAUNCHERS_LIMIT_SYSCONFIGS } from "../../utils/cuQtyEntryScanOnce";
  * does not read labels with it is covered by TC1d (jest), not here: no label is scanned in these tests.
  */
 const createMasterdata = async ({ pickTo }) => {
-    return await Backend.createMasterdata({
+    return await createMasterdataRememberingSysconfigs({
         language: "en_US",
         request: {
             sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list

@@ -6,7 +6,9 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { LAUNCHERS_LIMIT_SYSCONFIGS } from '../../utils/cuQtyEntryScanOnce';
+import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from '../../utils/cuQtyEntryScanOnce';
+
+restoreSysconfigsAfterEach(test);
 
 /**
  * @param {boolean} [allowQuickPackAll] profile switch of the Quick Pack All button
@@ -27,7 +29,7 @@ const createMasterdata = async ({
         { product: 'P2', qty: 10 },
         { product: 'P3', qty: 10 },
     ];
-    return await Backend.createMasterdata({
+    return await createMasterdataRememberingSysconfigs({
         language: 'en_US',
         request: {
             sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list

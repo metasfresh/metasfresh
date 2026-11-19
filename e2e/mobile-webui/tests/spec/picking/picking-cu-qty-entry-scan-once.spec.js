@@ -3,7 +3,9 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, BEST_BEFORE, createMasterdata, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, newFormatName, openLine, scanLabel, SOURCE_QTY, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, newFormatName, openLine, scanLabel, SOURCE_QTY, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+
+restoreSysconfigsAfterEach(test);
 
 /**
  * CU quantity entry, Scan once ("one label, type a count"): count, source, box, over-pick, line done (TC5, TC5b, TC5c Scan once part,

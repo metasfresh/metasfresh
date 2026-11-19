@@ -7,7 +7,9 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductValue } from "../../utils/cuLabel";
-import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta } from "../../utils/cuQtyEntryScanOnce";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryScanOnce";
+
+restoreSysconfigsAfterEach(test);
 
 /**
  * CU quantity entry: reading of the pack label on the Scan once line (TC3 without pack-ID cases, TC3b, TC4, TC4b).
@@ -29,7 +31,7 @@ const MSG_DIFFERENT_PRODUCT = 'The scanned QR Product does not match';
  * @param {object} [p.p2] extra fields of product P2 (e.g. `gtin`)
  */
 const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
-    return await Backend.createMasterdata({
+    return await createMasterdataRememberingSysconfigs({
         language: "en_US",
         request: {
             sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list

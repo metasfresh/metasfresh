@@ -11,7 +11,9 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GRAIScreen } from "../../utils/screens/huManager/GRAIScreen";
-import { allureMeta, book, createMasterdata, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_BOX, newFormatName, openLine, qtyPickedRow, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, book, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_BOX, newFormatName, openLine, qtyPickedRow, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+
+restoreSysconfigsAfterEach(test);
 
 /**
  * CU quantity entry, Scan once: opening the next box (TC14, TC14b, TC15, TC16, TC17 Scan once part, TC18, TC19, TC23).

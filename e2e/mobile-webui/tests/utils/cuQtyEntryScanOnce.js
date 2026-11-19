@@ -29,6 +29,33 @@ export const MSG_NO_OPEN_BOX = "Please open a box first (scan a GRAI or 'Next bo
 // so the specs raise the display limit; this changes nothing the specs assert.
 export const LAUNCHERS_LIMIT_SYSCONFIGS = { 'WorkflowRestAPIService.LaunchersLimit': '1000' };
 
+// The sysconfigs a test overwrote: the previousSysconfigs of its masterdata calls (values before the call). Written
+// back after the test by restoreSysconfigsAfterEach, also when the test failed, so the raised limit does not leak into
+// later specs and runs on the shared DB (same pattern as barcode_scanner_modes.spec.js).
+let sysconfigsToRestore = new Map();
+
+/** Backend.createMasterdata that remembers the sysconfig values it overwrote. */
+export const createMasterdataRememberingSysconfigs = async (args) => {
+    const masterdata = await Backend.createMasterdata(args);
+    for (const [name, value] of Object.entries(masterdata.previousSysconfigs ?? {})) {
+        if (!sysconfigsToRestore.has(name)) {
+            sysconfigsToRestore.set(name, value); // the first call of the test holds the values before the test
+        }
+    }
+    return masterdata;
+};
+
+/** Call once at the top level of a spec file that creates masterdata through this module. */
+export const restoreSysconfigsAfterEach = (test) => {
+    test.afterEach(async () => {
+        const sysconfigs = Object.fromEntries(sysconfigsToRestore);
+        sysconfigsToRestore = new Map();
+        if (Object.keys(sysconfigs).length > 0) {
+            await Backend.setSysconfigs(sysconfigs);
+        }
+    });
+};
+
 export const newFormatName = () => `cuqe-so-${uniqueProductValue()}`;
 
 /**
@@ -69,7 +96,7 @@ export const createMasterdata = async ({
     const slots = {};
     orders.forEach((_, idx) => { slots[`slot${idx + 1}`] = {}; });
 
-    return await Backend.createMasterdata({
+    return await createMasterdataRememberingSysconfigs({
         language: "en_US",
         request: {
             sysconfigs: { ...LAUNCHERS_LIMIT_SYSCONFIGS, ...sysconfigs },
