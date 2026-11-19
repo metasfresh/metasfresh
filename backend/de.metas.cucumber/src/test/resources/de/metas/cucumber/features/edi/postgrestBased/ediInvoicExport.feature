@@ -165,7 +165,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "postgRESTExportProductValue",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ],
       "Sums": [
@@ -244,7 +247,10 @@ Feature: EDI INVOIC export via postgREST
           "Invoice_Line": 10,
           "Product_Name": "depositTypeProductName",
           "Product_Supplier_ProductNo": "depositTypeProductValue",
-          "Product_DepositType": "NRC"
+          "Product_DepositType": "NRC",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ]
     }
@@ -313,7 +319,10 @@ Feature: EDI INVOIC export via postgREST
           "Invoice_Line": 10,
           "Product_Name": "depositTypeRCProductName",
           "Product_Supplier_ProductNo": "depositTypeRCProductValue",
-          "Product_DepositType": "RC"
+          "Product_DepositType": "RC",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ]
     }
@@ -568,7 +577,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@productValue@",
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": "@shipmentDocNo@"
         }
       ],
       "Sums": [
@@ -674,14 +686,20 @@ Feature: EDI INVOIC export via postgREST
           "Invoice_Line": 10,
           "Product_Name": "normalProductName",
           "Product_Supplier_ProductNo": "normalProductValue",
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 20,
           "Product_Name": "normalProductName",
           "Product_Supplier_ProductNo": "normalProductValue",
           "NetAmt": 5.0,
-          "Packaging": { "IsPackagingMaterial": true }
+          "Packaging": { "IsPackagingMaterial": true },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         }
       ],
       "Partners": [
@@ -760,7 +778,10 @@ Feature: EDI INVOIC export via postgREST
           "Invoice_Line": 10,
           "Product_Name": "eanCuProductName",
           "Product_Supplier_ProductNo": "eanCuProductValue",
-          "Product_Buyer_CU_GTIN": "4055555000019"
+          "Product_Buyer_CU_GTIN": "4055555000019",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ]
     }
@@ -832,7 +853,10 @@ Feature: EDI INVOIC export via postgREST
           "Invoice_Line": 10,
           "Product_Name": "ean13ProductName",
           "Product_Supplier_ProductNo": "ean13ProductValue",
-          "Product_Buyer_CU_GTIN": "4055555000026"
+          "Product_Buyer_CU_GTIN": "4055555000026",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ]
     }
@@ -1015,7 +1039,10 @@ Feature: EDI INVOIC export via postgREST
           "Tax_Percent": 7.0,
           "Tax_Amount": 15.4,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 20,
@@ -1025,7 +1052,10 @@ Feature: EDI INVOIC export via postgREST
           "Tax_Percent": 7.0,
           "Tax_Amount": 11.55,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 30,
@@ -1046,7 +1076,10 @@ Feature: EDI INVOIC export via postgREST
           "PriceUOM": "PCE",
           "Product_Name": "@crateName_TC1c@",
           "Product_Supplier_ProductNo": "@crateValue_TC1c@",
-          "Packaging": { "IsPackagingMaterial": true }
+          "Packaging": { "IsPackagingMaterial": true },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 40,
@@ -1067,7 +1100,10 @@ Feature: EDI INVOIC export via postgREST
           "PriceUOM": "PCE",
           "Product_Name": "@crateName_TC1c@",
           "Product_Supplier_ProductNo": "@crateValue_TC1c@",
-          "Packaging": { "IsPackagingMaterial": true }
+          "Packaging": { "IsPackagingMaterial": true },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         }
       ],
       "Partners": [
@@ -1190,7 +1226,10 @@ Feature: EDI INVOIC export via postgREST
           "NetAmt": 550.0,
           "Tax_Amount": 38.5,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 20,
@@ -1211,7 +1250,10 @@ Feature: EDI INVOIC export via postgREST
           "PriceUOM": "PCE",
           "Product_Name": "@crateName_TC1d@",
           "Product_Supplier_ProductNo": "@crateValue_TC1d@",
-          "Packaging": { "IsPackagingMaterial": true }
+          "Packaging": { "IsPackagingMaterial": true },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 30,
@@ -1219,7 +1261,10 @@ Feature: EDI INVOIC export via postgREST
           "NetAmt": -16.5,
           "Tax_Amount": -1.16,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ],
       "Partners": [
@@ -1350,7 +1395,10 @@ Feature: EDI INVOIC export via postgREST
           "Tax_Percent": 7.0,
           "Tax_Amount": 15.4,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 20,
@@ -1360,7 +1408,10 @@ Feature: EDI INVOIC export via postgREST
           "Tax_Percent": 7.0,
           "Tax_Amount": 11.55,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 30,
@@ -1380,7 +1431,10 @@ Feature: EDI INVOIC export via postgREST
           "PriceUOM": "PCE",
           "Product_Name": "@crateName_TC1a@",
           "Product_Supplier_ProductNo": "@crateValue_TC1a@",
-          "Packaging": { "IsPackagingMaterial": true }
+          "Packaging": { "IsPackagingMaterial": true },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 40,
@@ -1400,7 +1454,10 @@ Feature: EDI INVOIC export via postgREST
           "PriceUOM": "PCE",
           "Product_Name": "@crateName_TC1a@",
           "Product_Supplier_ProductNo": "@crateValue_TC1a@",
-          "Packaging": { "IsPackagingMaterial": true }
+          "Packaging": { "IsPackagingMaterial": true },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         }
       ],
       "Partners": [
@@ -1522,7 +1579,10 @@ Feature: EDI INVOIC export via postgREST
           "NetAmt": 550.0,
           "Tax_Amount": 38.5,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 20,
@@ -1542,7 +1602,10 @@ Feature: EDI INVOIC export via postgREST
           "PriceUOM": "PCE",
           "Product_Name": "@crateName_TC1b@",
           "Product_Supplier_ProductNo": "@crateValue_TC1b@",
-          "Packaging": { "IsPackagingMaterial": true }
+          "Packaging": { "IsPackagingMaterial": true },
+          "QtyCUsPerTU": 1,
+          "QtyCUsPerTU_UOM": "PCE",
+          "Shipment_DocumentNo": null
         },
         {
           "Invoice_Line": 30,
@@ -1550,7 +1613,10 @@ Feature: EDI INVOIC export via postgREST
           "NetAmt": -16.5,
           "Tax_Amount": -1.16,
           "Product_DepositType": null,
-          "Packaging": null
+          "Packaging": null,
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ],
       "Partners": [
@@ -1699,7 +1765,10 @@ Feature: EDI INVOIC export via postgREST
           "Invoice_Line": 10,
           "Product_Name": "markerProductName",
           "Product_Supplier_ProductNo": "markerProductValue",
-          "Product_Description": "markerProductDescription"
+          "Product_Description": "markerProductDescription",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ]
     }
@@ -1773,7 +1842,10 @@ Feature: EDI INVOIC export via postgREST
         {
           "Invoice_Line": 10,
           "Product_Name": "gtinProductName010",
-          "Product_Buyer_CU_GTIN": "7640119467344"
+          "Product_Buyer_CU_GTIN": "7640119467344",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ]
     }
@@ -1847,7 +1919,93 @@ Feature: EDI INVOIC export via postgREST
         {
           "Invoice_Line": 10,
           "Product_Name": "gtinProductName020",
-          "Product_Buyer_CU_GTIN": "7640119467344"
+          "Product_Buyer_CU_GTIN": "7640119467344",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S27050_TC1d_a
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00359_EDI_INVOICE_JSON
+  Scenario: Manual invoice without order and shipment, two goods lines without packing instruction: no delivery note and no CUs per TU on the lines
+    # Real case: a manual sales invoice (no order, no shipment) with two goods lines.
+    # Neither line has a shipment link, so no delivery note is stated; the products have no packing instruction, so no CUs per TU.
+    # The lines have no order line and are not merged: two lines stay two lines.
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1     | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier | Name                   | REST.Context.Value |
+      | product1   | S27050_TC1d_a_product1 | productValue1      |
+      | product2   | S27050_TC1d_a_product2 | productValue2      |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product1     | 5.00     | PCE      |
+      | salesPLV               | product2     | 7.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo    | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | invoice_ID   | customer1     | Ausgangsrechnung        | S27050_TC1d_a | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoice      | product1     | 187 PCE     |
+      | invoice      | product2     | 23 PCE      |
+    And the invoice identified by invoice is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Invoice_DocumentNo": "S27050_TC1d_a",
+      "Shipment_DocumentNo": null,
+      "Lines": [
+        {
+          "Invoice_QtyInvoiced": 187,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
+        },
+        {
+          "Invoice_QtyInvoiced": 23,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "QtyCUsPerTU": null,
+          "QtyCUsPerTU_UOM": null,
+          "Shipment_DocumentNo": null
         }
       ]
     }
