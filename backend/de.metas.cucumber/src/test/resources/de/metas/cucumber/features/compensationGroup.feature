@@ -121,7 +121,7 @@ Feature: Compensation Group
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus |
       | order_1               | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | ref_12301   | true      | CO        |
 
     And validate the created order lines
@@ -227,8 +227,8 @@ Feature: Compensation Group
       | order_2               | shipment_2            | invoice_2               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
-      | order_2               | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | ref_12301   | true      | CO        |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus |
+      | order_2               | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | ref_12302   | true      | CO        |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |

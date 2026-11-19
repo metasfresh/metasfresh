@@ -840,7 +840,7 @@ public class C_Order_StepDef
 	 *   <li>{@code DeliveryViaRule} — optional string</li>
 	 *   <li>{@code processed} — optional boolean</li>
 	 *   <li>{@code DocStatus} — optional string</li>
-	 *   <li>{@code poReference} — optional string</li>
+	 *   <li>{@code POReference} — optional string</li>
 	 *   <li>{@code InvoiceRule} — optional string</li>
 	 *   <li>{@code PaymentRule} — optional string</li>
 	 *   <li>{@code OPT.M_Warehouse_ID.Identifier} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData};
@@ -853,7 +853,7 @@ public class C_Order_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And validate the created orders:
-	 *   | C_Order_ID   | C_BPartner_ID | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.M_Warehouse_ID.Identifier |
+	 *   | C_Order_ID   | C_BPartner_ID | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.M_Warehouse_ID.Identifier |
 	 *   | order_S30235 | bp_S30235     | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH                     |
 	 * </pre>
 	 */

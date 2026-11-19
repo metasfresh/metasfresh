@@ -149,7 +149,7 @@ Feature: Dhl Shipment
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus |
       | order_1               | dhl_customer             | dhl_location                      | 2022-12-12  | SOO         | EUR          | F            | S               | ref_12301   | true      | CO        |
 
     And validate the created order lines
@@ -247,7 +247,7 @@ Feature: Dhl Shipment
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus |
       | order_1               | dhl_customer             | dhl_location                      | 2022-12-12  | SOO         | EUR          | F            | S               | ref_12345   | true      | CO        |
 
     And validate the created order lines
