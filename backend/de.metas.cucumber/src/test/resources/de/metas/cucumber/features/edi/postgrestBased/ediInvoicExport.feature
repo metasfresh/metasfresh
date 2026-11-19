@@ -30,7 +30,8 @@ Feature: EDI INVOIC export via postgREST
 @allure.label.feature:F00350_EDI
 @F00350
   Scenario: create an invoice and export it to JSON
-    Given metasfresh contains C_BPartners without locations:
+    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
+    And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
@@ -88,6 +89,7 @@ Feature: EDI INVOIC export via postgREST
       "CreditMemo_Reason": null,
       "CreditMemo_ReasonText": null,
       "Order_POReference": null,
+      "Invoice_PaymentReference": null,
       "Order_Date": "2025-05-01T00:00:00",
       "Shipment_Date": null,
       "Shipment_DocumentNo": null,
@@ -146,6 +148,7 @@ Feature: EDI INVOIC export via postgREST
           "ORDERS_QtyInvoiced": null,
           "ORDERS_QtyInvoiced_UOM": null,
           "Order_POReference": null,
+          "Order_IsPOReferenceBuyerOrderNo": false,
           "Order_Line": 10,
           "Order_QtyInvoiced": 1,
           "Order_QtyInvoiced_UOM": "PCE",

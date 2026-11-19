@@ -243,6 +243,7 @@ Feature: EDI DESADV export via postgREST
               },
               "OrderDocumentNo": "@o_1_DocumentNo@",
               "OrderPOReference": "testReference",
+              "OrderIsPOReferenceBuyerOrderNo": false,
               "QtyOrderedInDesadvLineUOM": 100,
               "QtyDeliveredInInvoicingUOM": 100,
               "QtyDeliveredInDesadvLineUOM": 100,
