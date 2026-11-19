@@ -90,7 +90,7 @@ test('TC2: CU quantity entry mode per picking line (profile default, customer re
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     // product-based job of P1: one line per customer, in the order of the orders A, B, C (20, 24, 28 CU)
-    await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
+    await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72, productId: masterdata.products.P1.id });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '20 Stk' });
     await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '24 Stk' });
     await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '28 Stk' });

@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
@@ -96,7 +96,7 @@ export const PickingJobsListScreen = {
         await PickingJobsListScanScreen.waitForScreen();
     }),
 
-    startJob: async ({ index, documentNo, qtyToDeliver, customerLocationId }) => {
+    startJob: async ({ index, documentNo, qtyToDeliver, productId, customerLocationId }) => {
         if (documentNo != null) {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
                 for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
@@ -118,7 +118,7 @@ export const PickingJobsListScreen = {
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
-                await tapLauncherUntilJobScreen({ index, qtyToDeliver, customerLocationId });
+                await tapLauncherUntilJobScreen({ index, qtyToDeliver, productId, customerLocationId });
                 return {
                     pickingJobId: await PickingJobScreen.getPickingJobId(),
                 }
@@ -179,14 +179,17 @@ export const PickingJobsListScreen = {
  *        list; a retry that is already back on a populated list can pass a shorter budget.
  * @returns {Promise<import('@playwright/test').Locator>} the locator to tap
  */
-const resolveLauncherTapTarget = async ({ index, qtyToDeliver, customerLocationId, settleTimeout = SLOW_ACTION_TIMEOUT }) => {
+const resolveLauncherTapTarget = async ({ index, qtyToDeliver, productId, customerLocationId, settleTimeout = SLOW_ACTION_TIMEOUT }) => {
     await page.locator('.loading').waitFor({ state: 'detached', timeout: settleTimeout });
 
-    const byAttribute = qtyToDeliver != null || customerLocationId != null;
+    const byAttribute = qtyToDeliver != null || productId != null || customerLocationId != null;
     const identified = byAttribute
-        ? locateJobButtons({ qtyToDeliver, customerLocationId })
+        ? locateJobButtons({ qtyToDeliver, productId, customerLocationId })
         : locateJobButtons({ index });
-    await identified.waitFor({ state: 'visible', timeout: settleTimeout });
+    // a launcher pinned by the test's own product appears once the job candidates of its freshly created orders are
+    // computed, which can take longer than the generic settle budget (several orders, busy stack): wait for it longer
+    const launcherTimeout = productId != null ? Math.max(settleTimeout, VERY_SLOW_ACTION_TIMEOUT) : settleTimeout;
+    await identified.waitFor({ state: 'visible', timeout: launcherTimeout });
 
     // Exactly one launcher must be addressed. A bare index (.nth is always ≤1) is reorder-safe only
     // against a single-candidate list (a prior filterByDocumentNo / single-order masterdata), so the
@@ -209,12 +212,12 @@ const resolveLauncherTapTarget = async ({ index, qtyToDeliver, customerLocationI
  * the trailing full-settle waitForScreen throws and the test fails loud (a genuine broken start is
  * never swallowed).
  */
-const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, customerLocationId }) => {
+const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, productId, customerLocationId }) => {
     for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
         // First attempt settles the freshly-navigated (websocket-populating) list on the full budget;
         // a retry is already back on a populated list, so it re-settles on a short budget.
         const settleTimeout = attempt === 1 ? SLOW_ACTION_TIMEOUT : FAST_ACTION_TIMEOUT;
-        const target = await resolveLauncherTapTarget({ index, qtyToDeliver, customerLocationId, settleTimeout });
+        const target = await resolveLauncherTapTarget({ index, qtyToDeliver, productId, customerLocationId, settleTimeout });
         await target.tap();
 
         const hasArrived = await jobScreenElement()
