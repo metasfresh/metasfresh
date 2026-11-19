@@ -23,20 +23,27 @@ const renderOnClose = (params) => {
   return onClose;
 };
 
-describe('PickLineScanScreen: where a finished line leaves to', () => {
+describe('PickLineScanScreen: where a finished line leaves to (the setting is honoured in every mode)', () => {
   beforeEach(() => {
     mockHistory.replace.mockClear();
     mockHistory.goBack.mockClear();
     mockGotoPickingJobOnClose = false; // the shipped sysconfig value (N)
   });
 
-  it('a scan-once line done via "Pack HU" (screen opened from the line screen) goes to the job screen', () => {
+  it('a scan-once line done keeps today: the sysconfig decides (N = back to the line screen)', () => {
     renderOnClose({ cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY', isLineDone: true })();
-    expect(mockHistory.goBack).not.toHaveBeenCalled();
-    expect(mockHistory.replace).toHaveBeenCalledTimes(1);
+    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
+    expect(mockHistory.replace).not.toHaveBeenCalled();
   });
 
-  it('a scan-each line done goes to the job screen too', () => {
+  it('a scan-each line done keeps today: the sysconfig decides (N = back to the line screen)', () => {
+    renderOnClose({ cuQtyEntryMode: 'SCAN_EACH_CU', isLineDone: true })();
+    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
+    expect(mockHistory.replace).not.toHaveBeenCalled();
+  });
+
+  it('a new-mode line done goes to the job screen when the sysconfig says Y', () => {
+    mockGotoPickingJobOnClose = true;
     renderOnClose({ cuQtyEntryMode: 'SCAN_EACH_CU', isLineDone: true })();
     expect(mockHistory.goBack).not.toHaveBeenCalled();
     expect(mockHistory.replace).toHaveBeenCalledTimes(1);

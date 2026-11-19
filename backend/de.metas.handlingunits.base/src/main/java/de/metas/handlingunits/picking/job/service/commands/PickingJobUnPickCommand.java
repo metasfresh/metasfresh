@@ -15,7 +15,9 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
@@ -50,6 +52,7 @@ public class PickingJobUnPickCommand
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final MobileUIPickingUserProfileService configService;
 
 	//
 	// Params
@@ -68,6 +71,7 @@ public class PickingJobUnPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
 			final @NonNull PickingJobHUService huService,
+			final @NonNull MobileUIPickingUserProfileService configService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @NonNull PickingJobLineId lineId,
@@ -79,6 +83,7 @@ public class PickingJobUnPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
 		this.huService = huService;
+		this.configService = configService;
 
 		this.initialPickingJob = pickingJob;
 		this.lineId = lineId;
@@ -174,8 +179,13 @@ public class PickingJobUnPickCommand
 
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
-		// a picked CU that still sits in a box (CU quantity entry) has its own QtyPicked records; the top-level lookup below does not find them
-		huIdAndQRCodeList.forEach(huIdAndQRCode -> deleteQtyPickedOfCUInBox(huIdAndQRCode.getHuId(), step.getScheduleId().getShipmentScheduleId()));
+		// a picked CU that still sits in a box (CU quantity entry) has its own QtyPicked records; the top-level lookup below does not find them.
+		// Only lines of a CU quantity entry mode book CUs into boxes: on every other line (Manual) the picked virtual HU inside a TU / LU is
+		// handled by the top-level lookup below (it also writes the compensating QtyPicked records), so it must not be deleted here.
+		if (isCUQtyEntryLine())
+		{
+			huIdAndQRCodeList.forEach(huIdAndQRCode -> deleteQtyPickedOfCUInBox(huIdAndQRCode.getHuId(), step.getScheduleId().getShipmentScheduleId()));
+		}
 
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
 		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
@@ -190,6 +200,12 @@ public class PickingJobUnPickCommand
 				pickFromKey,
 				PickingJobStepUnpickInfo.ofUnpickedHUs(pickedToHUs)
 		);
+	}
+
+	private boolean isCUQtyEntryLine()
+	{
+		final PickingJobLine line = initialPickingJob.getLineById(lineId);
+		return configService.getPickingJobOptions(line.getCustomerId()).getCuQtyEntryMode().isNewMode();
 	}
 
 	private void deleteQtyPickedOfCUInBox(@NonNull final HuId huId, @NonNull final ShipmentScheduleId shipmentScheduleId)

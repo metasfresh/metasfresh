@@ -184,7 +184,10 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
     await PickingJobLineScreen.clickPickHUButton();           // "HU verpacken": the block reopens, no new label scan
     await GetQuantityDialog.expectQtyEntered(4);              // MIN(last typed 6, open 4)
     await GetQuantityDialog.clickDoneStayOpen();              // books 4 into the kept box: the line is done
-    await PickingJobScreen.waitForScreen();                   // AC8 / R4: a finished line leads back to the job screen, also when the block was entered through "HU verpacken"
+    // a finished line honours the setting PickLineScanScreen.gotoPickingJobOnClose (shipped N): the screen was entered from the line screen ("HU verpacken"), so it leads back there
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.goBack();
+    await PickingJobScreen.waitForScreen();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '10 Stk' });
 
     await Backend.expect({

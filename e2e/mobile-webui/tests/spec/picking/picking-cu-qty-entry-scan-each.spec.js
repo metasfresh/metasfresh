@@ -22,12 +22,10 @@ restoreSysconfigsAfterEach(test);
 
 /** Opens the pick-step screen of the only picked HU of line `index` and unpacks it ("Entpacken", no target HU). */
 const unpackFirstPick = async ({ lineIndex }) => {
-    await PickLineScanScreen.goBack();
-    await PickingJobScreen.waitForScreen();
-    await PickingJobScreen.clickLineButton({ index: lineIndex });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickStepButton({ index: 1 });
+    await PickLineScanScreen.goBack(); // lands on the line screen, which lists the picked HUs
+    await PickingJobLineScreen.clickStepButton({ index: 0 });
     await PickingJobStepScreen.unpick();
+    await PickingJobLineScreen.goBack(); // the unpick leaves on the line screen
 };
 
 const newMasterdata = async ({ orders = [{ key: 'A', qty: 3 }], ...rest } = {}) =>
@@ -70,9 +68,10 @@ test('TC11 -> TC12 -> TC13: scan IDs 1 and 2 book one CU each into the open box,
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
         await Backend.expect({
+            // completing the job processes the bookings and puts the boxes on an LU: only CU, box and processed are pinned
             pickings: { [pickingJobId]: { docStatus: 'Completed', shipmentSchedules: { P1: { qtyPicked: [
-                qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu3', tu: 'tu1' }),
-            ].map((row) => ({ ...row, processed: true })) } } } },
+                { qtyPicked: '1 PCE', vhu: 'vhu1', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: 'vhu2', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: 'vhu3', tu: 'tu1', processed: true },
+            ] } } } },
         });
     });
 });
@@ -84,11 +83,12 @@ test('TC12b: a second lot on the same line books a CU with that lot; the first C
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
     const lotA = uniqueLot();
     const lotB = uniqueLot();
-    await startJob(masterdata, { qtyToDeliver: 2 });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1 });
     await scanPack(packLabelOf({ masterdata, lot: lotA, packId: 1 }));
     await scanPack(packLabelOf({ masterdata, lot: lotB, packId: 1 })); // same pack ID, other lot = another pack
     await Backend.expect({
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
         hus: { vhu1: { attributes: { 'Lot-Nummer': lotA } }, vhu2: { attributes: { 'Lot-Nummer': lotB } } },
     });
 });
@@ -147,7 +147,7 @@ test('TC12e: the box\'s first pack: a rescan is warned; "Unpack" frees only that
     await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
     await PickLineScanScreen.scanCULabelRefused(first, MSG_ALREADY_PICKED(1));
 
-    await unpackFirstPick({ lineIndex: 1 }); // the step list holds the first booking at index 1
+    await unpackFirstPick({ lineIndex: 1 }); // the step list holds the first booking at index 0
     await Backend.expect({
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
         hus: { tu1: { storages: { P1: '1 PCE' } } },
@@ -167,12 +167,13 @@ test('TC25: lots A, A, B: 3 CUs, the box has no lot (mixed), PackId on no box, t
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
     const lotA = uniqueLot();
     const lotB = uniqueLot();
-    await startJob(masterdata, { qtyToDeliver: 3 });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
     await openScanEachLine({ index: 1 });
     await scanPack(packLabelOf({ masterdata, lot: lotA, packId: 1 }));
     await scanPack(packLabelOf({ masterdata, lot: lotA, packId: 2 }));
     await scanPack(packLabelOf({ masterdata, lot: lotB, packId: 3 }));
     await Backend.expect({
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu3', tu: 'tu1' })] } } } },
         hus: {
             tu1: { qtyTUs: 1, storages: { P1: '3 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }, { qty: '1 PCE' }], attributes: { 'Lot-Nummer': null, PackId: null } },
             vhu1: { attributes: { 'Lot-Nummer': lotA, PackId: '1' } },
@@ -199,6 +200,7 @@ test('TC3: buyer B line (Scan each CU, pack-ID format): a label without counter 
         await openScanEachLine({ index: 1 });
         await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: null }), MSG_NO_PACK_ID);
         await PickLineScanScreen.goBack();
+        await PickingJobLineScreen.goBack(); // line screen -> job screen
     });
 
     await test.step('buyer C, label L(1): the effective format has no pack-ID part, refused', async () => {
@@ -278,9 +280,9 @@ test('TC30 variant: counters 9 and 10 give pack IDs "9" and "10" through the ope
     allureMeta('Scan each CU open-end pack ID');
 
     const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
-    await startJob(masterdata, { qtyToDeliver: 2 });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1 });
     await scanPack(packLabelOf({ masterdata, packId: 9 }));
     await scanPack(packLabelOf({ masterdata, packId: 10 }));
-    await Backend.expect({ hus: { vhu1: { attributes: { PackId: '9' } }, vhu2: { attributes: { PackId: '10' } } } });
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } }, hus: { vhu1: { attributes: { PackId: '9' } }, vhu2: { attributes: { PackId: '10' } } } });
 });

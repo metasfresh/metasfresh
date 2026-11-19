@@ -178,15 +178,6 @@ const PickLineScanScreen = () => {
         });
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
-  const onLineDone = useOnClose({
-    applicationId,
-    wfProcessId,
-    activity,
-    lineId,
-    next,
-    cuQtyEntryMode,
-    isLineDone: true,
-  });
 
   // scan once: the count offered for the next box (the last typed count, capped by the open quantity)
   const isScanOnce = isScanOnceMode(cuQtyEntryMode);
@@ -205,7 +196,7 @@ const PickLineScanScreen = () => {
     isRememberCUEntry: isScanOnce,
     cuQtyEntryMode,
     sourceHUQRCode: computeSourceHUQRCode({ qrCode, activity }),
-    onClose: onLineDone,
+    onClose,
   });
 
   const getConfirmationPromptForQty = useCallback(
@@ -525,17 +516,7 @@ const convertQRCodeObjectToResolvedResult = async ({
 //
 
 // @VisibleForTesting
-// A booking that finishes a line of a CU quantity entry mode always leaves to the job screen: the screen may have been
-// opened from the line screen ("Pack HU"), where the sysconfig-driven back step would land on the line screen again.
-export const useOnClose = ({
-  applicationId,
-  wfProcessId,
-  activity,
-  lineId,
-  next,
-  cuQtyEntryMode,
-  isLineDone = false,
-}) => {
+export const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
   const history = useMobileNavigation();
   const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
 
@@ -561,7 +542,7 @@ export const useOnClose = ({
   };
 
   return () => {
-    if (next === NEXT_PickingJob || (isLineDone && next == null && isNewMode(cuQtyEntryMode))) {
+    if (next === NEXT_PickingJob) {
       gotoPickingJob();
     } else if (next === NEXT_NextPickingLine) {
       gotoNextPickingLine();

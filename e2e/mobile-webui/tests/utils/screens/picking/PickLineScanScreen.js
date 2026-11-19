@@ -67,6 +67,8 @@ export const PickLineScanScreen = {
     scanCULabel: async (label) => await step(`${NAME} - Scan CU label`, async () => {
         await PickLineScanScreen.waitForScreen();
         await PickLineScanScreen.typeQRCode(label);
+        // Scan each CU books at once: the booking's request has been answered before the next step looks at the backend
+        await waitForNoInFlightXhr(page, { urlPattern: /\/picking\//, timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Scans a raw CU label on the scan step that must be refused: error toast with the text, the quantity block does not open. */
@@ -77,6 +79,8 @@ export const PickLineScanScreen = {
             async () => await PickLineScanScreen.typeQRCode(label),
             ({ textContent }) => expect(textContent).toContain(expectedText)
         );
+        // the closed toast is still fading out for a moment: the next step's error watcher would see it as a new error
+        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
         await GetQuantityDialog.expectNotShown();
     }),
 

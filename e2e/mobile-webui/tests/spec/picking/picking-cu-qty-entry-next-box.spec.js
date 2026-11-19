@@ -411,9 +411,11 @@ test('TC23 (iii): line without a TU type: first booking refused, "Next box" open
     await test.step('a GRAI scan opens the next box', async () => {
         await PickLineScanScreen.rescanGrai(grai);
         await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.G1.tuName);
-        await GetQuantityDialog.clickDoneStayOpen();   // the line is done: back to the job screen
+        await GetQuantityDialog.clickDoneStayOpen();   // the line is done: the setting PickLineScanScreen.gotoPickingJobOnClose (shipped N) leads back to the line screen it was entered from
         await PickGraiScreen.expectNotShown();
-        await PickingJobScreen.waitForScreen();   // AC8: after the booking that finishes the line the app shows the job screen
+        await PickingJobLineScreen.waitForScreen();
+        await PickingJobLineScreen.goBack();
+        await PickingJobScreen.waitForScreen();
     });
 
     await test.step('"Fertigstellen" is refused while boxes without GRAI exist, and completes once every box has one', async () => {

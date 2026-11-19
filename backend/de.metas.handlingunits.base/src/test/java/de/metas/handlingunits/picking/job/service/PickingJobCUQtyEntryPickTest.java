@@ -793,6 +793,29 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
 	}
 
+	/**
+	 * (v) The CU-in-box un-pick path (delete the CU's own QtyPicked rows first) applies to lines of a CU quantity entry mode only.
+	 * The same picked CU un-picked on a Manual line (profile switched after the booking) goes through today's top-level lookup alone,
+	 * which is what a Manual line's picked virtual HU inside a TU / LU needs (it writes the compensating QtyPicked rows).
+	 */
+	@Test
+	void v_manualLine_unpickDoesNotUseTheCUInBoxPath()
+	{
+		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-V");
+		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+		job = pickEach(job, source, LOT_A, "1");
+		job = pickEach(job, source, LOT_A, "2");
+		final HuId boxId = openBoxId(job);
+		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
+		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
+
+		setProfile(CUQtyEntryMode.MANUAL);
+		job = undo(job, cu1Id, source.getQrCode(), null);
+
+		assertThat(countQtyPickedRowsOfBox(boxId)).as("the CU-in-box delete did not run: both rows are still there").isEqualTo(2);
+	}
+
 	private PickingJob undo(final PickingJob job, final HuId cuId, final HUQRCode sourceQr, @Nullable final HUQRCode unpickToTargetQr)
 	{
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
