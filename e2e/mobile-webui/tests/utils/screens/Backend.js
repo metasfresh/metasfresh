@@ -158,6 +158,30 @@ export const Backend = {
     }),
 
     /**
+     * Update a business partner after the fact (test support): sets {@code C_BPartner.GRAIRequired}, e.g. to flip the partner
+     * between picking and consolidation.
+     *
+     * @param {Object} args
+     * @param {string} args.bpartnerId - the C_BPartner_ID returned by createMasterdata (`bpartners.<key>.id`).
+     * @param {'Y'|'N'|'D'} args.graiRequired - the new C_BPartner.GRAIRequired.
+     */
+    updateBPartner: async ({ bpartnerId, graiRequired }) => await test.step(`Backend: update bpartner ${bpartnerId} GRAIRequired=${graiRequired}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/updateBPartner`, {
+            data: { bpartnerId: String(bpartnerId), graiRequired },
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+            throw new Error(`updateBPartner failed: HTTP ${response.status()}`);
+        }
+    }),
+
+    /**
      * Generate shipments from a sales order's shipment schedules via the REAL "Generate Shipments"
      * process path ({@code ShipmentService.generateShipmentsForScheduleIds}) — NOT the
      * {@code shipments} masterdata shortcut. With quantityType 'P' (Picked) this ships the already-picked

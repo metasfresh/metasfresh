@@ -10,14 +10,14 @@ const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+
  * SO1 (P1) -> slot1, SO2 (P2) -> slot1, SO3 (P1) -> slot2. Product aggregation + pickTo:['TU'] so each pick
  * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config.
  *
- * @param {{pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object}} [overrides]
- *   optional replacements of the whole section of the same name (TC2 adds a second partner, a third slot and a pallet pick).
+ * @param {{language?: string, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object}} [overrides]
+ *   optional replacements of the whole section of the same name (TC2 adds a second partner, a third slot and a pallet pick); `language` replaces 'en_US' (user + masterdata).
  */
-export const createJobScanMasterdata = async ({ pickTo, bpartners, pickingSlots, salesOrders } = {}) => {
+export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders } = {}) => {
     return await Backend.createMasterdata({
-        language: 'en_US',
+        language,
         request: {
-            login: { user: { language: 'en_US' } },
+            login: { user: { language } },
             mobileConfig: {
                 picking: {
                     aggregationType: 'product',
@@ -54,3 +54,17 @@ export const createJobScanMasterdata = async ({ pickTo, bpartners, pickingSlots,
         },
     });
 };
+
+/**
+ * Masterdata of the scenarios that pick crates WITHOUT a GRAI: partner BP1 on GRAIRequired 'N' (flip it later with
+ * Backend.updateBPartner), one slot, SO1 (P1) and SO2 (P2), both for BP1 (same ship-to = one Verdichtung job).
+ */
+export const createNoGraiPartnerMasterdata = async ({ language = 'en_US' } = {}) => await createJobScanMasterdata({
+    language,
+    bpartners: { BP1: { graiRequired: 'N' } },
+    pickingSlots: { slot1: {} },
+    salesOrders: {
+        SO1: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
+        SO2: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
+    },
+});

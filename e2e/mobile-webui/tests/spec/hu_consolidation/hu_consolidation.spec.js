@@ -179,6 +179,8 @@ test('Simple HU consolidate HUs one by one test', async ({ page }) => {
         await HUConsolidationJobsListScreen.waitForScreen();
         await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId })
         await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
+        // The crates carry no GRAI, so the job-level "Scan (GRAI)" button is not shown either.
+        await HUConsolidationJobScreen.expectScanGRAIButton({ visible: false });
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
         // This customer does not require GRAI, so the GRAI scan affordance is NOT shown (only tap-to-consolidate).
         await PickingSlotScreen.expectScannerNotVisible();

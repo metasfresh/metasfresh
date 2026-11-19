@@ -1,4 +1,4 @@
-import { page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUConsolidationJobsListScreen } from './HUConsolidationJobsListScreen';
 import { SelectHUConsolidationTargetScreen } from './SelectHUConsolidationTargetScreen';
@@ -142,6 +142,23 @@ export const HUConsolidationJobScreen = {
     /** Expect the pallet (target LU) button caption to no longer show the pallet TYPE name, i.e. it shows the open pallet's QR code. */
     expectTargetLUCaptionNotContains: async ({ text }) => await test.step(`${NAME} - Expect target LU caption not to contain '${text}'`, async () => {
         await expect(page.getByTestId('targetLU-button')).not.toContainText(text, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Expect the pallet (target LU) button caption to start with the given text ("Neues Gebinde" / "New LU" / "Offenes Gebinde: ..." / "Current: ..."). */
+    expectTargetLUCaptionStartsWith: async ({ text }) => await test.step(`${NAME} - Expect target LU caption to start with '${text}'`, async () => {
+        await expect(page.getByTestId('targetLU-button')).toHaveText(new RegExp('^\\s*' + text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Expect the Fertigstellen ("Complete") button and the Rückgängig ("Abort") button captions. */
+    expectCompleteAndAbortCaptions: async ({ complete, abort }) => await test.step(`${NAME} - Expect captions '${complete}' / '${abort}'`, async () => {
+        await expect(page.locator('#last-confirm-button')).toContainText(complete, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('#abort-button')).toContainText(abort, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Leave the job screen with the Back button (the job stays started), back to the job list. */
+    goBack: async () => await step(`${NAME} - Go back to the job list`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await HUConsolidationJobsListScreen.waitForScreen();
     }),
 
     consolidateAll: async ({ pickingSlotId }) => await step(`${NAME} - Consolidate All`, async () => {
