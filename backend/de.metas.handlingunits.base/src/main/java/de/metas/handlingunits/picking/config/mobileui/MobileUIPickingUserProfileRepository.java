@@ -495,7 +495,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
-		record.setCUQtyEntryMode(from.getCuQtyEntryModeIfSet().map(CUQtyEntryMode::getCode).orElse(null)); // empty = use the profile's
+		record.setCUQtyEntryMode(from.getCUQtyEntryMode().map(CUQtyEntryMode::getCode).orElse(null)); // empty = use the profile's
 		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCuLabelFormatId().orElse(null)));
 		InterfaceWrapperHelper.saveRecord(record);
 		return PickingJobOptionsId.ofRepoId(record.getMobileUI_UserProfile_Picking_Job_ID());
