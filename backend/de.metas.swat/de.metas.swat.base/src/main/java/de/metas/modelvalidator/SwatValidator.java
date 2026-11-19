@@ -4,6 +4,7 @@
 package de.metas.modelvalidator;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
 import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -255,6 +256,7 @@ public class SwatValidator implements ModelValidator
 		cachingService.addTableCacheConfigIfAbsent(I_C_UOM.class);
 		cachingService.addTableCacheConfigIfAbsent(I_M_Warehouse.class);
 		cachingService.addTableCacheConfigIfAbsent(I_M_Locator.class);
+		cachingService.addTableCacheConfigIfAbsent(I_AD_InputDataSource.class); // looked up by ID for every order created from order candidates
 
 		// Cache C_BPartner
 		// NOTE: because we have a lot of them, we will cache only latest 50, using LRU map,
