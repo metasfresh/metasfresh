@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect, request as playwrightRequest } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
@@ -89,6 +89,16 @@ const RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS = ['270', '540394', '363'];
 // (M_ReceiptSchedule) for a purchase line; their records are created async after the order is completed
 const SHIPMENT_SCHEDULE_WINDOW_ID = 500221;
 const RECEIPT_SCHEDULE_WINDOW_ID = 540196;
+// R-REL: the two invoice-candidate entries of an order line ("Rechnungsdisposition" sales, "Rechnungsdisposition Einkauf" purchase)
+// come from relation types 540221 / 540275 (matched by AD_Table_ID + Record_ID of the order line). A migration with a
+// time-zone-dependent condition leaves them inactive on a UTC database, so there the entries (and a compare without them) are
+// vacuous. The test therefore activates them for its run (window "Relationsart", System Administrator role) and puts them back.
+// The relation types of the view row (540514 sales, 540515 purchase) copy the original's IsActive when their migration runs,
+// i.e. they are inactive on such a database too, so they are activated with the originals; they do not exist before that migration.
+const RELATION_TYPES_WINDOW_ID = 53102;
+const INVOICE_CANDIDATE_RELATION_TYPE_IDS = [540221, 540275, 540514, 540515];
+const INVOICE_CANDIDATE_SALES_CAPTION = 'Rechnungsdisposition';
+const INVOICE_CANDIDATE_PURCHASE_CAPTION = 'Rechnungsdisposition Einkauf';
 // R-REL compare: the order line's related documents must stay unchanged this long before they count as complete
 const STABLE_RELATED_DOCUMENTS_MS = 1000;
 // Bestellung (purchase order) and its line tab
@@ -208,6 +218,16 @@ const DISCOUNT_PERCENT = 3;
 const EXPECTED_DISCOUNT_AMOUNT = -(GOODS_PRICE * DISCOUNT_PERCENT) / 100; // -30
 
 test.describe('Compensation-group contract — create through the WebUI and complete an order', () => {
+  // puts the relation types back after the test that activated them (also when it failed)
+  let restoreRelationTypes = null;
+  test.afterEach(async () => {
+    if (restoreRelationTypes) {
+      const restore = restoreRelationTypes;
+      restoreRelationTypes = null;
+      await restore();
+    }
+  });
+
   test('creates schema, settings, conditions and contract, then completing a sales order adds the discount group', async ({ page }) => {
     allure.epic('E0170: Contract Management');
     allure.story('Compensation-group contract created through the WebUI adds the discount group on order completion');
@@ -730,6 +750,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         },
       },
     });
+    restoreRelationTypes = await activateInvoiceCandidateRelationTypes();
     const customer = masterdata.bpartners.CUSTOMER;
     const goods = masterdata.products.GOODS;
     const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
@@ -875,6 +896,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         readExpected: () => getDocumentReferences(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB, lineRowId),
         readActual: () => getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, lineRowId),
         requiredTargetWindowId: SHIPMENT_SCHEDULE_WINDOW_ID,
+        requiredCaption: INVOICE_CANDIDATE_SALES_CAPTION,
         what: 'the sales line row',
       });
 
@@ -1111,6 +1133,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         readExpected: () => getDocumentReferences(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID_PATH, goodsRowId),
         readActual: () => getDocumentReferences(ORDER_COMPENSATION_GROUP_WINDOW_ID, purchaseGroupId, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`, goodsRowId),
         requiredTargetWindowId: RECEIPT_SCHEDULE_WINDOW_ID,
+        requiredCaption: INVOICE_CANDIDATE_PURCHASE_CAPTION,
         what: 'the purchase goods line row',
       });
     });
@@ -2050,6 +2073,51 @@ function expectOrderNosDescending(orderNos) {
 
 // (compared by what the user sees: caption, target window, count; the internal name of a generic entry carries the
 // name of its source table, which differs between the line table and its view)
+/**
+ * Activates the invoice-candidate relation types (INVOICE_CANDIDATE_RELATION_TYPE_IDS, see there) through the WebUI window
+ * "Relationsart" as System Administrator, in a request context of their own (the page's session stays as it is).
+ * Returns the function that puts every changed one back to inactive. A relation type that does not exist is skipped.
+ */
+async function activateInvoiceCandidateRelationTypes() {
+  const api = await playwrightRequest.newContext();
+  try {
+    const authResponse = await api.post(`${WEBAPI_BASE_URL}/login/authenticate`, { data: { username: 'metasfresh', password: 'metasfresh' } });
+    const auth = await authResponse.json();
+    const systemRole = (auth.roles ?? []).find((role) => String(role.roleId) === '0');
+    expect(systemRole, 'the test user has the System Administrator role').toBeTruthy();
+    expect((await api.post(`${WEBAPI_BASE_URL}/login/loginComplete`, { data: systemRole })).ok(), 'login as System Administrator').toBe(true);
+
+    const setActive = async (relationTypeId, isActive) => {
+      const response = await api.patch(`${WEBAPI_BASE_URL}/window/${RELATION_TYPES_WINDOW_ID}/${relationTypeId}`, { data: [{ op: 'replace', path: 'IsActive', value: isActive }] });
+      expect(response.ok(), `relation type ${relationTypeId}: set IsActive=${isActive}, HTTP ${response.status()}`).toBe(true);
+    };
+    const changed = [];
+    for (const relationTypeId of INVOICE_CANDIDATE_RELATION_TYPE_IDS) {
+      const response = await api.get(`${WEBAPI_BASE_URL}/window/${RELATION_TYPES_WINDOW_ID}/${relationTypeId}`);
+      if (!response.ok()) {
+        continue; // not there (the relation types of the view row exist only with their migration)
+      }
+      const wasActive = (await response.json())[0].fieldsByName.IsActive.value === true;
+      if (!wasActive) {
+        await setActive(relationTypeId, true);
+        changed.push(relationTypeId);
+      }
+    }
+    return async () => {
+      try {
+        for (const relationTypeId of changed) {
+          await setActive(relationTypeId, false);
+        }
+      } finally {
+        await api.dispose();
+      }
+    };
+  } catch (error) {
+    await api.dispose();
+    throw error;
+  }
+}
+
 function relatedDocumentsComparable(references) {
   return references
     .filter((reference) => !RELATED_DOCUMENTS_LEFT_OUT_WINDOW_IDS.includes(String(reference.targetWindowId)))
@@ -2068,9 +2136,10 @@ function relatedDocumentsComparable(references) {
  * - the expected list has stayed the same for at least STABLE_RELATED_DOCUMENTS_MS (1 s) over successive reads. The other
  *   entries of the line (e.g. "Material Cockpit Detail") arrived 40-230 ms after the schedule in local runs, so a list
  *   read in that gap changes again before it counts as stable (a longer gap would still slip through: best effort), and
+ * - both lists show the entry `requiredCaption` (the invoice-candidate entry; the test has activated its relation types), and
  * - the actual list equals it.
  */
-async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, requiredTargetWindowId, what }) {
+async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, requiredTargetWindowId, requiredCaption, what }) {
   let previousExpected = null;
   let expectedUnchangedSince = 0;
   await expect.poll(async () => {
@@ -2078,16 +2147,21 @@ async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, 
     const actual = relatedDocumentsComparable(await readActual());
     const expected = relatedDocumentsComparable(expectedReferences);
     const hasRequired = expectedReferences.some((reference) => String(reference.targetWindowId) === String(requiredTargetWindowId));
+    // by name, on both sides, before the lists are compared: the order line and the view row each list the invoice-candidate entry
+    const lacksRequiredCaption = {
+      orderLine: !expected.some((entry) => entry.startsWith(`${requiredCaption} (#`)),
+      lineRowOfView: !actual.some((entry) => entry.startsWith(`${requiredCaption} (#`)),
+    };
     if (previousExpected === null || JSON.stringify(previousExpected) !== JSON.stringify(expected)) {
       expectedUnchangedSince = Date.now();
     }
     const isStable = Date.now() - expectedUnchangedSince >= STABLE_RELATED_DOCUMENTS_MS;
     previousExpected = expected;
-    return hasRequired && isStable && JSON.stringify(actual) === JSON.stringify(expected)
+    return hasRequired && isStable && !lacksRequiredCaption.orderLine && !lacksRequiredCaption.lineRowOfView && JSON.stringify(actual) === JSON.stringify(expected)
       ? 'equal'
-      : JSON.stringify({ hasRequired, isStable, expected, actual });
+      : JSON.stringify({ hasRequired, isStable, requiredCaption, lacksRequiredCaption, expected, actual });
   }, {
-    message: `related documents of ${what} (without windows 270, 540394, 363) equal those of the order line, read once the order line lists window ${requiredTargetWindowId} and its list is unchanged for ${STABLE_RELATED_DOCUMENTS_MS} ms`,
+    message: `related documents of ${what} (without windows 270, 540394, 363) equal those of the order line, read once the order line lists window ${requiredTargetWindowId} and its list is unchanged for ${STABLE_RELATED_DOCUMENTS_MS} ms; both lists show ${requiredCaption}`,
     timeout: VERY_SLOW_ACTION_TIMEOUT,
   }).toBe('equal');
 }
