@@ -554,6 +554,17 @@ public class C_Order_StepDef
 		C_Order_SimulatedDeadlockOnCompletion.arm(OrderId.ofRepoId(order.getC_Order_ID()), description);
 	}
 
+	/**
+	 * Arms a one-time DB deadlock for the next completion of the given order, raised when the completion's transaction is committed: after the
+	 * document engine saved the completed order in that transaction. The engine rolls the attempt back, incl. that save, and retries it.
+	 */
+	@And("^the next completion of the order identified by (\\S+) runs into a DB deadlock once when it is committed$")
+	public void order_next_completion_runs_into_deadlock_on_commit(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		C_Order_SimulatedDeadlockOnCompletion.armAtCommit(OrderId.ofRepoId(order.getC_Order_ID()));
+	}
+
 	@And("^the completion of the order identified by (.*) did run into the DB deadlock$")
 	public void order_completion_did_run_into_deadlock(@NonNull final String orderIdentifier)
 	{
