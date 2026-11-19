@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step } from '../../common';
+import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step } from '../../common';
 import { expect } from '@playwright/test';
 import { test } from '../../../../playwright.config';
 import { GetQuantityDialog } from './GetQuantityDialog';
@@ -63,11 +63,44 @@ export const PickLineScanScreen = {
         await PickLineScanScreen.typeQRCode(label);
     }),
 
+    /** Scans a raw CU label on the scan step that must be refused: error toast with the text, the quantity block does not open. */
+    scanCULabelRefused: async (label, expectedText) => await step(`${NAME} - Scan CU label, expect refusal '${expectedText}'`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await expectErrorToast(
+            `${NAME} label refusal`,
+            async () => await PickLineScanScreen.typeQRCode(label),
+            ({ textContent }) => expect(textContent).toContain(expectedText)
+        );
+        await GetQuantityDialog.expectNotShown();
+    }),
+
+    /** Rescans a raw CU label inside the open quantity block where it must be refused: error toast with the text, the block stays. */
+    rescanCULabelRefused: async (label, expectedText) => await step(`${NAME} - Rescan CU label, expect refusal '${expectedText}'`, async () => {
+        await expectErrorToast(
+            `${NAME} label rescan refusal`,
+            async () => await BarcodeScannerComponent.type({ scannedCode: label, testId: 'rescanCULabel-input' }),
+            ({ textContent }) => expect(textContent).toContain(expectedText)
+        );
+        await GetQuantityDialog.waitForDialog();
+    }),
+
     /** Taps "Weitere Kiste" / "Next box": opens the next TU (box) of the line. */
     nextBox: async () => await step(`${NAME} - Next box`, tapNextBox),
 
-    /** Opens the first box of a line in CU quantity entry mode, before its first booking (same tap as nextBox). */
-    openBox: async () => await step(`${NAME} - Open box`, tapNextBox),
+    /**
+     * Opens the first box of a line in CU quantity entry mode, before its first booking (same tap as nextBox).
+     * Returns when the box is open: the "Current" header entry shows it and the button is usable again.
+     */
+    openBox: async () => await step(`${NAME} - Open box`, async () => {
+        await tapNextBox();
+        await expect(page.locator('tr:has(th:has-text("Current"))').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(nextBoxButton()).toBeEnabled();
+    }),
+
+    /** Scans one raw CU label into the quantity block's own scanner (Scan once: a new label replaces the remembered one). */
+    rescanCULabel: async (label) => await step(`${NAME} - Rescan CU label in the quantity block`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: label, testId: 'rescanCULabel-input' });
+    }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await PickLineScanScreen.waitForScreen();
