@@ -5,12 +5,57 @@ import { GetQuantityDialog } from './GetQuantityDialog';
 import { PickingJobScreen } from './PickingJobScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { waitForNoInFlightXhr } from '../../inFlightXhr';
 
 const NAME = 'PickLineScanScreen';
 
 const containerElement = () => page.locator('#PickLineScanScreen');
 
+const PICKING_XHR = /\/picking\//;
+
+let huLookups = [];
+let huLookupsListener = null;
+
+const stopCollectingHULookups = () => {
+    if (huLookupsListener) {
+        page.off('request', huLookupsListener);
+        huLookupsListener = null;
+    }
+};
+
 export const PickLineScanScreen = {
+    /**
+     * Records every HU lookup the app sends from now on (api/picking.js getScannedHUQRCodeInfo -> POST .../picking/hu/byScannedCode),
+     * replacing any earlier recording. A code picked as a whole TU (e.g. a custom-format label) is looked up before any pick is posted.
+     */
+    startCollectingHULookups: () => {
+        stopCollectingHULookups();
+        const lookups = [];
+        huLookups = lookups;
+        huLookupsListener = (request) => {
+            if (request.method() === 'POST' && request.url().includes('/picking/hu/byScannedCode')) {
+                lookups.push(request.postDataJSON());
+            }
+        };
+        page.on('request', huLookupsListener);
+    },
+
+    /** Waits for the HU lookup(s) of one scan and checks every one carries the scanned code as scannedCode; stops the recording. */
+    expectHULookedUpWithScannedCode: async ({ scannedCode, expectedCount = 1 }) => await step(`${NAME} - Expect ${expectedCount} HU lookup(s) with scannedCode ${scannedCode}`, async () => {
+        try {
+            await expect.poll(() => huLookups.length, { timeout: SLOW_ACTION_TIMEOUT }).toBe(expectedCount);
+            // Reaching the count is not enough: a late extra lookup would come after.
+            // Wait until every picking XHR has been handled by the app, then re-check.
+            await waitForNoInFlightXhr(page, { urlPattern: PICKING_XHR, timeout: SLOW_ACTION_TIMEOUT });
+            expect(huLookups).toHaveLength(expectedCount);
+            for (const huLookup of huLookups) {
+                expect(huLookup.scannedCode).toBe(scannedCode);
+            }
+        } finally {
+            stopCollectingHULookups();
+        }
+    }),
+
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),

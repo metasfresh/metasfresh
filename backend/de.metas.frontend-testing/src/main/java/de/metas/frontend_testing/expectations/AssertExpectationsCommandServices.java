@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inventory.Inventory;
@@ -12,6 +13,7 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Inventory_Candidate;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -92,6 +94,7 @@ import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
@@ -108,6 +111,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository invalidationRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -239,6 +243,19 @@ public class AssertExpectationsCommandServices
 	public List<I_M_HU> getIncludedHUs(@NonNull final HuId huId)
 	{
 		return handlingUnitsBL.retrieveIncludedHUs(huId);
+	}
+
+	/**
+	 * @return the TU count of the packing instruction item (of the parent LU) via which the given HU is attached to its LU,
+	 * or {@code null} if the HU has no parent item or that item has no packing instruction item
+	 */
+	@Nullable
+	public Integer getParentPIItemQtyTUs(@NonNull final HuId huId)
+	{
+		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(handlingUnitsBL.getById(huId));
+		return parentItem != null && parentItem.getM_HU_PI_Item_ID() > 0
+				? parentItem.getM_HU_PI_Item().getQty().intValueExact()
+				: null;
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}

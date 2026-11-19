@@ -1,7 +1,6 @@
-package de.metas.scannable_code.format.repository;
+package de.metas.scannable_code.format.repository.interceptor;
 
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
-import de.metas.scannable_code.format.repository.interceptor.C_ScannableCode_Format_Part;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;

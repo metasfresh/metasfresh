@@ -206,8 +206,13 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 
 		final I_M_HU_PI_Item partnerItem = partnerItem35();
 		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, productXY)).contains(productItem40);
-		// the LU-item level of this lookup has no partner preference (it never had one), so only the product rule is asserted
-		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, otherProduct)).hasValueSatisfying(item -> assertThat(item).isIn(genericItem30, partnerItem));
+		// same filter and order as retrieveParentPIItemsForParentPI: the LU item is the partner's or partner-less; product, then partner, then item ID first
+		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId, otherProduct)).contains(partnerItem);
+		assertThat(dao.getTUPIItemForLUPIAndItemProduct(bpartner, luPIId, itemProductId)).contains(partnerItem);
+		// the LU item of another partner is not eligible
+		final BPartnerId otherPartner = BPartnerId.ofRepoId(createBPartner("BP2").getC_BPartner_ID());
+		assertThat(dao.getTUPIItemForLUPIAndItemProduct(otherPartner, luPIId, itemProductId, otherProduct)).contains(genericItem30);
+		assertThat(dao.getTUPIItemForLUPIAndItemProduct(null, luPIId, itemProductId, otherProduct)).contains(genericItem30);
 	}
 
 	// ---- retrieveParentPIItemForChildHUOrNull
