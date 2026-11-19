@@ -20,13 +20,14 @@ import { YesNoDialog } from '../../utils/dialogs/YesNoDialog';
  * operator could not declare a physically empty container empty; `computeIssueRequest.js` would also
  * have dropped `qtyRejected`/`qtyRejectedReasonCode` on the way to the backend.
  *
- * The two tests are the two halves of the new contract:
+ * The tests pin the new contract:
  *  - AC-A1: entering a shortfall (0.49 of the 0.5 target) DOES offer the reasons, and picking
  *    "empty (auto. inventory)" books the HU's whole remaining 0.012 KGM (0.502 - 0.49, NOT the 0.01
  *    shortfall) to zero and destroys the HU — and the confirmation prompt NAMES that same 12 g.
  *  - AC-A2: entering the full target (0.5) asks NOTHING — the reason group renders only once a
  *    shortfall exists (`qtyRejected > 0` in GetQuantityDialog.jsx) — and leaves the HU active with its
  *    0.002 KGM remainder, exactly as before this feature.
+ *  - AC-A3: picking a reason other than "empty" on such a step is accepted and leaves the HU alone.
  *
  * AC-A1 is also run at real-life size: an 86.75 KGM HU on a 15.4 KGM demand, 15.1 KGM issued, the HU's
  * remaining 71.65 KGM written off.
