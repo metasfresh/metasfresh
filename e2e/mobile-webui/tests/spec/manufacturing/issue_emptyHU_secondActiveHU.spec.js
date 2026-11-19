@@ -25,9 +25,10 @@ import { YesNoDialog } from '../../utils/dialogs/YesNoDialog';
  * active HU. The zero-target alternative step currently locks the quantity field at 0, so the newer HU can
  * be neither issued from nor emptied; that lock is what these tests pin.
  *
- * Fixture: two independent standalone HUs of one KGM component in the source warehouse — older/larger
- * (created first, the FEFO default) + newer/smaller — with the BOM-line demand set BELOW the older HU's
- * content, so the older HU alone covers it and the newer HU is the zero-target alternative. Config as the
+ * Fixture: two independent standalone HUs of one KGM component in the source warehouse — older (created
+ * first, the FEFO default) + newer — with the BOM-line demand set BELOW the older HU's content, so the
+ * older HU alone covers it and the newer HU is the zero-target alternative (the last test deviates: there
+ * the older HU holds LESS than the demand and the newer HU covers the rest). Config as the
  * feature ships: isAllowEmptyingHUs=Y, isConfirmEmptyingHU=Y, isAllowIssuingAnyHU=N (the newer HU is a
  * PLANNED candidate, not an on-the-fly "any HU").
  *
@@ -44,9 +45,9 @@ const EMPTIED_REASON_CAPTION = 'empty (auto. inventory)';
 const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu ${documentNo} geleert`;
 
 /**
- * Two independent standalone HUs of the SAME component (no packing instruction), older/larger created
+ * Two independent standalone HUs of the SAME component (no packing instruction), the older one created
  * first (lower HuId -> the plan's FEFO default under the reserved-first / expiring-first / lowest-HuId
- * allocation order) and newer/smaller created second. The order needs `orderQty` KGM, below the older
+ * allocation order) and the newer one created second. The order needs `orderQty` KGM, below the older
  * HU's content, so the older HU alone covers the demand (the last test deviates: there the older HU holds
  * LESS than the demand and the newer one covers the rest). The issuing tolerance defaults to none;
  * `issuingTolerancePerc` is set only to mirror a real-life BOM line.
@@ -70,10 +71,12 @@ const createMasterdata = async ({ olderHuQty, newerHuQty, orderQty, olderBestBef
                 BOM: { bom: { lines: [{ product: 'COMP', qty: orderQty, uom: 'KGM', issuingTolerancePerc }] } },
             },
             handlingUnits: {
-                // Created first -> lower HuId -> the plan's FEFO-default step (covers the whole demand).
+                // Created first -> lower HuId -> the plan's first (FEFO-default) step; covers the whole demand
+                // unless it holds less than the demand.
                 // An optional best-before date (MHD) ranks BEFORE the HuId in the allocation order.
                 HU_OLDER: { product: 'COMP', warehouse: 'wh', qty: olderHuQty, ...bestBeforeDateProp(olderBestBeforeDate) },
-                // Created second -> the newer HU the operator wants to use up / empty.
+                // Created second -> the zero-target alternative step, or the step covering the rest when the older
+                // HU is short of the demand.
                 HU_NEWER: { product: 'COMP', warehouse: 'wh', qty: newerHuQty, ...bestBeforeDateProp(newerBestBeforeDate) },
             },
             manufacturingOrders: {
