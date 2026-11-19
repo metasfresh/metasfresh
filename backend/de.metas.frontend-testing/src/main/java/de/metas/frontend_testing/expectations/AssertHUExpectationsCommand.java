@@ -173,9 +173,13 @@ class AssertHUExpectationsCommand
 			assertShippedTUCount(expectation.getShippedTUCount(), huId);
 		}
 
+		if (expectation.getArchiveProcessId() != null && expectation.getArchiveCount() == null)
+		{
+			throw new AdempiereException("archiveProcessId requires archiveCount: " + expectation);
+		}
 		if (expectation.getArchiveCount() != null)
 		{
-			assertThat(services.countArchivesOfHU(huId)).as("AD_Archive count").isEqualTo(expectation.getArchiveCount());
+			assertThat(services.countArchivesOfHU(huId, expectation.getArchiveProcessId())).as("AD_Archive count").isEqualTo(expectation.getArchiveCount());
 		}
 
 		if (expectation.getTus() != null)

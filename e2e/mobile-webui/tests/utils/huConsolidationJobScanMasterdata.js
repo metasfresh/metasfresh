@@ -1,7 +1,7 @@
 import { Backend } from './screens/Backend';
 
-/** AD_Process_ID of the LU label report: core "LU SSCC-Barcode-Etikett" (540412). */
-const HU_LABEL_PROCESS_ID = Number(process.env.HU_LABEL_PROCESS_ID || 540412);
+/** AD_Process_ID of the LU label report: core "LU SSCC-Barcode-Etikett" (540412); override via env HU_LABEL_PROCESS_ID when the image uses another label process. */
+export const HU_LABEL_PROCESS_ID = Number(process.env.HU_LABEL_PROCESS_ID || 540412);
 /** Order date of the sales orders (the value every existing consolidation spec uses; its accounting period is open). */
 const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+02:00';
 
@@ -10,13 +10,14 @@ const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+
  * SO1 (P1) -> slot1, SO2 (P2) -> slot1, SO3 (P1) -> slot2. Product aggregation + pickTo:['TU'] so each pick
  * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config.
  *
- * @param {{language?: string, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object}} [overrides]
+ * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object}} [overrides]
  *   optional replacements of the whole section of the same name (TC2 adds a second partner, a third slot and a pallet pick); `language` replaces 'en_US' (user + masterdata).
  */
-export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders } = {}) => {
+export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs } = {}) => {
     return await Backend.createMasterdata({
         language,
         request: {
+            ...(sysconfigs ? { sysconfigs } : {}),
             login: { user: { language } },
             mobileConfig: {
                 picking: {

@@ -32,9 +32,19 @@ import { HUConsolidationJobsListScreen } from '../../utils/screens/huConsolidati
 import { PickingSlotScreen } from '../../utils/screens/huConsolidation/PickingSlotScreen';
 import { HUConsolidationJobScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobScreen';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { page, expectErrorToast } from '../../utils/common';
-import { createJobScanMasterdata, createNoGraiPartnerMasterdata } from '../../utils/huConsolidationJobScanMasterdata';
+import { expectErrorToast } from '../../utils/common';
+import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial, pickOneCrateWithoutGrai, pickOneGraiCrate, pickOnePallet, readSlotCrates, stampGraiViaHUManager } from '../../utils/huConsolidationJobScanFlows';
+
+// GS1 sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
+let sysconfigsToRestore = null;
+test.afterEach(async () => {
+    const sysconfigs = sysconfigsToRestore;
+    sysconfigsToRestore = null;
+    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
+        await Backend.setSysconfigs(sysconfigs);
+    }
+});
 
 // noinspection JSUnusedLocalSymbols
 test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigstellen', async ({ page: _page }) => {
@@ -45,12 +55,14 @@ test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigst
     await allure.severity('critical');
 
     // GS1 manufacturer code + extension digit for the SSCC18 of the pallet
-    await Backend.setSysconfigs({
-        'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
-        'de.metas.handlingunit.GS1ExtensionDigit': '0',
+    const masterdata = await createJobScanMasterdata({
+        sysconfigs: {
+            'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
+            'de.metas.handlingunit.GS1ExtensionDigit': '0',
+        },
     });
-
-    const masterdata = await createJobScanMasterdata();
+    // the values found BEFORE the masterdata call; restored by the afterEach below (also when the test failed)
+    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2 } = masterdata.pickingSlots;
     const { SO1, SO2, SO3 } = masterdata.salesOrders;
 
@@ -83,7 +95,7 @@ test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigst
     await test.step('Scan (GRAI): 3 crates from 2 slots', async () => {
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
         await HUConsolidationJobScreen.clickScanGRAIButton();
-        await HUConsolidationJobScreen.expectScannerVisible(true);
+        await HUConsolidationJobScreen.expectScannerOpen(true);
 
         // scan 1: canonical dot form
         await HUConsolidationJobScreen.scanGRAI({ grai: grai1 });
@@ -103,7 +115,7 @@ test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigst
 
     await test.step('Fertigstellen -> Ja: back on the job list, ship-to gone', async () => {
         await HUConsolidationJobScreen.complete();
-        await expect(page.locator(`.wflauncher-button[data-bpartnerlocationid="${customerLocationId}"]`)).toHaveCount(0);
+        await HUConsolidationJobsListScreen.expectJobNotListed({ customerLocationId });
     });
 
     await Backend.expect({
@@ -120,6 +132,7 @@ test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigst
                 isShipmentCompleted: true,
                 shippedTUCount: 3,
                 archiveCount: 1,
+                archiveProcessId: HU_LABEL_PROCESS_ID,
             },
         },
         pickingSlots: {
@@ -184,14 +197,14 @@ test('TC2 rejected scans: one right message per scan, nothing moves, scanner sta
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot2.id, countHUs: 1 });
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
         await HUConsolidationJobScreen.clickScanGRAIButton();
-        await HUConsolidationJobScreen.expectScannerVisible(true);
+        await HUConsolidationJobScreen.expectScannerOpen(true);
     });
 
     /** after each rejected scan: nothing moved, scanner still armed, no toast left */
     const expectNothingMovedScannerArmed = async ({ crateInSlot1 }) => {
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: crateInSlot1 ? 1 : 0 });
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot2.id, countHUs: 1 });
-        await HUConsolidationJobScreen.expectScannerVisible(true);
+        await HUConsolidationJobScreen.expectScannerOpen(true);
     };
 
     await test.step('EAN-13 -> "not a valid GRAI"', async () => {
@@ -272,14 +285,14 @@ for (const language of ['de_DE', 'en_US']) {
             await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: captions.newLU });
             await HUConsolidationJobScreen.expectCompleteAndAbortCaptions({ complete: captions.complete, abort: captions.abort });
             await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: true });
-            await HUConsolidationJobScreen.expectScannerVisible(false);
+            await HUConsolidationJobScreen.expectScannerOpen(false);
         });
         await test.step('Choose a pallet -> button enabled', async () => {
             await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
             await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: captions.current });
             await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
             await HUConsolidationJobScreen.clickScanGRAIButton();
-            await HUConsolidationJobScreen.expectScannerVisible(true);
+            await HUConsolidationJobScreen.expectScannerOpen(true);
         });
         await test.step('Scan crate 1, then close the pallet (Schliessen): button disabled, scanner hidden', async () => {
             await HUConsolidationJobScreen.scanGRAI({ grai: grai1 });
@@ -287,7 +300,7 @@ for (const language of ['de_DE', 'en_US']) {
             await HUConsolidationJobScreen.closeTargetLU();
             await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: captions.newLU });
             await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: true });
-            await HUConsolidationJobScreen.expectScannerVisible(false);
+            await HUConsolidationJobScreen.expectScannerOpen(false);
         });
     });
 }
@@ -329,7 +342,7 @@ test('TC7 presence rule: a job whose slot holds only a pallet shows no button, t
         await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P2.luName });
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: false });
-        await HUConsolidationJobScreen.expectScannerVisible(false);
+        await HUConsolidationJobScreen.expectScannerOpen(false);
         await HUConsolidationJobScreen.goBack();
     });
     await test.step('The other job\'s crate is untouched in its slot', async () => {
@@ -461,7 +474,7 @@ test('TC20 (b) one GRAI crate + one without: button shown, gone after the GRAI c
         await HUConsolidationJobScreen.scanGRAI({ grai });
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: false });
-        await HUConsolidationJobScreen.expectScannerVisible(false);
+        await HUConsolidationJobScreen.expectScannerOpen(false);
     });
     await test.step('Tap the other crate in the slot screen (AC17): it moves', async () => {
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });

@@ -34,6 +34,8 @@ public class JsonHUExpectation
 	@Nullable Integer shippedTUCount;
 	/** Number of {@code AD_Archive} records of this HU ({@code AD_Table_ID=M_HU}, {@code Record_ID}=HU), e.g. printed labels. */
 	@Nullable Integer archiveCount;
+	/** Optional filter of {@link #archiveCount}: only {@code AD_Archive} records of this {@code AD_Process_ID} (e.g. the HU label process) are counted. Requires {@code archiveCount}. */
+	@Nullable Integer archiveProcessId;
 
 	//
  	//

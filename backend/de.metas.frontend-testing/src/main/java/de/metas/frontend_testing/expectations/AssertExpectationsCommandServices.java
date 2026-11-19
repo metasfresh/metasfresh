@@ -33,6 +33,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Archive;
@@ -172,12 +173,19 @@ public class AssertExpectationsCommandServices
 		public boolean isShipmentCompleted() {return "CO".equals(docStatus);}
 	}
 
-	public int countArchivesOfHU(@NonNull final HuId huId)
+	/**
+	 * @param processId if not {@code null}, only archives of this {@code AD_Archive.AD_Process_ID} are counted
+	 */
+	public int countArchivesOfHU(@NonNull final HuId huId, @Nullable final Integer processId)
 	{
-		return queryBL.createQueryBuilder(I_AD_Archive.class)
+		final IQueryBuilder<I_AD_Archive> queryBuilder = queryBL.createQueryBuilder(I_AD_Archive.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_HU.class))
-				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, huId)
-				.create()
-				.count();
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, huId);
+		if (processId != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Process_ID, processId);
+		}
+		return queryBuilder.create().count();
 	}
 }

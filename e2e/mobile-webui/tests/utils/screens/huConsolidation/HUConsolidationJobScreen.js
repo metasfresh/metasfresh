@@ -126,16 +126,18 @@ export const HUConsolidationJobScreen = {
         }
     }),
 
-    /** Expect the job screen's GRAI scanner input to be present / absent. */
-    expectScannerVisible: async (visible) => await test.step(`${NAME} - Expect GRAI scanner visible=${visible}`, async () => {
-        if (visible) await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
+    /** Expect the job screen's GRAI scanner to be open (its input is attached to the DOM; the input is not painted) / closed. */
+    expectScannerOpen: async (open) => await test.step(`${NAME} - Expect GRAI scanner open=${open}`, async () => {
+        if (open) await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
         else await BarcodeScannerComponent.expectNotAttached({ testId: GRAI_SCANNER_TESTID });
     }),
 
     /** Expect the picking slot row caption to show the given HU count, e.g. "slot1 (2 HUs)" / "(1 HU)". */
     expectPickingSlotHUCount: async ({ pickingSlotId, countHUs }) => await test.step(`${NAME} - Expect slot ${pickingSlotId} to hold ${countHUs} HU(s)`, async () => {
         const unit = countHUs === 1 ? 'HU' : 'HUs';
-        await expect(page.locator(`[data-pickingslotid="${pickingSlotId}"]`))
+        const slotRow = page.locator(`[data-pickingslotid="${pickingSlotId}"]`);
+        await expect(slotRow).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(slotRow)
             .toContainText(`(${countHUs} ${unit})`, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
