@@ -246,6 +246,19 @@ export const useHeaderUpdate = ({
   liveRefresh = false,
 }) => {
   const dispatch = useDispatch();
+  // fixed-length deps: null in Manual (refresh on url/caption only, as before), a value key in the new modes
+  const liveKey = liveRefresh
+    ? JSON.stringify([
+        pickingSlot?.caption,
+        pickingUnit,
+        packingItemName,
+        uom,
+        qtyToPick,
+        qtyPicked,
+        rootDataAttributes ?? null,
+        additionalHeaderProperties?.entries ?? null,
+      ])
+    : null;
   useEffect(() => {
     dispatch(
       updateHeaderEntry({
@@ -280,22 +293,7 @@ export const useHeaderUpdate = ({
         rootDataAttributes,
       })
     );
-  }, [
-    url,
-    caption,
-    ...(liveRefresh
-      ? [
-          pickingSlot?.caption,
-          pickingUnit,
-          packingItemName,
-          uom,
-          qtyToPick,
-          qtyPicked,
-          JSON.stringify(rootDataAttributes ?? null),
-          JSON.stringify(additionalHeaderProperties?.entries ?? null),
-        ]
-      : []),
-  ]);
+  }, [url, caption, liveKey]);
 };
 
 export default PickLineScreen;
