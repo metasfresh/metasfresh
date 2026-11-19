@@ -5,6 +5,7 @@ import {
   computeQtyUnitProps,
   computeScannedBarcodeParam,
   computeOpenBoxHeaderEntries,
+  computeRememberedCULabel,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
@@ -177,5 +178,15 @@ describe('PickingLineScanScreen: the open box is shown in the header', () => {
 
   it('Manual line: no entry, header unchanged', () => {
     expect(computeOpenBoxHeaderEntries({ isNewModeLine: false, tuPickingTarget: { caption: 'x' } })).toEqual([]);
+  });
+});
+
+describe('PickingLineScanScreen: re-entry with the remembered label', () => {
+  const cuEntry = { label: { cuLabel: 'RAW-A', lotNo: 'L1' }, lastTypedQty: 5 };
+
+  it('reopens the quantity block only on the hop back from the line screen', () => {
+    expect(computeRememberedCULabel({ isScanOnce: true, isResume: true, cuEntry })).toEqual(cuEntry.label);
+    expect(computeRememberedCULabel({ isScanOnce: true, isResume: false, cuEntry })).toBeUndefined();
+    expect(computeRememberedCULabel({ isScanOnce: false, isResume: true, cuEntry })).toBeUndefined();
   });
 });

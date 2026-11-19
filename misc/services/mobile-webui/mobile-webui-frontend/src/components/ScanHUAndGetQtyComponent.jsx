@@ -17,7 +17,7 @@ import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickCon
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 import Spinner from './Spinner';
 import { doFinally } from '../utils';
-import { CUQtyEntryMode } from '../constants/CUQtyEntryMode';
+import { isScanOnce as isScanOnceMode } from '../constants/CUQtyEntryMode';
 import { isLineDoneAfterBooking } from '../utils/picking';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
@@ -77,7 +77,7 @@ const ScanHUAndGetQtyComponent = ({
   onResult,
   onClose: onCloseCallback,
 }) => {
-  const isScanOnce = cuQtyEntryMode === CUQtyEntryMode.SCAN_ONCE_ENTER_QTY;
+  const isScanOnce = isScanOnceMode(cuQtyEntryMode);
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   // scan once: the quantity block stays open after a booking (and after a label rescan); a new key (also a new
   // suggestion) gives it the new suggestion and the new label values
@@ -350,7 +350,10 @@ const ScanHUAndGetQtyComponent = ({
     const resultPromise = onResult(result);
     return isScanOnce && resultPromise?.then
       ? resultPromise.then((value) => {
-          setQuantityBlockKey((key) => key + 1);
+          // a done line navigates away: nothing to reset there
+          if (!result.isDone) {
+            setQuantityBlockKey((key) => key + 1);
+          }
           return value;
         })
       : resultPromise;
@@ -460,6 +463,7 @@ const ScanHUAndGetQtyComponent = ({
             isScanOnce ? (
               <BarcodeScannerComponent
                 testId="rescanCULabel-input"
+                coexistWithTypedInput
                 resolveScannedBarcode={handleResolveHUScannedBarcode}
                 onResolvedResult={onCULabelRescanned}
               />

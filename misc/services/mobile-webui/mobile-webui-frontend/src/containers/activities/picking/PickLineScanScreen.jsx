@@ -57,7 +57,7 @@ import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/pic
 import { resolveCULabel, routeScannedCode, selectCULabelFormat, SCAN_TYPE_GRAI } from '../../../utils/cuLabel';
 import { parseGraiFromRawInput } from '../../../utils/grai';
 import NextBoxActions, { useNextBox } from '../../../components/NextBoxActions';
-import { CUQtyEntryMode, isNewMode } from '../../../constants/CUQtyEntryMode';
+import { isNewMode, isScanOnce as isScanOnceMode } from '../../../constants/CUQtyEntryMode';
 import { rememberCUEntry } from '../../../actions/PickingActions';
 import { getCUEntry } from '../../../reducers/wfProcesses/picking';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
@@ -74,6 +74,7 @@ const PickLineScanScreen = () => {
   const [urlParams] = useSearchParams();
   const qrCode = urlParams.get('qrCode');
   const next = urlParams.get('next');
+  const isResume = urlParams.get('resume') === 'Y';
 
   const {
     activity,
@@ -178,7 +179,7 @@ const PickLineScanScreen = () => {
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
   // scan once: the count offered for the next box (the last typed count, capped by the open quantity)
-  const isScanOnce = cuQtyEntryMode === CUQtyEntryMode.SCAN_ONCE_ENTER_QTY;
+  const isScanOnce = isScanOnceMode(cuQtyEntryMode);
   const suggestedQty = isScanOnce
     ? computeSuggestedQty({ lastTypedQty: cuEntry?.lastTypedQty, qtyOpen: qtyToPickRemaining }) ?? undefined
     : undefined;
@@ -231,7 +232,7 @@ const PickLineScanScreen = () => {
       readAttributes={readAttributes}
       cuQtyEntryMode={cuQtyEntryMode}
       suggestedQty={suggestedQty}
-      rememberedCULabel={isScanOnce ? cuEntry?.label : undefined}
+      rememberedCULabel={computeRememberedCULabel({ isScanOnce, isResume, cuEntry })}
       isShowCloseTargetButton={!!luPickingTarget}
       nextBoxActions={
         isNewModeLine ? <NextBoxActions isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} /> : undefined
@@ -279,6 +280,14 @@ export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
 // @VisibleForTesting
 export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
   isNewMode(cuQtyEntryMode) ? undefined : qrCode;
+
+/**
+ * Only the hop back from the line screen ("HU verpacken") reopens the quantity block with the remembered label; every
+ * other entry (e.g. the scan button, a line reopened after closing it) starts with the scan step.
+ */
+// @VisibleForTesting
+export const computeRememberedCULabel = ({ isScanOnce, isResume, cuEntry }) =>
+  isScanOnce && isResume ? cuEntry?.label : undefined;
 
 /**
  * The pick-time GRAI capture (after OK) belongs to the Manual path; in the CU quantity entry modes the picker opens

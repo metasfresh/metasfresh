@@ -294,7 +294,8 @@ describe('useNextBox', () => {
     let first;
     await act(async () => {
       first = exposed.nextBox.onNextBox();
-      await exposed.nextBox.onGraiScanned('1234567.12345.S1');
+      // the scanner is told (error beep + message) instead of a success for a box that was not opened
+      await expect(exposed.nextBox.onGraiScanned('1234567.12345.S1')).rejects.toThrow();
     });
     expect(pickingApi.setTUPickingTargetFromGrai).not.toHaveBeenCalled();
     await act(async () => {

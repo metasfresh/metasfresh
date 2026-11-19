@@ -109,6 +109,8 @@ export const useNextBox = ({
   // `isRethrow`: the scanner's own flow reports the error, so it gets it back instead of a toast.
   const runExclusive = useCallback(async (action, { isRethrow = false } = {}) => {
     if (isInFlightRef.current) {
+      // a scan must not report success for a box that was not opened
+      if (isRethrow) throw new Error(trl('picking.nextBoxBusy'));
       return;
     }
     isInFlightRef.current = true;

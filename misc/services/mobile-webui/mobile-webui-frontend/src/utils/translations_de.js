@@ -63,6 +63,7 @@ const translations = {
     },
     nextBox: 'Weitere Kiste',
     nextBoxOpened: 'Neue Kiste geöffnet: %(caption)s',
+    nextBoxBusy: 'Es wird gerade eine Kiste geöffnet. Bitte gleich nochmal scannen.',
   },
   login: {
     submitButton: 'Login',

@@ -59,6 +59,7 @@ const translations = {
     },
     nextBox: 'Next box',
     nextBoxOpened: 'New box opened: %(caption)s',
+    nextBoxBusy: 'A box is just being opened. Scan again in a moment.',
   },
   login: {
     submitButton: 'Login',

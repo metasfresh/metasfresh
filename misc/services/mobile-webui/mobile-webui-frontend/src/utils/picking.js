@@ -73,7 +73,7 @@ export const isCatchWeight = ({ line }) => {
  * @returns null before the first typed value
  */
 export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
-  if (lastTypedQty == null || lastTypedQty === '') {
+  if (lastTypedQty == null) {
     return null;
   }
   const last = Number(lastTypedQty);
@@ -109,6 +109,7 @@ export const computeCUEntryToRemember = ({
   lotNo,
   bestBeforeDate,
 }) =>
+  // the booking payload's `cuLabel` is optional: without it there is no label to reopen the quantity block with
   cuLabel
     ? {
         lastTypedQty: computeLastTypedQty({ previousLastTypedQty, suggestedQty, qtyBooked }),

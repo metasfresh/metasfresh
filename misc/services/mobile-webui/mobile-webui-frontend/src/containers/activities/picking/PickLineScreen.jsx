@@ -108,9 +108,9 @@ const PickLineScreen = () => {
         wfProcessId,
         activityId,
         lineId,
-        // a line with a CU quantity entry mode reads labels: back in its scan screen the open box (target) is kept and
-        // the screen continues in the line's mode, the source HU is not scanned
-        qrCode: isNewMode(cuQtyEntryMode) ? undefined : pickFromHUQRCode,
+        qrCode: pickFromHUQRCode,
+        // a line in a CU quantity entry mode continues where the picker left it: the quantity block reopens
+        resume: isNewMode(cuQtyEntryMode),
       })
     );
   };
@@ -277,7 +277,12 @@ export const useHeaderUpdate = ({
         rootDataAttributes,
       })
     );
-  }, [url, caption, JSON.stringify(rootDataAttributes ?? null)]);
+  }, [
+    url,
+    caption,
+    JSON.stringify(rootDataAttributes ?? null),
+    JSON.stringify(additionalHeaderProperties?.entries ?? null),
+  ]);
 };
 
 export default PickLineScreen;

@@ -21,7 +21,7 @@ import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
-import { CUQtyEntryMode, isNewMode } from '../../constants/CUQtyEntryMode';
+import { isNewMode, isScanOnce as isScanOnceMode } from '../../constants/CUQtyEntryMode';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
@@ -64,7 +64,7 @@ const GetQuantityDialog = ({
 
   // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
   // smaller count than the open qty is not a rejection
-  const isScanOnce = cuQtyEntryMode === CUQtyEntryMode.SCAN_ONCE_ENTER_QTY;
+  const isScanOnce = isScanOnceMode(cuQtyEntryMode);
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -507,6 +507,7 @@ const GetQuantityDialog = ({
                     captionKey="activities.picking.confirmDoneAndCloseTarget"
                     className="is-success"
                     disabled={!allValid}
+                    type="button"
                     onClick={() => onDialogYes({ isCloseTarget: true })}
                   />
                   <br />

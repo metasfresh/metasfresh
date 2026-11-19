@@ -19,6 +19,7 @@ const BarcodeScannerComponent = ({
   onResolvedResult,
   inputPlaceholderText,
   invisible,
+  coexistWithTypedInput,
 }) => {
   const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
     invisible,
@@ -122,6 +123,7 @@ const BarcodeScannerComponent = ({
         invisible={invisible || activeMode !== MODE.HARDWARE}
         isProcessing={isProcessing}
         disabled={isProcessing || activeMode === MODE.MANUAL}
+        coexistWithTypedInput={coexistWithTypedInput}
         onBarcodeScanned={validateScannedBarcodeAndForward}
         testId={testId}
       />
@@ -162,10 +164,13 @@ BarcodeScannerComponent.propTypes = {
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
+  /** the scanner sits next to a field the operator types into (it must not take the focus nor read typed keys) */
+  coexistWithTypedInput: PropTypes.bool,
 };
 
 BarcodeScannerComponent.defaultProps = {
   invisible: false,
+  coexistWithTypedInput: false,
 };
 
 export default BarcodeScannerComponent;
