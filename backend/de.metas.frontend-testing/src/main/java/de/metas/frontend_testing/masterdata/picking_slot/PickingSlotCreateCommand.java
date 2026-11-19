@@ -8,6 +8,9 @@ import de.metas.picking.api.PickingSlotCreateRequest;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import de.metas.picking.model.I_M_PickingSlot;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
@@ -15,6 +18,7 @@ import org.adempiere.warehouse.LocatorId;
 @Builder
 public class PickingSlotCreateCommand
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 
 	@NonNull private final MasterdataContext context;
@@ -24,6 +28,7 @@ public class PickingSlotCreateCommand
 	public JsonPickingSlotCreateResponse execute()
 	{
 		final String code = request.getCode() != null ? request.getCode() : identifier.toUniqueString();
+		assertNoPickingSlotWithCode(code);
 		final LocatorId locatorId = request.getLocator() != null
 				? context.getId(request.getLocator(), LocatorId.class)
 				: context.getIdOfType(LocatorId.class);
@@ -44,5 +49,18 @@ public class PickingSlotCreateCommand
 				.code(code)
 				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlot).toGlobalQRCodeJsonString())
 				.build();
+	}
+
+	/** A caller-supplied code must not collide with another slot (shared DB across runs): fail clearly instead of creating a duplicate. */
+	private void assertNoPickingSlotWithCode(final String code)
+	{
+		final boolean exists = queryBL.createQueryBuilder(I_M_PickingSlot.class)
+				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_PickingSlot, code)
+				.create()
+				.anyMatch();
+		if (exists)
+		{
+			throw new AdempiereException("A picking slot with code '" + code + "' already exists; pick another code");
+		}
 	}
 }

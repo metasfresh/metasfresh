@@ -1,7 +1,6 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -9,6 +8,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.handlingunits.picking.slot.PickingSlotQueue;
+import de.metas.handlingunits.picking.slot.PickingSlotQueueItem;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
@@ -109,7 +110,15 @@ class HUConsolidationScannedCodeResolversTest
 
 	private static HUConsolidationJobCrates jobCrates(final I_M_HU hu1, final I_M_HU hu2)
 	{
-		return HUConsolidationJobCrates.of(ImmutableMap.of(id(hu1), SLOT_1, id(hu2), SLOT_2));
+		return HUConsolidationJobCrates.ofQueues(ImmutableList.of(queue(SLOT_1, id(hu1)), queue(SLOT_2, id(hu2))));
+	}
+
+	private static PickingSlotQueue queue(final PickingSlotId slotId, final HuId huId)
+	{
+		return PickingSlotQueue.builder()
+				.pickingSlotId(slotId)
+				.items(ImmutableList.of(PickingSlotQueueItem.builder().huId(huId).build()))
+				.build();
 	}
 
 	private static void assertMessage(final Throwable ex, final AdMessageKey expected)

@@ -32,17 +32,6 @@ public final class HUConsolidationJobCrates
 	/** per slot: the size of that slot's own queue (an HU queued in two slots counts in both) */
 	@NonNull private final ImmutableMap<PickingSlotId, Integer> countHUsByPickingSlotId;
 
-	public static HUConsolidationJobCrates of(@NonNull final ImmutableMap<HuId, PickingSlotId> pickingSlotIdsByHuId)
-	{
-		if (pickingSlotIdsByHuId.isEmpty())
-		{
-			return EMPTY;
-		}
-		final LinkedHashMap<PickingSlotId, Integer> counts = new LinkedHashMap<>();
-		pickingSlotIdsByHuId.values().forEach(slotId -> counts.merge(slotId, 1, Integer::sum));
-		return new HUConsolidationJobCrates(pickingSlotIdsByHuId, ImmutableMap.copyOf(counts));
-	}
-
 	/**
 	 * An HU seen in more than one queue keeps its first slot in {@link #getPickingSlotId(HuId)}, but counts in every slot whose queue holds it.
 	 */
