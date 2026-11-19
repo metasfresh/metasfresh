@@ -82,7 +82,7 @@ class CustomerCUQtyEntryWriterTest
 		assertThat(jobId).isGreaterThan(0);
 		final I_MobileUI_UserProfile_Picking_Job job = InterfaceWrapperHelper.load(jobId, I_MobileUI_UserProfile_Picking_Job.class);
 		assertThat(job.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY);
-		assertThat(job.getC_ScannableCode_Format_ID()).isZero(); // empty on the row = the profile's
+		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(job.getC_ScannableCode_Format_ID())).isNull(); // empty on the row = the profile's
 		// the new row must not change the customer's other options: they start as a copy of the profile's
 		assertThat(job.isAllowSkippingRejectedReason()).isTrue();
 		assertThat(job.isShowConfirmationPromptWhenOverPick()).isTrue();
@@ -121,6 +121,6 @@ class CustomerCUQtyEntryWriterTest
 		assertThat(reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID()).isEqualTo(existing.getMobileUI_UserProfile_Picking_Job_ID());
 		final I_MobileUI_UserProfile_Picking_Job job = InterfaceWrapperHelper.load(existing.getMobileUI_UserProfile_Picking_Job_ID(), I_MobileUI_UserProfile_Picking_Job.class);
 		assertThat(job.getCUQtyEntryMode()).isNull();
-		assertThat(job.getC_ScannableCode_Format_ID()).isZero();
+		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(job.getC_ScannableCode_Format_ID())).isNull();
 	}
 }
