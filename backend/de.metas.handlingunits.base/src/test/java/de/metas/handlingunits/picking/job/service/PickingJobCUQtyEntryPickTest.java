@@ -112,7 +112,7 @@ class PickingJobCUQtyEntryPickTest
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		formatService = ScannableCodeFormatService.newInstanceForUnitTesting();
 
-		final I_M_Attribute packIdAttribute = new AttributesTestHelper().createM_Attribute(PickingCULabelService.ATTR_PackId.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		final I_M_Attribute packIdAttribute = new AttributesTestHelper().createM_Attribute(AttributeConstants.PackId.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 		huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(packIdAttribute)
 				.setM_HU_PI(huTestHelper.huDefVirtual)
 				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
@@ -575,8 +575,8 @@ class PickingJobCUQtyEntryPickTest
 	private String packIdOf(final I_M_HU hu)
 	{
 		final IAttributeStorage storage = attributesOf(hu);
-		assertThat(storage.hasAttribute(PickingCULabelService.ATTR_PackId)).as("HU carries the PackId attribute").isTrue();
-		final String packId = storage.getValueAsString(PickingCULabelService.ATTR_PackId);
+		assertThat(storage.hasAttribute(AttributeConstants.PackId)).as("HU carries the PackId attribute").isTrue();
+		final String packId = storage.getValueAsString(AttributeConstants.PackId);
 		return packId == null || packId.trim().isEmpty() ? null : packId;
 	}
 

@@ -14,6 +14,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
@@ -21,13 +22,11 @@ import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
@@ -47,9 +46,6 @@ public class PickingCULabelService
 	public static final AdMessageKey MSG_CU_LABEL_FORMAT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_FORMAT_MISMATCH");
 	public static final AdMessageKey MSG_CU_LABEL_ALREADY_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED");
 	public static final AdMessageKey MSG_CU_LABEL_NO_FORMAT = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_FORMAT");
-
-	/** HU attribute that carries the pack ID of a CU picked in {@code SCAN_EACH_CU} mode (migration 5836530) */
-	public static final AttributeCode ATTR_PackId = AttributeCode.ofString("PackId");
 
 	/** the constant marker in front of the pack ID in the label */
 	private static final String PACK_ID_MARKER = "92";
@@ -167,7 +163,7 @@ public class PickingCULabelService
 		final ImmutableSet<HuId> huIdsWithPackId = handlingUnitsBL.createHUQueryBuilder()
 				.setOnlyTopLevelHUs(false)
 				.addOnlyHUIds(pickedHUIds)
-				.addOnlyWithAttribute(ATTR_PackId, packId)
+				.addOnlyWithAttribute(AttributeConstants.PackId, packId)
 				.listIds();
 		if (huIdsWithPackId.isEmpty())
 		{

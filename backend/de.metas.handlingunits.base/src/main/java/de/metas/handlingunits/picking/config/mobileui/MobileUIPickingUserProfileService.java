@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
