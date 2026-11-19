@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { isGRAIScanEnabled as isGRAIScanEnabledFunc, isUserEditable as isUserEditableFunc } from '../reducers';
@@ -25,6 +25,12 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
   const [isScannerOpen, setScannerOpen] = useState(false);
   // the scanner closes by itself when the pallet is closed or the last GRAI crate has left the slots
   const isScannerVisible = isScannerOpen && isCurrentTargetSet && isGRAIScanEnabled;
+  // forget the open state when the last GRAI crate has left the slots, so the scanner does not re-open by itself when the button comes back
+  useEffect(() => {
+    if (!isGRAIScanEnabled) {
+      setScannerOpen(false);
+    }
+  }, [isGRAIScanEnabled]);
 
   // errors are not caught here: they reach the scanner, which shows the message and beeps
   const resolveScannedBarcode = ({ scannedBarcode }) =>
