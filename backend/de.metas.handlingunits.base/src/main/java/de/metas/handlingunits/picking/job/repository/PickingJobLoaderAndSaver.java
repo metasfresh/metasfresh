@@ -896,7 +896,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		}
 
 		// New CU quantity entry modes count packs (CU), also when the line's packing is a box (TU) packing; the pick command books CUs the same way
-		if (options.getCuQtyEntryMode().isNewMode())
+		if (options.getCUQtyEntryModeOrDefault().isNewMode())
 		{
 			return PickingUnit.CU;
 		}

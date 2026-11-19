@@ -144,7 +144,7 @@ public class PickingJobHUService
 
 	public boolean isCUQtyEntryNewMode(@Nullable final BPartnerId customerId)
 	{
-		return configService.getPickingJobOptions(customerId).getCuQtyEntryMode().isNewMode();
+		return configService.getPickingJobOptions(customerId).getCUQtyEntryModeOrDefault().isNewMode();
 	}
 
 	/**

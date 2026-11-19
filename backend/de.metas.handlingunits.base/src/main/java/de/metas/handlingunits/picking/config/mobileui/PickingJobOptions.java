@@ -3,8 +3,10 @@ package de.metas.handlingunits.picking.config.mobileui;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.util.OptionalBoolean;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,7 +36,7 @@ public class PickingJobOptions
 	@NonNull OptionalBoolean completeJobAutomatically;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
-	@Nullable CUQtyEntryMode cuQtyEntryMode; // null = not set (customer: use the profile's)
+	@Getter(AccessLevel.NONE) @Nullable CUQtyEntryMode cuQtyEntryMode; // null = not set (customer: use the profile's)
 	@Nullable ScannableCodeFormatId cuLabelFormatId; // null = not set (customer: use the profile's)
 
 	@Builder(toBuilder = true)
@@ -88,7 +90,7 @@ public class PickingJobOptions
 
 	/** @return the mode; never null: {@link CUQtyEntryMode#MANUAL} when none is set */
 	@NonNull
-	public CUQtyEntryMode getCuQtyEntryMode() {return cuQtyEntryMode != null ? cuQtyEntryMode : CUQtyEntryMode.DEFAULT;}
+	public CUQtyEntryMode getCUQtyEntryModeOrDefault() {return cuQtyEntryMode != null ? cuQtyEntryMode : CUQtyEntryMode.DEFAULT;}
 
 	/** @return the mode if one is set (a customer's options may leave it empty = use the profile's) */
 	public Optional<CUQtyEntryMode> getCuQtyEntryModeIfSet() {return Optional.ofNullable(cuQtyEntryMode);}

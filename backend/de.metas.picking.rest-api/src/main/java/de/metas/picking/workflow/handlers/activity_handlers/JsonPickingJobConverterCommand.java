@@ -118,7 +118,7 @@ public class JsonPickingJobConverterCommand
 			group.getValue().stream()
 					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
 							.displayGroupKey(group.getKey())
-							.cuQtyEntryMode(getLineOptions(line).getCuQtyEntryMode().getCode())
+							.cuQtyEntryMode(getLineOptions(line).getCUQtyEntryModeOrDefault().getCode())
 							.cuLabelFormatId(getLineOptions(line).getCuLabelFormatId().orElse(null))
 							.packingTuPIId(toPackingTuPIId(line.getPackingInfo(), handlingUnitsBL))
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())

@@ -358,7 +358,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
-		record.setCUQtyEntryMode(from.getCuQtyEntryMode().getCode());
+		record.setCUQtyEntryMode(from.getCUQtyEntryModeOrDefault().getCode());
 		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCuLabelFormatId().orElse(null)));
 	}
 

@@ -91,7 +91,7 @@ class CustomerCUQtyEntryWriterTest
 		assertThat(job.getName()).startsWith(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
 		assertThat(job.getAllowPickToStructure_TU()).isEqualTo("Y");
 		// the mode / format of the new row are what was asked; the effective values fall back to the profile
-		assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+		assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 		assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCuLabelFormatId()).contains(PROFILE_FORMAT_ID);
 	}
 

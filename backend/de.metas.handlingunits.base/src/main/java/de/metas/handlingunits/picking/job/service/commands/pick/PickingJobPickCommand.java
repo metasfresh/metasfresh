@@ -220,7 +220,7 @@ public class PickingJobPickCommand
 		this.pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
-		this.cuQtyEntryMode = pickingJobOptions.getCuQtyEntryMode();
+		this.cuQtyEntryMode = pickingJobOptions.getCUQtyEntryModeOrDefault();
 		this.cuLabel = cuLabel;
 		// new modes always book CUs into the open box: never a whole TU
 		this.isPickWholeTU = isPickWholeTU && !cuQtyEntryMode.isNewMode();

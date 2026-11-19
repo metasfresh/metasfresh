@@ -45,29 +45,29 @@ class PickingJobCUQtyEntryOptionsTest
 		void modeCustomerEmpty_fallsBackToProfile()
 		{
 			final PickingJobOptions resolved = options(null, null).fallbackTo(options(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null));
-			assertThat(resolved.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 		}
 
 		@Test
 		void modeCustomerSet_wins()
 		{
 			final PickingJobOptions resolved = options(CUQtyEntryMode.SCAN_EACH_CU, null).fallbackTo(options(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null));
-			assertThat(resolved.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
+			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
 		}
 
 		@Test
 		void customerMode_manual_winsOverProfileNewMode()
 		{
 			final PickingJobOptions resolved = options(CUQtyEntryMode.MANUAL, null).fallbackTo(options(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null));
-			assertThat(resolved.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.MANUAL);
+			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.MANUAL);
 		}
 
 		@Test
 		void noProfileMode_isManual()
 		{
 			final PickingJobOptions resolved = options(null, null).fallbackTo(options(null, null));
-			assertThat(resolved.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.MANUAL);
-			assertThat(options(null, null).getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.MANUAL);
+			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.MANUAL);
+			assertThat(options(null, null).getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.MANUAL);
 		}
 
 		@Test
@@ -89,7 +89,7 @@ class PickingJobCUQtyEntryOptionsTest
 		{
 			final PickingJobOptions resolved = options(CUQtyEntryMode.SCAN_EACH_CU, null)
 					.fallbackTo(options(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, FORMAT_PROFILE));
-			assertThat(resolved.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
+			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
 			assertThat(resolved.getCuLabelFormatId()).contains(FORMAT_PROFILE);
 		}
 
@@ -157,7 +157,7 @@ class PickingJobCUQtyEntryOptionsTest
 		void customerJobEmpty_usesProfileModeAndFormat()
 		{
 			final PickingJobOptions options = repository.getPickingJobOptions(customerId);
-			assertThat(options.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			assertThat(options.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			assertThat(options.getCuLabelFormatId()).contains(FORMAT_PROFILE);
 		}
 
@@ -170,11 +170,11 @@ class PickingJobCUQtyEntryOptionsTest
 			InterfaceWrapperHelper.saveRecord(job);
 
 			final PickingJobOptions customerOptions = repository.getPickingJobOptions(customerId);
-			assertThat(customerOptions.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
+			assertThat(customerOptions.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
 			assertThat(customerOptions.getCuLabelFormatId()).contains(FORMAT_CUSTOMER);
 
 			final PickingJobOptions otherCustomerOptions = repository.getPickingJobOptions(BPartnerId.ofRepoId(2001));
-			assertThat(otherCustomerOptions.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			assertThat(otherCustomerOptions.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			assertThat(otherCustomerOptions.getCuLabelFormatId()).contains(FORMAT_PROFILE);
 		}
 	}
