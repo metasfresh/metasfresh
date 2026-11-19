@@ -41,10 +41,6 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario Outline: Order from order candidates of the shipped EDI-ORDERS data source <dataSource> is flagged
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
@@ -105,10 +101,6 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: Order entered manually with a POReference is not flagged
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
@@ -122,10 +114,6 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: Order from order candidates of a data source that is not an EDI channel is not flagged
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                   | Value                  | InternalName           | IsEDIChannel |
@@ -184,13 +172,9 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: Order from an EDI-channel order candidate whose POReference was cleared is not flagged
     Given metasfresh contains AD_InputDataSource:
-      | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
+      | Identifier | Name                     | Value                    | InternalName             | IsEDIChannel |
       | dataSource | poRefBuyerClearedChannel | poRefBuyerClearedChannel | poRefBuyerClearedChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
@@ -242,20 +226,16 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | order_1               |
     Then validate the created orders
       | C_Order_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | IsPOReferenceBuyerOrderNo |
-      | order_1               | poRefBuyerClearedChannel                  | false                     |
+      | order_1               | poRefBuyerClearedChannel               | false                     |
 
 
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: Changing the POReference on a flagged order resets the flag
     Given metasfresh contains AD_InputDataSource:
-      | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
+      | Identifier | Name                   | Value                  | InternalName           | IsEDIChannel |
       | dataSource | poRefBuyerResetChannel | poRefBuyerResetChannel | poRefBuyerResetChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
@@ -317,13 +297,9 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: Changing the POReference on the order candidate resets the flag of the order
     Given metasfresh contains AD_InputDataSource:
-      | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
+      | Identifier | Name                       | Value                      | InternalName               | IsEDIChannel |
       | dataSource | poRefBuyerCandidateChannel | poRefBuyerCandidateChannel | poRefBuyerCandidateChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
@@ -385,10 +361,6 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: User ticks the flag on a manually entered order
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
@@ -405,10 +377,6 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: User changes the POReference and ticks the flag in the same save
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
@@ -425,10 +393,6 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: Copy of a flagged order is not flagged
     Given metasfresh contains AD_InputDataSource:
       | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
@@ -494,13 +458,9 @@ Feature: Sales order flag - the order reference is the buyer's order number
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
   Scenario: Unticking the EDI channel keeps the flag of existing orders and affects only later orders
     Given metasfresh contains AD_InputDataSource:
-      | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
+      | Identifier | Name                    | Value                   | InternalName            | IsEDIChannel |
       | dataSource | poRefBuyerUntickChannel | poRefBuyerUntickChannel | poRefBuyerUntickChannel | Y            |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
@@ -551,7 +511,7 @@ Feature: Sales order flag - the order reference is the buyer's order number
       | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
       | order_1               | 0021234572  | true                      |
     When metasfresh contains AD_InputDataSource:
-      | Identifier | Name                  | Value                 | InternalName          | IsEDIChannel |
+      | Identifier | Name                    | Value                   | InternalName            | IsEDIChannel |
       | dataSource | poRefBuyerUntickChannel | poRefBuyerUntickChannel | poRefBuyerUntickChannel | N            |
     Then validate the created orders
       | C_Order_ID.Identifier | poReference | IsPOReferenceBuyerOrderNo |
