@@ -814,6 +814,10 @@ class PickingJobCUQtyEntryPickTest
 		job = undo(job, cu1Id, source.getQrCode(), null);
 
 		assertThat(countQtyPickedRowsOfBox(boxId)).as("the CU-in-box delete did not run: both rows are still there").isEqualTo(2);
+		// the un-pick itself did run
+		assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").hasSize(1).doesNotContain(cu1Id);
+		assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
 	}
 
 	private PickingJob undo(final PickingJob job, final HuId cuId, final HUQRCode sourceQr, @Nullable final HUQRCode unpickToTargetQr)
