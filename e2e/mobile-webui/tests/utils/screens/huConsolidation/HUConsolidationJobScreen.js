@@ -180,6 +180,18 @@ export const HUConsolidationJobScreen = {
         await HUConsolidationJobsListScreen.waitForScreen();
     }),
 
+    /**
+     * Tap Rückgängig / Abort and confirm with Ja, when the server refuses (a real pallet is the current target):
+     * the job screen stays, no job list.
+     */
+    abortRefused: async () => await step(`${NAME} - Abort (refused, stays on the job screen)`, async () => {
+        await page.locator('#abort-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await HUConsolidationJobScreen.waitForScreen();
+        await HUConsolidationJobScreen.expectVisible();
+    }),
+
     complete: async () => await step(`${NAME} - Complete`, async () => {
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();

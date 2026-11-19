@@ -10,10 +10,10 @@ const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+
  * SO1 (P1) -> slot1, SO2 (P2) -> slot1, SO3 (P1) -> slot2. Product aggregation + pickTo:['TU'] so each pick
  * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config.
  *
- * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object}} [overrides]
- *   optional replacements of the whole section of the same name (TC2 adds a second partner, a third slot and a pallet pick); `language` replaces 'en_US' (user + masterdata).
+ * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object}} [overrides]
+ *   optional replacements of the whole section of the same name (TC2 adds a second partner, a third slot and a pallet pick); `handlingUnits` is added to the two source HUs (TC17 adds an existing pallet); `language` replaces 'en_US' (user + masterdata).
  */
-export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs } = {}) => {
+export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits } = {}) => {
     return await Backend.createMasterdata({
         language,
         request: {
@@ -46,6 +46,7 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpar
             handlingUnits: {
                 HU1: { product: 'P1', warehouse: 'wh', qty: 100 },
                 HU2: { product: 'P2', warehouse: 'wh', qty: 100 },
+                ...handlingUnits,
             },
             salesOrders: salesOrders ?? {
                 SO1: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
