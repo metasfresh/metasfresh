@@ -224,7 +224,7 @@ Feature: Render invoice address
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference      | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference      | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | shipment_1            | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_10001 | true      | CO        | Shopware                               | Shopware6            |
 
     And validate the created shipment lines

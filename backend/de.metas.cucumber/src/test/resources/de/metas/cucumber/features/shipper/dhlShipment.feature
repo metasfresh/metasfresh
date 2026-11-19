@@ -158,7 +158,7 @@ Feature: Dhl Shipment
       | orderLine_2               | order_1               | 2022-12-12  | packing_product_1       | 0            | 1          | 0           | 0.0   | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | shipment_1            | dhl_customer             | dhl_location                      | 2022-12-12  | ref_12301   | true      | CO        |
 
     And validate the created shipment lines
@@ -255,7 +255,7 @@ Feature: Dhl Shipment
       | orderLine_1               | order_1               | 2022-12-12  | test_product_dhl_01     | 10           | 10         | 10          | 10.0  | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | shipment_1            | dhl_customer             | dhl_location                      | 2022-12-12  | ref_12345   | true      | CO        |
 
     And validate the created shipment lines

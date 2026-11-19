@@ -130,7 +130,7 @@ Feature: Compensation Group
       | orderLine_2               | order_1               | 2022-02-02  | test_product_30_02      | 1            | 1          | 1           | 5.0   | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | shipment_1            | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | ref_12301   | true      | CO        |
 
     And validate the created shipment lines
@@ -236,7 +236,7 @@ Feature: Compensation Group
       | orderLine_2               | order_2               | 2022-02-02  | test_product_30_02      | 1            | 1          | 1           | 5.0   | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | shipment_2            | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | ref_12302   | true      | CO        |
 
     And validate the created shipment lines
