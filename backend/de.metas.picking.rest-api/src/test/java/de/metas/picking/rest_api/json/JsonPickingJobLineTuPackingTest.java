@@ -4,9 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -28,27 +26,18 @@ import java.math.BigDecimal;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
-/** {@code JsonPickingJobLine.packingTuPIId}: the TU packing instructions the line's packing names (null = no TU PI, e.g. virtual packing). */
-class JsonPickingJobLinePackingTuPITest
+/** {@code JsonPickingJobLine.builderFrom}: unit and quantities of a line on a TU packing, per picking unit. */
+class JsonPickingJobLineTuPackingTest
 {
 	private static final HuPackingInstructionsItemId PI_ITEM_ID = HuPackingInstructionsItemId.ofRepoId(540001);
-	private static final HuPackingInstructionsId TU_PI_ID = HuPackingInstructionsId.ofRepoId(540002);
 
-	private IHandlingUnitsBL handlingUnitsBL;
 	private I_C_UOM uom;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		handlingUnitsBL = mock(IHandlingUnitsBL.class);
-		when(handlingUnitsBL.getPackingInstructionsId(any(HuPackingInstructionsItemId.class))).thenReturn(TU_PI_ID);
 
 		uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("Stk");
@@ -80,7 +69,7 @@ class JsonPickingJobLinePackingTuPITest
 				.pickingUnit(pickingUnit)
 				.build();
 
-		return JsonPickingJobLine.builderFrom(line, handlingUnitsBL, uomId -> TranslatableStrings.constant("Stk"), JsonOpts.ofAdLanguage("en_US"))
+		return JsonPickingJobLine.builderFrom(line, uomId -> TranslatableStrings.constant("Stk"), JsonOpts.ofAdLanguage("en_US"))
 				.displayGroupKey("")
 				.allowPickingAnyHU(false)
 				.cuQtyEntryMode(cuQtyEntryMode)
@@ -93,35 +82,6 @@ class JsonPickingJobLinePackingTuPITest
 				.id(HUPIItemProductId.ofRepoId(huPiItemProductRepoId))
 				.name(TranslatableStrings.constant("packing"))
 				.piItemId(PI_ITEM_ID);
-	}
-
-	@Test
-	void tuLine_fourCUsPerTU_hasItsTuPI()
-	{
-		final HUPIItemProduct packingInfo = packing(540010)
-				.productId(ProductId.ofRepoId(10))
-				.qtyCUsPerTU(Quantity.of(BigDecimal.valueOf(4), uom))
-				.build();
-
-		assertThat(toJson(packingInfo).getPackingTuPIId()).isEqualTo(TU_PI_ID);
-		verify(handlingUnitsBL).getPackingInstructionsId(PI_ITEM_ID);
-	}
-
-	@Test
-	void unlimitedCapacityItemProductOfATuPI_hasThatPI()
-	{
-		final HUPIItemProduct packingInfo = packing(540011).build(); // qtyCUsPerTU == null: infinite capacity
-
-		assertThat(toJson(packingInfo).getPackingTuPIId()).isEqualTo(TU_PI_ID);
-	}
-
-	@Test
-	void virtualPacking_hasNoTuPI()
-	{
-		final HUPIItemProduct packingInfo = packing(HUPIItemProductId.VIRTUAL_HU.getRepoId()).build();
-
-		assertThat(toJson(packingInfo).getPackingTuPIId()).isNull();
-		verifyNoInteractions(handlingUnitsBL);
 	}
 
 	/** a new-mode line on a box (TU) packing counts CUs: the loader gives it picking unit CU, the JSON must then report uom = CU symbol and quantities in CUs (8 CU, not 2 TU) */

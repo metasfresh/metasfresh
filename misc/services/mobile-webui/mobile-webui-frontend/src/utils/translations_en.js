@@ -53,7 +53,6 @@ const translations = {
   },
   picking: {
     cuLabel: {
-      noPackId: 'The label contains no pack ID. Nothing was booked.',
       formatMismatch: 'The label does not match the label format of the picking profile. Nothing was booked.',
       noFormat: 'No label format set on the picking profile.',
     },

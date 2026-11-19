@@ -1214,8 +1214,7 @@ public class PickingJobPickCommand
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
-						.consolidateToSingleCU(cuQtyEntryMode.isNewMode())
-						.cuLevelAttributesWithoutLU(cuQtyEntryMode.isNewMode())
+						.cuQtyEntry(cuQtyEntryMode.isNewMode())
 						.build()
 		);
 	}

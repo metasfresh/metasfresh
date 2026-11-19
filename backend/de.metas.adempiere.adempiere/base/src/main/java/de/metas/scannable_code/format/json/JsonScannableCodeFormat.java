@@ -2,6 +2,7 @@ package de.metas.scannable_code.format.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.scannable_code.format.ScannableCodeFormat;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,14 +16,14 @@ import java.util.List;
 @Jacksonized
 public class JsonScannableCodeFormat
 {
-	int id;
+	@NonNull ScannableCodeFormatId id;
 	@NonNull String name;
 	@NonNull ImmutableList<JsonScannableCodeFormatPart> parts;
 
 	public static JsonScannableCodeFormat of(@NonNull final ScannableCodeFormat format)
 	{
 		return builder()
-				.id(format.getId().getRepoId())
+				.id(format.getId())
 				.name(format.getName())
 				.parts(format.getParts()
 						.stream()

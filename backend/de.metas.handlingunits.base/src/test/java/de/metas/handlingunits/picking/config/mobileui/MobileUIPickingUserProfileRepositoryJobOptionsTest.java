@@ -82,7 +82,7 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 		final PickingJobOptionsId id = repository.createPickingJobOptions("E2E customer 2", profileOptions.toBuilder().cuQtyEntryMode(null).cuLabelFormatId(null).build());
 
 		assertThat(load(id).getCUQtyEntryMode()).isNull();
-		assertThat(load(id).getC_ScannableCode_Format_ID()).isZero();
+		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(id).getC_ScannableCode_Format_ID())).isNull();
 	}
 
 	@Test
@@ -101,7 +101,7 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 
 		repository.updatePickingJobOptionsCUQtyEntry(id, null, null);
 		assertThat(load(id).getCUQtyEntryMode()).isNull();
-		assertThat(load(id).getC_ScannableCode_Format_ID()).isZero();
+		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(id).getC_ScannableCode_Format_ID())).isNull();
 		assertThat(load(id).isAllowSkippingRejectedReason()).isTrue();
 	}
 
@@ -137,8 +137,8 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 
 		repository.unlinkCULabelFormats(ImmutableList.of(FORMAT_1));
 
-		assertThat(InterfaceWrapperHelper.load(profile.getMobileUI_UserProfile_Picking_ID(), I_MobileUI_UserProfile_Picking.class).getC_ScannableCode_Format_ID()).isZero();
-		assertThat(load(job1).getC_ScannableCode_Format_ID()).isZero();
+		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(InterfaceWrapperHelper.load(profile.getMobileUI_UserProfile_Picking_ID(), I_MobileUI_UserProfile_Picking.class).getC_ScannableCode_Format_ID())).isNull();
+		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(job1).getC_ScannableCode_Format_ID())).isNull();
 		assertThat(load(job2).getC_ScannableCode_Format_ID()).isEqualTo(FORMAT_2.getRepoId());
 	}
 }

@@ -113,10 +113,11 @@ public class PackToHUsProducer
 		@NonNull TableRecordReference documentRef;
 		boolean checkIfAlreadyPacked;
 		boolean createInventoryForMissingQty;
-		/** Merge the source HU(s) into ONE new CU of {@link #qtyPicked} before packing (CU quantity entry modes only). */
-		boolean consolidateToSingleCU;
-		/** The booked CU stays a separate HU inside a partial TU (also without LU) and the 'already packed' shortcut is skipped (CU quantity entry modes only). */
-		boolean cuLevelAttributesWithoutLU;
+		/**
+		 * CU quantity entry modes only: the source HU(s) are merged into ONE new CU of {@link #qtyPicked} before packing, the booked CU stays a separate HU
+		 * inside a partial TU (also without LU) and the 'already packed' shortcut is skipped.
+		 */
+		boolean cuQtyEntry;
 		@NonNull @Builder.Default ImmutableSet<HuId> allowedReservedVhuIds = ImmutableSet.of();
 	}
 
@@ -196,9 +197,9 @@ public class PackToHUsProducer
 		//
 		// CU quantity entry: the booked quantity becomes ONE new CU, even if it was taken from several source pieces
 		final PickFromHUsList pickFromHUsToPack;
-		if (request.isConsolidateToSingleCU())
+		if (request.isCuQtyEntry())
 		{
-			pickFromHUsToPack = consolidateToSingleCU(huContext, pickFromHUs, productId, qtyPicked, request.getAllowedReservedVhuIds());
+			pickFromHUsToPack = consolidateToSingleCU(request, pickFromHUs);
 		}
 		else
 		{
@@ -208,9 +209,9 @@ public class PackToHUsProducer
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions.
-		// Skipped for CU quantity entry (cuLevelAttributesWithoutLU): a source box holding exactly the booked quantity must not become the box,
+		// Skipped for CU quantity entry (cuQtyEntry): a source box holding exactly the booked quantity must not become the box,
 		// else the picked HU would be the whole box and not the booked CU.
-		if (!request.isCuLevelAttributesWithoutLU()
+		if (!request.isCuQtyEntry()
 				&& packToInfo.getLu() == null
 				&& packToInfo.getTu().isNewTU()
 				&& pickFromHUsToPack.isSingleHUAlreadyPacked(checkIfAlreadyPacked, productId, qtyPicked, packToInfo.getTu().getTuPIIdNotNull()))
@@ -251,7 +252,7 @@ public class PackToHUsProducer
 			if (luRecord == null)
 			{
 				// CU quantity entry: the booked CU is the picked HU, not the whole box (same shape as the pallet case below)
-				return request.isCuLevelAttributesWithoutLU()
+				return request.isCuQtyEntry()
 						? LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cuRecord)))
 						: LUTUResult.ofSingleTopLevelTU(tuRecord);
 			}
@@ -289,7 +290,7 @@ public class PackToHUsProducer
 			if (packToDestination instanceof ILUTUProducerAllocationDestination)
 			{
 				final LUTUResult producedResult = ((ILUTUProducerAllocationDestination)packToDestination).getResult();
-				result = request.isCuLevelAttributesWithoutLU() && packToInfo.getLu() == null
+				result = request.isCuQtyEntry() && packToInfo.getLu() == null
 						? toPartialTUWithItsSingleCU(producedResult)
 						: producedResult;
 			}
@@ -348,21 +349,18 @@ public class PackToHUsProducer
 	 * Merges the source HUs into ONE new standalone CU of the given quantity and returns it as the only pick-from HU.
 	 * Reserved pieces are skipped / refused as in the existing open-box branch.
 	 */
-	private PickFromHUsList consolidateToSingleCU(
-			@NonNull final IHUContext huContext,
-			@NonNull final PickFromHUsList pickFromHUs,
-			@NonNull final ProductId productId,
-			@NonNull final Quantity qtyPicked,
-			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	private PickFromHUsList consolidateToSingleCU(@NonNull final PackToHURequest request, @NonNull final PickFromHUsList pickFromHUs)
 	{
+		final IHUContext huContext = request.getHuContext();
+		final ImmutableSet<HuId> allowedReservedVhuIds = request.getAllowedReservedVhuIds();
 		final I_M_HU singleCU = HUTransformService.builderForHUcontext()
 				.huContext(huContext)
 				.allowedReservedVhuIds(allowedReservedVhuIds)
 				.build()
 				.husToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
 						.sourceHUs(pickFromHUs.toHUsList())
-						.productId(productId)
-						.qtyCU(qtyPicked)
+						.productId(request.getProductId())
+						.qtyCU(request.getQtyPicked())
 						.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
 								? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
 								: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))

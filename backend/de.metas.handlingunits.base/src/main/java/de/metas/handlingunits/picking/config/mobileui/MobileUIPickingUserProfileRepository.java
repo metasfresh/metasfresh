@@ -359,7 +359,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
 		record.setCUQtyEntryMode(from.getCuQtyEntryMode().getCode());
-		record.setC_ScannableCode_Format_ID(toRepoIdOrZero(from.getCuLabelFormatId().orElse(null)));
+		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCuLabelFormatId().orElse(null)));
 	}
 
 	private static void updateRecord(final @NonNull I_MobileUI_UserProfile_Picking record, final AllowedPickToStructures from)
@@ -496,12 +496,10 @@ public class MobileUIPickingUserProfileRepository
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
 		record.setCUQtyEntryMode(from.getCuQtyEntryModeIfSet().map(CUQtyEntryMode::getCode).orElse(null)); // empty = use the profile's
-		record.setC_ScannableCode_Format_ID(toRepoIdOrZero(from.getCuLabelFormatId().orElse(null)));
+		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCuLabelFormatId().orElse(null)));
 		InterfaceWrapperHelper.saveRecord(record);
 		return PickingJobOptionsId.ofRepoId(record.getMobileUI_UserProfile_Picking_Job_ID());
 	}
-
-	private static int toRepoIdOrZero(@Nullable final ScannableCodeFormatId id) {return id != null ? id.getRepoId() : 0;}
 
 	/** Sets the CU quantity entry mode / CU label format of an existing picking job options row; null = empty (use the profile's). Other options are untouched. */
 	public void updatePickingJobOptionsCUQtyEntry(
@@ -511,7 +509,7 @@ public class MobileUIPickingUserProfileRepository
 	{
 		final I_MobileUI_UserProfile_Picking_Job record = InterfaceWrapperHelper.load(id, I_MobileUI_UserProfile_Picking_Job.class);
 		record.setCUQtyEntryMode(mode != null ? mode.getCode() : null);
-		record.setC_ScannableCode_Format_ID(toRepoIdOrZero(formatId));
+		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(formatId));
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
@@ -529,7 +527,7 @@ public class MobileUIPickingUserProfileRepository
 				.create()
 				.list())
 		{
-			record.setC_ScannableCode_Format_ID(0);
+			record.setC_ScannableCode_Format_ID(-1);
 			InterfaceWrapperHelper.saveRecord(record);
 		}
 		for (final I_MobileUI_UserProfile_Picking_Job record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
@@ -537,7 +535,7 @@ public class MobileUIPickingUserProfileRepository
 				.create()
 				.list())
 		{
-			record.setC_ScannableCode_Format_ID(0);
+			record.setC_ScannableCode_Format_ID(-1);
 			InterfaceWrapperHelper.saveRecord(record);
 		}
 	}

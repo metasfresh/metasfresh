@@ -147,7 +147,7 @@ class PickingJobCUQtyEntryPickTest
 	}
 
 	/**
-	 * Fake pack IDs: the pack ID part type is delivered by the label reader, not by this issue. The pack ID of the fake is the text after the last
+	 * Fake pack IDs: the label reader has no pack ID part type yet. The pack ID of the fake is the text after the last
 	 * "GS 92" of the raw label; "-" = the label carries none.
 	 */
 	private static class FakePackIdPickingCULabelService extends PickingCULabelService

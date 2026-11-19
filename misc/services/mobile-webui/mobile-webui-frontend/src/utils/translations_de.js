@@ -57,7 +57,6 @@ const translations = {
   },
   picking: {
     cuLabel: {
-      noPackId: 'Das Etikett enthält keine Packungs-ID. Es wurde nichts gebucht.',
       formatMismatch: 'Das Etikett passt nicht zum Etikettenformat des Kommissionierprofils. Es wurde nichts gebucht.',
       noFormat: 'Kein Etikettenformat im Kommissionierprofil hinterlegt.',
     },

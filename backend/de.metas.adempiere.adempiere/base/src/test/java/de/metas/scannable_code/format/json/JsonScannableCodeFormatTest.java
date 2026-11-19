@@ -50,11 +50,11 @@ class JsonScannableCodeFormatTest
 				.build();
 
 		final JsonScannableCodeFormat json = JsonScannableCodeFormat.of(format);
-		assertThat(json.getId()).isEqualTo(540123);
+		assertThat(json.getId()).isEqualTo(ScannableCodeFormatId.ofRepoId(540123));
 
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		final String jsonString = objectMapper.writeValueAsString(json);
 		assertThat(objectMapper.readTree(jsonString).get("id").asInt()).isEqualTo(540123);
-		assertThat(objectMapper.readValue(jsonString, JsonScannableCodeFormat.class).getId()).isEqualTo(540123);
+		assertThat(objectMapper.readValue(jsonString, JsonScannableCodeFormat.class).getId()).isEqualTo(ScannableCodeFormatId.ofRepoId(540123));
 	}
 }

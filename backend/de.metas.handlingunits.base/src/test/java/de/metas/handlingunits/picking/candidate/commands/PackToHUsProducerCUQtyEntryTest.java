@@ -40,8 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * CU quantity entry: {@link PackToHURequest#isConsolidateToSingleCU()} and
- * {@link PackToHURequest#isCuLevelAttributesWithoutLU()}.
+ * CU quantity entry: {@link PackToHURequest#isCuQtyEntry()}.
  * Every case builds the request like the pick command does: checkIfAlreadyPacked(true), createInventoryForMissingQty(true).
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -121,8 +120,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.documentRef(TableRecordReference.of(source))
 				.checkIfAlreadyPacked(true)
 				.createInventoryForMissingQty(true)
-				.consolidateToSingleCU(newModes)
-				.cuLevelAttributesWithoutLU(newModes)
+				.cuQtyEntry(newModes)
 				.build());
 	}
 
@@ -289,7 +287,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.hasMessageContaining("exactly one");
 	}
 
-	/** open box holding 3, the source holds two pieces 4 + 4, N=5 -> one new CU of 5 in the box (needs consolidateToSingleCU). */
+	/** open box holding 3, the source holds two pieces 4 + 4, N=5 -> one new CU of 5 in the box (needs the consolidation to one CU). */
 	@Test
 	public void openBox_fromTwoPieces_n5_oneCUOf5()
 	{

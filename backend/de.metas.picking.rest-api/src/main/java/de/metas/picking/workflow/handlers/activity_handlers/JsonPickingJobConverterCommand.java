@@ -3,7 +3,9 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
@@ -25,7 +27,6 @@ import de.metas.picking.rest_api.json.JsonRejectReasonsList;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
-import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -115,10 +116,11 @@ public class JsonPickingJobConverterCommand
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> JsonPickingJobLine.builderFrom(line, handlingUnitsBL, this::getUOMSymbolById, jsonOpts)
+					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
 							.displayGroupKey(group.getKey())
 							.cuQtyEntryMode(getLineOptions(line).getCuQtyEntryMode().getCode())
-							.cuLabelFormatId(getLineOptions(line).getCuLabelFormatId().map(ScannableCodeFormatId::getRepoId).orElse(null))
+							.cuLabelFormatId(getLineOptions(line).getCuLabelFormatId().orElse(null))
+							.packingTuPIId(toPackingTuPIId(line.getPackingInfo(), handlingUnitsBL))
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
 									getAdditionalHeaderProperties(line), jsonOpts))
@@ -127,6 +129,15 @@ public class JsonPickingJobConverterCommand
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
+	}
+
+	/** The TU packing instructions the line's packing names; null = the packing names no TU PI (virtual packing). */
+	@Nullable
+	static HuPackingInstructionsId toPackingTuPIId(@NonNull final HUPIItemProduct packingInfo, @NonNull final IHandlingUnitsBL handlingUnitsBL)
+	{
+		return packingInfo.getId().isVirtualHU()
+				? null
+				: handlingUnitsBL.getPackingInstructionsId(packingInfo.getPiItemId());
 	}
 
 	/** The options of the line's own customer: a mixed product job can hold lines of different customers, each with its own mode / format. */
