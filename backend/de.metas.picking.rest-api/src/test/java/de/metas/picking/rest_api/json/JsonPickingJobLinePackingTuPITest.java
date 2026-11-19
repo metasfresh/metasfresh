@@ -57,6 +57,11 @@ class JsonPickingJobLinePackingTuPITest
 
 	private JsonPickingJobLine toJson(final HUPIItemProduct packingInfo)
 	{
+		return toJson(packingInfo, PickingUnit.CU, "MANUAL");
+	}
+
+	private JsonPickingJobLine toJson(final HUPIItemProduct packingInfo, final PickingUnit pickingUnit, final String cuQtyEntryMode)
+	{
 		final PickingJobLine line = PickingJobLine.builder()
 				.id(PickingJobLineId.ofRepoId(1))
 				.caption(TranslatableStrings.constant("line"))
@@ -72,13 +77,13 @@ class JsonPickingJobLinePackingTuPITest
 				.deliveryBPLocationId(BPartnerLocationId.ofRepoId(30, 31))
 				.scheduleId(ShipmentScheduleAndJobScheduleId.ofRepoIds(40, 0))
 				.steps(ImmutableList.of())
-				.pickingUnit(PickingUnit.CU)
+				.pickingUnit(pickingUnit)
 				.build();
 
 		return JsonPickingJobLine.builderFrom(line, handlingUnitsBL, uomId -> TranslatableStrings.constant("Stk"), JsonOpts.ofAdLanguage("en_US"))
 				.displayGroupKey("")
 				.allowPickingAnyHU(false)
-				.cuQtyEntryMode("MANUAL")
+				.cuQtyEntryMode(cuQtyEntryMode)
 				.build();
 	}
 
@@ -117,5 +122,38 @@ class JsonPickingJobLinePackingTuPITest
 
 		assertThat(toJson(packingInfo).getPackingTuPIId()).isNull();
 		verifyNoInteractions(handlingUnitsBL);
+	}
+
+	/** a new-mode line on a box (TU) packing counts CUs: the loader gives it picking unit CU, the JSON must then report uom = CU symbol and quantities in CUs (8 CU, not 2 TU) */
+	@Test
+	void newModeLineOnTuPacking_countsCUs()
+	{
+		final HUPIItemProduct packingInfo = packing(540010)
+				.productId(ProductId.ofRepoId(10))
+				.qtyCUsPerTU(Quantity.of(BigDecimal.valueOf(4), uom))
+				.build();
+
+		final JsonPickingJobLine json = toJson(packingInfo, PickingUnit.CU, "SCAN_ONCE_ENTER_QTY");
+
+		assertThat(json.getPickingUnit()).isEqualTo(PickingUnit.CU);
+		assertThat(json.getUom()).isEqualTo("Stk");
+		assertThat(json.getQtyToPick()).isEqualByComparingTo("8");
+		assertThat(json.getQtyRemainingToPick()).isEqualByComparingTo("8");
+	}
+
+	/** control: the same packing with picking unit TU (Manual) counts TUs: uom "TU", 2 TU */
+	@Test
+	void manualLineOnTuPacking_countsTUs()
+	{
+		final HUPIItemProduct packingInfo = packing(540010)
+				.productId(ProductId.ofRepoId(10))
+				.qtyCUsPerTU(Quantity.of(BigDecimal.valueOf(4), uom))
+				.build();
+
+		final JsonPickingJobLine json = toJson(packingInfo, PickingUnit.TU, "MANUAL");
+
+		assertThat(json.getPickingUnit()).isEqualTo(PickingUnit.TU);
+		assertThat(json.getUom()).isEqualTo("TU");
+		assertThat(json.getQtyToPick()).isEqualByComparingTo("2");
 	}
 }

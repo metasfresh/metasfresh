@@ -221,12 +221,12 @@ public class PickingJobPickCommand
 		final I_C_UOM uom = line.getUOM();
 		this.cuQtyEntryMode = pickingJobOptions.getCuQtyEntryMode();
 		this.cuLabel = cuLabel;
-		// new modes always book CUs into the open box: never a whole TU, and TU lines count CUs
+		// new modes always book CUs into the open box: never a whole TU
 		this.isPickWholeTU = isPickWholeTU && !cuQtyEntryMode.isNewMode();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
-		this.pickingUnit = cuQtyEntryMode.isNewMode() ? PickingUnit.CU : line.getPickingUnit();
+		this.pickingUnit = line.getPickingUnit(); // CU for new-mode lines: the loader (PickingJobLoaderAndSaver#computePickingUnit) applies that rule
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);

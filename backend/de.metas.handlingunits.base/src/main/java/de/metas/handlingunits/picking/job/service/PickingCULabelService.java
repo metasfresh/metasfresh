@@ -4,10 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -38,8 +34,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -62,10 +56,8 @@ public class PickingCULabelService
 
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	public static PickingCULabelService newInstanceForUnitTesting()
 	{
@@ -154,7 +146,7 @@ public class PickingCULabelService
 
 	/**
 	 * @return true if one of the job's CURRENT picked HUs (any {@code HUStatus}, any step) of that product carries this lot and pack ID.
-	 * One query on the PackId attribute value over the picked HU ids; only the (few) HUs with that pack ID are checked for the lot.
+	 * One HU query on the PackId attribute value over the picked HU ids; only the (few) HUs with that pack ID are checked for the lot.
 	 */
 	public boolean isAlreadyPickedInJob(
 			@NonNull final PickingJob job,
@@ -162,24 +154,21 @@ public class PickingCULabelService
 			@Nullable final String lotNo,
 			@NonNull final String packId)
 	{
-		final Set<Integer> pickedHUIds = job.streamLines()
+		final ImmutableSet<HuId> pickedHUIds = job.streamLines()
 				.filter(line -> ProductId.equals(line.getProductId(), productId))
 				.flatMap(line -> line.getPickedHUIds().stream())
-				.map(HuId::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-		final AttributeId packIdAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(ATTR_PackId);
-		if (pickedHUIds.isEmpty() || packIdAttributeId == null)
+		if (pickedHUIds.isEmpty())
 		{
 			return false;
 		}
 
-		final List<Integer> huIdsWithPackId = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, packIdAttributeId)
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, packId)
-				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, pickedHUIds)
-				.create()
-				.listDistinct(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, Integer.class);
+		// the picked HUs are CUs inside boxes: not top level
+		final ImmutableSet<HuId> huIdsWithPackId = handlingUnitsBL.createHUQueryBuilder()
+				.setOnlyTopLevelHUs(false)
+				.addOnlyHUIds(pickedHUIds)
+				.addOnlyWithAttribute(ATTR_PackId, packId)
+				.listIds();
 		if (huIdsWithPackId.isEmpty())
 		{
 			return false;
@@ -188,7 +177,7 @@ public class PickingCULabelService
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
 		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
 		return huIdsWithPackId.stream()
-				.map(huId -> handlingUnitsBL.getById(HuId.ofRepoId(huId)))
+				.map(handlingUnitsBL::getById)
 				.anyMatch(hu -> {
 					final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
 					final String huLotNo = attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
