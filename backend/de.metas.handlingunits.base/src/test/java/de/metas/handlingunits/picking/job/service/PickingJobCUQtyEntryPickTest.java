@@ -896,6 +896,40 @@ class PickingJobCUQtyEntryPickTest
 	}
 
 	/**
+	 * (x2) Manual: the same two-customer product job queues the box on the slot scanned last, as today (the per-line slot is only for the
+	 * new quantity entry modes).
+	 */
+	@Test
+	void x2_manual_closingAllTargets_queuesTheBoxOnTheLastScannedSlot_asToday()
+	{
+		setProfile(CUQtyEntryMode.MANUAL);
+		final HUInfo source = sourceBox("QR-X2");
+		final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
+		createPackageable("salesOrder-x2-A", helper.shipToBPLocationId);
+		createPackageable("salesOrder-x2-B", customerB);
+		PickingJob job = helper.pickingJobService.createPickingJob(
+						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.PRODUCT)
+								.pickerId(UserId.ofRepoId(1234))
+								.isAllowPickingAnyHU(true)
+								.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+		final PickingJobLine lineA = job.getLines().stream()
+				.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no line of customer A"));
+		job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+		job = pickOnLine(job, lineA.getId(), source, "1", null);
+		final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
+		final PickingSlotId slotB = createPickingSlot("SLOT-B");
+		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
+
+		helper.pickingJobService.closeLUAndTUPickingTargets(job);
+
+		assertThat(queuedSlotsOf(boxA)).as("Manual: the close queues the box on the slot scanned last, as before").contains(slotB);
+	}
+
+	/**
 	 * (y) Manual with a pallet (LU) and a box (TU) target: a booking of 2 (box capacity 4) books the box on the pallet as the picked HU,
 	 * not a CU in a box, so the un-pick's CU-in-box delete does not apply; "Entpacken" leaves no QtyPicked row of the box and nothing
 	 * picked (the Manual un-pick of a box, unchanged).

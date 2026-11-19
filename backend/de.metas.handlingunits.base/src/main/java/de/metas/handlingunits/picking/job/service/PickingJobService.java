@@ -744,19 +744,32 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * Closes the job's targets and every line's targets. Each line's closed HUs go to that line's picking slot queue: in a job with
+	 * Closes the job's targets and every line's targets.
+	 * <p>
+	 * Lines whose customer uses a new CU quantity entry mode: each line's closed HUs go to that line's picking slot queue. In a job with
 	 * line-level targets (product job) every customer's line has its own slot, and the slot the picker scanned last belongs to another
 	 * customer (an HU queued on two slots cannot be shipped). An existing HU that is the open target of two lines with different slots
 	 * would be queued on both; lines of different customers do not share a target.
+	 * <p>
+	 * Manual lines (and all lines of a job without a new-mode line): unchanged, all closed HUs go to the slot scanned last.
 	 */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
+		final List<PickingJobLine> newModeLines = pickingJob.getLines().stream()
+				.filter(line -> configService.getPickingJobOptions(line.getCustomerId()).getCuQtyEntryMode().isNewMode())
+				.collect(ImmutableList.toImmutableList());
+		if (newModeLines.isEmpty())
+		{
+			return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
+		}
+
 		PickingJob pickingJobChanged = closeLUAndTUPickingTargets(pickingJob, true, false, null, false);
-		for (final PickingJobLine line : pickingJob.getLines())
+		for (final PickingJobLine line : newModeLines)
 		{
 			pickingJobChanged = closeLUAndTUPickingTargets(pickingJobChanged, false, true, line.getId(), false);
 		}
-		return pickingJobChanged;
+		// the remaining (Manual) lines: as before, on the slot scanned last
+		return closeLUAndTUPickingTargets(pickingJobChanged, false, true, null, false);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(
