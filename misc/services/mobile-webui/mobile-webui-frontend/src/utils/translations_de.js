@@ -64,6 +64,8 @@ const translations = {
         'Diese Packung wurde in diesem Auftrag bereits kommissioniert (Packungs-ID %(packId)s). Es wurde nichts gebucht.',
       noOpenBox: "Bitte öffnen Sie zuerst eine Kiste (GRAI scannen oder 'Weitere Kiste').",
     },
+    nextBox: 'Weitere Kiste',
+    nextBoxOpened: 'Neue Kiste geöffnet: %(caption)s',
   },
   login: {
     submitButton: 'Login',

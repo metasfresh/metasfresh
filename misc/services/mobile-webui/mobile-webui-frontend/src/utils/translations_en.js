@@ -59,6 +59,8 @@ const translations = {
       alreadyPicked: 'This pack was already picked in this job (pack ID %(packId)s). Nothing was booked.',
       noOpenBox: "Please open a box first (scan a GRAI or 'Next box').",
     },
+    nextBox: 'Next box',
+    nextBoxOpened: 'New box opened: %(caption)s',
   },
   login: {
     submitButton: 'Login',

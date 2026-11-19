@@ -1,6 +1,7 @@
 import {
   convertScannedBarcodeToResolvedResult,
   convertScannedCULabelToResolvedResult,
+  isInlineGraiCaptureEnabled,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
@@ -72,5 +73,43 @@ describe('PickingLineScanScreen: new mode label scan', () => {
     expect(() =>
       convertScannedCULabelToResolvedResult({ scannedBarcode, cuLabelFormat: format, expectedProductNo })
     ).toThrow(expect.objectContaining({ messageKey }));
+  });
+});
+
+describe('PickingLineScanScreen: pick-time GRAI capture', () => {
+  it('stays on for Manual (today) and is switched off in both new modes', () => {
+    const base = { graiScanEnabled: true, tuPickingTarget: null };
+    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: undefined })).toBe(true);
+    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: 'MANUAL' })).toBe(true);
+    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: 'SCAN_EACH_CU' })).toBe(false);
+    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' })).toBe(false);
+  });
+
+  it('keeps today rule for Manual: off when GRAI scanning is not required or a TU target is set', () => {
+    expect(isInlineGraiCaptureEnabled({ graiScanEnabled: false, tuPickingTarget: null })).toBe(false);
+    expect(isInlineGraiCaptureEnabled({ graiScanEnabled: true, tuPickingTarget: { caption: 'x' } })).toBe(false);
+  });
+});
+
+describe('PickingLineScanScreen: GRAI scan on a new-mode line', () => {
+  const A_GRAI = '1234567.12345.SERIAL1';
+
+  it('opens the box from the GRAI and does not read it as a label', async () => {
+    const onGrai = jest.fn().mockResolvedValue(undefined);
+    const result = await convertScannedCULabelToResolvedResult({
+      scannedBarcode: A_GRAI,
+      cuLabelFormat: undefined,
+      expectedProductNo: 'P1',
+      onGrai,
+    });
+    expect(onGrai).toHaveBeenCalledWith(A_GRAI);
+    expect(result).toEqual({ isNextBoxOpened: true });
+  });
+
+  it('a failing box opening is reported, not swallowed', async () => {
+    const onGrai = jest.fn().mockRejectedValue(new Error('boom'));
+    await expect(
+      convertScannedCULabelToResolvedResult({ scannedBarcode: A_GRAI, expectedProductNo: 'P1', onGrai })
+    ).rejects.toThrow('boom');
   });
 });

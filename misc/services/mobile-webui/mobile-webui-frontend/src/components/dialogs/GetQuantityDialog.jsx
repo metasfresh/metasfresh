@@ -50,6 +50,7 @@ const GetQuantityDialog = ({
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
+  nextBoxActions,
   //
   validateQtyEntered,
   getConfirmationPromptForQty,
@@ -507,6 +508,7 @@ const GetQuantityDialog = ({
                 onClick={onCloseDialog}
                 testId="cancel-button"
               />
+              {nextBoxActions}
             </div>
           </form>
         )}
@@ -564,6 +566,7 @@ GetQuantityDialog.propTypes = {
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
+  nextBoxActions: PropTypes.node,
   customQRCodeFormats: PropTypes.array,
 
   // Callbacks

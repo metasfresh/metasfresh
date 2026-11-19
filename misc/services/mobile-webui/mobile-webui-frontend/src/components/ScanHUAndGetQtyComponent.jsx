@@ -63,6 +63,7 @@ const ScanHUAndGetQtyComponent = ({
   cuLabelFormat,
   packingTuPIId,
   isShowCloseTargetButton = false,
+  nextBoxActions,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -199,6 +200,12 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const onHUBarcodeResolvedResult = async (resolvedBarcodeDataNew) => {
+    // the scan only opened a box (GRAI): stay on the scan step, nothing to book yet
+    if (resolvedBarcodeDataNew?.isNextBoxOpened) {
+      setProgressStatus(STATUS_READ_HU_BARCODE);
+      return;
+    }
+
     setResolvedBarcodeData(resolvedBarcodeDataNew);
 
     if (resolvedBarcodeDataNew.isScanProductCodeRequired) {
@@ -365,6 +372,7 @@ const ScanHUAndGetQtyComponent = ({
               onResolvedResult={onHUBarcodeResolvedResult}
             />
           )}
+          {nextBoxActions && <div className="buttons is-centered mt-4">{nextBoxActions}</div>}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: QR`}
@@ -413,6 +421,7 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
+          nextBoxActions={nextBoxActions}
           //
           getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}
@@ -495,6 +504,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   cuLabelFormat: PropTypes.object,
   packingTuPIId: PropTypes.number,
   isShowCloseTargetButton: PropTypes.bool,
+  nextBoxActions: PropTypes.node,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,

@@ -53,6 +53,8 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
 import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
 import { resolveCULabel, routeScannedCode, selectCULabelFormat, SCAN_TYPE_GRAI } from '../../../utils/cuLabel';
+import { parseGraiFromRawInput } from '../../../utils/grai';
+import NextBoxActions, { useNextBox } from '../../../components/NextBoxActions';
 import { isNewMode } from '../../../constants/CUQtyEntryMode';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
@@ -119,12 +121,24 @@ const PickLineScanScreen = () => {
   // different product picked onto the SAME LU) is skipped, not counted. The Flow-Through pick happens on
   // this line-scan screen (no per-step scan screen), so the wiring must live here too, not only in
   // PickStepScanScreen.
-  const { graiScanEnabled, existingLuGrais, isTargetsLoading } = useAvailablePickingTargets({
+  const { graiScanEnabled, existingLuGrais, isTargetsLoading, setPickingTarget } = useAvailablePickingTargets({
     wfProcessId,
     lineId,
     type: PickingTargetType.TU,
   });
-  const isInlineGraiCaptureEnabled = graiScanEnabled && tuPickingTarget == null;
+  const isInlineGraiCapture = isInlineGraiCaptureEnabled({ graiScanEnabled, tuPickingTarget, cuQtyEntryMode });
+
+  const isNewModeLine = isNewMode(cuQtyEntryMode);
+  const nextBox = useNextBox({
+    applicationId,
+    wfProcessId,
+    activityId,
+    lineId,
+    packingTuPIId,
+    packingItemName,
+    tuPickingTarget,
+    setPickingTarget,
+  });
 
   useHeaderUpdate({
     url,
@@ -137,12 +151,13 @@ const PickLineScanScreen = () => {
 
   const resolveScannedBarcode = useCallback(
     (scannedBarcode) =>
-      isNewMode(cuQtyEntryMode)
+      isNewModeLine
         ? convertScannedCULabelToResolvedResult({
             scannedBarcode,
             cuLabelFormat,
             expectedProductNo: productNo,
             expectedGS1ProductCodes: gs1ProductCodes,
+            onGrai: nextBox.onGraiScanned,
           })
         : convertScannedBarcodeToResolvedResult({
             scannedBarcode,
@@ -153,7 +168,8 @@ const PickLineScanScreen = () => {
             pickingUnit,
           }),
     [
-      cuQtyEntryMode,
+      isNewModeLine,
+      nextBox.onGraiScanned,
       cuLabelFormat,
       gs1ProductCodes,
       productId,
@@ -195,7 +211,7 @@ const PickLineScanScreen = () => {
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
-      graiScanEnabled={isInlineGraiCaptureEnabled}
+      graiScanEnabled={isInlineGraiCapture}
       existingLuGrais={existingLuGrais}
       qtyTargetCaption={trl('general.QtyToPick')}
       qtyCaption={trl(pickingUnit === PICKING_UNIT_TU ? 'general.QtyTU' : 'general.Qty')}
@@ -212,6 +228,9 @@ const PickLineScanScreen = () => {
       cuLabelFormat={cuLabelFormat}
       packingTuPIId={packingTuPIId}
       isShowCloseTargetButton={!!luPickingTarget}
+      nextBoxActions={
+        isNewModeLine ? <NextBoxActions isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} /> : undefined
+      }
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
@@ -228,6 +247,14 @@ export default PickLineScanScreen;
 // -------------------------------------------------------------------------------------
 //
 //
+
+/**
+ * The pick-time GRAI capture (after OK) belongs to the Manual path; in the CU quantity entry modes the picker opens
+ * every box beforehand (GRAI scan or "Weitere Kiste"), so it never shows there.
+ */
+// @VisibleForTesting
+export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryMode }) =>
+  graiScanEnabled && tuPickingTarget == null && !isNewMode(cuQtyEntryMode);
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
@@ -325,10 +352,14 @@ export const convertScannedCULabelToResolvedResult = ({
   cuLabelFormat,
   expectedProductNo,
   expectedGS1ProductCodes,
+  onGrai,
 }) => {
   if (routeScannedCode(scannedBarcode) === SCAN_TYPE_GRAI) {
     // a GRAI opens a box, it is never read as a label
-    throw { messageKey: 'error.qrCode.invalid' };
+    if (!onGrai) {
+      throw { messageKey: 'error.qrCode.invalid' };
+    }
+    return onGrai(parseGraiFromRawInput(scannedBarcode)).then(() => ({ isNextBoxOpened: true }));
   }
 
   const { errorKey, lotNo, bestBeforeDate, packId, cuLabel } = resolveCULabel({
