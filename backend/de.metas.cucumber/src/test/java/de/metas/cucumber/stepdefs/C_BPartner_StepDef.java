@@ -88,6 +88,7 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_InvoiceLine_Aggregation_ID;
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
@@ -493,6 +494,13 @@ public class C_BPartner_StepDef
 		{
 			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
 			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
+		}
+
+		final String soInvoiceLineAggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_SO_InvoiceLine_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(soInvoiceLineAggregationIdentifier))
+		{
+			final I_C_Aggregation lineAggregationRecord = aggregationTable.get(soInvoiceLineAggregationIdentifier);
+			bPartner.setSO_InvoiceLine_Aggregation_ID(lineAggregationRecord.getC_Aggregation_ID());
 		}
 
 		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_Dunning_ID);
