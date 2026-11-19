@@ -40,6 +40,10 @@ public class JsonRawMaterialsIssueLineStep
 	@Nullable JsonDisplayableQRCode huQRCode;
 	boolean isAllowEmptying;
 
+	// True when the issue-from HU is a free-standing, top-level HU (not a TU nested on a pallet/LU). The
+	// mobile UI only unlocks a zero-target alternative step for issuing/emptying when this is true.
+	boolean isIssueFromTopLevelHU;
+
 	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, @Nullable BigDecimal qtyToIssueMax, JsonOpts jsonOpts)
 	{
 		final JsonRawMaterialsIssueLineStepBuilder builder = builder()
@@ -57,7 +61,8 @@ public class JsonRawMaterialsIssueLineStep
 				.uom(step.getQtyToIssue().getUOMSymbol())
 				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())
 				.qtyToIssue(step.getQtyToIssue().toBigDecimal())
-				.isAllowEmptying(step.isAllowEmptying());
+				.isAllowEmptying(step.isAllowEmptying())
+				.isIssueFromTopLevelHU(step.isIssueFromTopLevelHU());
 
 		final PPOrderIssueSchedule.Issued issued = step.getIssued();
 		if (issued != null)

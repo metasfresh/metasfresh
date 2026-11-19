@@ -64,6 +64,43 @@ describe('computeStepScanPropsFromActivity', () => {
     expect(result.qtyToIssueTarget).toEqual(5); // min(stepQtyToIssue, qtyToIssueMax)
   });
 
+  // An engageable ALTERNATIVE HU (non-FEFO, emptying-eligible, free-standing top-level) carries a zero
+  // plan target but must open at its own content, so the operator can use it up / empty it.
+  it('unlocks an engageable alternative HU: target becomes the HU content, not the locked 0', () => {
+    const result = call_computeStepScanPropsFromActivity({
+      line: { qtyToIssue: 50, qtyToIssueMax: 50, qtyIssued: 0 },
+      step: {
+        qtyToIssue: 0,
+        qtyToIssueMax: 50,
+        qtyHUCapacity: 0.1,
+        alternativeIssue: true,
+        allowEmptying: true,
+        issueFromTopLevelHU: true,
+      },
+    });
+    expect(result.qtyToIssueTarget).toEqual(0.1); // the HU's content, not the zero-target lock
+  });
+
+  // Regression: unlocking the alternative step must NOT discard the backend's per-step, step-UOM max. A
+  // Stk-stocked alternative HU on a kg line must stay capped at the converted step max (1 Stk), never the
+  // raw kg line remaining (34.5) — otherwise an engaged alt HU could over-issue ~34 Stk against 34.5 kg.
+  it('engageable alternative Stk HU caps at the backend step max, not the kg line remaining', () => {
+    const result = call_computeStepScanPropsFromActivity({
+      line: { weightable: false, uom: 'kg', qtyToIssue: 34.5, qtyToIssueMax: 34.5, qtyIssued: 0 },
+      step: {
+        uom: 'Stk',
+        qtyToIssue: 0,
+        qtyToIssueMax: 1,
+        qtyHUCapacity: 40,
+        alternativeIssue: true,
+        allowEmptying: true,
+        issueFromTopLevelHU: true,
+      },
+    });
+    expect(result.qtyToIssueMax).toEqual(1); // 1 Stk — the kg remaining (34.5) must not leak in
+    expect(result.qtyToIssueTarget).toEqual(1); // capped in Stk, not over-issued to 34.5
+  });
+
   it('line qty < step qty', () => {
     const result = call_computeStepScanPropsFromActivity({
       line: { qtyToIssue: 10, qtyToIssueMax: 15, qtyIssued: 3 },
