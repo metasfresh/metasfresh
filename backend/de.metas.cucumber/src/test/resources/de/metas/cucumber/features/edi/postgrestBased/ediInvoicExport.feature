@@ -991,7 +991,7 @@ Feature: EDI INVOIC export via postgREST
       | customerLocation | 4337010331021 | customer                 | Y               | Y               |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DateOrdered | POReference |
-      | order_1    | true    | customer      | warehouse      | 2025-05-01  | REF-T2      |
+      | order_1    | true    | customer      | warehouse      | 2025-05-01  | REF-ESR-OFF      |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | product                 | 2          |
@@ -1039,10 +1039,10 @@ Feature: EDI INVOIC export via postgREST
     {
       "Invoice_ID": @invoice_ID@,
       "Invoice_PaymentReference": null,
-      "Order_POReference": "REF-T2",
+      "Order_POReference": "REF-ESR-OFF",
       "Lines": [
         {
-          "Order_POReference": "REF-T2",
+          "Order_POReference": "REF-ESR-OFF",
           "Order_IsPOReferenceBuyerOrderNo": false
         }
       ]
