@@ -276,6 +276,33 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	}
 
 	@Override
+	@Nullable
+	public HuPackingInstructionsId getLUPIIdSupersededByProductSpecificLUItem(
+			@Nullable final I_M_HU_LUTU_Configuration storedLUTUConfiguration,
+			@Nullable final HUPIItemProductId tuPIItemProductId,
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		if (storedLUTUConfiguration == null)
+		{
+			return null;
+		}
+
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(storedLUTUConfiguration.getM_LU_HU_PI_ID());
+		if (luPIId == null || tuPIItemProductId == null || storedLUTUConfiguration.getM_LU_HU_PI_Item_ID() <= 0)
+		{
+			return null;
+		}
+
+		final boolean superseded = handlingUnitsDAO
+				.getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, tuPIItemProductId, productId)
+				.filter(luPIItem -> luPIItem.getM_Product_ID() > 0)
+				.filter(luPIItem -> luPIItem.getM_HU_PI_Item_ID() != storedLUTUConfiguration.getM_LU_HU_PI_Item_ID())
+				.isPresent();
+		return superseded ? luPIId : null;
+	}
+
+	@Override
 	public boolean isNoLU(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 
@@ -758,7 +785,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 							tuPI,
 							X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
-							ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfigurationNew))
+							ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfigurationNew),
+							ProductId.ofRepoIdOrNull(lutuConfigurationNew.getM_Product_ID()))
 					//
 					.stream()
 					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
