@@ -5,6 +5,7 @@ import { GetQuantityDialog } from './GetQuantityDialog';
 import { PickingJobScreen } from './PickingJobScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { waitForNoInFlightXhr } from '../../inFlightXhr';
 
 const NAME = 'PickLineScanScreen';
 
@@ -13,6 +14,8 @@ const nextBoxButton = () => page.getByRole('button', { name: /Weitere Kiste|Next
 const tapNextBox = async () => {
     await PickLineScanScreen.waitForScreen();
     await nextBoxButton().tap();
+    // the tap's request has been answered and rendered (a poll right after the tap could still see the button enabled, before the tap took effect)
+    await waitForNoInFlightXhr(page, { urlPattern: /\/picking\//, timeout: SLOW_ACTION_TIMEOUT });
     // the button is disabled while the box is being closed and opened; a booking before that is done is refused (no open box).
     // Done = the button is usable again, or the screen was left for the box list.
     await expect.poll(async () => (await nextBoxButton().count()) === 0 || await nextBoxButton().isEnabled(), { timeout: SLOW_ACTION_TIMEOUT }).toBe(true);

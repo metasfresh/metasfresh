@@ -1,13 +1,9 @@
 import { test } from "../../../playwright.config";
-import { allure } from 'allure-playwright';
-import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
-import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductValue } from "../../utils/cuLabel";
+import { allureMeta, BEST_BEFORE, createMasterdata, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, newFormatName, openLine, scanLabel, SOURCE_QTY, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
 
 /**
  * CU quantity entry, Scan once ("one label, type a count"): count, source, box, over-pick, line done (TC5, TC5b, TC5c Scan once part,
@@ -18,113 +14,6 @@ import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductV
  * until the line is fully booked, then the app goes back to the job screen. Every booking needs an open box (`openBox()`), except TC5c.
  * Source: one pallet of 20 boxes of 4 pieces, so a count of 5 needs pieces from two source boxes.
  */
-const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
-const MODE_MANUAL = 'MANUAL';
-const BEST_BEFORE = '2026-11-07';
-const SOURCE_QTY = 80; // 20 boxes x 4 pieces
-
-const MSG_NO_OPEN_BOX = "Please open a box first (scan a GRAI or 'Next box').";
-
-/**
- * @param {object} p
- * @param {string} p.formatName label format of the profile
- * @param {object[]} p.orders sales orders in the order of the job lines: `{ key, qty }` (customer `key` is created per order)
- * @param {object[]} [p.customers] customer records of the mobile config (`{ customer, cuQtyEntryMode, cuLabelFormatName }`)
- * @param {string|null} [p.profileMode] profile CU quantity entry mode; null = not sent (Manual)
- * @param {object} [p.sysconfigs] sysconfigs to set for the test
- * @param {boolean} [p.anonymousPickHUsOnTheFly]
- */
-const createMasterdata = async ({ formatName, orders, customers = [], profileMode = MODE_SCAN_ONCE, sysconfigs, anonymousPickHUsOnTheFly = false }) => {
-    const bpartners = {};
-    const salesOrders = {};
-    orders.forEach(({ key, qty }) => {
-        bpartners[`cust${key}`] = {};
-        salesOrders[`SO_${key}`] = {
-            bpartner: `cust${key}`,
-            warehouse: 'wh',
-            datePromised: '2025-03-01T00:00:00.000+02:00',
-            lines: [{ product: 'P1', qty, piItemProduct: 'P1_4CU' }]
-        };
-    });
-    const slots = {};
-    orders.forEach((_, idx) => { slots[`slot${idx + 1}`] = {}; });
-
-    return await Backend.createMasterdata({
-        language: "en_US",
-        request: {
-            ...(sysconfigs ? { sysconfigs } : {}),
-            login: { user: { language: "en_US" } },
-            mobileConfig: {
-                picking: {
-                    aggregationType: "product",
-                    allowPickingAnyCustomer: true,
-                    createShipmentPolicy: 'CL',
-                    allowPickingAnyHU: true,
-                    anonymousPickHUsOnTheFly,
-                    showPromptWhenOverPicking: false,
-                    pickTo: ['TU'],
-                    ...(profileMode ? { cuQtyEntryMode: profileMode } : {}),
-                    cuLabelFormatName: formatName,
-                    customers,
-                }
-            },
-            customQRCodeFormats: [buildCULabelFormat({ name: formatName })],
-            bpartners,
-            warehouses: { "wh": {} },
-            pickingSlots: slots,
-            products: {
-                // product value of 7 characters, as on the real pack label
-                "P1": { price: 1, randomValue: { size: 7, isIncludeDigits: true } },
-            },
-            packingInstructions: {
-                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4 },
-            },
-            handlingUnits: {
-                "P1_HU": { product: 'P1', warehouse: 'wh', packingInstructions: 'P1_20x4' },
-            },
-            salesOrders,
-        }
-    });
-};
-
-/** Logs in, starts the product job of P1, scans the source HU ("Kommissionieren aus") and the picking slot of line 1. */
-const startJob = async (masterdata, { qtyToDeliver }) => {
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver, productId: masterdata.products.P1.id });
-    await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-    return { pickingJobId };
-};
-
-/** Opens the scan screen of a Scan once line with nothing picked yet (source HU known: the tap goes there directly) and checks its mode. */
-const openLine = async ({ index }) => {
-    await PickingJobScreen.clickLineButton({ index });
-    await PickLineScanScreen.waitForScreen();
-    await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-};
-
-/** Scan once: label scan, the quantity block opens. */
-const scanLabel = async (label) => {
-    await PickLineScanScreen.scanCULabel(label);
-    await GetQuantityDialog.waitForDialog();
-};
-
-const labelOf = ({ masterdata, gtin = uniqueGTIN(), lot = uniqueLot(), packId = 1, bestBefore = BEST_BEFORE }) =>
-    buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore, packId });
-
-const allureMeta = (story) => {
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story(story);
-    allure.severity('normal');
-};
-
-const newFormatName = () => `cuqe-so-${uniqueProductValue()}`;
-
 // noinspection JSUnusedLocalSymbols
 test('TC5 / TC27 (i): box opened with "Next box", label scanned, count 5 (needs two source boxes) books ONE CU of 5 in the box', async ({ page }) => {
     allureMeta('Scan once count');

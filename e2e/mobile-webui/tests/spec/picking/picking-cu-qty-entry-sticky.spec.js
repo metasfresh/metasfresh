@@ -1,11 +1,10 @@
 import { test } from "../../../playwright.config";
-import { allure } from 'allure-playwright';
 import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { BEST_BEFORE, book, createMasterdata, labelOf, newFormatName, openLine, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, BEST_BEFORE, book, createMasterdata, labelOf, newFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
 
 /**
  * CU quantity entry, Scan once: the pinned count and the navigation around it (TC8, TC8b, TC24, re-entry via "HU verpacken").
@@ -15,16 +14,6 @@ import { BEST_BEFORE, book, createMasterdata, labelOf, newFormatName, openLine, 
  * for the next booking (AC6a). A new line starts empty, also the next line of the same product.
  */
 const BEST_BEFORE_B = '2026-12-01';
-
-const allureMeta = (story) => {
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story(story);
-    allure.severity('normal');
-};
-
-const qtyPickedRow = ({ qty, vhu, tu }) => ({ qtyPicked: `${qty} PCE`, qtyTUs: 1, qtyLUs: 0, vhu, tu, lu: '-', processed: false, shipmentLineId: '-' });
 
 // noinspection JSUnusedLocalSymbols
 test('TC8: the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the last lot without a scan; the next line of the same product starts empty', async ({ page }) => {
@@ -159,6 +148,7 @@ test('TC24: book 6 of 10, close the line short: 4 stay open, no reject reason as
         await PickingJobLineScreen.clickCloseButton();
         await PickingJobLineScreen.expectReOpenButtonVisible();
         await PickingJobLineScreen.goBack();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '6 Stk' });   // the open 4 stay open: nothing picked, nothing rejected for them
         await PickingJobScreen.complete();
     });
 
@@ -192,7 +182,8 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
     await PickingJobLineScreen.clickPickHUButton();           // "HU verpacken": the block reopens, no new label scan
     await GetQuantityDialog.expectQtyEntered(4);              // MIN(last typed 6, open 4)
     await GetQuantityDialog.clickDoneStayOpen();              // books 4 into the kept box: the line is done
-    await PickingJobLineScreen.waitForScreen();               // a block entered through "HU verpacken" leads back to the line screen
+    await PickingJobScreen.waitForScreen();                   // AC8 / R4: a finished line leads back to the job screen, also when the block was entered through "HU verpacken"
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '10 Stk' });
 
     await Backend.expect({
         pickings: {

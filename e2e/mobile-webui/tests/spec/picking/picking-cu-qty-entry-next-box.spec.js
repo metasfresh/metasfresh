@@ -11,7 +11,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GRAIScreen } from "../../utils/screens/huManager/GRAIScreen";
-import { book, createMasterdata, labelOf, MSG_NO_OPEN_BOX, newFormatName, openLine, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, book, createMasterdata, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_BOX, newFormatName, openLine, qtyPickedRow, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
 
 /**
  * CU quantity entry, Scan once: opening the next box (TC14, TC14b, TC15, TC16, TC17 Scan once part, TC18, TC19, TC23).
@@ -22,20 +22,9 @@ import { book, createMasterdata, labelOf, MSG_NO_OPEN_BOX, newFormatName, openLi
  * (the `qtyTUs` expectation holds only for a real TU), never a loose CU.
  */
 const MSG_NO_CAPACITY = 'has no capacity configured for this product';
-const GRAI_8003_PREFIX = '8003076132640030951';
 const MSG_GRAI_COUNT = 'TUs have a GRAI';
 
 const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true, ...extra } });
-
-const allureMeta = (story) => {
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story(story);
-    allure.severity('normal');
-};
-
-const qtyPickedRow = ({ qty, vhu, tu }) => ({ qtyPicked: `${qty} PCE`, qtyTUs: 1, qtyLUs: 0, vhu, tu, lu: '-', processed: false, shipmentLineId: '-' });
 
 // noinspection JSUnusedLocalSymbols
 test('TC14: GRAI scan with a box open (customer GRAI not required): old box closed with its 5, new box carries the GRAI', async ({ page }) => {
@@ -125,6 +114,7 @@ test('TC15 / TC16: "Next box" opens a box of the line\'s TU type in one tap (no 
     await test.step('TC15: one tap opens the next box, no box list', async () => {
         await PickLineScanScreen.nextBox();
         await SelectPickTargetTUScreen.expectNotShown();
+        await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.P1_20x4.tuName);   // the TU type of the line's packing, not the GRAI type G1
         await GetQuantityDialog.waitForDialog();
         await book({ qty: 3, expectedQtyTarget: 12 });
     });
@@ -175,6 +165,7 @@ test('TC17 (Scan once): customer GRAI required, no pick-time GRAI screen: first 
 
     await test.step('(ii) "Next box", then the booking goes into the box, no GRAI screen', async () => {
         await PickLineScanScreen.nextBox();
+        await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.P1_20x4.tuName);   // the TU type of the line's packing
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 5 });
         await PickGraiScreen.expectNotShown();
     });
@@ -215,9 +206,49 @@ test('TC18: mixed job (customer GRAI required + customer not required): the GRAI
         await PickingJobScreen.waitForScreen();
     });
 
+    // the GRAI customer's box carries the scanned GRAI (a job that completes even when the GRAI is missing would also pass a bare docStatus check)
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 8, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 4, vhu: 'vhu2', tu: 'tu2' })] } }
+            }
+        },
+        hus: {
+            tu1: { qtyTUs: 1, storages: { P1: '8 PCE' }, attributes: { GRAI: grai } },
+            tu2: { qtyTUs: 1, storages: { P1: '4 PCE' }, attributes: { GRAI: null } },
+        },
+    });
     await PickingJobScreen.complete();
     await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
 });
+
+/**
+ * "GRAI scannen" in the HU Manager for each given box (alias of a picked TU, `tuN`): GS1 AI 8003 form (company prefix
+ * 7613264, asset type 00309) with a serial of its own per box. Then back to the picking application, in the job,
+ * ready to complete.
+ */
+const addGraiToBoxesInHUManager = async ({ masterdata, boxes }) => {
+    const serialBase = Date.now();
+    await PickingJobScreen.goBack();
+    await PickingJobsListScreen.goBack();
+    // one HU Manager visit per box: its scan field is gone while an HU is shown
+    for (const [idx, box] of boxes.entries()) {
+        const tuQRCode = await Backend.getHUQRCodeByIdentifier({ identifier: box });
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+        await HUManagerScreen.scanHUQRCode({ huQRCode: tuQRCode });
+        await HUManagerScreen.openGRAIScreen();
+        await GRAIScreen.scanGraiBarcode({ barcodeString: `${GRAI_8003_PREFIX}${String(serialBase + idx).slice(-11)}` });
+        await GRAIScreen.tapSendButton();
+        await GRAIScreen.goBack();
+        await HUManagerScreen.waitForScreen();
+        await HUManagerScreen.goBack();
+        await ApplicationsListScreen.expectVisible();
+    }
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.startJob({ index: 1, productId: masterdata.products.P1.id });
+};
 
 // noinspection JSUnusedLocalSymbols
 test('TC19: customer GRAI required, box opened with "Next box": "Fertigstellen" is refused as today; after "GRAI scannen" in the HU Manager the job completes', async ({ page }) => {
@@ -242,26 +273,8 @@ test('TC19: customer GRAI required, box opened with "Next box": "Fertigstellen" 
         hus: { tu1: { qtyTUs: 1, storages: { P1: '5 PCE' } } },
     });
 
-    // GRAI on the box in the HU Manager: GS1 AI 8003 form (company prefix 7613264, asset type 00309) with a serial of its own
-    const tuQRCode = await Backend.getHUQRCodeByIdentifier({ identifier: 'tu1' });
-    const graiBarcode = `${GRAI_8003_PREFIX}${String(Date.now()).slice(-11)}`;
-    await PickingJobScreen.goBack();
-    await PickingJobsListScreen.goBack();
-    await ApplicationsListScreen.startApplication('huManager');
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.scanHUQRCode({ huQRCode: tuQRCode });
-    await HUManagerScreen.openGRAIScreen();
-    await GRAIScreen.scanGraiBarcode({ barcodeString: graiBarcode });
-    await GRAIScreen.tapSendButton();
-
-    // back in the job: it completes now
-    await GRAIScreen.goBack();
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.goBack();
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.startJob({ index: 1, productId: masterdata.products.P1.id });
+    // GRAI on the box in the HU Manager, then back in the job: it completes now
+    await addGraiToBoxesInHUManager({ masterdata, boxes: ['tu1'] });
     await PickingJobScreen.complete();
     await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
 });
@@ -271,10 +284,11 @@ test('TC19: customer GRAI required, box opened with "Next box": "Fertigstellen" 
  * under its box (`tuN`, the `tu` of the qtyPicked row), and every box satisfies `qtyTUs: 1`, which holds only for a real
  * TU (never for a virtual packing), with the CU's quantity as its own storage (one CU per box here).
  */
-const expectEveryPickedHUIsACUInATU = async ({ pickingJobId, boxes }) => {
+const expectEveryPickedHUIsACUInATU = async ({ pickingJobId, boxes, docStatus }) => {
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
+                ...(docStatus ? { docStatus } : {}),
                 shipmentSchedules: {
                     P1: { qtyPicked: boxes.map(({ qty }, idx) => qtyPickedRow({ qty, vhu: `vhu${idx + 1}`, tu: `tu${idx + 1}` })) }
                 }
@@ -288,31 +302,41 @@ const expectEveryPickedHUIsACUInATU = async ({ pickingJobId, boxes }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC23 (i): line with a box packing "TU x 4 Stk" (customer GRAI required): first booking refused, "Next box" opens box 1, a GRAI scan opens the next box', async ({ page }) => {
+test('TC23 (i): line with a box packing "TU x 4 Stk" (customer GRAI required): first booking refused, "Next box" opens box 1, a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
     allureMeta('Open box first, box packing line');
 
     const masterdata = await createMasterdata({
         formatName: newFormatName(),
-        orders: [{ key: 'A', qty: 12, graiRequired: 'Y' }],
+        orders: [{ key: 'A', qty: 8, graiRequired: 'Y' }],
         packingInstructions: graiTuType('G1'),
     });
     const grai = masterdata.packingInstructions.G1.grai;
-    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 12 });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 8 });
     await openLine({ index: 1 });
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(4);
     await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_BOX });
-    await GetQuantityDialog.expectQtyTarget(12);
+    await PickGraiScreen.expectNotShown();
+    await GetQuantityDialog.expectQtyTarget(8);
 
     await PickLineScanScreen.nextBox();
     await SelectPickTargetTUScreen.expectNotShown();   // the line's packing names a TU type: one tap, no list
-    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
+    await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.P1_20x4.tuName);   // the TU type of the line's packing
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 4 });
+    await PickGraiScreen.expectNotShown();
 
     await PickLineScanScreen.rescanGrai(grai);
     await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.G1.tuName);
-    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 4 });
+    await GetQuantityDialog.clickDoneStayOpen();   // the line is done: back to the job screen
+    await PickGraiScreen.expectNotShown();
+    await PickingJobScreen.waitForScreen();
 
-    await expectEveryPickedHUIsACUInATU({ pickingJobId, boxes: [{ qty: 4, grai: null }, { qty: 4, grai: grai }] });
+    // box 1 was opened without GRAI: "Fertigstellen" is refused (as TC19), and completes once every box has a GRAI
+    await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
+    await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', boxes: [{ qty: 4, grai: null }, { qty: 4, grai: grai }] });
+    await addGraiToBoxesInHUManager({ masterdata, boxes: ['tu1'] });
+    await PickingJobScreen.complete();
+    await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -330,10 +354,13 @@ test('TC23 (ii): line with an unlimited-capacity packing that names a TU type: "
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(4);
     await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_BOX });
+    await PickGraiScreen.expectNotShown();
 
     await PickLineScanScreen.nextBox();
     await SelectPickTargetTUScreen.expectNotShown();
+    await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.INF.tuName);   // the TU type of the line's packing
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
+    await PickGraiScreen.expectNotShown();
 
     await expectEveryPickedHUIsACUInATU({ pickingJobId, boxes: [{ qty: 4 }] });
 });
@@ -354,6 +381,7 @@ test('TC23 (iii): line without a TU type: first booking refused, "Next box" open
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(4);
     await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_BOX });
+    await PickGraiScreen.expectNotShown();
 
     await test.step('"Next box" opens the box list, the picker chooses the TU type', async () => {
         await PickLineScanScreen.nextBox();
@@ -365,6 +393,7 @@ test('TC23 (iii): line without a TU type: first booking refused, "Next box" open
         await PickLineScanScreen.waitForScreen();
         await scanLabel(labelOf({ masterdata }));
         await book({ qty: 4, expectedQtyTarget: 8 });
+        await PickGraiScreen.expectNotShown();
     });
 
     await test.step('"Next box" again: the list opens directly, the first box closed without a close screen', async () => {
@@ -374,13 +403,22 @@ test('TC23 (iii): line without a TU type: first booking refused, "Next box" open
         await PickingJobLineScreen.waitForScreen();
         await PickingJobLineScreen.clickPickHUButton();   // the remembered label opens the quantity block again
         await book({ qty: 4, expectedQtyTarget: 4 });
+        await PickGraiScreen.expectNotShown();
     });
 
     await test.step('a GRAI scan opens the next box', async () => {
         await PickLineScanScreen.rescanGrai(grai);
         await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.G1.tuName);
-        await GetQuantityDialog.clickDoneStayOpen();
+        await GetQuantityDialog.clickDoneStayOpen();   // the line is done: back to the job screen
+        await PickGraiScreen.expectNotShown();
+        await PickingJobLineScreen.leaveToJobScreenAfterLineDone();   // the booking is through before the backend is asked
     });
 
-    await expectEveryPickedHUIsACUInATU({ pickingJobId, boxes: [{ qty: 4, grai: null }, { qty: 4, grai: null }, { qty: 4, grai: grai }] });
+    await test.step('"Fertigstellen" is refused while boxes without GRAI exist, and completes once every box has one', async () => {
+        await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
+        await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', boxes: [{ qty: 4, grai: null }, { qty: 4, grai: null }, { qty: 4, grai: grai }] });
+        await addGraiToBoxesInHUManager({ masterdata, boxes: ['tu1', 'tu2'] });
+        await PickingJobScreen.complete();
+        await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
+    });
 });

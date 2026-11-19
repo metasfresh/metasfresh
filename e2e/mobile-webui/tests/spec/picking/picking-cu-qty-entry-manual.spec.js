@@ -9,6 +9,7 @@ import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLine
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
+import { LAUNCHERS_LIMIT_SYSCONFIGS } from "../../utils/cuQtyEntryScanOnce";
 
 /**
  * Characterization of the Manual mode (AC2): these tests PASS before and after the CU quantity entry change.
@@ -20,6 +21,7 @@ const createMasterdata = async ({ pickTo }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
             login: { user: { language: "en_US" } },
             mobileConfig: {
                 picking: {

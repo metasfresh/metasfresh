@@ -6,6 +6,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
+import { LAUNCHERS_LIMIT_SYSCONFIGS } from '../../utils/cuQtyEntryScanOnce';
 
 /**
  * @param {boolean} [allowQuickPackAll] profile switch of the Quick Pack All button
@@ -29,6 +30,7 @@ const createMasterdata = async ({
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
             login: { user: { language: 'en_US', workplace: "workplace1" } },
             mobileConfig: {
                 picking: {

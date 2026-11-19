@@ -79,6 +79,20 @@ export const PickingJobLineScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
+    /**
+     * After the booking that finished a line: waits for the job screen, or, when the app shows the line screen instead,
+     * goes back from it. AC8 says the job screen; the app as built stays on the line screen when the quantity block was
+     * entered through "Pack HU" (the "Re-entry via Pack HU" spec pins the AC). Specs about something else than that
+     * navigation use this to carry on from either screen.
+     */
+    leaveToJobScreenAfterLineDone: async () => await test.step(`${NAME} - Leave to the job screen after the line is done`, async () => {
+        await page.locator('#WFProcessScreen, #PickLineScreen').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        if (await containerElement().isVisible()) {
+            await PickingJobLineScreen.goBack();
+        }
+        await PickingJobScreen.waitForScreen();
+    }),
+
     expectHeaderProperty:  async ({ caption, value }) => await test.step(`${NAME} - Check header property`, async () => {
         const row = await page.locator(
           `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`

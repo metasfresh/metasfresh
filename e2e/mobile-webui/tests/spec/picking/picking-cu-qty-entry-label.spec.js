@@ -1,5 +1,4 @@
 import { test } from "../../../playwright.config";
-import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -8,6 +7,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductValue } from "../../utils/cuLabel";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta } from "../../utils/cuQtyEntryScanOnce";
 
 /**
  * CU quantity entry: reading of the pack label on the Scan once line (TC3 without pack-ID cases, TC3b, TC4, TC4b).
@@ -32,6 +32,7 @@ const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
             login: { user: { language: "en_US" } },
             mobileConfig: {
                 picking: {
@@ -101,14 +102,6 @@ const bookWithLabel = async ({ label, qty, expectedQtyTarget, isRescan = false }
     await GetQuantityDialog.waitForDialog();
     await GetQuantityDialog.typeQtyEntered(qty);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget });
-};
-
-const allureMeta = (story) => {
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story(story);
-    allure.severity('normal');
 };
 
 // noinspection JSUnusedLocalSymbols
