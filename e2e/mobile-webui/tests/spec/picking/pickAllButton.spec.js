@@ -183,7 +183,7 @@ const openJob = async (masterdata, { productJob = false } = {}) => {
 
 /** The button is hidden, the direct call is refused with the new message, nothing is picked and the job stays open. */
 const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2', 'P3'] }) => {
-    await PickingJobScreen.expectPickAllButtonHidden();
+    await PickingJobScreen.expectPickAllButtonHiddenAfterQtyAvailable();
 
     const { status, body } = await Backend.postPickAll({ wfProcessId: `picking-${pickingJobId}` });
     expect(status, `answer: ${body}`).toBeGreaterThanOrEqual(400);
