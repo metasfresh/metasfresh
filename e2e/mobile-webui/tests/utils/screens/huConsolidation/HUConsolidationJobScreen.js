@@ -99,6 +99,10 @@ export const HUConsolidationJobScreen = {
     /** Tap the job-level "Scan (GRAI)" button (opens the scanner on the job screen). */
     clickScanGRAIButton: async () => await step(`${NAME} - Click Scan (GRAI) button`, async () => {
         await page.getByTestId(SCAN_GRAI_BUTTON_TESTID).tap();
+        // The scanner input is attached when React commits, but its window-level key listener is registered in a passive effect
+        // a moment later; a scan typed in between is silently lost. Two animation frames = the effects have run.
+        await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     }),
 
     /**

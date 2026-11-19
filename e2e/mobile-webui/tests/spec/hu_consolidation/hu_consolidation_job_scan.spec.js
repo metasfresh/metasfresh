@@ -1,28 +1,22 @@
 /**
- * TL;DR — In HU Consolidation, the worker scans the GRAI of each crate directly on the job screen
- * ("Scan (GRAI)" button), no matter which picking slot the crate is in, instead of opening every
- * picking slot first. Scanned crates go onto the open pallet; Fertigstellen prints the pallet label
- * and ships.
+ * In HU Consolidation, the worker scans the GRAI of each crate directly on the job screen ("Scan (GRAI)" button), no matter
+ * which picking slot the crate is in, instead of opening every picking slot first. Scanned crates go onto the open pallet;
+ * Fertigstellen prints the pallet label and ships.
  *
-
- * TC4 (button states, de_DE + en_US): "Scan (GRAI)" disabled before a pallet is chosen, enabled after, scanner closes when
- * the pallet is closed (Schliessen). TC7: a job whose slot holds only a pallet shows no button. TC19: partner on 'N' with a
- * GRAI crate: button shown, scan moves the crate, slot screen scanner follows the presence rule. TC20: button only when a
- * crate carries a GRAI; it goes away with the last GRAI crate (the tap path stays).
- *
- * TC14 (Rückgängig): (a) before any crate it voids the job and goes back to the job list (as today); (b) after a scan moved a
- * crate onto the pallet it is refused silently, the job screen stays and nothing changes (as today).
- *
- * TC2 (rejected scans + TOAST repro, BS-22): every rejected scan on the job screen shows exactly one error
- * toast with the right text, moves nothing and leaves the scanner armed (see the TC2 test for the sequence).
- *
- * Real-life flow (TC1, the reference case):
- *   1. Three crates (2 packing instructions, 3 distinct GRAIs) are picked with a GRAI scan into 2 picking slots.
- *   2. The worker opens HU Consolidation, taps the ship-to, chooses a new pallet ("Neues Gebinde" / "New LU").
- *   3. Taps "Scan (GRAI)" and scans the three crates (dot form, GS1 8003 form, dot form).
- *      Each accepted scan: crate onto the pallet, its slot count drops by 1, pallet caption shows the pallet QR.
- *   4. Fertigstellen -> Ja: the ship-to disappears from the job list; the pallet holds the 3 crates,
- *      has an SSCC18, belongs to the partner, its shipment is completed and one label was archived.
+ * Covered here:
+ *   - the reference flow: three crates (2 packing instructions, 3 distinct GRAIs) picked with a GRAI scan into 2 picking slots;
+ *     the worker opens the ship-to, chooses a new pallet, taps "Scan (GRAI)" and scans the three crates (dot form, GS1 8003
+ *     form, dot form); each accepted scan puts the crate onto the pallet, drops its slot count by 1 and shows the pallet QR as
+ *     caption; Fertigstellen -> Ja removes the ship-to from the job list, the pallet holds the 3 crates, has an SSCC18, belongs
+ *     to the partner, its shipment is completed and one label was archived.
+ *   - rejected scans: every rejected scan on the job screen shows exactly one error toast with the right text, moves nothing
+ *     and leaves the scanner armed.
+ *   - button states (de_DE + en_US): "Scan (GRAI)" is disabled before a pallet is chosen, enabled after, and the scanner
+ *     closes when the pallet is closed (Schliessen).
+ *   - presence rule: a job whose slot holds only a pallet shows no button; with the partner on 'N' a GRAI crate still shows it
+ *     and the slot screen scanner follows the presence rule; the button is shown only while a crate carries a GRAI.
+ *   - Rückgängig: before any crate it voids the job and goes back to the job list; after a scan moved a crate onto the pallet
+ *     it is refused silently, the job screen stays and nothing changes.
  */
 
 import { test } from '../../../playwright.config';
@@ -35,122 +29,9 @@ import { HUConsolidationJobsListScreen } from '../../utils/screens/huConsolidati
 import { PickingSlotScreen } from '../../utils/screens/huConsolidation/PickingSlotScreen';
 import { HUConsolidationJobScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobScreen';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { expectErrorToast } from '../../utils/common';
+import { pickOneGraiCrate, pickOneCrateWithoutGrai, stampGraiViaHUManager, pickOnePallet } from '../../utils/huConsolidationJobScanFlows';
 import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
-import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
-import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
-import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
-import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
-import { PickingGraiScanPanel } from '../../utils/screens/picking/PickingGraiScanPanel';
-import { SelectPickTargetTUScreen } from '../../utils/screens/picking/SelectPickTargetTUScreen';
-import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
-import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
-import { PickGraiScreen } from '../../utils/screens/picking/PickGraiScreen';
-
-/**
- * Picks one GRAI-stamped top-level TU for a single-line picking job into the given picking slot
- * (same flow as hu_consolidation_grai_cross_slot.spec.js: slot scan, line, TU target GRAI scan, HU scan, qty, complete).
- */
-const pickOneGraiCrate = async ({ documentNo, slotQrCode, grai, huQrCode }) => await test.step(`Pick crate ${grai} of ${documentNo} into its slot`, async () => {
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ index: 1 });
-
-    await PickingJobScreen.scanPickingSlot({ qrCode: slotQrCode });
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickTUTargetButton();
-    await PickingGraiScanPanel.scanGrai({ graiString: grai });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickScanButton();
-    await PickLineScanScreen.waitForScreen();
-    await PickLineScanScreen.typeQRCode(huQrCode);
-    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '1' });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.goBack();
-    await PickingJobScreen.complete();
-    await PickingJobsListScreen.goBack();
-});
-
-/**
- * Picks one top-level TU WITHOUT a GRAI for a single-line picking job into the given picking slot. Only valid while the
- * partner is on GRAIRequired 'N' (a crate without GRAI cannot complete under 'Y'): the line's TU target is chosen by the
- * TU button of the target screen (no GRAI panel then), as PickingJobScreen.setTargetTU; the rest is as pickOneGraiCrate.
- */
-const pickOneCrateWithoutGrai = async ({ documentNo, slotQrCode, tuName, huQrCode }) => await test.step(`Pick crate without GRAI of ${documentNo} into its slot`, async () => {
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ index: 1 });
-
-    await PickingJobScreen.scanPickingSlot({ qrCode: slotQrCode });
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickTUTargetButton();
-    await SelectPickTargetTUScreen.waitForScreen();
-    await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickScanButton();
-    await PickLineScanScreen.waitForScreen();
-    await PickLineScanScreen.typeQRCode(huQrCode);
-    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '1' });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.goBack();
-    await PickingJobScreen.complete();
-    await PickingJobsListScreen.goBack();
-});
-
-/**
- * Stamps a GRAI on a top-level TU through the HU Manager "Scan GRAI" action (PUT .../grai) and returns to the applications list.
- * @param {string} huQrCode global QR code of the TU
- * @param {string} grai canonical dot-form GRAI (sent as GS1 AI 8003 barcode, as humanager/grai.spec.js)
- */
-const stampGraiViaHUManager = async ({ huQrCode, grai }) => await test.step(`Stamp GRAI ${grai} on a crate via the HU Manager`, async () => {
-    await ApplicationsListScreen.startApplication('huManager');
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.scanHUQRCode({ huQRCode: huQrCode });
-    await HUManagerScreen.openGRAIScreen();
-    await GRAIScreen.expectVisible();
-    await GRAIScreen.scanGraiBarcode({ barcodeString: graiAs8003(grai) });
-    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.tapSendButton();
-    await GRAIScreen.goBack();
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.goBack();
-    await ApplicationsListScreen.expectVisible();
-});
-
-/**
- * Picks one pallet (LU with one GRAI-captured crate inside) into the given picking slot: job-level LU target,
- * line, source HU scan, quantity (1 TU) confirmed with "OK und LU schliessen", inline GRAI capture, Save, complete.
- * Closing the LU queues the pallet in the picking slot (as pick_by_ExternalBarcode.spec.js: an open LU is not queued).
- */
-const pickOnePallet = async ({ documentNo, slotQrCode, luName, crateGrai, huQrCode }) => await test.step(`Pick a pallet with crate ${crateGrai} of ${documentNo} into its slot`, async () => {
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ index: 1 });
-
-    await PickingJobScreen.scanPickingSlot({ qrCode: slotQrCode });
-    await PickingJobScreen.setTargetLU({ lu: luName });
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickScanButton();
-    await PickLineScanScreen.waitForScreen();
-    await PickLineScanScreen.typeQRCode(huQrCode);
-    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '1', closeTarget: true });
-    await PickGraiScreen.waitForScreen();
-    await PickGraiScreen.scanGraiBatch({ graiStrings: [crateGrai] });
-    await PickGraiScreen.expectCount({ scanned: 1, total: 1 });
-    await PickGraiScreen.clickSave();
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.goBack();
-    await PickingJobScreen.complete();
-    await PickingJobsListScreen.goBack();
-});
 
 // GS1 sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
 let sysconfigsToRestore = null;
@@ -163,7 +44,7 @@ test.afterEach(async () => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigstellen', async ({ page: _page }) => {
+test('Scan 3 crates from 2 slots on the job screen, Fertigstellen', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -235,7 +116,7 @@ test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigst
     });
 
     await Backend.expect({
-        title: 'TC1: pallet holds the 3 crates, SSCC18 set, partner BP1, shipment completed, 1 label archived',
+        title: 'pallet holds the 3 crates, SSCC18 set, partner BP1, shipment completed, 1 label archived',
         hus: {
             [targetLUQRCode]: {
                 bpartner: 'BP1',
@@ -258,15 +139,8 @@ test('TC1 reference case: scan 3 crates from 2 slots on the job screen, Fertigst
     });
 });
 
-/** One rejected scan on the job screen: exactly one error toast (checked + closed by expectErrorToast) with the given text. */
-const scanAndExpectRejected = async ({ code, expectedText, title }) => await expectErrorToast(title, async () => {
-    await HUConsolidationJobScreen.scanGRAI({ grai: code });
-}, ({ textContent }) => {
-    expect(textContent).toContain(expectedText);
-});
-
 // noinspection JSUnusedLocalSymbols
-test('TC2 rejected scans: one right message per scan, nothing moves, scanner stays armed', async ({ page: _page }) => {
+test('Rejected scans: one right message per scan, nothing moves, scanner stays armed', async ({ page: _page }) => {
     // setup picks 4 jobs, then 7 scans (GRAI debounce ~1.5 s each + toast close) follow
     test.slow();
     // === ALLURE METADATA ===
@@ -278,8 +152,7 @@ test('TC2 rejected scans: one right message per scan, nothing moves, scanner sta
     const NOT_A_GRAI = 'The scanned barcode is not a valid GRAI.';
     const NO_HU = 'No HU found for this QR code';
 
-    // Job 1 (BP1): 2 crates in slot1 (as TC1: one is scanned, the other stays so the job keeps a GRAI crate and the scanner stays open,
-    // AC19-VANISH) + a pallet (with 1 crate inside) in slot2. Job 2 (BP2): one crate in slot3.
+    // Job 1 (BP1): 2 crates in slot1 (as in the reference flow: one is scanned, the other stays so the job keeps a GRAI crate and the scanner stays open) + a pallet (with 1 crate inside) in slot2. Job 2 (BP2): one crate in slot3.
     const masterdata = await createJobScanMasterdata({
         pickTo: ['TU', 'LU_TU'],
         bpartners: { BP1: { graiRequired: 'Y' }, BP2: { graiRequired: 'Y' } },
@@ -331,19 +204,19 @@ test('TC2 rejected scans: one right message per scan, nothing moves, scanner sta
     };
 
     await test.step('EAN-13 -> "not a valid GRAI"', async () => {
-        await scanAndExpectRejected({ title: 'EAN-13', code: '4006381333931', expectedText: NOT_A_GRAI });
+        await HUConsolidationJobScreen.scanGRAIExpectError({ grai: '4006381333931', message: NOT_A_GRAI });
         await expectNothingMovedScannerArmed({ crateCountInSlot1: 2 });
     });
     await test.step('HU QR code -> "No HU found"', async () => {
-        await scanAndExpectRejected({ title: 'HU QR code', code: masterdata.handlingUnits.HU1.qrCode, expectedText: NO_HU });
+        await HUConsolidationJobScreen.scanGRAIExpectError({ grai: masterdata.handlingUnits.HU1.qrCode, message: NO_HU });
         await expectNothingMovedScannerArmed({ crateCountInSlot1: 2 });
     });
     await test.step('unknown GRAI -> "No HU found"', async () => {
-        await scanAndExpectRejected({ title: 'unknown GRAI', code: graiUnknown, expectedText: NO_HU });
+        await HUConsolidationJobScreen.scanGRAIExpectError({ grai: graiUnknown, message: NO_HU });
         await expectNothingMovedScannerArmed({ crateCountInSlot1: 2 });
     });
     await test.step('GRAI of the other job\'s crate -> "No HU found"', async () => {
-        await scanAndExpectRejected({ title: 'other job GRAI', code: graiOtherJob, expectedText: NO_HU });
+        await HUConsolidationJobScreen.scanGRAIExpectError({ grai: graiOtherJob, message: NO_HU });
         await expectNothingMovedScannerArmed({ crateCountInSlot1: 2 });
     });
 
@@ -355,22 +228,22 @@ test('TC2 rejected scans: one right message per scan, nothing moves, scanner sta
         await HUConsolidationJobScreen.expectScannerOpen(true);
         const targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
         await Backend.expect({
-            title: 'TC2: the scanned crate sits on the pallet',
+            title: 'the scanned crate sits on the pallet',
             hus: { [targetLUQRCode]: { tus: [{ storages: { P1: '4 PCE' }, attributes: { GRAI: graiOwn } }] } },
         });
     });
     await test.step('the same GRAI again -> "No HU found" (crate already moved)', async () => {
-        await scanAndExpectRejected({ title: 'same GRAI again', code: graiOwn, expectedText: NO_HU });
+        await HUConsolidationJobScreen.scanGRAIExpectError({ grai: graiOwn, message: NO_HU });
         await expectNothingMovedScannerArmed({ crateCountInSlot1: 1 });
     });
     await test.step('GRAI of a crate inside the pallet -> "No HU found", pallet stays in its slot', async () => {
-        await scanAndExpectRejected({ title: 'GRAI of a crate inside a pallet', code: graiInPallet, expectedText: NO_HU });
+        await HUConsolidationJobScreen.scanGRAIExpectError({ grai: graiInPallet, message: NO_HU });
         await expectNothingMovedScannerArmed({ crateCountInSlot1: 1 });
     });
 
     await test.step('Nothing else moved: the pallet and the other job\'s crate are still in their slots', async () => {
         await Backend.expect({
-            title: 'TC2: slot1 holds only the crate that was never scanned, pallet still in slot2, other job crate still in slot3',
+            title: 'slot1 holds only the crate that was never scanned, pallet still in slot2, other job crate still in slot3',
             pickingSlots: {
                 [slot1.qrCode]: { queue: [{ hu: 'stayingCrate' }] },
                 [slot2.qrCode]: { queue: [{ hu: 'pallet' }] },
@@ -381,14 +254,14 @@ test('TC2 rejected scans: one right message per scan, nothing moves, scanner sta
 });
 
 const CAPTIONS = {
-    // the new button reads "Scan (GRAI)" in both languages (REQUIREMENTS AC3 / AC11)
+    // the new button reads "Scan (GRAI)" in both languages 
     de_DE: { newLU: 'Neues Gebinde', current: 'Offenes Gebinde: ', complete: 'Fertigstellen', abort: 'Rückgängig', scanGrai: 'Scan (GRAI)' },
     en_US: { newLU: 'New LU', current: 'Current: ', complete: 'Complete', abort: 'Abort', scanGrai: 'Scan (GRAI)' },
 };
 
 for (const language of ['de_DE', 'en_US']) {
     // noinspection JSUnusedLocalSymbols
-    test(`TC4 button states: disabled before the pallet, enabled after, scanner closed after Schliessen (${language})`, async ({ page: _page }) => {
+    test(`Button states: disabled before the pallet, enabled after, scanner closed after Schliessen (${language})`, async ({ page: _page }) => {
         // === ALLURE METADATA ===
         await allure.epic('E0105: Picking');
         await allure.tag('F00248');
@@ -433,7 +306,7 @@ for (const language of ['de_DE', 'en_US']) {
             await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: true, caption: captions.scanGrai });
             await HUConsolidationJobScreen.expectScannerOpen(false);
         });
-        await test.step('Choose the next pallet -> button enabled again (AC16)', async () => {
+        await test.step('Choose the next pallet -> button enabled again', async () => {
             await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
             await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: captions.current });
             await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false, caption: captions.scanGrai });
@@ -442,7 +315,7 @@ for (const language of ['de_DE', 'en_US']) {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('TC7 presence rule: a job whose slot holds only a pallet shows no button, the other job does', async ({ page: _page }) => {
+test('Presence rule: a job whose slot holds only a pallet shows no button, the other job does', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -483,7 +356,7 @@ test('TC7 presence rule: a job whose slot holds only a pallet shows no button, t
     });
     await test.step('The other job\'s crate is untouched in its slot', async () => {
         await Backend.expect({
-            title: 'TC7: pallet in slot1, other job crate still in slot2',
+            title: 'pallet in slot1, other job crate still in slot2',
             pickingSlots: {
                 [slot1.qrCode]: { queue: [{ hu: 'pallet' }] },
                 [slot2.qrCode]: { queue: [{ hu: 'otherJobCrate' }] },
@@ -498,7 +371,7 @@ test('TC7 presence rule: a job whose slot holds only a pallet shows no button, t
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC19 partner on N, one crate with a GRAI (stamped via the HU Manager): button shown, scan moves it, slot screen follows the presence rule', async ({ page: _page }) => {
+test('Partner on N, one crate with a GRAI (stamped via the HU Manager): button shown, scan moves it, slot screen follows the presence rule', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -513,7 +386,7 @@ test('TC19 partner on N, one crate with a GRAI (stamped via the HU Manager): but
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await pickOneCrateWithoutGrai({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, tuName: masterdata.packingInstructions.PI_P1.tuName, huQrCode: masterdata.handlingUnits.HU1.qrCode });
-    const { qrCodes } = await Backend.getPickingSlotCrates({ title: 'TC19: the crate sits in slot1', slotQrCode: slot1.qrCode, aliases: ['crate1'] });
+    const { qrCodes } = await Backend.getPickingSlotCrates({ title: 'the crate sits in slot1', slotQrCode: slot1.qrCode, aliases: ['crate1'] });
     await stampGraiViaHUManager({ huQrCode: qrCodes.crate1, grai: grai1 });
 
     await test.step('Open the job, choose a pallet: partner is on N, the crate carries a GRAI -> button shown', async () => {
@@ -523,7 +396,7 @@ test('TC19 partner on N, one crate with a GRAI (stamped via the HU Manager): but
         await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
     });
-    await test.step('Before the scan: the slot screen shows the scanner although the partner is on N (AC27)', async () => {
+    await test.step('Before the scan: the slot screen shows the scanner although the partner is on N', async () => {
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });
         await PickingSlotScreen.expectScannerVisible();
         await PickingSlotScreen.goBack();
@@ -534,7 +407,7 @@ test('TC19 partner on N, one crate with a GRAI (stamped via the HU Manager): but
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 0 });
         await ErrorToast.expectNoErrorToast();
         await Backend.expect({
-            title: 'TC19: the crate sits on the pallet',
+            title: 'the crate sits on the pallet',
             hus: { [await HUConsolidationJobScreen.getCurrentTargetLUQRCode()]: { tus: [{ storages: { P1: '4 PCE' }, attributes: { GRAI: grai1 } }] } },
         });
     });
@@ -546,7 +419,7 @@ test('TC19 partner on N, one crate with a GRAI (stamped via the HU Manager): but
 });
 
 /**
- * TC20 fixture: two crates without GRAI picked while the partner is on 'N'; the partner is on 'Y' at Verdichtung time
+ * Fixture: two crates without GRAI picked while the partner is on 'N'; the partner is on 'Y' at Verdichtung time
  * (the button reads no partner flag). With withGraiCrate the P1 crate is picked afterwards under 'Y' with a GRAI scan.
  */
 const pickTwoCrates = async ({ masterdata, withGraiCrate }) => {
@@ -571,7 +444,7 @@ const pickTwoCrates = async ({ masterdata, withGraiCrate }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC20 (a) two crates without GRAI (partner on Y at Verdichtung time): no button', async ({ page: _page }) => {
+test('Two crates without GRAI (partner on Y at Verdichtung time): no button', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -591,7 +464,7 @@ test('TC20 (a) two crates without GRAI (partner on Y at Verdichtung time): no bu
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC20 (b) one GRAI crate + one without: button shown, gone after the GRAI crate is scanned, the other crate is moved by tap', async ({ page: _page }) => {
+test('One GRAI crate + one without: button shown, gone after the GRAI crate is scanned, the other crate is moved by tap', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -602,7 +475,7 @@ test('TC20 (b) one GRAI crate + one without: button shown, gone after the GRAI c
     const { slot1 } = masterdata.pickingSlots;
     const { grai } = await pickTwoCrates({ masterdata, withGraiCrate: true });
     let targetLUQRCode;
-    const { context } = await Backend.getPickingSlotCrates({ title: 'TC20 (b): two crates in slot1', slotQrCode: slot1.qrCode, aliases: ['crateNoGrai', 'crateGrai'] });
+    const { context } = await Backend.getPickingSlotCrates({ title: 'two crates in slot1', slotQrCode: slot1.qrCode, aliases: ['crateNoGrai', 'crateGrai'] });
 
     await ApplicationsListScreen.startApplication('huConsolidation');
     await HUConsolidationJobsListScreen.waitForScreen();
@@ -620,23 +493,23 @@ test('TC20 (b) one GRAI crate + one without: button shown, gone after the GRAI c
         await ErrorToast.expectNoErrorToast();
         targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
         await Backend.expect({
-            title: 'TC20 (b): the scanned GRAI crate sits on the pallet',
+            title: 'the scanned GRAI crate sits on the pallet',
             hus: { [targetLUQRCode]: { tus: [{ storages: { P1: '4 PCE' }, attributes: { GRAI: grai } }] } },
         });
     });
-    await test.step('Tap the other crate in the slot screen (AC17): it moves', async () => {
+    await test.step('Tap the other crate in the slot screen: it moves', async () => {
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });
         await PickingSlotScreen.clickConsolidateHUButton({ huId: context.crateNoGrai });
         await PickingSlotScreen.goBack();
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 0 });
         await Backend.expect({
-            title: 'TC20 (b): both crates sit on the pallet (the P2 crate was picked first, the P1 crate carries the GRAI)',
+            title: 'both crates sit on the pallet (the P2 crate was picked first, the P1 crate carries the GRAI)',
             hus: { [targetLUQRCode]: { tus: [{ storages: { P2: '5 PCE' } }, { storages: { P1: '4 PCE' }, attributes: { GRAI: grai } }] } },
         });
     });
 });
 
-/** TC14 fixture: two GRAI crates (P1, P2) picked into slot1, the job of BP1 opened. */
+/** Fixture: two GRAI crates (P1, P2) picked into slot1, the job of BP1 opened. */
 const pickTwoGraiCratesAndOpenJob = async () => {
     const masterdata = await createJobScanMasterdata();
     const { slot1 } = masterdata.pickingSlots;
@@ -657,7 +530,7 @@ const pickTwoGraiCratesAndOpenJob = async () => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC14 (a) Rückgängig -> Ja before any crate: back to the job list', async ({ page: _page }) => {
+test('Rückgängig -> Ja before any crate: back to the job list', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -669,7 +542,7 @@ test('TC14 (a) Rückgängig -> Ja before any crate: back to the job list', async
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC14 (b) Rückgängig -> Ja after one scanned crate: stays on the job screen, nothing changes', async ({ page: _page }) => {
+test('Rückgängig -> Ja after one scanned crate: stays on the job screen, nothing changes', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -691,7 +564,7 @@ test('TC14 (b) Rückgängig -> Ja after one scanned crate: stays on the job scre
     await HUConsolidationJobScreen.expectTargetLUCaptionNotContains({ text: masterdata.packingInstructions.PI_P1.luName });
     await ErrorToast.expectNoErrorToast();
     await Backend.expect({
-        title: 'TC14 (b): the scanned crate is still on the pallet after the refused abort',
+        title: 'the scanned crate is still on the pallet after the refused abort',
         hus: { [targetLUQRCode]: { tus: [{ storages: { P1: '4 PCE' }, attributes: { GRAI: grai1 } }] } },
     });
 });
