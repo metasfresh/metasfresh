@@ -202,7 +202,15 @@ export const HUConsolidationJobScreen = {
     abortRefused: async () => await step(`${NAME} - Abort (refused, stays on the job screen)`, async () => {
         await page.locator('#abort-button').tap();
         await YesNoDialog.waitForDialog();
+        // listener right before the action that fires the call: wait for the abort answer, so a navigation that
+        // follows an accepted abort cannot be missed by the checks below
+        const abortAnswered = page.waitForResponse(
+            (resp) => resp.url().includes('/wfProcess/') && resp.url().endsWith('/abort') && resp.request().method() === 'POST',
+            { timeout: SLOW_ACTION_TIMEOUT }
+        );
         await YesNoDialog.clickYesButton();
+        await abortAnswered;
+        await expect(page.locator('#WFLaunchersScreen')).toHaveCount(0);
         await HUConsolidationJobScreen.waitForScreen();
         await HUConsolidationJobScreen.expectVisible();
     }),
