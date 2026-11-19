@@ -2092,26 +2092,38 @@ async function activateInvoiceCandidateRelationTypes() {
       expect(response.ok(), `relation type ${relationTypeId}: set IsActive=${isActive}, HTTP ${response.status()}`).toBe(true);
     };
     const changed = [];
-    for (const relationTypeId of INVOICE_CANDIDATE_RELATION_TYPE_IDS) {
-      const response = await api.get(`${WEBAPI_BASE_URL}/window/${RELATION_TYPES_WINDOW_ID}/${relationTypeId}`);
-      if (!response.ok()) {
-        continue; // not there (the relation types of the view row exist only with their migration)
-      }
-      const wasActive = (await response.json())[0].fieldsByName.IsActive.value === true;
-      if (!wasActive) {
-        await setActive(relationTypeId, true);
-        changed.push(relationTypeId);
-      }
-    }
-    return async () => {
-      try {
-        for (const relationTypeId of changed) {
+    // puts back every relation type changed so far, also when one of them fails
+    const restore = async () => {
+      const failures = [];
+      for (const relationTypeId of changed) {
+        try {
           await setActive(relationTypeId, false);
+        } catch (error) {
+          failures.push(`${relationTypeId}: ${error.message}`);
         }
-      } finally {
-        await api.dispose();
       }
+      await api.dispose();
+      expect(failures, 'relation types put back to inactive').toEqual([]);
     };
+    try {
+      for (const relationTypeId of INVOICE_CANDIDATE_RELATION_TYPE_IDS) {
+        const response = await api.get(`${WEBAPI_BASE_URL}/window/${RELATION_TYPES_WINDOW_ID}/${relationTypeId}`);
+        if (!response.ok()) {
+          // not there (the relation types of the view row exist only with their migration); any other status is a failure
+          expect([404],`relation type ${relationTypeId}: read, HTTP ${response.status()}`).toContain(response.status());
+          continue;
+        }
+        const wasActive = (await response.json())[0].fieldsByName.IsActive.value === true;
+        if (!wasActive) {
+          await setActive(relationTypeId, true);
+          changed.push(relationTypeId);
+        }
+      }
+    } catch (error) {
+      await restore();
+      throw error;
+    }
+    return restore;
   } catch (error) {
     await api.dispose();
     throw error;
