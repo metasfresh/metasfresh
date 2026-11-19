@@ -2165,7 +2165,7 @@ async function expectRelatedDocumentsEqualOrderLine({ readExpected, readActual, 
     const actual = relatedDocumentsComparable(await readActual());
     const expected = relatedDocumentsComparable(expectedReferences);
     const hasRequired = expectedReferences.some((reference) => String(reference.targetWindowId) === String(requiredTargetWindowId));
-    // by name, on both sides, before the lists are compared: the order line and the view row each list the invoice-candidate entry
+    // by its target window, on both sides, before the lists are compared: the order line and the view row each list the invoice-candidate entry
     const lacksInvoiceCandidateEntry = {
       orderLine: !expected.some((entry) => entry.split('|')[1] === String(requiredInvoiceCandidateWindowId)),
       lineRowOfView: !actual.some((entry) => entry.split('|')[1] === String(requiredInvoiceCandidateWindowId)),
