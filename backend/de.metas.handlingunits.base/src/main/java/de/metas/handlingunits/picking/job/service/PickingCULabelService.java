@@ -1,6 +1,13 @@
 package de.metas.handlingunits.picking.job.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -31,6 +38,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -52,6 +61,11 @@ public class PickingCULabelService
 	private static final String PACK_ID_MARKER = "92";
 
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	public static PickingCULabelService newInstanceForUnitTesting()
 	{
@@ -121,6 +135,7 @@ public class PickingCULabelService
 	}
 
 	/** Seam for unit tests: they override it to supply fake {@link CULabelData} (the pack ID part type comes from the label reader, not from this task). */
+	@VisibleForTesting
 	protected CULabelData readCULabelData(@NonNull final ParsedScannedCode parsed, @NonNull final ScannedCode label)
 	{
 		return toCULabelData(parsed);
@@ -138,7 +153,8 @@ public class PickingCULabelService
 	}
 
 	/**
-	 * @return true if one of the job's CURRENT picked HUs (any {@code HUStatus}, any step) of that product carries this lot and pack ID
+	 * @return true if one of the job's CURRENT picked HUs (any {@code HUStatus}, any step) of that product carries this lot and pack ID.
+	 * One query on the PackId attribute value over the picked HU ids; only the (few) HUs with that pack ID are checked for the lot.
 	 */
 	public boolean isAlreadyPickedInJob(
 			@NonNull final PickingJob job,
@@ -146,20 +162,35 @@ public class PickingCULabelService
 			@Nullable final String lotNo,
 			@NonNull final String packId)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
-
-		return job.streamLines()
+		final Set<Integer> pickedHUIds = job.streamLines()
 				.filter(line -> ProductId.equals(line.getProductId(), productId))
 				.flatMap(line -> line.getPickedHUIds().stream())
-				.map(handlingUnitsBL::getById)
+				.map(HuId::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		final AttributeId packIdAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(ATTR_PackId);
+		if (pickedHUIds.isEmpty() || packIdAttributeId == null)
+		{
+			return false;
+		}
+
+		final List<Integer> huIdsWithPackId = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, packIdAttributeId)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, packId)
+				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, pickedHUIds)
+				.create()
+				.listDistinct(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, Integer.class);
+		if (huIdsWithPackId.isEmpty())
+		{
+			return false;
+		}
+
+		final IHUContext huContext = huContextFactory.createMutableHUContext();
+		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
+		return huIdsWithPackId.stream()
+				.map(huId -> handlingUnitsBL.getById(HuId.ofRepoId(huId)))
 				.anyMatch(hu -> {
 					final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-					if (!attributes.hasAttribute(ATTR_PackId) || !packId.equals(StringUtils.trimBlankToNull(attributes.getValueAsString(ATTR_PackId))))
-					{
-						return false;
-					}
 					final String huLotNo = attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
 							? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
 							: null;

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -196,7 +195,7 @@ public class PickingJobUnPickCommand
 	private void deleteQtyPickedOfCUInBox(@NonNull final HuId huId, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final I_M_HU hu = huService.getById(huId);
-		if (huService.isVirtual(hu) && !Services.get(IHandlingUnitsBL.class).isTopLevel(hu))
+		if (huService.isVirtual(hu) && !huService.isTopLevel(hu))
 		{
 			shipmentScheduleService.deleteByVHUAndShipmentScheduleId(huId, shipmentScheduleId);
 		}

@@ -260,7 +260,7 @@ public class PickingJobPickCommand
 		}
 		else if (this.pickingUnit.isCU())
 		{
-			// Scan each CU: one pack per label, whatever quantity the client sent
+			// Scan each CU: one pack per label, whatever quantity the client sent. One pack = one unit of the line UOM (the mode is meant for piece-counted lines)
 			this.qtyToPickCUs = Quantity.of(cuQtyEntryMode.isScanEachCU() ? BigDecimal.ONE : qtyToPickBD, uom);
 			this.qtyToPickTUs = null;
 

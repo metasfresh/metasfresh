@@ -32,6 +32,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
@@ -690,7 +692,7 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("98");
 	}
 
-	/** (r) the box's first pack: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (box and 2nd CU stay Picked, their QtyPicked rows stay); the rescan books. */
+	/** (r) the box's first pack: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (box and 2nd CU stay Picked, their QtyPicked rows stay, the line's picked qty drops by 1); the rescan books. */
 	@Test
 	void r_firstPackOfTheBox_duplicate_undo_rescan()
 	{
@@ -704,33 +706,111 @@ class PickingJobCUQtyEntryPickTest
 		final HuId cu1Id = HuId.ofRepoId(cu1.getM_HU_ID());
 		final I_M_HU cu2 = cuWithPackId(boxId, "2");
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HUs are the CUs, not the box").containsExactlyInAnyOrder(cu1Id, HuId.ofRepoId(cu2.getM_HU_ID()));
+		assertThat(pickedQtyOfLine(job)).as("2 packs picked").isEqualByComparingTo("2");
+		assertThat(pickedHUOfStepWithCU(job, cu1Id).getQrCode()).as("the picked CU carries its own QR code, not the box's").isNotEqualTo(helper.getQRCode(boxId));
 		final PickingJob jobBeforeRescan = job;
 		assertFails(() -> pickEach(jobBeforeRescan, source, LOT_A, "1"), CU_LABEL_ALREADY_PICKED);
 		assertThat(cusOf(boxId)).as("still 2 CU HUs").hasSize(2);
 		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
 
-		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
-		final PickingJobStep stepOfCU1 = line.streamSteps()
-				.filter(step -> step.getPickedHUIds().contains(cu1Id))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("no step with the CU of pack 1"));
-		job = helper.pickingJobService.processStepEvent(job, PickingJobStepEvent.builder()
-				.pickingLineId(line.getId())
-				.pickingStepId(stepOfCU1.getId())
-				.pickFromKey(PickingJobStepPickFromKey.MAIN)
-				.eventType(PickingJobStepEventType.UNPICK)
-				.qrCode(source.getQrCode().toScannedCode())
-				.build());
+		job = undo(job, cu1Id, source.getQrCode(), null);
 
 		assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("CU of pack 1 Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
 		assertThat(handlingUnitsBL.getById(boxId).getHUStatus()).as("box stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
 		assertThat(handlingUnitsBL.getById(HuId.ofRepoId(cu2.getM_HU_ID())).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").containsExactly(HuId.ofRepoId(cu2.getM_HU_ID()));
 		assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
+		assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
 
 		job = pickEach(job, source, LOT_A, "1");
 
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("rescan booked").hasSize(2);
+		assertThat(pickedQtyOfLine(job)).as("rescan: 2 packs picked again").isEqualByComparingTo("2");
+		final I_M_HU rescanned = cuWithPackId(boxId, "1");
+		assertThat(lotOf(rescanned)).as("rescanned CU keeps its lot").isEqualTo(LOT_A);
+		assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked rows of both CUs").isEqualTo(2);
+	}
+
+	/** (t) undo of a CU in a box with a scanned target (the CU is moved into it): box and the 2nd CU stay Picked, the target takes the pack. */
+	@Test
+	void t_undoWithTargetScan_cuMovedIntoTarget()
+	{
+		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-T");
+		final HUInfo target = helper.createVHUInfo(productId, "10", "QR-T-TARGET");
+		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+		job = pickEach(job, source, LOT_A, "1");
+		job = pickEach(job, source, LOT_A, "2");
+		final HuId boxId = openBoxId(job);
+		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
+		final HuId cu2Id = HuId.ofRepoId(cuWithPackId(boxId, "2").getM_HU_ID());
+
+		job = undo(job, cu1Id, source.getQrCode(), target.getQrCode());
+
+		assertThat(qtyOf(handlingUnitsBL.getById(target.getId()))).as("target took the pack").isEqualByComparingTo("11");
+		assertThat(handlingUnitsBL.getById(boxId).getHUStatus()).as("box stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+		assertThat(handlingUnitsBL.getById(cu2Id).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).containsExactly(cu2Id);
+		assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
+		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
+	}
+
+	/** (u) undo of the box's ONLY CU: nothing stays picked, the empty box stays the line's open box, the next pack is booked into it. */
+	@Test
+	void u_undoOfTheBoxsOnlyCU_boxStaysOpenTarget()
+	{
+		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-U");
+		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+		job = pickEach(job, source, LOT_A, "1");
+		final HuId boxId = openBoxId(job);
+		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
+
+		job = undo(job, cu1Id, source.getQrCode(), null);
+
+		assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("nothing picked").isEmpty();
+		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
+		assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row left").isEqualTo(0);
+		assertThat(openBoxId(job)).as("the empty box is still the line's open box").isEqualTo(boxId);
+
+		job = pickEach(job, source, LOT_A, "2");
+
+		assertThat(openBoxId(job)).isEqualTo(boxId);
+		assertThat(cusOf(boxId)).as("the next pack went into the same box").hasSize(1);
+		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
+	}
+
+	private PickingJob undo(final PickingJob job, final HuId cuId, final HUQRCode sourceQr, @Nullable final HUQRCode unpickToTargetQr)
+	{
+		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
+		final PickingJobStep step = line.streamSteps()
+				.filter(candidate -> candidate.getPickedHUIds().contains(cuId))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no step with the CU " + cuId));
+		return helper.pickingJobService.processStepEvent(job, PickingJobStepEvent.builder()
+				.pickingLineId(line.getId())
+				.pickingStepId(step.getId())
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
+				.eventType(PickingJobStepEventType.UNPICK)
+				.qrCode(sourceQr.toScannedCode())
+				.unpickToTargetQRCode(unpickToTargetQr)
+				.build());
+	}
+
+	private static HUInfo pickedHUOfStepWithCU(final PickingJob job, final HuId cuId)
+	{
+		return CollectionUtils.singleElement(job.getLines()).streamSteps()
+				.flatMap(step -> step.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo().getActualPickedHUs().stream())
+				.map(PickingJobStepPickedToHU::getActualPickedHU)
+				.filter(hu -> hu.getId().equals(cuId))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no picked HU " + cuId));
+	}
+
+	private static BigDecimal pickedQtyOfLine(final PickingJob job)
+	{
+		return CollectionUtils.singleElement(job.getLines()).getQtyPicked().toBigDecimal();
 	}
 
 	/** (s) the label carries no pack ID: CU_LABEL_NO_PACK_ID, nothing booked. */
