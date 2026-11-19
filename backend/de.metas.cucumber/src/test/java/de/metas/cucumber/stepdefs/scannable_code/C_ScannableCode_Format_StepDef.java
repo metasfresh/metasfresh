@@ -163,7 +163,10 @@ public class C_ScannableCode_Format_StepDef
 		catch (final AdempiereException e)
 		{
 			// no reader (custom format or other) recognizes the code: that is "not a custom code" too
-			assertThat(isMatching).as("custom code expected but parse failed (" + e.getMessage() + "): " + scannedCodeStr).isFalse();
+			if (isMatching)
+			{
+				throw new AssertionError("custom code expected but parse failed: " + scannedCodeStr, e);
+			}
 			return;
 		}
 

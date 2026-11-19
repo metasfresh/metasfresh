@@ -36,8 +36,7 @@ const stopCollectingPickEvents = () => {
 
 export const PickingJobScreen = {
     /**
-     * Starts recording the PICK events the app posts (api/picking.js postStepPicked -> POST .../picking/event).
-     * Call before the scan; read with expectPickPostedWithHUQRCode / expectNoPickPosted.
+     * Records every PICK event the app posts from now on (api/picking.js postStepPicked -> POST .../picking/event), replacing any earlier recording.
      */
     startCollectingPickEvents: () => {
         stopCollectingPickEvents();
@@ -70,7 +69,7 @@ export const PickingJobScreen = {
         }
     }),
 
-    /** Waits until every picking XHR has been handled (a PICK posted after the error toast would show up), then checks that no PICK was posted. */
+    /** Waits until no picking XHR is in flight, then checks that no PICK was posted; stops the recording. */
     expectNoPickPosted: async () => await step(`${NAME} - Expect no PICK event`, async () => {
         try {
             await waitForNoInFlightXhr(page, { urlPattern: PICKING_XHR, timeout: SLOW_ACTION_TIMEOUT });

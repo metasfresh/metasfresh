@@ -167,31 +167,38 @@ class ScannableCodeFormatTest
 		// 1..2 3..16 17..18 19..25 26..27 28..33 34..35 36..44 45..46 47..to the end
 		private static final String GS = "\u001d";
 
-		private ScannableCodeFormat formatWithPackId()
+		private ScannableCodeFormatPart part(final int startPosition, final int endPosition, final ScannableCodeFormatPartType type)
+		{
+			return ScannableCodeFormatPart.builder().startPosition(startPosition).endPosition(endPosition).type(type).build();
+		}
+
+		private ScannableCodeFormatPart constantPart(final int startPosition, final int endPosition, final String constantValue)
+		{
+			return ScannableCodeFormatPart.builder().startPosition(startPosition).endPosition(endPosition).type(ScannableCodeFormatPartType.Constant).constantValue(constantValue).build();
+		}
+
+		private ScannableCodeFormat format(final ScannableCodeFormatPart... parts)
 		{
 			return ScannableCodeFormat.builder()
 					.id(ScannableCodeFormatId.ofRepoId(1))
 					.name("Test")
-					.parts(ImmutableList.of(
-							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
-							ScannableCodeFormatPart.builder().startPosition(28).endPosition(33).type(ScannableCodeFormatPartType.BestBeforeDate).build(),
-							ScannableCodeFormatPart.builder().startPosition(36).endPosition(44).type(ScannableCodeFormatPartType.LotNo).build(),
-							ScannableCodeFormatPart.builder().startPosition(47).endPosition(ScannableCodeFormatPart.OPEN_END).type(ScannableCodeFormatPartType.PackId).build()
-					))
+					.parts(ImmutableList.copyOf(parts))
 					.build();
+		}
+
+		private ScannableCodeFormatPart productPart() {return part(19, 25, ScannableCodeFormatPartType.ProductCode);}
+		private ScannableCodeFormatPart bestBeforePart() {return part(28, 33, ScannableCodeFormatPartType.BestBeforeDate);}
+		private ScannableCodeFormatPart lotPart() {return part(36, 44, ScannableCodeFormatPartType.LotNo);}
+		private ScannableCodeFormatPart packIdPart() {return part(47, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId);}
+
+		private ScannableCodeFormat formatWithPackId()
+		{
+			return format(productPart(), bestBeforePart(), lotPart(), packIdPart());
 		}
 
 		private ScannableCodeFormat formatWithoutPackId()
 		{
-			return ScannableCodeFormat.builder()
-					.id(ScannableCodeFormatId.ofRepoId(1))
-					.name("Test")
-					.parts(ImmutableList.of(
-							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
-							ScannableCodeFormatPart.builder().startPosition(28).endPosition(33).type(ScannableCodeFormatPartType.BestBeforeDate).build(),
-							ScannableCodeFormatPart.builder().startPosition(36).endPosition(44).type(ScannableCodeFormatPartType.LotNo).build()
-					))
-					.build();
+			return format(productPart(), bestBeforePart(), lotPart());
 		}
 
 		private String label(final String packId) {return "010950600013435291P0000421726110710A1/B002C392" + packId;}
@@ -236,19 +243,7 @@ class ScannableCodeFormatTest
 		// CONSTANT guards (17 at 26-27, 10 at 34-35, 92 at 45-46) are listed first, so that they, not a later part, refuse a shifted code
 		private ScannableCodeFormat formatWithGuards()
 		{
-			return ScannableCodeFormat.builder()
-					.id(ScannableCodeFormatId.ofRepoId(1))
-					.name("Test")
-					.parts(ImmutableList.of(
-							ScannableCodeFormatPart.builder().startPosition(26).endPosition(27).type(ScannableCodeFormatPartType.Constant).constantValue("17").build(),
-							ScannableCodeFormatPart.builder().startPosition(34).endPosition(35).type(ScannableCodeFormatPartType.Constant).constantValue("10").build(),
-							ScannableCodeFormatPart.builder().startPosition(45).endPosition(46).type(ScannableCodeFormatPartType.Constant).constantValue("92").build(),
-							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
-							ScannableCodeFormatPart.builder().startPosition(28).endPosition(33).type(ScannableCodeFormatPartType.BestBeforeDate).build(),
-							ScannableCodeFormatPart.builder().startPosition(36).endPosition(44).type(ScannableCodeFormatPartType.LotNo).build(),
-							ScannableCodeFormatPart.builder().startPosition(47).endPosition(ScannableCodeFormatPart.OPEN_END).type(ScannableCodeFormatPartType.PackId).build()
-					))
-					.build();
+			return format(constantPart(26, 27, "17"), constantPart(34, 35, "10"), constantPart(45, 46, "92"), productPart(), bestBeforePart(), lotPart(), packIdPart());
 		}
 
 		@Test
@@ -270,15 +265,7 @@ class ScannableCodeFormatTest
 		@Test
 		void onlyTheConstantGuard92_refusesCodeWithoutMarker92()
 		{
-			final ScannableCodeFormat onlyGuard92 = ScannableCodeFormat.builder()
-					.id(ScannableCodeFormatId.ofRepoId(1))
-					.name("Test")
-					.parts(ImmutableList.of(
-							ScannableCodeFormatPart.builder().startPosition(45).endPosition(46).type(ScannableCodeFormatPartType.Constant).constantValue("92").build(),
-							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
-							ScannableCodeFormatPart.builder().startPosition(47).endPosition(ScannableCodeFormatPart.OPEN_END).type(ScannableCodeFormatPartType.PackId).build()
-					))
-					.build();
+			final ScannableCodeFormat onlyGuard92 = format(constantPart(45, 46, "92"), productPart(), packIdPart());
 			final String wrongMarker = label("2").substring(0, 44) + "XX" + "2"; // same length, `XX` instead of `92`; everything else parseable
 			assertThatThrownBy(() -> onlyGuard92.parse(ScannedCode.ofString(wrongMarker)).orElseThrow())
 					.isInstanceOf(AdempiereException.class)
