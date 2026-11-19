@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUConsolidationJobsListScreen } from './HUConsolidationJobsListScreen';
 import { SelectHUConsolidationTargetScreen } from './SelectHUConsolidationTargetScreen';
@@ -107,6 +107,18 @@ export const HUConsolidationJobScreen = {
      */
     scanGRAI: async ({ grai }) => await step(`${NAME} - Scan GRAI: ${grai}`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: grai, testId: GRAI_SCANNER_TESTID });
+    }),
+
+    /**
+     * Scan a GRAI that the backend rejects: expects exactly one error toast containing the given message (the toast is closed).
+     * @param {{grai: string, message: string}} params message = expected text of the toast (in the user's language)
+     */
+    scanGRAIExpectError: async ({ grai, message }) => await test.step(`${NAME} - Scan GRAI ${grai}, expect error "${message}"`, async () => {
+        await expectErrorToast(`${NAME} scan ${grai} rejected`, async () => {
+            await HUConsolidationJobScreen.scanGRAI({ grai });
+        }, ({ textContent }) => {
+            expect(textContent).toContain(message);
+        });
     }),
 
     /**

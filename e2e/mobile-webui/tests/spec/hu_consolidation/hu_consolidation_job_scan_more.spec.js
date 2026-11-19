@@ -1,7 +1,10 @@
 /**
  * TL;DR — In HU Consolidation, the GRAI scanner on the picking-slot screen is shown by what the crates in the slot carry
- * (a GRAI), no longer by the partner's GRAIRequired flag. More job-scan scenarios (duplicate GRAI) join this file in a
- * later task.
+ * (a GRAI), no longer by the partner's GRAIRequired flag.
+ *
+ * TC3 (duplicate GRAI, de_DE + en_US): 2 crates of the job (two slots) carry the same GRAI (picking with pickTo:['TU'] accepts the
+ *   same GRAI twice, no dedupe without an LU); the scan shows the message AD_Message 545693 ("Mehrere HUs fuer diesen QR-Code
+ *   gefunden" / "Multiple HUs found for this QR code"), nothing moves, the scanner stays armed.
  *
  * TC6 (fallback): 3 GRAI crates + 1 crate without GRAI in one slot: scan 2, move the crate without GRAI by tap in the slot
  *   screen, back on the job screen the scanner is closed and the button still shown, scan the last GRAI crate: all 4 crates
@@ -337,3 +340,53 @@ test('TC17 existing pallet: scan its QR code as target, then 2 GRAI scans put th
         pickingSlots: { [slot1.qrCode]: { queue: [] } },
     });
 });
+
+const AMBIGUOUS_MESSAGES = {
+    de_DE: 'Mehrere HUs für diesen QR-Code gefunden',
+    en_US: 'Multiple HUs found for this QR code',
+};
+
+for (const language of ['de_DE', 'en_US']) {
+    // noinspection JSUnusedLocalSymbols
+    test(`TC3 duplicate GRAI: 2 crates of the job carry the scanned GRAI, message, nothing moves, scanner stays armed (${language})`, async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan on the job screen');
+        await allure.severity('critical');
+
+        const masterdata = await createJobScanMasterdata({ language });
+        const { slot1, slot2 } = masterdata.pickingSlots;
+        const { SO1, SO2, SO3 } = masterdata.salesOrders;
+        const { PI_P1, PI_P2 } = masterdata.packingInstructions;
+        const serialBase = String(Date.now());
+        const graiDuplicate = graiWithSerial(PI_P1.grai, `${serialBase}1`);
+        const graiOther = graiWithSerial(PI_P2.grai, `${serialBase}2`);
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        // E12: picking has no duplicate check without an LU, so the same GRAI is scanned for the SO1 crate (slot1) and the SO3 crate (slot2)
+        await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai: graiDuplicate, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+        await pickOneGraiCrate({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, grai: graiOther, huQrCode: masterdata.handlingUnits.HU2.qrCode });
+        await pickOneGraiCrate({ documentNo: SO3.documentNo, slotQrCode: slot2.qrCode, grai: graiDuplicate, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+        await HUConsolidationJobScreen.setTargetLU({ lu: PI_P1.luName });
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 2 });
+        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot2.id, countHUs: 1 });
+
+        await test.step('Scan the GRAI that two crates carry: message, nothing moves, scanner stays armed', async () => {
+            await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
+            await HUConsolidationJobScreen.clickScanGRAIButton();
+            await HUConsolidationJobScreen.scanGRAIExpectError({ grai: graiDuplicate, message: AMBIGUOUS_MESSAGES[language] });
+            await HUConsolidationJobScreen.expectScannerOpen(true);
+            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 2 });
+            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot2.id, countHUs: 1 });
+        });
+
+        await Backend.getPickingSlotCrates({ title: 'TC3: slot1 keeps its 2 crates', slotQrCode: slot1.qrCode, aliases: ['slot1CrateA', 'slot1CrateB'] });
+        await Backend.getPickingSlotCrates({ title: 'TC3: slot2 keeps its crate', slotQrCode: slot2.qrCode, aliases: ['slot2Crate'] });
+    });
+}
