@@ -294,8 +294,12 @@ test('TC7 / TC27 (ii): open box holding 3, count 5 (needs two source boxes) book
             }
         },
         hus: {
-            // the open box holds 8 = one CU of 3 and ONE CU of 5
-            tu1: { storages: { P1: '8 PCE' }, cus: [{ qty: '3 PCE', attributes: { 'Lot-Nummer': lot } }, { qty: '5 PCE', attributes: { 'Lot-Nummer': lot } }] },
+            // the open box holds 8 = one CU of 3 and ONE CU of 5. No requirement orders the CUs inside a box, and the
+            // backend's `cus` assertion sorts by M_HU_ID (the merged CU of 5 can carry the lower id), so each CU is
+            // asserted by its own content through its picking alias; 3 + 5 = the box total leaves no room for a third CU
+            tu1: { storages: { P1: '8 PCE' } },
+            vhu1: { storages: { P1: '3 PCE' }, attributes: { 'Lot-Nummer': lot } },
+            vhu2: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lot } },
         },
     });
 });
