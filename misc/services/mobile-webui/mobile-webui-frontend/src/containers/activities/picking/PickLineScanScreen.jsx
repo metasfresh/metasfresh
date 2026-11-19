@@ -299,6 +299,7 @@ export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scanne
  * The source HU of a new-mode pick: the `qrCode` of the screen URL, else the job's current "Kommissionieren aus" HU.
  * @returns the source HU QR code, or undefined when neither exists (e.g. "Scannen" without a source HU)
  */
+// @VisibleForTesting
 export const computeSourceHUQRCode = ({ qrCode, activity }) => qrCode || activity?.dataStored?.pickFromHU?.code;
 
 /**
@@ -557,6 +558,7 @@ const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
 //
 //
 
+// @VisibleForTesting
 export const usePostQtyPicked = ({
   wfProcessId,
   activityId,
