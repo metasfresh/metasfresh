@@ -255,7 +255,7 @@ class ScannableCodeFormatTest
 		@Test
 		void guardedFormat_refusesShiftedCodeBecauseOfTheConstantGuard()
 		{
-			final String shifted = label("2").substring(0, 25) + "]" + label("2").substring(25, 45) + "]" + label("2").substring(45); // 49 characters, "]" at 26 and 46
+			final String shifted = label("2").substring(0, 25) + "]" + label("2").substring(25, 44) + "]" + label("2").substring(44); // 49 characters, "]" at 26 and 46
 			assertThat(shifted).hasSize(49);
 			assertThatThrownBy(() -> formatWithGuards().parse(ScannedCode.ofString(shifted)).orElseThrow())
 					.isInstanceOf(AdempiereException.class)
@@ -284,16 +284,11 @@ class ScannableCodeFormatTest
 		// (01)GTIN 1..16 | (91)productNo 17..25 | GS 26 | (17)yyMMdd 27..34 | (10)lot 35..45 | GS 46 | (92)packId 47..
 		private ScannableCodeFormat format49()
 		{
-			return ScannableCodeFormat.builder()
-					.id(ScannableCodeFormatId.ofRepoId(1))
-					.name("Test")
-					.parts(ImmutableList.of(
-							ScannableCodeFormatPart.builder().startPosition(19).endPosition(25).type(ScannableCodeFormatPartType.ProductCode).build(),
-							ScannableCodeFormatPart.builder().startPosition(29).endPosition(34).type(ScannableCodeFormatPartType.BestBeforeDate).build(),
-							ScannableCodeFormatPart.builder().startPosition(37).endPosition(45).type(ScannableCodeFormatPartType.LotNo).build(),
-							ScannableCodeFormatPart.builder().startPosition(49).endPosition(ScannableCodeFormatPart.OPEN_END).type(ScannableCodeFormatPartType.PackId).build()
-					))
-					.build();
+			return format(
+					part(19, 25, ScannableCodeFormatPartType.ProductCode),
+					part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+					part(37, 45, ScannableCodeFormatPartType.LotNo),
+					part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId));
 		}
 
 		private String label49(final String packId) {return "0109506000134352" + "91P000042" + GS + "17261107" + "10A1/B002C3" + GS + "92" + packId;}
