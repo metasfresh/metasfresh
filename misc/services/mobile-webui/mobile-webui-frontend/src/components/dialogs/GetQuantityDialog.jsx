@@ -45,6 +45,9 @@ const GetQuantityDialog = ({
   customQRCodeFormats,
   //
   readAttributes = [],
+  cuQtyEntryMode,
+  cuLabelFormat, // eslint-disable-line no-unused-vars -- consumed from B2 on
+  packingTuPIId, // eslint-disable-line no-unused-vars -- consumed from B4 on
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
@@ -321,7 +324,7 @@ const GetQuantityDialog = ({
   }
 
   return (
-    <div>
+    <div data-cu-qty-entry-mode={cuQtyEntryMode}>
       {isProcessing && <Spinner />}
       <Dialog className="get-qty-dialog">
         {isCustomView() && getCustomView()}
@@ -549,6 +552,9 @@ GetQuantityDialog.propTypes = {
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
   readAttributes: PropTypes.array,
+  cuQtyEntryMode: PropTypes.string,
+  cuLabelFormat: PropTypes.object,
+  packingTuPIId: PropTypes.number,
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,

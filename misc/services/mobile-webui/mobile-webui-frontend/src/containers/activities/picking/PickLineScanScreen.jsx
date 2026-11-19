@@ -21,7 +21,7 @@
  */
 
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { trl } from '../../../utils/translations';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import {
@@ -52,6 +52,7 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
 import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
+import { selectCULabelFormat } from '../../../constants/CUQtyEntryMode';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
 export const NEXT_PickingJob = 'pickingJob';
@@ -84,7 +85,15 @@ const PickLineScanScreen = () => {
     isShowPromptWhenOverPicking,
     customQRCodeFormats,
     readAttributes,
+    cuQtyEntryMode,
+    cuLabelFormatId,
+    packingTuPIId,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
+
+  const cuLabelFormat = useMemo(
+    () => selectCULabelFormat(customQRCodeFormats, cuLabelFormatId),
+    [customQRCodeFormats, cuLabelFormatId]
+  );
 
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
   // The current TU pick target (line-scoped for PRODUCT aggregation, header-scoped otherwise — hence
@@ -175,6 +184,9 @@ const PickLineScanScreen = () => {
       catchWeightUom={catchWeightUom}
       customQRCodeFormats={customQRCodeFormats}
       readAttributes={readAttributes}
+      cuQtyEntryMode={cuQtyEntryMode}
+      cuLabelFormat={cuLabelFormat}
+      packingTuPIId={packingTuPIId}
       isShowCloseTargetButton={!!luPickingTarget}
       //
       resolveScannedBarcode={resolveScannedBarcode}
@@ -216,6 +228,9 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
     customQRCodeFormats,
     readAttributes: getReadAttributesFromActivity({ activity }),
+    cuQtyEntryMode: line?.cuQtyEntryMode,
+    cuLabelFormatId: line?.cuLabelFormatId,
+    packingTuPIId: line?.packingTuPIId, // JSON number or null/absent; never string-compared
   };
 };
 

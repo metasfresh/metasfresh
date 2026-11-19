@@ -59,6 +59,9 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   customQRCodeFormats,
   readAttributes = [],
+  cuQtyEntryMode,
+  cuLabelFormat,
+  packingTuPIId,
   isShowCloseTargetButton = false,
   //
   invalidBarcodeMessageKey,
@@ -403,6 +406,9 @@ const ScanHUAndGetQtyComponent = ({
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           readAttributes={readAttributes}
+          cuQtyEntryMode={cuQtyEntryMode}
+          cuLabelFormat={cuLabelFormat}
+          packingTuPIId={packingTuPIId}
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
@@ -484,6 +490,9 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   customQRCodeFormats: PropTypes.array,
   readAttributes: PropTypes.array,
+  cuQtyEntryMode: PropTypes.string,
+  cuLabelFormat: PropTypes.object,
+  packingTuPIId: PropTypes.number,
   isShowCloseTargetButton: PropTypes.bool,
   //
   // Error messages:
