@@ -153,7 +153,6 @@ export const useNextBox = ({
     runExclusive(
       async () => {
         await openBoxFromGrai({
-          ...common,
           graiString,
           setTargetFromGrai: ({ graiString }) =>
             setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess)),
