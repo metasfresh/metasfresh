@@ -222,6 +222,15 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		return toWFProcess(job);
 	}
 
+	public WFProcess consolidateByScan(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final String scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final HUConsolidationJob job = jobService.consolidateByScan(HUConsolidationJobId.ofWFProcessId(wfProcessId), scannedCode, callerId);
+		return toWFProcess(job);
+	}
+
 	public JsonHUConsolidationJobPickingSlotContent getPickingSlotContent(final HUConsolidationJobId jobId, final PickingSlotId pickingSlotId)
 	{
 		return jobService.getPickingSlotContent(jobId, pickingSlotId);

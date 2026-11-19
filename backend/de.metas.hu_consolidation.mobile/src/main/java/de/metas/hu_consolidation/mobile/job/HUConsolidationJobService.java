@@ -10,7 +10,13 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateComm
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
 import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationJobCrates;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
+import de.metas.util.StringUtils;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -32,6 +38,7 @@ public class HUConsolidationJobService
 	@NonNull private final HUConsolidationAvailableTargetsFinder availableTargetsFinder;
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
 	@NonNull private final HUConsolidationLabelPrinter labelPrinter;
+	@NonNull private final HUConsolidationScannedCodeResolvers scannedCodeResolvers;
 
 	public HUConsolidationJob getJobById(final HUConsolidationJobId id)
 	{
@@ -129,6 +136,35 @@ public class HUConsolidationJobService
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	/**
+	 * Consolidates the crate that the scanned code resolves to (searched in all picking slots of the job) into the current target,
+	 * using the same path as a tap on the crate in its slot.
+	 */
+	public HUConsolidationJob consolidateByScan(
+			@NonNull final HUConsolidationJobId jobId,
+			@NonNull final String scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final HUConsolidationJob job = getJobById(jobId);
+		job.assertUserCanEdit(callerId);
+
+		final String scannedCodeNorm = StringUtils.trimBlankToNull(scannedCode);
+		if (scannedCodeNorm == null)
+		{
+			throw new AdempiereException(MobileQRCodeMessages.INVALID_GRAI_BARCODE, scannedCode);
+		}
+
+		final HUConsolidationJobCrates jobCrates = HUConsolidationJobCrates.load(job.getPickingSlotIds(), pickingSlotService);
+		final HUConsolidationScannedCrate crate = scannedCodeResolvers.resolve(scannedCodeNorm, jobCrates);
+
+		return consolidate(ConsolidateRequest.builder()
+				.callerId(callerId)
+				.jobId(jobId)
+				.fromPickingSlotId(crate.getPickingSlotId())
+				.huId(crate.getHuId())
+				.build());
 	}
 
 	public JsonHUConsolidationJobPickingSlotContent getPickingSlotContent(final HUConsolidationJobId jobId, final PickingSlotId pickingSlotId)
