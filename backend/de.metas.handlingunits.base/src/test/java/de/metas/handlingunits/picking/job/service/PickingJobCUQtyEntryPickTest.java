@@ -483,7 +483,7 @@ class PickingJobCUQtyEntryPickTest
 		final HuId boxId = openBoxId(job);
 		assertThat(cusOf(boxId)).hasSize(1);
 		assertThat(qtyOf(cusOf(boxId).get(0))).isEqualByComparingTo("5");
-		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(boxId)))).getAllGrais();
+		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(boxId), true))).getAllGrais();
 		assertThat(grais.toSet()).as("GRAI kept on the box").containsExactly(GRAI.parse(GRAI_CANONICAL));
 	}
 

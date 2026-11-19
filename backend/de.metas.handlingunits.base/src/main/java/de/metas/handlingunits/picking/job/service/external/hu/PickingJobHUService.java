@@ -13,7 +13,6 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
@@ -117,7 +116,6 @@ public class PickingJobHUService
 
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
@@ -131,40 +129,48 @@ public class PickingJobHUService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
 
+	/**
+	 * @param pickedCUsAreInBoxes {@code true} when the picks were booked in a CU quantity entry mode, i.e. the picked HU is the CU inside the open box (TU).
+	 *                            The GRAI of such a pick is stored on the box and a CU has no GRAI snapshot of its own, so every picked CU (virtual, non-aggregate HU) is replaced by its TU.
+	 *                            {@code false} (Manual mode): the picked HUs are used as they are.
+	 */
 	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
+	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds, final boolean pickedCUsAreInBoxes)
 	{
-		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds));
+		return huGraiService.getSnapshots(pickedCUsAreInBoxes ? toGraiCarrierHuIds(huIds) : huIds);
+	}
+
+	public boolean isCUQtyEntryNewMode(@Nullable final BPartnerId customerId)
+	{
+		return configService.getPickingJobOptions(customerId).getCuQtyEntryMode().isNewMode();
 	}
 
 	/**
-	 * In the CU quantity entry modes the picked HU is the CU (a virtual, non-aggregate HU) inside a box (TU).
-	 * The GRAI of such a pick is stored on the box, and a CU has no GRAI snapshot of its own,
-	 * so a CU is replaced by its parent TU. Any other HU (TU, LU, aggregate VHU, CU without a TU parent) stays as is.
+	 * A picked CU (virtual, non-aggregate HU) inside a TU is checked via its TU, which carries the GRAI.
+	 * Any other HU (TU, LU, aggregate VHU, CU without a TU parent) stays as is.
 	 */
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds)
 	{
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
-		for (final HuId huId : huIds)
+		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
-			result.add(getGraiCarrierHuId(huId));
+			result.add(getGraiCarrierHuId(hu));
 		}
 		return result.build();
 	}
 
 	@NonNull
-	private HuId getGraiCarrierHuId(@NonNull final HuId huId)
+	private HuId getGraiCarrierHuId(@NonNull final I_M_HU hu)
 	{
-		final I_M_HU hu = handlingUnitsBL.getById(huId);
-		if (!handlingUnitsBL.isVirtual(hu) || handlingUnitsBL.isAggregateHU(hu))
+		if (handlingUnitsBL.isVirtual(hu) && !handlingUnitsBL.isAggregateHU(hu))
 		{
-			return huId;
+			final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(hu);
+			if (tu != null && handlingUnitsBL.isTransportUnit(tu))
+			{
+				return HuId.ofRepoId(tu.getM_HU_ID());
+			}
 		}
-
-		final I_M_HU parentHU = handlingUnitsDAO.retrieveParent(hu);
-		return parentHU != null && handlingUnitsBL.isTransportUnit(parentHU)
-				? HuId.ofRepoId(parentHU.getM_HU_ID())
-				: huId;
+		return HuId.ofRepoId(hu.getM_HU_ID());
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)

@@ -63,7 +63,7 @@ public class PickingJobGRAIValidator
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshots(ImmutableSet.copyOf(pickedHUIds));
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshots(ImmutableSet.copyOf(pickedHUIds), segment.isCuQtyEntryNewMode());
 
 		if (graiRequired == GRAIRequired.Yes)
 		{
@@ -97,6 +97,7 @@ public class PickingJobGRAIValidator
 		return GRAIValidationSegment.builder()
 				.salesOrderId(line.getSalesOrderAndLineId().getOrderId())
 				.graiRequired(graiRequired)
+				.cuQtyEntryNewMode(huService.isCUQtyEntryNewMode(customerId))
 				.build();
 	}
 
@@ -112,5 +113,6 @@ public class PickingJobGRAIValidator
 	{
 		@NonNull OrderId salesOrderId;
 		@NonNull GRAIRequired graiRequired;
+		boolean cuQtyEntryNewMode;
 	}
 }
