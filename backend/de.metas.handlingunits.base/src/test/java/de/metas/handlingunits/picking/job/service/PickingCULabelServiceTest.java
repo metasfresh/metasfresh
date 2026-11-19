@@ -23,6 +23,7 @@ import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest.Part;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
+import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import org.adempiere.exceptions.AdempiereException;
@@ -277,6 +278,34 @@ class PickingCULabelServiceTest
 		final String beforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 36);
 
 		assertFails(() -> resolve(beforeLot, CUQtyEntryMode.SCAN_EACH_CU, noMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
+	}
+
+	@Test
+	void realLayout_packIdOpenEnd()
+	{
+		final ScannableCodeFormat packIdFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
+				.name("CU label with PackId")
+				.parts(ImmutableList.of(
+						constant(1, 2, "01"),
+						part(3, 16, ScannableCodeFormatPartType.Ignored),
+						constant(17, 18, "91"),
+						part(19, 25, ScannableCodeFormatPartType.ProductCode),
+						part(26, 26, ScannableCodeFormatPartType.Ignored),
+						constant(27, 28, "17"),
+						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(35, 36, "10"),
+						part(37, 45, ScannableCodeFormatPartType.LotNo),
+						part(46, 46, ScannableCodeFormatPartType.Ignored),
+						constant(47, 48, "92"),
+						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+				.build());
+
+		assertThat(resolve(label(GTIN, PRODUCT_NO, "2"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo("2");
+		assertThat(resolve(label(GTIN, PRODUCT_NO, "10"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo("10");
+
+		final String withoutPackId = label(GTIN, PRODUCT_NO, "2").substring(0, 46); // ends before "92"
+		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()), CU_LABEL_NO_PACK_ID);
+		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
 
 	@Test

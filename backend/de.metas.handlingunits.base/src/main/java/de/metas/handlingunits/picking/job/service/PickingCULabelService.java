@@ -122,7 +122,7 @@ public class PickingCULabelService
 				.build();
 	}
 
-	/** Seam for unit tests: they override it to supply fake {@link CULabelData} (no pack ID part type is read yet, see {@link #toCULabelData}). */
+	/** Seam for unit tests: they override it to supply fake {@link CULabelData} (see {@link #toCULabelData}). */
 	@VisibleForTesting
 	protected CULabelData readCULabelData(@NonNull final ParsedScannedCode parsed, @NonNull final ScannedCode label)
 	{
@@ -136,7 +136,7 @@ public class PickingCULabelService
 				.productNo(parsed.getProductNo())
 				.lotNo(parsed.getLotNo())
 				.bestBeforeDate(parsed.getBestBeforeDate())
-				.packId(null)
+				.packId(parsed.getPackId())
 				.build();
 	}
 
