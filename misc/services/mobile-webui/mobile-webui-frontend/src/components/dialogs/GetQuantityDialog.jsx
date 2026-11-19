@@ -343,13 +343,9 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form
-            onSubmit={
-              isScanOnce
-                ? // the OK button's click (also the Enter key's implicit click) books once; a second submit-triggered
-                  // call would book the same count twice
-                  (event) => event.preventDefault()
-                : () => onDialogYes({ isCloseTarget: false })
-            }
+            // the OK button's click (also the Enter key's implicit click) books once; a second, submit-triggered
+            // call would book the same quantity twice (and a native submit would reload the page)
+            onSubmit={(event) => event.preventDefault()}
           >
             <div className="table-container">
               <table className="table">
@@ -400,6 +396,7 @@ const GetQuantityDialog = ({
                               'is-success': useScaleDevice,
                               'is-selected': useScaleDevice,
                             })}
+                            type="button"
                             onClick={() => setUseScaleDevice(true)}
                           >
                             {scaleDevice.caption}
@@ -409,6 +406,7 @@ const GetQuantityDialog = ({
                               'is-success': !useScaleDevice,
                               'is-selected': !useScaleDevice,
                             })}
+                            type="button"
                             onClick={() => setUseScaleDevice(false)}
                           >
                             Manual
@@ -474,6 +472,7 @@ const GetQuantityDialog = ({
                           <DialogButton
                             captionKey="activities.picking.switchToQrCodeInput"
                             className="button"
+                            type="button"
                             onClick={() => setShowCatchWeightQRCodeReader(true)}
                           />
                         </>
@@ -524,6 +523,7 @@ const GetQuantityDialog = ({
                 captionKey="general.cancelText"
                 className="is-danger"
                 disabled={isProcessing}
+                type="button"
                 onClick={onCloseDialog}
                 testId="cancel-button"
               />
