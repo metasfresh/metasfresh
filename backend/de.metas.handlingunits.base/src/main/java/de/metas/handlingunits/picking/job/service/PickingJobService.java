@@ -363,7 +363,6 @@ public class PickingJobService implements PickingSlotListener
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
 						.huService(huService)
-						.configService(configService)
 						//
 						.pickingJob(pickingJob)
 						.lineId(event.getPickingLineId())
@@ -744,9 +743,19 @@ public class PickingJobService implements PickingSlotListener
 		DummyGRAITemplate.assertValidSerialPrefix(serialPrefix);
 	}
 
+	/**
+	 * Closes the job's targets and every line's targets. Each line's closed HUs go to that line's picking slot queue: in a job with
+	 * line-level targets (product job) every customer's line has its own slot, and the slot the picker scanned last belongs to another
+	 * customer (an HU queued on two slots cannot be shipped).
+	 */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
-		return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
+		PickingJob pickingJobChanged = closeLUAndTUPickingTargets(pickingJob, true, false, null, false);
+		for (final PickingJobLine line : pickingJob.getLines())
+		{
+			pickingJobChanged = closeLUAndTUPickingTargets(pickingJobChanged, false, true, line.getId(), false);
+		}
+		return pickingJobChanged;
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(

@@ -158,7 +158,7 @@ public class PickingJobHUService
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
-			if (isPickedCU(hu))
+			if (isCUInsideBox(hu))
 			{
 				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getGraiCarrierHuId(hu)));
 			}
@@ -170,7 +170,11 @@ public class PickingJobHUService
 		return result.build();
 	}
 
-	private boolean isPickedCU(@NonNull final I_M_HU hu)
+	/**
+	 * @return true for a CU (virtual HU) that sits in a TU (box) of its own, false for a top-level CU and for an aggregated TU (also a
+	 * virtual HU, but it stands for TUs on an LU)
+	 */
+	public boolean isCUInsideBox(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.isVirtual(hu) && !handlingUnitsBL.isAggregateHU(hu) && hu.getM_HU_Item_Parent_ID() > 0;
 	}
