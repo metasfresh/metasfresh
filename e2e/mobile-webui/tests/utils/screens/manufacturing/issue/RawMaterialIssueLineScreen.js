@@ -106,6 +106,8 @@ export const RawMaterialIssueLineScreen = {
     expectStepForHU: async ({ huQRCode, qtyToIssue, qtyIssued }) => await test.step(`${NAME} - Expect step for HU ...${huDisplayableSuffix(huQRCode)}`, async () => {
         const stepButton = locateStepButtonForHU({ huQRCode });
         await expect(stepButton).toHaveCount(1);
+        // The line header can push the step list below the fold: scroll to it, as the operator would to read it.
+        await stepButton.scrollIntoViewIfNeeded({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(stepButton).toBeVisible();
 
         const stepInfo = stepButton.locator('.picking-row-info');
