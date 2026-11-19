@@ -17,7 +17,8 @@ import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickCon
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 import Spinner from './Spinner';
 import { doFinally } from '../utils';
-import { isScanOnce as isScanOnceMode } from '../constants/CUQtyEntryMode';
+import { isScanEach as isScanEachMode, isScanOnce as isScanOnceMode } from '../constants/CUQtyEntryMode';
+import DialogButton from './dialogs/DialogButton';
 import { isLineDoneAfterBooking } from '../utils/picking';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
@@ -78,6 +79,8 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const isScanOnce = isScanOnceMode(cuQtyEntryMode);
+  // scan each CU: every label books one CU at once, the scan step stays (no quantity block)
+  const isScanEach = isScanEachMode(cuQtyEntryMode);
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   // scan once: the quantity block stays open after a booking (and after a label rescan); a new key (also a new
   // suggestion) gives it the new suggestion and the new label values
@@ -225,6 +228,11 @@ const ScanHUAndGetQtyComponent = ({
 
     setResolvedBarcodeData(resolvedBarcodeDataNew);
 
+    if (isScanEach) {
+      await bookScannedCU({ resolvedBarcodeData: resolvedBarcodeDataNew });
+      return;
+    }
+
     if (resolvedBarcodeDataNew.isScanProductCodeRequired) {
       setProgressStatus(STATUS_READ_PRODUCT_BARCODE);
       return;
@@ -232,6 +240,22 @@ const ScanHUAndGetQtyComponent = ({
 
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
+
+  // scan each CU: one label = one CU of 1 with that label; a refusal (e.g. the pack was already picked) is toasted
+  const bookScannedCU = async ({ resolvedBarcodeData }) =>
+    await fireOnResult({
+      qty: 1,
+      qtyRejected: 0,
+      reason: null,
+      scannedBarcode: resolvedBarcodeData.scannedBarcode,
+      resolvedBarcodeData,
+      isTUToBePickedAsWhole: false,
+      cuLabel: resolvedBarcodeData.cuLabel,
+      bestBeforeDate: resolvedBarcodeData.bestBeforeDate,
+      lotNo: resolvedBarcodeData.lotNo,
+      isCloseTarget: false,
+      isDone: isLineDoneAfterBooking({ qtyBooked: 1, qtyOpen: resolvedBarcodeData.qtyMax }),
+    });
 
   const onProductScannedCode = async ({ scannedBarcode: productScannedCode }) => {
     let resolveProductScannedCodeFuncResult = {};
@@ -410,7 +434,19 @@ const ScanHUAndGetQtyComponent = ({
               onResolvedResult={onHUBarcodeResolvedResult}
             />
           )}
-          {nextBoxActions && <div className="buttons is-centered mt-4">{nextBoxActions}</div>}
+          {(nextBoxActions || isScanEach) && (
+            <div className="buttons is-centered mt-4">
+              {nextBoxActions}
+              {isScanEach && (
+                <DialogButton
+                  captionKey="general.closeText"
+                  className="is-danger"
+                  testId="scan-each-close-button"
+                  onClick={onCloseDialog}
+                />
+              )}
+            </div>
+          )}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: QR`}

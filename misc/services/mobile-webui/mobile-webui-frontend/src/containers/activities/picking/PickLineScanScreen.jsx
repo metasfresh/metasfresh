@@ -57,7 +57,7 @@ import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/pic
 import { resolveCULabel, routeScannedCode, selectCULabelFormat, SCAN_TYPE_GRAI } from '../../../utils/cuLabel';
 import { parseGraiFromRawInput } from '../../../utils/grai';
 import NextBoxActions, { useNextBox } from '../../../components/NextBoxActions';
-import { isNewMode, isScanOnce as isScanOnceMode } from '../../../constants/CUQtyEntryMode';
+import { isNewMode, isScanEach, isScanOnce as isScanOnceMode } from '../../../constants/CUQtyEntryMode';
 import { rememberCUEntry } from '../../../actions/PickingActions';
 import { getCUEntry } from '../../../reducers/wfProcesses/picking';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
@@ -165,6 +165,7 @@ const PickLineScanScreen = () => {
           cuLabelFormat,
           expectedProductNo: productNo,
           expectedGS1ProductCodes: gs1ProductCodes,
+          cuQtyEntryMode,
           onGrai: nextBox.onGraiScanned,
         })
       : convertScannedBarcodeToResolvedResult({
@@ -425,6 +426,7 @@ export const convertScannedCULabelToResolvedResult = ({
   cuLabelFormat,
   expectedProductNo,
   expectedGS1ProductCodes,
+  cuQtyEntryMode,
   onGrai,
 }) => {
   if (routeScannedCode(scannedBarcode) === SCAN_TYPE_GRAI) {
@@ -437,6 +439,7 @@ export const convertScannedCULabelToResolvedResult = ({
     format: cuLabelFormat,
     expectedProductNo,
     expectedGS1ProductCodes,
+    requirePackId: isScanEach(cuQtyEntryMode),
   });
   if (errorKey) {
     throw { messageKey: errorKey };

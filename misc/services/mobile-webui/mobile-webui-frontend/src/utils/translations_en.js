@@ -55,6 +55,7 @@ const translations = {
     cuLabel: {
       formatMismatch: 'The label does not match the label format of the picking profile. Nothing was booked.',
       noFormat: 'No label format set on the picking profile.',
+      noPackId: 'The label contains no pack ID. Nothing was booked.',
     },
     pickFromRequired: "Please scan 'Pick From' first.",
     nextBox: 'Next box',

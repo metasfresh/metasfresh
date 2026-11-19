@@ -121,3 +121,69 @@ describe('cuLabel.resolveCULabel', () => {
     });
   });
 });
+
+describe('cuLabel.readCULabel with a PackId part', () => {
+  const packIdFormat = {
+    id: 8,
+    name: 'CU label with pack ID',
+    parts: [...markerParts, ...dataParts, constant(47, 48, '92'), { type: 'PACK_ID', startPosition: 49 }],
+  };
+
+  it('reads the pack ID (open end), also with several digits', () => {
+    expect(readCULabel({ string: LABEL, format: packIdFormat })).toEqual({
+      productNo: 'PTST001',
+      lotNo: 'LA0000001',
+      bestBeforeDate: '2026-11-07',
+      packId: '2',
+    });
+    expect(readCULabel({ string: LABEL + '0', format: packIdFormat }).packId).toBe('20');
+  });
+
+  it('a label ending before the "92" marker or the pack ID part has no pack ID when one is required (L0)', () => {
+    const beforeMarker = LABEL.substring(0, 46);
+    const markerOnly = LABEL.substring(0, 48);
+    for (const string of [beforeMarker, markerOnly]) {
+      expect(readCULabel({ string, format: packIdFormat, requirePackId: true })).toEqual({
+        errorKey: 'picking.cuLabel.noPackId',
+      });
+      expect(readCULabel({ string, format: packIdFormat })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
+    }
+  });
+
+  it('a label ending before the lot is a format mismatch even when a pack ID is required', () => {
+    expect(readCULabel({ string: LABEL.substring(0, 36), format: packIdFormat, requirePackId: true })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+    });
+  });
+
+  it('the pack-ID zone is the part after its own marker, not a fixed "92"', () => {
+    const otherMarkerFormat = {
+      ...packIdFormat,
+      parts: [...markerParts, ...dataParts, constant(47, 48, '93'), { type: 'PACK_ID', startPosition: 49 }],
+    };
+    expect(readCULabel({ string: LABEL.substring(0, 46), format: otherMarkerFormat, requirePackId: true })).toEqual({
+      errorKey: 'picking.cuLabel.noPackId',
+    });
+  });
+
+  it('a format without a PackId part reads, but has no pack ID when one is required (effective format without PackId)', () => {
+    expect(readCULabel({ string: LABEL, format, requirePackId: true })).toEqual({
+      errorKey: 'picking.cuLabel.noPackId',
+    });
+    expect(resolveCULabel({ string: LABEL, format, expectedProductNo: 'PTST001', requirePackId: true })).toEqual({
+      errorKey: 'picking.cuLabel.noPackId',
+    });
+  });
+
+  it('resolveCULabel passes the pack ID with the label', () => {
+    expect(
+      resolveCULabel({ string: LABEL, format: packIdFormat, expectedProductNo: 'PTST001', requirePackId: true })
+    ).toEqual({
+      productNo: 'PTST001',
+      lotNo: 'LA0000001',
+      bestBeforeDate: '2026-11-07',
+      packId: '2',
+      cuLabel: LABEL,
+    });
+  });
+});

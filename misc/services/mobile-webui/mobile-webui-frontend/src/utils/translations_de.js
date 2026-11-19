@@ -59,6 +59,7 @@ const translations = {
     cuLabel: {
       formatMismatch: 'Das Etikett passt nicht zum Etikettenformat des Kommissionierprofils. Es wurde nichts gebucht.',
       noFormat: 'Kein Etikettenformat im Kommissionierprofil hinterlegt.',
+      noPackId: 'Das Etikett enthält keine Packungs-ID. Es wurde nichts gebucht.',
     },
     pickFromRequired: "Bitte zuerst 'Kommissionieren aus' scannen.",
     nextBox: 'Weitere Kiste',
