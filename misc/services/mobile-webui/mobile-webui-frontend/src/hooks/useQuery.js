@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 let nextQueryId = 1;
 
 export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess, onError }) => {
-  const [isPending, setIsPending] = useState(false);
+  // isPending is true from the first render when the query is enabled (no false -> true flip)
+  const [isPending, setIsPending] = useState(enabled);
   const [isSuccess, setIsSuccess] = useState(false);
   const [data, setData] = useState();
   const [error, setError] = useState();
