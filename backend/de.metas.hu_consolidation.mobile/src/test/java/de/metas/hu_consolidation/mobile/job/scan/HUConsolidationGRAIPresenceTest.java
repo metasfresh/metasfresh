@@ -98,6 +98,15 @@ class HUConsolidationGRAIPresenceTest
 	}
 
 	@Test
+	void severalCratesWithGRAI_count_withoutException()
+	{
+		// regression: the real reference case has several GRAI crates in the slots, the check must not demand a unique match
+		final I_M_HU crate1 = createTopLevelHU(GRAI);
+		final I_M_HU crate2 = createTopLevelHU("7613204.00307.1234567891");
+		assertThat(presence.isAnyGRAIPresent(ImmutableSet.of(id(crate1), id(crate2)))).isTrue();
+	}
+
+	@Test
 	void dummyGRAI_counts()
 	{
 		final I_M_HU crate = createTopLevelHU("7613204.00307.DUMMY-1");

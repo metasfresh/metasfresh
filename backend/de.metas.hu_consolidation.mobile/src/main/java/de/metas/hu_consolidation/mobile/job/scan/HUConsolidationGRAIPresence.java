@@ -30,7 +30,7 @@ public class HUConsolidationGRAIPresence
 				.setOnlyTopLevelHUs()
 				.addOnlyHUIds(huIds)
 				.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_GRAI)
-				.firstIdOnly()
+				.firstId()
 				.isPresent();
 	}
 }
