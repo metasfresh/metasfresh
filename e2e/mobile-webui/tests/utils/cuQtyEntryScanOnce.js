@@ -70,6 +70,7 @@ export const newFormatName = () => `cuqe-so-${uniqueProductValue()}`;
  * @param {string[]} [p.pickTo]
  * @param {object} [p.sysconfigs] sysconfigs to set for the test (on top of the launcher limit)
  * @param {boolean} [p.anonymousPickHUsOnTheFly]
+ * @param {{name: string, withPackId?: boolean}[]} [p.formats] formats to create; default = `formatName` without a pack-ID part
  */
 export const createMasterdata = async ({
                                            formatName,
@@ -81,6 +82,7 @@ export const createMasterdata = async ({
                                            pickTo = ['TU'],
                                            sysconfigs = {},
                                            anonymousPickHUsOnTheFly = false,
+                                           formats = [{ name: formatName, withPackId: false }],
                                        }) => {
     const bpartners = {};
     const salesOrders = {};
@@ -115,7 +117,7 @@ export const createMasterdata = async ({
                     customers,
                 }
             },
-            customQRCodeFormats: [buildCULabelFormat({ name: formatName })],
+            customQRCodeFormats: formats.map(({ name, withPackId = false }) => buildCULabelFormat({ name, withPackId })),
             bpartners,
             warehouses: { "wh": {} },
             pickingSlots: slots,
