@@ -865,7 +865,7 @@ class PickingJobCUQtyEntryPickTest
 				.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 	}
 
-	/** Manual mode: through the same wiring, no mapping to the box; the picked HU is the box itself, which has no GRAI, so completion is refused as it was before the change. */
+	/** Manual mode: the picked HU is the box itself (asserted below); the box has no GRAI, so completion is refused. */
 	@Test
 	void completion_manualMode_boxWithoutGrai_graiRequiredYes_isRefusedAsBefore()
 	{

@@ -7,6 +7,7 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -153,13 +154,13 @@ public class PickingJobHUService
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds)
 	{
 		// CUs of the same box share their parent item: walk up once per parent item, not once per CU
-		final HashMap<Integer, HuId> carrierHuIdByParentItemId = new HashMap<>();
+		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
 			if (isPickedCU(hu))
 			{
-				result.add(carrierHuIdByParentItemId.computeIfAbsent(hu.getM_HU_Item_Parent_ID(), parentItemId -> getGraiCarrierHuId(hu)));
+				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getGraiCarrierHuId(hu)));
 			}
 			else
 			{
