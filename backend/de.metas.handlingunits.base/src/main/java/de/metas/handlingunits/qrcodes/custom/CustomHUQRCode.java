@@ -59,4 +59,9 @@ public class CustomHUQRCode implements IHUQRCode
 	{
 		return Optional.ofNullable(parsedScannedCode.getLotNo());
 	}
+
+	public Optional<String> getPackId()
+	{
+		return Optional.ofNullable(parsedScannedCode.getPackId());
+	}
 }

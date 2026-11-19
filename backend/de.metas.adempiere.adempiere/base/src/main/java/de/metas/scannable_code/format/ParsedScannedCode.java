@@ -22,6 +22,7 @@ public class ParsedScannedCode
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable LocalDate productionDate;
 	@Nullable GTIN gtin;
+	@Nullable String packId;
 
 	public String getAsString()
 	{
