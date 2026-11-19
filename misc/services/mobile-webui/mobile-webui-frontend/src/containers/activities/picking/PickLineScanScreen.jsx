@@ -194,7 +194,7 @@ const PickLineScanScreen = () => {
     suggestedQty,
     isRememberCUEntry: isScanOnce,
     cuQtyEntryMode,
-    sourceHUQRCode: qrCode,
+    sourceHUQRCode: computeSourceHUQRCode({ qrCode, activity }),
     onClose,
   });
 
@@ -289,8 +289,17 @@ export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
  * the attributes and travels as `cuLabel`. Manual keeps today: the scanned code is the source HU.
  */
 // @VisibleForTesting
-export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }) =>
-  isNewMode(cuQtyEntryMode) ? sourceHUQRCode : scannedBarcode;
+export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }) => {
+  if (!isNewMode(cuQtyEntryMode)) return scannedBarcode;
+  if (!sourceHUQRCode) throw { messageKey: 'picking.pickFromRequired' };
+  return sourceHUQRCode;
+};
+
+/**
+ * The source HU of a new-mode pick: the `qrCode` of the screen URL, else the job's current "Kommissionieren aus" HU.
+ * @returns the source HU QR code, or undefined when neither exists (e.g. "Scannen" without a source HU)
+ */
+export const computeSourceHUQRCode = ({ qrCode, activity }) => qrCode || activity?.dataStored?.pickFromHU?.code;
 
 /**
  * Only the hop back from the line screen ("HU verpacken") reopens the quantity block with the remembered label; every

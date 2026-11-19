@@ -61,6 +61,7 @@ const translations = {
       formatMismatch: 'Das Etikett passt nicht zum Etikettenformat des Kommissionierprofils. Es wurde nichts gebucht.',
       noFormat: 'Kein Etikettenformat im Kommissionierprofil hinterlegt.',
     },
+    pickFromRequired: "Bitte zuerst 'Kommissionieren aus' scannen.",
     nextBox: 'Weitere Kiste',
     nextBoxOpened: 'Neue Kiste geöffnet: %(caption)s',
     nextBoxBusy: 'Es wird gerade eine Kiste geöffnet. Bitte gleich nochmal scannen.',

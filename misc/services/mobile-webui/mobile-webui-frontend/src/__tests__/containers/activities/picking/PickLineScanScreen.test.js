@@ -7,6 +7,7 @@ import {
   computeOpenBoxHeaderEntries,
   computeRememberedCULabel,
   computePickFromHUQRCode,
+  computeSourceHUQRCode,
 } from '../../../../containers/activities/picking/PickLineScanScreen';
 
 describe('PickingLineScanScreen', () => {
@@ -210,5 +211,25 @@ describe('PickingLineScanScreen: the HU the PICK event takes the packs from', ()
       'HU#1#{}'
     );
     expect(computePickFromHUQRCode({ sourceHUQRCode, scannedBarcode: 'HU#1#{}' })).toBe('HU#1#{}');
+  });
+
+  it('the source HU comes from the screen URL, else from the job\'s "Kommissionieren aus" HU', () => {
+    const activity = { dataStored: { pickFromHU: { code: 'HU#1#{"id":"job"}' } } };
+    expect(computeSourceHUQRCode({ qrCode: sourceHUQRCode, activity })).toBe(sourceHUQRCode);
+    expect(computeSourceHUQRCode({ qrCode: null, activity })).toBe('HU#1#{"id":"job"}');
+    expect(computeSourceHUQRCode({ qrCode: undefined, activity: { dataStored: {} } })).toBeUndefined();
+    expect(computeSourceHUQRCode({ qrCode: null, activity: undefined })).toBeUndefined();
+  });
+
+  it('a new-mode pick without any source HU is refused with the pick-from message, nothing is posted', () => {
+    ['SCAN_EACH_CU', 'SCAN_ONCE_ENTER_QTY'].forEach((cuQtyEntryMode) => {
+      expect(() =>
+        computePickFromHUQRCode({ cuQtyEntryMode, sourceHUQRCode: undefined, scannedBarcode: label })
+      ).toThrow(expect.objectContaining({ messageKey: 'picking.pickFromRequired' }));
+    });
+  });
+
+  it('Manual without a source HU is unchanged (no refusal)', () => {
+    expect(computePickFromHUQRCode({ cuQtyEntryMode: 'MANUAL', scannedBarcode: 'HU#1#{}' })).toBe('HU#1#{}');
   });
 });

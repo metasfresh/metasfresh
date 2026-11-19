@@ -57,6 +57,7 @@ const translations = {
       formatMismatch: 'The label does not match the label format of the picking profile. Nothing was booked.',
       noFormat: 'No label format set on the picking profile.',
     },
+    pickFromRequired: "Please scan 'Pick from' first.",
     nextBox: 'Next box',
     nextBoxOpened: 'New box opened: %(caption)s',
     nextBoxBusy: 'A box is just being opened. Scan again in a moment.',
