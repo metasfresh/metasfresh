@@ -12,6 +12,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -59,6 +60,7 @@ import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
@@ -834,5 +836,47 @@ class PickingJobCUQtyEntryPickTest
 		assertFails(() -> pickEach(job, source, LOT_A, "-"), CU_LABEL_NO_PACK_ID);
 
 		assertNothingBooked(job, source, "100");
+	}
+
+	private static final AdMessageKey GRAI_COUNT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAICountMismatch");
+
+	private void setCustomerGraiRequired(final GRAIRequired graiRequired)
+	{
+		final I_C_BPartner customer = InterfaceWrapperHelper.load(helper.shipToBPLocationId.getBpartnerId(), I_C_BPartner.class);
+		customer.setGRAIRequired(graiRequired.getCode());
+		InterfaceWrapperHelper.save(customer);
+	}
+
+	/**
+	 * Completion through the real {@link PickingJobService#complete} wiring: the customer's mode is resolved from its job options
+	 * (not passed as a flag). Scan-each-CU picks the CU itself, which sits in a box without GRAI: the box is the GRAI carrier, so completion is refused.
+	 */
+	@Test
+	void completion_newMode_cuPickedInBoxWithoutGrai_graiRequiredYes_isRefused()
+	{
+		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+		setCustomerGraiRequired(GRAIRequired.Yes);
+		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GRAI-N");
+		final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HU is the CU, not the box").doesNotContain(openBoxId(job));
+
+		assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+	}
+
+	/** Manual mode: through the same wiring, no mapping to the box; the picked HU is the box itself, which has no GRAI, so completion is refused as it was before the change. */
+	@Test
+	void completion_manualMode_boxWithoutGrai_graiRequiredYes_isRefusedAsBefore()
+	{
+		setProfile(CUQtyEntryMode.MANUAL);
+		setCustomerGraiRequired(GRAIRequired.Yes);
+		final HUInfo source = sourceBox("QR-GRAI-M");
+		final PickingJob job = pick(openBoxFromLinePacking(createJob(null, true)), source, "5", null, false, null);
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HU is the box").containsExactly(openBoxId(job));
+
+		assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 	}
 }

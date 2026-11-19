@@ -87,6 +87,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -151,26 +152,33 @@ public class PickingJobHUService
 	 */
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds)
 	{
+		// CUs of the same box share their parent item: walk up once per parent item, not once per CU
+		final HashMap<Integer, HuId> carrierHuIdByParentItemId = new HashMap<>();
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
-			result.add(getGraiCarrierHuId(hu));
+			if (isPickedCU(hu))
+			{
+				result.add(carrierHuIdByParentItemId.computeIfAbsent(hu.getM_HU_Item_Parent_ID(), parentItemId -> getGraiCarrierHuId(hu)));
+			}
+			else
+			{
+				result.add(HuId.ofRepoId(hu.getM_HU_ID()));
+			}
 		}
 		return result.build();
 	}
 
-	@NonNull
-	private HuId getGraiCarrierHuId(@NonNull final I_M_HU hu)
+	private boolean isPickedCU(@NonNull final I_M_HU hu)
 	{
-		if (handlingUnitsBL.isVirtual(hu) && !handlingUnitsBL.isAggregateHU(hu))
-		{
-			final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(hu);
-			if (tu != null && handlingUnitsBL.isTransportUnit(tu))
-			{
-				return HuId.ofRepoId(tu.getM_HU_ID());
-			}
-		}
-		return HuId.ofRepoId(hu.getM_HU_ID());
+		return handlingUnitsBL.isVirtual(hu) && !handlingUnitsBL.isAggregateHU(hu) && hu.getM_HU_Item_Parent_ID() > 0;
+	}
+
+	@NonNull
+	private HuId getGraiCarrierHuId(@NonNull final I_M_HU cu)
+	{
+		final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(cu);
+		return HuId.ofRepoId(tu != null && handlingUnitsBL.isTransportUnit(tu) ? tu.getM_HU_ID() : cu.getM_HU_ID());
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)
