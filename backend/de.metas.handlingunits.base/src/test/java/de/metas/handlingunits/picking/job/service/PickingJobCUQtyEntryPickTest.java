@@ -806,7 +806,11 @@ class PickingJobCUQtyEntryPickTest
 		 * puts the booked CU directly on the pallet. It is not a CU in a box, so the un-pick does not take the CU-in-box path and runs exactly
 		 * the code of before this feature: the HU is not picked any more, the line has nothing picked, and the QtyPicked row of the CU is
 		 * left as it is on the base branch (checked by running this test with the CU-in-box delete removed from the un-pick: same result).
-		 * That leftover row is a base behaviour, pinned here so a change of the Manual un-pick shows up; it is not a new one.
+		 * <p>
+		 * KNOWN BASE DEFECT: the un-pick of a CU picked directly onto an LU leaves its {@code M_ShipmentSchedule_QtyPicked} row, because the
+		 * row has {@code M_TU_HU_ID} = the CU at pick time ({@code HandlingUnitsBL.getTransportUnitHU} returns the CU itself, HandlingUnitsBL.java:846-851),
+		 * while the un-pick lookup requires {@code M_TU_HU_ID IS NULL} (HUShipmentScheduleDAO.java:87-92). It is pinned here only so that Manual
+		 * stays exactly as base; whoever fixes that defect must update the row assertions below.
 		 */
 		@Test
 		void manual_cuPickedOntoPallet_unpick_restoresAsBase()
@@ -831,7 +835,7 @@ class PickingJobCUQtyEntryPickTest
 
 			job = undo(job, pickedHuId, source.getQrCode(), null);
 
-			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("QtyPicked row of the CU: left, as on base").isEqualTo(1);
+			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("KNOWN BASE DEFECT, pinned so Manual stays as base: the QtyPicked row of the CU is left; a fix of the defect must update this assertion").isEqualTo(1);
 			assertThat(countAllQtyPickedRows()).as("no other QtyPicked row was touched").isEqualTo(1);
 			assertThat(handlingUnitsBL.getById(pickedHuId).getHUStatus()).as("not picked any more").isEqualTo(X_M_HU.HUSTATUS_Active);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
