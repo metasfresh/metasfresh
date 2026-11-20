@@ -47,6 +47,8 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.impexp.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -166,6 +168,7 @@ class OLCandOrderFactory
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL = SpringContextHolder.instance.getBean(BPartnerAddressEffectiveBL.class);
+	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepository = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
@@ -225,6 +228,14 @@ class OLCandOrderFactory
 
 		this.olCandListeners = olCandListeners;
 
+	}
+
+	private boolean isPOReferenceBuyerOrderNo(@NonNull final OLCand candidate)
+	{
+		final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoIdOrNull(candidate.getAD_InputDataSource_ID());
+		return inputDataSourceId != null
+				&& Check.isNotBlank(candidate.getPOReference())
+				&& inputDataSourceDAO.isEDIChannel(inputDataSourceId);
 	}
 
 	private I_C_Order newOrder(@NonNull final OLCand candidateOfGroup)
@@ -350,6 +361,7 @@ class OLCandOrderFactory
 
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
+		order.setIsPOReferenceBuyerOrderNo(isPOReferenceBuyerOrderNo(candidateOfGroup));
 
 		setBPSalesRepIdToOrder(order, candidateOfGroup);
 

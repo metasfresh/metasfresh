@@ -236,10 +236,12 @@ public class C_OLCand_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Changes an already-loaded {@code C_OLCand} like a user would in the window and saves it (which triggers the candidate's validation).
+	 * @cucumber.stepdef Changes an already-loaded {@code C_OLCand} like a user would in the window and saves it through a model save
+	 * (which triggers the candidate's validation and its model interceptors).
 	 * @cucumber.columns
 	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the OLCand to update<br>
-	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) new packing instruction override
+	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) new packing instruction override<br>
+	 *   <b>POReference</b> — (optional, null-allowed) new PO reference; {@code null} clears it
 	 * @cucumber.depends StepDefData: C_OLCand_StepDefData, M_HU_PI_Item_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -253,8 +255,9 @@ public class C_OLCand_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row ->
 		{
+			final StepDefDataIdentifier olCandIdentifier = row.getAsIdentifier(COLUMNNAME_C_OLCand_ID);
 			final de.metas.handlingunits.model.I_C_OLCand olCand = InterfaceWrapperHelper.create(
-					row.getAsIdentifier(COLUMNNAME_C_OLCand_ID).lookupIn(olCandTable),
+					olCandIdentifier.lookupNotNullIn(olCandTable),
 					de.metas.handlingunits.model.I_C_OLCand.class);
 			InterfaceWrapperHelper.refresh(olCand);
 
@@ -262,7 +265,10 @@ public class C_OLCand_StepDef
 					.map(id -> id.lookupIn(huItemProductTable))
 					.ifPresent(huPIItemProduct -> olCand.setM_HU_PI_Item_Product_Override_ID(huPIItemProduct.getM_HU_PI_Item_Product_ID()));
 
+			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(poReference -> olCand.setPOReference(DataTableUtil.nullToken2Null(poReference)));
+
 			InterfaceWrapperHelper.saveRecord(olCand);
+			olCandIdentifier.putOrReplace(olCandTable, olCand);
 		});
 	}
 

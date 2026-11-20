@@ -11,6 +11,7 @@ Feature: EDI INVOIC export via postgREST
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2025-05-01T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And temporarily set sys config boolean value false for sys config 'de.metas.payment.esr.Enabled'
     And documents are accounted immediately
 
     And metasfresh contains M_PricingSystems
@@ -88,6 +89,7 @@ Feature: EDI INVOIC export via postgREST
       "CreditMemo_Reason": null,
       "CreditMemo_ReasonText": null,
       "Order_POReference": null,
+      "Invoice_PaymentReference": null,
       "Order_Date": "2025-05-01T00:00:00",
       "Shipment_Date": null,
       "Shipment_DocumentNo": null,
@@ -146,6 +148,7 @@ Feature: EDI INVOIC export via postgREST
           "ORDERS_QtyInvoiced": null,
           "ORDERS_QtyInvoiced_UOM": null,
           "Order_POReference": null,
+          "Order_IsPOReferenceBuyerOrderNo": false,
           "Order_Line": 10,
           "Order_QtyInvoiced": 1,
           "Order_QtyInvoiced_UOM": "PCE",
@@ -2012,3 +2015,970 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario Outline: INVOIC of an order from the EDI-ORDERS data source <dataSource> carries the payment reference and the buyer-order-number flag
+    Given temporarily set sys config boolean value true for sys config 'de.metas.payment.esr.Enabled'
+    And load C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
+      | orgBankAccount                 | 2000257                 |
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
+      | orgBankAccount                 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+    And metasfresh contains M_Products:
+      | Identifier | Name                   |
+      | product    | invPoRefT1<key>Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN   | deliveryRule |
+      | customer   | Y              | N            | pricingSystem                 | customerLocation           | <gln> | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN   | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
+      | customerLocation | <gln> | customer                 | Y               | Y               |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "<header>",
+            "externalLineId": "<header>_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-<dataSource>",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-<gln>",
+                "bpartnerLocationIdentifier": "gln-<gln>"
+            },
+            "dateRequired": "2025-05-01",
+            "dateOrdered": "2025-05-01",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-invPoRefT1<key>Product",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "0021234567",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "<header>",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+    And validate the created orders
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
+      | order_1               | 0021234567  | true                      |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
+      | ol_1                      | order_1               | product                 | 2          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_1       | ol_1                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_1                             | shipment_1            |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | ol_1                      | 2            |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | ic_1                              | invoice                 | invoice_ID   |
+    And load C_ReferenceNo:
+      | C_ReferenceNo_ID.Identifier | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | REST.Context     |
+      | referenceNo                 | invoice              | 540006                           | invoiceReference |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Invoice_PaymentReference": "@invoiceReference@",
+      "Order_POReference": "0021234567",
+      "Lines": [
+        {
+          "Order_POReference": "0021234567",
+          "Order_IsPOReferenceBuyerOrderNo": true
+        }
+      ]
+    }
+  ]
+}
+    """
+
+    Examples:
+      | key     | dataSource                | header                | gln           |
+      | Ecosio  | DEST.de.metas.edi.ecosio  | invPoRefHeaderEcosio  | 4337010331011 |
+      | Eddyson | DEST.de.metas.edi.eddyson | invPoRefHeaderEddyson | 4337010331012 |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC of a manually entered order with ESR disabled has no payment reference and flag false on every line
+    Given metasfresh contains M_Products:
+      | Identifier | Name              |
+      | product    | invPoRefT2Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | customer   | Y              | N            | pricingSystem                 | customerLocation           | 4337010331021 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
+      | customerLocation | 4337010331021 | customer                 | Y               | Y               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DateOrdered | POReference |
+      | order_1    | true    | customer      | warehouse      | 2025-05-01  | REF-ESR-OFF      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | order_1               | product                 | 2          |
+    And the order identified by order_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_1       | ol_1                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_1                             | shipment_1            |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | ol_1                      | 2            |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | ic_1                              | invoice                 | invoice_ID   |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Invoice_PaymentReference": null,
+      "Order_POReference": "REF-ESR-OFF",
+      "Lines": [
+        {
+          "Order_POReference": "REF-ESR-OFF",
+          "Order_IsPOReferenceBuyerOrderNo": false
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC of a flagged order whose POReference was changed before invoicing has flag false next to the new reference
+    Given metasfresh contains M_Products:
+      | Identifier | Name               |
+      | product    | invPoRefT4aProduct |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | customer   | Y              | N            | pricingSystem                 | customerLocation           | 4337010331031 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
+      | customerLocation | 4337010331031 | customer                 | Y               | Y               |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "invPoRefHeaderT4a",
+            "externalLineId": "invPoRefHeaderT4a_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-DEST.de.metas.edi.ecosio",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4337010331031",
+                "bpartnerLocationIdentifier": "gln-4337010331031"
+            },
+            "dateRequired": "2025-05-01",
+            "dateOrdered": "2025-05-01",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-invPoRefT4aProduct",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "0021234568",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "invPoRefHeaderT4a",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+    And validate the created orders
+      | C_Order_ID.Identifier | POReference | IsPOReferenceBuyerOrderNo |
+      | order_1               | 0021234568  | true                      |
+    And update order
+      | C_Order_ID.Identifier | POReference |
+      | order_1               | 0029999993  |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
+      | ol_1                      | order_1               | product                 | 2          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_1       | ol_1                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_1                             | shipment_1            |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | ol_1                      | 2            |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | ic_1                              | invoice                 | invoice_ID   |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Lines": [
+        {
+          "Order_POReference": "0029999993",
+          "Order_IsPOReferenceBuyerOrderNo": false
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC of a flagged order keeps the flag when the POReference is changed on the invoice only
+    Given metasfresh contains M_Products:
+      | Identifier | Name               |
+      | product    | invPoRefT4cProduct |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | customer   | Y              | N            | pricingSystem                 | customerLocation           | 4337010331041 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
+      | customerLocation | 4337010331041 | customer                 | Y               | Y               |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "invPoRefHeaderT4c",
+            "externalLineId": "invPoRefHeaderT4c_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-DEST.de.metas.edi.ecosio",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4337010331041",
+                "bpartnerLocationIdentifier": "gln-4337010331041"
+            },
+            "dateRequired": "2025-05-01",
+            "dateOrdered": "2025-05-01",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-invPoRefT4cProduct",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "0021234569",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "invPoRefHeaderT4c",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
+      | ol_1                      | order_1               | product                 | 2          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_1       | ol_1                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_1                             | shipment_1            |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | ol_1                      | 2            |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | ic_1                              | invoice                 | invoice_ID   |
+    And update C_Invoice:
+      | Identifier | POReference |
+      | invoice    | INVOICE-REF |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Order_POReference": "INVOICE-REF",
+      "Lines": [
+        {
+          "Order_POReference": "0021234569",
+          "Order_IsPOReferenceBuyerOrderNo": true
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC over two orders gives each line the flag of its own order
+    Given metasfresh contains M_Products:
+      | Identifier | Name              |
+      | product    | invPoRefT6Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | customer   | Y              | N            | pricingSystem                 | customerLocation           | 4337010331061 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
+      | customerLocation | 4337010331061 | customer                 | Y               | Y               |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "invPoRefHeaderT6",
+            "externalLineId": "invPoRefHeaderT6_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-DEST.de.metas.edi.ecosio",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4337010331061",
+                "bpartnerLocationIdentifier": "gln-4337010331061"
+            },
+            "dateRequired": "2025-05-01",
+            "dateOrdered": "2025-05-01",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "val-invPoRefT6Product",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "0021234570",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_A               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "invPoRefHeaderT6",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_A               |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
+      | ol_A                      | order_A               | product                 | 2          |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DateOrdered | POReference |
+      | order_B    | true    | customer      | warehouse      | 2025-05-01  | REF-B       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_B       | order_B               | product                 | 2          |
+    And the order identified by order_B is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_A       | ol_A                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_A                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_A                             | shipment_A            |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_B       | ol_B                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_B                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_B                             | shipment_B            |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_A                              | ol_A                      | 2            |
+      | ic_B                              | ol_B                      | 2            |
+    When process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_A                              |
+      | ic_B                              |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | ic_A                              | invoice                 | invoice_ID   |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Lines": [
+        {
+          "Order_POReference": "0021234570",
+          "Order_IsPOReferenceBuyerOrderNo": true
+        },
+        {
+          "Order_POReference": "REF-B",
+          "Order_IsPOReferenceBuyerOrderNo": false
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC line aggregated from two orders has no order line: reference falls back to the invoice's, flag false
+  ## On this branch the INVOIC Lines are read per invoice line AND delivery note (edi_invoic_json_line_v), so the one
+  ## aggregated invoice line shipped with two delivery notes is exported as two Lines entries; both carry the invoice's reference and flag false.
+    Given metasfresh contains M_Products:
+      | Identifier | Name                |
+      | product    | invPoRefT6b1Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | customer   | Y              | N            | pricingSystem                 | customerLocation           | 4337010331071 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
+      | customerLocation | 4337010331071 | customer                 | Y               | Y               |
+    And load C_Aggregations:
+      | Identifier | C_Aggregation_ID |
+      | lineAgg    | 540003           |
+    And update C_BPartner:
+      | Identifier | OPT.SO_InvoiceLine_Aggregation_ID.Identifier |
+      | customer   | lineAgg                                      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DateOrdered | POReference |
+      | order_A    | true    | customer      | warehouse      | 2025-05-01  | REF-A       |
+    And update order
+      | C_Order_ID.Identifier | IsPOReferenceBuyerOrderNo |
+      | order_A               | true                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_A       | order_A               | product                 | 2          |
+    And the order identified by order_A is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DateOrdered | POReference |
+      | order_B    | true    | customer      | warehouse      | 2025-05-01  | REF-B       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_B       | order_B               | product                 | 2          |
+    And the order identified by order_B is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_A       | ol_A                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_A                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_A                             | shipment_A            |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_B       | ol_B                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_B                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_B                             | shipment_B            |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_A                              | ol_A                      | 2            |
+      | ic_B                              | ol_B                      | 2            |
+    When process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_A                              |
+      | ic_B                              |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | ic_A                              | invoice                 | invoice_ID   |
+    And update C_Invoice:
+      | Identifier | POReference |
+      | invoice    | INVOICE-REF |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Lines": [
+        {
+          "Order_POReference": "INVOICE-REF",
+          "Order_IsPOReferenceBuyerOrderNo": false
+        },
+        {
+          "Order_POReference": "INVOICE-REF",
+          "Order_IsPOReferenceBuyerOrderNo": false
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC line whose order has an empty POReference: reference falls back to the invoice's, flag false although the order is ticked
+    Given metasfresh contains M_Products:
+      | Identifier | Name                |
+      | product    | invPoRefT6b2Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | customer   | Y              | N            | pricingSystem                 | customerLocation           | 4337010331081 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
+      | customerLocation | 4337010331081 | customer                 | Y               | Y               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DateOrdered |
+      | order_1    | true    | customer      | warehouse      | 2025-05-01  |
+    And update order
+      | C_Order_ID.Identifier | IsPOReferenceBuyerOrderNo |
+      | order_1               | true                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | order_1               | product                 | 2          |
+    And the order identified by order_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_1       | ol_1                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_1                             | shipment_1            |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | ol_1                      | 2            |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | ic_1                              | invoice                 | invoice_ID   |
+    And update C_Invoice:
+      | Identifier | POReference |
+      | invoice    | INVOICE-REF |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Lines": [
+        {
+          "Order_POReference": "INVOICE-REF",
+          "Order_IsPOReferenceBuyerOrderNo": false
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC of an invoice without any sales order carries the payment reference and flag false on its line
+    Given temporarily set sys config boolean value true for sys config 'de.metas.payment.esr.Enabled'
+    And load C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
+      | orgBankAccount                 | 2000257                 |
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
+      | orgBankAccount                 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer   | Y          | invPoRefT6b3Name  | invPoRefT6b3Value  | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | customerLocation | customer      | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier | Name                |
+      | product    | invPoRefT6b3Product |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product      | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | invoice_ID   | customer      | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoice      | product      | 1 PCE       |
+    And the invoice identified by invoice is completed
+    And load C_ReferenceNo:
+      | C_ReferenceNo_ID.Identifier | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | REST.Context     |
+      | referenceNo                 | invoice              | 540006                           | invoiceReference |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "Invoice_PaymentReference": "@invoiceReference@",
+      "Lines": [
+        {
+          "Order_POReference": null,
+          "Order_IsPOReferenceBuyerOrderNo": false
+        }
+      ]
+    }
+  ]
+}
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: INVOIC of a credit memo has no payment reference even with ESR enabled
+    Given temporarily set sys config boolean value true for sys config 'de.metas.payment.esr.Enabled'
+    And load C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
+      | orgBankAccount                 | 2000257                 |
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
+      | orgBankAccount                 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer   | Y          | invPoRefT6b4Name  | invPoRefT6b4Value  | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | customerLocation | customer      | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier | Name                |
+      | product    | invPoRefT6b4Product |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product      | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | invoice_ID   | customer      | Gutschrift              | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoice      | product      | 1 PCE       |
+    And the invoice identified by invoice is completed
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@invoice_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @invoice_ID@,
+      "DocType_Base": "ARC",
+      "Invoice_PaymentReference": null,
+      "Lines": [
+        {
+          "Order_POReference": null,
+          "Order_IsPOReferenceBuyerOrderNo": false
+        }
+      ]
+    }
+  ]
+}
+    """
+
