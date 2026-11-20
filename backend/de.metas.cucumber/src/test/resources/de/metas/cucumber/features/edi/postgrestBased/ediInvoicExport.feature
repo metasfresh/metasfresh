@@ -11,6 +11,7 @@ Feature: EDI INVOIC export via postgREST
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2025-05-01T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And temporarily set sys config boolean value false for sys config 'de.metas.payment.esr.Enabled'
     And documents are accounted immediately
 
     And metasfresh contains M_PricingSystems
@@ -30,8 +31,7 @@ Feature: EDI INVOIC export via postgREST
 @allure.label.feature:F00350_EDI
 @F00350
   Scenario: create an invoice and export it to JSON
-    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And metasfresh contains C_BPartners without locations:
+    Given metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
@@ -833,7 +833,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario Outline: INVOIC of an order from the EDI-ORDERS data source <dataSource> carries the payment reference and the buyer-order-number flag
-    Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
+    Given temporarily set sys config boolean value true for sys config 'de.metas.payment.esr.Enabled'
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
       | orgBankAccount                 | 2000257                 |
@@ -963,7 +963,6 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
-    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
     Examples:
       | key     | dataSource                | header                | gln           |
@@ -976,8 +975,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC of a manually entered order with ESR disabled has no payment reference and flag false on every line
-    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name              |
       | product    | invPoRefT2Product |
     And metasfresh contains M_ProductPrices
@@ -1060,8 +1058,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC of a flagged order whose POReference was changed before invoicing has flag false next to the new reference
-    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name               |
       | product    | invPoRefT4aProduct |
     And metasfresh contains M_ProductPrices
@@ -1189,8 +1186,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC of a flagged order keeps the flag when the POReference is changed on the invoice only
-    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name               |
       | product    | invPoRefT4cProduct |
     And metasfresh contains M_ProductPrices
@@ -1316,8 +1312,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC over two orders gives each line the flag of its own order
-    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name              |
       | product    | invPoRefT6Product |
     And metasfresh contains M_ProductPrices
@@ -1460,8 +1455,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC line aggregated from two orders has no order line: reference falls back to the invoice's, flag false
-    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name                |
       | product    | invPoRefT6b1Product |
     And metasfresh contains M_ProductPrices
@@ -1572,8 +1566,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC line whose order has an empty POReference: reference falls back to the invoice's, flag false although the order is ticked
-    Given set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name                |
       | product    | invPoRefT6b2Product |
     And metasfresh contains M_ProductPrices
@@ -1660,7 +1653,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC of an invoice without any sales order carries the payment reference and flag false on its line
-    Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
+    Given temporarily set sys config boolean value true for sys config 'de.metas.payment.esr.Enabled'
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
       | orgBankAccount                 | 2000257                 |
@@ -1724,7 +1717,6 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
-    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
 
 # ############################################################################################################################################
@@ -1732,7 +1724,7 @@ Feature: EDI INVOIC export via postgREST
 # ############################################################################################################################################
 # ############################################################################################################################################
   Scenario: INVOIC of a credit memo has no payment reference even with ESR enabled
-    Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
+    Given temporarily set sys config boolean value true for sys config 'de.metas.payment.esr.Enabled'
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
       | orgBankAccount                 | 2000257                 |
@@ -1794,5 +1786,4 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
-    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
