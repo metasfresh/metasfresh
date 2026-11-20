@@ -26,10 +26,13 @@ export const GetQuantityDialog = {
         await expect(containerElement()).toHaveCount(0);
     }),
 
-    /** Asserts the open quantity shown by the dialog (`qty-target`, raw number). In Scan once it drops after every booking. */
+    /**
+     * Asserts the open quantity shown by the dialog (`qty-target`, raw number). In Scan once it drops after every booking.
+     * It updates only after the booking round trip (`/picking/event`) ends, so it gets the slow-action budget (CLAUDE.md: SLOW_ACTION_TIMEOUT for dialog waits).
+     */
     expectQtyTarget: async (expected) => await test.step(`${NAME} - Expect qty target '${expected}'`, async () => {
         await expect(page.getByTestId('qty-target')).toBeVisible();
-        await expect(page.getByTestId('qty-target')).toHaveAttribute('data-internalvalue', `${expected}`);
+        await expect(page.getByTestId('qty-target')).toHaveAttribute('data-internalvalue', `${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Asserts that no rejected quantity / reject reason is shown (Scan once: a smaller count is not a rejection). */
