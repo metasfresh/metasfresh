@@ -31,7 +31,7 @@ export const toNumberOrNaN = (arg) => {
     }
 
     try {
-      const number = Number(string.replaceAll(',', '.'));
+      const number = Number(string.replace(/,/g, '.'));
       if (Number.isFinite(number)) {
         return number;
       }

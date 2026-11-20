@@ -10,11 +10,8 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 // Self-contained guard: a dead deep-link still redirects home.
 //
-// The upstream sibling suite ApplicationLayout.bounceHome.test.js CANNOT LOAD on these branches: it
-// jest.mocks apps/picking/ShelfLifeConfirmDialogHost, a module that only exists further upstream, so the
-// whole suite dies with "Cannot find module" and reports `Tests: 0 total`, so it cannot be met by citing
-// it. This file therefore pins the same two behaviours here, and must stay loadable on these branches:
-// do NOT add an import or a jest.mock for anything outside containers/applicationRoot/,
+// This file repeats both halves of the sibling suite ApplicationLayout.bounceHome.test.js and is kept
+// self-contained: do NOT add an import or a jest.mock for anything outside containers/applicationRoot/,
 // reducers/wfProcesses/ and actions/WorkflowActions.
 //
 // Both halves of the guarantee live below:

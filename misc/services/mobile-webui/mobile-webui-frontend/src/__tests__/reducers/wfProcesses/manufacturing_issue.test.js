@@ -71,6 +71,7 @@ describe('reducers: manufacturing issue tests', () => {
         const draftActivityDataStored = {
           lines: [
             {
+              qtyToIssueMin: 4, // line-level completion threshold (tolerance), see computeLineStatus
               steps: {
                 1: { qtyToIssue: 8, qtyIssued: 4, qtyRejectedReasonCode: null },
                 2: { qtyToIssue: 0, qtyIssued: 0, qtyRejectedReasonCode: null }, // alternative step
@@ -86,6 +87,7 @@ describe('reducers: manufacturing issue tests', () => {
         const draftActivityDataStored = {
           lines: [
             {
+              qtyToIssueMin: 4, // line-level completion threshold (tolerance), see computeLineStatus
               steps: {
                 1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
                 2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
@@ -101,6 +103,7 @@ describe('reducers: manufacturing issue tests', () => {
         const draftActivityDataStored = {
           lines: [
             {
+              qtyToIssueMin: 4, // line-level completion threshold (tolerance), see computeLineStatus
               steps: {
                 1: { qtyToIssue: 8, qtyIssued: 3, qtyRejectedReasonCode: null },
                 2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
