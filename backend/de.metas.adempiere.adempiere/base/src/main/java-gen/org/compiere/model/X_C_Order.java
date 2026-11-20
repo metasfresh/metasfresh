@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1027239543L;
+	private static final long serialVersionUID = -1403637011L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1574,6 +1574,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isInvoiced() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiced);
+	}
+
+	@Override
+	public void setIsPOReferenceBuyerOrderNo (final boolean IsPOReferenceBuyerOrderNo)
+	{
+		set_Value (COLUMNNAME_IsPOReferenceBuyerOrderNo, IsPOReferenceBuyerOrderNo);
+	}
+
+	@Override
+	public boolean isPOReferenceBuyerOrderNo() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPOReferenceBuyerOrderNo);
 	}
 
 	@Override

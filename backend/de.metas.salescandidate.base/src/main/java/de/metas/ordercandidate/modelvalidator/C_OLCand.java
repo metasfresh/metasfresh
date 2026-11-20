@@ -203,6 +203,11 @@ public class C_OLCand
 		}
 	}
 
+	/**
+	 * Copies a changed {@code POReference} of the given order candidate to the sales order(s) it was already allocated to,
+	 * i.e. the orders of the order lines referenced by the candidate's active {@code C_Order_Line_Alloc} records.
+	 * Does nothing if the candidate has no active allocation yet.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_POReference)
 	public void updatePOReferenceOnSalesOrder(@NonNull final I_C_OLCand olCand)
 	{
@@ -210,8 +215,8 @@ public class C_OLCand
 				.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID, olCand.getC_OLCand_ID())
-				.andCollectChildren(I_C_OrderLine.COLUMN_C_OrderLine_ID, I_C_OrderLine.class)
-				.andCollect(I_C_Order.COLUMN_C_Order_ID, I_C_Order.class);
+				.andCollect(I_C_Order_Line_Alloc.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.class)
+				.andCollect(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_Order.class);
 
 		final ICompositeQueryUpdater<I_C_Order> poReferenceUpdater = queryBL
 				.createCompositeQueryUpdater(I_C_Order.class)
