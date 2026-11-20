@@ -1118,24 +1118,22 @@ test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanne
     });
 
     /** the refused scan: exactly one error message box that carries the scanner's toast id, and the error beep (no OK beep) */
-    const scanRefused = async (title, barcode) => await test.step(`Refused: ${title}`, async () => {
+    const scanRefused = async (title, barcode, expectedText) => await test.step(`Refused: ${title}`, async () => {
         await expectErrorToast(title, async () => {
             await PickingSlotScreen.scanGRAI({ graiString: barcode });
             await PickingSlotScreen.waitForScreen();
         }, async ({ toast, textContent }) => {
-            expect((textContent ?? '').trim().length).toBeGreaterThan(0);
+            expect(textContent).toContain(expectedText);
             const toastElement = toast.locator('xpath=ancestor::*[contains(@class,"Toastify__toast--error")][1]');
             await expect(toastElement).toHaveAttribute('id', SCANNER_ERROR_TOAST_ID);
         });
-        // observed 2026-11-20 (not root-caused): a refused scan right after the previous message was tapped away showed no message (2 runs: 1 failed without this pause, 1 passed with it); same scanner toast id, see BS-22
-        await page.waitForTimeout(3000);
         const tones = await takeBeepTones();
         expect(tones, `beep tones played for ${title}`).toContain(ERROR_BEEP_HZ);
         expect(tones, `beep tones played for ${title}`).not.toContain(OK_BEEP_HZ);
     });
 
-    await scanRefused('EAN-13', '4006381333931');
-    await scanRefused('GRAI of the crate in slot2 (not in this slot)', graiInSlot2);
+    await scanRefused('EAN-13', '4006381333931', 'Der gescannte Barcode ist kein gültiger GRAI.');
+    await scanRefused('GRAI of the crate in slot2 (not in this slot)', graiInSlot2, 'Die HU befindet sich nicht am Kommissionierplatz');
 
     await test.step('Nothing moved by the refused scans', async () => {
         await Backend.expect({
@@ -1155,5 +1153,12 @@ test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanne
         expect(tones).not.toContain(ERROR_BEEP_HZ);
         await ErrorToast.expectNoErrorToast();
         await PickingSlotScreen.waitNotLoading();
+        await PickingSlotScreen.goBack();
+        const targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
+        await Backend.expect({
+            title: 'the accepted crate sits on the pallet, the refused crate is still in slot2',
+            hus: { [targetLUQRCode]: { tus: [{ storages: { P1: '4 PCE' }, attributes: { GRAI: graiInSlot1 } }] } },
+            pickingSlots: { [slot2.qrCode]: { queue: [{ hu: 'crate2' }] } },
+        });
     });
 });

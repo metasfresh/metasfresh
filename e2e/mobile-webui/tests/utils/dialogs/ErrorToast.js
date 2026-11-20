@@ -50,6 +50,10 @@ export const ErrorToast = {
         await closeButton.scrollIntoViewIfNeeded({ timeout: FAST_ACTION_TIMEOUT });
         await closeButton.tap({ timeout: FAST_ACTION_TIMEOUT });
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+        // The message body is gone before react-toastify has released the toast id: it keeps the id (and the toast element) until
+        // its exit animation ends, about 1 s later, and ignores a new toast with the same id meanwhile. Wait for the element,
+        // so that the next scan's message (same scanner toast id) is not swallowed.
+        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     },
 
     // Assert exactly N non-blocking success/info toasts (`.Toastify__toast--success`) are shown — one
