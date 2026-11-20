@@ -11,9 +11,9 @@ restoreSysconfigsAfterEach(test);
 /**
  * CU quantity entry, Scan once: the pinned count and the navigation around it (TC8, TC8b, TC24, re-entry via "HU verpacken").
  *
- * The field suggests the last typed count, capped by the line's open quantity (AC5); confirming books it again on the
- * last scanned lot without a new scan (AC6); a label scanned inside the open block replaces product / lot / best-before
- * for the next booking (AC6a). A new line starts empty, also the next line of the same product.
+ * The field suggests the last typed count, capped by the line's open quantity; confirming books it again on the
+ * last scanned lot without a new scan; a label scanned inside the open block replaces product / lot / best-before
+ * for the next booking. A new line starts empty, also the next line of the same product.
  */
 const BEST_BEFORE_B = '2026-12-01';
 

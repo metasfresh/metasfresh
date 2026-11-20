@@ -9,11 +9,11 @@ import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, openScanE
 restoreSysconfigsAfterEach(test);
 
 /**
- * TC20, the real case (AC17), one mixed product job of two customers, source boxes of 4:
+ * TC20, the real case, one mixed product job of two customers, source boxes of 4:
  *  - buyer A (`C_BPartner.GRAIRequired` N, profile Scan once + format without pack-ID part): 50 CU = 3, 5, 8 x 5 (alternating
  *    GRAI scan / "Next box"), 2; box 1 opened by "Next box"; 11 boxes, 50 CU.
  *  - buyer B (GRAIRequired Y, record Scan each CU + format with pack-ID part): 6 CU, pack ID 3 scanned twice (one warning); 2 boxes,
- *    both opened by GRAI scan (REQUIREMENTS AC17: "box 1 (TU) by GRAI scan before the first label ... box 2 (TU) by GRAI scan").
+ *    both opened by GRAI scan (box 1 before the first label).
  * Expected: 13 boxes, 56 CU, 1 warning, `M_Picking_Job.DocStatus` CO.
  * GRAI boxes: one GRAI-mapped box type with a capacity row for the test product; every GRAI box gets a serial of its own.
  *

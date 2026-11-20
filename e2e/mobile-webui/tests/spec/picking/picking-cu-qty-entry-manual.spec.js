@@ -14,7 +14,7 @@ import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, rest
 restoreSysconfigsAfterEach(test);
 
 /**
- * Characterization of the Manual mode (AC2): these tests PASS before and after the CU quantity entry change.
+ * Characterization of the Manual mode: these tests PASS before and after the CU quantity entry change.
  * The mobile config never sends `cuQtyEntryMode` / `cuLabelFormatName`, so the profile stays Manual.
  * A test format with the marker parts is active (created, not linked to the profile) as a precondition; that Manual
  * does not read labels with it is covered by TC1d (jest), not here: no label is scanned in these tests.

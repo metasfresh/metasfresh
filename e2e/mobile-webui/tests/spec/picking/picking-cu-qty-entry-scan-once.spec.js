@@ -337,7 +337,7 @@ test('TC26: on a line whose packing is a box packing, a SECOND CU booking into t
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU each into the box on the pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
+test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU each into the box on the pallet; "Next box" + count 4 (a full box) books one CU of 4 in a second box on the same pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
     allureMeta('Scan once pallet target');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }], pickTo: ['LU_TU', 'TU'] });
@@ -375,12 +375,50 @@ test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU ea
         });
     });
 
-    await test.step('"Unpack" of the 3: only that CU is freed, the CU of 2 stays in the box on the pallet', async () => {
+    await test.step('"Next box", count 4 (fills the box of 4): one CU of 4 in a second box on the same pallet, as without a pallet', async () => {
+        await PickLineScanScreen.nextBox();
+        await GetQuantityDialog.typeQtyEntered(4);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 1 });
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [
+                                { qtyPicked: '3 PCE', vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false },
+                                { qtyPicked: '2 PCE', vhu: 'vhu2', tu: 'tu1', lu: 'lu1', processed: false },
+                                { qtyPicked: '4 PCE', vhu: 'vhu3', tu: 'tu2', lu: 'lu1', processed: false },
+                            ]
+                        }
+                    }
+                }
+            },
+            hus: {
+                tu1: { storages: { P1: '5 PCE' } },
+                // the second box holds exactly one CU of 4 (a real box, not an aggregated TU)
+                tu2: { storages: { P1: '4 PCE' }, cus: [{ qty: '4 PCE', attributes: { 'Lot-Nummer': lot } }] },
+                vhu3: { storages: { P1: '4 PCE' } },
+            },
+        });
+    });
+
+    await test.step('"Unpack" of the 3: only that CU is freed, the CU of 2 stays in the box on the pallet, the box of 4 stays', async () => {
         await GetQuantityDialog.clickCancel(); // closes the quantity block, back on the line screen
         await unpackFirstBooking({ fromLineScreen: true });
         await Backend.expect({
-            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [{ qtyPicked: '2 PCE', vhu: 'vhu2', tu: 'tu1', lu: 'lu1', processed: false }] } } } },
-            hus: { tu1: { storages: { P1: '2 PCE' } } },
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [
+                                { qtyPicked: '2 PCE', vhu: 'vhu2', tu: 'tu1', lu: 'lu1', processed: false },
+                                { qtyPicked: '4 PCE', vhu: 'vhu3', tu: 'tu2', lu: 'lu1', processed: false },
+                            ]
+                        }
+                    }
+                }
+            },
+            hus: { tu1: { storages: { P1: '2 PCE' } }, tu2: { storages: { P1: '4 PCE' } } },
         });
     });
 });
