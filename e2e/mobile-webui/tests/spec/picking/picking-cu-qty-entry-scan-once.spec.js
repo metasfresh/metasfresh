@@ -3,13 +3,13 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, newFormatName, openLine, scanLabel, SOURCE_QTY, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, newFormatName, openLine, scanLabel, setPalletTarget, SOURCE_QTY, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
 
 restoreSysconfigsAfterEach(test);
 
 /**
  * CU quantity entry, Scan once ("one label, type a count"): count, source, box, over-pick, line done (TC5, TC5b, TC5c Scan once part,
- * TC6, TC7, TC9, TC10, TC1c, TC26, TC27 flow).
+ * TC6, TC7, TC9, TC10, TC1c, TC26, TC27 flow, pallet target).
  *
  * Flow of the app as built: with a source HU scanned ("Kommissionieren aus"), a tap on a line with nothing picked opens its scan screen
  * directly; a label scan opens the quantity block; after OK the picker stays on the line (the block stays open, open quantity drops)
@@ -333,5 +333,54 @@ test('TC26: on a line whose packing is a box packing, a SECOND CU booking into t
             }
         },
         hus: { tu1: { storages: { P1: '2 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }] } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU each into the box on the pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
+    allureMeta('Scan once pallet target');
+
+    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }], pickTo: ['LU_TU', 'TU'] });
+    const lot = uniqueLot();
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
+    await openLine({ index: 1 });
+    await setPalletTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
+    await PickLineScanScreen.openBox();
+
+    await test.step('counts 3 and 2: one CU each, in the same box, the box on the pallet', async () => {
+        await scanLabel(labelOf({ masterdata, lot }));
+        await GetQuantityDialog.typeQtyEntered(3);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 7 });
+        await GetQuantityDialog.typeQtyEntered(2);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 5 });
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [
+                                { qtyPicked: '3 PCE', vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false },
+                                { qtyPicked: '2 PCE', vhu: 'vhu2', tu: 'tu1', lu: 'lu1', processed: false },
+                            ]
+                        }
+                    }
+                }
+            },
+            hus: {
+                // the box holds exactly the two booked CUs (vhu1 = the 3, vhu2 = the 2; the box's CU list is not in booking order)
+                tu1: { storages: { P1: '5 PCE' } },
+                vhu1: { storages: { P1: '3 PCE' }, attributes: { 'Lot-Nummer': lot } },
+                vhu2: { storages: { P1: '2 PCE' } },
+            },
+        });
+    });
+
+    await test.step('"Unpack" of the 3: only that CU is freed, the CU of 2 stays in the box on the pallet', async () => {
+        await GetQuantityDialog.clickCancel(); // closes the quantity block, back on the line screen
+        await unpackFirstBooking({ fromLineScreen: true });
+        await Backend.expect({
+            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [{ qtyPicked: '2 PCE', vhu: 'vhu2', tu: 'tu1', lu: 'lu1', processed: false }] } } } },
+            hus: { tu1: { storages: { P1: '2 PCE' } } },
+        });
     });
 });

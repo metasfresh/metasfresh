@@ -14,6 +14,9 @@ import { PickingJobsListScreen } from './screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from './screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from './screens/picking/PickLineScanScreen';
 import { GetQuantityDialog } from './screens/picking/GetQuantityDialog';
+import { PickingJobLineScreen } from './screens/picking/PickingJobLineScreen';
+import { PickingJobStepScreen } from './screens/picking/PickingJobStepScreen';
+import { SelectPickTargetLUScreen } from './screens/picking/SelectPickTargetLUScreen';
 import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductValue } from './cuLabel';
 
 export const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
@@ -158,6 +161,34 @@ export const openLine = async ({ index }) => {
     await PickingJobScreen.clickLineButton({ index });
     await PickLineScanScreen.waitForScreen();
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
+};
+
+/**
+ * Sets a pallet (LU) target of type `lu` on the line, before its first booking (needs `pickTo` with 'LU_TU'): from the line's scan
+ * screen back to the line screen, pallet target, then "HU verpacken" / "Pack HU" back to the scan screen.
+ */
+export const setPalletTarget = async ({ lu }) => {
+    await PickLineScanScreen.goBack();
+    await PickingJobLineScreen.clickLUTargetButton();
+    await SelectPickTargetLUScreen.clickLUButton({ lu });
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.tapPickHUButton();
+    await PickLineScanScreen.waitForScreen();
+};
+
+/**
+ * Opens the pick-step screen of the first booking of the open line and unpacks it ("Entpacken", no target HU); ends on the job screen.
+ * Starts on the line's scan screen, or on the line screen with `fromLineScreen` (e.g. after Cancel of the quantity block).
+ */
+export const unpackFirstBooking = async ({ fromLineScreen = false } = {}) => {
+    if (fromLineScreen) {
+        await PickingJobLineScreen.waitForScreen();
+    } else {
+        await PickLineScanScreen.goBack(); // lands on the line screen, which lists the picked HUs
+    }
+    await PickingJobLineScreen.clickStepButton({ index: 0 });
+    await PickingJobStepScreen.unpick();
+    await PickingJobLineScreen.goBack(); // the unpick leaves on the line screen
 };
 
 /** Scan once: label scan, the quantity block opens. */

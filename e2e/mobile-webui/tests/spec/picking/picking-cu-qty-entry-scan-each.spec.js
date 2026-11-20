@@ -3,9 +3,8 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
-import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
-import { allureMeta, MSG_NO_OPEN_BOX, newFormatName, qtyPickedRow, restoreSysconfigsAfterEach, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, MSG_NO_OPEN_BOX, newFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_NO_PACK_ID, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -13,21 +12,13 @@ restoreSysconfigsAfterEach(test);
 /**
  * CU quantity entry, Scan each CU ("scan every pack label"): every scan books one CU of 1 into the open box; a pack label needs a
  * pack ID; the same pack twice in one job is warned; "Unpack" frees a CU (TC11 - TC13 chain, TC12b - TC12e, TC25, TC3 cases
- * "B, L0" and "C, L(1)", TC5c Scan each CU part, TC17, TC23 (i) / (ii), TC26, TC30 variant).
+ * "B, L0" and "C, L(1)", TC5c Scan each CU part, TC17, TC23 (i) / (ii), TC26, TC30 variant, pallet target).
  *
  * Needs the pack-ID part type of the label-reader change (merged on soft_panda_hotfix): the label format of these specs has a
  * pack-ID part (`buildCULabelFormat({ withPackId: true })`).
  *
  * Source: one pallet of 20 boxes of 4 pieces (80 pieces). Every case opens box 1 first ("Next box"), except TC5c / TC17 (i) / TC23.
  */
-
-/** Opens the pick-step screen of the only picked HU of line `index` and unpacks it ("Entpacken", no target HU). */
-const unpackFirstPick = async ({ lineIndex }) => {
-    await PickLineScanScreen.goBack(); // lands on the line screen, which lists the picked HUs
-    await PickingJobLineScreen.clickStepButton({ index: 0 });
-    await PickingJobStepScreen.unpick();
-    await PickingJobLineScreen.goBack(); // the unpick leaves on the line screen
-};
 
 const newMasterdata = async ({ orders = [{ key: 'A', qty: 3 }], ...rest } = {}) =>
     await createScanEachMasterdata({ packFormatName: newFormatName(), orders, ...rest });
@@ -130,7 +121,7 @@ test('TC12d: "Unpack" of a booked CU, then the same label books again without a 
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1 });
     await scanPack(label);
-    await unpackFirstPick({ lineIndex: 1 });
+    await unpackFirstBooking();
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 
     await PickingJobScreen.clickLineButton({ index: 1 });
@@ -154,7 +145,7 @@ test('TC12d (box opened by GRAI scan): "Unpack" of the box\'s only pack, then th
     await openScanEachLine({ index: 1, openBox: false });
     await PickLineScanScreen.scanGrai(grai);
     await scanPack(label);
-    await unpackFirstPick({ lineIndex: 1 }); // the box's only pack: the box is emptied
+    await unpackFirstBooking(); // the box's only pack: the box is emptied
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 
     await PickingJobScreen.clickLineButton({ index: 1 });
@@ -179,7 +170,7 @@ test('TC12e: the box\'s first pack: a rescan is warned; "Unpack" frees only that
     await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
     await PickLineScanScreen.scanCULabelRefused(first, MSG_ALREADY_PICKED(1));
 
-    await unpackFirstPick({ lineIndex: 1 }); // the step list holds the first booking at index 0
+    await unpackFirstBooking(); // the step list holds the first booking at index 0
     await Backend.expect({
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
         hus: { tu1: { storages: { P1: '1 PCE' } } },
@@ -319,4 +310,37 @@ test('TC30 variant: counters 9 and 10 give pack IDs "9" and "10" through the ope
     await scanPack(packLabelOf({ masterdata, packId: 9 }));
     await scanPack(packLabelOf({ masterdata, packId: 10 }));
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } }, hus: { vhu1: { attributes: { PackId: '9' } }, vhu2: { attributes: { PackId: '10' } } } });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Pallet target (Scan each CU): pallet + new box: every scan books one CU into the box on the pallet; "Unpack" of pack 1 frees only that CU', async ({ page }) => {
+    allureMeta('Scan each CU pallet target');
+
+    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }], pickTo: ['LU_TU', 'TU'] });
+    const lot = uniqueLot();
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
+    await openScanEachLine({ index: 1, openBox: false });
+    await setPalletTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
+    await PickLineScanScreen.openBox();
+
+    await test.step('packs 1 and 2: one CU of 1 each, in the same box, the box on the pallet', async () => {
+        await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
+        await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
+        await Backend.expect({
+            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [1, 2].map((n) => ({ qtyPicked: '1 PCE', vhu: `vhu${n}`, tu: 'tu1', lu: 'lu1', processed: false })) } } } },
+            hus: {
+                tu1: { storages: { P1: '2 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }] },
+                vhu1: { storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': lot, PackId: '1' } },
+                vhu2: { storages: { P1: '1 PCE' }, attributes: { PackId: '2' } },
+            },
+        });
+    });
+
+    await test.step('"Unpack" of pack 1: only that CU is freed, pack 2 stays in the box on the pallet', async () => {
+        await unpackFirstBooking();
+        await Backend.expect({
+            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [{ qtyPicked: '1 PCE', vhu: 'vhu2', tu: 'tu1', lu: 'lu1', processed: false }] } } } },
+            hus: { tu1: { storages: { P1: '1 PCE' } } },
+        });
+    });
 });
