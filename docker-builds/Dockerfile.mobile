@@ -19,7 +19,7 @@ RUN yarn install
 
 COPY misc/services/mobile-webui/mobile-webui-frontend/ .
 RUN yarn lint
-# currently not terminating: RUN yarn test --ci --runInBand
+RUN CI=true yarn test --ci --runInBand --watchAll=false
 
 ENV PUBLIC_URL=/
 RUN yarn build
