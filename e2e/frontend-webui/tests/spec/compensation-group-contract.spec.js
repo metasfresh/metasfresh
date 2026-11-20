@@ -6,7 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, getPage, selectRows, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { getDocumentReferences, getFieldData, getTabRows, getWindowLayout, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { openRelatedDocument } from '../utils/DocumentReferences';
@@ -1960,7 +1960,8 @@ function lineOfProduct(lines, product) {
  * returned. `beforeZoom` (optional) runs with the menu open, before the item is clicked.
  */
 async function zoomIntoFromCell(page, cell, beforeZoom) {
-  await cell.click();
+  // select the cell's row instead of a plain click: a plain click on an auto-selected row deselects it
+  await selectRows([cell.locator('xpath=ancestor::tr[1]')]);
   await cell.click({ button: 'right' });
   const contextMenu = page.locator('.context-menu');
   await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
