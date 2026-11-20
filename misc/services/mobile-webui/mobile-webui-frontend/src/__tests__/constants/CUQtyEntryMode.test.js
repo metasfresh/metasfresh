@@ -1,12 +1,8 @@
-import {
-  CUQtyEntryMode,
-  getCUQtyEntryPolicy,
-  isLabelRequired,
-  isScanEachCU,
-  isScanOnce,
-} from '../../constants/CUQtyEntryMode';
+import { CUQtyEntryMode, getCUQtyEntryPolicy } from '../../constants/CUQtyEntryMode';
 
-describe('CUQtyEntryMode.isLabelRequired', () => {
+const MANUAL_POLICY = { isLabelRequired: false, isPackIdRequired: false, isScanOnce: false };
+
+describe('CUQtyEntryMode', () => {
   it('has the backend codes', () => {
     expect(CUQtyEntryMode).toEqual({
       MANUAL: 'MANUAL',
@@ -14,35 +10,19 @@ describe('CUQtyEntryMode.isLabelRequired', () => {
       SCAN_ONCE_ENTER_QTY: 'SCAN_ONCE_ENTER_QTY',
     });
   });
-
-  it.each([
-    ['SCAN_EACH_CU', true],
-    ['SCAN_ONCE_ENTER_QTY', true],
-    ['MANUAL', false],
-    [undefined, false],
-    [null, false],
-    ['', false],
-    ['SOMETHING_ELSE', false],
-  ])('isLabelRequired(%p) = %p', (code, expected) => {
-    expect(isLabelRequired(code)).toBe(expected);
-  });
 });
 
 describe('CUQtyEntryMode.getCUQtyEntryPolicy', () => {
   it.each([
-    ['MANUAL', { isLabelRequired: false, isPackIdRequired: false, isScanOnce: false }],
+    ['MANUAL', MANUAL_POLICY],
     ['SCAN_EACH_CU', { isLabelRequired: true, isPackIdRequired: true, isScanOnce: false }],
     ['SCAN_ONCE_ENTER_QTY', { isLabelRequired: true, isPackIdRequired: false, isScanOnce: true }],
-    [undefined, { isLabelRequired: false, isPackIdRequired: false, isScanOnce: false }],
-    ['SOMETHING_ELSE', { isLabelRequired: false, isPackIdRequired: false, isScanOnce: false }],
+    [undefined, MANUAL_POLICY],
+    [null, MANUAL_POLICY],
+    ['', MANUAL_POLICY],
+    ['SOMETHING_ELSE', MANUAL_POLICY],
+    ['toString', MANUAL_POLICY],
   ])('%p', (code, expected) => {
     expect(getCUQtyEntryPolicy(code)).toEqual(expected);
-  });
-
-  it('the predicates read the policy', () => {
-    expect(isScanOnce('SCAN_ONCE_ENTER_QTY')).toBe(true);
-    expect(isScanOnce('SCAN_EACH_CU')).toBe(false);
-    expect(isScanEachCU('SCAN_EACH_CU')).toBe(true);
-    expect(isScanEachCU('SCAN_ONCE_ENTER_QTY')).toBe(false);
   });
 });

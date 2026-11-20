@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * CU quantity entry: {@link PackToHURequest#isCuQtyEntry()}.
+ * CU quantity entry: {@link PackToHURequest#isBookAsSingleCUInBox()}.
  * Every case builds the request like the pick command does: checkIfAlreadyPacked(true), createInventoryForMissingQty(true).
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -121,7 +121,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.documentRef(TableRecordReference.of(source))
 				.checkIfAlreadyPacked(true)
 				.createInventoryForMissingQty(true)
-				.isCuQtyEntry(isNewModes)
+				.isBookAsSingleCUInBox(isNewModes)
 				.build());
 	}
 

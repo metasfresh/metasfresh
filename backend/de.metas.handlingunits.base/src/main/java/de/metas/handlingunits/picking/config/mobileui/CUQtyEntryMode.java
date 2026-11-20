@@ -19,15 +19,18 @@ import static org.compiere.model.X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_S
 @Getter
 public enum CUQtyEntryMode implements ReferenceListAwareEnum
 {
-	MANUAL(CUQTYENTRYMODE_MANUAL),
-	SCAN_EACH_CU(CUQTYENTRYMODE_SCAN_EACH_CU),
-	SCAN_ONCE_ENTER_QTY(CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY);
+	MANUAL(CUQTYENTRYMODE_MANUAL, CUQtyEntryPolicy.MANUAL),
+	SCAN_EACH_CU(CUQTYENTRYMODE_SCAN_EACH_CU, CUQtyEntryPolicy.SCAN_EACH_CU),
+	SCAN_ONCE_ENTER_QTY(CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY, CUQtyEntryPolicy.SCAN_ONCE_ENTER_QTY);
 
 	public static final CUQtyEntryMode DEFAULT = MANUAL;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CUQtyEntryMode> index = ReferenceListAwareEnums.index(values());
 
 	private final String code;
+
+	/** what this mode means for a pick; ask it instead of comparing modes */
+	@NonNull private final CUQtyEntryPolicy policy;
 
 	@NonNull
 	public static CUQtyEntryMode ofCode(@NonNull final String code)
@@ -39,21 +42,5 @@ public enum CUQtyEntryMode implements ReferenceListAwareEnum
 	public static CUQtyEntryMode ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
-	}
-
-	/** @return what this mode means for a pick; ask it instead of comparing modes */
-	public CUQtyEntryPolicy getPolicy()
-	{
-		switch (this)
-		{
-			case MANUAL:
-				return CUQtyEntryPolicy.MANUAL;
-			case SCAN_EACH_CU:
-				return CUQtyEntryPolicy.SCAN_EACH_CU;
-			case SCAN_ONCE_ENTER_QTY:
-				return CUQtyEntryPolicy.SCAN_ONCE_ENTER_QTY;
-			default:
-				throw new IllegalStateException("No policy for " + this);
-		}
 	}
 }

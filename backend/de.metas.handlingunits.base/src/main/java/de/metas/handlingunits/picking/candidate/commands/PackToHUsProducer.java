@@ -117,7 +117,7 @@ public class PackToHUsProducer
 		 * CU quantity entry modes only: the source HU(s) are merged into ONE new CU of {@link #qtyPicked} before packing, the booked CU stays a separate HU
 		 * inside a partial TU (also without LU) and the 'already packed' shortcut is skipped.
 		 */
-		boolean isCuQtyEntry;
+		boolean isBookAsSingleCUInBox;
 		@NonNull @Builder.Default ImmutableSet<HuId> allowedReservedVhuIds = ImmutableSet.of();
 	}
 
@@ -197,7 +197,7 @@ public class PackToHUsProducer
 		//
 		// CU quantity entry: the booked quantity becomes ONE new CU, even if it was taken from several source pieces
 		final PickFromHUsList pickFromHUsToPack;
-		if (request.isCuQtyEntry())
+		if (request.isBookAsSingleCUInBox())
 		{
 			pickFromHUsToPack = consolidateToSingleCU(request, pickFromHUs);
 		}
@@ -209,9 +209,9 @@ public class PackToHUsProducer
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions.
-		// Skipped for CU quantity entry (isCuQtyEntry): a source box holding exactly the booked quantity must not become the box,
+		// Skipped for CU quantity entry (isBookAsSingleCUInBox): a source box holding exactly the booked quantity must not become the box,
 		// else the picked HU would be the whole box and not the booked CU.
-		if (!request.isCuQtyEntry()
+		if (!request.isBookAsSingleCUInBox()
 				&& packToInfo.getLu() == null
 				&& packToInfo.getTu().isNewTU()
 				&& pickFromHUsToPack.isSingleHUAlreadyPacked(checkIfAlreadyPacked, productId, qtyPicked, packToInfo.getTu().getTuPIIdNotNull()))
@@ -252,7 +252,7 @@ public class PackToHUsProducer
 			if (luRecord == null)
 			{
 				// CU quantity entry: the booked CU is the picked HU, not the whole box (same shape as the pallet case below)
-				return request.isCuQtyEntry()
+				return request.isBookAsSingleCUInBox()
 						? LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cuRecord)))
 						: LUTUResult.ofSingleTopLevelTU(tuRecord);
 			}
@@ -290,7 +290,7 @@ public class PackToHUsProducer
 			if (packToDestination instanceof ILUTUProducerAllocationDestination)
 			{
 				final LUTUResult producedResult = ((ILUTUProducerAllocationDestination)packToDestination).getResult();
-				result = request.isCuQtyEntry() && packToInfo.getLu() == null
+				result = request.isBookAsSingleCUInBox() && packToInfo.getLu() == null
 						? toPartialTUWithItsSingleCU(producedResult)
 						: producedResult;
 			}

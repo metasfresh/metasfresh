@@ -216,7 +216,7 @@ public class PickingCULabelService
 				.max(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
 				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant)
 				.orElse(null);
-		return new PackIdZone(
+		return PackIdZone.ofStartAndEnd(
 				precedingMarker != null ? precedingMarker.getStartPosition() : packIdPart.getStartPosition(),
 				packIdPart.getStartPosition());
 	}
@@ -241,7 +241,7 @@ public class PickingCULabelService
 				.filter(start -> start > zoneStart)
 				.min()
 				.orElse(markerEnd));
-		return new PackIdZone(zoneStart, zoneEnd);
+		return PackIdZone.ofStartAndEnd(zoneStart, zoneEnd);
 	}
 
 	/** @return true if the parts in front of the pack ID zone read the label: the label was scanned right, it just has no pack ID */
@@ -269,6 +269,8 @@ public class PickingCULabelService
 	{
 		int start;
 		int end;
+
+		static PackIdZone ofStartAndEnd(final int start, final int end) {return new PackIdZone(start, end);}
 	}
 
 	private static AdempiereException userError(@NonNull final AdMessageKey messageKey, final Object... params)

@@ -28,12 +28,3 @@ const POLICIES = {
 /** @returns the policy of the code; MANUAL's for an absent or unknown code */
 export const getCUQtyEntryPolicy = (code) =>
   Object.prototype.hasOwnProperty.call(POLICIES, code) ? POLICIES[code] : POLICY_MANUAL;
-
-/** @returns true for "scan once, enter quantity"; false for any other code and for an absent one */
-export const isScanOnce = (code) => getCUQtyEntryPolicy(code).isScanOnce;
-
-/** @returns true for "scan each CU"; false for any other code and for an absent one */
-export const isScanEachCU = (code) => getCUQtyEntryPolicy(code).isPackIdRequired;
-
-/** @returns true for the modes that read a CU label; false for MANUAL and for an absent / unknown code */
-export const isLabelRequired = (code) => getCUQtyEntryPolicy(code).isLabelRequired;

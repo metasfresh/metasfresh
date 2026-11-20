@@ -414,6 +414,14 @@ class PickingJobCUQtyEntryPickTest
 		return job.getTuPickingTargetEffective(line.getId()).orElseThrow(() -> new AssertionError("no TU target"));
 	}
 
+	private static long countAllQtyPickedRows()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+	}
+
 	private static long countQtyPickedRowsOfCU(final HuId cuId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
@@ -794,8 +802,46 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		/**
+		 * Manual, CU line, pallet (LU) target and no box (TU): the real pick (the LU_CU structure, as in the over-picking Playwright spec)
+		 * puts the booked CU directly on the pallet. It is not a CU in a box, so the un-pick does not take the CU-in-box path and runs exactly
+		 * the code of before this feature: the HU is not picked any more, the line has nothing picked, and the QtyPicked row of the CU is
+		 * left as it is on the base branch (checked by running this test with the CU-in-box delete removed from the un-pick: same result).
+		 * That leftover row is a base behaviour, pinned here so a change of the Manual un-pick shows up; it is not a new one.
+		 */
+		@Test
+		void manual_cuPickedOntoPallet_unpick_restoresAsBase()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LUCU");
+			final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-CU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			huTestHelper.createHU_PI_Item_IncludedHU(luPI, huTestHelper.huDefVirtual, new BigDecimal("10"));
+			PickingJob job = createJob(null, true); // virtual packing = a CU line
+			job = helper.pickingJobService.setLUPickingTarget(job, targetScope(job), LUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()), "LU-CU"));
+
+			job = pick(job, source, "2", null, false, LOT_A);
+
+			final HuId pickedHuId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+			final I_M_HU pickedHU = handlingUnitsBL.getById(pickedHuId);
+			assertThat(handlingUnitsBL.isVirtual(pickedHU)).as("the picked HU is a CU").isTrue();
+			assertThat(handlingUnitsBL.getLoadingUnitHU(pickedHU)).as("on the pallet").isNotNull();
+			assertThat(handlingUnitsBL.getTransportUnitHU(pickedHU)).as("no box (TU) around it").satisfies(tu -> assertThat(tu == null || !handlingUnitsBL.isTransportUnit(tu)).isTrue());
+			assertThat(helper.huService.isCUInTU(pickedHU)).isFalse();
+			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("the pick booked its QtyPicked row").isEqualTo(1);
+			assertThat(countAllQtyPickedRows()).isEqualTo(1);
+
+			job = undo(job, pickedHuId, source.getQrCode(), null);
+
+			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("QtyPicked row of the CU: left, as on base").isEqualTo(1);
+			assertThat(countAllQtyPickedRows()).as("no other QtyPicked row was touched").isEqualTo(1);
+			assertThat(handlingUnitsBL.getById(pickedHuId).getHUStatus()).as("not picked any more").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
+		}
+
+		/**
 		 * A CU that sits directly on a pallet (LU), without a box (TU), is not a CU in a box: the un-pick's CU-in-box delete (and the
-		 * GRAI check on the box) must not treat it as one; Manual un-pick of such a CU stays as before this feature.
+		 * GRAI check on the box) must not treat it as one. The tree is hand-built; the real pick's result is pinned by
+		 * {@code manual_cuPickedOntoPallet_unpick_restoresAsBase}.
 		 */
 		@Test
 		void cuDirectlyOnPallet_isNotACUInABox()

@@ -776,13 +776,24 @@ public class PickingJobService implements PickingSlotListener
 
 	private PickingJob closeTargetsPerNewModeLineSlot(@NonNull final PickingJob pickingJob, @NonNull final List<PickingJobLine> newModeLines)
 	{
-		PickingJob pickingJobChanged = closeLUAndTUPickingTargets(pickingJob, true, false, null, false);
+		PickingJob pickingJobChanged = closeHeaderTargets(pickingJob);
 		for (final PickingJobLine line : newModeLines)
 		{
-			pickingJobChanged = closeLUAndTUPickingTargets(pickingJobChanged, false, true, line.getId(), false);
+			pickingJobChanged = closeLineTargets(pickingJobChanged, line.getId());
 		}
 		// the remaining (Manual) lines: as before, on the slot scanned last
-		return closeLUAndTUPickingTargets(pickingJobChanged, false, true, null, false);
+		return closeLineTargets(pickingJobChanged, null);
+	}
+
+	private PickingJob closeHeaderTargets(@NonNull final PickingJob pickingJob)
+	{
+		return closeLUAndTUPickingTargets(pickingJob, true, false, null, false);
+	}
+
+	/** @param lineId null = the targets of all lines */
+	private PickingJob closeLineTargets(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		return closeLUAndTUPickingTargets(pickingJob, false, true, lineId, false);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(
