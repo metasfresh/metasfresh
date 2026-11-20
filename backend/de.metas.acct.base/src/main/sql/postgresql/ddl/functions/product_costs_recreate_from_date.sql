@@ -68,6 +68,7 @@ $BODY$
 DECLARE
     v_productIds      numeric[];
     v_costingLevel    char(1);
+    v_AD_Client_ID    numeric;
     v_orgIds          numeric[];
     v_costElement                      m_costelement%rowtype;
     v_IsManualCostPrice                boolean; -- true if we are dealing with manual cost price (i.e. M_Cost.CurrentCostPrice is set by user and we MUST keep it)
@@ -109,10 +110,11 @@ BEGIN
 
     --
     -- Validate parameter: Accounting Schema
-    -- => extract eligible Orgs
+    -- => extract client and eligible Orgs
+    -- Only documents of the accounting schema's client are selected, un-posted and enqueued.
     --
-    SELECT cas.costinglevel
-    INTO v_costingLevel
+    SELECT cas.ad_client_id, cas.costinglevel
+    INTO v_AD_Client_ID, v_costingLevel
     FROM c_acctschema cas
     WHERE cas.c_acctschema_id = p_C_AcctSchema_ID;
     IF (v_costingLevel = 'C') THEN
@@ -121,12 +123,12 @@ BEGIN
         SELECT ARRAY_AGG(org.ad_org_id ORDER BY org.ad_org_id)
         INTO v_orgIds
         FROM ad_org org
-        WHERE org.ad_client_id = 1000000
+        WHERE org.ad_client_id = v_AD_Client_ID
           AND org.ad_org_id != 0;
     ELSE
         RAISE EXCEPTION 'Costing level `%` not supported for C_AcctSchema_ID=%', v_costingLevel, p_C_AcctSchema_ID;
     END IF;
-    RAISE NOTICE 'p_C_AcctSchema_ID=%: CostingLevel=%', p_C_AcctSchema_ID, v_costingLevel;
+    RAISE NOTICE 'p_C_AcctSchema_ID=%: AD_Client_ID=%, CostingLevel=%', p_C_AcctSchema_ID, v_AD_Client_ID, v_costingLevel;
     RAISE NOTICE 'Orgs: %', v_orgIds;
 
     --
@@ -167,7 +169,7 @@ BEGIN
     WHERE m_product_id = ANY (v_productIds)
       AND tablename <> 'C_Invoice'
       AND dateacct >= p_StartDateAcct
-      AND ad_client_id = 1000000;
+      AND ad_client_id = v_AD_Client_ID;
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     RAISE NOTICE 'Selected % documents to be reposted', rowcount;
 
@@ -258,7 +260,8 @@ BEGIN
     --
     IF (p_ReorderDocs = 'Y') THEN
         PERFORM "de_metas_acct".accounting_docs_to_repost_reorder(
-                p_DateAcct_Trunc := p_ReorderDocs_DateAcct_Trunc
+                p_DateAcct_Trunc := p_ReorderDocs_DateAcct_Trunc,
+                p_AD_Client_ID := v_AD_Client_ID
             );
         v_result := v_result || 'reordered enqueued docs';
     END IF;
