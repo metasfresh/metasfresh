@@ -255,20 +255,11 @@ public final class SqlViewSelectionQueryBuilder
 				SqlOptions.usingTableAlias(sqlTableAlias),
 				filterConverterCtx.withViewId(newViewId));
 
-		SqlAndParams sqlOrderBy_FTS_Line = SqlAndParams.EMPTY;
-		SqlAndParams sqlJoinFTSTable = SqlAndParams.EMPTY;
 		boolean isAnyFilterApplied = false;
-		if (filterSqlExpression.getFilterByFTS() != null)
-		{
-			sqlOrderBy_FTS_Line = filterSqlExpression.getFilterByFTS().buildOrderBy("fts");
-			sqlJoinFTSTable = filterSqlExpression.getFilterByFTS().buildInnerJoinClause(sqlTableAlias, "fts");
-			isAnyFilterApplied = true;
-		}
 
 		final SqlAndParamsExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
 				.joinOnTableNameOrAlias(sqlTableAlias)
 				.useColumnNameAlias(false)
-				.beforeOrderBy(sqlOrderBy_FTS_Line)
 				.beforeOrderBy(filterSqlExpression.getOrderBy())
 				.buildSqlOrderBy(orderBys)
 				.orElseGet(() -> SqlAndParamsExpression.of(keyColumnNamesMap.getKeyColumnNamesCommaSeparated(sqlTableAlias)));
@@ -291,7 +282,6 @@ public final class SqlViewSelectionQueryBuilder
 								.append("\n, ").append(keyColumnNamesMap.getKeyColumnNamesCommaSeparated(sqlTableAlias)) // keys
 								//
 								.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
-								.append(sqlJoinFTSTable)
 								.append("\n WHERE 1=1 ")
 								.wrap(securityRestrictionsWrapper(sqlTableAlias)) // security
 				);
@@ -341,10 +331,6 @@ public final class SqlViewSelectionQueryBuilder
 				filters,
 				SqlOptions.usingTableAlias(sqlTableAlias),
 				filterConverterCtx.withViewId(newViewId));
-		if (filterSqlExpression.getFilterByFTS() != null)
-		{
-			throw new AdempiereException("Full Text Search filtering not supported when grouping" + filterSqlExpression);
-		}
 		if (filterSqlExpression.getOrderBy() != null)
 		{
 			throw new AdempiereException("Filter ORDER BY not supported when grouping: " + filterSqlExpression);
@@ -493,7 +479,6 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		// Document filters
-		FilterSql.FullTextSearchResult filterByFTS = null;
 		FilterSql.RecordsToAlwaysIncludeSql alwaysIncludeSql = null;
 		SqlAndParams sqlOrderBy = null;
 		if (filters != null && !filters.isEmpty())
@@ -505,14 +490,12 @@ public final class SqlViewSelectionQueryBuilder
 				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(filtersSql.getWhereClause()).append(")\n");
 			}
 
-			filterByFTS = filtersSql.getFilterByFTS();
 			alwaysIncludeSql = filtersSql.getAlwaysIncludeSql();
 			sqlOrderBy = filtersSql.getOrderBy();
 		}
 
 		return FilterSqlExpression.builder()
 				.whereClause(sqlWhereClauseBuilder.build())
-				.filterByFTS(filterByFTS)
 				.alwaysIncludeSql(alwaysIncludeSql)
 				.orderBy(sqlOrderBy)
 				.build();
@@ -524,8 +507,6 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		@Getter(AccessLevel.NONE)
 		@Nullable SqlAndParamsExpression whereClause;
-
-		@Nullable FilterSql.FullTextSearchResult filterByFTS;
 
 		@Getter(AccessLevel.NONE)
 		@Nullable FilterSql.RecordsToAlwaysIncludeSql alwaysIncludeSql;
@@ -653,11 +634,6 @@ public final class SqlViewSelectionQueryBuilder
 				}
 			}
 
-			if (filterSql.getFilterByFTS() != null)
-			{
-				sqlSourceTableBuilder.append(", ").append(filterSql.getFilterByFTS().buildOrderBy("fts")).append(" AS _fts_line");
-			}
-
 			if (sourceRelationSql != null)
 			{
 				sqlSourceTableBuilder.append("\n FROM ").append(sourceRelationSql + " " + getTableName(), sourceRelationParams.toArray());
@@ -665,11 +641,6 @@ public final class SqlViewSelectionQueryBuilder
 			else
 			{
 				sqlSourceTableBuilder.append("\n FROM ").append(getTableName());
-			}
-
-			if (filterSql.getFilterByFTS() != null)
-			{
-				sqlSourceTableBuilder.append(filterSql.getFilterByFTS().buildInnerJoinClause(getTableName(), "fts"));
 			}
 
 			if (filterSql.getWhereClause() != null && !filterSql.getWhereClause().isEmpty())
@@ -688,7 +659,6 @@ public final class SqlViewSelectionQueryBuilder
 		final SqlAndParams sqlOrderBys = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
 				.joinOnTableNameOrAlias(sqlTableAlias)
 				.useColumnNameAlias(useColumnNameAlias)
-				.beforeOrderBy(filterSql.getFilterByFTS() != null ? "_fts_line" : null)
 				.beforeOrderBy(filterSql.getOrderBy())
 				.buildSqlOrderBy(orderBysEffective)
 				.map(sqlOrderBysExpr -> sqlOrderBysExpr.evaluate(viewEvalCtx.toEvaluatee()))
