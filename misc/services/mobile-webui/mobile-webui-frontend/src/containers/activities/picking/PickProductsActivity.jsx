@@ -43,12 +43,13 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const dispatch = useDispatch();
 
   const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
-  const quickPackAllAllowed = isQuickPackAllAllowed({
+  const isQuickPackAllAllowedForJob = isQuickPackAllAllowed({
     allowQuickPackAll,
     lines: getLinesArrayFromActivity(activity),
   });
-  const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: quickPackAllAllowed });
-  const isShowQuickPackAllButton = quickPackAllAllowed && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
+  const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: isQuickPackAllAllowedForJob });
+  const isShowQuickPackAllButton =
+    isQuickPackAllAllowedForJob && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
 
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 

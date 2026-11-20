@@ -131,20 +131,21 @@ public class PickingJobHUService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
 
-	/**
-	 * @param pickedCUsAreInBoxes {@code true} when the picks were booked in a CU quantity entry mode, i.e. the picked HU is the CU inside the open box (TU).
-	 *                            The GRAI of such a pick is stored on the box and a CU has no GRAI snapshot of its own, so every picked CU (virtual, non-aggregate HU) is replaced by its TU.
-	 *                            {@code false} (Manual mode): the picked HUs are used as they are.
-	 */
+	/** The picked HUs as they are (Manual mode). */
 	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds, final boolean pickedCUsAreInBoxes)
+	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
 	{
-		return huGraiService.getSnapshots(pickedCUsAreInBoxes ? toGraiCarrierHuIds(huIds) : huIds);
+		return huGraiService.getSnapshots(huIds);
 	}
 
-	public boolean isCUQtyEntryNewMode(@Nullable final BPartnerId customerId)
+	/**
+	 * The picks were booked in a CU quantity entry mode, i.e. the picked HU is the CU inside the open box (TU).
+	 * The GRAI of such a pick is stored on the box and a CU has no GRAI snapshot of its own, so every picked CU (virtual, non-aggregate HU in a TU) is replaced by its TU.
+	 */
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds)
 	{
-		return configService.getPickingJobOptions(customerId).getCUQtyEntryModeOrDefault().isNewMode();
+		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds));
 	}
 
 	/**
@@ -158,9 +159,9 @@ public class PickingJobHUService
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
-			if (isCUInsideBox(hu))
+			if (isCUInTU(hu))
 			{
-				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getGraiCarrierHuId(hu)));
+				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getTUIdOrSelf(hu)));
 			}
 			else
 			{
@@ -171,19 +172,31 @@ public class PickingJobHUService
 	}
 
 	/**
-	 * @return true for a CU (virtual HU) that sits in a TU (box) of its own, false for a top-level CU and for an aggregated TU (also a
-	 * virtual HU, but it stands for TUs on an LU)
+	 * @return true for a CU (virtual HU) whose parent is a TU (box); false for a top-level CU, for a CU directly on an LU (no box) and for an
+	 * aggregated TU (also a virtual HU, but it stands for TUs on an LU)
 	 */
-	public boolean isCUInsideBox(@NonNull final I_M_HU hu)
+	public boolean isCUInTU(@NonNull final I_M_HU hu)
 	{
-		return handlingUnitsBL.isVirtual(hu) && !handlingUnitsBL.isAggregateHU(hu) && hu.getM_HU_Item_Parent_ID() > 0;
+		return handlingUnitsBL.isVirtual(hu)
+				&& !handlingUnitsBL.isAggregateHU(hu)
+				&& hu.getM_HU_Item_Parent_ID() > 0
+				&& getTU(hu) != null;
 	}
 
-	@NonNull
-	private HuId getGraiCarrierHuId(@NonNull final I_M_HU cu)
+	/** @return the TU the HU is in, or null if it is not in a TU (top-level, or directly on an LU) */
+	@Nullable
+	private I_M_HU getTU(@NonNull final I_M_HU hu)
 	{
-		final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(cu);
-		return HuId.ofRepoId(tu != null && handlingUnitsBL.isTransportUnit(tu) ? tu.getM_HU_ID() : cu.getM_HU_ID());
+		final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(hu);
+		return tu != null && handlingUnitsBL.isTransportUnit(tu) ? tu : null;
+	}
+
+	/** @return the id of the TU the HU is in; the HU's own id if it is not in a TU */
+	@NonNull
+	private HuId getTUIdOrSelf(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU tu = getTU(hu);
+		return HuId.ofRepoId((tu != null ? tu : hu).getM_HU_ID());
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)

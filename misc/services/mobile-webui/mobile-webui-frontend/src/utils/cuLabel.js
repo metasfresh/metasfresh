@@ -72,11 +72,11 @@ const isEndingBeforePackId = ({ string, format }) => {
 /**
  * Reads a CU label with the line's effective format only (no GS1, EAN13 or global QR code).
  *
- * @param requirePackId Scan each CU: the label must carry a pack ID, else `picking.cuLabel.noPackId` (also for a label
+ * @param isPackIdRequired Scan each CU: the label must carry a pack ID, else `picking.cuLabel.noPackId` (also for a label
  * that ends before the "92" marker / the pack ID part)
  * @returns {{productNo, lotNo, bestBeforeDate, packId}} or {errorKey} (translation key)
  */
-export const readCULabel = ({ string, format, requirePackId = false }) => {
+export const readCULabel = ({ string, format, isPackIdRequired = false }) => {
   if (!format) {
     return { errorKey: ERROR_noFormat };
   }
@@ -84,10 +84,10 @@ export const readCULabel = ({ string, format, requirePackId = false }) => {
   const parsed = parseCustomQRCode({ string, format });
   if (!parsed || parsed.error) {
     return {
-      errorKey: requirePackId && isEndingBeforePackId({ string, format }) ? ERROR_noPackId : ERROR_formatMismatch,
+      errorKey: isPackIdRequired && isEndingBeforePackId({ string, format }) ? ERROR_noPackId : ERROR_formatMismatch,
     };
   }
-  if (requirePackId && !parsed.packId) {
+  if (isPackIdRequired && !parsed.packId) {
     return { errorKey: ERROR_noPackId };
   }
 
@@ -109,9 +109,9 @@ export const resolveCULabel = ({
   format,
   expectedProductNo,
   expectedGS1ProductCodes,
-  requirePackId = false,
+  isPackIdRequired = false,
 }) => {
-  const label = readCULabel({ string, format, requirePackId });
+  const label = readCULabel({ string, format, isPackIdRequired });
   if (label.errorKey) {
     return label;
   }

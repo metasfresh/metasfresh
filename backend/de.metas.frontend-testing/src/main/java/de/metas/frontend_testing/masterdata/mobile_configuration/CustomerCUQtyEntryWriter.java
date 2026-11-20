@@ -40,18 +40,29 @@ final class CustomerCUQtyEntryWriter
 			@Nullable final ScannableCodeFormatId cuLabelFormatId)
 	{
 		final MobileUIPickingUserProfile profile = profileService.getProfile();
-		final PickingCustomerConfig customerConfig = StreamSupport.stream(profile.getCustomerConfigs().spliterator(), false)
-				.filter(config -> BPartnerId.equals(config.getCustomerId(), customerId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("Customer " + customerId + " is not a customer of the picking profile; it must be listed in mobileConfig.picking.customers"));
+		final PickingCustomerConfigsCollection customerConfigs = profile.getCustomerConfigs();
+		if (!customerConfigs.getCustomerIds().contains(customerId))
+		{
+			throw new AdempiereException("Customer " + customerId + " is not a customer of the picking profile; it must be listed in mobileConfig.picking.customers");
+		}
 
-		final PickingJobOptionsId existingJobOptionsId = customerConfig.getPickingJobOptionsId();
+		final PickingJobOptionsId existingJobOptionsId = customerConfigs.getPickingJobOptionsId(customerId).orElse(null);
 		if (existingJobOptionsId != null)
 		{
 			profileService.updatePickingJobOptionsCUQtyEntry(existingJobOptionsId, cuQtyEntryMode, cuLabelFormatId);
-			return;
 		}
+		else
+		{
+			createAndLinkJobOptions(profile, customerId, cuQtyEntryMode, cuLabelFormatId);
+		}
+	}
 
+	private void createAndLinkJobOptions(
+			@NonNull final MobileUIPickingUserProfile profile,
+			@NonNull final BPartnerId customerId,
+			@Nullable final CUQtyEntryMode cuQtyEntryMode,
+			@Nullable final ScannableCodeFormatId cuLabelFormatId)
+	{
 		if (cuQtyEntryMode == null && cuLabelFormatId == null)
 		{
 			return; // nothing to reset: the customer has no own job options row

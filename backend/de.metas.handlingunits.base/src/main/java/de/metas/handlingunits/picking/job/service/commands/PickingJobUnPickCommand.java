@@ -233,7 +233,7 @@ public class PickingJobUnPickCommand
 
 	private void deleteQtyPickedOfCUInBox(@NonNull final HuId huId, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		if (huService.isCUInsideBox(huService.getById(huId)))
+		if (huService.isCUInTU(huService.getById(huId)))
 		{
 			shipmentScheduleService.deleteByVHUAndShipmentScheduleId(huId, shipmentScheduleId);
 		}

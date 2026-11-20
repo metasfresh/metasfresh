@@ -359,7 +359,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
 		record.setCUQtyEntryMode(from.getCUQtyEntryModeOrDefault().getCode());
-		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCuLabelFormatId().orElse(null)));
+		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCULabelFormatId().orElse(null)));
 	}
 
 	private static void updateRecord(final @NonNull I_MobileUI_UserProfile_Picking record, final AllowedPickToStructures from)
@@ -496,7 +496,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
 		record.setCUQtyEntryMode(from.getCUQtyEntryMode().map(CUQtyEntryMode::getCode).orElse(null)); // empty = use the profile's
-		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCuLabelFormatId().orElse(null)));
+		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCULabelFormatId().orElse(null)));
 		InterfaceWrapperHelper.saveRecord(record);
 		return PickingJobOptionsId.ofRepoId(record.getMobileUI_UserProfile_Picking_Job_ID());
 	}

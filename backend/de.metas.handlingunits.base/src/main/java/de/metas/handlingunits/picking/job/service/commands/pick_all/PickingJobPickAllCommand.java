@@ -60,9 +60,9 @@ public class PickingJobPickAllCommand
 	 */
 	private void assertNoLineUsesNewCUQtyEntryMode(final PickingJob pickingJob)
 	{
-		final boolean anyLineInNewMode = pickingJob.getLines().stream()
-				.anyMatch(line -> configService.getPickingJobOptions(line.getCustomerId()).getCUQtyEntryModeOrDefault().isNewMode());
-		if (anyLineInNewMode)
+		final boolean isAnyLineInNewMode = pickingJob.getLines().stream()
+				.anyMatch(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired());
+		if (isAnyLineInNewMode)
 		{
 			throw new AdempiereException(MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED).markAsUserValidationError();
 		}

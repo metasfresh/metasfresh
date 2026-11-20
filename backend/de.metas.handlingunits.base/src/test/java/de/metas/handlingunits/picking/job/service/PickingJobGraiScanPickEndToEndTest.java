@@ -264,7 +264,7 @@ class PickingJobGraiScanPickEndToEndTest
 		// The completion-time GRAI validator reads exactly these picked HU ids and calls assertAllGraisAssigned().
 		line = CollectionUtils.singleElement(pickingJob.getLines());
 		assertThat(line.getPickedHUIds()).as("the pick must have produced picked HU(s)").isNotEmpty();
-		helper.huService.getGraiSnapshots(line.getPickedHUIds(), false)
+		helper.huService.getGraiSnapshots(line.getPickedHUIds())
 				.assertAllGraisAssigned();
 	}
 
@@ -296,7 +296,7 @@ class PickingJobGraiScanPickEndToEndTest
 		});
 
 		final HUGraiSnapshot snapshot = CollectionUtils.singleElement(
-				ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(tuId), false)));
+				ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(tuId))));
 		assertThat(snapshot.getAllGrais().toSet())
 				.as("the scanned GRAI must be stamped on the TU and readable back")
 				.containsExactly(grai);
@@ -416,7 +416,7 @@ class PickingJobGraiScanPickEndToEndTest
 		// The completion-time GRAI validator reads exactly these picked HU ids and calls assertAllGraisAssigned().
 		final PickingJobLine pickedLine = CollectionUtils.singleElement(pickingJob.getLines());
 		assertThat(pickedLine.getPickedHUIds()).as("the pick must have produced picked HU(s)").isNotEmpty();
-		helper.huService.getGraiSnapshots(pickedLine.getPickedHUIds(), false)
+		helper.huService.getGraiSnapshots(pickedLine.getPickedHUIds())
 				.assertAllGraisAssigned();
 	}
 
@@ -570,7 +570,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId cuId = createBoxWithCU(productId).getCuId();
 
-			assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(cuId), true).assertAllGraisAssigned())
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(cuId)).assertAllGraisAssigned())
 					.as("a CU in a box without GRAI must fail the GRAI count check")
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
@@ -584,7 +584,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final BoxWithCU box = createBoxWithCU(productId);
 			setGraiOnBox(box.getTuId(), GRAI.parse(GRAI_CANONICAL));
 
-			helper.huService.getGraiSnapshots(ImmutableSet.of(box.getCuId()), true).assertAllGraisAssigned();
+			helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
 		}
 
 		/** Several CUs of the same box are checked once, via their box. */
@@ -594,7 +594,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final BoxWithCU box = createBoxWithCU(productId);
 
-			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshots(ImmutableSet.of(box.getCuId(), box.getTuId()), true);
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId(), box.getTuId()));
 
 			assertThat(snapshots).hasSize(1);
 		}
@@ -606,12 +606,12 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId tuId = createBoxWithCU(productId).getTuId();
 
-			for (final boolean pickedCUsAreInBoxes : new boolean[] { true, false })
-			{
-				assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(tuId), pickedCUsAreInBoxes).assertAllGraisAssigned())
-						.isInstanceOf(AdempiereException.class)
-						.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
-			}
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 		}
 
 		/**
@@ -624,7 +624,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId cuId = createBoxWithCU(productId).getCuId();
 
-			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshots(ImmutableSet.of(cuId), false);
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshots(ImmutableSet.of(cuId));
 
 			assertThat(snapshots).isEmpty();
 			snapshots.assertAllGraisAssigned();
@@ -639,11 +639,11 @@ class PickingJobGraiScanPickEndToEndTest
 			final DummyGRAIProvider dummyGRAIProvider = new DummyGRAIProvider(DummyGRAITemplate.migros("1234567890"), 1);
 			final GRAI expectedGrai = DummyGRAITemplate.migros("1234567890").buildGRAI(1);
 
-			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshots(ImmutableSet.of(box.getCuId()), true);
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId()));
 			Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> helper.huService.generateMissingGRAIs(snapshots, dummyGRAIProvider));
 
 			assertThat(helper.huService.getGrais(box.getTuId())).isEqualTo(GRAISet.of(expectedGrai));
-			helper.huService.getGraiSnapshots(ImmutableSet.of(box.getCuId()), true).assertAllGraisAssigned();
+			helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
 		}
 	}
 

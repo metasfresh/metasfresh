@@ -16,7 +16,9 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -53,11 +55,12 @@ import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.scannable_code.ScannedCode;
-import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest.Part;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
+import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.user.UserId;
@@ -73,6 +76,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -100,10 +104,6 @@ class PickingJobCUQtyEntryPickTest
 	private static final String GRAI_CANONICAL = "7613204.00307.999999";
 
 	private static final AdMessageKey CU_NO_OPEN_BOX = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
-	private static final AdMessageKey CU_LABEL_FORMAT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_FORMAT_MISMATCH");
-	private static final AdMessageKey CU_LABEL_ALREADY_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED");
-	private static final AdMessageKey CU_LABEL_NO_PACK_ID = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_PACK_ID");
-	private static final AdMessageKey HU_PRODUCT_NOT_MATCHING = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
 
 	private PickingJobTestHelper helper;
 	private HUTestHelper huTestHelper;
@@ -118,7 +118,7 @@ class PickingJobCUQtyEntryPickTest
 	@BeforeEach
 	void beforeEach()
 	{
-		helper = new PickingJobTestHelper(() -> new FakePackIdPickingCULabelService(ScannableCodeFormatService.newInstanceForUnitTesting()));
+		helper = new PickingJobTestHelper();
 		huTestHelper = helper.getHuTestHelper();
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		formatService = ScannableCodeFormatService.newInstanceForUnitTesting();
@@ -151,35 +151,14 @@ class PickingJobCUQtyEntryPickTest
 						part(37, 45, ScannableCodeFormatPartType.LotNo),
 						part(46, 46, ScannableCodeFormatPartType.Ignored),
 						constant(47, 48, "92"),
-						part(49, 49, ScannableCodeFormatPartType.Ignored)))
+						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
 				.build());
 	}
 
-	/**
-	 * Fake pack IDs: the label reader has no pack ID part type yet. The pack ID of the fake is the text after the last
-	 * "GS 92" of the raw label; "-" = the label carries none.
-	 */
-	private static class FakePackIdPickingCULabelService extends PickingCULabelService
+	/** @param packId null = a label that ends before the pack ID */
+	private static ScannedCode eachLabel(final String lot, @Nullable final String packId)
 	{
-		FakePackIdPickingCULabelService(final ScannableCodeFormatService scannableCodeFormatService) {super(scannableCodeFormatService);}
-
-		@Override
-		protected CULabelData readCULabelData(final ParsedScannedCode parsed, final ScannedCode label)
-		{
-			final String code = label.getAsString();
-			final String packIdText = code.substring(code.lastIndexOf(GS + "92") + 3);
-			return CULabelData.builder()
-					.productNo(parsed.getProductNo())
-					.lotNo(parsed.getLotNo())
-					.bestBeforeDate(parsed.getBestBeforeDate())
-					.packId("-".equals(packIdText) ? null : packIdText)
-					.build();
-		}
-	}
-
-	private static ScannedCode eachLabel(final String lot, final String packId)
-	{
-		return ScannedCode.ofString("01" + GTIN + "91" + PRODUCT_NO + GS + "17" + "261107" + "10" + lot + GS + "92" + packId);
+		return ScannedCode.ofString("01" + GTIN + "91" + PRODUCT_NO + GS + "17" + "261107" + "10" + lot + GS + "92" + (packId != null ? packId : ""));
 	}
 
 	private static Part constant(final int start, final int end, final String value)
@@ -207,12 +186,12 @@ class PickingJobCUQtyEntryPickTest
 				.build());
 	}
 
-	private PickingJob createJob(@Nullable final HUPIItemProductId packingPiipId, final boolean allowAnyHU)
+	private PickingJob createJob(@Nullable final HUPIItemProductId packingPiipId, final boolean isAllowAnyHU)
 	{
-		return createJob("salesOrderCU", packingPiipId, allowAnyHU);
+		return createJob("salesOrderCU", packingPiipId, isAllowAnyHU);
 	}
 
-	private PickingJob createJob(final String orderDocNo, @Nullable final HUPIItemProductId packingPiipId, final boolean allowAnyHU)
+	private PickingJob createJob(final String orderDocNo, @Nullable final HUPIItemProductId packingPiipId, final boolean isAllowAnyHU)
 	{
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId(orderDocNo);
 		helper.packageable()
@@ -228,7 +207,7 @@ class PickingJobCUQtyEntryPickTest
 								.pickerId(UserId.ofRepoId(1234))
 								.salesOrderId(orderAndLineId.getOrderId())
 								.deliveryBPLocationId(helper.shipToBPLocationId)
-								.isAllowPickingAnyHU(allowAnyHU)
+								.isAllowPickingAnyHU(isAllowAnyHU)
 								.build())
 				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 	}
@@ -464,7 +443,7 @@ class PickingJobCUQtyEntryPickTest
 		final HUInfo source = sourceBox("QR-F");
 		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 
-		assertFails(() -> pick(job, source, "5", label("OTHER99", LOT_A), false, null), HU_PRODUCT_NOT_MATCHING);
+		assertFails(() -> pick(job, source, "5", label("OTHER99", LOT_A), false, null), MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING);
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
@@ -494,7 +473,7 @@ class PickingJobCUQtyEntryPickTest
 		final HuId boxId = openBoxId(job);
 		assertThat(cusOf(boxId)).hasSize(1);
 		assertThat(qtyOf(cusOf(boxId).get(0))).isEqualByComparingTo("5");
-		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(boxId), true))).getAllGrais();
+		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(boxId)))).getAllGrais();
 		assertThat(grais.toSet()).as("GRAI kept on the box").containsExactly(GRAI.parse(GRAI_CANONICAL));
 	}
 
@@ -531,7 +510,7 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("the source box keeps the rest").isEqualByComparingTo("3");
 	}
 
-	/** (j) new mode, open box, PICK with cuLabel = null: refused CU_LABEL_FORMAT_MISMATCH, nothing booked. */
+	/** (j) new mode, open box, PICK with cuLabel = null: refused PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH, nothing booked. */
 	@Test
 	void j_newMode_noCuLabel_refused()
 	{
@@ -539,7 +518,7 @@ class PickingJobCUQtyEntryPickTest
 		final HUInfo source = sourceBox("QR-J");
 		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 
-		assertFails(() -> pick(job, source, "5", null, false, null), CU_LABEL_FORMAT_MISMATCH);
+		assertFails(() -> pick(job, source, "5", null, false, null), PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH);
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
@@ -608,7 +587,7 @@ class PickingJobCUQtyEntryPickTest
 				.count();
 	}
 
-	private PickingJob pickEach(final PickingJob job, final HUInfo source, final String lot, final String packId)
+	private PickingJob pickEach(final PickingJob job, final HUInfo source, final String lot, @Nullable final String packId)
 	{
 		return pick(job, source, "1", eachLabel(lot, packId), false, null);
 	}
@@ -661,7 +640,7 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
 	}
 
-	/** (o) the same (product, lot, pack ID) again in the job: CU_LABEL_ALREADY_PICKED, nothing booked. */
+	/** (o) the same (product, lot, pack ID) again in the job: PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, nothing booked. */
 	@Test
 	void o_repeatedLotAndPackId_refused_nothingBooked()
 	{
@@ -671,7 +650,7 @@ class PickingJobCUQtyEntryPickTest
 		job = pickEach(job, source, LOT_A, "1");
 		final PickingJob jobBefore = job;
 
-		assertFails(() -> pickEach(jobBefore, source, LOT_A, "1"), CU_LABEL_ALREADY_PICKED);
+		assertFails(() -> pickEach(jobBefore, source, LOT_A, "1"), PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED);
 
 		assertThat(cusOf(openBoxId(job))).as("still one CU").hasSize(1);
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
@@ -730,7 +709,7 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(pickedQtyOfLine(job)).as("2 packs picked").isEqualByComparingTo("2");
 		assertThat(pickedHUOfStepWithCU(job, cu1Id).getQrCode()).as("the picked CU carries its own QR code, not the box's").isNotEqualTo(helper.getQRCode(boxId));
 		final PickingJob jobBeforeRescan = job;
-		assertFails(() -> pickEach(jobBeforeRescan, source, LOT_A, "1"), CU_LABEL_ALREADY_PICKED);
+		assertFails(() -> pickEach(jobBeforeRescan, source, LOT_A, "1"), PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED);
 		assertThat(cusOf(boxId)).as("still 2 CU HUs").hasSize(2);
 		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
 
@@ -832,7 +811,7 @@ class PickingJobCUQtyEntryPickTest
 		job = pickEach(job, source, LOT_A, "2");
 
 		final HuId nextBoxId = openBoxId(job);
-		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(nextBoxId), true))).getAllGrais();
+		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(nextBoxId)))).getAllGrais();
 		assertThat(grais.toSet()).as("the next pack's box carries the GRAI").containsExactly(GRAI.parse(GRAI_CANONICAL));
 	}
 
@@ -1010,7 +989,7 @@ class PickingJobCUQtyEntryPickTest
 		final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
 		final I_M_HU box = handlingUnitsBL.getById(boxId);
 		assertThat(handlingUnitsBL.isTransportUnit(box)).as("Manual: the picked HU is the box").isTrue();
-		assertThat(helper.huService.isCUInsideBox(box)).isFalse();
+		assertThat(helper.huService.isCUInTU(box)).isFalse();
 		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(1);
 		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
 
@@ -1019,6 +998,28 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row of the box left").isEqualTo(0);
 		assertThat(pickedQtyOfLine(job)).as("nothing picked any more").isEqualByComparingTo("0");
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
+	}
+
+	/**
+	 * A CU that sits directly on a pallet (LU), without a box (TU), is not a CU in a box: the un-pick's CU-in-box delete (and the
+	 * GRAI check on the box) must not treat it as one; Manual un-pick of such a CU stays as before this feature.
+	 */
+	@Test
+	void cuDirectlyOnPallet_isNotACUInABox()
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Z", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		final I_M_HU_PI_Item luItem = huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
+		final I_M_HU lu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+		lu.setM_HU_PI_Version_ID(handlingUnitsDAO.retrievePICurrentVersion(luPI).getM_HU_PI_Version_ID());
+		InterfaceWrapperHelper.save(lu);
+		final I_M_HU_Item luHUItem = handlingUnitsDAO.createHUItem(lu, luItem);
+
+		final I_M_HU cuOnPallet = handlingUnitsBL.getById(helper.createVHU(productId, "5"));
+		cuOnPallet.setM_HU_Item_Parent_ID(luHUItem.getM_HU_Item_ID());
+		InterfaceWrapperHelper.save(cuOnPallet);
+
+		assertThat(helper.huService.isCUInTU(cuOnPallet)).isFalse();
 	}
 
 	private OrderAndLineId createPackageable(final String orderDocNo, final BPartnerLocationId shipToBPLocationId)
@@ -1125,7 +1126,7 @@ class PickingJobCUQtyEntryPickTest
 		return CollectionUtils.singleElement(job.getLines()).getQtyPicked().toBigDecimal();
 	}
 
-	/** (s) the label carries no pack ID: CU_LABEL_NO_PACK_ID, nothing booked. */
+	/** (s) the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */
 	@Test
 	void s_labelWithoutPackId_refused()
 	{
@@ -1133,7 +1134,7 @@ class PickingJobCUQtyEntryPickTest
 		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-S");
 		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
 
-		assertFails(() -> pickEach(job, source, LOT_A, "-"), CU_LABEL_NO_PACK_ID);
+		assertFails(() -> pickEach(job, source, LOT_A, null), PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID);
 
 		assertNothingBooked(job, source, "100");
 	}
@@ -1147,36 +1148,40 @@ class PickingJobCUQtyEntryPickTest
 		InterfaceWrapperHelper.save(customer);
 	}
 
-	/**
-	 * Completion through the real {@link PickingJobService#complete} wiring: the customer's mode is resolved from its job options
-	 * (not passed as a flag). Scan-each-CU picks the CU itself, which sits in a box without GRAI: the box is the GRAI carrier, so completion is refused.
-	 */
-	@Test
-	void completion_newMode_cuPickedInBoxWithoutGrai_graiRequiredYes_isRefused()
+	@Nested
+	class Completion
 	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		setCustomerGraiRequired(GRAIRequired.Yes);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GRAI-N");
-		final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HU is the CU, not the box").doesNotContain(openBoxId(job));
+		/**
+		 * Completion through the real {@link PickingJobService#complete} wiring: the customer's mode is resolved from its job options
+		 * (not passed as a flag). Scan-each-CU picks the CU itself, which sits in a box without GRAI: the box is the GRAI carrier, so completion is refused.
+		 */
+		@Test
+		void newMode_cuPickedInBoxWithoutGrai_graiRequiredYes_isRefused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			setCustomerGraiRequired(GRAIRequired.Yes);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GRAI-N");
+			final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HU is the CU, not the box").doesNotContain(openBoxId(job));
 
-		assertThatThrownBy(() -> helper.pickingJobService.complete(job))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
-	}
+			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+		}
 
-	/** Manual mode: the picked HU is the box itself (asserted below); the box has no GRAI, so completion is refused. */
-	@Test
-	void completion_manualMode_boxWithoutGrai_graiRequiredYes_isRefusedAsBefore()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		setCustomerGraiRequired(GRAIRequired.Yes);
-		final HUInfo source = sourceBox("QR-GRAI-M");
-		final PickingJob job = pick(openBoxFromLinePacking(createJob(null, true)), source, "5", null, false, null);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HU is the box").containsExactly(openBoxId(job));
+		/** Manual mode: the picked HU is the box itself (asserted below); the box has no GRAI, so completion is refused. */
+		@Test
+		void manualMode_boxWithoutGrai_graiRequiredYes_isRefusedAsBefore()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			setCustomerGraiRequired(GRAIRequired.Yes);
+			final HUInfo source = sourceBox("QR-GRAI-M");
+			final PickingJob job = pick(openBoxFromLinePacking(createJob(null, true)), source, "5", null, false, null);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HU is the box").containsExactly(openBoxId(job));
 
-		assertThatThrownBy(() -> helper.pickingJobService.complete(job))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+		}
 	}
 }

@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -181,61 +182,9 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
-	void scanEachCU_labelEndingBeforeTheMarker_hasNoPackId()
-	{
-		final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
-
-		assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
-	}
-
-	@Test
-	void scanEachCU_labelEndingBeforeThePackIdPart_hasNoPackId()
-	{
-		final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
-
-		assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
-	}
-
-	@Test
-	void scanOnce_labelEndingBeforeThePackIdPart_isFormatMismatch()
-	{
-		final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
-
-		assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
-	}
-
-	@Test
 	void noEffectiveFormat_isRefused()
 	{
 		assertFails(() -> resolve(label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null), CU_LABEL_NO_FORMAT);
-	}
-
-	@Test
-	void scanEachCU_withoutPackId_isRefused()
-	{
-		final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId(null).build();
-
-		assertFails(() -> service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU), CU_LABEL_NO_PACK_ID);
-	}
-
-	@Test
-	void scanEachCU_withPackId_returnsIt()
-	{
-		final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
-
-		final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU);
-		assertThat(resolved).isNotNull();
-		assertThat(resolved.getPackId()).isEqualTo("1");
-	}
-
-	@Test
-	void scanOnce_ignoresThePackId()
-	{
-		final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
-
-		final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		assertThat(resolved).isNotNull();
-		assertThat(resolved.getPackId()).isNull();
 	}
 
 	@Test
@@ -366,5 +315,65 @@ class PickingCULabelServiceTest
 	void formatIdSetButNotResolvable_hasNoFormat()
 	{
 		assertFails(() -> resolve(label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, ScannableCodeFormatId.ofRepoId(999999)), CU_LABEL_NO_FORMAT);
+	}
+
+	@Nested
+	class ScanEachCU
+	{
+		@Test
+		void labelEndingBeforeTheMarker_hasNoPackId()
+		{
+			final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
+
+			assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
+		}
+
+		@Test
+		void labelEndingBeforeThePackIdPart_hasNoPackId()
+		{
+			final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
+
+			assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
+		}
+
+		@Test
+		void withoutPackId_isRefused()
+		{
+			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId(null).build();
+
+			assertFails(() -> service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU), CU_LABEL_NO_PACK_ID);
+		}
+
+		@Test
+		void withPackId_returnsIt()
+		{
+			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
+
+			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU);
+			assertThat(resolved).isNotNull();
+			assertThat(resolved.getPackId()).isEqualTo("1");
+		}
+	}
+
+	@Nested
+	class ScanOnce
+	{
+		@Test
+		void labelEndingBeforeThePackIdPart_isFormatMismatch()
+		{
+			final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
+
+			assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
+		}
+
+		@Test
+		void ignoresThePackId()
+		{
+			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
+
+			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			assertThat(resolved).isNotNull();
+			assertThat(resolved.getPackId()).isNull();
+		}
 	}
 }

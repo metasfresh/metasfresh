@@ -29,6 +29,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
@@ -149,6 +150,7 @@ public class PickingJobPickCommand
 	@Nullable private final GRAISet graiCodes;
 	@NonNull private final PickAttributes _manualPickAttributes;
 	@NonNull private final CUQtyEntryMode cuQtyEntryMode;
+	@NonNull private final CUQtyEntryPolicy cuQtyEntryPolicy;
 	@Nullable private final ScannedCode cuLabel;
 
 	//
@@ -221,9 +223,10 @@ public class PickingJobPickCommand
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
 		this.cuQtyEntryMode = pickingJobOptions.getCUQtyEntryModeOrDefault();
+		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
 		this.cuLabel = cuLabel;
 		// new modes always book CUs into the open box: never a whole TU
-		this.isPickWholeTU = isPickWholeTU && !cuQtyEntryMode.isNewMode();
+		this.isPickWholeTU = isPickWholeTU && cuQtyEntryPolicy.isPickWholeTUAllowed();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
@@ -262,7 +265,7 @@ public class PickingJobPickCommand
 		else if (this.pickingUnit.isCU())
 		{
 			// Scan each CU: one pack per label, whatever quantity the client sent. One pack = one unit of the line UOM (the mode is meant for piece-counted lines)
-			this.qtyToPickCUs = Quantity.of(cuQtyEntryMode.isScanEachCU() ? BigDecimal.ONE : qtyToPickBD, uom);
+			this.qtyToPickCUs = Quantity.of(cuQtyEntryPolicy.getQtyToPickCUs(qtyToPickBD), uom);
 			this.qtyToPickTUs = null;
 
 			if (qtyRejectedReasonCode != null)
@@ -431,7 +434,7 @@ public class PickingJobPickCommand
 
 	private void assertNewModeBookingAllowed()
 	{
-		if (!cuQtyEntryMode.isNewMode())
+		if (!cuQtyEntryPolicy.isLabelRequired())
 		{
 			return;
 		}
@@ -442,7 +445,7 @@ public class PickingJobPickCommand
 		}
 
 		final ResolvedCULabel label = getResolvedCULabel();
-		if (cuQtyEntryMode.isScanEachCU()
+		if (cuQtyEntryPolicy.isPackIdRequired()
 				&& cuLabelService.isAlreadyPickedInJob(getPickingJob(), label.getProductId(), label.getLotNo(), Check.assumeNotNull(label.getPackId(), "packId is set in SCAN_EACH_CU")))
 		{
 			throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, label.getPackId()).markAsUserValidationError();
@@ -458,7 +461,7 @@ public class PickingJobPickCommand
 			{
 				throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH).markAsUserValidationError();
 			}
-			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryMode, pickingJobOptions.getCuLabelFormatId().orElse(null));
+			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryMode, pickingJobOptions.getCULabelFormatId().orElse(null));
 		}
 		return _resolvedCULabel;
 	}
@@ -775,7 +778,7 @@ public class PickingJobPickCommand
 	@NonNull
 	private PickAttributes computePickAttributes()
 	{
-		PickAttributes pickAttributes = cuQtyEntryMode.isNewMode()
+		PickAttributes pickAttributes = cuQtyEntryPolicy.isLabelRequired()
 				? toPickAttributes(getResolvedCULabel()).fallbackTo(this._manualPickAttributes)
 				: this._manualPickAttributes;
 		boolean isCatchWeightRequired = false;
@@ -914,7 +917,7 @@ public class PickingJobPickCommand
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
 		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
-		if (cuQtyEntryMode.isScanEachCU())
+		if (cuQtyEntryPolicy.isPackIdRequired())
 		{
 			setPackIdOnNewCUs(packedHUs, getResolvedCULabel().getPackId());
 		}
@@ -1058,7 +1061,7 @@ public class PickingJobPickCommand
 	{
 
 		// New modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the box's code is assigned to the box only)
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryMode.isNewMode() ? cu.getId() : tu1.getId());
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryPolicy.isBookedAsSingleCUInBox() ? cu.getId() : tu1.getId());
 		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
@@ -1214,7 +1217,7 @@ public class PickingJobPickCommand
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
-						.cuQtyEntry(cuQtyEntryMode.isNewMode())
+						.isCuQtyEntry(cuQtyEntryPolicy.isBookedAsSingleCUInBox())
 						.build()
 		);
 	}

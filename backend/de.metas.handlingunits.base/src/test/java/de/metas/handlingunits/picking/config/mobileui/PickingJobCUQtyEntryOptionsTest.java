@@ -74,14 +74,14 @@ class PickingJobCUQtyEntryOptionsTest
 		void formatCustomerEmpty_fallsBackToProfile()
 		{
 			final PickingJobOptions resolved = options(null, null).fallbackTo(options(null, FORMAT_PROFILE));
-			assertThat(resolved.getCuLabelFormatId()).contains(FORMAT_PROFILE);
+			assertThat(resolved.getCULabelFormatId()).contains(FORMAT_PROFILE);
 		}
 
 		@Test
 		void formatCustomerSet_wins()
 		{
 			final PickingJobOptions resolved = options(null, FORMAT_CUSTOMER).fallbackTo(options(null, FORMAT_PROFILE));
-			assertThat(resolved.getCuLabelFormatId()).contains(FORMAT_CUSTOMER);
+			assertThat(resolved.getCULabelFormatId()).contains(FORMAT_CUSTOMER);
 		}
 
 		@Test
@@ -90,24 +90,32 @@ class PickingJobCUQtyEntryOptionsTest
 			final PickingJobOptions resolved = options(CUQtyEntryMode.SCAN_EACH_CU, null)
 					.fallbackTo(options(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, FORMAT_PROFILE));
 			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
-			assertThat(resolved.getCuLabelFormatId()).contains(FORMAT_PROFILE);
+			assertThat(resolved.getCULabelFormatId()).contains(FORMAT_PROFILE);
 		}
 
 		@Test
 		void noFormatAnywhere_isEmpty()
 		{
 			final PickingJobOptions resolved = options(null, null).fallbackTo(options(null, null));
-			assertThat(resolved.getCuLabelFormatId()).isEmpty();
+			assertThat(resolved.getCULabelFormatId()).isEmpty();
 		}
 
 		@Test
 		void enumFlags()
 		{
-			assertThat(CUQtyEntryMode.MANUAL.isNewMode()).isFalse();
-			assertThat(CUQtyEntryMode.SCAN_EACH_CU.isNewMode()).isTrue();
-			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.isNewMode()).isTrue();
-			assertThat(CUQtyEntryMode.SCAN_EACH_CU.isScanEachCU()).isTrue();
-			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.isScanEachCU()).isFalse();
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isLabelRequired()).isFalse();
+			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isLabelRequired()).isTrue();
+			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isLabelRequired()).isTrue();
+			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isPackIdRequired()).isTrue();
+			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isPackIdRequired()).isFalse();
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isPackIdRequired()).isFalse();
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isPickWholeTUAllowed()).isTrue();
+			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isPickWholeTUAllowed()).isFalse();
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isBookedAsSingleCUInBox()).isFalse();
+			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isBookedAsSingleCUInBox()).isTrue();
+			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("1");
+			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("7");
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("7");
 			assertThat(CUQtyEntryMode.ofCode(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_EACH_CU)).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
 		}
 	}
@@ -158,7 +166,7 @@ class PickingJobCUQtyEntryOptionsTest
 		{
 			final PickingJobOptions options = repository.getPickingJobOptions(customerId);
 			assertThat(options.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-			assertThat(options.getCuLabelFormatId()).contains(FORMAT_PROFILE);
+			assertThat(options.getCULabelFormatId()).contains(FORMAT_PROFILE);
 		}
 
 		@Test
@@ -171,11 +179,11 @@ class PickingJobCUQtyEntryOptionsTest
 
 			final PickingJobOptions customerOptions = repository.getPickingJobOptions(customerId);
 			assertThat(customerOptions.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU);
-			assertThat(customerOptions.getCuLabelFormatId()).contains(FORMAT_CUSTOMER);
+			assertThat(customerOptions.getCULabelFormatId()).contains(FORMAT_CUSTOMER);
 
 			final PickingJobOptions otherCustomerOptions = repository.getPickingJobOptions(BPartnerId.ofRepoId(2001));
 			assertThat(otherCustomerOptions.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-			assertThat(otherCustomerOptions.getCuLabelFormatId()).contains(FORMAT_PROFILE);
+			assertThat(otherCustomerOptions.getCULabelFormatId()).contains(FORMAT_PROFILE);
 		}
 	}
 }

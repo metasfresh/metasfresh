@@ -44,12 +44,12 @@ export const pickingLineScanScreenLocation = ({
   lineId,
   qrCode,
   next,
-  resume,
+  isResume,
 }) =>
   toUrl(pickingJobLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`, {
     qrCode,
     next,
-    resume: resume ? 'Y' : undefined,
+    resume: isResume ? 'Y' : undefined,
   });
 
 export const pickingStepScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) =>

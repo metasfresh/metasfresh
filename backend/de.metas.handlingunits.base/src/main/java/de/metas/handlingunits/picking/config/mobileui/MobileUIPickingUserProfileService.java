@@ -38,6 +38,13 @@ public class MobileUIPickingUserProfileService
 		return profileRepository.getPickingJobOptions(customerId);
 	}
 
+	/** @return what the customer's effective CU quantity entry mode (customer value, else profile value) means for a pick */
+	@NonNull
+	public CUQtyEntryPolicy getCUQtyEntryPolicy(@Nullable final BPartnerId customerId)
+	{
+		return getPickingJobOptions(customerId).getCUQtyEntryPolicy();
+	}
+
 	@NonNull
 	public PickingJobAggregationType getAggregationType(@Nullable final BPartnerId customerId)
 	{

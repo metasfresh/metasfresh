@@ -13,6 +13,7 @@ import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
 import org.compiere.model.X_MobileUI_UserProfile_Picking;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,42 +72,6 @@ class CustomerCUQtyEntryWriterTest
 	}
 
 	@Test
-	void customerWithoutJobOptions_cuSettingsGiven_createsAndLinksJobOptionsThatKeepTheProfileOptions()
-	{
-		final I_MobileUI_UserProfile_Picking_BPartner customerRecord = createCustomerRecord(null);
-
-		writer.write(CUSTOMER_ID, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null);
-
-		assertThat(countJobRecords()).isEqualTo(1);
-		final int jobId = reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID();
-		assertThat(jobId).isGreaterThan(0);
-		final I_MobileUI_UserProfile_Picking_Job job = InterfaceWrapperHelper.load(jobId, I_MobileUI_UserProfile_Picking_Job.class);
-		assertThat(job.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY);
-		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(job.getC_ScannableCode_Format_ID())).isNull(); // empty on the row = the profile's
-		// the new row must not change the customer's other options: they start as a copy of the profile's
-		assertThat(job.isAllowSkippingRejectedReason()).isTrue();
-		assertThat(job.isShowConfirmationPromptWhenOverPick()).isTrue();
-		assertThat(job.getPickingJobAggregationType()).isEqualTo("sales_order");
-		assertThat(job.getCreateShipmentPolicy()).isEqualTo("CO");
-		assertThat(job.getName()).startsWith(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
-		assertThat(job.getAllowPickToStructure_TU()).isEqualTo("Y");
-		// the mode / format of the new row are what was asked; the effective values fall back to the profile
-		assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCuLabelFormatId()).contains(PROFILE_FORMAT_ID);
-	}
-
-	@Test
-	void customerWithoutJobOptions_noCuSettings_createsNothing()
-	{
-		final I_MobileUI_UserProfile_Picking_BPartner customerRecord = createCustomerRecord(null);
-
-		writer.write(CUSTOMER_ID, null, null);
-
-		assertThat(countJobRecords()).isZero();
-		assertThat(reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID()).isZero();
-	}
-
-	@Test
 	void customerWithJobOptions_updatesTheExistingRow_andResetsAbsentValues()
 	{
 		final I_MobileUI_UserProfile_Picking_Job existing = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_Job.class);
@@ -122,5 +87,45 @@ class CustomerCUQtyEntryWriterTest
 		final I_MobileUI_UserProfile_Picking_Job job = InterfaceWrapperHelper.load(existing.getMobileUI_UserProfile_Picking_Job_ID(), I_MobileUI_UserProfile_Picking_Job.class);
 		assertThat(job.getCUQtyEntryMode()).isNull();
 		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(job.getC_ScannableCode_Format_ID())).isNull();
+	}
+
+	@Nested
+	class CustomerWithoutJobOptions
+	{
+		@Test
+		void cuSettingsGiven_createsAndLinksJobOptionsThatKeepTheProfileOptions()
+		{
+			final I_MobileUI_UserProfile_Picking_BPartner customerRecord = createCustomerRecord(null);
+
+			writer.write(CUSTOMER_ID, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null);
+
+			assertThat(countJobRecords()).isEqualTo(1);
+			final int jobId = reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID();
+			assertThat(jobId).isGreaterThan(0);
+			final I_MobileUI_UserProfile_Picking_Job job = InterfaceWrapperHelper.load(jobId, I_MobileUI_UserProfile_Picking_Job.class);
+			assertThat(job.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY);
+			assertThat(ScannableCodeFormatId.ofRepoIdOrNull(job.getC_ScannableCode_Format_ID())).isNull(); // empty on the row = the profile's
+			// the new row must not change the customer's other options: they start as a copy of the profile's
+			assertThat(job.isAllowSkippingRejectedReason()).isTrue();
+			assertThat(job.isShowConfirmationPromptWhenOverPick()).isTrue();
+			assertThat(job.getPickingJobAggregationType()).isEqualTo("sales_order");
+			assertThat(job.getCreateShipmentPolicy()).isEqualTo("CO");
+			assertThat(job.getName()).startsWith(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
+			assertThat(job.getAllowPickToStructure_TU()).isEqualTo("Y");
+			// the mode / format of the new row are what was asked; the effective values fall back to the profile
+			assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCULabelFormatId()).contains(PROFILE_FORMAT_ID);
+		}
+
+		@Test
+		void noCuSettings_createsNothing()
+		{
+			final I_MobileUI_UserProfile_Picking_BPartner customerRecord = createCustomerRecord(null);
+
+			writer.write(CUSTOMER_ID, null, null);
+
+			assertThat(countJobRecords()).isZero();
+			assertThat(reload(customerRecord).getMobileUI_UserProfile_Picking_Job_ID()).isZero();
+		}
 	}
 }

@@ -99,7 +99,7 @@ export const useNextBox = ({
   const isTargetOpen = tuPickingTarget != null;
   const updateWF = (wfProcess) => dispatch(updateWFProcess({ wfProcess }));
 
-  const common = {
+  const closeOpenBoxDeps = {
     isTargetOpen,
     closeTarget: () =>
       closePickingTarget({ wfProcessId, lineId, type: PickingTargetType.TU }).then((wfProcess) => updateWF(wfProcess)),
@@ -129,7 +129,7 @@ export const useNextBox = ({
   const onNextBox = () =>
     runExclusive(async () => {
       await openNextBox({
-        ...common,
+        ...closeOpenBoxDeps,
         packingTuPIId,
         packingItemName,
         setTarget: ({ target }) => setPickingTarget({ target }).then((wfProcess) => updateWF(wfProcess)),

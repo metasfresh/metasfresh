@@ -499,7 +499,7 @@ const ScanHUAndGetQtyComponent = ({
             isScanOnce ? (
               <BarcodeScannerComponent
                 testId="rescanCULabel-input"
-                coexistWithTypedInput
+                isCoexistingWithTypedInput
                 resolveScannedBarcode={handleResolveHUScannedBarcode}
                 onResolvedResult={onCULabelRescanned}
               />

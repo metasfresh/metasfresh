@@ -24,6 +24,17 @@ import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
 import { isNewMode, isScanOnce as isScanOnceMode } from '../../constants/CUQtyEntryMode';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
+/** The offered quantity when the dialog opens. */
+const computeInitialQtyInfo = ({ isScanOnce, qtyInitial, qtyTarget, useZeroAsInitialValue }) => {
+  if (!isScanOnce) {
+    return qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget);
+  }
+  // scan once: the offered count of the next box (last typed count, capped by the open qty); empty before the first one
+  return qtyInitial != null
+    ? qtyInfos.invalidOfNumber(qtyInitial)
+    : qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null });
+};
+
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
   hideQtyInput = false,
@@ -59,14 +70,15 @@ const GetQuantityDialog = ({
   onCloseDialog,
 }) => {
   // a CU label carries lot and best-before: the quantity block of a new mode always shows them
-  const isShowBestBeforeDate = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.BestBeforeDate);
-  const isShowLotNo = isNewMode(cuQtyEntryMode) || readAttributes.includes(PickAttribute.LotNo);
+  const isLabelMode = isNewMode(cuQtyEntryMode);
+  const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
 
   // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
   // smaller count than the open qty is not a rejection
   const isScanOnce = isScanOnceMode(cuQtyEntryMode);
   // new modes: no implicit form submit by secondary buttons; undefined = default submit, as in Manual before
-  const buttonType = isNewMode(cuQtyEntryMode) ? 'button' : undefined;
+  const buttonType = isLabelMode ? 'button' : undefined;
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -79,12 +91,7 @@ const GetQuantityDialog = ({
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
   const [qtyInfo, setQtyInfo] = useState(
-    isScanOnce
-      ? // the offered count of the next box (last typed count, capped by the open qty); empty before the first one
-        qtyInitial != null
-        ? qtyInfos.invalidOfNumber(qtyInitial)
-        : qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null })
-      : qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
+    computeInitialQtyInfo({ isScanOnce, qtyInitial, qtyTarget, useZeroAsInitialValue })
   );
   const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
@@ -127,7 +134,7 @@ const GetQuantityDialog = ({
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
   // lot and best-before come from the label; the backend takes them from there, so an edit would be dropped
-  const isLabelAttributeReadOnly = readOnly || isNewMode(cuQtyEntryMode);
+  const isLabelAttributeReadOnly = readOnly || isLabelMode;
 
   const getConfirmationPrompt = useCallback(
     async (qtyInput) => {
@@ -347,11 +354,7 @@ const GetQuantityDialog = ({
           <form
             // new modes: the OK button's click (also the Enter key's implicit click) books once; a second,
             // submit-triggered call would book the same quantity twice. Manual keeps the form submit as before.
-            onSubmit={
-              isNewMode(cuQtyEntryMode)
-                ? (event) => event.preventDefault()
-                : () => onDialogYes({ isCloseTarget: false })
-            }
+            onSubmit={isLabelMode ? (event) => event.preventDefault() : () => onDialogYes({ isCloseTarget: false })}
           >
             <div className="table-container">
               <table className="table">

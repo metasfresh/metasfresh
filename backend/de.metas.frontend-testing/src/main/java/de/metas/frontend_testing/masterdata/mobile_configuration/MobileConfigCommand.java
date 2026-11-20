@@ -95,39 +95,35 @@ public class MobileConfigCommand
 			return;
 		}
 
-		trxManager.runInThreadInheritedTrx(() -> {
-			// the rows of earlier runs' customers (replaced by MobileConfigPickingCommand above) are not referenced any more
-			mobilePickingConfigService.deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
-
-			final CUQtyEntryMode mode = cuQtyEntryModeOrDefault(picking.getCuQtyEntryMode());
-			final ScannableCodeFormatId formatId = resolveFormatIdOrNull(picking.getCuLabelFormatName());
-			mobilePickingConfigService.update(profile -> profile.toBuilder()
-					.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
-							.cuQtyEntryMode(mode)
-							.cuLabelFormatId(formatId)
-							.build())
-					.build());
-
-			if (picking.getCustomers() != null)
-			{
-				final CustomerCUQtyEntryWriter customerWriter = new CustomerCUQtyEntryWriter(mobilePickingConfigService);
-				for (final JsonMobileConfigRequest.Picking.Customer customer : picking.getCustomers())
-				{
-					customerWriter.write(
-							context.getId(customer.getCustomer(), BPartnerId.class),
-							CUQtyEntryMode.ofNullableCode(customer.getCuQtyEntryMode()),
-							resolveFormatIdOrNull(customer.getCuLabelFormatName()));
-				}
-			}
-		});
+		trxManager.runInThreadInheritedTrx(() -> updatePickingCUQtyEntryInTrx(picking));
 	}
 
-	/** The profile's mode is mandatory: absent = {@link CUQtyEntryMode#MANUAL}. */
-	@NonNull
-	private static CUQtyEntryMode cuQtyEntryModeOrDefault(@Nullable final String cuQtyEntryMode)
+	private void updatePickingCUQtyEntryInTrx(@NonNull final JsonMobileConfigRequest.Picking picking)
 	{
-		final CUQtyEntryMode mode = CUQtyEntryMode.ofNullableCode(cuQtyEntryMode);
-		return mode != null ? mode : CUQtyEntryMode.MANUAL;
+		// the rows of earlier runs' customers (replaced by MobileConfigPickingCommand above) are not referenced any more
+		mobilePickingConfigService.deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
+
+		// absent = the profile's mandatory mode: the profile writer stores CUQtyEntryMode.DEFAULT for an unset mode
+		final CUQtyEntryMode mode = CUQtyEntryMode.ofNullableCode(picking.getCuQtyEntryMode());
+		final ScannableCodeFormatId formatId = resolveFormatIdOrNull(picking.getCuLabelFormatName());
+		mobilePickingConfigService.update(profile -> profile.toBuilder()
+				.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+						.cuQtyEntryMode(mode)
+						.cuLabelFormatId(formatId)
+						.build())
+				.build());
+
+		if (picking.getCustomers() != null)
+		{
+			final CustomerCUQtyEntryWriter customerWriter = new CustomerCUQtyEntryWriter(mobilePickingConfigService);
+			for (final JsonMobileConfigRequest.Picking.Customer customer : picking.getCustomers())
+			{
+				customerWriter.write(
+						context.getId(customer.getCustomer(), BPartnerId.class),
+						CUQtyEntryMode.ofNullableCode(customer.getCuQtyEntryMode()),
+						resolveFormatIdOrNull(customer.getCuLabelFormatName()));
+			}
+		}
 	}
 
 	/** Returns the format id, or null (= no format) when the name is absent. */

@@ -527,16 +527,18 @@ public class CreateMasterdataCommand
 			return;
 		}
 
-		trxManager.runInThreadInheritedTrx(() -> {
-			MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService, services.mobilePickingConfigService); // the generated formats are deleted by the command below
-			CustomQRCodeFormatCommand.builder()
-					.scannableCodeFormatService(services.scannableCodeFormatService)
-					.context(context)
-					.requests(request.getCustomQRCodeFormats())
-					.build()
-					.execute();
-		});
+		trxManager.runInThreadInheritedTrx(this::recreateCustomQRCodeFormats);
+	}
 
+	private void recreateCustomQRCodeFormats()
+	{
+		MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService, services.mobilePickingConfigService); // the generated formats are deleted by the command below
+		CustomQRCodeFormatCommand.builder()
+				.scannableCodeFormatService(services.scannableCodeFormatService)
+				.context(context)
+				.requests(request.getCustomQRCodeFormats())
+				.build()
+				.execute();
 	}
 
 	private ImmutableMap<String, String> applySysconfigs()

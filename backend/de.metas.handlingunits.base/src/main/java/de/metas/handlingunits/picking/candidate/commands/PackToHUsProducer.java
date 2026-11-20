@@ -117,7 +117,7 @@ public class PackToHUsProducer
 		 * CU quantity entry modes only: the source HU(s) are merged into ONE new CU of {@link #qtyPicked} before packing, the booked CU stays a separate HU
 		 * inside a partial TU (also without LU) and the 'already packed' shortcut is skipped.
 		 */
-		boolean cuQtyEntry;
+		boolean isCuQtyEntry;
 		@NonNull @Builder.Default ImmutableSet<HuId> allowedReservedVhuIds = ImmutableSet.of();
 	}
 
@@ -209,7 +209,7 @@ public class PackToHUsProducer
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions.
-		// Skipped for CU quantity entry (cuQtyEntry): a source box holding exactly the booked quantity must not become the box,
+		// Skipped for CU quantity entry (isCuQtyEntry): a source box holding exactly the booked quantity must not become the box,
 		// else the picked HU would be the whole box and not the booked CU.
 		if (!request.isCuQtyEntry()
 				&& packToInfo.getLu() == null

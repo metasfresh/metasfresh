@@ -12,6 +12,7 @@ import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
 import org.compiere.model.X_MobileUI_UserProfile_Picking;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,38 +52,6 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 	private int countJobRecords()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class).create().count();
-	}
-
-	@Test
-	void createPickingJobOptions_storesAllGivenOptions()
-	{
-		final PickingJobOptions profileOptions = repository.getProfile().getDefaultPickingJobOptions();
-
-		final PickingJobOptionsId id = repository.createPickingJobOptions(
-				"E2E customer 1",
-				profileOptions.toBuilder().cuQtyEntryMode(CUQtyEntryMode.SCAN_EACH_CU).cuLabelFormatId(FORMAT_2).build());
-
-		final I_MobileUI_UserProfile_Picking_Job record = load(id);
-		assertThat(record.getName()).isEqualTo("E2E customer 1");
-		assertThat(record.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_EACH_CU);
-		assertThat(record.getC_ScannableCode_Format_ID()).isEqualTo(FORMAT_2.getRepoId());
-		// the other options start as the profile's
-		assertThat(record.isAllowSkippingRejectedReason()).isTrue();
-		assertThat(record.isShowConfirmationPromptWhenOverPick()).isTrue();
-		assertThat(record.getPickingJobAggregationType()).isEqualTo("sales_order");
-		assertThat(record.getCreateShipmentPolicy()).isEqualTo("CO");
-		assertThat(record.getAllowPickToStructure_TU()).isEqualTo("Y");
-	}
-
-	@Test
-	void createPickingJobOptions_modeNotSet_noFormat_storesEmptySoTheProfilesApplies()
-	{
-		final PickingJobOptions profileOptions = repository.getProfile().getDefaultPickingJobOptions();
-
-		final PickingJobOptionsId id = repository.createPickingJobOptions("E2E customer 2", profileOptions.toBuilder().cuQtyEntryMode(null).cuLabelFormatId(null).build());
-
-		assertThat(load(id).getCUQtyEntryMode()).isNull();
-		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(id).getC_ScannableCode_Format_ID())).isNull();
 	}
 
 	@Test
@@ -140,5 +109,41 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(InterfaceWrapperHelper.load(profile.getMobileUI_UserProfile_Picking_ID(), I_MobileUI_UserProfile_Picking.class).getC_ScannableCode_Format_ID())).isNull();
 		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(job1).getC_ScannableCode_Format_ID())).isNull();
 		assertThat(load(job2).getC_ScannableCode_Format_ID()).isEqualTo(FORMAT_2.getRepoId());
+	}
+
+	@Nested
+	class CreatePickingJobOptions
+	{
+		@Test
+		void storesAllGivenOptions()
+		{
+			final PickingJobOptions profileOptions = repository.getProfile().getDefaultPickingJobOptions();
+
+			final PickingJobOptionsId id = repository.createPickingJobOptions(
+					"E2E customer 1",
+					profileOptions.toBuilder().cuQtyEntryMode(CUQtyEntryMode.SCAN_EACH_CU).cuLabelFormatId(FORMAT_2).build());
+
+			final I_MobileUI_UserProfile_Picking_Job record = load(id);
+			assertThat(record.getName()).isEqualTo("E2E customer 1");
+			assertThat(record.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_EACH_CU);
+			assertThat(record.getC_ScannableCode_Format_ID()).isEqualTo(FORMAT_2.getRepoId());
+			// the other options start as the profile's
+			assertThat(record.isAllowSkippingRejectedReason()).isTrue();
+			assertThat(record.isShowConfirmationPromptWhenOverPick()).isTrue();
+			assertThat(record.getPickingJobAggregationType()).isEqualTo("sales_order");
+			assertThat(record.getCreateShipmentPolicy()).isEqualTo("CO");
+			assertThat(record.getAllowPickToStructure_TU()).isEqualTo("Y");
+		}
+
+		@Test
+		void modeNotSet_noFormat_storesEmptySoTheProfilesApplies()
+		{
+			final PickingJobOptions profileOptions = repository.getProfile().getDefaultPickingJobOptions();
+
+			final PickingJobOptionsId id = repository.createPickingJobOptions("E2E customer 2", profileOptions.toBuilder().cuQtyEntryMode(null).cuLabelFormatId(null).build());
+
+			assertThat(load(id).getCUQtyEntryMode()).isNull();
+			assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(id).getC_ScannableCode_Format_ID())).isNull();
+		}
 	}
 }

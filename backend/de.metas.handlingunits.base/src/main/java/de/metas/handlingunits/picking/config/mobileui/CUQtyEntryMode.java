@@ -41,8 +41,19 @@ public enum CUQtyEntryMode implements ReferenceListAwareEnum
 		return index.ofNullableCode(code);
 	}
 
-	/** @return true for the modes that are not the classic manual entry */
-	public boolean isNewMode() {return this != MANUAL;}
-
-	public boolean isScanEachCU() {return this == SCAN_EACH_CU;}
+	/** @return what this mode means for a pick; ask it instead of comparing modes */
+	public CUQtyEntryPolicy getPolicy()
+	{
+		switch (this)
+		{
+			case MANUAL:
+				return CUQtyEntryPolicy.MANUAL;
+			case SCAN_EACH_CU:
+				return CUQtyEntryPolicy.SCAN_EACH_CU;
+			case SCAN_ONCE_ENTER_QTY:
+				return CUQtyEntryPolicy.SCAN_ONCE_ENTER_QTY;
+			default:
+				throw new IllegalStateException("No policy for " + this);
+		}
+	}
 }

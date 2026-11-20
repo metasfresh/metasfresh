@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.service;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -8,6 +7,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -26,6 +26,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.SpringContextHolder;
@@ -83,10 +84,10 @@ public class PickingCULabelService
 		final ExplainedOptional<ParsedScannedCode> parsed = format.parse(label);
 		if (parsed.isPresent())
 		{
-			return resolve(line, readCULabelData(parsed.get(), label), mode);
+			return resolve(line, toCULabelData(parsed.get()), mode);
 		}
 
-		if (mode.isScanEachCU() && isEndingBeforePackId(format, label))
+		if (mode.getPolicy().isPackIdRequired() && isEndingBeforePackId(format, label))
 		{
 			throw userError(MSG_CU_LABEL_NO_PACK_ID);
 		}
@@ -108,8 +109,9 @@ public class PickingCULabelService
 			throw userError(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductValueAndName().getName());
 		}
 
-		final String packId = mode.isScanEachCU() ? labelData.getPackId() : null;
-		if (mode.isScanEachCU() && packId == null)
+		final boolean isPackIdRequired = mode.getPolicy().isPackIdRequired();
+		final String packId = isPackIdRequired ? labelData.getPackId() : null;
+		if (isPackIdRequired && packId == null)
 		{
 			throw userError(MSG_CU_LABEL_NO_PACK_ID);
 		}
@@ -120,13 +122,6 @@ public class PickingCULabelService
 				.bestBeforeDate(labelData.getBestBeforeDate())
 				.packId(packId)
 				.build();
-	}
-
-	/** Seam for unit tests: they override it to supply fake {@link CULabelData} (see {@link #toCULabelData}). */
-	@VisibleForTesting
-	protected CULabelData readCULabelData(@NonNull final ParsedScannedCode parsed, @NonNull final ScannedCode label)
-	{
-		return toCULabelData(parsed);
 	}
 
 	/** The only place that reads the pack ID of a parsed label. */
@@ -174,65 +169,85 @@ public class PickingCULabelService
 		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
 		return huIdsWithPackId.stream()
 				.map(handlingUnitsBL::getById)
-				.anyMatch(hu -> {
-					final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-					final String huLotNo = attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
-							? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
-							: null;
-					return Objects.equals(huLotNo, lotNoNorm);
-				});
+				.anyMatch(hu -> hasLotNo(huContext, hu, lotNoNorm));
+	}
+
+	private static boolean hasLotNo(@NonNull final IHUContext huContext, @NonNull final I_M_HU hu, @Nullable final String lotNoNorm)
+	{
+		final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		final String huLotNo = attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
+				? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
+				: null;
+		return Objects.equals(huLotNo, lotNoNorm);
 	}
 
 	/**
 	 * @return true if the label is too short to hold the pack ID zone while every part before the zone reads.
-	 * The zone starts at the constant marker directly in front of the {@link ScannableCodeFormatPartType#PackId} part (or at that part itself).
-	 * A format without a {@code PackId} part falls back to the constant "92" marker; a format with neither has no pack ID zone: false.
+	 * See {@link #findPackIdZone} for the zone. A format with no pack ID zone: false.
 	 */
 	private static boolean isEndingBeforePackId(@NonNull final ScannableCodeFormat format, @NonNull final ScannedCode label)
 	{
-		final ImmutableList<ScannableCodeFormatPart> parts = format.getParts();
-		final int zoneStart;
-		final int zoneEnd;
+		final PackIdZone zone = findPackIdZone(format.getParts());
+		return zone != null
+				&& label.length() < zone.getEnd()
+				&& isPrefixReadable(format, label, zone.getStart());
+	}
 
+	/**
+	 * The zone starts at the constant marker directly in front of the {@link ScannableCodeFormatPartType#PackId} part (or at that part itself).
+	 * A format without a {@code PackId} part falls back to the constant "92" marker; a format with neither has no pack ID zone: null.
+	 */
+	@Nullable
+	private static PackIdZone findPackIdZone(@NonNull final ImmutableList<ScannableCodeFormatPart> parts)
+	{
 		final ScannableCodeFormatPart packIdPart = parts.stream()
 				.filter(part -> part.getType() == ScannableCodeFormatPartType.PackId)
 				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
 				.orElse(null);
-		if (packIdPart != null)
+		return packIdPart != null
+				? zoneBeforePackIdPart(parts, packIdPart)
+				: zoneOfFallbackMarker(parts);
+	}
+
+	private static PackIdZone zoneBeforePackIdPart(@NonNull final ImmutableList<ScannableCodeFormatPart> parts, @NonNull final ScannableCodeFormatPart packIdPart)
+	{
+		final ScannableCodeFormatPart precedingMarker = parts.stream()
+				.filter(part -> part.getStartPosition() < packIdPart.getStartPosition())
+				.max(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
+				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant)
+				.orElse(null);
+		return new PackIdZone(
+				precedingMarker != null ? precedingMarker.getStartPosition() : packIdPart.getStartPosition(),
+				packIdPart.getStartPosition());
+	}
+
+	@Nullable
+	private static PackIdZone zoneOfFallbackMarker(@NonNull final ImmutableList<ScannableCodeFormatPart> parts)
+	{
+		final ScannableCodeFormatPart marker = parts.stream()
+				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
+				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
+				.orElse(null);
+		if (marker == null)
 		{
-			final ScannableCodeFormatPart precedingMarker = parts.stream()
-					.filter(part -> part.getStartPosition() < packIdPart.getStartPosition())
-					.max(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
-					.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant)
-					.orElse(null);
-			zoneStart = precedingMarker != null ? precedingMarker.getStartPosition() : packIdPart.getStartPosition();
-			zoneEnd = packIdPart.getStartPosition();
-		}
-		else
-		{
-			final ScannableCodeFormatPart marker = parts.stream()
-					.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
-					.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
-					.orElse(null);
-			if (marker == null)
-			{
-				return false;
-			}
-			zoneStart = marker.getStartPosition();
-			// same rule as the frontend cuLabel.js: the zone is the marker itself, cut short by a part starting inside it
-			final int markerEnd = zoneStart + PACK_ID_MARKER.length();
-			zoneEnd = Math.min(markerEnd, parts.stream()
-					.mapToInt(ScannableCodeFormatPart::getStartPosition)
-					.filter(start -> start > zoneStart)
-					.min()
-					.orElse(markerEnd));
-		}
-		if (label.length() >= zoneEnd)
-		{
-			return false;
+			return null;
 		}
 
-		final ImmutableList<ScannableCodeFormatPart> partsBefore = parts.stream()
+		final int zoneStart = marker.getStartPosition();
+		// same rule as the frontend cuLabel.js: the zone is the marker itself, cut short by a part starting inside it
+		final int markerEnd = zoneStart + PACK_ID_MARKER.length();
+		final int zoneEnd = Math.min(markerEnd, parts.stream()
+				.mapToInt(ScannableCodeFormatPart::getStartPosition)
+				.filter(start -> start > zoneStart)
+				.min()
+				.orElse(markerEnd));
+		return new PackIdZone(zoneStart, zoneEnd);
+	}
+
+	/** @return true if the parts in front of the pack ID zone read the label: the label was scanned right, it just has no pack ID */
+	private static boolean isPrefixReadable(@NonNull final ScannableCodeFormat format, @NonNull final ScannedCode label, final int zoneStart)
+	{
+		final ImmutableList<ScannableCodeFormatPart> partsBefore = format.getParts().stream()
 				.filter(part -> part.getStartPosition() < zoneStart)
 				.filter(part -> part.getType() != ScannableCodeFormatPartType.Ignored) // separators: the scanned code is trimmed, a trailing one is lost
 				.collect(ImmutableList.toImmutableList());
@@ -247,6 +262,13 @@ public class PickingCULabelService
 				.parts(partsBefore)
 				.build();
 		return prefixFormat.parse(label).isPresent();
+	}
+
+	@Value
+	private static class PackIdZone
+	{
+		int start;
+		int end;
 	}
 
 	private static AdempiereException userError(@NonNull final AdMessageKey messageKey, final Object... params)

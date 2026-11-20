@@ -36,8 +36,10 @@ public class PickingJobOptions
 	@NonNull OptionalBoolean completeJobAutomatically;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
-	@Getter(AccessLevel.NONE) @Nullable CUQtyEntryMode cuQtyEntryMode; // null = not set (customer: use the profile's)
-	@Nullable ScannableCodeFormatId cuLabelFormatId; // null = not set (customer: use the profile's)
+	/** null = not set (customer: use the profile's) */
+	@Getter(AccessLevel.NONE) @Nullable CUQtyEntryMode cuQtyEntryMode;
+	/** null = not set (customer: use the profile's) */
+	@Nullable ScannableCodeFormatId cuLabelFormatId;
 
 	@Builder(toBuilder = true)
 	private PickingJobOptions(
@@ -92,10 +94,14 @@ public class PickingJobOptions
 	@NonNull
 	public CUQtyEntryMode getCUQtyEntryModeOrDefault() {return cuQtyEntryMode != null ? cuQtyEntryMode : CUQtyEntryMode.DEFAULT;}
 
+	/** @return what the effective mode means for a pick ({@link CUQtyEntryMode#DEFAULT} when none is set) */
+	@NonNull
+	public CUQtyEntryPolicy getCUQtyEntryPolicy() {return getCUQtyEntryModeOrDefault().getPolicy();}
+
 	/** @return the mode if one is set (a customer's options may leave it empty = use the profile's) */
 	public Optional<CUQtyEntryMode> getCUQtyEntryMode() {return Optional.ofNullable(cuQtyEntryMode);}
 
-	public Optional<ScannableCodeFormatId> getCuLabelFormatId() {return Optional.ofNullable(cuLabelFormatId);}
+	public Optional<ScannableCodeFormatId> getCULabelFormatId() {return Optional.ofNullable(cuLabelFormatId);}
 
 	public boolean isStrictlyAllowed(@NonNull final PickToStructure pickToStructure) {return allowedPickToStructures.isStrictlyAllowed(pickToStructure);}
 

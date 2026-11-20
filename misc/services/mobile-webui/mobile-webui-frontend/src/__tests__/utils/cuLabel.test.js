@@ -143,7 +143,7 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     const beforeMarker = LABEL.substring(0, 46);
     const markerOnly = LABEL.substring(0, 48);
     for (const string of [beforeMarker, markerOnly]) {
-      expect(readCULabel({ string, format: packIdFormat, requirePackId: true })).toEqual({
+      expect(readCULabel({ string, format: packIdFormat, isPackIdRequired: true })).toEqual({
         errorKey: 'picking.cuLabel.noPackId',
       });
       expect(readCULabel({ string, format: packIdFormat })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
@@ -156,16 +156,16 @@ describe('cuLabel.readCULabel with a PackId part', () => {
       ...packIdFormat,
       parts: [...markerParts, ...dataParts, constant(47, 48, '92'), constant(52, 53, '93')],
     };
-    expect(readCULabel({ string: LABEL.substring(0, 49), format: gapFormat, requirePackId: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 49), format: gapFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
     });
-    expect(readCULabel({ string: LABEL.substring(0, 46), format: gapFormat, requirePackId: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 46), format: gapFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.noPackId',
     });
   });
 
   it('a label ending before the lot is a format mismatch even when a pack ID is required', () => {
-    expect(readCULabel({ string: LABEL.substring(0, 36), format: packIdFormat, requirePackId: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 36), format: packIdFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
     });
   });
@@ -175,23 +175,23 @@ describe('cuLabel.readCULabel with a PackId part', () => {
       ...packIdFormat,
       parts: [...markerParts, ...dataParts, constant(47, 48, '93'), { type: 'PACK_ID', startPosition: 49 }],
     };
-    expect(readCULabel({ string: LABEL.substring(0, 46), format: otherMarkerFormat, requirePackId: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 46), format: otherMarkerFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.noPackId',
     });
   });
 
   it('a format without a PackId part reads, but has no pack ID when one is required (effective format without PackId)', () => {
-    expect(readCULabel({ string: LABEL, format, requirePackId: true })).toEqual({
+    expect(readCULabel({ string: LABEL, format, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.noPackId',
     });
-    expect(resolveCULabel({ string: LABEL, format, expectedProductNo: 'PTST001', requirePackId: true })).toEqual({
+    expect(resolveCULabel({ string: LABEL, format, expectedProductNo: 'PTST001', isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.noPackId',
     });
   });
 
   it('resolveCULabel passes the pack ID with the label', () => {
     expect(
-      resolveCULabel({ string: LABEL, format: packIdFormat, expectedProductNo: 'PTST001', requirePackId: true })
+      resolveCULabel({ string: LABEL, format: packIdFormat, expectedProductNo: 'PTST001', isPackIdRequired: true })
     ).toEqual({
       productNo: 'PTST001',
       lotNo: 'LA0000001',

@@ -65,7 +65,7 @@ const PickLineScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties,
-    liveRefresh: isNewMode(cuQtyEntryMode),
+    isLiveRefresh: isNewMode(cuQtyEntryMode),
   });
 
   const onPickFromManufacturingOrderClicked = () => {
@@ -111,7 +111,7 @@ const PickLineScreen = () => {
         lineId,
         qrCode: pickFromHUQRCode,
         // a line in a CU quantity entry mode continues where the picker left it: the quantity block reopens
-        resume: isNewMode(cuQtyEntryMode),
+        isResume: isNewMode(cuQtyEntryMode),
       })
     );
   };
@@ -243,11 +243,11 @@ export const useHeaderUpdate = ({
   additionalHeaderProperties,
   rootDataAttributes,
   // new CU quantity entry modes only: refresh the header while the screen stays mounted; Manual refreshes on url/caption only, as before
-  liveRefresh = false,
+  isLiveRefresh = false,
 }) => {
   const dispatch = useDispatch();
   // fixed-length deps: null in Manual (refresh on url/caption only, as before), a value key in the new modes
-  const liveKey = liveRefresh
+  const liveKey = isLiveRefresh
     ? JSON.stringify([
         pickingSlot?.caption,
         pickingUnit,

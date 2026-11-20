@@ -756,13 +756,26 @@ public class PickingJobService implements PickingSlotListener
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
 		final List<PickingJobLine> newModeLines = pickingJob.getLines().stream()
-				.filter(line -> huService.isCUQtyEntryNewMode(line.getCustomerId()))
+				.filter(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired())
 				.collect(ImmutableList.toImmutableList());
 		if (newModeLines.isEmpty())
 		{
-			return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
+			return closeAllTargetsOnLastScannedSlot(pickingJob);
 		}
+		else
+		{
+			return closeTargetsPerNewModeLineSlot(pickingJob, newModeLines);
+		}
+	}
 
+	/** Manual lines (and all lines of a job without a new-mode line): all closed HUs go to the slot scanned last. */
+	private PickingJob closeAllTargetsOnLastScannedSlot(@NonNull final PickingJob pickingJob)
+	{
+		return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
+	}
+
+	private PickingJob closeTargetsPerNewModeLineSlot(@NonNull final PickingJob pickingJob, @NonNull final List<PickingJobLine> newModeLines)
+	{
 		PickingJob pickingJobChanged = closeLUAndTUPickingTargets(pickingJob, true, false, null, false);
 		for (final PickingJobLine line : newModeLines)
 		{

@@ -155,7 +155,7 @@ const PickLineScanScreen = () => {
     qtyPicked,
     additionalHeaderProperties: { entries: computeOpenBoxHeaderEntries({ isNewModeLine, tuPickingTarget }) },
     rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode },
-    liveRefresh: isNewModeLine,
+    isLiveRefresh: isNewModeLine,
   });
 
   // not memoized: `nextBox.onGraiScanned` is a new function on every render
@@ -431,7 +431,7 @@ export const convertScannedCULabelToResolvedResult = ({
     format: cuLabelFormat,
     expectedProductNo,
     expectedGS1ProductCodes,
-    requirePackId: isScanEach(cuQtyEntryMode),
+    isPackIdRequired: isScanEach(cuQtyEntryMode),
   });
   if (errorKey) {
     throw { messageKey: errorKey };

@@ -71,22 +71,6 @@ class ScannableCodeFormatRepositoryTest
 	}
 
 	@Test
-	void getById_returnsTheFormat()
-	{
-		final ScannableCodeFormat format = createLabelFormat();
-
-		assertThat(repository.getById(format.getId())).contains(format);
-	}
-
-	@Test
-	void getById_unknownId_returnsEmpty()
-	{
-		createLabelFormat();
-
-		assertThat(repository.getById(ScannableCodeFormatId.ofRepoId(999999))).isEmpty();
-	}
-
-	@Test
 	void lastPartWithOpenEnd_readsLotsOfAnyLength()
 	{
 		final ScannableCodeFormat format = createLabelFormat();
@@ -246,6 +230,26 @@ class ScannableCodeFormatRepositoryTest
 			final ScannableCodeFormatsCollection all = repository.getAll();
 
 			assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
+		}
+	}
+
+	@Nested
+	class GetById
+	{
+		@Test
+		void returnsTheFormat()
+		{
+			final ScannableCodeFormat format = createLabelFormat();
+
+			assertThat(repository.getById(format.getId())).contains(format);
+		}
+
+		@Test
+		void unknownId_returnsEmpty()
+		{
+			createLabelFormat();
+
+			assertThat(repository.getById(ScannableCodeFormatId.ofRepoId(999999))).isEmpty();
 		}
 	}
 }
