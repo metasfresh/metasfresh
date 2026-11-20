@@ -16,7 +16,7 @@ import { allureMeta, book, createMasterdata, restoreSysconfigsAfterEach, GRAI_80
 restoreSysconfigsAfterEach(test);
 
 /**
- * CU quantity entry, Scan once: opening the next box (TC14, TC14b, TC15, TC16, TC17 Scan once part, TC18, TC19, TC23).
+ * CU quantity entry, Scan once: opening the next box.
  *
  * The next box comes from a GRAI scan (closes the open box, opens a box of the GRAI's TU type, GRAI on that TU) or from
  * "Weitere Kiste" (one tap, TU type of the line's packing; a line whose packing names no TU type gets the "Gebinde" list).
@@ -282,7 +282,7 @@ test('customer GRAI required, box opened with "Next box": "Fertigstellen" is ref
 });
 
 /**
- * TC23 expectation "every picked HU is a CU inside a TU of a TU packing, no loose CU": each booking's CU (`vhuN`) is listed
+ * Expectation "every picked HU is a CU inside a TU of a TU packing, no loose CU": each booking's CU (`vhuN`) is listed
  * under its box (`tuN`, the `tu` of the qtyPicked row), and every box satisfies `qtyTUs: 1`, which holds only for a real
  * TU (never for a virtual packing), with the CU's quantity as its own storage (one CU per box here).
  */
@@ -333,7 +333,7 @@ test('line with a box packing "TU x 4 Stk" (customer GRAI required): first booki
     await PickGraiScreen.expectNotShown();
     await PickingJobScreen.waitForScreen();
 
-    // box 1 was opened without GRAI: "Fertigstellen" is refused (as TC19), and completes once every box has a GRAI
+    // box 1 was opened without GRAI: "Fertigstellen" is refused (customer GRAI required), and completes once every box has a GRAI
     await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
     await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', boxes: [{ qty: 4, grai: null }, { qty: 4, grai: grai }] });
     await addGraiToBoxesInHUManager({ masterdata, boxes: ['tu1'] });

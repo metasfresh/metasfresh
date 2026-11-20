@@ -12,7 +12,7 @@ import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta, createMasterdataRememberingSysc
 restoreSysconfigsAfterEach(test);
 
 /**
- * CU quantity entry: reading of the pack label on the Scan once line (TC3 without pack-ID cases, TC3b, TC4, TC4b).
+ * CU quantity entry: reading of the pack label on the Scan once line.
  * Scan once = one label scan, then the quantity block. Keyboard-wedge input: the raw label typed into the scan field.
  * Buyer A has no record: the line takes the profile's mode (Scan once) and the profile's format (without `PackId` part).
  */
@@ -76,7 +76,7 @@ const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
 
 /**
  * Starts the picking job of the single line, scans the source HU ("Kommissionieren aus") and the picking slot,
- * and opens the line's scan screen (S5): with a source HU known and nothing picked, the line tap goes there directly.
+ * and opens the line's scan screen: with a source HU known and nothing picked, the line tap goes there directly.
  */
 const openLineScanScreen = async (masterdata) => {
     await LoginScreen.login(masterdata.login.user);

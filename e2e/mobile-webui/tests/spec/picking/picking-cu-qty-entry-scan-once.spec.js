@@ -8,12 +8,11 @@ import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, 
 restoreSysconfigsAfterEach(test);
 
 /**
- * CU quantity entry, Scan once ("one label, type a count"): count, source, box, over-pick, line done (TC5, TC5b, TC5c Scan once part,
- * TC6, TC7, TC9, TC10, TC1c, TC26, TC27 flow, pallet target).
+ * CU quantity entry, Scan once ("one label, type a count"): count, source, box, over-pick, line done, pallet target.
  *
  * Flow of the app as built: with a source HU scanned ("Kommissionieren aus"), a tap on a line with nothing picked opens its scan screen
  * directly; a label scan opens the quantity block; after OK the picker stays on the line (the block stays open, open quantity drops)
- * until the line is fully booked, then the app goes back to the job screen. Every booking needs an open box (`openBox()`), except TC5c.
+ * until the line is fully booked, then the app goes back to the job screen. Every booking needs an open box (`openBox()`), except the case that tests the missing box.
  * Source: one pallet of 20 boxes of 4 pieces, so a count of 5 needs pieces from two source boxes.
  */
 // noinspection JSUnusedLocalSymbols

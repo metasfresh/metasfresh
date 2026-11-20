@@ -9,7 +9,7 @@ import { allureMeta, BEST_BEFORE, book, createMasterdata, restoreSysconfigsAfter
 restoreSysconfigsAfterEach(test);
 
 /**
- * CU quantity entry, Scan once: the pinned count and the navigation around it (TC8, TC8b, TC24, re-entry via "HU verpacken").
+ * CU quantity entry, Scan once: the pinned count and the navigation around it (re-entry via "HU verpacken").
  *
  * The field suggests the last typed count, capped by the line's open quantity; confirming books it again on the
  * last scanned lot without a new scan; a label scanned inside the open block replaces product / lot / best-before

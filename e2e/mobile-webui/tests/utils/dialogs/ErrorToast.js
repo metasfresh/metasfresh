@@ -46,13 +46,19 @@ export const ErrorToast = {
             );
         }
 
+        const toast = page.locator('.Toastify__toast--error').first();
         const closeButton = page.locator('.Toastify__close-button--error').first();
         await closeButton.scrollIntoViewIfNeeded({ timeout: FAST_ACTION_TIMEOUT });
         await closeButton.tap({ timeout: FAST_ACTION_TIMEOUT });
-        // A message taller than the viewport (a backend error with its parameter dump) pushes the close
-        // button off-screen, so the tap above misses; the toast closes on a tap anywhere on it (closeOnClick).
-        if (!(await expect(toasts).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT }).then(() => true, () => false))) {
-            await page.locator('.Toastify__toast--error').first().tap({ position: { x: 20, y: 300 }, timeout: FAST_ACTION_TIMEOUT });
+        const isClosed = await expect(toasts).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT }).then(() => true, () => false);
+        if (!isClosed) {
+            // A message taller than the viewport (e.g. a backend error with its parameter dump) pushes the close button
+            // out of reach; the toast also closes on a tap anywhere on it (closeOnClick), so tap the middle of its visible part.
+            const viewport = page.viewportSize();
+            const toastBox = await toast.boundingBox();
+            const top = Math.max(toastBox.y, 0);
+            const bottom = Math.min(toastBox.y + toastBox.height, viewport.height);
+            await page.touchscreen.tap(toastBox.x + toastBox.width / 2, (top + bottom) / 2);
         }
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     },

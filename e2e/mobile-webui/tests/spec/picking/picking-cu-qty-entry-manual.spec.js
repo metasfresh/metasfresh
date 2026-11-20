@@ -17,7 +17,7 @@ restoreSysconfigsAfterEach(test);
  * Characterization of the Manual mode: these tests PASS before and after the CU quantity entry change.
  * The mobile config never sends `cuQtyEntryMode` / `cuLabelFormatName`, so the profile stays Manual.
  * A test format with the marker parts is active (created, not linked to the profile) as a precondition; that Manual
- * does not read labels with it is covered by TC1d (jest), not here: no label is scanned in these tests.
+ * does not read labels with it is covered by jest, not here: no label is scanned in these tests.
  */
 const createMasterdata = async ({ pickTo }) => {
     return await createMasterdataRememberingSysconfigs({
@@ -88,7 +88,7 @@ const openJob = async (masterdata, { withLU }) => {
     return { pickingJobId };
 };
 
-/** Opens the line on the scan screen (S5) and checks that Manual shows no CU-mode element. */
+/** Opens the line on the scan screen and checks that Manual shows no CU-mode element. */
 const openLineScanScreen = async ({ index }) => {
     await PickingJobScreen.clickLineButton({ index });
     await PickingJobLineScreen.waitForScreen();
@@ -97,7 +97,7 @@ const openLineScanScreen = async ({ index }) => {
     await PickLineScanScreen.expectNextBoxButtonHidden();
 };
 
-/** Scans the HU on the scan screen (S5), answers the quantity dialog, and goes back to the job screen (S2). */
+/** Scans the HU on the scan screen, answers the quantity dialog, and goes back to the job screen. */
 const scanAndPick = async ({ qrCode, qtyEntered, expectQtyEntered, qtyNotFoundReason }) => {
     await PickLineScanScreen.typeQRCode(qrCode);
     await GetQuantityDialog.fillAndPressDone({ qtyEntered, expectQtyEntered, qtyNotFoundReason });
@@ -180,7 +180,7 @@ test('Manual profile, partial pick asks a reason, "New TU" behaves as today', as
                 shipmentSchedules: {
                     P1: {},
                     P2: {
-                        // no box (TU) open: each OK of N TU makes N separate TUs (today's behaviour, F16)
+                        // no box (TU) open: each OK of N TU makes N separate TUs (today's behaviour)
                         qtyPicked: [
                             { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu2a', lu: '-', processed: false, shipmentLineId: '-' },
                             { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu2b', lu: '-', processed: false, shipmentLineId: '-' },
@@ -188,7 +188,7 @@ test('Manual profile, partial pick asks a reason, "New TU" behaves as today', as
                         ]
                     },
                     P3: {
-                        // "New TU" target set: all 10 TU of the line go into the one new TU (today's behaviour, F12 / F16)
+                        // "New TU" target set: all 10 TU of the line go into the one new TU (today's behaviour)
                         qtyPicked: [{ qtyPicked: "40 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu3', lu: '-', processed: false, shipmentLineId: '-' }]
                     },
                 }
