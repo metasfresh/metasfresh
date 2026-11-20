@@ -348,11 +348,12 @@ test('line with an unlimited-capacity packing that names a TU type: "Next box" o
 
     const masterdata = await createMasterdata({
         formatName: newFormatName(),
-        orders: [{ key: 'A', qty: 12, graiRequired: 'Y', piItemProduct: 'TU_INF' }],
-        // no qtyCUsPerTU: the capacity row of this TU type is unlimited
-        packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' } },
+        orders: [{ key: 'A', qty: 8, graiRequired: 'Y', piItemProduct: 'TU_INF' }],
+        // INF: no qtyCUsPerTU, the capacity row of this TU type is unlimited; G1: the GRAI mapped TU type of the next box
+        packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' }, ...graiTuType('G1') },
     });
-    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 12 });
+    const grai = masterdata.packingInstructions.G1.grai;
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 8 });
     await openLine({ index: 1 });
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(4);
@@ -362,10 +363,21 @@ test('line with an unlimited-capacity packing that names a TU type: "Next box" o
     await PickLineScanScreen.nextBox();
     await SelectPickTargetTUScreen.expectNotShown();
     await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.INF.tuName);   // the TU type of the line's packing
-    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 4 });
     await PickGraiScreen.expectNotShown();
 
-    await expectEveryPickedHUIsACUInATU({ pickingJobId, boxes: [{ qty: 4 }] });
+    await PickLineScanScreen.rescanGrai(grai);
+    await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.G1.tuName);
+    await GetQuantityDialog.clickDoneStayOpen();   // the line is done: back to the job screen
+    await PickGraiScreen.expectNotShown();
+    await PickingJobScreen.waitForScreen();
+
+    // box 1 was opened without GRAI: "Fertigstellen" is refused (customer GRAI required), and completes once every box has a GRAI
+    await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
+    await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', boxes: [{ qty: 4, grai: null }, { qty: 4, grai: grai }] });
+    await addGraiToBoxesInHUManager({ masterdata, boxes: ['tu1'] });
+    await PickingJobScreen.complete();
+    await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -473,9 +485,10 @@ test('Scan each CU: line with an unlimited-capacity packing that names a TU type
 
     const masterdata = await newScanEachMasterdata({
         orders: [{ key: 'A', qty: 2, graiRequired: 'Y', piItemProduct: 'TU_INF' }],
-        // no qtyCUsPerTU: the capacity row of this TU type is unlimited
-        packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' } },
+        // INF: no qtyCUsPerTU, the capacity row of this TU type is unlimited; G1: the GRAI mapped TU type of the next box
+        packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' }, ...graiTuType('G1') },
     });
+    const grai = masterdata.packingInstructions.G1.grai;
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1, openBox: false });
@@ -488,7 +501,18 @@ test('Scan each CU: line with an unlimited-capacity packing that names a TU type
     await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
     await PickGraiScreen.expectNotShown();
 
-    await expectEveryPickedHUIsACUInATU({ pickingJobId, boxes: [{ qty: 1 }] });
+    await PickLineScanScreen.scanGrai(grai);
+    await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.G1.tuName);
+    await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));   // the line is done: back to the job screen
+    await PickGraiScreen.expectNotShown();
+    await PickingJobScreen.waitForScreen();
+
+    // box 1 was opened without GRAI: "Fertigstellen" is refused (customer GRAI required), and completes once every box has a GRAI
+    await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
+    await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', boxes: [{ qty: 1, grai: null }, { qty: 1, grai: grai }] });
+    await addGraiToBoxesInHUManager({ masterdata, boxes: ['tu1'] });
+    await PickingJobScreen.complete();
+    await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
 });
 
 // noinspection JSUnusedLocalSymbols

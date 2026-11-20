@@ -115,7 +115,6 @@ public class PickingJobPickCommand
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
 	private final static AdMessageKey CU_NO_OPEN_BOX_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
 	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
-	private final static AdMessageKey CU_LINE_ALREADY_FULLY_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LINE_ALREADY_FULLY_PICKED");
 
 	//
 	// Services
@@ -363,7 +362,8 @@ public class PickingJobPickCommand
 	 * persists synchronously (M_Picking_Job_Step), so the reloaded job a sequential second request works from already
 	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
 	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
-	 * guard. Must run inside {@link #executeInTrx()}.
+	 * guard. The refusal has one message in both cases; with the always-refusing CU mode the values go to the log only
+	 * (no parameter dump in the message the picker sees). Must run inside {@link #executeInTrx()}.
 	 */
 	private void assertNotAboveOrderedQty()
 	{
@@ -387,24 +387,16 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		if (cuQtyEntryPolicy.isOverPickAlwaysRefused())
-		{
-			// a routine scan of the picker (one pack too many, or a pack scanned into a finished line): a short message without the values, they go to the log only
-			throw new AdempiereException(CU_LINE_ALREADY_FULLY_PICKED_ERROR_MSG)
-					.setParameter("pickingJobId", _pickingJob.getId())
-					.setParameter("pickingJobLineId", getLineId())
-					.setParameter("qtyToPick", qtyToPickCUs)
-					.setParameter("qtyOrdered", line.getQtyToPick())
-					.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
-		}
-
-		throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
-				.appendParametersToMessage()
+		final AdempiereException exception = new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
 				.setParameter("pickingJobId", _pickingJob.getId())
 				.setParameter("pickingJobLineId", getLineId())
 				.setParameter("qtyToPick", qtyToPickCUs)
 				.setParameter("qtyOrdered", line.getQtyToPick())
-				.setParameter("qtyAlreadyPicked", line.getQtyPicked());
+				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
+
+		// Scan each CU always refuses, so a routine scan of the picker (a pack into a finished line) lands here:
+		// the values go to the log only, a parameter dump would make the toast taller than the handheld screen.
+		throw cuQtyEntryPolicy.isOverPickAlwaysRefused() ? exception : exception.appendParametersToMessage();
 	}
 
 	public PickingJob execute()

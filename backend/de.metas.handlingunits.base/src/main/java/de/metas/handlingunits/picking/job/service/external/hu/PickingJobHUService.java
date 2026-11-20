@@ -139,7 +139,7 @@ public class PickingJobHUService
 	}
 
 	/**
-	 * The picks were booked in a CU quantity entry mode, i.e. the picked HU is the CU inside the open box (TU).
+	 * The GRAI carriers of the picked HUs, whatever the mode now is: a pick booked in a CU quantity entry mode picks the CU inside the open box (TU).
 	 * The GRAI of such a pick is stored on the box and a CU has no GRAI snapshot of its own, so every picked CU (virtual, non-aggregate HU in a TU) is replaced by its TU.
 	 */
 	@NonNull

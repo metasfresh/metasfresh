@@ -45,9 +45,10 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     position: 'bottom-center',
     transition: Bounce,
     // react-toastify caps a toast at 800px, taller than a handheld screen: a long message would push the close button off-screen.
-    // Cap it to the screen instead (minus the container's bottom margin), the message scrolls inside the toast.
+    // Cap it to the screen instead (minus the container's bottom margin). The toast body does not stretch to the toast's height
+    // (react-toastify: margin auto 0), so the body carries its own cap (toast cap minus the toast's padding) and scrolls the message.
     style: { maxHeight: 'calc(100vh - 6rem)' },
-    bodyStyle: { overflow: 'auto' },
+    bodyStyle: { overflow: 'auto', maxHeight: 'calc(100vh - 8rem)' },
     toastId,
   });
 

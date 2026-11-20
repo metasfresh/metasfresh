@@ -9,7 +9,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
@@ -27,7 +26,6 @@ import java.util.Map;
 public class PickingJobGRAIValidator
 {
 	@NonNull private final PickingJobHUService huService;
-	@NonNull private final MobileUIPickingUserProfileService configService;
 
 	// Parameters
 	@NonNull private final PickingJob pickingJob;
@@ -39,12 +37,10 @@ public class PickingJobGRAIValidator
 	@Builder
 	private PickingJobGRAIValidator(
 			@NonNull final PickingJobHUService huService,
-			@NonNull final MobileUIPickingUserProfileService configService,
 			@NonNull final PickingJobBPartnerService bpartnerService,
 			@NonNull final PickingJob pickingJob)
 	{
 		this.huService = huService;
-		this.configService = configService;
 		this.pickingJob = pickingJob;
 
 		this.salesOrderDummyGRAIProviders = SalesOrderDummyGRAIProviders.builder()
@@ -67,10 +63,8 @@ public class PickingJobGRAIValidator
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final ImmutableSet<HuId> huIds = ImmutableSet.copyOf(pickedHUIds);
-		final HUGraiSnapshotsCollection snapshots = segment.isCUsInBoxes()
-				? huService.getGraiSnapshotsOfBoxes(huIds)
-				: huService.getGraiSnapshots(huIds);
+		// decided per picked HU, not per mode: a CU in a box (CU quantity entry modes) is checked via its box, any other HU (Manual) as it is
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds));
 
 		if (graiRequired == GRAIRequired.Yes)
 		{
@@ -104,7 +98,6 @@ public class PickingJobGRAIValidator
 		return GRAIValidationSegment.builder()
 				.salesOrderId(line.getSalesOrderAndLineId().getOrderId())
 				.graiRequired(graiRequired)
-				.isCUsInBoxes(configService.getCUQtyEntryPolicy(customerId).isBookedAsSingleCUInBox())
 				.build();
 	}
 
@@ -120,6 +113,5 @@ public class PickingJobGRAIValidator
 	{
 		@NonNull OrderId salesOrderId;
 		@NonNull GRAIRequired graiRequired;
-		boolean isCUsInBoxes;
 	}
 }

@@ -106,7 +106,7 @@ class PickingJobCUQtyEntryPickTest
 	private static final String GRAI_CANONICAL = "7613204.00307.999999";
 
 	private static final AdMessageKey CU_NO_OPEN_BOX = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
-	private static final AdMessageKey CU_LINE_ALREADY_FULLY_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LINE_ALREADY_FULLY_PICKED");
+	private static final AdMessageKey PICK_OVERDELIVERY_BLOCKED = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	private PickingJobTestHelper helper;
 	private HUTestHelper huTestHelper;
@@ -495,6 +495,26 @@ class PickingJobCUQtyEntryPickTest
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GRAI-N");
 			final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HU is the CU, not the box").doesNotContain(openBoxId(job));
+
+			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+		}
+
+		/**
+		 * The customer is switched to Manual while a job picked in Scan each CU is open: the check follows the picked HU (a CU in a box), not the current mode,
+		 * so the box without GRAI still refuses completion.
+		 */
+		@Test
+		void newModePick_thenModeSwitchedToManual_cuPickedInBoxWithoutGrai_isStillRefused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			setCustomerGraiRequired(GRAIRequired.Yes);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GRAI-S");
+			final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HU is the CU, not the box").doesNotContain(openBoxId(job));
+
+			setProfile(CUQtyEntryMode.MANUAL);
 
 			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
 					.isInstanceOf(AdempiereException.class)
@@ -1222,7 +1242,7 @@ class PickingJobCUQtyEntryPickTest
 
 		/**
 		 * the line's quantity (2) is reached: a further scan books nothing, whether or not the profile allows over-pick with a confirmation prompt (the Scan each CU loop has no prompt).
-		 * The picker reaches this with a routine scan, so the refusal is a short message without technical parameters (a parameter dump makes the toast taller than the handheld screen).
+		 * The picker reaches this with a routine scan, so the refusal carries the existing over-delivery message without the technical parameters (a parameter dump makes the toast taller than the handheld screen).
 		 */
 		@ParameterizedTest(name = "isShowConfirmationPromptWhenOverPick={0}")
 		@ValueSource(booleans = { true, false })
@@ -1241,8 +1261,9 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).as("line done: 2 of 2").isEqualByComparingTo("2");
 			final PickingJob jobWhenDone = job;
 
-			assertFails(() -> pickEach(jobWhenDone, source, LOT_A, "3"), CU_LINE_ALREADY_FULLY_PICKED);
 			assertThatThrownBy(() -> pickEach(jobWhenDone, source, LOT_A, "3"))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PICK_OVERDELIVERY_BLOCKED.toAD_Message()))
 					.as("no technical parameters in the message the picker sees")
 					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked"));
 

@@ -15,6 +15,7 @@ describe('toastError', () => {
     expect(toastErrorSpy).toHaveBeenCalledTimes(1);
     const options = toastErrorSpy.mock.calls[0][1];
     expect(options.style).toEqual({ maxHeight: 'calc(100vh - 6rem)' });
-    expect(options.bodyStyle).toEqual({ overflow: 'auto' });
+    // the toast body (not the toast) is the scroll container: react-toastify's body does not stretch to the toast's height, so it needs its own cap
+    expect(options.bodyStyle).toEqual({ overflow: 'auto', maxHeight: 'calc(100vh - 8rem)' });
   });
 });

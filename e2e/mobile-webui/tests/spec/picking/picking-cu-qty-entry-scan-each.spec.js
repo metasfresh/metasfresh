@@ -5,7 +5,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { allureMeta, MSG_NO_OPEN_BOX, newFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
-import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_NO_PACK_ID, MSG_LINE_ALREADY_FULLY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
+import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
 
@@ -88,7 +88,7 @@ test('a scan after the line is done books nothing: the picker re-enters the fini
         await PickingJobLineScreen.waitForScreen();
         await PickingJobLineScreen.tapPickHUButton();
         await PickLineScanScreen.waitForScreen();
-        await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 4 }), MSG_LINE_ALREADY_FULLY_PICKED);
+        await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 4 }), MSG_OVER_PICK);
         await Backend.expect({
             pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: threeBooked } } } },
             hus: { tu1: { storages: { P1: '3 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }, { qty: '1 PCE' }] } },
