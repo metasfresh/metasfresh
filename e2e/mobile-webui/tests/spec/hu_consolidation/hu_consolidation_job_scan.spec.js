@@ -58,7 +58,7 @@ import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
-import { expectErrorToast } from '../../utils/common';
+import { expectErrorToast, page } from '../../utils/common';
 
 // sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
 let sysconfigsToRestore = null;
@@ -1061,5 +1061,101 @@ test('TC23 Schliessen with a failing label print (label process fails): error sh
     await Backend.expect({
         title: 'the shipped pallet has HUStatus E (shipped)',
         hus: { [targetLUQRCode]: { huStatus: 'E' } },
+    });
+});
+
+/** Tones of the scanner beeps (utils/audio.js: OK 1000 Hz, error 100 Hz; BarcodeScannerComponent.jsx okBeepParams / errorBeepParams) */
+const OK_BEEP_HZ = 1000;
+const ERROR_BEEP_HZ = 100;
+const SCANNER_ERROR_TOAST_ID = 'BarcodeScannerComponentError';
+
+/** Records the frequency of every oscillator started from now on (the beep sets it with AudioParam.setValueAtTime; the volume uses .value, not recorded). */
+const startRecordingBeepTones = async () => await page.evaluate(() => {
+    window.__beepTones = [];
+    if (!window.__beepRecorderInstalled) {
+        window.__beepRecorderInstalled = true;
+        const original = AudioParam.prototype.setValueAtTime;
+        AudioParam.prototype.setValueAtTime = function (value, time) {
+            window.__beepTones.push(value); // only the oscillator frequency is set with setValueAtTime (the volume uses .value)
+            return original.call(this, value, time);
+        };
+    }
+});
+const takeBeepTones = async () => await page.evaluate(() => window.__beepTones.splice(0));
+
+// noinspection JSUnusedLocalSymbols
+test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanner\'s one error message, an accepted scan the OK beep', async ({ page: _page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan screen');
+    await allure.severity('critical');
+
+    // AC30-SLOTBEEP: the slot screen's scan handler must not swallow the error, else the scanner plays the OK beep for a refused scan
+    const masterdata = await createJobScanMasterdata({
+        language: 'de_DE',
+        sysconfigs: { 'mobileui.frontend.barcodeScanner.scanDuplicatesIntervalMillis': '0' },
+        pickingSlots: { slot1: {}, slot2: {} },
+    });
+    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
+    const { slot1, slot2 } = masterdata.pickingSlots;
+    const { SO1, SO2 } = masterdata.salesOrders;
+    const serialBase = String(Date.now());
+    const graiInSlot1 = graiWithSerial(masterdata.packingInstructions.PI_P1.grai, `${serialBase}1`);
+    const graiInSlot2 = graiWithSerial(masterdata.packingInstructions.PI_P2.grai, `${serialBase}2`);
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai: graiInSlot1, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+    await pickOneGraiCrate({ documentNo: SO2.documentNo, slotQrCode: slot2.qrCode, grai: graiInSlot2, huQrCode: masterdata.handlingUnits.HU2.qrCode });
+
+    await test.step('Open the job, choose a pallet, open slot1 (holds a GRAI crate: the scanner shows)', async () => {
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+        await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });
+        await PickingSlotScreen.expectScannerVisible();
+        await startRecordingBeepTones();
+    });
+
+    /** the refused scan: exactly one error message box that carries the scanner's toast id, and the error beep (no OK beep) */
+    const scanRefused = async (title, barcode) => await test.step(`Refused: ${title}`, async () => {
+        await expectErrorToast(title, async () => {
+            await PickingSlotScreen.scanGRAI({ graiString: barcode });
+            await PickingSlotScreen.waitForScreen();
+        }, async ({ toast, textContent }) => {
+            expect((textContent ?? '').trim().length).toBeGreaterThan(0);
+            const toastElement = toast.locator('xpath=ancestor::*[contains(@class,"Toastify__toast--error")][1]');
+            await expect(toastElement).toHaveAttribute('id', SCANNER_ERROR_TOAST_ID);
+        });
+        // observed 2026-11-20 (not root-caused): a refused scan right after the previous message was tapped away showed no message (2 runs: 1 failed without this pause, 1 passed with it); same scanner toast id, see BS-22
+        await page.waitForTimeout(3000);
+        const tones = await takeBeepTones();
+        expect(tones, `beep tones played for ${title}`).toContain(ERROR_BEEP_HZ);
+        expect(tones, `beep tones played for ${title}`).not.toContain(OK_BEEP_HZ);
+    });
+
+    await scanRefused('EAN-13', '4006381333931');
+    await scanRefused('GRAI of the crate in slot2 (not in this slot)', graiInSlot2);
+
+    await test.step('Nothing moved by the refused scans', async () => {
+        await Backend.expect({
+            title: 'both crates are still in their slots',
+            pickingSlots: {
+                [slot1.qrCode]: { queue: [{ hu: 'crate1' }] },
+                [slot2.qrCode]: { queue: [{ hu: 'crate2' }] },
+            },
+        });
+    });
+
+    await test.step('Accepted: GRAI of the crate in this slot -> OK beep, no message, crate moved', async () => {
+        await PickingSlotScreen.scanGRAI({ graiString: graiInSlot1 });
+        await expect.poll(async () => (await page.evaluate(() => window.__beepTones.slice())).length, { timeout: 20000 }).toBeGreaterThan(0);
+        const tones = await takeBeepTones();
+        expect(tones).toContain(OK_BEEP_HZ);
+        expect(tones).not.toContain(ERROR_BEEP_HZ);
+        await ErrorToast.expectNoErrorToast();
+        await PickingSlotScreen.waitNotLoading();
     });
 });
