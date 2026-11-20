@@ -239,13 +239,14 @@ public class C_OLCand_StepDef
 	 * @cucumber.stepdef Changes an already-loaded {@code C_OLCand} like a user would in the window and saves it (which triggers the candidate's validation).
 	 * @cucumber.columns
 	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the OLCand to update<br>
-	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) new packing instruction override
+	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) new packing instruction override<br>
+	 *   <b>POReference</b> — (optional, null-allowed) new PO reference; {@code null} clears it
 	 * @cucumber.depends StepDefData: C_OLCand_StepDefData, M_HU_PI_Item_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_OLCand:
-	 *   | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_Override_ID.Identifier |
-	 *   | olCand                 | huItemProduct                                    |
+	 *   | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_Override_ID.Identifier | POReference |
+	 *   | olCand                 | huItemProduct                                    | PO_4711     |
 	 * </pre>
 	 */
 	@And("update C_OLCand:")
@@ -261,6 +262,7 @@ public class C_OLCand_StepDef
 			row.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
 					.map(id -> id.lookupIn(huItemProductTable))
 					.ifPresent(huPIItemProduct -> olCand.setM_HU_PI_Item_Product_Override_ID(huPIItemProduct.getM_HU_PI_Item_Product_ID()));
+			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(poReference -> olCand.setPOReference(DataTableUtil.nullToken2Null(poReference)));
 
 			InterfaceWrapperHelper.saveRecord(olCand);
 		});
@@ -287,38 +289,6 @@ public class C_OLCand_StepDef
 
 		final String errorMsg = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ErrorMsg);
 		assertThat(olCand.getErrorMsg()).contains(errorMsg);
-	}
-
-	/**
-	 * Updates the {@code POReference} of a {@code C_OLCand} through a model save, like a user changing the
-	 * order candidate, so that the order candidate's model interceptors fire.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the order candidate to update<br>
-	 *   <b>POReference</b> — (optional, null-allowed) new PO reference; {@code null} clears it<br>
-	 * @cucumber.depends StepDefData: C_OLCand_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And update C_OLCand:
-	 *   | C_OLCand_ID | POReference |
-	 *   | olCand_1    | PO_4711     |
-	 * </pre>
-	 */
-	@And("update C_OLCand:")
-	public void update_C_OLCand(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row ->
-		{
-			final StepDefDataIdentifier olCandIdentifier = row.getAsIdentifier(COLUMNNAME_C_OLCand_ID);
-			final I_C_OLCand olCand = olCandIdentifier.lookupNotNullIn(olCandTable);
-			InterfaceWrapperHelper.refresh(olCand);
-
-			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(poReference -> olCand.setPOReference(DataTableUtil.nullToken2Null(poReference)));
-
-			InterfaceWrapperHelper.saveRecord(olCand);
-			olCandIdentifier.putOrReplace(olCandTable, olCand);
-		});
 	}
 
 	/**
