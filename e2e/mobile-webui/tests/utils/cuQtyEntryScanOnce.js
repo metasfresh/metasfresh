@@ -70,7 +70,7 @@ export const newFormatName = () => `cuqe-so-${uniqueProductValue()}`;
  * @param {string[]} [p.pickTo]
  * @param {object} [p.sysconfigs] sysconfigs to set for the test (on top of the launcher limit)
  * @param {boolean} [p.anonymousPickHUsOnTheFly]
- * @param {boolean} [p.allowCompletingPartialPickingJob] profile flag; undefined = not sent (the backend keeps the current value), so a test that completes a partly picked job must pass true
+ * @param {boolean} [p.allowCompletingPartialPickingJob] profile flag, always sent (default false) so no spec inherits it from an earlier one; a test that completes a partly picked job passes true
  * @param {{name: string, withPackId?: boolean}[]} [p.formats] formats to create; default = `formatName` without a pack-ID part
  */
 export const createMasterdata = async ({
@@ -83,7 +83,7 @@ export const createMasterdata = async ({
                                            pickTo = ['TU'],
                                            sysconfigs = {},
                                            anonymousPickHUsOnTheFly = false,
-                                           allowCompletingPartialPickingJob,
+                                           allowCompletingPartialPickingJob = false,
                                            formats = [{ name: formatName, withPackId: false }],
                                        }) => {
     const bpartners = {};
@@ -113,7 +113,7 @@ export const createMasterdata = async ({
                     allowPickingAnyHU: true,
                     anonymousPickHUsOnTheFly,
                     showPromptWhenOverPicking: false,
-                    ...(allowCompletingPartialPickingJob !== undefined ? { allowCompletingPartialPickingJob } : {}),
+                    allowCompletingPartialPickingJob,
                     pickTo,
                     ...(profileMode ? { cuQtyEntryMode: profileMode } : {}),
                     cuLabelFormatName: formatName,
