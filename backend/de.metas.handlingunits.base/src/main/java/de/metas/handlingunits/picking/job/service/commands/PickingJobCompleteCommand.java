@@ -125,6 +125,7 @@ public class PickingJobCompleteCommand
 
 		PickingJobGRAIValidator.builder()
 				.huService(huService)
+				.configService(configService)
 				.bpartnerService(bpartnerService)
 				.pickingJob(pickingJob)
 				.build()

@@ -7,6 +7,7 @@ import * as uiTrace from './ui_trace';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { ContextualError } from './ContextualError';
+import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from './toastLayout';
 
 export const toastErrorFromObj = (obj, toastId) => {
   console.log('toastErrorFromObj', { obj });
@@ -44,11 +45,8 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     autoClose: 1000 * 60 * 5,
     position: 'bottom-center',
     transition: Bounce,
-    // react-toastify caps a toast at 800px, taller than a handheld screen: a long message would push the close button off-screen.
-    // Cap it to the screen instead (minus the container's bottom margin). The toast body does not stretch to the toast's height
-    // (react-toastify: margin auto 0), so the body carries its own cap (toast cap minus the toast's padding) and scrolls the message.
-    style: { maxHeight: 'calc(100vh - 6rem)' },
-    bodyStyle: { overflow: 'auto', maxHeight: 'calc(100vh - 8rem)' },
+    style: ERROR_TOAST_STYLE,
+    bodyStyle: ERROR_TOAST_BODY_STYLE,
     toastId,
   });
 

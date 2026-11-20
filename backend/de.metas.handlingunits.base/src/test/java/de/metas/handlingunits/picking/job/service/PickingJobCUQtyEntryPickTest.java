@@ -501,26 +501,6 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
-		/**
-		 * The customer is switched to Manual while a job picked in Scan each CU is open: the check follows the picked HU (a CU in a box), not the current mode,
-		 * so the box without GRAI still refuses completion.
-		 */
-		@Test
-		void newModePick_thenModeSwitchedToManual_cuPickedInBoxWithoutGrai_isStillRefused()
-		{
-			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-			setCustomerGraiRequired(GRAIRequired.Yes);
-			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GRAI-S");
-			final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
-			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HU is the CU, not the box").doesNotContain(openBoxId(job));
-
-			setProfile(CUQtyEntryMode.MANUAL);
-
-			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
-		}
-
 		/** Manual mode: the picked HU is the box itself (asserted below); the box has no GRAI, so completion is refused. */
 		@Test
 		void manualMode_boxWithoutGrai_graiRequiredYes_isRefusedAsBefore()

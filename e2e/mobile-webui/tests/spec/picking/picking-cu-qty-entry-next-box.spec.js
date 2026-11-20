@@ -343,7 +343,7 @@ test('line with a box packing "TU x 4 Stk" (customer GRAI required): first booki
 });
 
 // noinspection JSUnusedLocalSymbols
-test('line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list', async ({ page }) => {
+test('line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list, a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
     allureMeta('Open box first, unlimited capacity packing');
 
     const masterdata = await createMasterdata({
@@ -480,7 +480,7 @@ test('Scan each CU: line with a box packing "TU x 4 Stk" (customer GRAI required
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan each CU: line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list', async ({ page }) => {
+test('Scan each CU: line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list, a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
     allureMeta('Scan each CU open box first, unlimited capacity packing');
 
     const masterdata = await newScanEachMasterdata({
