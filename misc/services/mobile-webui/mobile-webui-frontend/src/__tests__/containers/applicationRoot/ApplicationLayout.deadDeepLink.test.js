@@ -10,10 +10,9 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 // Self-contained guard: a dead deep-link still redirects home.
 //
-// The sibling suite ApplicationLayout.bounceHome.test.js covers the other half (a just-started workflow is
-// not bounced home); this file pins the dead deep-link half and is kept self-contained: do NOT add an
-// import or a jest.mock for anything outside containers/applicationRoot/, reducers/wfProcesses/ and
-// actions/WorkflowActions.
+// This file repeats both halves of the sibling suite ApplicationLayout.bounceHome.test.js and is kept
+// self-contained: do NOT add an import or a jest.mock for anything outside containers/applicationRoot/,
+// reducers/wfProcesses/ and actions/WorkflowActions.
 //
 // Both halves of the guarantee live below:
 //
