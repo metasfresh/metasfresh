@@ -126,7 +126,6 @@ public class JsonPickingJobConverterCommand
 		return ImmutableList.copyOf(result);
 	}
 
-
 	/** The options of the line's own customer: a mixed product job can hold lines of different customers, each with its own mode / format. */
 	@NonNull
 	private PickingJobOptions getLineOptions(@NonNull final PickingJobLine line)
