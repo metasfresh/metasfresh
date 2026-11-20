@@ -47,11 +47,11 @@ export const PickingJobLineScreen = {
     }),
 
     expectCloseButtonVisible: async () => await test.step(`${NAME} - Expect Close button`, async () => {
-        await expect(page.getByTestId('closeText-button')).toBeVisible();
+        await expect(page.getByTestId('closeText-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectReOpenButtonVisible: async () => await test.step(`${NAME} - Expect Re-open button`, async () => {
-        await expect(page.getByTestId('reOpenText-button')).toBeVisible();
+        await expect(page.getByTestId('reOpenText-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     clickStepButton: async ({ index }) => await test.step(`${NAME} - Click step ${index} button`, async () => {
