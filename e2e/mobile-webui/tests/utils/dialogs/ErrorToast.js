@@ -54,11 +54,14 @@ export const ErrorToast = {
         if (!isClosed) {
             // A message taller than the viewport (e.g. a backend error with its parameter dump) pushes the close button
             // out of reach; the toast also closes on a tap anywhere on it (closeOnClick), so tap the middle of its visible part.
-            const viewport = page.viewportSize();
-            const toastBox = await toast.boundingBox();
-            const top = Math.max(toastBox.y, 0);
-            const bottom = Math.min(toastBox.y + toastBox.height, viewport.height);
-            await page.touchscreen.tap(toastBox.x + toastBox.width / 2, (top + bottom) / 2);
+            // The toast may have unmounted meanwhile (late exit animation): then there is nothing to tap and the final count check below decides.
+            const toastBox = await toast.boundingBox({ timeout: FAST_ACTION_TIMEOUT }).catch(() => null);
+            if (toastBox) {
+                const viewport = page.viewportSize();
+                const top = Math.max(toastBox.y, 0);
+                const bottom = Math.min(toastBox.y + toastBox.height, viewport.height);
+                await page.touchscreen.tap(toastBox.x + toastBox.width / 2, (top + bottom) / 2);
+            }
         }
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     },
