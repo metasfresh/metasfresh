@@ -100,7 +100,7 @@ test('TC12c: the same pack in two jobs: job 1 picked it, job 2 books it without 
 
     // a product job holds every customer who ordered the product: job 1 = both orders; the picker packs customer A's line only
     // and completes; customer B's still open order is offered again and becomes job 2 (same product, same lot, same pack)
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }] });
+    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true }); // job 1 completes with customer B's line unpicked
     const lot = uniqueLot();
     const label = packLabelOf({ masterdata, lot, packId: 2 });
 
