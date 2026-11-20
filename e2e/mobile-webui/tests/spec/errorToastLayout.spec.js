@@ -1,16 +1,18 @@
 import { expect, test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from '../../../../misc/services/mobile-webui/mobile-webui-frontend/src/utils/toastLayout';
 
 /**
- * Layout of a long error toast on a handheld screen, in a real browser with the real react-toastify stylesheet and the
- * very style values `toast.jsx` passes: the message scrolls inside the toast and the close button stays on screen.
+ * Layout of a long error toast on a handheld screen, in a real browser with the react-toastify stylesheet (fixture copy)
+ * and the style values `toast.jsx` passes: the message scrolls inside the toast and the close button stays on screen.
  * Needs no backend and no login.
  */
-const toastifyCss = fs.readFileSync(
-    path.resolve(__dirname, '../../../../misc/services/mobile-webui/mobile-webui-frontend/node_modules/react-toastify/dist/ReactToastify.css'),
-    'utf8');
+const toastifyCss = fs.readFileSync(path.resolve(__dirname, '../fixtures/ReactToastify-7.0.0.css'), 'utf8');
+
+// The values of `ERROR_TOAST_STYLE` / `ERROR_TOAST_BODY_STYLE` in mobile-webui-frontend/src/utils/toastLayout.js, which toast.jsx passes to react-toastify
+// (its jest test pins the same literals; the CI image of this suite holds no frontend sources, so they are repeated here).
+const ERROR_TOAST_STYLE = { maxHeight: 'calc(100vh - 6rem)' };
+const ERROR_TOAST_BODY_STYLE = { overflow: 'auto', maxHeight: 'calc(100vh - 8rem)' };
 const css = (style) => Object.entries(style).map(([k, v]) => `${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}:${v}`).join(';');
 
 test.use({ viewport: { width: 360, height: 640 } });

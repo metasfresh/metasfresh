@@ -139,33 +139,36 @@ public class PickingJobHUService
 	}
 
 	/**
-	 * The picks were booked in a CU quantity entry mode, i.e. the picked HU is the CU inside the open box (TU).
-	 * The GRAI of such a pick is stored on the box and a CU has no GRAI snapshot of its own, so every picked CU (virtual, non-aggregate HU in a TU) is replaced by its TU.
+	 * The GRAI snapshots of the picked HUs. A CU that was booked in a CU quantity entry mode ({@code cusBookedWithOwnQRCode}) sits in a box (TU) which carries
+	 * the GRAI and a CU has no GRAI snapshot of its own, so it is replaced by its TU. The one-argument form treats every CU of {@code huIds} as booked that way. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
 	 */
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds)
 	{
-		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds));
+		return getGraiSnapshotsOfBoxes(huIds, huIds);
 	}
 
-	/**
-	 * A picked CU (virtual, non-aggregate HU) inside a TU is checked via its TU, which carries the GRAI.
-	 * Any other HU (TU, LU, aggregate VHU, CU without a TU parent) stays as is.
-	 */
-	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds)
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithOwnQRCode)
+	{
+		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithOwnQRCode));
+	}
+
+	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithOwnQRCode)
 	{
 		// CUs of the same box share their parent item: walk up once per parent item, not once per CU
 		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
-			if (isCUInTU(hu))
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+			if (cusBookedWithOwnQRCode.contains(huId) && isCUInTU(hu))
 			{
 				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getTUIdOrSelf(hu)));
 			}
 			else
 			{
-				result.add(HuId.ofRepoId(hu.getM_HU_ID()));
+				result.add(huId);
 			}
 		}
 		return result.build();

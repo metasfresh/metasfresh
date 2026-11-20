@@ -501,6 +501,60 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
+		/**
+		 * The customer is switched to Manual while a job picked in Scan each CU is open: the check follows the picked HU (a CU in a box), not the current mode,
+		 * so the box without GRAI still refuses completion.
+		 */
+		@Test
+		void newModePick_thenModeSwitchedToManual_cuPickedInBoxWithoutGrai_isStillRefused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			setCustomerGraiRequired(GRAIRequired.Yes);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GRAI-S");
+			final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HU is the CU, not the box").doesNotContain(openBoxId(job));
+
+			setProfile(CUQtyEntryMode.MANUAL);
+
+			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+		}
+
+		/** The reverse switch: a job picked in Manual, then the customer is switched to a new mode: the box is checked as picked (as on the base branch), not looked up by the CU rule. */
+		@Test
+		void manualPick_thenModeSwitchedToNewMode_boxWithoutGrai_isRefusedAsBefore()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			setCustomerGraiRequired(GRAIRequired.Yes);
+			final HUInfo source = sourceBox("QR-GRAI-R");
+			final PickingJob job = pick(openBoxFromLinePacking(createJob(null, true)), source, "5", null, false, null);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HU is the box").containsExactly(openBoxId(job));
+
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+
+			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+		}
+
+		/**
+		 * A CU inside a TU that was NOT booked in a CU quantity entry mode (Manual records the box's QR code with such a CU) is checked as it is, as on the base branch:
+		 * the CU has no GRAI snapshot, so the box is not looked up. Only a CU booked with its own QR code is replaced by its box.
+		 */
+		@Test
+		void cuInTU_notBookedWithOwnQRCode_isCheckedAsItIs_bookedWithOwnQRCode_viaItsBox()
+		{
+			final HuId boxId = helper.createHU(tuPIId, productId, helper.qty("4", productId));
+			final HuId cuId = HuId.ofRepoId(cusOf(boxId).get(0).getM_HU_ID());
+			assertThat(helper.huService.isCUInTU(handlingUnitsBL.getById(cuId))).as("the CU sits in the box").isTrue();
+
+			assertThat(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(cuId), ImmutableSet.of()))
+					.as("Manual-shaped CU: checked as it is, the CU has no GRAI snapshot").isEmpty();
+			assertThat(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(cuId), ImmutableSet.of(cuId)))
+					.as("CU booked with its own QR code: its box is checked").extracting(snapshot -> snapshot.getHuId()).containsExactly(boxId);
+		}
+
 		/** Manual mode: the picked HU is the box itself (asserted below); the box has no GRAI, so completion is refused. */
 		@Test
 		void manualMode_boxWithoutGrai_graiRequiredYes_isRefusedAsBefore()

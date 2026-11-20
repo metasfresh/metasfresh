@@ -162,6 +162,12 @@ public class PickingJobStep
 	}
 
 	@NonNull
+	public List<HUInfo> getPickedHUInfos()
+	{
+		return pickFroms.getPickedHUInfos();
+	}
+
+	@NonNull
 	public Optional<PickingJobStepPickedToHU> getLastPickedHU()
 	{
 		return pickFroms.getLastPickedHU();

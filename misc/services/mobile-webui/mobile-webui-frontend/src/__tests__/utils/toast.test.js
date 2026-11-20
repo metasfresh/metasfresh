@@ -17,5 +17,8 @@ describe('toastError', () => {
     const options = toastErrorSpy.mock.calls[0][1];
     expect(options.style).toBe(ERROR_TOAST_STYLE);
     expect(options.bodyStyle).toBe(ERROR_TOAST_BODY_STYLE);
+    // the same literals are repeated in e2e/mobile-webui/tests/spec/errorToastLayout.spec.js (its CI image holds no frontend sources)
+    expect(ERROR_TOAST_STYLE).toEqual({ maxHeight: 'calc(100vh - 6rem)' });
+    expect(ERROR_TOAST_BODY_STYLE).toEqual({ overflow: 'auto', maxHeight: 'calc(100vh - 8rem)' });
   });
 });
