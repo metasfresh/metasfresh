@@ -69,6 +69,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.createFrom.LegacyOrderCopyCommand;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
@@ -762,6 +763,8 @@ public class C_Order_StepDef
 	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
 	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
 	 *       repeated local runs</li>
+	 *   <li>{@code IsPOReferenceBuyerOrderNo} – boolean; set in the same save as a {@code POReference}
+	 *       change when both columns are given</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -809,6 +812,8 @@ public class C_Order_StepDef
 		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
 		tableRow.getAsOptionalName(COLUMNNAME_POReference)
 				.ifPresent(order::setPOReference);
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsPOReferenceBuyerOrderNo)
+				.ifPresent(order::setIsPOReferenceBuyerOrderNo);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
@@ -845,6 +850,7 @@ public class C_Order_StepDef
 	 *   <li>{@code PaymentRule} — optional string</li>
 	 *   <li>{@code OPT.M_Warehouse_ID.Identifier} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData};
 	 *       when absent the warehouse is not validated</li>
+	 *   <li>{@code IsPOReferenceBuyerOrderNo} — optional boolean</li>
 	 *   <li>(plus further optional columns: AD_User_ID, Bill_BPartner_ID, Bill_Location_ID, Bill_User_ID, EMail,
 	 *       ExternalId, ExternalSystem, AD_InputDataSource_ID, IsDropShip, DropShip_*, IsUseHandOver_Location,
 	 *       HandOver_*, C_Incoterms, IncotermLocation, C_PromotionCode_ID, C_PromotionCode2_ID, C_Project_ID, LC_Date)</li>
@@ -959,6 +965,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_POReference)
 				.ifPresent(poReference -> softly.assertThat(order.getPOReference()).as("POReference for Identifier=%s", identifierStr).isEqualTo(poReference));
+
+		row.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsPOReferenceBuyerOrderNo)
+				.ifPresent(expected -> softly.assertThat(order.isPOReferenceBuyerOrderNo()).as("IsPOReferenceBuyerOrderNo for Identifier=%s", identifierStr).isEqualTo(expected));
 
 		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
 				.ifPresent(externalSystemValue -> {
@@ -1125,6 +1134,37 @@ public class C_Order_StepDef
 			final I_C_Order clonedOrder = load(po.get_ID(), I_C_Order.class);
 			orderTable.putOrReplace(clonedOrderIdentifier, clonedOrder);
 		}
+	}
+
+	/**
+	 * Copies an order header without lines, the way the subscription contract change does it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID.Identifier</b> — (required, identifier-ref) the order to copy<br>
+	 *   <b>CopiedOrder.C_Order_ID.Identifier</b> — (required) alias for the copy<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When C_Order header is copied the way a contract change does it
+	 *   | C_Order_ID.Identifier | CopiedOrder.C_Order_ID.Identifier |
+	 *   | order_1               | copiedOrder                       |
+	 * </pre>
+	 */
+	@When("C_Order header is copied the way a contract change does it")
+	public void copy_order_header_like_contract_change(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Order order = row.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+			final I_C_Order copiedOrder = LegacyOrderCopyCommand.builder()
+					.originalOrder(order)
+					.copyLines(false)
+					.build()
+					.execute();
+
+			row.getAsIdentifier("CopiedOrder." + COLUMNNAME_C_Order_ID).putOrReplace(orderTable, copiedOrder);
+		});
 	}
 
 	@NonNull
