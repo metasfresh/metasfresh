@@ -938,6 +938,49 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("3");
 		}
 
+		/** Scan once, pallet + new box, first booking fills the box (4 into a box of 4): as without a pallet, the box holds ONE CU of 4, sits on the pallet, the CU is the picked HU; undo removes it. */
+		@Test
+		void scanOnce_palletAndNewBox_firstBookingFillsTheBox_oneCUOf4_undo()
+		{
+			assertPalletAndNewBox_firstBookingOfQty_oneCU_undo("4", "QR-LU-ONCE-FULL");
+		}
+
+		/** Scan once, pallet + new box, first booking above the box capacity (5 into a box of 4): as without a pallet, ONE CU of 5 in one box on the pallet; undo removes it. */
+		@Test
+		void scanOnce_palletAndNewBox_firstBookingAboveBoxCapacity_oneCUOf5_undo()
+		{
+			assertPalletAndNewBox_firstBookingOfQty_oneCU_undo("5", "QR-LU-ONCE-OVER");
+		}
+
+		private void assertPalletAndNewBox_firstBookingOfQty_oneCU_undo(final String qty, final String sourceQRCode)
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = helper.createVHUInfo(productId, "100", sourceQRCode);
+			PickingJob job = jobWithPalletAndNewBox();
+
+			job = pick(job, source, qty, label(PRODUCT_NO, LOT_A), false, null);
+
+			final HuId cuId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+			final I_M_HU cu = handlingUnitsBL.getById(cuId);
+			assertThat(handlingUnitsBL.isVirtual(cu)).as("the picked HU is the booked CU, not the box").isTrue();
+			assertThat(qtyOf(cu)).isEqualByComparingTo(qty);
+			final HuId boxId = boxOf(cuId);
+			assertThat(handlingUnitsBL.isAggregateHU(handlingUnitsBL.getById(boxId))).as("a real box, not an aggregated TU").isFalse();
+			assertThat(cusOf(boxId)).as("the box holds only the booked CU").extracting(I_M_HU::getM_HU_ID).containsExactly(cuId.getRepoId());
+			assertThat(palletOf(boxId)).as("the box sits on the pallet").isNotNull();
+			assertThat(openBoxId(job)).as("the box is the open box").isEqualTo(boxId);
+			assertThat(countQtyPickedRowsOfCU(cuId)).isEqualTo(1);
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo(qty);
+
+			job = undo(job, cuId, source.getQrCode(), null);
+
+			assertThat(handlingUnitsBL.getById(cuId).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(countQtyPickedRowsOfCU(cuId)).as("no QtyPicked row of the un-picked CU left").isEqualTo(0);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("nothing picked any more").isEmpty();
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
+			assertThat(cusOf(boxId)).as("the CU left the box").isEmpty();
+		}
+
 		/** Scan each CU, pallet + new box, packs 1 and 2 go into the same box on the pallet; undo of pack 1 removes only that CU. */
 		@Test
 		void scanEachCU_palletAndNewBox_twoPacks_undoFirst_removesOnlyThatCU()

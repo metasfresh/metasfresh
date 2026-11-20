@@ -561,7 +561,7 @@ class PickingJobGraiScanPickEndToEndTest
 	class GetGraiSnapshots
 	{
 		/**
-		 * AC16 / TC19 (CU quantity entry modes): the picked HU of a new-mode line is the CU (virtual HU) inside the open box (TU).
+		 * TC19 (CU quantity entry modes): the picked HU of a new-mode line is the CU (virtual HU) inside the open box (TU).
 		 * The GRAI lives on the box, so the completion-time GRAI check must read the box: a box without GRAI is refused.
 		 */
 		@Test
@@ -576,7 +576,7 @@ class PickingJobGraiScanPickEndToEndTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 		}
 
-		/** AC16 / TC19: same as above, but the box carries its GRAI: accepted. */
+		/** TC19: same as above, but the box carries its GRAI: accepted. */
 		@Test
 		void newMode_pickedCUInsideBox_boxWithGrai_isAccepted()
 		{
@@ -630,7 +630,7 @@ class PickingJobGraiScanPickEndToEndTest
 			snapshots.assertAllGraisAssigned();
 		}
 
-		/** YesWithDummyGRAIs + new mode: the box of a picked CU gets the dummy GRAI at completion (AC16: the box is the GRAI carrier). */
+		/** YesWithDummyGRAIs + new mode: the box of a picked CU gets the dummy GRAI at completion (the box is the GRAI carrier). */
 		@Test
 		void newMode_dummyGRAIs_writtenOnTheBoxOfThePickedCU()
 		{

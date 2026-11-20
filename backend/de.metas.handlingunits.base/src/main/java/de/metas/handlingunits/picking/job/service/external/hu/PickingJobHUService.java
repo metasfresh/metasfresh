@@ -397,6 +397,15 @@ public class PickingJobHUService
 		return huPIItemProductBL.getById(huPIItemProductId);
 	}
 
+	/** The TU packing instructions the given packing names; {@code null} for the virtual packing (no TU). */
+	@Nullable
+	public HuPackingInstructionsId getPackingTuPIId(@NonNull final HUPIItemProduct packingInfo)
+	{
+		return packingInfo.getId().isVirtualHU()
+				? null
+				: handlingUnitsBL.getPackingInstructionsId(packingInfo.getPiItemId());
+	}
+
 	public IHUQRCode parsePickFromScannedCode(final ScannedCode pickFromScannedCode) {return huQRCodesService.parse(pickFromScannedCode);}
 
 	public ExplainedOptional<HUInfo> resolvePickFromHUQRCode(

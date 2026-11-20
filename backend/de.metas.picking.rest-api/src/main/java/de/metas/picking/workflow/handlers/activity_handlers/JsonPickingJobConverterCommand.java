@@ -3,10 +3,7 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
@@ -28,7 +25,6 @@ import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
@@ -57,7 +53,6 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@NonNull private final PickingJob pickingJob;
 	@NonNull private final JsonOpts jsonOpts;
@@ -120,7 +115,7 @@ public class JsonPickingJobConverterCommand
 							.displayGroupKey(group.getKey())
 							.cuQtyEntryMode(getLineOptions(line).getCUQtyEntryModeOrDefault().getCode())
 							.cuLabelFormatId(getLineOptions(line).getCULabelFormatId().orElse(null))
-							.packingTuPIId(toPackingTuPIId(line.getPackingInfo(), handlingUnitsBL))
+							.packingTuPIId(huService.getPackingTuPIId(line.getPackingInfo()))
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
 									getAdditionalHeaderProperties(line), jsonOpts))
@@ -131,14 +126,6 @@ public class JsonPickingJobConverterCommand
 		return ImmutableList.copyOf(result);
 	}
 
-	/** The TU packing instructions the line's packing names; null = the packing names no TU PI (virtual packing). */
-	@Nullable
-	static HuPackingInstructionsId toPackingTuPIId(@NonNull final HUPIItemProduct packingInfo, @NonNull final IHandlingUnitsBL handlingUnitsBL)
-	{
-		return packingInfo.getId().isVirtualHU()
-				? null
-				: handlingUnitsBL.getPackingInstructionsId(packingInfo.getPiItemId());
-	}
 
 	/** The options of the line's own customer: a mixed product job can hold lines of different customers, each with its own mode / format. */
 	@NonNull

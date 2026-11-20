@@ -131,7 +131,7 @@ class PickingCULabelServiceTest
 
 	private ResolvedCULabel resolve(final String label, final CUQtyEntryMode mode, final ScannableCodeFormatId formatId)
 	{
-		return service.resolve(line(PRODUCT_NO), ScannedCode.ofString(label), mode, formatId);
+		return service.resolve(line(PRODUCT_NO), ScannedCode.ofString(label), mode.getPolicy(), formatId);
 	}
 
 	private static void assertFails(final Runnable runnable, final AdMessageKey expected)
@@ -341,7 +341,7 @@ class PickingCULabelServiceTest
 		{
 			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId(null).build();
 
-			assertFails(() -> service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU), CU_LABEL_NO_PACK_ID);
+			assertFails(() -> service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU.getPolicy()), CU_LABEL_NO_PACK_ID);
 		}
 
 		@Test
@@ -349,7 +349,7 @@ class PickingCULabelServiceTest
 		{
 			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
 
-			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU);
+			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU.getPolicy());
 			assertThat(resolved).isNotNull();
 			assertThat(resolved.getPackId()).isEqualTo("1");
 		}
@@ -371,7 +371,7 @@ class PickingCULabelServiceTest
 		{
 			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
 
-			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy());
 			assertThat(resolved).isNotNull();
 			assertThat(resolved.getPackId()).isNull();
 		}

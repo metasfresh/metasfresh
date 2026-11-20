@@ -28,7 +28,6 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
-import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
@@ -149,7 +148,6 @@ public class PickingJobPickCommand
 	private final boolean isSetGrais;
 	@Nullable private final GRAISet graiCodes;
 	@NonNull private final PickAttributes _manualPickAttributes;
-	@NonNull private final CUQtyEntryMode cuQtyEntryMode;
 	@NonNull private final CUQtyEntryPolicy cuQtyEntryPolicy;
 	@Nullable private final ScannedCode cuLabel;
 
@@ -222,7 +220,6 @@ public class PickingJobPickCommand
 		this.pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
-		this.cuQtyEntryMode = pickingJobOptions.getCUQtyEntryModeOrDefault();
 		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
 		this.cuLabel = cuLabel;
 		// new modes always book CUs into the open box: never a whole TU
@@ -460,9 +457,9 @@ public class PickingJobPickCommand
 			if (cuLabel == null)
 			{
 				// a contract violation, not an operator error: the mobile app always sends the scanned label in these modes
-				throw new AdempiereException("A CU label is required for a pick in the CU quantity entry mode " + cuQtyEntryMode);
+				throw new AdempiereException("A CU label is required for a pick in the CU quantity entry mode " + pickingJobOptions.getCUQtyEntryModeOrDefault());
 			}
-			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryMode, pickingJobOptions.getCULabelFormatId().orElse(null));
+			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryPolicy, pickingJobOptions.getCULabelFormatId().orElse(null));
 		}
 		return _resolvedCULabel;
 	}

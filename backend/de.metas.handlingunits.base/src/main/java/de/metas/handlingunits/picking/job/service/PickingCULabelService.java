@@ -8,7 +8,7 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
@@ -70,7 +70,7 @@ public class PickingCULabelService
 	public ResolvedCULabel resolve(
 			@NonNull final PickingJobLine line,
 			@NonNull final ScannedCode label,
-			@NonNull final CUQtyEntryMode mode,
+			@NonNull final CUQtyEntryPolicy policy,
 			@Nullable final ScannableCodeFormatId formatId)
 	{
 		final ScannableCodeFormat format = formatId != null
@@ -84,10 +84,10 @@ public class PickingCULabelService
 		final ExplainedOptional<ParsedScannedCode> parsed = format.parse(label);
 		if (parsed.isPresent())
 		{
-			return resolve(line, toCULabelData(parsed.get()), mode);
+			return resolve(line, toCULabelData(parsed.get()), policy);
 		}
 
-		if (mode.getPolicy().isPackIdRequired() && isEndingBeforePackId(format, label))
+		if (policy.isPackIdRequired() && isEndingBeforePackId(format, label))
 		{
 			throw userError(MSG_CU_LABEL_NO_PACK_ID);
 		}
@@ -98,7 +98,7 @@ public class PickingCULabelService
 	public ResolvedCULabel resolve(
 			@NonNull final PickingJobLine line,
 			@NonNull final CULabelData labelData,
-			@NonNull final CUQtyEntryMode mode)
+			@NonNull final CUQtyEntryPolicy policy)
 	{
 		if (labelData.getProductNo() == null)
 		{
@@ -109,7 +109,7 @@ public class PickingCULabelService
 			throw userError(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductValueAndName().getName());
 		}
 
-		final boolean isPackIdRequired = mode.getPolicy().isPackIdRequired();
+		final boolean isPackIdRequired = policy.isPackIdRequired();
 		final String packId = isPackIdRequired ? labelData.getPackId() : null;
 		if (isPackIdRequired && packId == null)
 		{

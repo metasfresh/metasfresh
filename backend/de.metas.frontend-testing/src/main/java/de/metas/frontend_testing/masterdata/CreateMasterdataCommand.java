@@ -68,11 +68,9 @@ import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -89,7 +87,6 @@ public class CreateMasterdataCommand
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
 	@NonNull private final JsonCreateMasterdataRequest request;
 
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final MasterdataContext context = new MasterdataContext();
 
 	public JsonCreateMasterdataResponse execute()
@@ -527,14 +524,9 @@ public class CreateMasterdataCommand
 			return;
 		}
 
-		trxManager.runInThreadInheritedTrx(this::recreateCustomQRCodeFormats);
-	}
-
-	private void recreateCustomQRCodeFormats()
-	{
-		MobileConfigCommand.unlinkTaggedCULabelFormats(services.scannableCodeFormatService, services.mobilePickingConfigService); // the generated formats are deleted by the command below
 		CustomQRCodeFormatCommand.builder()
 				.scannableCodeFormatService(services.scannableCodeFormatService)
+				.mobilePickingConfigService(services.mobilePickingConfigService)
 				.context(context)
 				.requests(request.getCustomQRCodeFormats())
 				.build()

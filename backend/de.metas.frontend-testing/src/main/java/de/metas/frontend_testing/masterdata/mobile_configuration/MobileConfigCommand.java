@@ -134,22 +134,6 @@ public class MobileConfigCommand
 	}
 
 	/**
-	 * Unlinks the profile and job options rows from the CU label formats tagged by {@link CustomQRCodeFormatCommand},
-	 * so that these formats can be deleted (and re-created) by the masterdata request.
-	 */
-	public static void unlinkTaggedCULabelFormats(
-			@NonNull final ScannableCodeFormatService scannableCodeFormatService,
-			@NonNull final MobileUIPickingUserProfileService mobilePickingConfigService)
-	{
-		final ImmutableList<ScannableCodeFormatId> taggedFormatIds = scannableCodeFormatService.getAll().toList()
-				.stream()
-				.filter(format -> CustomQRCodeFormatCommand.TAGGING_DESCRIPTION.equals(format.getDescription()))
-				.map(ScannableCodeFormat::getId)
-				.collect(ImmutableList.toImmutableList());
-		mobilePickingConfigService.unlinkCULabelFormats(taggedFormatIds);
-	}
-
-	/**
 	 * Resolves a CU label format by its name among the formats created by the masterdata (see {@link CustomQRCodeFormatCommand}).
 	 */
 	private ScannableCodeFormatId resolveFormatId(@NonNull final String formatName)
@@ -157,7 +141,7 @@ public class MobileConfigCommand
 		final ImmutableList<ScannableCodeFormat> matches = scannableCodeFormatService.getAll().toList()
 				.stream()
 				.filter(format -> formatName.equals(format.getName()))
-				.filter(format -> CustomQRCodeFormatCommand.TAGGING_DESCRIPTION.equals(format.getDescription()))
+				.filter(CustomQRCodeFormatCommand::isGeneratedFormat)
 				.collect(ImmutableList.toImmutableList());
 		if (matches.size() != 1)
 		{
