@@ -190,7 +190,7 @@
       "paid": "Rechnung %(docNo)s bezahlt",
       "paidRemainderAsCustomerCredit": "Rechnung bezahlt – Restbetrag als Kundenguthaben gebucht, Backoffice informiert",
       "bookedAsCustomerCredit": "Mit Karte bezahlt – als Kundenguthaben gebucht, Backoffice informiert",
-      "refunded": "Kartenzahlung erstattet",
+      "refunded": "Kartenzahlung rückerstattet",
       "released": "Freigegeben",
       "otherStatus": "Kartenzahlung: Status %(status)s",
       "cardPaymentOpen": "Kartenzahlung offen",

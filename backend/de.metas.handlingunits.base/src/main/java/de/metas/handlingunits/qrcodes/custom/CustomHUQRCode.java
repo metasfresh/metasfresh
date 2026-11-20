@@ -69,4 +69,9 @@ public class CustomHUQRCode implements IHUQRCode
 				.gtin(parsedScannedCode.getGtin())
 				.build());
 	}
+
+	public Optional<String> getPackId()
+	{
+		return Optional.ofNullable(parsedScannedCode.getPackId());
+	}
 }

@@ -2,12 +2,16 @@ package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.error.IErrorManager;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.service.ClientId;
@@ -17,13 +21,20 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class ScannableCodeFormatRepository
 {
 	@NotNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IErrorManager errorManager;
 	@NotNull private final CCache<Integer, ScannableCodeFormatsCollection> cache = CCache.<Integer, ScannableCodeFormatsCollection>builder()
 			.tableName(I_C_ScannableCode_Format.Table_Name)
 			.additionalTableNameToResetFor(I_C_ScannableCode_Format_Part.Table_Name)
 			.build();
+
+	public ScannableCodeFormatRepository()
+	{
+		this(Services.get(IErrorManager.class));
+	}
 
 	public ScannableCodeFormatsCollection getAll()
 	{
@@ -37,7 +48,7 @@ public class ScannableCodeFormatRepository
 
 	private ScannableCodeFormatLoaderAndSaver newLoaderAndSaver()
 	{
-		return ScannableCodeFormatLoaderAndSaver.builder().queryBL(queryBL).build();
+		return ScannableCodeFormatLoaderAndSaver.builder().queryBL(queryBL).errorManager(errorManager).build();
 	}
 
 	public ScannableCodeFormat create(@NotNull final ScannableCodeFormatCreateRequest request)

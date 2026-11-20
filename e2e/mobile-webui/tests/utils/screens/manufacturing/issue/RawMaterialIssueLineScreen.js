@@ -1,4 +1,4 @@
-import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../../common';
+import { expectErrorToast, ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { RawMaterialIssueLineScanScreen } from './RawMaterialIssueLineScanScreen';
@@ -8,6 +8,25 @@ import { ManufacturingJobScreen } from '../ManufacturingJobScreen';
 const NAME = 'RawMaterialIssueLineScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#RawMaterialIssueLineScreen');
+
+/** @returns {import('@playwright/test').Locator} */
+const locateStepButtons = () => containerElement().locator('[data-testid^="step-"][data-testid$="-button"]');
+
+/**
+ * The displayable part of an HU QR code (`HU#1#{"id":"<base>-<suffix>",...}`) — the short number the step
+ * caption shows (see HUQRCodeUniqueId.getDisplayableSuffix / toQRCodeDisplayable in the mobile frontend).
+ */
+const huDisplayableSuffix = (huQRCode) => {
+    const json = huQRCode.substring(huQRCode.indexOf('{'));
+    const id = JSON.parse(json).id;
+    return id.substring(id.indexOf('-') + 1);
+};
+
+/** @returns {import('@playwright/test').Locator} */
+const locateStepButtonForHU = ({ huQRCode }) => {
+    const suffix = huDisplayableSuffix(huQRCode);
+    return locateStepButtons().filter({ has: page.locator('.caption-btn > .rows > .row > span', { hasText: new RegExp(` - ${suffix}\\s*$`) }) });
+};
 
 export const RawMaterialIssueLineScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -71,6 +90,32 @@ export const RawMaterialIssueLineScreen = {
     retypeQtyAndConfirm: async ({ qtyEntered }) => await test.step(`${NAME} - Retype qty=${qtyEntered} and confirm`, async () => {
         await GetQuantityDialog.fillAndPressDone({ qtyEntered });
         await RawMaterialIssueLineScreen.waitForScreen();
+    }),
+
+    expectStepsCount: async ({ count }) => await test.step(`${NAME} - Expect ${count} step(s)`, async () => {
+        await expect(locateStepButtons()).toHaveCount(count);
+        if (count > 0) {
+            await expect(locateStepButtons().first()).toBeVisible();
+        }
+    }),
+
+    /**
+     * Assert the issue step planned on the given HU — the step is identified the way the operator sees it, by
+     * the HU's displayable QR suffix at the end of the step caption ("<locator> - <suffix>").
+     */
+    expectStepForHU: async ({ huQRCode, qtyToIssue, qtyIssued }) => await test.step(`${NAME} - Expect step for HU ...${huDisplayableSuffix(huQRCode)}`, async () => {
+        const stepButton = locateStepButtonForHU({ huQRCode });
+        await expect(stepButton).toHaveCount(1);
+        await expect(stepButton).toBeVisible();
+        await revealForCaptureIfEnabled(stepButton);
+
+        const stepInfo = stepButton.locator('.picking-row-info');
+        if (qtyToIssue !== undefined) {
+            await expect(stepInfo).toHaveAttribute('data-qtytarget', qtyToIssue);
+        }
+        if (qtyIssued !== undefined) {
+            await expect(stepInfo).toHaveAttribute('data-qtycurrent', qtyIssued);
+        }
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
