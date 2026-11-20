@@ -69,7 +69,7 @@ jest.mock('../../../utils/ui_trace', () => ({
 // Heavy children are irrelevant to the guard; stub them to trivial nodes.
 jest.mock('../../../containers/ViewHeader', () => ({ ViewHeader: () => null }));
 jest.mock('../../../components/ScreenToaster', () => () => null);
-jest.mock('../../../apps/picking/ShelfLifeConfirmDialogHost', () => () => null);
+jest.mock('../../../apps/picking/ShelfLifeConfirmDialogHost', () => () => null, { virtual: true });
 
 describe('ApplicationLayout: a just-started workflow must not be bounced to home (Race B)', () => {
   beforeEach(() => {
