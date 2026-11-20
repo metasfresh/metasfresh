@@ -23,6 +23,16 @@ export const GRAIScanScreen = {
         await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
     }),
 
+    /** Expect the screen's header caption (same text in de_DE and en_US: "Scan (GRAI)"). */
+    expectHeaderCaption: async ({ caption }) => await test.step(`${NAME} - Expect header caption '${caption}'`, async () => {
+        await expect(containerElement().locator('.app-header .app-caption')).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Expect the browser URL to be the scan screen route of a job: .../huConsolidation/.../scanGRAI/<activityId> */
+    expectUrlIsScanScreenRoute: async () => await test.step(`${NAME} - Expect the URL to be the scan screen route`, async () => {
+        await expect(page).toHaveURL(/\/scanGRAI\/[^/?#]+$/, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     expectNotVisible: async () => await test.step(`${NAME} - Expect screen to be gone`, async () => {
         await expect(containerElement()).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     }),

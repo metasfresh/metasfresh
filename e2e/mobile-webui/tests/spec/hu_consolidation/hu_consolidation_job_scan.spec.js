@@ -170,6 +170,7 @@ test('Scan (GRAI) opens the scan screen: 3 crates from 2 slots scanned there, Ba
 
     // GS1 manufacturer code + extension digit for the SSCC18 of the pallet
     const masterdata = await createJobScanMasterdata({
+        language: 'de_DE', // German UI, as the customer uses it
         sysconfigs: {
             'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
@@ -210,6 +211,9 @@ test('Scan (GRAI) opens the scan screen: 3 crates from 2 slots scanned there, Ba
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
         await HUConsolidationJobScreen.clickScanGRAIButton();
         await GRAIScanScreen.expectVisible();
+        // header caption of the scan screen; the URL is the scan screen route of the job opened with the pallet chosen above
+        await GRAIScanScreen.expectHeaderCaption({ caption: 'Scan (GRAI)' });
+        await GRAIScanScreen.expectUrlIsScanScreenRoute();
 
         // scan 1: canonical dot form, slot1
         await GRAIScanScreen.scanGRAI({ grai: grai1 });
@@ -288,11 +292,13 @@ test('Rejected scans: one right message per scan, nothing moves, the scan screen
     await allure.story('HU Consolidation - GRAI scan screen');
     await allure.severity('critical');
 
-    const NOT_A_GRAI = 'The scanned barcode is not a valid GRAI.';
-    const NO_HU = 'No HU found for this QR code';
+    // German UI (AD_Message de.metas.handlingunits.picking.InvalidGRAIBarcode / de.metas.mobile.qr.HuNotFound, de_DE)
+    const NOT_A_GRAI = 'Der gescannte Barcode ist kein gültiger GRAI.';
+    const NO_HU = 'Keine HU für diesen QR-Code gefunden';
 
     // Job 1 (BP1): 2 crates in slot1 (as in the reference flow: one is scanned, the other stays so the job keeps a GRAI crate and the scanner stays open) + a pallet (with 1 crate inside) in slot2. Job 2 (BP2): one crate in slot3.
     const masterdata = await createJobScanMasterdata({
+        language: 'de_DE', // German UI, as the customer uses it
         // the same GRAI scanned twice must reach the backend both times (no duplicate-scan guard)
         sysconfigs: { 'mobileui.frontend.barcodeScanner.scanDuplicatesIntervalMillis': '0' },
         pickTo: ['TU', 'LU_TU'],
