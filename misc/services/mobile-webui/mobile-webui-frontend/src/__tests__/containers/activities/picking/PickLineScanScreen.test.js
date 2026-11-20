@@ -280,3 +280,30 @@ describe('PickingLineScanScreen: no-source refusal reaches the toast', () => {
     expect(toastNode.props.message).toBe("Please scan 'Pick From' first.");
   });
 });
+
+describe('PickingLineScanScreen: Manual product mismatch stays synchronous', () => {
+  it('a code of another product throws at the call (not a rejected promise), so the catch-weight scanner gives the error beep as before; nothing is posted', () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    mockDispatch.mockClear();
+
+    let postQty;
+    const Harness = () => {
+      postQty = usePostQtyPicked({
+        wfProcessId: 'wf',
+        activityId: 'a',
+        expectedProductNo: 'P1',
+        cuQtyEntryMode: 'MANUAL',
+      });
+      return null;
+    };
+    render(<Harness />);
+
+    let returned;
+    expect(() => {
+      returned = postQty({ qty: 1, scannedBarcode: 'x', productNo: 'OTHER', catchWeight: 5, isDone: false });
+      returned?.catch?.(() => {}); // a rejected promise would be the defect: keep it from crashing the run
+    }).toThrow(expect.objectContaining({ messageKey: 'activities.picking.qrcode.differentProduct' }));
+    expect(returned).toBeUndefined();
+    expect(mockDispatch).not.toHaveBeenCalled();
+  });
+});

@@ -579,7 +579,9 @@ export const usePostQtyPicked = ({
   const dispatch = useDispatch();
   const history = useMobileNavigation();
 
-  return async ({
+  // NOT async: a product mismatch must throw at the call, as before, so the catch-weight scanner's catch gives the error beep;
+  // a refusal found later (e.g. no source HU) is returned as a rejected promise, which the callers .catch into the toast
+  return ({
     qty = 0,
     qtyRejected,
     reason = null,
@@ -612,13 +614,20 @@ export const usePostQtyPicked = ({
       };
     }
 
+    let huQRCode;
+    try {
+      huQRCode = computePickFromHUQRCode({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode });
+    } catch (error) {
+      return Promise.reject(error);
+    }
+
     return dispatch(
       postStepPickedThunk({
         history,
         wfProcessId,
         activityId,
         lineId: lineIdEffective,
-        huQRCode: computePickFromHUQRCode({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }),
+        huQRCode,
         qtyPicked: qty,
         qtyRejectedReasonCode: reason,
         qtyRejected,
