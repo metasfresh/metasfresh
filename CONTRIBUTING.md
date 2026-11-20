@@ -30,7 +30,7 @@ We are allowed to use it for metasfresh under the GPL version two, three, or any
 * Make your contribution and create a pull request.
 * We will review and comment on the pull request. We may suggest some changes or improvements or alternatives. We will always treat your work and of course also yourself with respect, even in case we choose not to incorporate it into metasfresh.
 
-The process of creating and maintaning a fork with git and github is explained in [this article](https://help.github.com/articles/fork-a-repo/). Note that at the article's end, there is also a link to [this article](https://help.github.com/articles/using-pull-requests/) about pull requests.
+The process of creating and maintaining a fork with git and github is explained in [this article](https://help.github.com/articles/fork-a-repo/). Note that at the article's end, there is also a link to [this article](https://help.github.com/articles/using-pull-requests/) about pull requests.
 
 If you need help, don't hesitate to contact us, for example on our [metasfresh forum](https://forum.metasfresh.org/).
 
