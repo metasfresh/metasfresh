@@ -362,10 +362,14 @@ public class PickingJobPickCommand
 	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
 	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
 	 * guard. Must run inside {@link #executeInTrx()}.
+	 * <p>
+	 * A mode whose scan loop has no over-pick prompt ({@link CUQtyEntryPolicy#isOverPickAlwaysRefused()}) is checked whatever the over-pick
+	 * setting: there a scan after the line is done must book nothing.
 	 */
 	private void assertNotAboveOrderedQtyWhenOverPickBlocked()
 	{
-		if (pickingJobOptions.isShowConfirmationPromptWhenOverPick() || qtyToPickCUs.signum() <= 0)
+		final boolean isOverPickAllowed = pickingJobOptions.isShowConfirmationPromptWhenOverPick() && !cuQtyEntryPolicy.isOverPickAlwaysRefused();
+		if (isOverPickAllowed || qtyToPickCUs.signum() <= 0)
 		{
 			return;
 		}

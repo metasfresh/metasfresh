@@ -109,6 +109,9 @@ class PickingJobCUQtyEntryOptionsTest
 			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isPackIdRequired()).isTrue();
 			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isPackIdRequired()).isFalse();
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isPackIdRequired()).isFalse();
+			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isOverPickAlwaysRefused()).isTrue();
+			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isOverPickAlwaysRefused()).isFalse();
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isOverPickAlwaysRefused()).isFalse();
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isPickWholeTUAllowed()).isTrue();
 			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isPickWholeTUAllowed()).isFalse();
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isBookedAsSingleCUInBox()).isFalse();

@@ -79,6 +79,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -104,6 +106,7 @@ class PickingJobCUQtyEntryPickTest
 	private static final String GRAI_CANONICAL = "7613204.00307.999999";
 
 	private static final AdMessageKey CU_NO_OPEN_BOX = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
+	private static final AdMessageKey PICK_OVERDELIVERY_BLOCKED = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	private PickingJobTestHelper helper;
 	private HUTestHelper huTestHelper;
@@ -193,12 +196,17 @@ class PickingJobCUQtyEntryPickTest
 
 	private PickingJob createJob(final String orderDocNo, @Nullable final HUPIItemProductId packingPiipId, final boolean isAllowAnyHU)
 	{
+		return createJob(orderDocNo, packingPiipId, isAllowAnyHU, "100");
+	}
+
+	private PickingJob createJob(final String orderDocNo, @Nullable final HUPIItemProductId packingPiipId, final boolean isAllowAnyHU, final String qtyToDeliver)
+	{
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId(orderDocNo);
 		helper.packageable()
 				.orderAndLineId(orderAndLineId)
 				.productId(productId)
 				.huPIItemProductId(packingPiipId)
-				.qtyToDeliver("100")
+				.qtyToDeliver(qtyToDeliver)
 				.build();
 
 		return helper.pickingJobService.createPickingJob(
@@ -1210,6 +1218,31 @@ class PickingJobCUQtyEntryPickTest
 			final I_M_HU rescanned = cuWithPackId(boxId, "1");
 			assertThat(lotOf(rescanned)).as("rescanned CU keeps its lot").isEqualTo(LOT_A);
 			assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked rows of both CUs").isEqualTo(2);
+		}
+
+		/** the line's quantity (2) is reached: a further scan books nothing, whether or not the profile allows over-pick with a confirmation prompt (the Scan each CU loop has no prompt). */
+		@ParameterizedTest(name = "isShowConfirmationPromptWhenOverPick={0}")
+		@ValueSource(booleans = { true, false })
+		void lineDone_furtherScan_refused_nothingBooked(final boolean isShowConfirmationPromptWhenOverPick)
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			helper.updateMobileProfile(profile -> profile.toBuilder()
+					.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+							.isShowConfirmationPromptWhenOverPick(isShowConfirmationPromptWhenOverPick)
+							.build())
+					.build());
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-T");
+			PickingJob job = openBoxFromLinePacking(createJob("salesOrderCU", tuPiipId, true, "2"));
+			job = pickEach(job, source, LOT_A, "1");
+			job = pickEach(job, source, LOT_A, "2");
+			assertThat(pickedQtyOfLine(job)).as("line done: 2 of 2").isEqualByComparingTo("2");
+			final PickingJob jobWhenDone = job;
+
+			assertFails(() -> pickEach(jobWhenDone, source, LOT_A, "3"), PICK_OVERDELIVERY_BLOCKED);
+
+			assertThat(cusOf(openBoxId(job))).as("still 2 CUs").hasSize(2);
+			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source: only 2 taken").isEqualByComparingTo("98");
 		}
 
 		/** the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */

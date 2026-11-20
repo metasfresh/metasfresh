@@ -39,6 +39,12 @@ public final class CUQtyEntryPolicy
 	/** @return true if the label must carry a pack ID: it is stored on the CU and a repeated (product, lot, pack ID) in the job is refused */
 	public boolean isPackIdRequired() {return isPackIdUsed;}
 
+	/**
+	 * @return true if a pick above the line's open quantity is refused whatever the profile's over-pick setting: one scan books one pack and the
+	 * scan loop has no over-pick confirmation prompt, so once the line is done a further scan must book nothing
+	 */
+	public boolean isOverPickAlwaysRefused() {return isPackIdUsed;}
+
 	/** @return the quantity of CUs to book for the given client quantity: one pack per label when a pack ID is required */
 	public BigDecimal getQtyToPickCUs(final BigDecimal clientQty) {return isPackIdUsed ? BigDecimal.ONE : clientQty;}
 }
