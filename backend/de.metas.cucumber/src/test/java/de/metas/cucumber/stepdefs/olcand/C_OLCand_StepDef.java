@@ -255,7 +255,7 @@ public class C_OLCand_StepDef
 		DataTableRows.of(dataTable).forEach(row ->
 		{
 			final de.metas.handlingunits.model.I_C_OLCand olCand = InterfaceWrapperHelper.create(
-					row.getAsIdentifier(COLUMNNAME_C_OLCand_ID).lookupIn(olCandTable),
+					row.getAsIdentifier(COLUMNNAME_C_OLCand_ID).lookupNotNullIn(olCandTable),
 					de.metas.handlingunits.model.I_C_OLCand.class);
 			InterfaceWrapperHelper.refresh(olCand);
 

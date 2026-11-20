@@ -2732,6 +2732,7 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
+    # The INVOIC JSON has one line per delivery note, so the aggregated invoice line is exported once per shipment
     Then the metasfresh REST-API responds with
     """
 {
@@ -2739,6 +2740,10 @@ Feature: EDI INVOIC export via postgREST
     {
       "Invoice_ID": @invoice_ID@,
       "Lines": [
+        {
+          "Order_POReference": "INVOICE-REF",
+          "Order_IsPOReferenceBuyerOrderNo": false
+        },
         {
           "Order_POReference": "INVOICE-REF",
           "Order_IsPOReferenceBuyerOrderNo": false
