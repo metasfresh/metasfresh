@@ -222,3 +222,71 @@ UPDATE AD_Ref_List_Trl SET Name='Schlussdifferenz',IsTranslated='Y',Updated=TO_T
 -- 2026-11-20T12:00:50
 UPDATE AD_Ref_List_Trl SET Name='Schlussdifferenz',Updated=TO_TIMESTAMP('2026-11-20 12:00:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543724 AND IsTranslated='N'
 ;
+
+-- German tooltip (Description) and help of the POS-specific fields Modify Price, Auto Logout Delay and POS-Terminal, and of
+-- the tab POS-Terminal (AD_Element 573227). en_US keeps its text (already IsTranslated='Y'). Description and help of the
+-- general fields Nr., Drucker and Auftrags-Belegart are core texts used in many windows and are not changed here.
+
+-- 2026-11-20T12:01:00
+UPDATE AD_Element_Trl SET Description='Erlaubt, den Preis zu ändern',Help='Erlaubt, den Preis von Produkten mit einem Preis ungleich null zu ändern',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-20 12:01:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2584 AND AD_Language IN ('de_DE','de_CH')
+;
+
+-- 2026-11-20T12:01:01
+UPDATE AD_Element_Trl SET Description='Erlaubt, den Preis zu ändern',Help='Erlaubt, den Preis von Produkten mit einem Preis ungleich null zu ändern',Updated=TO_TIMESTAMP('2026-11-20 12:01:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2584 AND IsTranslated='N'
+;
+
+-- 2026-11-20T12:01:02
+/* DDL */  select update_ad_element_on_ad_element_trl_update(2584,'de_DE')
+;
+
+-- 2026-11-20T12:01:03
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(2584)
+;
+
+-- 2026-11-20T12:01:04
+UPDATE AD_Element_Trl SET Description='Automatische Abmeldung, wenn das Terminal so lange nicht benutzt wird',Help='In Sekunden; 0 bedeutet keine automatische Abmeldung',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-20 12:01:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=54141 AND AD_Language IN ('de_DE','de_CH')
+;
+
+-- 2026-11-20T12:01:05
+UPDATE AD_Element_Trl SET Description='Automatische Abmeldung, wenn das Terminal so lange nicht benutzt wird',Help='In Sekunden; 0 bedeutet keine automatische Abmeldung',Updated=TO_TIMESTAMP('2026-11-20 12:01:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=54141 AND IsTranslated='N'
+;
+
+-- 2026-11-20T12:01:06
+/* DDL */  select update_ad_element_on_ad_element_trl_update(54141,'de_DE')
+;
+
+-- 2026-11-20T12:01:07
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(54141)
+;
+
+-- 2026-11-20T12:01:08
+UPDATE AD_Element_Trl SET Description='Kassenterminal (Point of Sale)',Help='"POS-Terminal" definiert Standardwerte und Funktionen für das POS-Fenster.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-20 12:01:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2581 AND AD_Language IN ('de_DE','de_CH')
+;
+
+-- 2026-11-20T12:01:09
+UPDATE AD_Element_Trl SET Description='Kassenterminal (Point of Sale)',Help='"POS-Terminal" definiert Standardwerte und Funktionen für das POS-Fenster.',Updated=TO_TIMESTAMP('2026-11-20 12:01:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2581 AND IsTranslated='N'
+;
+
+-- 2026-11-20T12:01:10
+/* DDL */  select update_ad_element_on_ad_element_trl_update(2581,'de_DE')
+;
+
+-- 2026-11-20T12:01:11
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(2581)
+;
+
+-- 2026-11-20T12:01:12
+UPDATE AD_Element_Trl SET Description='Kassenterminal (Point of Sale)',Help='"POS-Terminal" definiert Standardwerte und Funktionen für das POS-Fenster.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-20 12:01:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573227 AND AD_Language IN ('de_DE','de_CH')
+;
+
+-- 2026-11-20T12:01:13
+UPDATE AD_Element_Trl SET Description='Kassenterminal (Point of Sale)',Help='"POS-Terminal" definiert Standardwerte und Funktionen für das POS-Fenster.',Updated=TO_TIMESTAMP('2026-11-20 12:01:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573227 AND IsTranslated='N'
+;
+
+-- 2026-11-20T12:01:14
+/* DDL */  select update_ad_element_on_ad_element_trl_update(573227,'de_DE')
+;
+
+-- 2026-11-20T12:01:15
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(573227)
+;
