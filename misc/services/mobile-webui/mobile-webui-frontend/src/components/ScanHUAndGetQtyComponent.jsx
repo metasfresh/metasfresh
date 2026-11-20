@@ -17,7 +17,7 @@ import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickCon
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 import Spinner from './Spinner';
 import { doFinally } from '../utils';
-import { isScanEach as isScanEachMode, isScanOnce as isScanOnceMode } from '../constants/CUQtyEntryMode';
+import { getCUQtyEntryPolicy } from '../constants/CUQtyEntryMode';
 import DialogButton from './dialogs/DialogButton';
 import { isLineDoneAfterBooking } from '../utils/picking';
 
@@ -78,9 +78,10 @@ const ScanHUAndGetQtyComponent = ({
   onResult,
   onClose: onCloseCallback,
 }) => {
-  const isScanOnce = isScanOnceMode(cuQtyEntryMode);
+  const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
+  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
   // scan each CU: every label books one CU at once, the scan step stays (no quantity block)
-  const isScanEach = isScanEachMode(cuQtyEntryMode);
+  const isScanEachCU = cuQtyEntryPolicy.isPackIdRequired;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   // scan once: the quantity block stays open after a booking (and after a label rescan); a new key (also a new
   // suggestion) gives it the new suggestion and the new label values
@@ -228,7 +229,7 @@ const ScanHUAndGetQtyComponent = ({
 
     setResolvedBarcodeData(resolvedBarcodeDataNew);
 
-    if (isScanEach) {
+    if (isScanEachCU) {
       await bookScannedCU({ resolvedBarcodeData: resolvedBarcodeDataNew });
       return;
     }
@@ -434,10 +435,10 @@ const ScanHUAndGetQtyComponent = ({
               onResolvedResult={onHUBarcodeResolvedResult}
             />
           )}
-          {(nextBoxActions || isScanEach) && (
+          {(nextBoxActions || isScanEachCU) && (
             <div className="buttons is-centered mt-4">
               {nextBoxActions}
-              {isScanEach && (
+              {isScanEachCU && (
                 <DialogButton
                   captionKey="general.closeText"
                   className="is-danger"

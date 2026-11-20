@@ -181,17 +181,17 @@ describe('PickingLineScanScreen: re-entry hop', () => {
 
 describe('PickingLineScanScreen: the open box is shown in the header', () => {
   it('a new-mode line with an open box shows its caption', () => {
-    expect(computeOpenBoxHeaderEntries({ isNewModeLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual([
-      { caption: expect.any(String), value: 'Kiste 7' },
-    ]);
+    expect(computeOpenBoxHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual(
+      [{ caption: expect.any(String), value: 'Kiste 7' }]
+    );
   });
 
   it('no open box: no entry', () => {
-    expect(computeOpenBoxHeaderEntries({ isNewModeLine: true, tuPickingTarget: null })).toEqual([]);
+    expect(computeOpenBoxHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: null })).toEqual([]);
   });
 
   it('Manual line: no entry, header unchanged', () => {
-    expect(computeOpenBoxHeaderEntries({ isNewModeLine: false, tuPickingTarget: { caption: 'x' } })).toEqual([]);
+    expect(computeOpenBoxHeaderEntries({ isLabelRequiredLine: false, tuPickingTarget: { caption: 'x' } })).toEqual([]);
   });
 });
 

@@ -314,253 +314,6 @@ class PickingJobCUQtyEntryPickTest
 		assertThat(line.getQtyRemainingToPick().toBigDecimal()).as("qty remaining in CUs").isEqualByComparingTo("100");
 	}
 
-	/** (a) TU line "TU x 4", Scan once, TU target from the line's packing, N=5: one TU on the line's PI with ONE CU of 5 carrying the label's lot and best-before. */
-	@Test
-	void a_tuLine_scanOnce_n5_oneBoxOnLinePacking_oneCUOf5_withLotAndBestBefore()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-A");
-		PickingJob job = createJob(tuPiipId, true);
-		assertNewModeLineCountsCUs(job);
-		job = openBoxFromLinePacking(job);
-
-		job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
-
-		final HuId boxId = openBoxId(job);
-		assertThat(handlingUnitsBL.getPI(handlingUnitsBL.getById(boxId)).getM_HU_PI_ID()).as("box on the line packing's PI").isEqualTo(tuPIId.getRepoId());
-		final List<I_M_HU> cus = cusOf(boxId);
-		assertThat(cus).as("one CU in the box").hasSize(1);
-		assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("5");
-		assertThat(lotOf(cus.get(0))).isEqualTo(LOT_A);
-		assertThat(attributesOf(cus.get(0)).getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate)).isEqualTo(LocalDate.of(2026, 11, 7));
-		final ImmutableSet<HuId> pickedHUIds = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
-		assertThat(pickedHUIds).as("the picked HU is the CU").containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
-	}
-
-	/** (b) second pick of 3 into the open box: a second CU of 3, no "Cannot pick TUs when TU pick target is set!". */
-	@Test
-	void b_secondPickIntoTheOpenBox_secondCUOf3()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-B");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-		job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
-
-		job = pick(job, source, "3", label(PRODUCT_NO, LOT_A), false, null);
-
-		final HuId boxId = openBoxId(job);
-		assertThat(cusOf(boxId)).extracting(this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
-				.containsExactlyInAnyOrder(new BigDecimal("5"), new BigDecimal("3"));
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).hasSize(2);
-	}
-
-	/** (c) unlimited-capacity line naming a TU PI, no TU target: refused CU_NO_OPEN_BOX, nothing booked. */
-	@Test
-	void c_unlimitedCapacityLineNamingATuPI_noTarget_refused()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.load(tuPiipId.getRepoId(), I_M_HU_PI_Item_Product.class);
-		piip.setIsInfiniteCapacity(true);
-		InterfaceWrapperHelper.save(piip);
-		final HUInfo source = sourceBox("QR-C");
-		final PickingJob job = createJob(tuPiipId, true);
-
-		assertFails(() -> pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
-
-		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).as("nothing booked").isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source untouched").isEqualByComparingTo("8");
-	}
-
-	/** (d) virtual-packing line (no TU PI), no TU target: refused CU_NO_OPEN_BOX (no loose CU). */
-	@Test
-	void d_virtualPackingLine_noTarget_refused()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-D");
-		final PickingJob job = createJob(null, true);
-
-		assertFails(() -> pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
-
-		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
-	}
-
-	/** (e) Manual: no flag and no refusal: a TU line without a TU target is booked as today (the full TU, not a partial one). */
-	@Test
-	void e_manual_noTarget_notRefused_todaysFullTU()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-E");
-		PickingJob job = createJob(tuPiipId, true);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickingUnit().isTU()).as("Manual: a TU packing line still counts TUs").isTrue();
-
-		job = pick(job, source, "1", null, false, null); // Manual on a TU line: 1 TU = 4 CUs
-
-		final ImmutableSet<HuId> picked = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
-		assertThat(picked).hasSize(1);
-		final I_M_HU pickedHU = handlingUnitsBL.getById(picked.iterator().next());
-		assertThat(handlingUnitsBL.isTransportUnitOrAggregate(pickedHU)).as("today: the picked HU is the box (TU)").isTrue();
-		assertThat(qtyOf(pickedHU)).isEqualByComparingTo("4");
-	}
-
-	/** (e2) Manual, virtual-packing line, no TU target, 5 from a box holding two pieces of 4: today's result, one picked HU of 5 without CUs. */
-	@Test
-	void e2_manual_fiveFromTwoPieces_noTarget_onePickedHUOf5()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		final HUInfo source = sourceBox("QR-E2");
-		PickingJob job = createJob(null, true);
-
-		job = pick(job, source, "5", null, false, null);
-
-		final ImmutableSet<HuId> picked = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
-		assertThat(picked).hasSize(1);
-		final HuId pickedId = picked.iterator().next();
-		assertThat(qtyOf(handlingUnitsBL.getById(pickedId))).isEqualByComparingTo("5");
-		assertThat(cusOf(pickedId)).as("no CU split per source piece").isEmpty();
-	}
-
-	/** (e3) Manual, virtual-packing line, open box, 5 from a box holding two pieces of 4: today's result, one CU per source piece (4 + 1) in the box. */
-	@Test
-	void e3_manual_fiveFromTwoPieces_openBox_oneCUPerSourcePiece()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		final HUInfo source = sourceBox("QR-E3");
-		PickingJob job = openBoxFromLinePacking(createJob(null, true));
-
-		job = pick(job, source, "5", null, false, null);
-
-		final HuId pickedBoxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
-		assertThat(cusOf(pickedBoxId)).as("one CU per source piece").extracting(this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
-				.containsExactlyInAnyOrder(new BigDecimal("4"), new BigDecimal("1"));
-	}
-
-	/** (f) cuLabel of another product: HU_PRODUCT_NOT_MATCHING, nothing booked. */
-	@Test
-	void f_labelOfAnotherProduct_refused()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-F");
-		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		assertFails(() -> pick(job, source, "5", label("OTHER99", LOT_A), false, null), MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING);
-
-		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
-	}
-
-	/** (g) TU target set by a GRAI scan: booked into it, the GRAI stays on the TU. */
-	@Test
-	void g_tuTargetFromGRAIScan_bookedIntoIt_graiKept()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final I_M_HU_PI graiTuPI = InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class);
-		final I_M_HU_PI_GRAI map = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
-		map.setGRAI_CompanyPrefix("7613204");
-		map.setGRAI_AssetType("00307");
-		map.setM_HU_PI_ID(graiTuPI.getM_HU_PI_ID());
-		InterfaceWrapperHelper.save(map);
-		final I_M_Attribute graiAttribute = new AttributesTestHelper().createM_Attribute(AttributeConstants.ATTR_GRAI.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(graiAttribute)
-				.setM_HU_PI(graiTuPI)
-				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
-		final HUInfo source = sourceBox("QR-G");
-		PickingJob job = createJob(tuPiipId, true);
-		job = helper.pickingJobService.createTUFromGRAI(job, targetScope(job), ScannedCode.ofString(GRAI_CANONICAL));
-
-		job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
-
-		final HuId boxId = openBoxId(job);
-		assertThat(cusOf(boxId)).hasSize(1);
-		assertThat(qtyOf(cusOf(boxId).get(0))).isEqualByComparingTo("5");
-		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(boxId)))).getAllGrais();
-		assertThat(grais.toSet()).as("GRAI kept on the box").containsExactly(GRAI.parse(GRAI_CANONICAL));
-	}
-
-	/** (h) Scan each CU, no TU target: refused CU_NO_OPEN_BOX, nothing booked. */
-	@Test
-	void h_scanEachCU_noTarget_refused()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = sourceBox("QR-H");
-		final PickingJob job = createJob(tuPiipId, true);
-
-		assertFails(() -> pick(job, source, "1", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
-
-		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
-	}
-
-	/** (i) Scan once with isPickWholeTU = true and an open box: one CU of N into the box, no whole TU taken. */
-	@Test
-	void i_isPickWholeTU_ignored_oneCUOfN()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-I");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), true, null);
-
-		final HuId boxId = openBoxId(job);
-		final List<I_M_HU> cus = cusOf(boxId);
-		assertThat(cus).hasSize(1);
-		assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("5");
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the source box is not the picked HU").doesNotContain(source.getId());
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("the source box keeps the rest").isEqualByComparingTo("3");
-	}
-
-	/** (j) new mode, open box, PICK with cuLabel = null: refused PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH, nothing booked. */
-	@Test
-	void j_newMode_noCuLabel_refused()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-J");
-		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		assertFails(() -> pick(job, source, "5", null, false, null), PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH);
-
-		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
-	}
-
-	/** (k) Scan once, lots A then B into one open box: each CU keeps its lot AND the TU's lot is empty. */
-	@Test
-	void k_lotsAThenB_intoOneBox_eachCUKeepsItsLot_tuLotEmpty()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-K");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		job = pick(job, source, "2", label(PRODUCT_NO, LOT_A), false, null);
-		job = pick(job, source, "3", label(PRODUCT_NO, LOT_B), false, null);
-
-		final HuId boxId = openBoxId(job);
-		assertThat(lotOf(cuWithQty(boxId, "2"))).isEqualTo(LOT_A);
-		assertThat(lotOf(cuWithQty(boxId, "3"))).isEqualTo(LOT_B);
-		assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot empty (mixed lots)").isNull();
-	}
-
-	/** (l) Manual (new-mode flags off), lots A then B into one open box: the TU lot is overwritten as today. */
-	@Test
-	void l_manual_lotsAThenB_intoOneBox_lotOverwrittenAsToday()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-L");
-		final HUInfo source2 = helper.createVHUInfo(productId, "100", "QR-L2");
-		PickingJob job = createJob(null, true); // virtual packing = a CU line, so Manual can book into an open box
-		job = openBoxFromLinePacking(job);
-
-		job = pick(job, source, "2", null, false, LOT_A);
-		final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
-		assertThat(handlingUnitsBL.isTransportUnitOrAggregate(handlingUnitsBL.getById(boxId))).as("today: the first booking's picked HU is the box").isTrue();
-		job = helper.pickingJobService.setTUPickingTarget(job, targetScope(job), TUPickingTarget.ofExistingHU(boxId, helper.huService.getQRCodeByHuId(boxId)));
-		job = pick(job, source2, "3", null, false, LOT_B);
-
-		assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot overwritten by the second booking").isEqualTo(LOT_B);
-		assertThat(cusOf(boxId)).extracting(this::lotOf).as("today: the second lot is written on the whole box").containsOnly(LOT_B);
-	}
-
 	@Nullable
 	private String packIdOf(final I_M_HU hu)
 	{
@@ -596,430 +349,6 @@ class PickingJobCUQtyEntryPickTest
 	{
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).as("nothing booked").isEmpty();
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source untouched").isEqualByComparingTo(sourceQty);
-	}
-
-	/** (m) Scan each CU, lots A, A, B (own pack IDs) into one open box: 3 CUs of 1, each with its own lot and PackId, the TU's lot empty. */
-	@Test
-	void m_scanEachCU_lotsAAB_threeCUsOfOne_ownLotAndPackId_tuLotEmpty()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-M");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		job = pickEach(job, source, LOT_A, "1");
-		job = pickEach(job, source, LOT_A, "2");
-		job = pickEach(job, source, LOT_B, "3");
-
-		final HuId boxId = openBoxId(job);
-		final List<I_M_HU> cus = cusOf(boxId);
-		assertThat(cus).as("3 CUs in the box").hasSize(3);
-		cus.forEach(cu -> assertThat(qtyOf(cu)).as("each CU is 1 pack").isEqualByComparingTo("1"));
-		assertThat(cus).extracting(this::lotOf, this::packIdOf)
-				.containsExactlyInAnyOrder(
-						tuple(LOT_A, "1"),
-						tuple(LOT_A, "2"),
-						tuple(LOT_B, "3"));
-		assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot empty (mixed lots)").isNull();
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).hasSize(3);
-	}
-
-	/** (n) the server books qty 1 per label, whatever quantity the client sent. */
-	@Test
-	void n_scanEachCU_clientSendsQty3_oneCUOfOneBooked()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-N");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		job = pick(job, source, "3", eachLabel(LOT_A, "1"), false, null);
-
-		final List<I_M_HU> cus = cusOf(openBoxId(job));
-		assertThat(cus).hasSize(1);
-		assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("1");
-		assertThat(packIdOf(cus.get(0))).isEqualTo("1");
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
-	}
-
-	/** (o) the same (product, lot, pack ID) again in the job: PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, nothing booked. */
-	@Test
-	void o_repeatedLotAndPackId_refused_nothingBooked()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-O");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-		job = pickEach(job, source, LOT_A, "1");
-		final PickingJob jobBefore = job;
-
-		assertFails(() -> pickEach(jobBefore, source, LOT_A, "1"), PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED);
-
-		assertThat(cusOf(openBoxId(job))).as("still one CU").hasSize(1);
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
-	}
-
-	/** (p) the same pack ID on another lot is a different pack: booked. */
-	@Test
-	void p_samePackIdOnAnotherLot_booked()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-P");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		job = pickEach(job, source, LOT_A, "1");
-		job = pickEach(job, source, LOT_B, "1");
-
-		final List<I_M_HU> cus = cusOf(openBoxId(job));
-		assertThat(cus).hasSize(2);
-		assertThat(cus).extracting(this::lotOf, this::packIdOf)
-				.containsExactlyInAnyOrder(tuple(LOT_A, "1"), tuple(LOT_B, "1"));
-	}
-
-	/** (q) the same label in another job is booked: the lookup reads only the job's own picked HUs. */
-	@Test
-	void q_sameLabelInAnotherJob_booked()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-Q");
-		PickingJob job1 = openBoxFromLinePacking(createJob("salesOrderCU1", tuPiipId, true));
-		job1 = pickEach(job1, source, LOT_A, "1");
-		PickingJob job2 = openBoxFromLinePacking(createJob("salesOrderCU2", tuPiipId, true));
-
-		job2 = pickEach(job2, source, LOT_A, "1");
-
-		final List<I_M_HU> cus2 = cusOf(openBoxId(job2));
-		assertThat(cus2).hasSize(1);
-		assertThat(packIdOf(cus2.get(0))).isEqualTo("1");
-		assertThat(lotOf(cus2.get(0))).isEqualTo(LOT_A);
-		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("98");
-	}
-
-	/** (r) the box's first pack: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (box and 2nd CU stay Picked, their QtyPicked rows stay, the line's picked qty drops by 1); the rescan books. */
-	@Test
-	void r_firstPackOfTheBox_duplicate_undo_rescan()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-R");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-		job = pickEach(job, source, LOT_A, "1");
-		job = pickEach(job, source, LOT_A, "2");
-		final HuId boxId = openBoxId(job);
-		final I_M_HU cu1 = cuWithPackId(boxId, "1");
-		final HuId cu1Id = HuId.ofRepoId(cu1.getM_HU_ID());
-		final I_M_HU cu2 = cuWithPackId(boxId, "2");
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HUs are the CUs, not the box").containsExactlyInAnyOrder(cu1Id, HuId.ofRepoId(cu2.getM_HU_ID()));
-		assertThat(pickedQtyOfLine(job)).as("2 packs picked").isEqualByComparingTo("2");
-		assertThat(pickedHUOfStepWithCU(job, cu1Id).getQrCode()).as("the picked CU carries its own QR code, not the box's").isNotEqualTo(helper.getQRCode(boxId));
-		final PickingJob jobBeforeRescan = job;
-		assertFails(() -> pickEach(jobBeforeRescan, source, LOT_A, "1"), PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED);
-		assertThat(cusOf(boxId)).as("still 2 CU HUs").hasSize(2);
-		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
-
-		job = undo(job, cu1Id, source.getQrCode(), null);
-
-		assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("CU of pack 1 Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
-		assertThat(handlingUnitsBL.getById(boxId).getHUStatus()).as("box stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-		assertThat(handlingUnitsBL.getById(HuId.ofRepoId(cu2.getM_HU_ID())).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").containsExactly(HuId.ofRepoId(cu2.getM_HU_ID()));
-		assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
-		assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
-
-		job = pickEach(job, source, LOT_A, "1");
-
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("rescan booked").hasSize(2);
-		assertThat(pickedQtyOfLine(job)).as("rescan: 2 packs picked again").isEqualByComparingTo("2");
-		final I_M_HU rescanned = cuWithPackId(boxId, "1");
-		assertThat(lotOf(rescanned)).as("rescanned CU keeps its lot").isEqualTo(LOT_A);
-		assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked rows of both CUs").isEqualTo(2);
-	}
-
-	/** (t) undo of a CU in a box with a scanned target (the CU is moved into it): box and the 2nd CU stay Picked, the target takes the pack. */
-	@Test
-	void t_undoWithTargetScan_cuMovedIntoTarget()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-T");
-		final HUInfo target = helper.createVHUInfo(productId, "10", "QR-T-TARGET");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-		job = pickEach(job, source, LOT_A, "1");
-		job = pickEach(job, source, LOT_A, "2");
-		final HuId boxId = openBoxId(job);
-		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
-		final HuId cu2Id = HuId.ofRepoId(cuWithPackId(boxId, "2").getM_HU_ID());
-
-		job = undo(job, cu1Id, source.getQrCode(), target.getQrCode());
-
-		assertThat(qtyOf(handlingUnitsBL.getById(target.getId()))).as("target took the pack").isEqualByComparingTo("11");
-		assertThat(handlingUnitsBL.getById(boxId).getHUStatus()).as("box stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-		assertThat(handlingUnitsBL.getById(cu2Id).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).containsExactly(cu2Id);
-		assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
-		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
-	}
-
-	/**
-	 * (u) undo of the box's ONLY CU: nothing stays picked and no QtyPicked row of the CU is left. The emptied box is gone (in production
-	 * the HU framework destroys a TU whose last CU leaves it), so the line keeps an open box of the same box type, like an LU target
-	 * that an un-pick destroyed; the next pack is booked into a box of that type.
-	 */
-	@Test
-	void u_undoOfTheBoxsOnlyCU_lineKeepsAnOpenBoxOfTheSameType()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-U");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-		job = pickEach(job, source, LOT_A, "1");
-		final HuId boxId = openBoxId(job);
-		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
-
-		job = undo(job, cu1Id, source.getQrCode(), null);
-
-		assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("nothing picked").isEmpty();
-		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
-		assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row left in the box").isEqualTo(0);
-		assertThat(countQtyPickedRowsOfCU(cu1Id)).as("no QtyPicked row of the CU left").isEqualTo(0);
-		final TUPickingTarget target = openBoxTarget(job);
-		assertThat(target.isNewTU()).as("the emptied box is not the target any more: an open box of the same type is").isTrue();
-		assertThat(target.getTuPIIdNotNull()).isEqualTo(tuPIId);
-
-		job = pickEach(job, source, LOT_A, "2");
-
-		final HuId nextBoxId = openBoxId(job);
-		assertThat(cusOf(nextBoxId)).as("the next pack went into a box of that type").hasSize(1);
-		assertThat(handlingUnitsBL.getEffectivePackingInstructionsIdAndCaption(handlingUnitsBL.getById(nextBoxId)).getId()).isEqualTo(tuPIId);
-		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
-	}
-
-	/** (w) undo of the ONLY CU of a box opened by a GRAI scan: the line's open box keeps the GRAI, the next pack's box carries it. */
-	@Test
-	void w_undoOfTheOnlyCUOfAGRAIBox_openBoxKeepsTheGRAI()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		mapGRAIToTheBoxType();
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-W");
-		PickingJob job = createJob(tuPiipId, true);
-		job = helper.pickingJobService.createTUFromGRAI(job, targetScope(job), ScannedCode.ofString(GRAI_CANONICAL));
-		job = pickEach(job, source, LOT_A, "1");
-		final HuId boxId = openBoxId(job);
-		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
-
-		job = undo(job, cu1Id, source.getQrCode(), null);
-
-		final TUPickingTarget target = openBoxTarget(job);
-		assertThat(target.isNewTU()).isTrue();
-		assertThat(target.getGrai()).as("the open box keeps the scanned GRAI").isEqualTo(GRAI.parse(GRAI_CANONICAL));
-
-		job = pickEach(job, source, LOT_A, "2");
-
-		final HuId nextBoxId = openBoxId(job);
-		final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(nextBoxId)))).getAllGrais();
-		assertThat(grais.toSet()).as("the next pack's box carries the GRAI").containsExactly(GRAI.parse(GRAI_CANONICAL));
-	}
-
-	/**
-	 * (v) The un-pick of a CU in a box removes the CU's own QtyPicked rows from what was booked, not from the current profile: the same
-	 * picked CU un-picked after the profile was switched to Manual still leaves no QtyPicked row of that CU (else the line would count a
-	 * pack that is not picked any more); the other CU's row stays.
-	 */
-	@Test
-	void v_profileSwitchedToManualAfterBooking_unpickStillRemovesTheCUsRows()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-V");
-		PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-		job = pickEach(job, source, LOT_A, "1");
-		job = pickEach(job, source, LOT_A, "2");
-		final HuId boxId = openBoxId(job);
-		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
-		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
-
-		setProfile(CUQtyEntryMode.MANUAL);
-		job = undo(job, cu1Id, source.getQrCode(), null);
-
-		assertThat(countQtyPickedRowsOfCU(cu1Id)).as("no QtyPicked row of the un-picked CU left").isEqualTo(0);
-		assertThat(countQtyPickedRowsOfBox(boxId)).as("the other CU's row stays").isEqualTo(1);
-		assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").hasSize(1).doesNotContain(cu1Id);
-		assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
-	}
-
-	/**
-	 * (x) A product job of two customers, each line in its own picking slot: when all targets are closed (on completion), the first
-	 * customer's still open box is queued on its line's slot only, not also on the slot scanned last for the other customer (a box in two
-	 * slot queues breaks the shipment: more than one slot found for the HU).
-	 */
-	@Test
-	void x_closingAllTargets_queuesEachLinesBoxOnItsOwnLinesSlot()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final HUInfo source = sourceBox("QR-X");
-		final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
-		createPackageable("salesOrder-x-A", helper.shipToBPLocationId);
-		createPackageable("salesOrder-x-B", customerB);
-		PickingJob job = helper.pickingJobService.createPickingJob(
-						PickingJobCreateRequest.builder()
-								.aggregationType(PickingJobAggregationType.PRODUCT)
-								.pickerId(UserId.ofRepoId(1234))
-								.isAllowPickingAnyHU(true)
-								.build())
-				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-		assertThat(job.getLines()).as("one line per customer").hasSize(2);
-		final PickingJobLine lineA = job.getLines().stream()
-				.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("no line of customer A"));
-		job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
-		job = pickOnLine(job, lineA.getId(), source, "3", label(PRODUCT_NO, LOT_A));
-		final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
-		final PickingSlotId slotB = createPickingSlot("SLOT-B");
-		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
-
-		helper.pickingJobService.closeLUAndTUPickingTargets(job);
-
-		assertThat(queuedSlotsOf(boxA)).as("customer A's box is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
-	}
-
-	/**
-	 * (x2) Manual: the same two-customer product job queues the box on the slot scanned last, as today (the per-line slot is only for the
-	 * new quantity entry modes).
-	 */
-	@Test
-	void x2_manual_closingAllTargets_queuesTheBoxOnTheLastScannedSlot_asToday()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		final HUInfo source = sourceBox("QR-X2");
-		final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
-		createPackageable("salesOrder-x2-A", helper.shipToBPLocationId);
-		createPackageable("salesOrder-x2-B", customerB);
-		PickingJob job = helper.pickingJobService.createPickingJob(
-						PickingJobCreateRequest.builder()
-								.aggregationType(PickingJobAggregationType.PRODUCT)
-								.pickerId(UserId.ofRepoId(1234))
-								.isAllowPickingAnyHU(true)
-								.build())
-				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-		final PickingJobLine lineA = job.getLines().stream()
-				.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("no line of customer A"));
-		job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
-		job = pickOnLine(job, lineA.getId(), source, "1", null);
-		final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
-		final PickingSlotId slotB = createPickingSlot("SLOT-B");
-		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
-
-		helper.pickingJobService.closeLUAndTUPickingTargets(job);
-
-		assertThat(queuedSlotsOf(boxA)).as("Manual: the close queues the box on the slot scanned last, as before").contains(slotB);
-	}
-
-	/**
-	 * (x3) Mixed job: customer A uses a new mode (own job options row), customer B is Manual (the profile default). Closing all targets
-	 * queues A's box on A's line slot only and B's box on the slot scanned last, as today; B's target is closed.
-	 */
-	@Test
-	void x3_mixedJob_newModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
-		final BPartnerId customerAId = helper.shipToBPLocationId.getBpartnerId();
-		helper.updateMobileProfile(profile -> {
-			final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A new mode", profile.getDefaultPickingJobOptions());
-			helper.configService.updatePickingJobOptionsCUQtyEntry(optionsA, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId());
-			return profile.toBuilder()
-					.customerConfigs(PickingCustomerConfigsCollection.ofCollection(ImmutableList.of(
-							PickingCustomerConfig.builder().customerId(customerAId).pickingJobOptionsId(optionsA).build())))
-					.build();
-		});
-		final HUInfo sourceA = sourceBox("QR-X3A");
-		final HUInfo sourceB = sourceBox("QR-X3B");
-		createPackageable("salesOrder-x3-A", helper.shipToBPLocationId);
-		createPackageable("salesOrder-x3-B", customerB);
-		PickingJob job = helper.pickingJobService.createPickingJob(
-						PickingJobCreateRequest.builder()
-								.aggregationType(PickingJobAggregationType.PRODUCT)
-								.pickerId(UserId.ofRepoId(1234))
-								.isAllowPickingAnyHU(true)
-								.build())
-				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-		assertThat(job.getLines()).as("one line per customer").hasSize(2);
-		final PickingJobLine lineA = job.getLines().stream()
-				.filter(line -> line.getCustomerId().equals(customerAId))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("no line of customer A"));
-		final PickingJobLine lineB = job.getLines().stream()
-				.filter(line -> !line.getCustomerId().equals(customerAId))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("no line of customer B"));
-		job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
-		job = pickOnLine(job, lineA.getId(), sourceA, "3", label(PRODUCT_NO, LOT_A));
-		final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box of A")).getTuIdNotNull();
-		final PickingSlotId slotB = createPickingSlot("SLOT-B");
-		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
-		job = helper.pickingJobService.setTUPickingTarget(job, lineB.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
-		job = pickOnLine(job, lineB.getId(), sourceB, "1", null);
-		final HuId boxB = job.getTuPickingTargetEffective(lineB.getId()).orElseThrow(() -> new AssertionError("no box of B")).getTuIdNotNull();
-		final PickingSlotId slotC = createPickingSlot("SLOT-C");
-		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotC, "SLOT-C")); // the picker scans this slot last
-
-		final PickingJob jobClosed = helper.pickingJobService.closeLUAndTUPickingTargets(job);
-
-		assertThat(queuedSlotsOf(boxA)).as("new-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
-		assertThat(queuedSlotsOf(boxB)).as("Manual customer B: the slot scanned last, as before").contains(slotC);
-		assertThat(jobClosed.getTuPickingTargetEffective(lineB.getId())).as("Manual line's target closed").isEmpty();
-	}
-
-	/**
-	 * (y) Manual with a pallet (LU) and a box (TU) target: a booking of 2 (box capacity 4) books the box on the pallet as the picked HU,
-	 * not a CU in a box, so the un-pick's CU-in-box delete does not apply; "Entpacken" leaves no QtyPicked row of the box and nothing
-	 * picked (the Manual un-pick of a box, unchanged).
-	 */
-	@Test
-	void y_manual_palletAndBox_pickedHUIsTheBox_undoLeavesNothingPicked()
-	{
-		setProfile(CUQtyEntryMode.MANUAL);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-Y");
-		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Y", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-		huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
-		PickingJob job = createJob(null, true); // virtual packing = a CU line
-		job = helper.pickingJobService.setLUPickingTarget(job, targetScope(job), LUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()), "LU-Y"));
-		job = openBoxFromLinePacking(job);
-
-		job = pick(job, source, "2", null, false, LOT_A);
-
-		final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
-		final I_M_HU box = handlingUnitsBL.getById(boxId);
-		assertThat(handlingUnitsBL.isTransportUnit(box)).as("Manual: the picked HU is the box").isTrue();
-		assertThat(helper.huService.isCUInTU(box)).isFalse();
-		assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(1);
-		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
-
-		job = undo(job, boxId, source.getQrCode(), null);
-
-		assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row of the box left").isEqualTo(0);
-		assertThat(pickedQtyOfLine(job)).as("nothing picked any more").isEqualByComparingTo("0");
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
-	}
-
-	/**
-	 * A CU that sits directly on a pallet (LU), without a box (TU), is not a CU in a box: the un-pick's CU-in-box delete (and the
-	 * GRAI check on the box) must not treat it as one; Manual un-pick of such a CU stays as before this feature.
-	 */
-	@Test
-	void cuDirectlyOnPallet_isNotACUInABox()
-	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Z", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-		final I_M_HU_PI_Item luItem = huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
-		final I_M_HU lu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
-		lu.setM_HU_PI_Version_ID(handlingUnitsDAO.retrievePICurrentVersion(luPI).getM_HU_PI_Version_ID());
-		InterfaceWrapperHelper.save(lu);
-		final I_M_HU_Item luHUItem = handlingUnitsDAO.createHUItem(lu, luItem);
-
-		final I_M_HU cuOnPallet = handlingUnitsBL.getById(helper.createVHU(productId, "5"));
-		cuOnPallet.setM_HU_Item_Parent_ID(luHUItem.getM_HU_Item_ID());
-		InterfaceWrapperHelper.save(cuOnPallet);
-
-		assertThat(helper.huService.isCUInTU(cuOnPallet)).isFalse();
 	}
 
 	private OrderAndLineId createPackageable(final String orderDocNo, final BPartnerLocationId shipToBPLocationId)
@@ -1126,19 +455,6 @@ class PickingJobCUQtyEntryPickTest
 		return CollectionUtils.singleElement(job.getLines()).getQtyPicked().toBigDecimal();
 	}
 
-	/** (s) the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */
-	@Test
-	void s_labelWithoutPackId_refused()
-	{
-		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
-		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-S");
-		final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
-
-		assertFails(() -> pickEach(job, source, LOT_A, null), PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID);
-
-		assertNothingBooked(job, source, "100");
-	}
-
 	private static final AdMessageKey GRAI_COUNT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAICountMismatch");
 
 	private void setCustomerGraiRequired(final GRAIRequired graiRequired)
@@ -1182,6 +498,716 @@ class PickingJobCUQtyEntryPickTest
 			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+		}
+	}
+
+	@Nested
+	class ScanOnce
+	{
+		/** TU line "TU x 4", Scan once, TU target from the line's packing, N=5: one TU on the line's PI with ONE CU of 5 carrying the label's lot and best-before. */
+		@Test
+		void tuLine_scanOnce_n5_oneBoxOnLinePacking_oneCUOf5_withLotAndBestBefore()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-A");
+			PickingJob job = createJob(tuPiipId, true);
+			assertNewModeLineCountsCUs(job);
+			job = openBoxFromLinePacking(job);
+
+			job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
+
+			final HuId boxId = openBoxId(job);
+			assertThat(handlingUnitsBL.getPI(handlingUnitsBL.getById(boxId)).getM_HU_PI_ID()).as("box on the line packing's PI").isEqualTo(tuPIId.getRepoId());
+			final List<I_M_HU> cus = cusOf(boxId);
+			assertThat(cus).as("one CU in the box").hasSize(1);
+			assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("5");
+			assertThat(lotOf(cus.get(0))).isEqualTo(LOT_A);
+			assertThat(attributesOf(cus.get(0)).getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate)).isEqualTo(LocalDate.of(2026, 11, 7));
+			final ImmutableSet<HuId> pickedHUIds = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
+			assertThat(pickedHUIds).as("the picked HU is the CU").containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
+		}
+
+		/** second pick of 3 into the open box: a second CU of 3, no "Cannot pick TUs when TU pick target is set!". */
+		@Test
+		void secondPickIntoTheOpenBox_secondCUOf3()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-B");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+			job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
+
+			job = pick(job, source, "3", label(PRODUCT_NO, LOT_A), false, null);
+
+			final HuId boxId = openBoxId(job);
+			assertThat(cusOf(boxId)).extracting(PickingJobCUQtyEntryPickTest.this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+					.containsExactlyInAnyOrder(new BigDecimal("5"), new BigDecimal("3"));
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).hasSize(2);
+		}
+
+		/** cuLabel of another product: HU_PRODUCT_NOT_MATCHING, nothing booked. */
+		@Test
+		void labelOfAnotherProduct_refused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-F");
+			final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			assertFails(() -> pick(job, source, "5", label("OTHER99", LOT_A), false, null), MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING);
+
+			assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
+		}
+
+		/** TU target set by a GRAI scan: booked into it, the GRAI stays on the TU. */
+		@Test
+		void tuTargetFromGRAIScan_bookedIntoIt_graiKept()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final I_M_HU_PI graiTuPI = InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class);
+			final I_M_HU_PI_GRAI map = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
+			map.setGRAI_CompanyPrefix("7613204");
+			map.setGRAI_AssetType("00307");
+			map.setM_HU_PI_ID(graiTuPI.getM_HU_PI_ID());
+			InterfaceWrapperHelper.save(map);
+			final I_M_Attribute graiAttribute = new AttributesTestHelper().createM_Attribute(AttributeConstants.ATTR_GRAI.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+			huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(graiAttribute)
+					.setM_HU_PI(graiTuPI)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
+			final HUInfo source = sourceBox("QR-G");
+			PickingJob job = createJob(tuPiipId, true);
+			job = helper.pickingJobService.createTUFromGRAI(job, targetScope(job), ScannedCode.ofString(GRAI_CANONICAL));
+
+			job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
+
+			final HuId boxId = openBoxId(job);
+			assertThat(cusOf(boxId)).hasSize(1);
+			assertThat(qtyOf(cusOf(boxId).get(0))).isEqualByComparingTo("5");
+			final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(boxId)))).getAllGrais();
+			assertThat(grais.toSet()).as("GRAI kept on the box").containsExactly(GRAI.parse(GRAI_CANONICAL));
+		}
+
+		/** Scan once with isPickWholeTU = true and an open box: one CU of N into the box, no whole TU taken. */
+		@Test
+		void isPickWholeTU_ignored_oneCUOfN()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-I");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), true, null);
+
+			final HuId boxId = openBoxId(job);
+			final List<I_M_HU> cus = cusOf(boxId);
+			assertThat(cus).hasSize(1);
+			assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("5");
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the source box is not the picked HU").doesNotContain(source.getId());
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("the source box keeps the rest").isEqualByComparingTo("3");
+		}
+
+		/** new mode, open box, PICK with cuLabel = null: refused as a contract violation (no user message), nothing booked. */
+		@Test
+		void newMode_noCuLabel_refused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-J");
+			final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			assertThatThrownBy(() -> pick(job, source, "5", null, false, null))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("A CU label is required");
+
+			assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
+		}
+
+		/** Scan once, lots A then B into one open box: each CU keeps its lot AND the TU's lot is empty. */
+		@Test
+		void lotsAThenB_intoOneBox_eachCUKeepsItsLot_tuLotEmpty()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-K");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			job = pick(job, source, "2", label(PRODUCT_NO, LOT_A), false, null);
+			job = pick(job, source, "3", label(PRODUCT_NO, LOT_B), false, null);
+
+			final HuId boxId = openBoxId(job);
+			assertThat(lotOf(cuWithQty(boxId, "2"))).isEqualTo(LOT_A);
+			assertThat(lotOf(cuWithQty(boxId, "3"))).isEqualTo(LOT_B);
+			assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot empty (mixed lots)").isNull();
+		}
+	}
+
+	@Nested
+	class OpenBoxRequired
+	{
+		/** unlimited-capacity line naming a TU PI, no TU target: refused CU_NO_OPEN_BOX, nothing booked. */
+		@Test
+		void unlimitedCapacityLineNamingATuPI_noTarget_refused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.load(tuPiipId.getRepoId(), I_M_HU_PI_Item_Product.class);
+			piip.setIsInfiniteCapacity(true);
+			InterfaceWrapperHelper.save(piip);
+			final HUInfo source = sourceBox("QR-C");
+			final PickingJob job = createJob(tuPiipId, true);
+
+			assertFails(() -> pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
+
+			assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).as("nothing booked").isEmpty();
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source untouched").isEqualByComparingTo("8");
+		}
+
+		/** virtual-packing line (no TU PI), no TU target: refused CU_NO_OPEN_BOX (no loose CU). */
+		@Test
+		void virtualPackingLine_noTarget_refused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-D");
+			final PickingJob job = createJob(null, true);
+
+			assertFails(() -> pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
+
+			assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
+		}
+
+		/** Manual: no flag and no refusal: a TU line without a TU target is booked as today (the full TU, not a partial one). */
+		@Test
+		void manual_noTarget_notRefused_todaysFullTU()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-E");
+			PickingJob job = createJob(tuPiipId, true);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickingUnit().isTU()).as("Manual: a TU packing line still counts TUs").isTrue();
+
+			job = pick(job, source, "1", null, false, null); // Manual on a TU line: 1 TU = 4 CUs
+
+			final ImmutableSet<HuId> picked = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
+			assertThat(picked).hasSize(1);
+			final I_M_HU pickedHU = handlingUnitsBL.getById(picked.iterator().next());
+			assertThat(handlingUnitsBL.isTransportUnitOrAggregate(pickedHU)).as("today: the picked HU is the box (TU)").isTrue();
+			assertThat(qtyOf(pickedHU)).isEqualByComparingTo("4");
+		}
+
+		/** Manual, virtual-packing line, no TU target, 5 from a box holding two pieces of 4: today's result, one picked HU of 5 without CUs. */
+		@Test
+		void manual_fiveFromTwoPieces_noTarget_onePickedHUOf5()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final HUInfo source = sourceBox("QR-E2");
+			PickingJob job = createJob(null, true);
+
+			job = pick(job, source, "5", null, false, null);
+
+			final ImmutableSet<HuId> picked = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
+			assertThat(picked).hasSize(1);
+			final HuId pickedId = picked.iterator().next();
+			assertThat(qtyOf(handlingUnitsBL.getById(pickedId))).isEqualByComparingTo("5");
+			assertThat(cusOf(pickedId)).as("no CU split per source piece").isEmpty();
+		}
+
+		/** Manual, virtual-packing line, open box, 5 from a box holding two pieces of 4: today's result, one CU per source piece (4 + 1) in the box. */
+		@Test
+		void manual_fiveFromTwoPieces_openBox_oneCUPerSourcePiece()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final HUInfo source = sourceBox("QR-E3");
+			PickingJob job = openBoxFromLinePacking(createJob(null, true));
+
+			job = pick(job, source, "5", null, false, null);
+
+			final HuId pickedBoxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+			assertThat(cusOf(pickedBoxId)).as("one CU per source piece").extracting(PickingJobCUQtyEntryPickTest.this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+					.containsExactlyInAnyOrder(new BigDecimal("4"), new BigDecimal("1"));
+		}
+
+		/** Scan each CU, no TU target: refused CU_NO_OPEN_BOX, nothing booked. */
+		@Test
+		void scanEachCU_noTarget_refused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = sourceBox("QR-H");
+			final PickingJob job = createJob(tuPiipId, true);
+
+			assertFails(() -> pick(job, source, "1", label(PRODUCT_NO, LOT_A), false, null), CU_NO_OPEN_BOX);
+
+			assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
+		}
+	}
+
+	@Nested
+	class ManualAndPallet
+	{
+		/** Manual (new-mode flags off), lots A then B into one open box: the TU lot is overwritten as today. */
+		@Test
+		void manual_lotsAThenB_intoOneBox_lotOverwrittenAsToday()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-L");
+			final HUInfo source2 = helper.createVHUInfo(productId, "100", "QR-L2");
+			PickingJob job = createJob(null, true); // virtual packing = a CU line, so Manual can book into an open box
+			job = openBoxFromLinePacking(job);
+
+			job = pick(job, source, "2", null, false, LOT_A);
+			final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+			assertThat(handlingUnitsBL.isTransportUnitOrAggregate(handlingUnitsBL.getById(boxId))).as("today: the first booking's picked HU is the box").isTrue();
+			job = helper.pickingJobService.setTUPickingTarget(job, targetScope(job), TUPickingTarget.ofExistingHU(boxId, helper.huService.getQRCodeByHuId(boxId)));
+			job = pick(job, source2, "3", null, false, LOT_B);
+
+			assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot overwritten by the second booking").isEqualTo(LOT_B);
+			assertThat(cusOf(boxId)).extracting(PickingJobCUQtyEntryPickTest.this::lotOf).as("today: the second lot is written on the whole box").containsOnly(LOT_B);
+		}
+
+		/**
+		 * (y) Manual with a pallet (LU) and a box (TU) target: a booking of 2 (box capacity 4) books the box on the pallet as the picked HU,
+		 * not a CU in a box, so the un-pick's CU-in-box delete does not apply; "Entpacken" leaves no QtyPicked row of the box and nothing
+		 * picked (the Manual un-pick of a box, unchanged).
+		 */
+		@Test
+		void manual_palletAndBox_pickedHUIsTheBox_undoLeavesNothingPicked()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-Y");
+			final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Y", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
+			PickingJob job = createJob(null, true); // virtual packing = a CU line
+			job = helper.pickingJobService.setLUPickingTarget(job, targetScope(job), LUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()), "LU-Y"));
+			job = openBoxFromLinePacking(job);
+
+			job = pick(job, source, "2", null, false, LOT_A);
+
+			final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+			final I_M_HU box = handlingUnitsBL.getById(boxId);
+			assertThat(handlingUnitsBL.isTransportUnit(box)).as("Manual: the picked HU is the box").isTrue();
+			assertThat(helper.huService.isCUInTU(box)).isFalse();
+			assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(1);
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
+
+			job = undo(job, boxId, source.getQrCode(), null);
+
+			assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row of the box left").isEqualTo(0);
+			assertThat(pickedQtyOfLine(job)).as("nothing picked any more").isEqualByComparingTo("0");
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
+		}
+
+		/**
+		 * A CU that sits directly on a pallet (LU), without a box (TU), is not a CU in a box: the un-pick's CU-in-box delete (and the
+		 * GRAI check on the box) must not treat it as one; Manual un-pick of such a CU stays as before this feature.
+		 */
+		@Test
+		void cuDirectlyOnPallet_isNotACUInABox()
+		{
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Z", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			final I_M_HU_PI_Item luItem = huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
+			final I_M_HU lu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+			lu.setM_HU_PI_Version_ID(handlingUnitsDAO.retrievePICurrentVersion(luPI).getM_HU_PI_Version_ID());
+			InterfaceWrapperHelper.save(lu);
+			final I_M_HU_Item luHUItem = handlingUnitsDAO.createHUItem(lu, luItem);
+
+			final I_M_HU cuOnPallet = handlingUnitsBL.getById(helper.createVHU(productId, "5"));
+			cuOnPallet.setM_HU_Item_Parent_ID(luHUItem.getM_HU_Item_ID());
+			InterfaceWrapperHelper.save(cuOnPallet);
+
+			assertThat(helper.huService.isCUInTU(cuOnPallet)).isFalse();
+		}
+	}
+
+	@Nested
+	class ScanEachCU
+	{
+		/** Scan each CU, lots A, A, B (own pack IDs) into one open box: 3 CUs of 1, each with its own lot and PackId, the TU's lot empty. */
+		@Test
+		void scanEachCU_lotsAAB_threeCUsOfOne_ownLotAndPackId_tuLotEmpty()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-M");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			job = pickEach(job, source, LOT_A, "1");
+			job = pickEach(job, source, LOT_A, "2");
+			job = pickEach(job, source, LOT_B, "3");
+
+			final HuId boxId = openBoxId(job);
+			final List<I_M_HU> cus = cusOf(boxId);
+			assertThat(cus).as("3 CUs in the box").hasSize(3);
+			cus.forEach(cu -> assertThat(qtyOf(cu)).as("each CU is 1 pack").isEqualByComparingTo("1"));
+			assertThat(cus).extracting(PickingJobCUQtyEntryPickTest.this::lotOf, PickingJobCUQtyEntryPickTest.this::packIdOf)
+					.containsExactlyInAnyOrder(
+							tuple(LOT_A, "1"),
+							tuple(LOT_A, "2"),
+							tuple(LOT_B, "3"));
+			assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot empty (mixed lots)").isNull();
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).hasSize(3);
+		}
+
+		/** the server books qty 1 per label, whatever quantity the client sent. */
+		@Test
+		void scanEachCU_clientSendsQty3_oneCUOfOneBooked()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-N");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			job = pick(job, source, "3", eachLabel(LOT_A, "1"), false, null);
+
+			final List<I_M_HU> cus = cusOf(openBoxId(job));
+			assertThat(cus).hasSize(1);
+			assertThat(qtyOf(cus.get(0))).isEqualByComparingTo("1");
+			assertThat(packIdOf(cus.get(0))).isEqualTo("1");
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
+		}
+
+		/** the same (product, lot, pack ID) again in the job: PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, nothing booked. */
+		@Test
+		void repeatedLotAndPackId_refused_nothingBooked()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-O");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+			job = pickEach(job, source, LOT_A, "1");
+			final PickingJob jobBefore = job;
+
+			assertFails(() -> pickEach(jobBefore, source, LOT_A, "1"), PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED);
+
+			assertThat(cusOf(openBoxId(job))).as("still one CU").hasSize(1);
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
+		}
+
+		/** the same pack ID on another lot is a different pack: booked. */
+		@Test
+		void samePackIdOnAnotherLot_booked()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-P");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			job = pickEach(job, source, LOT_A, "1");
+			job = pickEach(job, source, LOT_B, "1");
+
+			final List<I_M_HU> cus = cusOf(openBoxId(job));
+			assertThat(cus).hasSize(2);
+			assertThat(cus).extracting(PickingJobCUQtyEntryPickTest.this::lotOf, PickingJobCUQtyEntryPickTest.this::packIdOf)
+					.containsExactlyInAnyOrder(tuple(LOT_A, "1"), tuple(LOT_B, "1"));
+		}
+
+		/** the same label in another job is booked: the lookup reads only the job's own picked HUs. */
+		@Test
+		void sameLabelInAnotherJob_booked()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-Q");
+			PickingJob job1 = openBoxFromLinePacking(createJob("salesOrderCU1", tuPiipId, true));
+			job1 = pickEach(job1, source, LOT_A, "1");
+			PickingJob job2 = openBoxFromLinePacking(createJob("salesOrderCU2", tuPiipId, true));
+
+			job2 = pickEach(job2, source, LOT_A, "1");
+
+			final List<I_M_HU> cus2 = cusOf(openBoxId(job2));
+			assertThat(cus2).hasSize(1);
+			assertThat(packIdOf(cus2.get(0))).isEqualTo("1");
+			assertThat(lotOf(cus2.get(0))).isEqualTo(LOT_A);
+			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("98");
+		}
+
+		/** the box's first pack: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (box and 2nd CU stay Picked, their QtyPicked rows stay, the line's picked qty drops by 1); the rescan books. */
+		@Test
+		void firstPackOfTheBox_duplicate_undo_rescan()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-R");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+			job = pickEach(job, source, LOT_A, "1");
+			job = pickEach(job, source, LOT_A, "2");
+			final HuId boxId = openBoxId(job);
+			final I_M_HU cu1 = cuWithPackId(boxId, "1");
+			final HuId cu1Id = HuId.ofRepoId(cu1.getM_HU_ID());
+			final I_M_HU cu2 = cuWithPackId(boxId, "2");
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HUs are the CUs, not the box").containsExactlyInAnyOrder(cu1Id, HuId.ofRepoId(cu2.getM_HU_ID()));
+			assertThat(pickedQtyOfLine(job)).as("2 packs picked").isEqualByComparingTo("2");
+			assertThat(pickedHUOfStepWithCU(job, cu1Id).getQrCode()).as("the picked CU carries its own QR code, not the box's").isNotEqualTo(helper.getQRCode(boxId));
+			final PickingJob jobBeforeRescan = job;
+			assertFails(() -> pickEach(jobBeforeRescan, source, LOT_A, "1"), PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED);
+			assertThat(cusOf(boxId)).as("still 2 CU HUs").hasSize(2);
+			assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
+
+			job = undo(job, cu1Id, source.getQrCode(), null);
+
+			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("CU of pack 1 Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(handlingUnitsBL.getById(boxId).getHUStatus()).as("box stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+			assertThat(handlingUnitsBL.getById(HuId.ofRepoId(cu2.getM_HU_ID())).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").containsExactly(HuId.ofRepoId(cu2.getM_HU_ID()));
+			assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
+			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
+
+			job = pickEach(job, source, LOT_A, "1");
+
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("rescan booked").hasSize(2);
+			assertThat(pickedQtyOfLine(job)).as("rescan: 2 packs picked again").isEqualByComparingTo("2");
+			final I_M_HU rescanned = cuWithPackId(boxId, "1");
+			assertThat(lotOf(rescanned)).as("rescanned CU keeps its lot").isEqualTo(LOT_A);
+			assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked rows of both CUs").isEqualTo(2);
+		}
+
+		/** the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */
+		@Test
+		void labelWithoutPackId_refused()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-S");
+			final PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+
+			assertFails(() -> pickEach(job, source, LOT_A, null), PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID);
+
+			assertNothingBooked(job, source, "100");
+		}
+	}
+
+	@Nested
+	class Undo
+	{
+		/** undo of a CU in a box with a scanned target (the CU is moved into it): box and the 2nd CU stay Picked, the target takes the pack. */
+		@Test
+		void undoWithTargetScan_cuMovedIntoTarget()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-T");
+			final HUInfo target = helper.createVHUInfo(productId, "10", "QR-T-TARGET");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+			job = pickEach(job, source, LOT_A, "1");
+			job = pickEach(job, source, LOT_A, "2");
+			final HuId boxId = openBoxId(job);
+			final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
+			final HuId cu2Id = HuId.ofRepoId(cuWithPackId(boxId, "2").getM_HU_ID());
+
+			job = undo(job, cu1Id, source.getQrCode(), target.getQrCode());
+
+			assertThat(qtyOf(handlingUnitsBL.getById(target.getId()))).as("target took the pack").isEqualByComparingTo("11");
+			assertThat(handlingUnitsBL.getById(boxId).getHUStatus()).as("box stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+			assertThat(handlingUnitsBL.getById(cu2Id).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).containsExactly(cu2Id);
+			assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
+		}
+
+		/**
+		 * (u) undo of the box's ONLY CU: nothing stays picked and no QtyPicked row of the CU is left. The emptied box is gone (in production
+		 * the HU framework destroys a TU whose last CU leaves it), so the line keeps an open box of the same box type, like an LU target
+		 * that an un-pick destroyed; the next pack is booked into a box of that type.
+		 */
+		@Test
+		void undoOfTheBoxsOnlyCU_lineKeepsAnOpenBoxOfTheSameType()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-U");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+			job = pickEach(job, source, LOT_A, "1");
+			final HuId boxId = openBoxId(job);
+			final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
+
+			job = undo(job, cu1Id, source.getQrCode(), null);
+
+			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("nothing picked").isEmpty();
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
+			assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row left in the box").isEqualTo(0);
+			assertThat(countQtyPickedRowsOfCU(cu1Id)).as("no QtyPicked row of the CU left").isEqualTo(0);
+			final TUPickingTarget target = openBoxTarget(job);
+			assertThat(target.isNewTU()).as("the emptied box is not the target any more: an open box of the same type is").isTrue();
+			assertThat(target.getTuPIIdNotNull()).isEqualTo(tuPIId);
+
+			job = pickEach(job, source, LOT_A, "2");
+
+			final HuId nextBoxId = openBoxId(job);
+			assertThat(cusOf(nextBoxId)).as("the next pack went into a box of that type").hasSize(1);
+			assertThat(handlingUnitsBL.getEffectivePackingInstructionsIdAndCaption(handlingUnitsBL.getById(nextBoxId)).getId()).isEqualTo(tuPIId);
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
+		}
+
+		/** undo of the ONLY CU of a box opened by a GRAI scan: the line's open box keeps the GRAI, the next pack's box carries it. */
+		@Test
+		void undoOfTheOnlyCUOfAGRAIBox_openBoxKeepsTheGRAI()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			mapGRAIToTheBoxType();
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-W");
+			PickingJob job = createJob(tuPiipId, true);
+			job = helper.pickingJobService.createTUFromGRAI(job, targetScope(job), ScannedCode.ofString(GRAI_CANONICAL));
+			job = pickEach(job, source, LOT_A, "1");
+			final HuId boxId = openBoxId(job);
+			final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
+
+			job = undo(job, cu1Id, source.getQrCode(), null);
+
+			final TUPickingTarget target = openBoxTarget(job);
+			assertThat(target.isNewTU()).isTrue();
+			assertThat(target.getGrai()).as("the open box keeps the scanned GRAI").isEqualTo(GRAI.parse(GRAI_CANONICAL));
+
+			job = pickEach(job, source, LOT_A, "2");
+
+			final HuId nextBoxId = openBoxId(job);
+			final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(nextBoxId)))).getAllGrais();
+			assertThat(grais.toSet()).as("the next pack's box carries the GRAI").containsExactly(GRAI.parse(GRAI_CANONICAL));
+		}
+
+		/**
+		 * (v) The un-pick of a CU in a box removes the CU's own QtyPicked rows from what was booked, not from the current profile: the same
+		 * picked CU un-picked after the profile was switched to Manual still leaves no QtyPicked row of that CU (else the line would count a
+		 * pack that is not picked any more); the other CU's row stays.
+		 */
+		@Test
+		void profileSwitchedToManualAfterBooking_unpickStillRemovesTheCUsRows()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-V");
+			PickingJob job = openBoxFromLinePacking(createJob(tuPiipId, true));
+			job = pickEach(job, source, LOT_A, "1");
+			job = pickEach(job, source, LOT_A, "2");
+			final HuId boxId = openBoxId(job);
+			final HuId cu1Id = HuId.ofRepoId(cuWithPackId(boxId, "1").getM_HU_ID());
+			assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(2);
+
+			setProfile(CUQtyEntryMode.MANUAL);
+			job = undo(job, cu1Id, source.getQrCode(), null);
+
+			assertThat(countQtyPickedRowsOfCU(cu1Id)).as("no QtyPicked row of the un-picked CU left").isEqualTo(0);
+			assertThat(countQtyPickedRowsOfBox(boxId)).as("the other CU's row stays").isEqualTo(1);
+			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").hasSize(1).doesNotContain(cu1Id);
+			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
+		}
+	}
+
+	@Nested
+	class CloseTargets
+	{
+		/**
+		 * (x) A product job of two customers, each line in its own picking slot: when all targets are closed (on completion), the first
+		 * customer's still open box is queued on its line's slot only, not also on the slot scanned last for the other customer (a box in two
+		 * slot queues breaks the shipment: more than one slot found for the HU).
+		 */
+		@Test
+		void closingAllTargets_queuesEachLinesBoxOnItsOwnLinesSlot()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-X");
+			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
+			createPackageable("salesOrder-x-A", helper.shipToBPLocationId);
+			createPackageable("salesOrder-x-B", customerB);
+			PickingJob job = helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.PRODUCT)
+									.pickerId(UserId.ofRepoId(1234))
+									.isAllowPickingAnyHU(true)
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+			assertThat(job.getLines()).as("one line per customer").hasSize(2);
+			final PickingJobLine lineA = job.getLines().stream()
+					.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("no line of customer A"));
+			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineA.getId(), source, "3", label(PRODUCT_NO, LOT_A));
+			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
+			final PickingSlotId slotB = createPickingSlot("SLOT-B");
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
+
+			helper.pickingJobService.closeLUAndTUPickingTargets(job);
+
+			assertThat(queuedSlotsOf(boxA)).as("customer A's box is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
+		}
+
+		/**
+		 * (x2) Manual: the same two-customer product job queues the box on the slot scanned last, as today (the per-line slot is only for the
+		 * new quantity entry modes).
+		 */
+		@Test
+		void manual_closingAllTargets_queuesTheBoxOnTheLastScannedSlot_asToday()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final HUInfo source = sourceBox("QR-X2");
+			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
+			createPackageable("salesOrder-x2-A", helper.shipToBPLocationId);
+			createPackageable("salesOrder-x2-B", customerB);
+			PickingJob job = helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.PRODUCT)
+									.pickerId(UserId.ofRepoId(1234))
+									.isAllowPickingAnyHU(true)
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+			final PickingJobLine lineA = job.getLines().stream()
+					.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("no line of customer A"));
+			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineA.getId(), source, "1", null);
+			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
+			final PickingSlotId slotB = createPickingSlot("SLOT-B");
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
+
+			helper.pickingJobService.closeLUAndTUPickingTargets(job);
+
+			assertThat(queuedSlotsOf(boxA)).as("Manual: the close queues the box on the slot scanned last, as before").contains(slotB);
+		}
+
+		/**
+		 * (x3) Mixed job: customer A uses a new mode (own job options row), customer B is Manual (the profile default). Closing all targets
+		 * queues A's box on A's line slot only and B's box on the slot scanned last, as today; B's target is closed.
+		 */
+		@Test
+		void mixedJob_newModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
+			final BPartnerId customerAId = helper.shipToBPLocationId.getBpartnerId();
+			helper.updateMobileProfile(profile -> {
+				final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A new mode", profile.getDefaultPickingJobOptions());
+				helper.configService.updatePickingJobOptionsCUQtyEntry(optionsA, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId());
+				return profile.toBuilder()
+						.customerConfigs(PickingCustomerConfigsCollection.ofCollection(ImmutableList.of(
+								PickingCustomerConfig.builder().customerId(customerAId).pickingJobOptionsId(optionsA).build())))
+						.build();
+			});
+			final HUInfo sourceA = sourceBox("QR-X3A");
+			final HUInfo sourceB = sourceBox("QR-X3B");
+			createPackageable("salesOrder-x3-A", helper.shipToBPLocationId);
+			createPackageable("salesOrder-x3-B", customerB);
+			PickingJob job = helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.PRODUCT)
+									.pickerId(UserId.ofRepoId(1234))
+									.isAllowPickingAnyHU(true)
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+			assertThat(job.getLines()).as("one line per customer").hasSize(2);
+			final PickingJobLine lineA = job.getLines().stream()
+					.filter(line -> line.getCustomerId().equals(customerAId))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("no line of customer A"));
+			final PickingJobLine lineB = job.getLines().stream()
+					.filter(line -> !line.getCustomerId().equals(customerAId))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("no line of customer B"));
+			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineA.getId(), sourceA, "3", label(PRODUCT_NO, LOT_A));
+			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box of A")).getTuIdNotNull();
+			final PickingSlotId slotB = createPickingSlot("SLOT-B");
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
+			job = helper.pickingJobService.setTUPickingTarget(job, lineB.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineB.getId(), sourceB, "1", null);
+			final HuId boxB = job.getTuPickingTargetEffective(lineB.getId()).orElseThrow(() -> new AssertionError("no box of B")).getTuIdNotNull();
+			final PickingSlotId slotC = createPickingSlot("SLOT-C");
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotC, "SLOT-C")); // the picker scans this slot last
+
+			final PickingJob jobClosed = helper.pickingJobService.closeLUAndTUPickingTargets(job);
+
+			assertThat(queuedSlotsOf(boxA)).as("new-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
+			assertThat(queuedSlotsOf(boxB)).as("Manual customer B: the slot scanned last, as before").contains(slotC);
+			assertThat(jobClosed.getTuPickingTargetEffective(lineB.getId())).as("Manual line's target closed").isEmpty();
 		}
 	}
 }

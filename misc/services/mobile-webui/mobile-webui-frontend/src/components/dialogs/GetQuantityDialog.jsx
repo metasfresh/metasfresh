@@ -21,7 +21,7 @@ import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
-import { isNewMode, isScanOnce as isScanOnceMode } from '../../constants/CUQtyEntryMode';
+import { getCUQtyEntryPolicy } from '../../constants/CUQtyEntryMode';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 /** The offered quantity when the dialog opens. */
@@ -70,13 +70,14 @@ const GetQuantityDialog = ({
   onCloseDialog,
 }) => {
   // a CU label carries lot and best-before: the quantity block of a new mode always shows them
-  const isLabelMode = isNewMode(cuQtyEntryMode);
+  const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
+  const isLabelMode = cuQtyEntryPolicy.isLabelRequired;
   const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
 
   // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
   // smaller count than the open qty is not a rejection
-  const isScanOnce = isScanOnceMode(cuQtyEntryMode);
+  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
   // new modes: no implicit form submit by secondary buttons; undefined = default submit, as in Manual before
   const buttonType = isLabelMode ? 'button' : undefined;
 

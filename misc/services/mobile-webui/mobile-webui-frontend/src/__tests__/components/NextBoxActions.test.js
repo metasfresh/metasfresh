@@ -4,7 +4,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import NextBoxActions, { openBoxFromGrai, openNextBox, useNextBox } from '../../components/NextBoxActions';
+import NextBoxActions, { openNextBox, useNextBox } from '../../components/NextBoxActions';
 import * as pickingApi from '../../api/picking';
 import { toastErrorFromObj, toastNotification } from '../../utils/toast';
 import GetQuantityDialog from '../../components/dialogs/GetQuantityDialog';
@@ -40,7 +40,6 @@ const newDeps = () => {
     calls,
     closeTarget: jest.fn(async () => calls.push('close')),
     setTarget: jest.fn(async ({ target }) => calls.push(['set', target])),
-    setTargetFromGrai: jest.fn(async ({ graiString }) => calls.push(['setFromGrai', graiString])),
     gotoSelectTarget: jest.fn(() => calls.push('gotoS7')),
   };
 };
@@ -91,28 +90,6 @@ describe('openNextBox: the "Weitere Kiste" button', () => {
       openNextBox({ ...deps, packingTuPIId: BOX_TYPE_ID, packingItemName: 'x', isTargetOpen: true })
     ).rejects.toThrow('close failed');
     expect(deps.setTarget).not.toHaveBeenCalled();
-  });
-});
-
-describe('openBoxFromGrai: a scanned GRAI', () => {
-  it('box open: opens the new box from the GRAI without closing the open one first (the backend replaces it)', async () => {
-    const deps = newDeps();
-    await openBoxFromGrai({ ...deps, graiString: '1234567.12345.S1' });
-    expect(deps.calls).toEqual([['setFromGrai', '1234567.12345.S1']]);
-    expect(deps.closeTarget).not.toHaveBeenCalled();
-  });
-
-  it('box open, backend refuses the GRAI: the open box is not closed and the error reaches the caller', async () => {
-    const deps = newDeps();
-    deps.setTargetFromGrai.mockRejectedValue(new Error('GRAI refused'));
-    await expect(openBoxFromGrai({ ...deps, graiString: 'bad' })).rejects.toThrow('GRAI refused');
-    expect(deps.closeTarget).not.toHaveBeenCalled();
-  });
-
-  it('no box open: only opens the box from the GRAI', async () => {
-    const deps = newDeps();
-    await openBoxFromGrai({ ...deps, graiString: '1234567.12345.S1' });
-    expect(deps.calls).toEqual([['setFromGrai', '1234567.12345.S1']]);
   });
 });
 
@@ -238,14 +215,14 @@ describe('useNextBox', () => {
       lineId: 'l',
       packingTuPIId: BOX_TYPE_ID,
       packingItemName: 'Kiste',
-      tuPickingTarget: null,
+      tuPickingTarget: exposed.tuPickingTarget ?? null,
       setPickingTarget: exposed.setPickingTarget,
     });
     exposed.nextBox = nextBox;
     return null;
   };
-  const setup = (setPickingTarget) => {
-    const exposed = { setPickingTarget };
+  const setup = (setPickingTarget, tuPickingTarget = null) => {
+    const exposed = { setPickingTarget, tuPickingTarget };
     render(<Harness exposed={exposed} />);
     return exposed;
   };
@@ -317,6 +294,43 @@ describe('useNextBox', () => {
     const exposed = setup(jest.fn());
     await act(async () => {
       await expect(exposed.nextBox.onGraiScanned('1234567.12345.S1')).rejects.toThrow('bad grai');
+    });
+  });
+
+  describe('a scanned GRAI', () => {
+    const OPEN_BOX = { tuPIId: BOX_TYPE_ID, caption: 'Kiste' };
+
+    it('box open: opens the new box from the GRAI without closing the open one first (the backend replaces it)', async () => {
+      const exposed = setup(jest.fn(), OPEN_BOX);
+      await act(async () => {
+        await exposed.nextBox.onGraiScanned('1234567.12345.S1');
+      });
+      expect(pickingApi.setTUPickingTargetFromGrai).toHaveBeenCalledWith({
+        wfProcessId: 'wf',
+        lineId: 'l',
+        graiString: '1234567.12345.S1',
+      });
+      expect(pickingApi.closePickingTarget).not.toHaveBeenCalled();
+    });
+
+    it('box open, backend refuses the GRAI: the open box is not closed and the error reaches the caller', async () => {
+      pickingApi.setTUPickingTargetFromGrai.mockRejectedValue(new Error('GRAI refused'));
+      const exposed = setup(jest.fn(), OPEN_BOX);
+      await act(async () => {
+        await expect(exposed.nextBox.onGraiScanned('bad')).rejects.toThrow('GRAI refused');
+      });
+      expect(pickingApi.closePickingTarget).not.toHaveBeenCalled();
+      expect(toastNotification).not.toHaveBeenCalled();
+    });
+
+    it('no box open: only opens the box from the GRAI and notifies', async () => {
+      const exposed = setup(jest.fn());
+      await act(async () => {
+        await exposed.nextBox.onGraiScanned('1234567.12345.S1');
+      });
+      expect(pickingApi.setTUPickingTargetFromGrai).toHaveBeenCalledTimes(1);
+      expect(pickingApi.closePickingTarget).not.toHaveBeenCalled();
+      expect(toastNotification).toHaveBeenCalledTimes(1);
     });
   });
 });

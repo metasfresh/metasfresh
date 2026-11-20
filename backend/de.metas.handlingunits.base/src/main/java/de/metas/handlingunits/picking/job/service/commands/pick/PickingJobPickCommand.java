@@ -459,7 +459,8 @@ public class PickingJobPickCommand
 		{
 			if (cuLabel == null)
 			{
-				throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH).markAsUserValidationError();
+				// a contract violation, not an operator error: the mobile app always sends the scanned label in these modes
+				throw new AdempiereException("A CU label is required for a pick in the CU quantity entry mode " + cuQtyEntryMode);
 			}
 			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryMode, pickingJobOptions.getCULabelFormatId().orElse(null));
 		}

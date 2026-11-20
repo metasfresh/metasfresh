@@ -66,15 +66,6 @@ export const openNextBox = async ({
 };
 
 /**
- * A scanned GRAI: opens the new box with that GRAI. The open box is NOT closed first: the backend replaces the line's
- * box target in one step, so a GRAI it refuses leaves the open box as it was.
- */
-// @VisibleForTesting
-export const openBoxFromGrai = async ({ graiString, setTargetFromGrai }) => {
-  await setTargetFromGrai({ graiString });
-};
-
-/**
  * Wires the two ways of opening a box (button, GRAI scan) to the picking target APIs of the line.
  *
  * @param setPickingTarget `setPickingTarget` of `useAvailablePickingTargets({type: TU})`
@@ -152,11 +143,9 @@ export const useNextBox = ({
   const onGraiScanned = (graiString) =>
     runExclusive(
       async () => {
-        await openBoxFromGrai({
-          graiString,
-          setTargetFromGrai: ({ graiString }) =>
-            setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess)),
-        });
+        // The open box is NOT closed first: the backend replaces the line's box target in one step,
+        // so a GRAI it refuses leaves the open box as it was.
+        await setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess));
         toastNotification({ plainMessage: trl('picking.nextBoxOpened', { caption: graiString }) });
       },
       { isRethrow: true }

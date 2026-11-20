@@ -26,7 +26,7 @@ import { toastError } from '../../../utils/toast';
 import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
 import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
-import { isNewMode } from '../../../constants/CUQtyEntryMode';
+import { getCUQtyEntryPolicy } from '../../../constants/CUQtyEntryMode';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -65,7 +65,7 @@ const PickLineScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties,
-    isLiveRefresh: isNewMode(cuQtyEntryMode),
+    isLiveRefresh: getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired,
   });
 
   const onPickFromManufacturingOrderClicked = () => {
@@ -111,7 +111,7 @@ const PickLineScreen = () => {
         lineId,
         qrCode: pickFromHUQRCode,
         // a line in a CU quantity entry mode continues where the picker left it: the quantity block reopens
-        isResume: isNewMode(cuQtyEntryMode),
+        isResume: getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired,
       })
     );
   };

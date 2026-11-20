@@ -522,20 +522,18 @@ public class MobileUIPickingUserProfileRepository
 		}
 		final List<Integer> formatRepoIds = formatIds.stream().map(ScannableCodeFormatId::getRepoId).collect(Collectors.toList());
 
-		for (final I_MobileUI_UserProfile_Picking record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
-				.addInArrayFilter(I_MobileUI_UserProfile_Picking.COLUMNNAME_C_ScannableCode_Format_ID, formatRepoIds)
+		clearCULabelFormat(I_MobileUI_UserProfile_Picking.class, I_MobileUI_UserProfile_Picking.COLUMNNAME_C_ScannableCode_Format_ID, formatRepoIds);
+		clearCULabelFormat(I_MobileUI_UserProfile_Picking_Job.class, I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_C_ScannableCode_Format_ID, formatRepoIds);
+	}
+
+	private <T> void clearCULabelFormat(@NonNull final Class<T> recordClass, @NonNull final String formatColumnName, @NonNull final List<Integer> formatRepoIds)
+	{
+		for (final T record : queryBL.createQueryBuilder(recordClass)
+				.addInArrayFilter(formatColumnName, formatRepoIds)
 				.create()
 				.list())
 		{
-			record.setC_ScannableCode_Format_ID(-1);
-			InterfaceWrapperHelper.saveRecord(record);
-		}
-		for (final I_MobileUI_UserProfile_Picking_Job record : queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
-				.addInArrayFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_C_ScannableCode_Format_ID, formatRepoIds)
-				.create()
-				.list())
-		{
-			record.setC_ScannableCode_Format_ID(-1);
+			InterfaceWrapperHelper.setValue(record, formatColumnName, null);
 			InterfaceWrapperHelper.saveRecord(record);
 		}
 	}
@@ -550,13 +548,11 @@ public class MobileUIPickingUserProfileRepository
 				.addNotNull(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID)
 				.create();
 
-		// the name is compared here: a SQL LIKE filter on the query builder is a "contains" filter (it prepends a wildcard)
 		final List<I_MobileUI_UserProfile_Picking_Job> unused = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_Job.class)
 				.addNotInSubQueryFilter(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, usedRefs)
+				.addStringStartsWith(I_MobileUI_UserProfile_Picking_Job.COLUMNNAME_Name, namePrefix)
 				.create()
-				.stream()
-				.filter(record -> record.getName() != null && record.getName().startsWith(namePrefix))
-				.collect(Collectors.toList());
+				.list();
 		InterfaceWrapperHelper.deleteAll(unused);
 	}
 

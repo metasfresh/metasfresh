@@ -57,7 +57,7 @@ import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/pic
 import { resolveCULabel, routeScannedCode, selectCULabelFormat, SCAN_TYPE_GRAI } from '../../../utils/cuLabel';
 import { parseGraiFromRawInput } from '../../../utils/grai';
 import NextBoxActions, { useNextBox } from '../../../components/NextBoxActions';
-import { isNewMode, isScanEach, isScanOnce as isScanOnceMode } from '../../../constants/CUQtyEntryMode';
+import { getCUQtyEntryPolicy } from '../../../constants/CUQtyEntryMode';
 import { rememberCUEntry } from '../../../actions/PickingActions';
 import { getCUEntry } from '../../../reducers/wfProcesses/picking';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
@@ -134,7 +134,8 @@ const PickLineScanScreen = () => {
   });
   const isInlineGraiCapture = isInlineGraiCaptureEnabled({ graiScanEnabled, tuPickingTarget, cuQtyEntryMode });
 
-  const isNewModeLine = isNewMode(cuQtyEntryMode);
+  const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
+  const isLabelRequiredLine = cuQtyEntryPolicy.isLabelRequired;
   const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
   const nextBox = useNextBox({
     applicationId,
@@ -153,14 +154,14 @@ const PickLineScanScreen = () => {
     uom,
     qtyToPick,
     qtyPicked,
-    additionalHeaderProperties: { entries: computeOpenBoxHeaderEntries({ isNewModeLine, tuPickingTarget }) },
+    additionalHeaderProperties: { entries: computeOpenBoxHeaderEntries({ isLabelRequiredLine, tuPickingTarget }) },
     rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode },
-    isLiveRefresh: isNewModeLine,
+    isLiveRefresh: isLabelRequiredLine,
   });
 
   // not memoized: `nextBox.onGraiScanned` is a new function on every render
   const resolveScannedBarcode = (scannedBarcode) =>
-    isNewModeLine
+    isLabelRequiredLine
       ? convertScannedCULabelToResolvedResult({
           scannedBarcode,
           cuLabelFormat,
@@ -181,7 +182,7 @@ const PickLineScanScreen = () => {
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
   // scan once: the count offered for the next box (the last typed count, capped by the open quantity)
-  const isScanOnce = isScanOnceMode(cuQtyEntryMode);
+  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
   const suggestedQty = isScanOnce
     ? computeSuggestedQty({ lastTypedQty: cuEntry?.lastTypedQty, qtyOpen: qtyToPickRemaining }) ?? undefined
     : undefined;
@@ -192,9 +193,7 @@ const PickLineScanScreen = () => {
     lineId,
     expectedProductNo: productNo,
     expectedGS1ProductCodes: gs1ProductCodes,
-    rememberedLastTypedQty: isScanOnce ? cuEntry?.lastTypedQty : undefined,
-    suggestedQty,
-    isRememberCUEntry: isScanOnce,
+    scanOnceMemory: isScanOnce ? { lastTypedQty: cuEntry?.lastTypedQty, suggestedQty } : undefined,
     cuQtyEntryMode,
     sourceHUQRCode: computeSourceHUQRCode({ qrCode, activity }),
     onClose,
@@ -239,7 +238,9 @@ const PickLineScanScreen = () => {
       rememberedCULabel={computeRememberedCULabel({ isScanOnce, isResume, cuEntry })}
       isShowCloseTargetButton={!!luPickingTarget}
       nextBoxActions={
-        isNewModeLine ? <NextBoxActions isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} /> : undefined
+        isLabelRequiredLine ? (
+          <NextBoxActions isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} />
+        ) : undefined
       }
       //
       resolveScannedBarcode={resolveScannedBarcode}
@@ -262,8 +263,8 @@ export default PickLineScanScreen;
  * The box open on a new-mode line stays visible in the header (a toast alone is gone when the picker looks back).
  */
 // @VisibleForTesting
-export const computeOpenBoxHeaderEntries = ({ isNewModeLine, tuPickingTarget }) =>
-  isNewModeLine && tuPickingTarget?.caption
+export const computeOpenBoxHeaderEntries = ({ isLabelRequiredLine, tuPickingTarget }) =>
+  isLabelRequiredLine && tuPickingTarget?.caption
     ? [{ caption: trl('activities.picking.tuPickingTarget.Current'), value: tuPickingTarget.caption }]
     : [];
 
@@ -283,7 +284,7 @@ export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
  */
 // @VisibleForTesting
 export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
-  isNewMode(cuQtyEntryMode) ? undefined : qrCode;
+  getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired ? undefined : qrCode;
 
 /**
  * The HU the PICK event takes the packs from (`huQRCode`). A line with a CU quantity entry mode takes them from the
@@ -292,7 +293,7 @@ export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
  */
 // @VisibleForTesting
 export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }) => {
-  if (!isNewMode(cuQtyEntryMode)) return scannedBarcode;
+  if (!getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired) return scannedBarcode;
   if (!sourceHUQRCode) throw { messageKey: 'picking.pickFromRequired' };
   return sourceHUQRCode;
 };
@@ -318,7 +319,7 @@ export const computeRememberedCULabel = ({ isScanOnce, isResume, cuEntry }) =>
  */
 // @VisibleForTesting
 export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryMode }) =>
-  graiScanEnabled && tuPickingTarget == null && !isNewMode(cuQtyEntryMode);
+  graiScanEnabled && tuPickingTarget == null && !getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired;
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
@@ -431,7 +432,7 @@ export const convertScannedCULabelToResolvedResult = ({
     format: cuLabelFormat,
     expectedProductNo,
     expectedGS1ProductCodes,
-    isPackIdRequired: isScanEach(cuQtyEntryMode),
+    isPackIdRequired: getCUQtyEntryPolicy(cuQtyEntryMode).isPackIdRequired,
   });
   if (errorKey) {
     throw { messageKey: errorKey };
@@ -570,9 +571,7 @@ export const usePostQtyPicked = ({
   lineId: lineIdParam = null,
   expectedProductNo,
   expectedGS1ProductCodes,
-  isRememberCUEntry = false,
-  rememberedLastTypedQty,
-  suggestedQty,
+  scanOnceMemory, // scan once only: the count typed last and the one offered (undefined = do not remember the entry)
   cuQtyEntryMode,
   sourceHUQRCode,
   onClose,
@@ -636,10 +635,10 @@ export const usePostQtyPicked = ({
         isCloseTarget,
       })
     ).then(({ isPickingJobCompleted }) => {
-      if (isRememberCUEntry && !isPickingJobCompleted) {
+      if (scanOnceMemory && !isPickingJobCompleted) {
         const cuEntryToRemember = computeCUEntryToRemember({
-          previousLastTypedQty: rememberedLastTypedQty,
-          suggestedQty,
+          previousLastTypedQty: scanOnceMemory.lastTypedQty,
+          suggestedQty: scanOnceMemory.suggestedQty,
           qtyBooked: qty,
           cuLabel,
           lotNo,

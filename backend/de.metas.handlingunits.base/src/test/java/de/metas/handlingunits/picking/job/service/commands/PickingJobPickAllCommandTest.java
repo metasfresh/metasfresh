@@ -55,20 +55,20 @@ class PickingJobPickAllCommandTest
 		helper.createQRCode(vhuId, "QR-VHU1");
 	}
 
-	/** (i) one line, effective mode SCAN_ONCE_ENTER_QTY from the profile */
+	/** one line, effective mode SCAN_ONCE_ENTER_QTY from the profile */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void i_profileNewMode_refused(final boolean allowQuickPackAll)
+	void profileNewMode_refused(final boolean allowQuickPackAll)
 	{
 		createProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, allowQuickPackAll);
 		final PickingJob job = createSalesOrderJob("salesOrder-i", helper.shipToBPLocationId);
 		assertRefusedAndNothingPicked(job);
 	}
 
-	/** (ii) one line, profile MANUAL + customer record SCAN_EACH_CU: the customer wins */
+	/** one line, profile MANUAL + customer record SCAN_EACH_CU: the customer wins */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void ii_customerNewMode_overProfileManual_refused(final boolean allowQuickPackAll)
+	void customerNewMode_overProfileManual_refused(final boolean allowQuickPackAll)
 	{
 		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, allowQuickPackAll);
 		createCustomerRecord(profile, helper.shipToBPLocationId.getBpartnerId(), CUQtyEntryMode.SCAN_EACH_CU);
@@ -76,10 +76,10 @@ class PickingJobPickAllCommandTest
 		assertRefusedAndNothingPicked(job);
 	}
 
-	/** (iii) product job, two lines of two customers: customer A MANUAL, customer B SCAN_EACH_CU (mixed = whole job refused) */
+	/** product job, two lines of two customers: customer A MANUAL, customer B SCAN_EACH_CU (mixed = whole job refused) */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void iii_mixedProductJob_refused(final boolean allowQuickPackAll)
+	void mixedProductJob_refused(final boolean allowQuickPackAll)
 	{
 		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, allowQuickPackAll);
 		final BPartnerLocationId customerA = helper.createBPartnerAndLocationId("CustomerA");
@@ -99,9 +99,9 @@ class PickingJobPickAllCommandTest
 		assertRefusedAndNothingPicked(job);
 	}
 
-	/** (iv) one line, MANUAL in profile and customer record, IsAllowQuickPackAll = Y: as today, every line picked and the job completed */
+	/** one line, MANUAL in profile and customer record, IsAllowQuickPackAll = Y: as today, every line picked and the job completed */
 	@Test
-	void iv_manualOnly_pickedAndCompleted()
+	void manualOnly_pickedAndCompleted()
 	{
 		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, true);
 		createCustomerRecord(profile, helper.shipToBPLocationId.getBpartnerId(), CUQtyEntryMode.MANUAL);

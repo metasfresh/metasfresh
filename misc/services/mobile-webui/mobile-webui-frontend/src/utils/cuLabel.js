@@ -23,50 +23,66 @@ const ERROR_differentProduct = 'activities.picking.qrcode.differentProduct';
  */
 export const routeScannedCode = (string) => (parseGraiFromRawInput(string) ? SCAN_TYPE_GRAI : SCAN_TYPE_CU_LABEL);
 
+const byStartPosition = (a, b) => a.startPosition - b.startPosition;
+
 /**
- * @returns true when the label is too short to hold the pack ID zone while every part in front of the zone reads
- * (L0: a label without counter). The zone starts at the constant marker directly in front of the PACK_ID part (or at
- * that part); a format without a PACK_ID part falls back to the constant "92" marker; with neither: false.
- * Same rule as the backend `PickingCULabelService`.
+ * The pack ID zone of the format: it starts at the constant marker directly in front of the PACK_ID part (or at that
+ * part); a format without a PACK_ID part falls back to the constant "92" marker; with neither: undefined.
+ * Same rule as the backend `PickingCULabelService.findPackIdZone`.
+ *
+ * @returns {{zoneStart, zoneEnd}|undefined}
  */
-const isEndingBeforePackId = ({ string, format }) => {
-  const parts = format.parts ?? [];
-  const byStart = (a, b) => a.startPosition - b.startPosition;
+const findPackIdZone = (parts) => {
+  const packIdPart = [...parts].filter((part) => part.type === PART_TYPE_PACK_ID).sort(byStartPosition)[0];
+  return packIdPart ? zoneBeforePackIdPart(parts, packIdPart) : zoneOfFallbackMarker(parts);
+};
 
-  let zoneStart;
-  let zoneEnd;
-  const packIdPart = [...parts].filter((part) => part.type === PART_TYPE_PACK_ID).sort(byStart)[0];
-  if (packIdPart) {
-    const preceding = parts
-      .filter((part) => part.startPosition < packIdPart.startPosition)
-      .sort(byStart)
-      .pop();
-    zoneStart = preceding?.type === PART_TYPE_CONSTANT ? preceding.startPosition : packIdPart.startPosition;
-    zoneEnd = packIdPart.startPosition;
-  } else {
-    const marker = [...parts]
-      .filter((part) => part.type === PART_TYPE_CONSTANT && part.constantValue === FALLBACK_PACK_ID_MARKER)
-      .sort(byStart)[0];
-    if (!marker) {
-      return false;
-    }
-    zoneStart = marker.startPosition;
-    zoneEnd = Math.min(
-      ...parts.map((part) => part.startPosition).filter((start) => start > zoneStart),
-      zoneStart + FALLBACK_PACK_ID_MARKER.length
-    );
-  }
-  if (string.length >= zoneEnd) {
-    return false;
-  }
+const zoneBeforePackIdPart = (parts, packIdPart) => {
+  const preceding = parts
+    .filter((part) => part.startPosition < packIdPart.startPosition)
+    .sort(byStartPosition)
+    .pop();
+  return {
+    zoneStart: preceding?.type === PART_TYPE_CONSTANT ? preceding.startPosition : packIdPart.startPosition,
+    zoneEnd: packIdPart.startPosition,
+  };
+};
 
+const zoneOfFallbackMarker = (parts) => {
+  const marker = [...parts]
+    .filter((part) => part.type === PART_TYPE_CONSTANT && part.constantValue === FALLBACK_PACK_ID_MARKER)
+    .sort(byStartPosition)[0];
+  if (!marker) {
+    return undefined;
+  }
+  const zoneStart = marker.startPosition;
+  const zoneEnd = Math.min(
+    ...parts.map((part) => part.startPosition).filter((start) => start > zoneStart),
+    zoneStart + FALLBACK_PACK_ID_MARKER.length
+  );
+  return { zoneStart, zoneEnd };
+};
+
+/** @returns true when the parts in front of the zone read the label: it was scanned right, it just has no pack ID */
+const isPrefixReadable = ({ string, format, zoneStart }) => {
   // separators are ignored: the scanned code is trimmed, a trailing one is lost
-  const partsBefore = parts.filter((part) => part.startPosition < zoneStart && part.type !== PART_TYPE_IGNORE);
+  const partsBefore = (format.parts ?? []).filter(
+    (part) => part.startPosition < zoneStart && part.type !== PART_TYPE_IGNORE
+  );
   if (partsBefore.length === 0) {
     return false;
   }
   const parsed = parseCustomQRCode({ string, format: { ...format, parts: partsBefore } });
   return !!parsed && !parsed.error;
+};
+
+/**
+ * @returns true when the label is too short to hold the pack ID zone while every part in front of the zone reads
+ * (L0: a label without counter). Same rule as the backend `PickingCULabelService`.
+ */
+const isEndingBeforePackId = ({ string, format }) => {
+  const zone = findPackIdZone(format.parts ?? []);
+  return !!zone && string.length < zone.zoneEnd && isPrefixReadable({ string, format, zoneStart: zone.zoneStart });
 };
 
 /**
