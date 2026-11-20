@@ -290,7 +290,7 @@ public class PackToHUsProducer
 			if (packToDestination instanceof ILUTUProducerAllocationDestination)
 			{
 				final LUTUResult producedResult = ((ILUTUProducerAllocationDestination)packToDestination).getResult();
-				result = request.isBookAsSingleCUInBox() && packToInfo.getLu() == null
+				result = request.isBookAsSingleCUInBox()
 						? toPartialTUWithItsSingleCU(producedResult)
 						: producedResult;
 			}
@@ -327,22 +327,36 @@ public class PackToHUsProducer
 
 	/**
 	 * The new box (TU) made by the first booking is a full TU today. For CU quantity entry the booked CU must be the picked HU,
-	 * so the result is the partial TU holding its single CU (as the open box and the pallet cases).
+	 * so the result is the partial TU holding its single CU (as the open box and the pallet cases). With a pallet (LU) target the box
+	 * sits on the pallet: the pallet is kept as produced (incl. its pre-existing flag when the target was an existing pallet).
 	 */
 	private LUTUResult toPartialTUWithItsSingleCU(@NonNull final LUTUResult producedResult)
 	{
-		if (!producedResult.isSingleTopLevelTUOnly() || !producedResult.isSingleFullTU())
+		if (!producedResult.isSingleFullTU() || producedResult.getSingleTU().isAggregate())
 		{
-			throw new AdempiereException("Expected the new box to be exactly one full top-level TU but got: " + producedResult);
+			throw new AdempiereException("Expected the new box to be exactly one full, not aggregated TU but got: " + producedResult);
 		}
 
-		final I_M_HU tuRecord = producedResult.getSingleTopLevelTURecord();
+		final I_M_HU tuRecord = producedResult.getSingleTU().toHU();
 		final List<I_M_HU> cus = handlingUnitsBL.retrieveIncludedHUs(tuRecord);
 		if (cus.size() != 1)
 		{
 			throw new AdempiereException("Expected exactly one CU in the new box but found " + cus.size() + ": " + tuRecord);
 		}
-		return LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cus.get(0))));
+		final TUsList partialTU = TUsList.of(TU.ofSingleTU(tuRecord, cus.get(0)));
+
+		if (producedResult.isSingleTopLevelTUOnly())
+		{
+			return LUTUResult.ofTopLevelTUs(partialTU);
+		}
+		else if (producedResult.isSingleLU() && producedResult.getTopLevelTUs().isEmpty())
+		{
+			return LUTUResult.ofLU(producedResult.getSingleLU().toBuilder().tus(partialTU).build());
+		}
+		else
+		{
+			throw new AdempiereException("Expected the new box to be either a top-level TU or on a single pallet (LU) but got: " + producedResult);
+		}
 	}
 
 	/**
