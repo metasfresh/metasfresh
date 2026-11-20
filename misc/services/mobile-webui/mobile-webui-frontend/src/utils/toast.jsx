@@ -44,6 +44,9 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     autoClose: 1000 * 60 * 5,
     position: 'bottom-center',
     transition: Bounce,
+    // react-toastify caps a toast at 800px, taller than a handheld screen: a long message would push the close button off-screen.
+    // Cap it to the screen instead (minus the container's bottom margin), the message scrolls inside the toast.
+    style: { maxHeight: 'calc(100vh - 6rem)' },
     bodyStyle: { overflow: 'auto' },
     toastId,
   });

@@ -7,6 +7,11 @@ import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { waitForNoInFlightXhr } from '../../inFlightXhr';
 
+/** A refusal is read on the handheld: the whole error toast, its close button included, fits on the screen (a long message must not push it off). */
+const expectToastCloseButtonOnScreen = async () => {
+    await expect(page.locator('.Toastify__close-button--error').first()).toBeInViewport({ ratio: 1 });
+};
+
 const NAME = 'PickLineScanScreen';
 
 const containerElement = () => page.locator('#PickLineScanScreen');
@@ -71,7 +76,10 @@ export const PickLineScanScreen = {
         await expectErrorToast(
             `${NAME} label refusal`,
             async () => await PickLineScanScreen.typeQRCode(label),
-            ({ textContent }) => expect(textContent).toContain(expectedText)
+            async ({ textContent }) => {
+                expect(textContent).toContain(expectedText);
+                await expectToastCloseButtonOnScreen();
+            }
         );
         // the closed toast is still fading out for a moment: the next step's error watcher would see it as a new error
         await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
@@ -83,7 +91,10 @@ export const PickLineScanScreen = {
         await expectErrorToast(
             `${NAME} label rescan refusal`,
             async () => await BarcodeScannerComponent.type({ scannedCode: label, testId: 'rescanCULabel-input' }),
-            ({ textContent }) => expect(textContent).toContain(expectedText)
+            async ({ textContent }) => {
+                expect(textContent).toContain(expectedText);
+                await expectToastCloseButtonOnScreen();
+            }
         );
         await GetQuantityDialog.waitForDialog();
     }),

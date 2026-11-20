@@ -115,6 +115,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
 	private final static AdMessageKey CU_NO_OPEN_BOX_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
 	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
+	private final static AdMessageKey CU_LINE_ALREADY_FULLY_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LINE_ALREADY_FULLY_PICKED");
 
 	//
 	// Services
@@ -381,16 +382,29 @@ public class PickingJobPickCommand
 		}
 
 		final Quantity qtyAllowedToPick = line.getQtyToPick().subtract(qtyAlreadyPicked).toZeroIfNegative();
-		if (qtyToPickCUs.compareTo(qtyAllowedToPick) > 0)
+		if (qtyToPickCUs.compareTo(qtyAllowedToPick) <= 0)
 		{
-			throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
-					.appendParametersToMessage()
+			return;
+		}
+
+		if (cuQtyEntryPolicy.isOverPickAlwaysRefused())
+		{
+			// a routine scan of the picker (one pack too many, or a pack scanned into a finished line): a short message without the values, they go to the log only
+			throw new AdempiereException(CU_LINE_ALREADY_FULLY_PICKED_ERROR_MSG)
 					.setParameter("pickingJobId", _pickingJob.getId())
 					.setParameter("pickingJobLineId", getLineId())
 					.setParameter("qtyToPick", qtyToPickCUs)
 					.setParameter("qtyOrdered", line.getQtyToPick())
-					.setParameter("qtyAlreadyPicked", line.getQtyPicked());
+					.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
 		}
+
+		throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
+				.appendParametersToMessage()
+				.setParameter("pickingJobId", _pickingJob.getId())
+				.setParameter("pickingJobLineId", getLineId())
+				.setParameter("qtyToPick", qtyToPickCUs)
+				.setParameter("qtyOrdered", line.getQtyToPick())
+				.setParameter("qtyAlreadyPicked", line.getQtyPicked());
 	}
 
 	public PickingJob execute()

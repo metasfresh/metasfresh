@@ -106,7 +106,7 @@ class PickingJobCUQtyEntryPickTest
 	private static final String GRAI_CANONICAL = "7613204.00307.999999";
 
 	private static final AdMessageKey CU_NO_OPEN_BOX = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
-	private static final AdMessageKey PICK_OVERDELIVERY_BLOCKED = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
+	private static final AdMessageKey CU_LINE_ALREADY_FULLY_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LINE_ALREADY_FULLY_PICKED");
 
 	private PickingJobTestHelper helper;
 	private HUTestHelper huTestHelper;
@@ -1220,7 +1220,10 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(countQtyPickedRowsOfBox(boxId)).as("QtyPicked rows of both CUs").isEqualTo(2);
 		}
 
-		/** the line's quantity (2) is reached: a further scan books nothing, whether or not the profile allows over-pick with a confirmation prompt (the Scan each CU loop has no prompt). */
+		/**
+		 * the line's quantity (2) is reached: a further scan books nothing, whether or not the profile allows over-pick with a confirmation prompt (the Scan each CU loop has no prompt).
+		 * The picker reaches this with a routine scan, so the refusal is a short message without technical parameters (a parameter dump makes the toast taller than the handheld screen).
+		 */
 		@ParameterizedTest(name = "isShowConfirmationPromptWhenOverPick={0}")
 		@ValueSource(booleans = { true, false })
 		void lineDone_furtherScan_refused_nothingBooked(final boolean isShowConfirmationPromptWhenOverPick)
@@ -1238,7 +1241,10 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).as("line done: 2 of 2").isEqualByComparingTo("2");
 			final PickingJob jobWhenDone = job;
 
-			assertFails(() -> pickEach(jobWhenDone, source, LOT_A, "3"), PICK_OVERDELIVERY_BLOCKED);
+			assertFails(() -> pickEach(jobWhenDone, source, LOT_A, "3"), CU_LINE_ALREADY_FULLY_PICKED);
+			assertThatThrownBy(() -> pickEach(jobWhenDone, source, LOT_A, "3"))
+					.as("no technical parameters in the message the picker sees")
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked"));
 
 			assertThat(cusOf(openBoxId(job))).as("still 2 CUs").hasSize(2);
 			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
