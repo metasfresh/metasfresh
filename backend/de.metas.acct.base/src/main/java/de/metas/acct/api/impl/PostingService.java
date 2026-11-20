@@ -90,6 +90,18 @@ public class PostingService implements IPostingService
 
 		logger.debug("Posting directly: {}", this);
 
+		final TableRecordReference record = request.getRecord();
+		if (!acctDocRegistryHolder.get().isAccountingTable(record.getTableName()))
+		{
+			// The document's table has no accounting Doc provider, so there is nothing to post (e.g. PP_Product_BOM,
+			// M_Forecast, M_ShipperTransportation). Skip silently instead of letting AcctDocRegistry.get(..) throw
+			// "No accountable document found", which would be swallowed into AD_Issue (~120 such entries per cucumber run,
+			// and the same noise in production). An accounting table that fails to build its Doc (e.g. M_InOut with a
+			// missing price list) still passes this guard and surfaces its error through the catch block below.
+			logger.debug("Skip posting {} because {} is not an accounting table", record, record.getTableName());
+			return;
+		}
+
 		final Properties ctx = Env.newTemporaryCtx();
 		Env.setClientId(ctx, request.getClientId());
 

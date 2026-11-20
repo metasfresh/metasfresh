@@ -54,6 +54,7 @@ Feature: EDI DESADV export via External System
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
   @F00350
+  @expectsAdIssue:External.system.export.failed:.Test.error
   Scenario: create a shipment and export DESADV via external system
     And RabbitMQ MF_TO_ExternalSystem queue is purged
     And metasfresh contains C_Orders:
@@ -123,6 +124,7 @@ Feature: EDI DESADV export via External System
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
   @F00350
+  @expectsAdIssue:External.system.export.failed:.Test.error
   Scenario: create a shipment and enqueue single shipment to export DESADV via external system
     And RabbitMQ MF_TO_ExternalSystem queue is purged
     And metasfresh contains C_Orders:

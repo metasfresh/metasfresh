@@ -14,7 +14,6 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderRef;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderAndBOMLineId;
@@ -78,7 +77,15 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	{
 		final PPOrderId ppOrderId = event.getPpOrderId();
 		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId);
-		Check.errorIf(candidatesToUpdate.isEmpty(), "No Candidates found for PP_Order_ID={}", ppOrderId);
+		if (candidatesToUpdate.isEmpty())
+		{
+			// A PPOrderChangedEvent can legitimately arrive with no dispo candidates to update:
+			// this handler only updates already-existing candidates loaded by PP_Order_ID, and the
+			// PP_Order's creation may not have produced any (e.g. the complete/void flow of a PP_Order
+			// whose candidates were never created). Nothing to update -> no-op, instead of raising an
+			// AD_Issue from this async material-event handler.
+			return;
+		}
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 

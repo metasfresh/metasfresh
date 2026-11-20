@@ -25,6 +25,7 @@ package de.metas.externalsystem.audit;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem_ExportAudit;
 import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -81,5 +82,38 @@ public class ExternalSystemExportAuditRepoTests
 		assertThat(audit.getExternalSystemType()).isEqualTo(createExportAuditRequest.getExternalSystemType());
 		assertThat(audit.getPInstanceId()).isEqualTo(createExportAuditRequest.getPInstanceId());
 		assertThat(audit.getTableRecordReference()).isEqualTo(createExportAuditRequest.getTableRecordReference());
+	}
+
+	/**
+	 * System user/role have repoId 0 which is a valid value for the mandatory columns ExportUser_ID/ExportRole_ID.
+	 * The generated PO setters turn ids &lt; 1 into NULL (=&gt; NOT NULL violation in production), so the repo must write them
+	 * through the column-name based setter. This test pins the system-context round trip.
+	 * <p>
+	 * NOTE: this is a round-trip pin, NOT a RED reproduction of the NULL mapping: the POJO test layer stores 0
+	 * directly (it does not run the generated PO's id&lt;1-&gt;NULL logic), so this test stays green with or without
+	 * the repo fix. The actual RED/GREEN reproduction is the cucumber AD_Issue guard — the {@code exportrole_id}
+	 * NOT-NULL AD_Issue appears before the fix and not after.
+	 */
+	@Test
+	public void createESExportAudit_systemUserAndRole()
+	{
+		final I_AD_Table testTable = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
+		testTable.setName("TestTable");
+		testTable.setTableName("TestTable");
+		InterfaceWrapperHelper.saveRecord(testTable);
+
+		final ExternalSystemExportAudit audit = externalSystemExportAuditRepo.createESExportAudit(CreateExportAuditRequest.builder()
+				.tableRecordReference(TableRecordReference.of(testTable.getAD_Table_ID(), 100))
+				.exportTime(Instant.now())
+				.exportUserId(UserId.SYSTEM)
+				.exportRoleId(RoleId.SYSTEM)
+				.externalSystemType(ExternalSystemType.Shopware6)
+				.build());
+
+		final I_ExternalSystem_ExportAudit record = InterfaceWrapperHelper.load(audit.getExternalSystemExportAuditId(), I_ExternalSystem_ExportAudit.class);
+		assertThat((Object)InterfaceWrapperHelper.getValueOrNull(record, I_ExternalSystem_ExportAudit.COLUMNNAME_ExportRole_ID)).isEqualTo(0);
+		assertThat((Object)InterfaceWrapperHelper.getValueOrNull(record, I_ExternalSystem_ExportAudit.COLUMNNAME_ExportUser_ID)).isEqualTo(0);
+		assertThat(audit.getExportRoleId()).isEqualTo(RoleId.SYSTEM);
+		assertThat(audit.getExportUserId()).isEqualTo(UserId.SYSTEM);
 	}
 }

@@ -98,6 +98,7 @@ Feature: API Audit GET http method
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_030
+  @expectsAdIssue:Endpoint.invoked;.log.ad_issue
   Scenario: Testcase 120, failing GET and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -138,6 +139,7 @@ Feature: API Audit GET http method
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_040
+  @expectsAdIssue:Endpoint.invoked;.log.ad_issue
   Scenario: Testcase 130, failing GET and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -183,6 +185,7 @@ Feature: API Audit GET http method
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_060
+  @expectsAdIssue:Endpoint.invoked;.log.ad_issue
   Scenario: Testcase 140, failing GET and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |

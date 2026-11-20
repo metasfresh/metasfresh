@@ -77,6 +77,7 @@ Feature: Camel-ExternalSystem authorization
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00802
   @Id:S0168_300
+  @expectsAdIssue:External_Systems_Authorization_SysConfig_Not_Found_Error
   Scenario: One sys config is missing, then a custom notification is sent to the configured user group
     Given no AD_User_AuthToken records for userId:externalSystemUser
     And set sys config String value null for sys config de.metas.externalsystem.externalservice.authorization.AD_User_ID
@@ -101,6 +102,7 @@ Feature: Camel-ExternalSystem authorization
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00802
   @Id:S0168_400
+  @expectsAdIssue:External_Systems_Authorization_Role_Not_Found_For_User
   Scenario: Both sys configs are set but AD_Role_ID doesn't match any role associated with provided AD_User_ID, then a custom notification is sent to the configured user group
     Given no AD_User_AuthToken records for userId:externalSystemUser
     # 10168 -> externalSystemUser

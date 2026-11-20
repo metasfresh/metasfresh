@@ -151,7 +151,12 @@ public class DemandCandidateHandler implements CandidateHandler
 		// Demand decreased: reduce the bound supply. SupplyRequiredDecreasedHandler reduces what it can (un-processed
 		// candidates) and, for whatever it cannot reduce (an already-processed production that cannot be un-produced),
 		// fires a user notification so a planner can rebalance another candidate. This holds for lot-for-lot too.
-		if (candidateSaveResult.getQtyDelta().signum() < 0)
+		// Only a real DEMAND binds supply, so only its decrease can reduce supply — mirroring the DEMAND-only guard on
+		// the qty-increase branch above. The other handled types (UNEXPECTED_DECREASE/INVENTORY_DOWN/
+		// ATTRIBUTES_CHANGED_FROM) bind no supply; firing SupplyRequiredDecreased for them is wrong and would fail
+		// SupplyRequiredEventCreator's DEMAND/STOCK_UP type check (e.g. a reactivated SHIPMENT UNEXPECTED_DECREASE whose
+		// qty drops).
+		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() < 0)
 		{
 			fireSupplyRequiredDecreasedEventIfNeeded(savedCandidate, candidateSaveResult.getQtyDelta().negate());
 		}
