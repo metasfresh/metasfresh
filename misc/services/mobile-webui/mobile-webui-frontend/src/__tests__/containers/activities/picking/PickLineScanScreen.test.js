@@ -282,7 +282,7 @@ describe('PickingLineScanScreen: no-source refusal reaches the toast', () => {
 });
 
 describe('PickingLineScanScreen: Manual product mismatch stays synchronous', () => {
-  it('a code of another product throws at the call (not a rejected promise), so the catch-weight scanner gives the error beep as before; nothing is posted', () => {
+  it('a code of another product throws at the call (not a rejected promise), so the catch-weight scanner gives the error beep; nothing is posted', () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
     mockDispatch.mockClear();
 

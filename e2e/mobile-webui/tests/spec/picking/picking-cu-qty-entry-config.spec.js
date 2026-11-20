@@ -79,7 +79,7 @@ const createMasterdata = async ({ formatName, formatNameC }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC2: CU quantity entry mode per picking line (profile default, customer record, empty customer record)', async ({ page }) => {
+test('CU quantity entry mode per picking line (profile default, customer record, empty customer record)', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');

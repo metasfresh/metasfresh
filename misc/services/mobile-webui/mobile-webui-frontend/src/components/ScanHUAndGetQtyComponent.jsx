@@ -81,7 +81,7 @@ const ScanHUAndGetQtyComponent = ({
   const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
   const isScanOnce = cuQtyEntryPolicy.isScanOnce;
   // scan each CU: every label books one CU at once, the scan step stays (no quantity block)
-  const isScanEachCU = cuQtyEntryPolicy.isPackIdRequired;
+  const { isPackIdRequired } = cuQtyEntryPolicy;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   // scan once: the quantity block stays open after a booking (and after a label rescan); a new key (also a new
   // suggestion) gives it the new suggestion and the new label values
@@ -229,7 +229,7 @@ const ScanHUAndGetQtyComponent = ({
 
     setResolvedBarcodeData(resolvedBarcodeDataNew);
 
-    if (isScanEachCU) {
+    if (isPackIdRequired) {
       await bookScannedCU({ resolvedBarcodeData: resolvedBarcodeDataNew });
       return;
     }
@@ -435,10 +435,10 @@ const ScanHUAndGetQtyComponent = ({
               onResolvedResult={onHUBarcodeResolvedResult}
             />
           )}
-          {(nextBoxActions || isScanEachCU) && (
+          {(nextBoxActions || isPackIdRequired) && (
             <div className="buttons is-centered mt-4">
               {nextBoxActions}
-              {isScanEachCU && (
+              {isPackIdRequired && (
                 <DialogButton
                   captionKey="general.closeText"
                   className="is-danger"

@@ -15,7 +15,7 @@ const PRODUCT_VALUE_LENGTH = 7;
 const LOT_LENGTH = 9;
 
 /**
- * Type code of the pack-ID scannable-code part (`C_ScannableCode_Format_Part.DataType` PackId, merged on soft_panda_hotfix).
+ * Type code of the pack-ID scannable-code part (`C_ScannableCode_Format_Part.DataType` PackId).
  */
 export const PACK_ID_PART_TYPE = 'PACK_ID';
 

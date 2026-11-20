@@ -242,11 +242,11 @@ export const useHeaderUpdate = ({
   qtyPicked,
   additionalHeaderProperties,
   rootDataAttributes,
-  // new CU quantity entry modes only: refresh the header while the screen stays mounted; Manual refreshes on url/caption only, as before
+  // new CU quantity entry modes only: refresh the header while the screen stays mounted; Manual refreshes on url/caption only
   isLiveRefresh = false,
 }) => {
   const dispatch = useDispatch();
-  // fixed-length deps: null in Manual (refresh on url/caption only, as before), a value key in the new modes
+  // fixed-length deps: null in Manual (refresh on url/caption only), a value key in the new modes
   const liveKey = isLiveRefresh
     ? JSON.stringify([
         pickingSlot?.caption,

@@ -18,7 +18,7 @@ restoreSysconfigsAfterEach(test);
 const BEST_BEFORE_B = '2026-12-01';
 
 // noinspection JSUnusedLocalSymbols
-test('TC8: the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the last lot without a scan; the next line of the same product starts empty', async ({ page }) => {
+test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the last lot without a scan; the next line of the same product starts empty', async ({ page }) => {
     allureMeta('Pinned count');
 
     // line 1: buyer A, 12; line 2: buyer B, 3 (same product)
@@ -87,7 +87,7 @@ test('TC8: the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on t
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC8b: a label of another lot scanned in the open block replaces the remembered lot; the count stays 5', async ({ page }) => {
+test('a label of another lot scanned in the open block replaces the remembered lot; the count stays 5', async ({ page }) => {
     allureMeta('Pinned count, lot change');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }] });
@@ -121,7 +121,7 @@ test('TC8b: a label of another lot scanned in the open block replaces the rememb
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC24: book 6 of 10, close the line short: 4 stay open, no reject reason asked, "Wieder öffnen" reopens it, the job completes', async ({ page }) => {
+test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "Wieder öffnen" reopens it, the job completes', async ({ page }) => {
     allureMeta('Close a line short');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });

@@ -579,7 +579,7 @@ export const usePostQtyPicked = ({
   const dispatch = useDispatch();
   const history = useMobileNavigation();
 
-  // NOT async: a product mismatch must throw at the call, as before, so the catch-weight scanner's catch gives the error beep;
+  // NOT async: a product mismatch must throw synchronously at the call, so the catch-weight scanner's catch gives the error beep;
   // a refusal found later (e.g. no source HU) is returned as a rejected promise, which the callers .catch into the toast
   return ({
     qty = 0,

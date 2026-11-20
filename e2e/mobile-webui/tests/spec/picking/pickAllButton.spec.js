@@ -202,7 +202,7 @@ const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2',
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC32 (i): profile mode Scan once: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
+test('profile mode Scan once: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
@@ -215,7 +215,7 @@ test('TC32 (i): profile mode Scan once: no Quick Pack All button, the direct cal
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC32 (ii): profile Manual, customer record Scan each CU: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
+test('profile Manual, customer record Scan each CU: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
@@ -232,7 +232,7 @@ test('TC32 (ii): profile Manual, customer record Scan each CU: no Quick Pack All
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC32 (iii): mixed job (customer 1 Manual, customer 2 Scan once): no Quick Pack All button, the direct call is refused for the whole job', async ({ page }) => {
+test('mixed job (customer 1 Manual, customer 2 Scan once): no Quick Pack All button, the direct call is refused for the whole job', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
@@ -253,7 +253,7 @@ test('TC32 (iii): mixed job (customer 1 Manual, customer 2 Scan once): no Quick 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC32 control: the same mixed two-customer product job with Manual only shows the Quick Pack All button', async ({ page }) => {
+test('control: the same mixed two-customer product job with Manual only shows the Quick Pack All button', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;

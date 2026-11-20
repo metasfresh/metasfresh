@@ -345,8 +345,9 @@ public class PickingJobPickCommand
 	}
 
 	/**
-	 * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty,
-	 * but ONLY when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}). When over-pick is allowed the
+	 * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty.
+	 * It applies when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}) or when the CU quantity entry
+	 * mode always refuses over-pick ({@link CUQtyEntryPolicy#isOverPickAlwaysRefused()}); otherwise the
 	 * server never hard-rejects (the mobile client in-flight guard protects there). A partial pick within the remaining qty
 	 * is never refused; neither is a FIRST pick (nothing yet picked on the line), so a flow that over-delivers by design on
 	 * the first pick (e.g. AlwaysSplitHU "pick more than available") is unaffected - only a REPEAT pick that would push an
@@ -362,11 +363,8 @@ public class PickingJobPickCommand
 	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
 	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
 	 * guard. Must run inside {@link #executeInTrx()}.
-	 * <p>
-	 * A mode whose scan loop has no over-pick prompt ({@link CUQtyEntryPolicy#isOverPickAlwaysRefused()}) is checked whatever the over-pick
-	 * setting: there a scan after the line is done must book nothing.
 	 */
-	private void assertNotAboveOrderedQtyWhenOverPickBlocked()
+	private void assertNotAboveOrderedQty()
 	{
 		final boolean isOverPickAllowed = pickingJobOptions.isShowConfirmationPromptWhenOverPick() && !cuQtyEntryPolicy.isOverPickAlwaysRefused();
 		if (isOverPickAllowed || qtyToPickCUs.signum() <= 0)
@@ -406,7 +404,7 @@ public class PickingJobPickCommand
 
 		assertNewModeBookingAllowed();
 
-		assertNotAboveOrderedQtyWhenOverPickBlocked();
+		assertNotAboveOrderedQty();
 
 		checkOrAllocatePickingSlot();
 

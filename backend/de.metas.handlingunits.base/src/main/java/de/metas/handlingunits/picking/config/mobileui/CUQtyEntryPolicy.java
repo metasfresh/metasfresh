@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * What a {@link CUQtyEntryMode} means for a pick. The single place that answers "does this mode do X?", so the pick code asks the policy
  * instead of comparing modes (one more mode means one more constant here, not one more {@code if} per call site).
  * <p>
- * {@link #MANUAL} is the classic entry: every question below is answered "as before this feature".
+ * {@link #MANUAL} is the classic entry: every question below is answered the classic way.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CUQtyEntryPolicy

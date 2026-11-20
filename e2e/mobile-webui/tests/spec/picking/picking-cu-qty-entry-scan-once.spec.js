@@ -17,7 +17,7 @@ restoreSysconfigsAfterEach(test);
  * Source: one pallet of 20 boxes of 4 pieces, so a count of 5 needs pieces from two source boxes.
  */
 // noinspection JSUnusedLocalSymbols
-test('TC5 / TC27 (i): box opened with "Next box", label scanned, count 5 (needs two source boxes) books ONE CU of 5 in the box', async ({ page }) => {
+test('box opened with "Next box", label scanned, count 5 (needs two source boxes) books ONE CU of 5 in the box', async ({ page }) => {
     allureMeta('Scan once count');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
@@ -49,7 +49,7 @@ test('TC5 / TC27 (i): box opened with "Next box", label scanned, count 5 (needs 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC5b: Scan once field starts empty (not 0) with the zero-as-initial-value setting; a Manual line still shows 0', async ({ page }) => {
+test('Scan once field starts empty (not 0) with the zero-as-initial-value setting; a Manual line still shows 0', async ({ page }) => {
     allureMeta('Scan once count');
 
     let previousSysconfigs = null;
@@ -89,7 +89,7 @@ test('TC5b: Scan once field starts empty (not 0) with the zero-as-initial-value 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC5c (Scan once): OK without an open box is refused, nothing is booked; after "Next box" the same booking succeeds', async ({ page }) => {
+test('Scan once: OK without an open box is refused, nothing is booked; after "Next box" the same booking succeeds', async ({ page }) => {
     allureMeta('Scan once needs an open box');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
@@ -124,7 +124,7 @@ test('TC5c (Scan once): OK without an open box is refused, nothing is booked; af
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC6: the packs come from the "Kommissionieren aus" HU; the source pallet drops by the booked count, nothing is created on the fly', async ({ page }) => {
+test('the packs come from the "Kommissionieren aus" HU; the source pallet drops by the booked count, nothing is created on the fly', async ({ page }) => {
     allureMeta('Scan once source');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }], anonymousPickHUsOnTheFly: false });
@@ -151,7 +151,7 @@ test('TC6: the packs come from the "Kommissionieren aus" HU; the source pallet d
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC7 / TC27 (ii): open box holding 3, count 5 (needs two source boxes) books ONE CU of 5 into it', async ({ page }) => {
+test('open box holding 3, count 5 (needs two source boxes) books ONE CU of 5 into it', async ({ page }) => {
     allureMeta('Scan once count');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
@@ -196,7 +196,7 @@ test('TC7 / TC27 (ii): open box holding 3, count 5 (needs two source boxes) book
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC9: a count smaller than the open quantity is not a rejection', async ({ page }) => {
+test('a count smaller than the open quantity is not a rejection', async ({ page }) => {
     allureMeta('Scan once count');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
@@ -226,7 +226,7 @@ test('TC9: a count smaller than the open quantity is not a rejection', async ({ 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC10: the booking that reaches the open quantity finishes the line and goes back to the job screen', async ({ page }) => {
+test('the booking that reaches the open quantity finishes the line and goes back to the job screen', async ({ page }) => {
     allureMeta('Scan once line done');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
@@ -260,7 +260,7 @@ test('TC10: the booking that reaches the open quantity finishes the line and goe
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC1c: a count above the open quantity is blocked as today, on a Manual line and on a Scan once line', async ({ page }) => {
+test('a count above the open quantity is blocked as today, on a Manual line and on a Scan once line', async ({ page }) => {
     allureMeta('Over-pick unchanged');
 
     // profile Manual (mode not sent) with a Scan once customer record; both lines order 12 (Manual line counts 3 boxes of 4)
@@ -302,7 +302,7 @@ test('TC1c: a count above the open quantity is blocked as today, on a Manual lin
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC26: on a line whose packing is a box packing, a SECOND CU booking into the open box is accepted', async ({ page }) => {
+test('on a line whose packing is a box packing, a SECOND CU booking into the open box is accepted', async ({ page }) => {
     allureMeta('Scan once on a box-packed line');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });

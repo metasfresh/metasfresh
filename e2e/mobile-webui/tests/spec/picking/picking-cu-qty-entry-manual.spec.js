@@ -106,7 +106,7 @@ const scanAndPick = async ({ qrCode, qtyEntered, expectQtyEntered, qtyNotFoundRe
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC1a: Manual profile, line of 10 TU is picked as today', async ({ page }) => {
+test('Manual profile, line of 10 TU is picked as today', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -138,7 +138,7 @@ test('TC1a: Manual profile, line of 10 TU is picked as today', async ({ page }) 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC1b: Manual profile, partial pick asks a reason, "New TU" behaves as today', async ({ page }) => {
+test('Manual profile, partial pick asks a reason, "New TU" behaves as today', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');

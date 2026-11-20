@@ -78,7 +78,7 @@ const GetQuantityDialog = ({
   // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
   // smaller count than the open qty is not a rejection
   const isScanOnce = cuQtyEntryPolicy.isScanOnce;
-  // new modes: no implicit form submit by secondary buttons; undefined = default submit, as in Manual before
+  // new modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
   const buttonType = isLabelMode ? 'button' : undefined;
 
   const [isProcessing, setProcessing] = useState(false);
@@ -354,7 +354,7 @@ const GetQuantityDialog = ({
         {!isCustomView() && (
           <form
             // new modes: the OK button's click (also the Enter key's implicit click) books once; a second,
-            // submit-triggered call would book the same quantity twice. Manual keeps the form submit as before.
+            // submit-triggered call would book the same quantity twice. Manual keeps the form submit.
             onSubmit={isLabelMode ? (event) => event.preventDefault() : () => onDialogYes({ isCloseTarget: false })}
           >
             <div className="table-container">

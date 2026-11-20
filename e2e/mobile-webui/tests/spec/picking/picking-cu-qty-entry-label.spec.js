@@ -107,7 +107,7 @@ const bookWithLabel = async ({ label, qty, expectedQtyTarget, isRescan = false }
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC3 (buyer A): Scan once reads the label with the profile format without PackId part, with and without counter', async ({ page }) => {
+test('buyer A: Scan once reads the label with the profile format without PackId part, with and without counter', async ({ page }) => {
     allureMeta('CU label reading');
 
     const formatName = `cuqe-lbl-${uniqueProductValue()}`;
@@ -150,7 +150,7 @@ test('TC3 (buyer A): Scan once reads the label with the profile format without P
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC3b (i): no effective format on the line, another active format that reads the label does not count', async ({ page }) => {
+test('no effective format on the line, another active format that reads the label does not count', async ({ page }) => {
     allureMeta('CU label reading');
 
     // profile and customer record have no format; a different active format would read L(1)
@@ -169,7 +169,7 @@ test('TC3b (i): no effective format on the line, another active format that read
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC3b (ii): label with a "]d2" prefix is refused by the linked format', async ({ page }) => {
+test('label with a "]d2" prefix is refused by the linked format', async ({ page }) => {
     allureMeta('CU label reading');
 
     const formatName = `cuqe-lbl-${uniqueProductValue()}`;
@@ -187,7 +187,7 @@ test('TC3b (ii): label with a "]d2" prefix is refused by the linked format', asy
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC4: label of the line product opens the quantity block, books lot and best-before; other product is refused', async ({ page }) => {
+test('label of the line product opens the quantity block, books lot and best-before; other product is refused', async ({ page }) => {
     allureMeta('CU label product match');
 
     const formatName = `cuqe-lbl-${uniqueProductValue()}`;
@@ -228,7 +228,7 @@ test('TC4: label of the line product opens the quantity block, books lot and bes
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC4b: product match uses the label product part against M_Product.Value, the GTIN is not checked', async ({ page }) => {
+test('product match uses the label product part against M_Product.Value, the GTIN is not checked', async ({ page }) => {
     allureMeta('CU label product match');
 
     const formatName = `cuqe-lbl-${uniqueProductValue()}`;

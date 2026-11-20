@@ -29,7 +29,7 @@ const MSG_GRAI_COUNT = 'TUs have a GRAI';
 const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true, ...extra } });
 
 // noinspection JSUnusedLocalSymbols
-test('TC14: GRAI scan with a box open (customer GRAI not required): old box closed with its 5, new box carries the GRAI', async ({ page }) => {
+test('GRAI scan with a box open (customer GRAI not required): old box closed with its 5, new box carries the GRAI', async ({ page }) => {
     allureMeta('Next box by GRAI');
 
     const masterdata = await createMasterdata({
@@ -64,7 +64,7 @@ test('TC14: GRAI scan with a box open (customer GRAI not required): old box clos
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC14b: GRAI of a TU type without capacity for the product is refused; the open box stays and takes the next booking', async ({ page }) => {
+test('GRAI of a TU type without capacity for the product is refused; the open box stays and takes the next booking', async ({ page }) => {
     allureMeta('Next box by GRAI');
 
     const masterdata = await createMasterdata({
@@ -97,7 +97,7 @@ test('TC14b: GRAI of a TU type without capacity for the product is refused; the 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC15 / TC16: "Next box" opens a box of the line\'s TU type in one tap (no "Gebinde" list); a GRAI scan after it opens one more box, the button box keeps no GRAI', async ({ page }) => {
+test('"Next box" opens a box of the line\'s TU type in one tap (no "Gebinde" list); a GRAI scan after it opens one more box, the button box keeps no GRAI', async ({ page }) => {
     allureMeta('Next box button');
 
     const masterdata = await createMasterdata({
@@ -113,7 +113,7 @@ test('TC15 / TC16: "Next box" opens a box of the line\'s TU type in one tap (no 
     await PickLineScanScreen.expectNextBoxButtonInQuantityBlock();   // the button sits next to OK
     await book({ qty: 5, expectedQtyTarget: 15 });
 
-    await test.step('TC15: one tap opens the next box, no box list', async () => {
+    await test.step('one tap opens the next box, no box list', async () => {
         await PickLineScanScreen.nextBox();
         await SelectPickTargetTUScreen.expectNotShown();
         await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.P1_20x4.tuName);   // the TU type of the line's packing, not the GRAI type G1
@@ -121,7 +121,7 @@ test('TC15 / TC16: "Next box" opens a box of the line\'s TU type in one tap (no 
         await book({ qty: 3, expectedQtyTarget: 12 });
     });
 
-    await test.step('TC16: a GRAI scan opens one more box with that GRAI', async () => {
+    await test.step('a GRAI scan opens one more box with that GRAI', async () => {
         await PickLineScanScreen.rescanGrai(grai);
         await PickLineScanScreen.expectOpenBoxCaption(masterdata.packingInstructions.G1.tuName);
         await book({ qty: 4, expectedQtyTarget: 8 });
@@ -150,7 +150,7 @@ test('TC15 / TC16: "Next box" opens a box of the line\'s TU type in one tap (no 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC17 (Scan once): customer GRAI required, no pick-time GRAI screen: first booking without a box is refused, after "Next box" it is booked', async ({ page }) => {
+test('Scan once: customer GRAI required, no pick-time GRAI screen: first booking without a box is refused, after "Next box" it is booked', async ({ page }) => {
     allureMeta('No pick-time GRAI screen');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10, graiRequired: 'Y' }] });
@@ -179,7 +179,7 @@ test('TC17 (Scan once): customer GRAI required, no pick-time GRAI screen: first 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC18: mixed job (customer GRAI required + customer not required): the GRAI customer\'s box opened by GRAI scan, job completes', async ({ page }) => {
+test('mixed job (customer GRAI required + customer not required): the GRAI customer\'s box opened by GRAI scan, job completes', async ({ page }) => {
     allureMeta('Complete a mixed job');
 
     const masterdata = await createMasterdata({
@@ -253,7 +253,7 @@ const addGraiToBoxesInHUManager = async ({ masterdata, boxes }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC19: customer GRAI required, box opened with "Next box": "Fertigstellen" is refused as today; after "GRAI scannen" in the HU Manager the job completes', async ({ page }) => {
+test('customer GRAI required, box opened with "Next box": "Fertigstellen" is refused as today; after "GRAI scannen" in the HU Manager the job completes', async ({ page }) => {
     allureMeta('GRAI customer, box without GRAI');
 
     const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 5, graiRequired: 'Y' }] });
@@ -304,7 +304,7 @@ const expectEveryPickedHUIsACUInATU = async ({ pickingJobId, boxes, docStatus })
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC23 (i): line with a box packing "TU x 4 Stk" (customer GRAI required): first booking refused, "Next box" opens box 1, a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
+test('line with a box packing "TU x 4 Stk" (customer GRAI required): first booking refused, "Next box" opens box 1, a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
     allureMeta('Open box first, box packing line');
 
     const masterdata = await createMasterdata({
@@ -342,7 +342,7 @@ test('TC23 (i): line with a box packing "TU x 4 Stk" (customer GRAI required): f
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC23 (ii): line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list', async ({ page }) => {
+test('line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list', async ({ page }) => {
     allureMeta('Open box first, unlimited capacity packing');
 
     const masterdata = await createMasterdata({
@@ -368,7 +368,7 @@ test('TC23 (ii): line with an unlimited-capacity packing that names a TU type: "
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC23 (iii): line without a TU type: first booking refused, "Next box" opens the "Gebinde" list (again after a booking, no close screen), a GRAI scan opens the next box', async ({ page }) => {
+test('line without a TU type: first booking refused, "Next box" opens the "Gebinde" list (again after a booking, no close screen), a GRAI scan opens the next box', async ({ page }) => {
     allureMeta('Open box first, line without a TU type');
 
     const masterdata = await createMasterdata({

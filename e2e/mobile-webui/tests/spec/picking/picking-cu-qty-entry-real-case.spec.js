@@ -17,11 +17,10 @@ restoreSysconfigsAfterEach(test);
  * Expected: 13 boxes, 56 CU, 1 warning, `M_Picking_Job.DocStatus` CO.
  * GRAI boxes: one GRAI-mapped box type with a capacity row for the test product; every GRAI box gets a serial of its own.
  *
- * Needs the pack-ID part type of the label-reader change (merged on soft_panda_hotfix).
  */
 
 // noinspection JSUnusedLocalSymbols
-test('TC20: real case, buyer A 50 CU in 11 boxes (Scan once), buyer B 6 CU in 2 boxes with one duplicate warning (Scan each CU): 13 boxes, 56 CU, job completed', async ({ page }) => {
+test('real case, buyer A 50 CU in 11 boxes (Scan once), buyer B 6 CU in 2 boxes with one duplicate warning (Scan each CU): 13 boxes, 56 CU, job completed', async ({ page }) => {
     allureMeta('Real case');
 
     const onceFormat = newFormatName();
@@ -88,7 +87,7 @@ test('TC20: real case, buyer A 50 CU in 11 boxes (Scan once), buyer B 6 CU in 2 
     const buyerBRows = [12, 12, 12, 13, 13, 13].map((box, idx) => row(1, box, 12 + idx));
     const box = (qty, grai) => ({ storages: { P1: `${qty} PCE` }, ...(grai !== undefined ? { attributes: { GRAI: grai } } : {}) });
     await Backend.expect({
-        title: 'TC20: 13 boxes, 56 CU, job completed',
+        title: '13 boxes, 56 CU, job completed',
         pickings: { [pickingJobId]: { docStatus: 'Completed', shipmentSchedules: { P1: { qtyPicked: [...buyerARows, ...buyerBRows] } } } },
         hus: {
             tu1: box(3, null), tu2: box(5, null),

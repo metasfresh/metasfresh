@@ -10,6 +10,7 @@ import { BEST_BEFORE, createMasterdata, MODE_SCAN_ONCE } from './cuQtyEntryScanO
 export const MODE_SCAN_EACH = 'SCAN_EACH_CU';
 export { MODE_SCAN_ONCE };
 export const MSG_NO_PACK_ID = 'The label contains no pack ID. Nothing was booked.';
+export const MSG_OVER_PICK = 'Cannot pick more than the ordered quantity for this line.';
 export const MSG_ALREADY_PICKED = (packId) => `This pack was already picked in this job (pack ID ${packId}). Nothing was booked.`;
 
 /** Raw label of one pack; `packId: null` = a label without counter (ends before the "92" marker). */

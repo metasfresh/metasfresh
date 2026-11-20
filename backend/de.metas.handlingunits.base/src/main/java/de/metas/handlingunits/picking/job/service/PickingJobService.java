@@ -781,7 +781,7 @@ public class PickingJobService implements PickingSlotListener
 		{
 			pickingJobChanged = closeLineTargets(pickingJobChanged, line.getId());
 		}
-		// the remaining (Manual) lines: as before, on the slot scanned last
+		// the remaining (Manual) lines: on the slot scanned last
 		return closeLineTargets(pickingJobChanged, null);
 	}
 

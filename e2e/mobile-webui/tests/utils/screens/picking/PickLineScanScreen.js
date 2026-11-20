@@ -10,7 +10,7 @@ import { waitForNoInFlightXhr } from '../../inFlightXhr';
 const NAME = 'PickLineScanScreen';
 
 const containerElement = () => page.locator('#PickLineScanScreen');
-const nextBoxButton = () => page.getByRole('button', { name: /Weitere Kiste|Next box/ });
+const nextBoxButton = () => page.getByTestId('next-box-button');
 const tapNextBox = async () => {
     await PickLineScanScreen.waitForScreen();
     await nextBoxButton().tap();
@@ -43,12 +43,6 @@ export const PickLineScanScreen = {
         } else {
             await PickLineScanScreen.waitForScreen();
         }
-    }),
-
-    /** Reads the CU quantity entry mode of the line from the screen's `data-cu-qty-entry-mode` attribute (one-shot; assert with expectCUQtyEntryMode). */
-    cuQtyEntryMode: async () => await step(`${NAME} - Read CU quantity entry mode`, async () => {
-        await PickLineScanScreen.waitForScreen();
-        return await containerElement().getAttribute('data-cu-qty-entry-mode');
     }),
 
     /** Asserts (auto-retrying) the CU quantity entry mode of the line. */
@@ -119,7 +113,7 @@ export const PickLineScanScreen = {
 
     /** Asserts that "Weitere Kiste" / "Next box" sits in the quantity block's button row, next to OK. */
     expectNextBoxButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next box button in the quantity block`, async () => {
-        await expect(page.locator('.get-qty-dialog').getByRole('button', { name: /Weitere Kiste|Next box/ })).toBeVisible();
+        await expect(page.locator('.get-qty-dialog').getByTestId('next-box-button')).toBeVisible();
     }),
 
     /** Scans a GRAI on the scan step (before the label): opens a new box. */
