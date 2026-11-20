@@ -214,7 +214,7 @@ Feature: Explode a compensation-group-schema product into its component order li
       | order_ship            | shipment_ship         |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference          | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference          | processed | DocStatus |
       | shipment_ship         | customer                 | customerLocation                  | 2026-07-20  | schemaExplosion_ship | true      | CO        |
 
     # the shipment must carry ONE line per exploded component product, with the scaled quantities (2x2=4, 3x2=6)

@@ -42,7 +42,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -336,29 +339,54 @@ public class AD_SysConfig_StepDef
 			return;
 		}
 
-		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
+		// every row is attempted, also after one failed, so a single failure does not leave the others changed for later scenarios
+		final List<RuntimeException> restoreFailures = new ArrayList<>();
+		try
 		{
-			final String sysConfigName = entry.getKey();
-			final String priorValue = entry.getValue();
-			if (priorValue == null)
+			for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
 			{
-				deleteSystemSysConfig(sysConfigName);
+				try
+				{
+					restoreSystemSysConfig(entry.getKey(), entry.getValue());
+				}
+				catch (final RuntimeException ex)
+				{
+					restoreFailures.add(ex);
+				}
+			}
+		}
+		finally
+		{
+			final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
+			priorValueBySysConfigName.clear();
+			if (reportServerChanged)
+			{
+				CacheMgt.get().reset();
 			}
 			else
 			{
-				sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				resetSysConfigCache();
 			}
 		}
 
-		final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
-		priorValueBySysConfigName.clear();
-		if (reportServerChanged)
+		if (!restoreFailures.isEmpty())
 		{
-			CacheMgt.get().reset();
+			final RuntimeException firstFailure = restoreFailures.get(0);
+			restoreFailures.subList(1, restoreFailures.size()).forEach(firstFailure::addSuppressed);
+			throw firstFailure;
+		}
+	}
+
+	/** Puts the SYSTEM row back to its prior value, or deletes it if there was none. */
+	private void restoreSystemSysConfig(@NonNull final String sysConfigName, @Nullable final String priorValue)
+	{
+		if (priorValue == null)
+		{
+			deleteSystemSysConfig(sysConfigName);
 		}
 		else
 		{
-			resetSysConfigCache();
+			sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 		}
 	}
 }

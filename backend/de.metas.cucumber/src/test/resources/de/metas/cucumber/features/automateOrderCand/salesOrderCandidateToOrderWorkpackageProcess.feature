@@ -426,7 +426,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
     # The header DatePromised must equal the EARLIEST DatePromised among the lines (2026-07-01).
     And validate the created orders
-      | C_Order_ID | externalId | DatePromised | DocStatus |
+      | C_Order_ID | ExternalId | DatePromised | DocStatus |
       | order_1    | 22062026   | 2026-07-01   | CO        |
     # Each line keeps the DatePromised (dateRequired) of its own source candidate (matched by QtyOrdered:
     # qty 2 -> 2026-07-01, qty 1 -> 2026-07-08, qty 3 -> 2026-07-15); its PreparationDate is derived from that
