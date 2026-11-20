@@ -55,10 +55,11 @@ import { SelectPickTargetTUScreen } from '../../utils/screens/picking/SelectPick
 import { PickGraiScreen } from '../../utils/screens/picking/PickGraiScreen';
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
+import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID, NOT_A_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
-import { expectErrorToast, page } from '../../utils/common';
+import { expectErrorToast } from '../../utils/common';
 
 // sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
 let sysconfigsToRestore = null;
@@ -1044,7 +1045,7 @@ test('TC23 Schliessen with a failing label print (label process fails): error sh
             await HUConsolidationJobScreen.clickLUTargetButton();
             await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
         }, ({ textContent }) => {
-            // AC29-CLOSEERR / TC23 require only "an error message is shown" (no wording), so any non-empty message passes
+            // only "an error message is shown" is required (no wording), so any non-empty message passes
             expect((textContent ?? '').trim().length).toBeGreaterThan(0);
         });
         // the error toast keeps the operator on the target screen; the pallet is closed: Back shows the job screen without an open pallet
@@ -1067,20 +1068,6 @@ const OK_BEEP_HZ = 1000;
 const ERROR_BEEP_HZ = 100;
 const SCANNER_ERROR_TOAST_ID = 'BarcodeScannerComponentError';
 
-/** Records the frequency of every oscillator started from now on (the beep sets it with AudioParam.setValueAtTime; the volume uses .value, not recorded). */
-const startRecordingBeepTones = async () => await page.evaluate(() => {
-    window.__beepTones = [];
-    if (!window.__beepRecorderInstalled) {
-        window.__beepRecorderInstalled = true;
-        const original = AudioParam.prototype.setValueAtTime;
-        AudioParam.prototype.setValueAtTime = function (value, time) {
-            window.__beepTones.push(value); // only the oscillator frequency is set with setValueAtTime (the volume uses .value)
-            return original.call(this, value, time);
-        };
-    }
-});
-const takeBeepTones = async () => await page.evaluate(() => window.__beepTones.splice(0));
-
 // noinspection JSUnusedLocalSymbols
 test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanner\'s one error message, an accepted scan the OK beep', async ({ page: _page }) => {
     // === ALLURE METADATA ===
@@ -1089,7 +1076,7 @@ test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanne
     await allure.story('HU Consolidation - GRAI scan screen');
     await allure.severity('critical');
 
-    // AC30-SLOTBEEP: the slot screen's scan handler must not swallow the error, else the scanner plays the OK beep for a refused scan
+    // the slot screen's scan handler must not swallow the error, else the scanner plays the OK beep for a refused scan
     const masterdata = await createJobScanMasterdata({
         language: 'de_DE',
         sysconfigs: { 'mobileui.frontend.barcodeScanner.scanDuplicatesIntervalMillis': '0' },
@@ -1114,7 +1101,7 @@ test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanne
         await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });
         await PickingSlotScreen.expectScannerVisible();
-        await startRecordingBeepTones();
+        await BarcodeScannerComponent.startRecordingBeepTones();
     });
 
     /** the refused scan: exactly one error message box that carries the scanner's toast id, and the error beep (no OK beep) */
@@ -1124,10 +1111,9 @@ test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanne
             await PickingSlotScreen.waitForScreen();
         }, async ({ toast, textContent }) => {
             expect(textContent).toContain(expectedText);
-            const toastElement = toast.locator('xpath=ancestor::*[contains(@class,"Toastify__toast--error")][1]');
-            await expect(toastElement).toHaveAttribute('id', SCANNER_ERROR_TOAST_ID);
+            await ErrorToast.expectToastId(toast, SCANNER_ERROR_TOAST_ID);
         });
-        const tones = await takeBeepTones();
+        const tones = await BarcodeScannerComponent.takeBeepTones();
         expect(tones, `beep tones played for ${title}`).toContain(ERROR_BEEP_HZ);
         expect(tones, `beep tones played for ${title}`).not.toContain(OK_BEEP_HZ);
     });
@@ -1147,8 +1133,8 @@ test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanne
 
     await test.step('Accepted: GRAI of the crate in this slot -> OK beep, no message, crate moved', async () => {
         await PickingSlotScreen.scanGRAI({ graiString: graiInSlot1 });
-        await expect.poll(async () => (await page.evaluate(() => window.__beepTones.slice())).length, { timeout: 20000 }).toBeGreaterThan(0);
-        const tones = await takeBeepTones();
+        await BarcodeScannerComponent.waitForBeepTones();
+        const tones = await BarcodeScannerComponent.takeBeepTones();
         expect(tones).toContain(OK_BEEP_HZ);
         expect(tones).not.toContain(ERROR_BEEP_HZ);
         await ErrorToast.expectNoErrorToast();

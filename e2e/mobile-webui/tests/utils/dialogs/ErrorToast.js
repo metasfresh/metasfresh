@@ -29,6 +29,12 @@ export const ErrorToast = {
             });
     },
 
+    /** Asserts the DOM id of the toast that contains the given toast body (the scanner reuses one fixed id for its error toast). */
+    expectToastId: async (toastBody, expectedId) => {
+        const toastElement = toastBody.locator('xpath=ancestor::*[contains(@class,"Toastify__toast--error")][1]');
+        await expect(toastElement).toHaveAttribute('id', expectedId);
+    },
+
     closePopup: async () => {
         // A single failure must surface as EXACTLY ONE error toast. Stacked duplicate toasts are a
         // UI/UX defect (the operator wonders "did it fail twice?", and on the small mobile viewport
@@ -47,18 +53,10 @@ export const ErrorToast = {
         }
 
         const closeButton = page.locator('.Toastify__close-button--error').first();
-        // tap() itself scrolls into view and waits until the button is visible, stable (same box in two consecutive animation
-        // frames) and enabled, so a separate scrollIntoViewIfNeeded(FAST) only added a second 5 s stability wait.
-        // The toast's enter animation is long over here (waitToPopup + text validation take longer; measured: no running
-        // animation, constant button box). The flake (TC23, 1 of 3): "element is not stable" over the whole 5 s with only 2
-        // attempts, i.e. the page produced almost no frames while the host was overloaded (load average ~20, other Playwright
-        // runs on the same machine). The stability check needs frames, so its budget must be the machine-load budget (SLOW), not 5 s.
-        // Actionability stays fully enforced; nothing is skipped (force is not used).
+        // tap() waits for actionability itself; the SLOW budget because the stability check needs rendered frames, which a loaded host delays
         await closeButton.tap({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
-        // The message body is gone before react-toastify has released the toast id: it keeps the id (and the toast element) until
-        // its exit animation ends, about 1 s later, and ignores a new toast with the same id meanwhile. Wait for the element,
-        // so that the next scan's message (same scanner toast id) is not swallowed.
+        // react-toastify ignores a new toast with the same id until the previous one has fully exited (known product gap: a quick rescan shows no message); wait for that
         await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     },
 
