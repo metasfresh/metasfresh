@@ -105,7 +105,7 @@ class PORetryStateSnapshotTest
 		assertThat((Object[])get("m_newValues")).containsExactly(null, 2);
 		assertThat((boolean[])get("m_valueLoaded")).containsExactly(true, false);
 		assertThat(get("m_stale")).isEqualTo(true);
-		assertThat((Set<?>)get("markedChangedColumns")).containsExactly(1);
+		assertThat((Set<Integer>)get("markedChangedColumns")).containsExactly(1);
 		assertThat(get("m_custom")).isEqualTo(singletonMap("CustomColumn", "customValue"));
 		assertThat(get("m_dynAttrs")).isEqualTo(singletonMap("dynAttr", "dynValue"));
 		assertThat((List<?>)get("m_lobInfo")).hasSize(1);

@@ -24,9 +24,7 @@ package de.metas.common.rest_api.v2.currencyconversion;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.pentabyte.springfox.ApiEnum;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -34,33 +32,34 @@ import lombok.Value;
 
 import java.util.List;
 
-@ApiModel("Outcome of a conversion-rate batch upsert: the top-level aggregate syncOutcome plus the per-item outcomes.")
+@Schema(name = "Outcome of a conversion-rate batch upsert: the top-level aggregate syncOutcome plus the per-item outcomes.")
 @Value
 @Builder
 @JsonDeserialize(builder = JsonResponseConversionRateUpsert.JsonResponseConversionRateUpsertBuilder.class)
 public class JsonResponseConversionRateUpsert
 {
 	/** An item counts as failed iff its per-item outcome is {@code ERROR} ({@code NOTHING_DONE} counts as applied). */
+	@Schema(description =
+			"SUCCESS: " + "No record failed; the batch fully applied (also the degenerate empty batch)." + "\n"
+			+ "PARTIAL_SUCCESS: " + "Some records applied and at least one failed; the failed records carry a per-item ERROR outcome." + "\n"
+			+ "ERROR: " + "No record was applied; every record failed (the response reports the per-record outcomes).")
 	public enum BatchSyncOutcome
 	{
-		@ApiEnum("No record failed; the batch fully applied (also the degenerate empty batch).")
 		SUCCESS,
 
-		@ApiEnum("Some records applied and at least one failed; the failed records carry a per-item ERROR outcome.")
 		PARTIAL_SUCCESS,
 
-		@ApiEnum("No record was applied; every record failed (the response reports the per-record outcomes).")
 		ERROR
 	}
 
-	@ApiModelProperty(position = 10, value = "Top-level aggregate outcome over the response items: SUCCESS (none failed), "
+	@Schema(description = "Top-level aggregate outcome over the response items: SUCCESS (none failed), "
 			+ "PARTIAL_SUCCESS (some failed, not all), or ERROR (every record failed). Maps to HTTP 200 (SUCCESS/PARTIAL_SUCCESS) or 422 (ERROR).")
 	@NonNull
 	@JsonProperty("syncOutcome")
 	BatchSyncOutcome syncOutcome;
 
 	@Singular
-	@ApiModelProperty(position = 20, value = "The per-item outcome for each request item.")
+	@Schema(description = "The per-item outcome for each request item.")
 	@JsonProperty("responseItems")
 	List<JsonResponseConversionRateUpsertItem> responseItems;
 }

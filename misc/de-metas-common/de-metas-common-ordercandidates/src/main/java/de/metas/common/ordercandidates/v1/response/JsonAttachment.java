@@ -6,8 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,32 +37,25 @@ import javax.annotation.Nullable;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@ApiModel(description = "Describes a data attachment that exists within metasfresh")
+@Schema(description = "Describes a data attachment that exists within metasfresh")
 public class JsonAttachment
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Reference in terms of the external system. Can reference multiple records (e.g. multiple order line candidates)\n"
+	@Schema(description = "Reference in terms of the external system. Can reference multiple records (e.g. multiple order line candidates)\n"
 					+ "To be used in conjunction with <code>externalSystemCode</code>")
 	String externalReference;
 
-	@ApiModelProperty( //
-			value = "Identifier of the external system this attachment came from.\n"
+	@Schema(description = "Identifier of the external system this attachment came from.\n"
 					+ "To be used in conjunction with <code>externalReference</code>")
 	String externalSystemCode;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "ID assigned to the attachment data by metasfresh")
+	@Schema(description = "ID assigned to the attachment data by metasfresh")
 	String attachmentId;
 
 	JsonAttachmentType type;
 
 	String filename;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = "MIME type of the binary data; `null` if the attachment's type is `URL`")
+	@Schema(description = "MIME type of the binary data; `null` if the attachment's type is `URL`")
 	String mimeType;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

@@ -29,8 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,7 +37,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
+@Schema(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";
@@ -64,63 +63,54 @@ public class JsonResponseBPartner
 
 	private static final String CHANGE_INFO = "changeInfo";
 
-	@ApiModelProperty( //
-			required = true, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_BPartner.C_BPartner_ID`.")
+	@Schema(description = "This translates to `C_BPartner.C_BPartner_ID`.", required = true, implementation = Integer.class)
 	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty( //
-			dataType = "java.lang.String", //
-			value = "This translates to `C_BPartner.ExternalId`.")
+	@Schema(description = "This translates to `C_BPartner.ExternalId`.", implementation = String.class)
 	@JsonProperty(EXTERNAL_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalId externalId;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.Value`.")
+	@Schema(description = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(CODE)
 	String code;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.GlobalId`.")
+	@Schema(description = "This translates to `C_BPartner.GlobalId`.")
 	@JsonProperty(GLOBAL_ID)
 	String globalId;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.IsActive`.")
+	@Schema(description = "This translates to `C_BPartner.IsActive`.")
 	@JsonProperty(ACTIVE)
 	boolean active;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.Name`.")
+	@Schema(description = "This translates to `C_BPartner.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.Name2`.")
+	@Schema(description = "This translates to `C_BPartner.Name2`.")
 	@JsonProperty(NAME_2)
 	@JsonInclude(Include.NON_NULL)
 	String name2;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.Name3`.")
+	@Schema(description = "This translates to `C_BPartner.Name3`.")
 	@JsonProperty(NAME_3)
 	@JsonInclude(Include.NON_NULL)
 	String name3;
 	
-	@ApiModelProperty( //
-			value = "This translates to `C_BPartner.CompanyName`.\n"
+	@Schema(description = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	@JsonProperty(COMPANY_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String companyName;
 
-	@ApiModelProperty( //
-			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
-			dataType = "java.lang.Integer")
+	@Schema(description = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company", implementation = Integer.class)
 	@JsonProperty(PARENT_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId parentId;
 
-	@ApiModelProperty( //
-			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
+	@Schema(description = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	@JsonProperty(PHONE)
 	@JsonInclude(Include.NON_NULL)
 	String phone;
@@ -129,44 +119,43 @@ public class JsonResponseBPartner
 	@JsonProperty(LANGUAGE)
 	String language;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.URL`.")
+	@Schema(description = "This translates to `C_BPartner.URL`.")
 	@JsonProperty(URL)
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.URL2`.")
+	@Schema(description = "This translates to `C_BPartner.URL2`.")
 	@JsonProperty(URL_2)
 	@JsonInclude(Include.NON_NULL)
 	String url2;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.URL3`.")
+	@Schema(description = "This translates to `C_BPartner.URL3`.")
 	@JsonProperty(URL_3)
 	@JsonInclude(Include.NON_NULL)
 	String url3;
 
-	@ApiModelProperty( //
-			value = "Name of the business partner's group")
+	@Schema(description = "Name of the business partner's group")
 	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.IsVendor`.")
+	@Schema(description = "This translates to `C_BPartner.IsVendor`.")
 	@JsonProperty(VENDOR)
 	boolean vendor;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.IsCustomer`.")
+	@Schema(description = "This translates to `C_BPartner.IsCustomer`.")
 	@JsonProperty(CUSTOMER)
 	boolean customer;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.IsCompany`.")
+	@Schema(description = "This translates to `C_BPartner.IsCompany`.")
 	@JsonProperty(COMPANY)
 	boolean company;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.VATaxID`.")
+	@Schema(description = "This translates to `C_BPartner.VATaxID`.")
 	@JsonProperty(VAT_ID)
 	String vatId;
 
-	@ApiModelProperty(position = 9999) // shall be last
+	@Schema // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
 	JsonChangeInfo changeInfo;

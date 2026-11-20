@@ -25,8 +25,7 @@ package de.metas.common.rest_api.v2.currencyconversion;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,32 +33,32 @@ import lombok.Value;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@ApiModel("The newest stored conversion rate for a (from, to, type) combo.")
+@Schema(name = "The newest stored conversion rate for a (from, to, type) combo.")
 @Value
 public class JsonNewestConversionRate
 {
-	@ApiModelProperty(position = 10, value = "3-letter ISO source currency code.")
+	@Schema(description = "3-letter ISO source currency code.")
 	@NonNull
 	String fromCurrencyCode;
 
-	@ApiModelProperty(position = 20, value = "3-letter ISO target currency code.")
+	@Schema(description = "3-letter ISO target currency code.")
 	@NonNull
 	String toCurrencyCode;
 
-	@ApiModelProperty(position = 30, value = "Conversion type code (S/P/A/C).")
+	@Schema(description = "Conversion type code (S/P/A/C).")
 	@NonNull
 	String conversionTypeCode;
 
-	@ApiModelProperty(position = 40, value = "The date this rate is valid from (ISO yyyy-MM-dd).")
+	@Schema(description = "The date this rate is valid from (ISO yyyy-MM-dd).")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@NonNull
 	LocalDate validFrom;
 
-	@ApiModelProperty(position = 50, value = "amount(from) x multiplyRate = amount(to).")
+	@Schema(description = "amount(from) x multiplyRate = amount(to).")
 	@NonNull
 	BigDecimal multiplyRate;
 
-	@ApiModelProperty(position = 60, value = "1/multiplyRate (scale 12, HALF_UP).")
+	@Schema(description = "1/multiplyRate (scale 12, HALF_UP).")
 	@NonNull
 	BigDecimal divideRate;
 

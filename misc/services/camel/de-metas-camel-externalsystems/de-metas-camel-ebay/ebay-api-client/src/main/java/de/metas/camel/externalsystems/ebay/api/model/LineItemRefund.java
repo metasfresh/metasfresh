@@ -20,14 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.Amount;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type contains refund information for a line item.
  */
-@ApiModel(description = "This type contains refund information for a line item.")
+@Schema(description = "This type contains refund information for a line item.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class LineItemRefund
 {
@@ -60,7 +59,7 @@ public class LineItemRefund
 	 * @return amount
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getAmount()
 	{
@@ -85,7 +84,7 @@ public class LineItemRefund
 	 * @return refundDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The date and time that the refund was issued for the line item. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field is not returned until the refund has been issued. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
+	@Schema(description = "The date and time that the refund was issued for the line item. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field is not returned until the refund has been issued. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
 
 	public String getRefundDate()
 	{
@@ -111,7 +110,7 @@ public class LineItemRefund
 	 * @return refundId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "Unique identifier of a refund that was initiated for an order's line item through the issueRefund method. If the issueRefund method was used to issue a refund at the order level, this identifier is returned at the order level instead (paymentSummary.refunds.refundId field). A refundId value is returned in the response of the issueRefund method, and this same value will be returned in the getOrder and getOrders responses for pending and completed refunds. The issueRefund method can only be used for eBay managed payment orders.")
+	@Schema(description = "Unique identifier of a refund that was initiated for an order's line item through the issueRefund method. If the issueRefund method was used to issue a refund at the order level, this identifier is returned at the order level instead (paymentSummary.refunds.refundId field). A refundId value is returned in the response of the issueRefund method, and this same value will be returned in the getOrder and getOrders responses for pending and completed refunds. The issueRefund method can only be used for eBay managed payment orders.")
 
 	public String getRefundId()
 	{
@@ -136,7 +135,7 @@ public class LineItemRefund
 	 * @return refundReferenceId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This field is reserved for internal or future use.")
+	@Schema(description = "This field is reserved for internal or future use.")
 
 	public String getRefundReferenceId()
 	{

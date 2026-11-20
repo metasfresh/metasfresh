@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonExternalId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -39,19 +39,16 @@ import java.util.List;
 @Value
 public class JsonPurchaseCandidateReference
 {
-	@ApiModelProperty(position = 10, required = true,
-			value = "Identifier of the `ExternalSystem` record that tells where this Purchase Candidate came from.\n"
-					+ "This translates to 'ExternalSystem.value.'")
+	@Schema(description = "Identifier of the `ExternalSystem` record that tells where this Purchase Candidate came from.\n"
+					+ "This translates to 'ExternalSystem.value.'", required = true)
 	String externalSystemCode;
 
-	@ApiModelProperty(position = 20, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
-			value = "Used to select which invoice candidates should be enqueued.")
+	@Schema(description = "Used to select which invoice candidates should be enqueued.", implementation = String.class, example = "ExternalHeaderId_1")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 30, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
-			value = "Optional, used to select which invoice candidates which have these `C_PurchaseCandidate.ExternalLineId`s should be enqueued.\n"
+	@Schema(description = "Optional, used to select which invoice candidates which have these `C_PurchaseCandidate.ExternalLineId`s should be enqueued.\n"
 					+ "Inherited from order line candidates.\n"
-					+ "If not specified, then all purchase candidate with the specified `externalHeaderId` are matched")
+					+ "If not specified, then all purchase candidate with the specified `externalHeaderId` are matched", implementation = String.class, example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonExternalId> externalLineIds;
 

@@ -45,8 +45,8 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
@@ -92,10 +92,10 @@ public class ProcessRestController
 		this.processService = processService;
 	}
 
-	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
+	@Operation(summary = "Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
-			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
+			@NonNull @PathVariable("value") @Parameter(description = "Translates to `AD_Process.Value`") final String processValue,
 			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);

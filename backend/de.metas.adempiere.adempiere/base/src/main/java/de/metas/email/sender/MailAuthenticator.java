@@ -7,8 +7,8 @@ import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 
 import javax.annotation.concurrent.Immutable;
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
+import jakarta.mail.Authenticator;
+import jakarta.mail.PasswordAuthentication;
 import java.io.Serializable;
 
 /*

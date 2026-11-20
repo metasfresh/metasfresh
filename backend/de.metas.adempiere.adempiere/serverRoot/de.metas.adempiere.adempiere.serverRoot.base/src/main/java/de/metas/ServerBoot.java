@@ -11,6 +11,7 @@ import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.web.LenientRestMessageConverterConfiguration;
 import lombok.Getter;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
@@ -33,6 +34,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
@@ -68,8 +70,16 @@ import java.util.concurrent.TimeUnit;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@SpringBootApplication(
+		scanBasePackages = { "de.metas", "org.adempiere" },
+		// Spring Boot 3.5 ships both the deprecated ...web.reactive.function.client.ClientHttpConnectorAutoConfiguration
+		// and the new ...http.client.reactive.ClientHttpConnectorAutoConfiguration. With our MetasfreshBeanNameGenerator, both
+		// nested ReactorNetty configurations get the same bean name; even with overriding allowed, the new class's
+		// BuilderCustomizer @Bean then receives an instance of the deprecated class ("not an instance of").
+		// Configured here and not in application.properties, because -compat deployments replace that file with their own.
+		excludeName = "org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration")
 @ServletComponentScan(value = { "de.metas", "org.adempiere" })
+@Import(LenientRestMessageConverterConfiguration.class)
 @Profile(Profiles.PROFILE_App)
 public class ServerBoot implements InitializingBean
 {
@@ -129,6 +139,9 @@ public class ServerBoot implements InitializingBean
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
 					.profiles(activeProfiles.toArray(new String[0]))
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
+					// default only (an explicit spring.main.allow-bean-definition-overriding still wins); safety net for other
+					// duplicate bean names surfaced by Spring Boot 3, see the excludeName comment on this class
+					.properties("spring.main.allow-bean-definition-overriding=true")
 					.run(args);
 		}
 		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;

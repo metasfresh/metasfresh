@@ -12,8 +12,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import javax.activation.DataSource;
-import javax.activation.URLDataSource;
+import jakarta.activation.DataSource;
+import jakarta.activation.URLDataSource;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;

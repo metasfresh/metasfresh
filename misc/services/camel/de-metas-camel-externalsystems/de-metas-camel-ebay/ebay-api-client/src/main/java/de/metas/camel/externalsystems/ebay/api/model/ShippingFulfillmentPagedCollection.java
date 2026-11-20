@@ -21,8 +21,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.Error;
 import de.metas.camel.externalsystems.ebay.api.model.ShippingFulfillment;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ import java.util.List;
 /**
  * This type contains the specifications for the entire collection of shipping fulfillments that are associated with the order specified by a getShippingFulfillments call. The fulfillments container returns an array of all the fulfillments in the collection.
  */
-@ApiModel(description = "This type contains the specifications for the entire collection of shipping fulfillments that are associated with the order specified by a getShippingFulfillments call. The fulfillments container returns an array of all the fulfillments in the collection.")
+@Schema(description = "This type contains the specifications for the entire collection of shipping fulfillments that are associated with the order specified by a getShippingFulfillments call. The fulfillments container returns an array of all the fulfillments in the collection.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class ShippingFulfillmentPagedCollection
 {
@@ -69,7 +68,7 @@ public class ShippingFulfillmentPagedCollection
 	 * @return fulfillments
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array contains one or more fulfillments required for the order that was specified in method endpoint.")
+	@Schema(description = "This array contains one or more fulfillments required for the order that was specified in method endpoint.")
 
 	public List<ShippingFulfillment> getFulfillments()
 	{
@@ -94,7 +93,7 @@ public class ShippingFulfillmentPagedCollection
 	 * @return total
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The total number of fulfillments in the specified order. Note: If no fulfillments are found for the order, this field is returned with a value of 0.")
+	@Schema(description = "The total number of fulfillments in the specified order. Note: If no fulfillments are found for the order, this field is returned with a value of 0.")
 
 	public Integer getTotal()
 	{
@@ -129,7 +128,7 @@ public class ShippingFulfillmentPagedCollection
 	 * @return warnings
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array is only returned if one or more errors or warnings occur with the call request.")
+	@Schema(description = "This array is only returned if one or more errors or warnings occur with the call request.")
 
 	public List<Error> getWarnings()
 	{

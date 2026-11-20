@@ -5,7 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -34,8 +34,7 @@ import lombok.Value;
 @Value
 public class JsonCloseInvoiceCandidatesRequest
 {
-	@ApiModelProperty(position = 10, required = true, //
-			value = "Specifies the invoice candidates to close.")
+	@Schema(required = true, description = "Specifies the invoice candidates to close.")
 	List<JsonInvoiceCandidateReference> invoiceCandidates;
 
 	@JsonCreator

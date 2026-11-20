@@ -24,6 +24,9 @@ package de.metas.ui.web.config;
 
 import de.metas.ui.web.CORSFilter;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.util.web.filter.DuplicateSlashCollapsingFilter;
+import de.metas.util.web.filter.PathNormalizingFilterRegistrations;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -31,16 +34,17 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.session.web.http.DefaultCookieSerializer;
+import org.springframework.web.filter.UrlHandlerFilter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +54,37 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer
 {
 	public static final String ENDPOINT_ROOT = "/rest/api";
+
+	/** {@link org.springframework.web.util.pattern.PathPattern} matching every webui-api REST path (any depth) under the {@code /rest} root that {@link #ENDPOINT_ROOT} lives in. */
+	private static final String URL_PATHPATTERN_REST = "/rest/**";
+
+	/** Servlet URL pattern the {@link #trailingSlashRestUrlHandlerFilter()} and {@link #duplicateSlashRestFilter()} are mapped to; the webui-api serves its whole REST surface under {@code /rest}. */
+	private static final String URL_PATTERN_REST = "/rest/*";
+
+	/**
+	 * Restores trailing-slash tolerance for the webui-api REST endpoints (the {@code /rest/api/**} surface the React frontend drives),
+	 * e.g. the frontend's {@code GET /rest/api/window/{windowId}/{documentId}/} document load must match {@code @GetMapping("/{windowId}/{documentId}")}.
+	 * See {@link PathNormalizingFilterRegistrations#trailingSlashRegistration(String, String)}.
+	 * <p>
+	 * The app server's {@code /api} gets the same filters in {@code de.metas.util.web.filter.FilterRegistrationConfig};
+	 * the webui-api runs a separate Spring context and needs its own registration here.
+	 */
+	@Bean
+	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashRestUrlHandlerFilter()
+	{
+		return PathNormalizingFilterRegistrations.trailingSlashRegistration(URL_PATTERN_REST, URL_PATHPATTERN_REST);
+	}
+
+	/**
+	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the webui-api REST path. {@code frontend/docker/nginx/default.conf}'s
+	 * {@code location /rest { proxy_pass .../rest/; }} forwards {@code /rest/api/x} as {@code /rest//api/x}.
+	 * See {@link DuplicateSlashCollapsingFilter}.
+	 */
+	@Bean
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashRestFilter()
+	{
+		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(URL_PATTERN_REST);
+	}
 
 	@Bean
 	public CookieSerializer cookieSerializer()

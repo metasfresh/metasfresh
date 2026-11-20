@@ -40,7 +40,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @Callout(I_C_BPartner_QuickInput.class)

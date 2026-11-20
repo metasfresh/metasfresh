@@ -190,7 +190,7 @@ class JsonPersisterServiceDebtorCreditorTest
 				.build();
 
 		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response = bpartnerRestController.createOrUpdateBPartner(request);
-		assertThat(response.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = response.getBody().getResponseItems().get(0);
 		return responseCompositeItem.getResponseBPartnerItem();

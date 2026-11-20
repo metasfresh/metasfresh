@@ -34,10 +34,10 @@ import de.metas.logging.LogManager;
 import de.metas.currency.ConversionRateQuery;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
@@ -70,13 +70,13 @@ public class CurrencyConversionRestController
 	@NonNull private final NewestConversionRatesService newestConversionRatesService;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
-	@ApiOperation("Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
+	@Operation(summary = "Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "All records applied (syncOutcome=SUCCESS); each record reports its own outcome"),
-			@ApiResponse(code = 207, message = "Partial success (syncOutcome=PARTIAL_SUCCESS): some records applied, at least one failed; the response reports the per-record outcomes"),
-			@ApiResponse(code = 401, message = "You are not authorized to invoke this endpoint"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "No records were applied — either every record failed (syncOutcome=ERROR; the response reports the per-record outcomes) or the request could not be processed")
+			@ApiResponse(responseCode = "200", description = "All records applied (syncOutcome=SUCCESS); each record reports its own outcome"),
+			@ApiResponse(responseCode = "207", description = "Partial success (syncOutcome=PARTIAL_SUCCESS): some records applied, at least one failed; the response reports the per-record outcomes"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to invoke this endpoint"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "No records were applied — either every record failed (syncOutcome=ERROR; the response reports the per-record outcomes) or the request could not be processed")
 	})
 	@PutMapping("/rates")
 	public ResponseEntity<?> upsertRates(@RequestBody @NonNull final JsonRequestConversionRateUpsert request)
@@ -110,12 +110,12 @@ public class CurrencyConversionRestController
 		}
 	}
 
-	@ApiOperation("Retrieve the active currencies (the set the caller should fetch rates for).")
+	@Operation(summary = "Retrieve the active currencies (the set the caller should fetch rates for).")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "The active currencies were retrieved"),
-			@ApiResponse(code = 401, message = "You are not authorized to invoke this endpoint"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(responseCode = "200", description = "The active currencies were retrieved"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to invoke this endpoint"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request could not be processed")
 	})
 	@GetMapping("/currencies")
 	public ResponseEntity<?> getCurrencies()
@@ -137,25 +137,25 @@ public class CurrencyConversionRestController
 		}
 	}
 
-	@ApiOperation("Retrieve the newest stored conversion rate per (from, to, type) combo.")
+	@Operation(summary = "Retrieve the newest stored conversion rate per (from, to, type) combo.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "The newest rates were retrieved"),
-			@ApiResponse(code = 401, message = "You are not authorized to invoke this endpoint"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(responseCode = "200", description = "The newest rates were retrieved"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to invoke this endpoint"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request could not be processed")
 	})
 	@GetMapping("/newestRates")
 	public ResponseEntity<?> getNewestRates(
-			@ApiParam("3-letter ISO source currency code; omitted spans all source currencies.")
+			@Parameter(description = "3-letter ISO source currency code; omitted spans all source currencies.")
 			@RequestParam(value = "fromCurrencyCode", required = false) @Nullable final String fromCurrencyCode,
 
-			@ApiParam("3-letter ISO target currency code; omitted spans all target currencies.")
+			@Parameter(description = "3-letter ISO target currency code; omitted spans all target currencies.")
 			@RequestParam(value = "toCurrencyCode", required = false) @Nullable final String toCurrencyCode,
 
-			@ApiParam("Conversion type code (S/P/A/C); omitted spans all conversion types.")
+			@Parameter(description = "Conversion type code (S/P/A/C); omitted spans all conversion types.")
 			@RequestParam(value = "conversionTypeCode", required = false) @Nullable final String conversionTypeCode,
 
-			@ApiParam("Org code; omitted spans all orgs (incl. the shared org 0 rows).")
+			@Parameter(description = "Org code; omitted spans all orgs (incl. the shared org 0 rows).")
 			@RequestParam(value = "orgCode", required = false) @Nullable final String orgCode)
 	{
 		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());

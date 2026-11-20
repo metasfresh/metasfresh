@@ -1,16 +1,15 @@
 package de.metas.util.web;
 
-import org.compiere.Adempiere;
-
 import de.metas.util.web.security.UserAuthTokenFilter;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.ParameterBuilder;
-import springfox.documentation.schema.ModelRef;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Parameter;
-import springfox.documentation.spring.web.plugins.Docket;
+import org.compiere.Adempiere;
 
 /*
  * #%L
@@ -38,27 +37,47 @@ import springfox.documentation.spring.web.plugins.Docket;
 public class SwaggerUtil
 {
 	/**
-	 * If you create swagger documentation for an API that is controlled by {@link UserAuthTokenFilter},
-	 * then you can add this parameter to the {@link Docket}'s globalOperationParameters
+	 * Name of the (optional) auth-token security scheme that mirrors the {@link UserAuthTokenFilter} Authorization
+	 * header. Used by APIs controlled by {@link UserAuthTokenFilter}; swagger-ui renders it as an "Authorize" box.
 	 */
-	public static final Parameter SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER = new ParameterBuilder()
-			.name(UserAuthTokenFilter.HEADER_Authorization)
-			.description("Authorization token")
-			.modelRef(new ModelRef("string"))
-			.parameterType("header")
-			.required(false) // not required because we have some endpoints which are excluded (like the /auth one)
-			.build();
+	public static final String AUTH_TOKEN_SECURITY_SCHEME = "metasfresh-auth-token";
 
-	public ApiInfo createApiInfo(
+	public Info createApiInfo(
 			@NonNull final String title,
 			@NonNull final String description)
 	{
-		return new ApiInfoBuilder()
+		return new Info()
 				.title(title)
 				.description(description)
 				.version(Adempiere.getBuildAndDateVersion())
-				.license("GNU General Public License, version 2")
-				.licenseUrl("http://www.gnu.org/licenses/gpl-2.0.html")
-				.build();
+				.license(new License()
+						.name("GNU General Public License, version 2")
+						.url("http://www.gnu.org/licenses/gpl-2.0.html"));
+	}
+
+	public OpenAPI createOpenAPI(
+			@NonNull final String title,
+			@NonNull final String description)
+	{
+		return new OpenAPI().info(createApiInfo(title, description));
+	}
+
+	/**
+	 * Like {@link #createOpenAPI(String, String)} but additionally declares the {@link UserAuthTokenFilter}
+	 * Authorization header as an apiKey security scheme, so the token can be entered in swagger-ui.
+	 */
+	public OpenAPI createOpenAPIWithAuthToken(
+			@NonNull final String title,
+			@NonNull final String description)
+	{
+		final SecurityScheme authTokenScheme = new SecurityScheme()
+				.type(SecurityScheme.Type.APIKEY)
+				.in(SecurityScheme.In.HEADER)
+				.name(UserAuthTokenFilter.HEADER_Authorization)
+				.description("Authorization token");
+
+		return createOpenAPI(title, description)
+				.components(new Components().addSecuritySchemes(AUTH_TOKEN_SECURITY_SCHEME, authTokenScheme))
+				.addSecurityItem(new SecurityRequirement().addList(AUTH_TOKEN_SECURITY_SCHEME));
 	}
 }

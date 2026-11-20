@@ -1,21 +1,9 @@
 package de.metas.ui.web.config;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import de.metas.util.web.SwaggerUtil;
-import de.pentabyte.springfox.ApiEnumDescriptionPlugin;
+import io.swagger.v3.oas.models.OpenAPI;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import springfox.documentation.RequestHandler;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /*
  * #%L
@@ -39,38 +27,17 @@ import java.util.Set;
  * #L%
  */
 
+// NOTE: no @EnableWebMvc here. springdoc relies on Spring Boot's MVC auto-configuration (incl. the
+// swagger-ui resource handling); @EnableWebMvc would disable it. The app's MVC customizations live in
+// WebConfig (a WebMvcConfigurer), which works with Boot's auto-config.
 @Configuration
-@EnableWebMvc
-@Import(ApiEnumDescriptionPlugin.class) // https://github.com/hoereth/springfox-enum-plugin
 public class SwaggerConfig
 {
 	@Bean
-	public Docket api()
+	public OpenAPI api()
 	{
-		return new Docket(DocumentationType.OAS_30)
-				.select()
-				.paths(PathSelectors.any())
-				.build()
-				.apiInfo(SwaggerUtil.createApiInfo(
-						"metasfresh webui REST API" /* title */,
-						"REST API backend for metasfresh UIs"/* description */));
-	}
-
-	@SuppressWarnings("unused")
-	private static Predicate<RequestHandler> basePackages(final Class<?>... classes)
-	{
-		final Set<Predicate<RequestHandler>> predicates = new HashSet<>(classes.length);
-		for (final Class<?> clazz : classes)
-		{
-			final String packageName = clazz.getPackage().getName();
-			predicates.add((Predicate<RequestHandler>)RequestHandlerSelectors.basePackage(packageName));
-		}
-
-		if(predicates.size() == 1)
-		{
-			return predicates.iterator().next();
-		}
-
-		return Predicates.or(predicates);
+		return SwaggerUtil.createOpenAPI(
+				"metasfresh webui REST API" /* title */,
+				"REST API backend for metasfresh UIs"/* description */);
 	}
 }

@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -136,7 +136,7 @@ public class NShiftRestClient
 	}
 
 	private <T_Req> RuntimeException createApiException(
-			@NonNull final T_Req request, @NonNull final HttpStatus statusCode, @NonNull final String responseBody)
+			@NonNull final T_Req request, @NonNull final HttpStatusCode statusCode, @NonNull final String responseBody)
 	{
 		return new RuntimeException("nShift API call failed with status code " + statusCode + "\n"
 				+ "Additional information's:\n"

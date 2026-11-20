@@ -84,7 +84,6 @@ class ManufacturingOrderReportProcessCommandTest
 					.build();
 		}
 
-		@Builder(builderMethodName = "hu", builderClassName = "$HUBuilder")
 		private HuId createHU(
 				@Nullable final String huValue,
 				@Nullable final String lotNumber,
@@ -158,7 +157,7 @@ class ManufacturingOrderReportProcessCommandTest
 		@Test
 		public void huValue()
 		{
-			final HuId huId = hu().huValue("12345").build();
+			final HuId huId = createHU("12345", null, null, null);
 			final HuId foundHUId = command.resolveHUId(productId, JsonRequestHULookup.builder().huValue("12345").build());
 			Assertions.assertThat(foundHUId).isEqualTo(huId);
 		}
@@ -166,7 +165,7 @@ class ManufacturingOrderReportProcessCommandTest
 		@Test
 		public void lotNumber()
 		{
-			final HuId huId = hu().lotNumber("12345").build();
+			final HuId huId = createHU(null, "12345", null, null);
 			final HuId foundHUId = command.resolveHUId(productId, JsonRequestHULookup.builder().lotNumber("12345").build());
 			Assertions.assertThat(foundHUId).isEqualTo(huId);
 		}
@@ -174,7 +173,7 @@ class ManufacturingOrderReportProcessCommandTest
 		@Test
 		public void bestBeforeDate()
 		{
-			final HuId huId = hu().bestBeforeDate(LocalDate.parse("2020-02-03")).build();
+			final HuId huId = createHU(null, null, LocalDate.parse("2020-02-03"), null);
 			final HuId foundHUId = command.resolveHUId(productId, JsonRequestHULookup.builder().bestBeforeDate(LocalDate.parse("2020-02-03")).build());
 			Assertions.assertThat(foundHUId).isEqualTo(huId);
 		}
@@ -182,7 +181,7 @@ class ManufacturingOrderReportProcessCommandTest
 		@Test
 		public void serialNo()
 		{
-			final HuId huId = hu().serialNo("12345").build();
+			final HuId huId = createHU(null, null, null, "12345");
 			final HuId foundHUId = command.resolveHUId(productId, JsonRequestHULookup.builder().serialNo("12345").build());
 			Assertions.assertThat(foundHUId).isEqualTo(huId);
 		}

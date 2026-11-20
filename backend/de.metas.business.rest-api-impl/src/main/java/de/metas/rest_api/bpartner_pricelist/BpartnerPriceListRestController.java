@@ -25,7 +25,7 @@ import de.metas.rest_api.bpartner_pricelist.command.GetPriceListCommand;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 
 /*
@@ -68,15 +68,15 @@ public class BpartnerPriceListRestController
 
 	@GetMapping("/{bpartnerIdentifier}/sales/prices/{countryCode}")
 	public ResponseEntity<JsonResponsePriceList> getSalesPriceList(
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 			//
-			@ApiParam(required = true, value = "Country code (2 letters)") //
+			@Parameter(required = true, description = "Country code (2 letters)") //
 			@PathVariable("countryCode") //
 			@NonNull final String countryCode,
 			//
-			@ApiParam(required = false, value = "Date on which the prices shall be valid. The format is 'yyyy-MM-dd'.") //
+			@Parameter(required = false, description = "Date on which the prices shall be valid. The format is 'yyyy-MM-dd'.") //
 			@RequestParam(name = "date", required = false) //
 			@Nullable final String dateStr)
 	{
@@ -86,15 +86,15 @@ public class BpartnerPriceListRestController
 
 	@GetMapping("/{bpartnerIdentifier}/purchase/prices/{countryCode}")
 	public ResponseEntity<JsonResponsePriceList> getPurchasePriceList(
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 			//
-			@ApiParam(required = true, value = "Country code (2 letters)") //
+			@Parameter(required = true, description = "Country code (2 letters)") //
 			@PathVariable("countryCode") //
 			@NonNull final String countryCode,
 			//
-			@ApiParam(required = false, value = "Date on which the prices shall be valid. The format is 'yyyy-MM-dd'.") //
+			@Parameter(required = false, description = "Date on which the prices shall be valid. The format is 'yyyy-MM-dd'.") //
 			@RequestParam(name = "date", required = false) //
 			@Nullable final String dateStr)
 	{

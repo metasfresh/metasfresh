@@ -20,8 +20,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.LineItemReference;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
 /**
  * This type contains the complete details of an existing fulfillment for an order.
  */
-@ApiModel(description = "This type contains the complete details of an existing fulfillment for an order.")
+@Schema(description = "This type contains the complete details of an existing fulfillment for an order.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class ShippingFulfillment
 {
@@ -66,7 +65,7 @@ public class ShippingFulfillment
 	 * @return fulfillmentId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of the fulfillment; for example, 9405509699937003457459. This eBay-generated value is created with a successful createShippingFulfillment call.")
+	@Schema(description = "The unique identifier of the fulfillment; for example, 9405509699937003457459. This eBay-generated value is created with a successful createShippingFulfillment call.")
 
 	public String getFulfillmentId()
 	{
@@ -101,7 +100,7 @@ public class ShippingFulfillment
 	 * @return lineItems
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array contains a list of one or more line items (and purchased quantity) to which the fulfillment applies.")
+	@Schema(description = "This array contains a list of one or more line items (and purchased quantity) to which the fulfillment applies.")
 
 	public List<LineItemReference> getLineItems()
 	{
@@ -126,7 +125,7 @@ public class ShippingFulfillment
 	 * @return shipmentTrackingNumber
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The tracking number provided by the shipping carrier for the package shipped in this fulfillment. This field is returned if available.")
+	@Schema(description = "The tracking number provided by the shipping carrier for the package shipped in this fulfillment. This field is returned if available.")
 
 	public String getShipmentTrackingNumber()
 	{
@@ -151,7 +150,7 @@ public class ShippingFulfillment
 	 * @return shippedDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The date and time that the fulfillment package was shipped. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field should only be returned if the package has been shipped. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
+	@Schema(description = "The date and time that the fulfillment package was shipped. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. This field should only be returned if the package has been shipped. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
 
 	public String getShippedDate()
 	{
@@ -176,7 +175,7 @@ public class ShippingFulfillment
 	 * @return shippingCarrierCode
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The eBay code identifying the shipping carrier for this fulfillment. This field is returned if available. Note: The Trading API's ShippingCarrierCodeType enumeration type contains the most current list of eBay shipping carrier codes and the countries served by each carrier. See ShippingCarrierCodeType.")
+	@Schema(description = "The eBay code identifying the shipping carrier for this fulfillment. This field is returned if available. Note: The Trading API's ShippingCarrierCodeType enumeration type contains the most current list of eBay shipping carrier codes and the countries served by each carrier. See ShippingCarrierCodeType.")
 
 	public String getShippingCarrierCode()
 	{

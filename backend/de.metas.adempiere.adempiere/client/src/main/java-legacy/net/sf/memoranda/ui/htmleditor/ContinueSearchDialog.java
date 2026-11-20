@@ -31,7 +31,42 @@ public class ContinueSearchDialog extends JPanel {
   public boolean cont = false;
   public boolean cancel = false;
 
-  public ContinueSearchDialog(Thread t, String txt) {    
+  // Thread.suspend()/resume() were removed in Java 21+; this monitor replaces them,
+  // letting the search worker block until the user clicks a button.
+  private final Object resumeLock = new Object();
+  private boolean resumed = false;
+
+  /** Reset the decision before (re)showing the dialog, so a prior click is not re-read. */
+  public void resetDecision() {
+    synchronized (resumeLock) {
+      resumed = false;
+    }
+  }
+
+  /** Block the calling (worker) thread until a button is clicked (replaces Thread.suspend()). */
+  public void awaitDecision() {
+    synchronized (resumeLock) {
+      while (!resumed) {
+        try {
+          resumeLock.wait();
+        }
+        catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+      }
+    }
+  }
+
+  /** Release the waiting worker thread (replaces thread.resume()). */
+  private void signalResume() {
+    synchronized (resumeLock) {
+      resumed = true;
+      resumeLock.notifyAll();
+    }
+  }
+
+  public ContinueSearchDialog(Thread t, String txt) {
     try {
       text = txt;   
       thread = t;
@@ -82,12 +117,12 @@ public class ContinueSearchDialog extends JPanel {
 
   void cancelB_actionPerformed(ActionEvent e) {
     cont = true;
-    cancel = true;    
-    thread.resume();
+    cancel = true;
+    signalResume();
   }
 
   void continueB_actionPerformed(ActionEvent e) {
-     cont = true;     
-     thread.resume();
+     cont = true;
+     signalResume();
   }
 }

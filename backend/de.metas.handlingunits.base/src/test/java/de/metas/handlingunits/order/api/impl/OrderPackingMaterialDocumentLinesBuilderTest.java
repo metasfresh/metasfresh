@@ -16,7 +16,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -68,7 +68,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 
 		// we don't want to invoke the pricing logic
 		final OrderLineBL orderLineBL = Mockito.spy(new OrderLineBL());
-		Mockito.doNothing().when(orderLineBL).updatePrices(Matchers.any(OrderLinePriceUpdateRequest.class));
+		Mockito.doNothing().when(orderLineBL).updatePrices(ArgumentMatchers.any(OrderLinePriceUpdateRequest.class));
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 
 		final I_C_UOM packageProductUom = newInstance(I_C_UOM.class);

@@ -18,7 +18,7 @@ import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Callout(value = I_SAP_GLJournalLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 @TabCallout(I_SAP_GLJournalLine.class)

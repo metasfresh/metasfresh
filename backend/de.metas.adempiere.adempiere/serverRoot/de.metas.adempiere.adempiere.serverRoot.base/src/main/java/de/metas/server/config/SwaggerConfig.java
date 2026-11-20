@@ -1,15 +1,9 @@
 package de.metas.server.config;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.util.web.SwaggerUtil;
-import de.pentabyte.springfox.ApiEnumDescriptionPlugin;
+import io.swagger.v3.oas.models.OpenAPI;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
 
 /*
  * #%L
@@ -33,21 +27,16 @@ import springfox.documentation.spring.web.plugins.Docket;
  * #L%
  */
 
+// NOTE: no @EnableWebMvc here (see de.metas.ui.web.config.SwaggerConfig). springdoc needs Boot's MVC
+// auto-configuration; the app's MVC customizations live in WebConfig (a WebMvcConfigurer).
 @Configuration
-@EnableWebMvc
-@Import(ApiEnumDescriptionPlugin.class)  // https://github.com/hoereth/springfox-enum-plugin
 public class SwaggerConfig
 {
 	@Bean
-	public Docket api()
+	public OpenAPI api()
 	{
-		return new Docket(DocumentationType.OAS_30)
-				.globalOperationParameters(ImmutableList.of(SwaggerUtil.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
-				.select()
-				.paths(PathSelectors.any())
-				.build()
-				.apiInfo(SwaggerUtil.createApiInfo(
-						"metasfresh application server REST API" /* title */,
-						"metasfresh REST API"/* description */));
+		return SwaggerUtil.createOpenAPIWithAuthToken(
+				"metasfresh application server REST API" /* title */,
+				"metasfresh REST API"/* description */);
 	}
 }

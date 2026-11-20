@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used by the lineItems array that is used to identify one or more line items in the order with the payment dispute.
  */
-@ApiModel(description = "This type is used by the lineItems array that is used to identify one or more line items in the order with the payment dispute.")
+@Schema(description = "This type is used by the lineItems array that is used to identify one or more line items in the order with the payment dispute.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class OrderLineItems
 {
@@ -51,7 +50,7 @@ public class OrderLineItems
 	 * @return itemId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of the eBay listing associated with the order.")
+	@Schema(description = "The unique identifier of the eBay listing associated with the order.")
 
 	public String getItemId()
 	{
@@ -76,7 +75,7 @@ public class OrderLineItems
 	 * @return lineItemId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of the line item within the order. The lineItemId value is created once the buyer actually purchases the item, or if there is a commitment to buy (such as an auction that is won by the buyer, an accepted Best Offer, or other situation that does not require immediate payment from the buyer).")
+	@Schema(description = "The unique identifier of the line item within the order. The lineItemId value is created once the buyer actually purchases the item, or if there is a commitment to buy (such as an auction that is won by the buyer, an accepted Best Offer, or other situation that does not require immediate payment from the buyer).")
 
 	public String getLineItemId()
 	{

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.Profiles;
-import de.metas.elasticsearch.IESSystem;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -51,7 +50,6 @@ import java.time.Instant;
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondition
 {
-	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final KPIRepository kpisRepo = SpringContextHolder.instance.getBean(KPIRepository.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
@@ -82,7 +80,6 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 
 		final KPIDataResult kpiData = KPIDataProvider.builder()
 				.kpiRepository(kpisRepo)
-				.esSystem(esSystem)
 				.sysConfigBL(sysConfigBL)
 				.kpiPermissionsProvider(new KPIPermissionsProvider(userRolePermissionsDAO))
 				.build()

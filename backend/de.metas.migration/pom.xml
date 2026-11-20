@@ -14,7 +14,12 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<slf4j.version>1.7.25</slf4j.version>
+		<!-- Keep in sync with the slf4j-2.x line managed by the spring-boot 3.5.x BOM / de.metas.parent.general.
+		     de.metas.migration.cli is a shaded uber-jar that embeds slf4j-api + logback; a stale 1.7.x api here
+		     bundles an slf4j-1.x LoggerFactory that, next to the modern logback (a ServiceLoader provider, no
+		     StaticLoggerBinder), falls back to a NOP logger and breaks Spring Boot's LogbackLoggingSystem when
+		     the jar is on the cucumber/server classpath. -->
+		<slf4j.version>2.0.18</slf4j.version>
 	</properties>
 
 	<modules>

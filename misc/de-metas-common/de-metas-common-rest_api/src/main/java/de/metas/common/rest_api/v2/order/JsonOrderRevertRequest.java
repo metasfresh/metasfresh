@@ -22,7 +22,7 @@
 
 package de.metas.common.rest_api.v2.order;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,17 +33,16 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonOrderRevertRequest
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	String orgCode;
 
 	@NonNull
-	@ApiModelProperty(position = 20, required = true, value = "This translates to 'C_Order.ExternalId'.\n"
-			+ "'externalId' and 'dataSource' together need to be unique.")
+	@Schema(description = "This translates to 'C_Order.ExternalId'.\n"
+			+ "'externalId' and 'dataSource' together need to be unique.", required = true)
 	String externalId;
 
 	@NonNull
-	@ApiModelProperty(position = 30, required = true, //
-			value = "Identifier of the `ExternalSystem` record that tells where this Order came from.\n"
-					+ "This translates to 'ExternalSystem.value.'")
+	@Schema(description = "Identifier of the `ExternalSystem` record that tells where this Order came from.\n"
+					+ "This translates to 'ExternalSystem.value.'", required = true)
 	String externalSystemCode;
 }

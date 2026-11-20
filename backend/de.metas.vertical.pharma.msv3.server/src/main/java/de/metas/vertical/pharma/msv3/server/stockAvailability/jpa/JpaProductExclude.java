@@ -2,12 +2,12 @@ package de.metas.vertical.pharma.msv3.server.stockAvailability.jpa;
 
 import java.util.UUID;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
 
 import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
 import lombok.Getter;

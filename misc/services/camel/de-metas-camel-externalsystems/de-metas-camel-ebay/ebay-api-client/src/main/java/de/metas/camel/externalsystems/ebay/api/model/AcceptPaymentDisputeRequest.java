@@ -20,14 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.ReturnAddress;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used by base request of the acceptPaymentDispute method.
  */
-@ApiModel(description = "This type is used by base request of the acceptPaymentDispute method.")
+@Schema(description = "This type is used by base request of the acceptPaymentDispute method.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class AcceptPaymentDisputeRequest
 {
@@ -52,7 +51,7 @@ public class AcceptPaymentDisputeRequest
 	 * @return returnAddress
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public ReturnAddress getReturnAddress()
 	{
@@ -77,7 +76,7 @@ public class AcceptPaymentDisputeRequest
 	 * @return revision
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This integer value indicates the revision number of the payment dispute. This field is required. The current revision number for a payment dispute can be retrieved with the getPaymentDispute method. Each time an action is taken against a payment dispute, this integer value increases by 1.")
+	@Schema(description = "This integer value indicates the revision number of the payment dispute. This field is required. The current revision number for a payment dispute can be retrieved with the getPaymentDispute method. Each time an action is taken against a payment dispute, this integer value increases by 1.")
 
 	public Integer getRevision()
 	{

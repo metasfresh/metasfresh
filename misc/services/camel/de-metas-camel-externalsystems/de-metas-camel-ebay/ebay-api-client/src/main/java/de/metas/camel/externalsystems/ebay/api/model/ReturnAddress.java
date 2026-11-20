@@ -20,14 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.Phone;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used by the payment dispute methods, and is relevant if the buyer will be returning the item to the seller.
  */
-@ApiModel(description = "This type is used by the payment dispute methods, and is relevant if the buyer will be returning the item to the seller.")
+@Schema(description = "This type is used by the payment dispute methods, and is relevant if the buyer will be returning the item to the seller.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class ReturnAddress
 {
@@ -80,7 +79,7 @@ public class ReturnAddress
 	 * @return addressLine1
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The first line of the street address.")
+	@Schema(description = "The first line of the street address.")
 
 	public String getAddressLine1()
 	{
@@ -105,7 +104,7 @@ public class ReturnAddress
 	 * @return addressLine2
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The second line of the street address. This line is not always necessarily, but is often used for apartment number or suite number, or other relevant information that can not fit on the first line.")
+	@Schema(description = "The second line of the street address. This line is not always necessarily, but is often used for apartment number or suite number, or other relevant information that can not fit on the first line.")
 
 	public String getAddressLine2()
 	{
@@ -130,7 +129,7 @@ public class ReturnAddress
 	 * @return city
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The city of the return address.")
+	@Schema(description = "The city of the return address.")
 
 	public String getCity()
 	{
@@ -155,7 +154,7 @@ public class ReturnAddress
 	 * @return country
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The country's two-digt, ISO 3166-1 country code. See the enumeration type for a country's value. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum'>eBay API documentation</a>")
+	@Schema(description = "The country's two-digt, ISO 3166-1 country code. See the enumeration type for a country's value. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum'>eBay API documentation</a>")
 
 	public String getCountry()
 	{
@@ -180,7 +179,7 @@ public class ReturnAddress
 	 * @return county
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The county of the return address. Counties are not applicable to all countries.")
+	@Schema(description = "The county of the return address. Counties are not applicable to all countries.")
 
 	public String getCounty()
 	{
@@ -205,7 +204,7 @@ public class ReturnAddress
 	 * @return fullName
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The full name of return address owner.")
+	@Schema(description = "The full name of return address owner.")
 
 	public String getFullName()
 	{
@@ -230,7 +229,7 @@ public class ReturnAddress
 	 * @return postalCode
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The postal code of the return address.")
+	@Schema(description = "The postal code of the return address.")
 
 	public String getPostalCode()
 	{
@@ -255,7 +254,7 @@ public class ReturnAddress
 	 * @return primaryPhone
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Phone getPrimaryPhone()
 	{
@@ -280,7 +279,7 @@ public class ReturnAddress
 	 * @return stateOrProvince
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The state or province of the return address.")
+	@Schema(description = "The state or province of the return address.")
 
 	public String getStateOrProvince()
 	{

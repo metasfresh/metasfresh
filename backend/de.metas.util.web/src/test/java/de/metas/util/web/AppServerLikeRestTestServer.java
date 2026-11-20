@@ -22,7 +22,9 @@
 
 package de.metas.util.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.Profiles;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
@@ -43,17 +45,20 @@ import org.compiere.model.I_API_Audit_Config;
 import org.compiere.model.I_API_Request_Audit;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Nullable;
@@ -71,7 +76,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 /**
  * An embedded Tomcat with the app server's REST setup, for tests that need the real {@code /api/v2} filter chain:
  * <ul>
- * <li>{@code @EnableWebMvc}, as in the app server's {@code de.metas.server.config.SwaggerConfig};</li>
+ * <li>Spring Boot's MVC auto-configuration (no {@code @EnableWebMvc}, as in the app server's {@code de.metas.server.config.SwaggerConfig}),
+ * with the {@code @Primary} shared mapper and {@link LenientRestMessageConverterConfiguration} as in {@code ServerBoot};</li>
  * <li>the app server's content negotiation, see {@link AppServerContentNegotiation};</li>
  * <li>the real {@link FilterRegistrationConfig} filters ({@code UserAuthTokenFilter}, {@code ApiAuditFilter}) with the real {@link ApiAuditService}, on the in-memory DB.</li>
  * </ul>
@@ -286,11 +292,29 @@ public final class AppServerLikeRestTestServer implements AutoCloseable
 	}
 
 	@Configuration
-	@EnableWebMvc
-	@ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class, DispatcherServletAutoConfiguration.class })
-	@Import({ AppServerContentNegotiation.class, FilterRegistrationConfig.class, UserAuthTokenFilterConfiguration.class })
+	@ImportAutoConfiguration({
+			ServletWebServerFactoryAutoConfiguration.class,
+			DispatcherServletAutoConfiguration.class,
+			JacksonAutoConfiguration.class,
+			HttpMessageConvertersAutoConfiguration.class,
+			WebMvcAutoConfiguration.class })
+	@Import({
+			LenientRestMessageConverterConfiguration.class,
+			AppServerContentNegotiation.class,
+			FilterRegistrationConfig.class,
+			UserAuthTokenFilterConfiguration.class })
 	static class AppServerLikeRestConfig
 	{
+		/**
+		 * Like {@code ServerBoot#jsonObjectMapper()}.
+		 */
+		@Bean
+		@Primary
+		public ObjectMapper jsonObjectMapper()
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper();
+		}
+
 		@Bean
 		public UserAuthTokenService userAuthTokenService()
 		{

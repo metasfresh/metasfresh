@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used to provide details about an order line item being fulfilled by eBay or an eBay fulfillment partner.
  */
-@ApiModel(description = "This type is used to provide details about an order line item being fulfilled by eBay or an eBay fulfillment partner.")
+@Schema(description = "This type is used to provide details about an order line item being fulfilled by eBay or an eBay fulfillment partner.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class EbayFulfillmentProgram
 {
@@ -47,7 +46,7 @@ public class EbayFulfillmentProgram
 	 * @return fulfilledBy
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The value returned in this field indicates the party that is handling fulfillment of the order line item. Valid value: EBAY")
+	@Schema(description = "The value returned in this field indicates the party that is handling fulfillment of the order line item. Valid value: EBAY")
 
 	public String getFulfilledBy()
 	{

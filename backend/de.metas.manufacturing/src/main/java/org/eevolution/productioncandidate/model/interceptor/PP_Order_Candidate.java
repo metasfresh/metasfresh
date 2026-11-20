@@ -57,7 +57,7 @@ import org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

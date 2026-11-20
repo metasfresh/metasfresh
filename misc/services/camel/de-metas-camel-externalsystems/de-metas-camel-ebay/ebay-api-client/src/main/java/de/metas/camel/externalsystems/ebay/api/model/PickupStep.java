@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used to indicate the merchant&#39;s store where the buyer will pickup their In-Store Pickup order. The pickupStep container is only returned for In-Store Pickup orders. The In-Store Pickup feature is supported in the US, Canada, UK, Germany, and Australia marketplaces.
  */
-@ApiModel(description = "This type is used to indicate the merchant's store where the buyer will pickup their In-Store Pickup order. The pickupStep container is only returned for In-Store Pickup orders. The In-Store Pickup feature is supported in the US, Canada, UK, Germany, and Australia marketplaces.")
+@Schema(description = "This type is used to indicate the merchant's store where the buyer will pickup their In-Store Pickup order. The pickupStep container is only returned for In-Store Pickup orders. The In-Store Pickup feature is supported in the US, Canada, UK, Germany, and Australia marketplaces.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class PickupStep
 {
@@ -47,7 +46,7 @@ public class PickupStep
 	 * @return merchantLocationKey
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "A merchant-defined unique identifier of the merchant's store where the buyer will pick up their In-Store Pickup order. This field is always returned with the pickupStep container.")
+	@Schema(description = "A merchant-defined unique identifier of the merchant's store where the buyer will pick up their In-Store Pickup order. This field is always returned with the pickupStep container.")
 
 	public String getMerchantLocationKey()
 	{

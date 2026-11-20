@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -43,13 +43,13 @@ import javax.annotation.Nullable;
 @EqualsAndHashCode(callSuper = true)
 public class JsonResponseBPartnerUpsertItem extends JsonResponseUpsertItem
 {
-	@ApiModelProperty(value = "Debtor number persisted for this business partner (C_BPartner.DebtorId). Null when not set.")
+	@Schema(description = "Debtor number persisted for this business partner (C_BPartner.DebtorId). Null when not set.")
 	@JsonProperty("debtorId")
 	@JsonInclude(Include.NON_NULL)
 	@Nullable
 	Integer debtorId;
 
-	@ApiModelProperty(value = "Creditor number persisted for this business partner (C_BPartner.CreditorId). Null when not set.")
+	@Schema(description = "Creditor number persisted for this business partner (C_BPartner.CreditorId). Null when not set.")
 	@JsonProperty("creditorId")
 	@JsonInclude(Include.NON_NULL)
 	@Nullable
