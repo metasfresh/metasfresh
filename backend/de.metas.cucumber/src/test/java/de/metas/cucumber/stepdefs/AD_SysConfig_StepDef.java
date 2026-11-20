@@ -320,7 +320,7 @@ public class AD_SysConfig_StepDef
 	{
 		if (!priorValueBySysConfigName.containsKey(sysConfigName))
 		{
-			priorValueBySysConfigName.put(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+			priorValueBySysConfigName.put(sysConfigName, sysConfigBL.getValue(sysConfigName, null, ClientId.SYSTEM.getRepoId(), StepDefConstants.ORG_ID_SYSTEM.getRepoId()));
 		}
 	}
 

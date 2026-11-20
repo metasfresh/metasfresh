@@ -290,6 +290,38 @@ public class C_OLCand_StepDef
 	}
 
 	/**
+	 * Updates the {@code POReference} of a {@code C_OLCand} through a model save, like a user changing the
+	 * order candidate, so that the order candidate's model interceptors fire.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the order candidate to update<br>
+	 *   <b>POReference</b> — (optional, null-allowed) new PO reference; {@code null} clears it<br>
+	 * @cucumber.depends StepDefData: C_OLCand_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OLCand:
+	 *   | C_OLCand_ID | POReference |
+	 *   | olCand_1    | PO_4711     |
+	 * </pre>
+	 */
+	@And("update C_OLCand:")
+	public void update_C_OLCand(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final StepDefDataIdentifier olCandIdentifier = row.getAsIdentifier(COLUMNNAME_C_OLCand_ID);
+			final I_C_OLCand olCand = olCandIdentifier.lookupNotNullIn(olCandTable);
+			InterfaceWrapperHelper.refresh(olCand);
+
+			row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(poReference -> olCand.setPOReference(DataTableUtil.nullToken2Null(poReference)));
+
+			InterfaceWrapperHelper.saveRecord(olCand);
+			olCandIdentifier.putOrReplace(olCandTable, olCand);
+		});
+	}
+
+	/**
 	 * @cucumber.stepdef Validates fields of an already-loaded {@code C_OLCand}. Only the columns present in the row are asserted.
 	 * @cucumber.columns
 	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the OLCand to validate<br>

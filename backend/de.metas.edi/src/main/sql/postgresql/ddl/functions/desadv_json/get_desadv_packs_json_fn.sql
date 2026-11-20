@@ -165,6 +165,7 @@ BEGIN
                                        'OrderLine', ol.line,
                                        'ShipmentLine', iol.line,
                                        'OrderPOReference', o.poreference,
+                                       'OrderIsPOReferenceBuyerOrderNo', COALESCE(o.IsPOReferenceBuyerOrderNo = 'Y' AND NULLIF(o.poreference, '') IS NOT NULL, FALSE),
                                        'OrderDocumentNo', o.documentno,
                                        'DesadvLine', dl.line,
                                        'LineItemLine', ia.pi_line,

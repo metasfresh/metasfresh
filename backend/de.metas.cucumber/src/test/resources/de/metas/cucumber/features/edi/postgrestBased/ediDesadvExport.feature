@@ -243,6 +243,7 @@ Feature: EDI DESADV export via postgREST
               },
               "OrderDocumentNo": "@o_1_DocumentNo@",
               "OrderPOReference": "testReference",
+              "OrderIsPOReferenceBuyerOrderNo": false,
               "QtyOrderedInDesadvLineUOM": 100,
               "QtyDeliveredInInvoicingUOM": 100,
               "QtyDeliveredInDesadvLineUOM": 100,
@@ -1564,3 +1565,585 @@ Feature: EDI DESADV export via postgREST
     Then verify DESADV JSON export response has exactly 1 element matching:
       | Order_Identifier | ExpectedQtyDelivered |
       | o_S29231_160     | 10                   |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario Outline: DESADV line of an order from the data source <dataSource> carries the buyer-order-number flag <flag>
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier  | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customerGln | Y          | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | customerGln   | true                 | 1234567890            | edi_setting_postgrest_gln_1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
+      | customerGlnLocation | customerGln   | Y               | Y               | <gln>         |
+    And metasfresh contains M_Products:
+      | Identifier | Name                      |
+      | product    | desadvPoRefD1<key>Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_LU    |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPIV_LU           | huPI_LU    | LU          | Y         |
+      | huPIV_TU           | huPI_TU    | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | huPI_Item_LU               | huPIV_LU           | 10  | HU       | huPI_TU           |
+      | huPI_Item_TU               | huPIV_TU           | 0   | PM       |                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | REST.Context | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | huPIP                   | huPIP_ID     | huPI_Item_TU    | product      | 10  | 2025-01-01 |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "desadvPoRefHeader<key>",
+            "externalLineId": "desadvPoRefHeader<key>_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-<dataSource>",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-<gln>",
+                "bpartnerLocationIdentifier": "gln-<gln>"
+            },
+            "dateRequired": "2025-05-16",
+            "dateOrdered": "2025-05-15",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-desadvPoRefD1<key>Product",
+            "packingMaterialId": @huPIP_ID@,
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "<ref>",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "desadvPoRefHeader<key>",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+    And validate the created orders
+      | C_Order_ID.Identifier | POReference | processed | DocStatus |
+      | order_1               | <ref>       | true      | CO        |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
+      | ol_1                      | order_1               | product                 | 10         |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_1       | ol_1                      | N             | 10           |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 180s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID |
+      | ss_1                             | shipment_1            | shipment_ID             |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "metasfresh_DESADV": {
+      "Packings": [ { "LineItems": [ { "DesadvLine": { "OrderPOReference": "<ref>", "OrderIsPOReferenceBuyerOrderNo": <flag> } } ] } ]
+    }
+  }
+]
+    """
+
+    Examples:
+      | key     | dataSource                | ref        | flag  | gln           |
+      | Ecosio  | DEST.de.metas.edi.ecosio  | 0021234501 | true  | 4337010332011 |
+      | Eddyson | DEST.de.metas.edi.eddyson | 0021234502 | true  | 4337010332012 |
+      | Excel   | DEST.de.metas.edi.excel   | 0021234503 | false | 4337010332013 |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: DESADV line of a flagged order whose POReference was changed before shipping has flag false next to the new reference
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier  | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customerGln | Y          | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | customerGln   | true                 | 1234567890            | edi_setting_postgrest_gln_1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
+      | customerGlnLocation | customerGln   | Y               | Y               | 4337010332021 |
+    And metasfresh contains M_Products:
+      | Identifier | Name                 |
+      | product    | desadvPoRefD4Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_LU    |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPIV_LU           | huPI_LU    | LU          | Y         |
+      | huPIV_TU           | huPI_TU    | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | huPI_Item_LU               | huPIV_LU           | 10  | HU       | huPI_TU           |
+      | huPI_Item_TU               | huPIV_TU           | 0   | PM       |                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | REST.Context | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | huPIP                   | huPIP_ID     | huPI_Item_TU    | product      | 10  | 2025-01-01 |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "desadvPoRefHeaderD4",
+            "externalLineId": "desadvPoRefHeaderD4_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-DEST.de.metas.edi.ecosio",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4337010332021",
+                "bpartnerLocationIdentifier": "gln-4337010332021"
+            },
+            "dateRequired": "2025-05-16",
+            "dateOrdered": "2025-05-15",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-desadvPoRefD4Product",
+            "packingMaterialId": @huPIP_ID@,
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "0021234568",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "desadvPoRefHeaderD4",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+    And validate the created orders
+      | C_Order_ID.Identifier | POReference | processed | DocStatus |
+      | order_1               | 0021234568  | true      | CO        |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
+      | ol_1                      | order_1               | product                 | 10         |
+    And update order
+      | C_Order_ID.Identifier | POReference |
+      | order_1               | 0029999993  |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_1       | ol_1                      | N             | 10           |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 180s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID |
+      | ss_1                             | shipment_1            | shipment_ID             |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "metasfresh_DESADV": {
+      "Packings": [ { "LineItems": [ { "DesadvLine": { "OrderPOReference": "0029999993", "OrderIsPOReferenceBuyerOrderNo": false } } ] } ]
+    }
+  }
+]
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: DESADV line of a flagged order keeps the flag when the POReference is changed on the shipment only
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier  | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customerGln | Y          | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | customerGln   | true                 | 1234567890            | edi_setting_postgrest_gln_1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
+      | customerGlnLocation | customerGln   | Y               | Y               | 4337010332031 |
+    And metasfresh contains M_Products:
+      | Identifier | Name                 |
+      | product    | desadvPoRefD5Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_LU    |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPIV_LU           | huPI_LU    | LU          | Y         |
+      | huPIV_TU           | huPI_TU    | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | huPI_Item_LU               | huPIV_LU           | 10  | HU       | huPI_TU           |
+      | huPI_Item_TU               | huPIV_TU           | 0   | PM       |                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | REST.Context | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | huPIP                   | huPIP_ID     | huPI_Item_TU    | product      | 10  | 2025-01-01 |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "desadvPoRefHeaderD5",
+            "externalLineId": "desadvPoRefHeaderD5_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-DEST.de.metas.edi.ecosio",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4337010332031",
+                "bpartnerLocationIdentifier": "gln-4337010332031"
+            },
+            "dateRequired": "2025-05-16",
+            "dateOrdered": "2025-05-15",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-desadvPoRefD5Product",
+            "packingMaterialId": @huPIP_ID@,
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "0021234569",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+    And process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "desadvPoRefHeaderD5",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    And process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+    And validate the created orders
+      | C_Order_ID.Identifier | POReference | processed | DocStatus |
+      | order_1               | 0021234569  | true      | CO        |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered |
+      | ol_1                      | order_1               | product                 | 10         |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_1       | ol_1                      | N             | 10           |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 180s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID |
+      | ss_1                             | shipment_1            | shipment_ID             |
+    And update M_InOut:
+      | M_InOut_ID | POReference  |
+      | shipment_1 | SHIPMENT-REF |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "metasfresh_DESADV": {
+      "Packings": [ { "LineItems": [ { "DesadvLine": { "OrderPOReference": "0021234569", "OrderIsPOReferenceBuyerOrderNo": true } } ] } ]
+    }
+  }
+]
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario: DESADVs of one consolidated shipment over two orders give each line the flag of its own order
+    Given metasfresh is configured for One-DESADV-Per-ORDERS
+    And metasfresh contains M_Products:
+      | Identifier | Name                 |
+      | product    | desadvPoRefD6Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_LU    |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPIV_LU           | huPI_LU    | LU          | Y         |
+      | huPIV_TU           | huPI_TU    | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | huPI_Item_LU               | huPIV_LU           | 10  | HU       | huPI_TU           |
+      | huPI_Item_TU               | huPIV_TU           | 0   | PM       |                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | REST.Context | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | huPIP                   | huPIP_ID     | huPI_Item_TU    | product      | 10  | 2025-01-01 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference |
+      | order_A    | true    | customer1     | 2025-05-15  | 2025-05-16Z  | 0021234570  |
+      | order_B    | true    | customer1     | 2025-05-15  | 2025-05-16Z  | REF-B       |
+    And update order
+      | C_Order_ID.Identifier | IsPOReferenceBuyerOrderNo |
+      | order_A               | true                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID.Identifier |
+      | ol_A       | order_A               | product                 | 10         | huPIP                              |
+      | ol_B       | order_B               | product                 | 20         | huPIP                              |
+    And the order identified by order_A is completed
+    And the order identified by order_B is completed
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus | REST.Context |
+      | desadv_A                 | customer1                | order_A               | P                | desadv_A_ID  |
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus | REST.Context |
+      | desadv_B                 | customer1                | order_B               | P                | desadv_B_ID  |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_A       | ol_A                      | N             | 10           |
+      | ss_B       | ol_B                      | N             | 20           |
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_A                  |
+      | ss_B                  |
+    Then after not more than 180s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  | REST.Context.M_InOut_ID |
+      | ss_A                  | shipment_AB | shipment_ID             |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "metasfresh_DESADV": {
+      "EDI_Desadv_ID": @desadv_A_ID@,
+      "Packings": [ { "LineItems": [ { "DesadvLine": { "OrderPOReference": "0021234570", "OrderIsPOReferenceBuyerOrderNo": true } } ] } ]
+    }
+  },
+  {
+    "metasfresh_DESADV": {
+      "EDI_Desadv_ID": @desadv_B_ID@,
+      "Packings": [ { "LineItems": [ { "DesadvLine": { "OrderPOReference": "REF-B", "OrderIsPOReferenceBuyerOrderNo": false } } ] } ]
+    }
+  }
+]
+    """
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  Scenario Outline: DESADV packed line and unshipped line of an order carry the order's flag <ticked>
+    Given metasfresh contains M_Products:
+      | Identifier | Name                      |
+      | product    | desadvPoRefD2<key>Product |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | salesPLV                          | product                 | 5.00     | PCE               | Normal                        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_LU    |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPIV_LU           | huPI_LU    | LU          | Y         |
+      | huPIV_TU           | huPI_TU    | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | huPI_Item_LU               | huPIV_LU           | 10  | HU       | huPI_TU           |
+      | huPI_Item_TU               | huPIV_TU           | 0   | PM       |                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | REST.Context | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | huPIP                   | huPIP_ID     | huPI_Item_TU    | product      | 10  | 2025-01-01 |
+    And metasfresh contains M_Products:
+      | Identifier  | Name                          |
+      | productOpen | desadvPoRefD2<key>OpenProduct |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_open    | salesPLV                          | productOpen             | 3.00     | PCE               | Normal                        |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | huPIP_open              | huPI_Item_TU    | productOpen  | 10  | 2025-01-01 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference |
+      | order_1    | true    | customer1     | 2025-05-15  | 2025-05-16Z  | <ref>       |
+    And update order
+      | C_Order_ID.Identifier | IsPOReferenceBuyerOrderNo |
+      | order_1               | <ticked>                  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID.Identifier |
+      | ol_1       | order_1               | product                 | 10         | huPIP                              |
+      | ol_open    | order_1               | productOpen             | 20         | huPIP_open                         |
+    And the order identified by order_1 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_1       | ol_1                      | N             | 10           |
+      | ss_open    | ol_open                   | N             | 20           |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_1                             | D            | true                | false       |
+    And after not more than 180s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID |
+      | ss_1                             | shipment_1            | shipment_ID             |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "metasfresh_DESADV": {
+      "Packings": [ { "LineItems": [ { "DesadvLine": { "OrderPOReference": "<ref>", "OrderIsPOReferenceBuyerOrderNo": <ticked> } } ] } ],
+      "DesadvLineWithNoPacking": [ { "DesadvLine": { "OrderPOReference": "<ref>", "OrderIsPOReferenceBuyerOrderNo": <ticked> } } ]
+    }
+  }
+]
+    """
+
+    Examples:
+      | key      | ref        | ticked |
+      | Ticked   | 0027654301 | true   |
+      | Unticked | 0027654302 | false  |
+
