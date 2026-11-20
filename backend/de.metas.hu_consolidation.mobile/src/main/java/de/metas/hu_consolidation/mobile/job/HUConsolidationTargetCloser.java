@@ -8,6 +8,8 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
+import java.util.function.Function;
+
 @Component
 @RequiredArgsConstructor
 public class HUConsolidationTargetCloser
@@ -17,14 +19,10 @@ public class HUConsolidationTargetCloser
 
 	public HUConsolidationJob closeTarget(@NonNull final HUConsolidationJob job)
 	{
-		final HUConsolidationTarget currentTarget = job.getCurrentTarget();
-		if (currentTarget != null && currentTarget.getLuId() != null)
-		{
-			labelPrinter.printLabel(currentTarget);
-			shipmentService.createShipmentForLUs(job, ImmutableSet.of(currentTarget.getLuIdNotNull()));
-		}
-
-		return job.withCurrentTarget(null);
+		return close(job, target -> {
+			labelPrinter.printLabel(target);
+			return () -> {};
+		}).getJob();
 	}
 
 	/**
@@ -36,10 +34,18 @@ public class HUConsolidationTargetCloser
 	 */
 	public ClosedTarget closeTargetDeferringLabelPrint(@NonNull final HUConsolidationJob job)
 	{
+		return close(job, labelPrinter::preparePrintLabel);
+	}
+
+	/** @param labelPrintProvider called first, with the LU target to be closed; returns the printing the caller shall run (may be a no-op) */
+	private ClosedTarget close(
+			@NonNull final HUConsolidationJob job,
+			@NonNull final Function<HUConsolidationTarget, Runnable> labelPrintProvider)
+	{
 		final HUConsolidationTarget currentTarget = job.getCurrentTarget();
 		if (currentTarget != null && currentTarget.getLuId() != null)
 		{
-			final Runnable printLabelAction = labelPrinter.preparePrintLabel(currentTarget);
+			final Runnable printLabelAction = labelPrintProvider.apply(currentTarget);
 			shipmentService.createShipmentForLUs(job, ImmutableSet.of(currentTarget.getLuIdNotNull()));
 			return new ClosedTarget(job.withCurrentTarget(null), printLabelAction);
 		}

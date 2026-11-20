@@ -57,15 +57,7 @@ public class HULabelService
 
 	public void print(@NonNull final HULabelPrintRequest request)
 	{
-		HULabelPrintCommand.builder()
-				.handlingUnitsBL(handlingUnitsBL)
-				.huLabelConfigService(huLabelConfigService)
-				.huProcessDAO(huProcessDAO)
-				.huQRCodesService(huQRCodesService)
-				.huLabelService(this)
-				.request(request)
-				.build()
-				.execute();
+		newPrintCommand(request).execute();
 	}
 
 	/**
@@ -76,16 +68,20 @@ public class HULabelService
 	@NonNull
 	public Runnable preparePrint(@NonNull final HULabelPrintRequest request)
 	{
-		final Runnable printAction = HULabelPrintCommand.builder()
+		final Runnable printAction = newPrintCommand(request).prepare();
+		return printAction != null ? printAction : () -> {};
+	}
+
+	private HULabelPrintCommand newPrintCommand(@NonNull final HULabelPrintRequest request)
+	{
+		return HULabelPrintCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huLabelConfigService(huLabelConfigService)
 				.huProcessDAO(huProcessDAO)
 				.huQRCodesService(huQRCodesService)
 				.huLabelService(this)
 				.request(request)
-				.build()
-				.prepare();
-		return printAction != null ? printAction : () -> {};
+				.build();
 	}
 
 	public void printNow(final HULabelDirectPrintRequest request)

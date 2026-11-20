@@ -56,7 +56,7 @@ import { PickGraiScreen } from '../../utils/screens/picking/PickGraiScreen';
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
+import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID, NOT_A_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
 import { expectErrorToast, page } from '../../utils/common';
 
@@ -997,9 +997,6 @@ for (const language of ['de_DE', 'en_US']) {
     });
 }
 
-/** AD_Process_ID 540094 (Anlage zur Provisionsabrechnung): its jasper file does not exist in this installation, so using it as label process makes the print fail. */
-const NOT_A_LABEL_PROCESS_ID = 540094;
-
 // noinspection JSUnusedLocalSymbols
 test('TC23 Schliessen with a failing label print (label process fails): error shown, pallet closed anyway, shipment as today', async ({ page: _page }) => {
     // === ALLURE METADATA ===
@@ -1047,6 +1044,7 @@ test('TC23 Schliessen with a failing label print (label process fails): error sh
             await HUConsolidationJobScreen.clickLUTargetButton();
             await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
         }, ({ textContent }) => {
+            // AC29-CLOSEERR / TC23 require only "an error message is shown" (no wording), so any non-empty message passes
             expect((textContent ?? '').trim().length).toBeGreaterThan(0);
         });
         // the error toast keeps the operator on the target screen; the pallet is closed: Back shows the job screen without an open pallet

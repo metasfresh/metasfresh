@@ -2,6 +2,9 @@ import { Backend } from './screens/Backend';
 
 /** AD_Process_ID of the LU label report: core "LU SSCC-Barcode-Etikett" (540412); override via env HU_LABEL_PROCESS_ID when the image uses another label process. */
 export const HU_LABEL_PROCESS_ID = Number(process.env.HU_LABEL_PROCESS_ID || 540412);
+
+/** AD_Process_ID of a process that cannot print a label (core "Anlage zur Provisionsabrechnung" 540094: its jasper file does not exist in this installation); override via env NOT_A_LABEL_PROCESS_ID. */
+export const NOT_A_LABEL_PROCESS_ID = Number(process.env.NOT_A_LABEL_PROCESS_ID || 540094);
 /** Order date of the sales orders (the value every existing consolidation spec uses; its accounting period is open). */
 const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+02:00';
 
