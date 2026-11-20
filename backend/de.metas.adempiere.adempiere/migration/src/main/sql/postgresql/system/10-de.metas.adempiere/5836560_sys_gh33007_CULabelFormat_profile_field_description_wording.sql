@@ -5,6 +5,9 @@ UPDATE AD_Element SET Description='Format des Etiketts, das in den Modi der CU-M
 ;
 UPDATE AD_Element_Trl SET Description='Format des Etiketts, das in den Modi der CU-Mengenerfassung gelesen wird.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-20 13:30:01.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language IN ('de_DE','de_CH') AND AD_Element_ID=585624
 ;
+-- languages without a translation keep the copy of the base text
+UPDATE AD_Element_Trl SET Description='Format des Etiketts, das in den Modi der CU-Mengenerfassung gelesen wird.', Updated=TO_TIMESTAMP('2026-11-20 13:30:02.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language NOT IN ('de_DE','de_CH','en_US') AND IsTranslated='N' AND AD_Element_ID=585624
+;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585624)
 ;
 /* DDL */ select update_FieldTranslation_From_AD_Name_Element(585624)
