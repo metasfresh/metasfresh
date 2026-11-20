@@ -1,6 +1,7 @@
 import { useWFActivity } from '../../../reducers/wfProcesses';
 import { getCurrentTarget } from '../reducers';
 import * as api from '../api';
+import { getWFProcess } from '../../../api/workflow';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
 import { toastErrorFromObj } from '../../../utils/toast';
@@ -23,12 +24,23 @@ export const useCurrentTarget = ({ wfProcessId, activityId }) => {
       .finally(() => setProcessing(false));
   };
 
+  /** @returns {Promise<boolean>} true if the target was closed without error, false if an error was shown (the target might still have been closed, the job is reloaded) */
   const closeTarget = () => {
     setProcessing(true);
     return api
       .closeTarget({ wfProcessId })
-      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .catch((error) => toastErrorFromObj(error))
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+        return true;
+      })
+      .catch((error) => {
+        toastErrorFromObj(error);
+        // The pallet is closed even when printing its label failed, so show the actual job state, not the stale open pallet.
+        return getWFProcess({ wfProcessId })
+          .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+          .catch((reloadError) => console.error('Failed reloading the job after a close error', reloadError))
+          .then(() => false);
+      })
       .finally(() => setProcessing(false));
   };
 

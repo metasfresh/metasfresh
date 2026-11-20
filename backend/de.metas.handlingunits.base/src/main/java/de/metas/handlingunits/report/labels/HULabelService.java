@@ -68,6 +68,26 @@ public class HULabelService
 				.execute();
 	}
 
+	/**
+	 * Like {@link #print(HULabelPrintRequest)} but the printing is not deferred to after-transaction-close:
+	 * the label config check happens now, the returned action does the printing when run by the caller
+	 * (so that a print failure reaches the caller).
+	 */
+	@NonNull
+	public Runnable preparePrint(@NonNull final HULabelPrintRequest request)
+	{
+		final Runnable printAction = HULabelPrintCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.huLabelConfigService(huLabelConfigService)
+				.huProcessDAO(huProcessDAO)
+				.huQRCodesService(huQRCodesService)
+				.huLabelService(this)
+				.request(request)
+				.build()
+				.prepare();
+		return printAction != null ? printAction : () -> {};
+	}
+
 	public void printNow(final HULabelDirectPrintRequest request)
 	{
 		if (request.getHus().isEmpty())

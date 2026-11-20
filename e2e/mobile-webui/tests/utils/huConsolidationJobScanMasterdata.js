@@ -10,10 +10,10 @@ const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+
  * SO1 (P1) -> slot1, SO2 (P2) -> slot1, SO3 (P1) -> slot2. Product aggregation + pickTo:['TU'] so each pick
  * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config.
  *
- * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object}} [overrides]
- *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata).
+ * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object, huLabelConfigs?: object}} [overrides]
+ *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata); `huLabelConfigs` replaces the default label config of BP1 (e.g. `{}` = none, so the label print of a closed pallet fails).
  */
-export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits } = {}) => {
+export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits, huLabelConfigs } = {}) => {
     return await Backend.createMasterdata({
         language,
         request: {
@@ -40,7 +40,7 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpar
                 PI_P1: { lu: 'LU', luSSCC18: true, qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
                 PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
             },
-            huLabelConfigs: {
+            huLabelConfigs: huLabelConfigs ?? {
                 lc1: { bpartner: 'BP1', huUnitType: 'LU', sourceDocType: 'PI', process: HU_LABEL_PROCESS_ID, autoPrint: true },
             },
             handlingUnits: {

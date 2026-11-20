@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -114,10 +115,21 @@ public class HUConsolidationJobService
 
 	public HUConsolidationJob closeTarget(@NonNull final HUConsolidationJobId jobId, @NonNull final UserId callerId)
 	{
-		return jobRepository.updateById(jobId, job -> {
+		// the label printing prepared inside the transaction by the mapper; stays a no-op when this call did not close a target
+		final AtomicReference<Runnable> printLabelActionRef = new AtomicReference<>(() -> {});
+
+		final HUConsolidationJob jobClosed = jobRepository.updateById(jobId, job -> {
 			job.assertUserCanEdit(callerId);
-			return targetCloser.closeTarget(job);
+			final HUConsolidationTargetCloser.ClosedTarget closed = targetCloser.closeTargetDeferringLabelPrint(job);
+			printLabelActionRef.set(closed.getPrintLabelAction());
+			return closed.getJob();
 		});
+
+		// Print after the close was committed, so that a print failure is shown to the operator while the pallet stays closed
+		// (like picking: PickingJobService saves, then prints).
+		printLabelActionRef.get().run();
+
+		return jobClosed;
 	}
 
 	public void printTargetLabel(@NonNull final HUConsolidationJobId jobId, @NotNull final UserId callerId)

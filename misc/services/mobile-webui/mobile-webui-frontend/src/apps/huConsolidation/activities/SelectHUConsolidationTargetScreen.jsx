@@ -19,7 +19,12 @@ export const SelectHUConsolidationTargetScreen = () => {
   const { currentTarget, isProcessing, closeTarget, printLabel } = useCurrentTarget({ wfProcessId, activityId });
 
   const onCloseTargetClicked = () => {
-    closeTarget({ wfProcessId }).then(() => history.goBack());
+    closeTarget({ wfProcessId }).then((closedWithoutError) => {
+      // On an error stay here, so that the error toast stays visible (it is dismissed on every screen change)
+      if (closedWithoutError) {
+        history.goBack();
+      }
+    });
   };
   const onScanTargetClicked = () => {
     history.goTo(scanTargetScreenLocation({ applicationId, wfProcessId, activityId }));

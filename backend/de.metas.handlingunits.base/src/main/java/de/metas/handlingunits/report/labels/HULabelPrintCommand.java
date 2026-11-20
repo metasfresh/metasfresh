@@ -43,10 +43,8 @@ class HULabelPrintCommand
 
 	public void execute()
 	{
-		final BatchToPrintCollector batchToPrintCollector = newBatchesToPrintCollector();
-		batchToPrintCollector.explodeAndAddAll(HUToReportWrapper.ofList(handlingUnitsBL.getByIds(request.getHuIds())));
-		batchToPrintCollector.explodeAndAddAll(request.getHus());
-		if (batchToPrintCollector.isEmpty())
+		final Runnable printAction = prepare();
+		if (printAction == null)
 		{
 			return;
 		}
@@ -54,10 +52,32 @@ class HULabelPrintCommand
 		trxManager.runAfterClose((trx) ->
 		{
 			if (trx != null && !trx.isCommittedOK()) {return;}
+			printAction.run();
+		});
+	}
+
+	/**
+	 * Does the part which can fail early (e.g. missing label config), right now, and returns the actual printing to be run by the caller
+	 * (e.g. after its transaction was committed, so that a print failure can be shown to the user).
+	 *
+	 * @return the printing action or {@code null} if there is nothing to print
+	 */
+	@Nullable
+	public Runnable prepare()
+	{
+		final BatchToPrintCollector batchToPrintCollector = newBatchesToPrintCollector();
+		batchToPrintCollector.explodeAndAddAll(HUToReportWrapper.ofList(handlingUnitsBL.getByIds(request.getHuIds())));
+		batchToPrintCollector.explodeAndAddAll(request.getHus());
+		if (batchToPrintCollector.isEmpty())
+		{
+			return null;
+		}
+
+		return () -> {
 			//M_HU_Storage persistence may be delayed by de.metas.handlingunits.storage.impl.SaveOnCommitHUStorageDAO
 			huQRCodesService.generateForExistingHUs(batchToPrintCollector.getHuIds());
 			batchToPrintCollector.forEach(this::printBatchNow);
-		});
+		};
 	}
 
 	private BatchToPrintCollector newBatchesToPrintCollector()
