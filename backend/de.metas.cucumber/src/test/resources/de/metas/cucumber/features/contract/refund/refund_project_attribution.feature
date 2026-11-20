@@ -392,3 +392,101 @@ Feature: Refund credit memo lines per project
     And validate invoice lines for refundInvoice:
       | M_Product_ID | QtyInvoiced | LineNetAmt |
       | goodsProduct | 1           | 24.00      |
+
+  # ##############################################################################################
+  # A sales order of two positions that also carries the customer's contract Bonus: every Bonus line stays out of the refund base,
+  # the refund is still split per position by the money of the goods (regression for the per-position Bonus, same result before and after)
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @allure.label.feature:F2000_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC11b
+  Scenario: A refund of a two-position order with a contract Bonus is computed on the goods only and split per position as before
+    Given metasfresh contains M_Product_Categories:
+      | Identifier    |
+      | bonusGoodsCat |
+    And metasfresh contains M_Products:
+      | Identifier    | OPT.M_Product_Category_ID.Identifier | OPT.IsStocked |
+      | bonusGoods    | bonusGoodsCat                        | false         |
+      | bonusDiscount |                                      | false         |
+      | contractProd  |                                      | false         |
+    And metasfresh contains M_ProductPrices
+      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_bonusGoods       | refundPLV                         | bonusGoods              | 100      | PCE               | Normal                        |
+      | pp_bonusDiscount    | refundPLV                         | bonusDiscount           | 1        | PCE               | Normal                        |
+      | pp_bonusGoodsRefund | refundPLVCHF                      | bonusGoods              | 100      | PCE               | Normal                        |
+    And load C_DocType:
+      | DocBaseType | DocSubType | C_DocType_ID      |
+      | SOO         | SO         | docTypeSalesOrder |
+    And metasfresh contains C_Flatrate_Transition:
+      | Identifier   | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.EnsurePeriodsForYears |
+      | zeroDurTrans | 0            | day              | 0                | day                  | EO                | 2026,2027                 |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier  | Name          | OPT.IsAdditive |
+      | bonusSchema | Bonus Ware 3% | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier      | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | bonusSchemaLine | bonusSchema                              | bonusDiscount           | 3                         | bonusGoodsCat                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier    | Name           | C_CompensationGroup_Schema_ID.Identifier |
+      | bonusSettings | Bonus settings | bonusSchema                              |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | bonusSettings                                      | docTypeSalesOrder       |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier      | Name             | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | bonusConditions | Bonus conditions | CompensationGroup | contractProd                         | zeroDurTrans                            | bonusSettings                                          |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | bonusTerm  | bonusConditions                     | customerBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by bonusTerm is completed
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier       | Type_Conditions |
+      | refundConditions | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier   | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_ID |
+      | refundConfig | refundConditions         | monthlySchedule      | 10            | bonusGoods   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | StartDate  | EndDate    |
+      | refundTerm | refundConditions                    | customerBP                  | bonusGoods                  | 2026-07-01 | 2026-12-31 |
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project1   |
+      | project2   |
+
+    # project 1: 6 x 100 = 600; project 2: 8 x 50 = 400; the contract's 3 % Bonus line(s) are added at completion
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | order1     | true    | customerBP               | 2026-07-01  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | olP1       | order1                | bonusGoods              | 6          | 100   | project1     |
+      | olP2       | order1                | bonusGoods              | 8          | 50    | project2     |
+    And the order identified by order1 is completed
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | olP1           | salesICP1              |
+      | olP2           | salesICP2              |
+
+    # 10 % of the goods 1000, not of 1000 less the Bonus
+    And after not more than 60s, refund C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DocBaseType | DocSubType | OnePerProject |
+      | refundIC               | refundTerm         | 100             | ARC         | RI         | Y             |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule | IncludeSameRecordCandidates |
+      | refundIC                          | Y                     | Y                           |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | refundInvoice           | refundIC                          |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | DocBaseType | GrandTotal | DocStatus |
+      | refundInvoice           | ARC         | 119.00 EUR | CO        |
+    And validate invoice lines for refundInvoice:
+      | M_Product_ID | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | bonusGoods   | 1           | project1     | 60.00      |
+      | bonusGoods   | 1           | project2     | 40.00      |
