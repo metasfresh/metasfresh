@@ -196,7 +196,7 @@ public class M_InOut_StepDef
 	 * <b>DateOrdered</b> — (required) expected date, e.g., "2022-05-17"<br>
 	 * <b>processed</b> — (required) true/false<br>
 	 * <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
-	 * <b>POReference</b> — (optional) expected PO reference<br>
+	 * <b>POReference</b> — (optional) expected PO reference; {@code null} asserts that it is not set<br>
 	 * <b>AD_InputDataSource_ID.InternalName</b> — (optional) expected input data source internal name<br>
 	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
 	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
@@ -235,7 +235,7 @@ public class M_InOut_StepDef
 
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
 				.filter(Check::isNotBlank)
-				.ifPresent(poReference -> softly.assertThat(inout.getPOReference()).isEqualTo(poReference));
+				.ifPresent(poReference -> softly.assertThat(inout.getPOReference()).as("POReference").isEqualTo(DataTableUtil.nullToken2Null(poReference)));
 
 		row.getAsOptionalBoolean("processed")
 				.ifPresent(processed -> softly.assertThat(inout.isProcessed()).isEqualTo(processed));

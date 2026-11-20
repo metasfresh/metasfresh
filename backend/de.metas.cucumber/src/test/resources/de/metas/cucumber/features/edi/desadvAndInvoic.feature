@@ -126,7 +126,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId              | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId              | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference            | processed | DocStatus |
       | o_1                   | externalHeaderId_29042022_1 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_29042022_1 | true      | CO        |
 
     And validate the created order lines
@@ -301,7 +301,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference            | processed | DocStatus |
       | o_1                   | externalHeaderId02052022_2 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_02052022_2 | true      | CO        |
 
     And validate the created order lines
@@ -471,7 +471,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_3 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_3 | true      | CO        |
 
     And validate the created order lines
@@ -642,7 +642,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_4 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_4 | true      | CO        |
 
     And validate the created order lines
@@ -819,7 +819,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_5 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_5 | true      | CO        |
 
     And validate the created order lines
@@ -996,7 +996,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference            | processed | DocStatus |
       | o_1                   | externalHeaderId04052022_6 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_04052022_6 | true      | CO        |
 
     And validate the created order lines

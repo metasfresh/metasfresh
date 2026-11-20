@@ -89,7 +89,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference     | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference     | processed | DocStatus |
       | order_1               | externalHeaderId_S0469_10 | bpartner_1               | bpartnerLocation_1                | 2021-04-15  | SOO         | EUR          | F            | S               | po_ref_S0469_10 | true      | CL        |
 
     And validate the created order lines
@@ -204,7 +204,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference     | processed | DocStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference     | processed | DocStatus |
       | order_1               | externalHeaderId_S0469_20 | bpartner_1_S0469_20      | bpartnerLocation_1_S0469_20       | 2021-04-15  | SOO         | EUR          | F            | S               | po_ref_S0469_20 | true      | CL        |
 
     And validate the created order lines

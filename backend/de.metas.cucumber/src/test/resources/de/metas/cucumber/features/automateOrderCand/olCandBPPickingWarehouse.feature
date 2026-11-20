@@ -113,7 +113,7 @@ Feature: OLCand order creation uses the BP picking warehouse when no warehouse i
     # The order and its lines must use the BP's picking warehouse (pickingWH), not the
     # processor default warehouse.
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | M_Warehouse_ID |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | M_Warehouse_ID |
       | order_S30235          | bp_S30235                | bpLoc_S30235                      | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH      |
 
     And validate the created order lines
