@@ -678,6 +678,12 @@ import java.util.stream.Stream;
 	}
 
 	@Override
+	public boolean anyMatch()
+	{
+		return createQuery().anyMatch();
+	}
+
+	@Override
 	public int count()
 	{
 		return createQuery()

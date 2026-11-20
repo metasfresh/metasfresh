@@ -21,7 +21,7 @@ public class HUConsolidationGRAIPresence
 	public boolean isAnyGRAIPresent(@NonNull final Collection<HuId> huIds)
 	{
 		return HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, huIds)
-				.map(query -> query.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_GRAI).firstId().isPresent())
+				.map(query -> query.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_GRAI).anyMatch())
 				.orElse(false);
 	}
 }
