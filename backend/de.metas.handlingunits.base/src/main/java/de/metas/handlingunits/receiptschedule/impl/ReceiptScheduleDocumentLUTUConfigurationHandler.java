@@ -25,6 +25,7 @@ package de.metas.handlingunits.receiptschedule.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -41,9 +42,11 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 /* package */class ReceiptScheduleDocumentLUTUConfigurationHandler extends AbstractDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule>
@@ -70,7 +73,28 @@ import java.util.Properties;
 			return null;
 		}
 
+		if (getLUPIIdSupersededByProductSpecificLUItem(documentLine, getM_HU_PI_Item_Product(documentLine)) != null)
+		{
+			return null; // a new configuration is derived, which uses the product-specific LU item
+		}
+
 		return lutuConfiguration;
+	}
+
+	/**
+	 * Checks the stored configuration with the TU packing instruction, product and partner that {@link #createNewLUTUConfiguration(I_M_ReceiptSchedule)} derives with.
+	 * The TU packing instruction is the schedule's current one, which may differ from the stored configuration's one.
+	 *
+	 * @param tuPIItemProduct the TU packing instruction the new configuration is derived with, see {@link #getM_HU_PI_Item_Product(I_M_ReceiptSchedule)}
+	 */
+	@Nullable
+	private HuPackingInstructionsId getLUPIIdSupersededByProductSpecificLUItem(@NonNull final I_M_ReceiptSchedule documentLine, @NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
+	{
+		return lutuFactory.getLUPIIdSupersededByProductSpecificLUItem(
+				documentLine.getM_HU_LUTU_Configuration(),
+				HUPIItemProductId.ofRepoIdOrNull(tuPIItemProduct.getM_HU_PI_Item_Product_ID()),
+				ProductId.ofRepoId(documentLine.getM_Product_ID()),
+				receiptScheduleBL.getBPartnerEffectiveId(documentLine));
 	}
 
 	@Override
@@ -88,13 +112,20 @@ import java.util.Properties;
 		final BPartnerId bpartnerId = receiptScheduleBL.getBPartnerEffectiveId(documentLine);
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(documentLine.getC_OrderLine_ID()), I_C_OrderLine.class);
 
+		HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(orderLine.getM_LU_HU_PI_ID());
+		if (luPIId == null)
+		{
+			// stay on the stored LU packing instruction if the product has an LU item of its own there
+			luPIId = getLUPIIdSupersededByProductSpecificLUItem(documentLine, tuPIItemProduct);
+		}
+
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
 				cuUOMId,
 				bpartnerId,
 				false, // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
-				HuPackingInstructionsId.ofRepoIdOrNull(orderLine.getM_LU_HU_PI_ID()),
+				luPIId,
 				orderLine.getQtyLU());
 
 		// Update LU/TU configuration

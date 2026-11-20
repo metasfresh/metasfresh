@@ -8,7 +8,9 @@ import { page } from './common';
  * The app server talks to SumUp via the `sumup.baseUrl` property: the E2E stack sets it to
  * `http://wiremock:8080/sumup/v0.1` (docker-builds/e2e-tests/compose.yml); a local run starts the app
  * server with `-Dsumup.baseUrl=<WIREMOCK_BASE_URL>/sumup/v0.1`. `WIREMOCK_BASE_URL` is the address the
- * spec registers stubs at, the same variable the picking spec uses.
+ * spec registers stubs at, the same variable the picking spec uses. The reader calls go to that v0.1 base;
+ * the transaction lookup goes to the v2.1 API, whose base the app server derives by replacing the trailing
+ * `/v0.1` with `/v2.1` (SumUpClient), so it lands at `<WIREMOCK_BASE_URL>/sumup/v2.1`.
  *
  * Stubs are registered through the admin API, never committed as mapping files, so a missing WireMock
  * fails the spec at setup instead of silently exercising an unstubbed SumUp. WireMock state is global,
@@ -19,18 +21,46 @@ import { page } from './common';
  *   the checkout's `description` (the card settlement id, see POSInvoiceCardSettlementService#send),
  *   echoed by the response template; so each checkout gets its own id, and the spec knows it as soon
  *   as it knows the settlement id;
- * - the transaction lookup (`GET /me/transactions?client_transaction_id=…`, polled by the app server's
- *   SumUp poller and by the till's check) answers the status the spec sets; the state is flipped by
- *   re-registering that mapping;
+ * - the transaction lookup (`GET /v2.1/merchants/{merchant_code}/transactions?client_transaction_id=…`,
+ *   polled by the app server's SumUp poller and by the till's check) answers the status the spec sets;
+ *   the state is flipped by re-registering that mapping;
  * - the reader terminate call answers 204 (SumUp does not confirm it).
  */
 export const WIREMOCK_BASE_URL = process.env.WIREMOCK_BASE_URL || 'http://localhost:18080';
 const SUMUP_PATH = '/sumup/v0.1';
+const SUMUP_TRANSACTIONS_API_PATH = '/sumup/v2.1';
 
 let registeredStubIds = [];
+let isUnservedPathStubRegistered = false;
 const transactionStubIdsByClientTransactionId = new Map();
 
+const transactionsPath = ({ merchantCode }) => `${SUMUP_TRANSACTIONS_API_PATH}/merchants/${merchantCode}/transactions`;
+
 const registerStub = async (stub) => {
+    await registerUnservedPathStubIfMissing();
+    return registerMapping(stub);
+};
+
+/**
+ * Answers every SumUp request no other mapping serves with 501, instead of WireMock's default 404: the app server reads a
+ * 404 of the lookup as "SumUp does not know the transaction", so a request to an outdated path would pass as that answer.
+ * Lowest priority (WireMock: higher number = lower priority; default 5), so every specific mapping wins.
+ */
+const registerUnservedPathStubIfMissing = async () => {
+    if (isUnservedPathStubRegistered) return;
+    await registerMapping({
+        priority: 10,
+        request: { urlPathPattern: '/sumup/.*' },
+        response: {
+            status: 501,
+            headers: { 'Content-Type': 'application/json' },
+            jsonBody: { error: 'SumUp stub: no mapping for this request' },
+        },
+    });
+    isUnservedPathStubRegistered = true;
+};
+
+const registerMapping = async (stub) => {
     const response = await page.request.post(`${WIREMOCK_BASE_URL}/__admin/mappings`, {
         data: stub,
         headers: { 'Content-Type': 'application/json' },
@@ -53,12 +83,12 @@ const removeStub = async (stubId) => {
     }
 };
 
-/** Number of `GET /me/transactions?client_transaction_id=<clientTransactionId>` requests WireMock received so far. */
-const countTransactionLookups = async ({ clientTransactionId }) => {
+/** Number of `GET /v2.1/merchants/<merchantCode>/transactions?client_transaction_id=<clientTransactionId>` requests WireMock received so far. */
+const countTransactionLookups = async ({ merchantCode, clientTransactionId }) => {
     const response = await page.request.post(`${WIREMOCK_BASE_URL}/__admin/requests/count`, {
         data: {
             method: 'GET',
-            urlPath: `${SUMUP_PATH}/me/transactions`,
+            urlPath: transactionsPath({ merchantCode }),
             queryParameters: { client_transaction_id: { equalTo: clientTransactionId } },
         },
         headers: { 'Content-Type': 'application/json' },
@@ -134,7 +164,7 @@ export const SumUpStub = {
         const stubId = await registerStub({
             request: {
                 method: 'GET',
-                urlPath: `${SUMUP_PATH}/me/transactions`,
+                urlPath: transactionsPath({ merchantCode }),
                 queryParameters: { client_transaction_id: { equalTo: clientTransactionId } },
             },
             response: {
@@ -155,10 +185,10 @@ export const SumUpStub = {
         });
         transactionStubIdsByClientTransactionId.set(clientTransactionId, stubId);
 
-        const lookupCountBefore = await countTransactionLookups({ clientTransactionId });
+        const lookupCountBefore = await countTransactionLookups({ merchantCode, clientTransactionId });
         return {
             waitForLookup: async ({ timeout = 60_000 } = {}) => {
-                await expect.poll(() => countTransactionLookups({ clientTransactionId }), { timeout, intervals: [1_000] })
+                await expect.poll(() => countTransactionLookups({ merchantCode, clientTransactionId }), { timeout, intervals: [1_000] })
                     .toBeGreaterThan(lookupCountBefore);
             },
         };
@@ -179,6 +209,7 @@ export const SumUpStub = {
     removeAll: async () => {
         const stubIds = [...registeredStubIds];
         transactionStubIdsByClientTransactionId.clear();
+        isUnservedPathStubRegistered = false;
         for (const stubId of stubIds) {
             await removeStub(stubId);
         }

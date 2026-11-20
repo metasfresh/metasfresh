@@ -2,6 +2,7 @@ package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
@@ -11,6 +12,7 @@ import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,6 +34,7 @@ class ScannableCodeFormatLoaderAndSaver
 	private static final Logger logger = LogManager.getLogger(ScannableCodeFormatLoaderAndSaver.class);
 
 	@NotNull private final IQueryBL queryBL;
+	@NonNull private final IErrorManager errorManager;
 
 	private final HashMap<ScannableCodeFormatId, I_C_ScannableCode_Format> formatRecordsCache = new HashMap<>();
 	private final ArrayListMultimap<ScannableCodeFormatId, I_C_ScannableCode_Format_Part> partRecordsCache = ArrayListMultimap.create();
@@ -97,7 +100,7 @@ class ScannableCodeFormatLoaderAndSaver
 	}
 
 	/**
-	 * One broken format must not stop the other formats from working: log it and skip it.
+	 * One broken format must not stop the other formats from working: log it, record an AD_Issue and skip it.
 	 */
 	@Nullable
 	private ScannableCodeFormat getByIdOrNull(@NotNull final ScannableCodeFormatId formatId)
@@ -109,7 +112,19 @@ class ScannableCodeFormatLoaderAndSaver
 		catch (final Exception ex)
 		{
 			final I_C_ScannableCode_Format formatRecord = formatRecordsCache.get(formatId);
-			logger.warn("Skipping invalid scannable code format {} (ID={}): {}", formatRecord != null ? formatRecord.getName() : "?", formatId.getRepoId(), ex.getLocalizedMessage(), ex);
+			final String formatName = formatRecord != null ? formatRecord.getName() : "?";
+			logger.warn("Skipping invalid scannable code format {} (ID={}): {}", formatName, formatId.getRepoId(), ex.getLocalizedMessage(), ex);
+			// a log line alone leaves no trace for the admin: record an AD_Issue (once per cache load, not per scan)
+			try
+			{
+				errorManager.createIssue(
+						new AdempiereException("Skipping invalid scannable code format " + formatName + " (ID=" + formatId.getRepoId() + "): " + ex.getLocalizedMessage(), ex));
+			}
+			catch (final Exception issueEx)
+			{
+				// failing to record the issue must not make all other formats unusable
+				logger.warn("Failed recording an AD_Issue for invalid scannable code format {} (ID={})", formatName, formatId.getRepoId(), issueEx);
+			}
 			return null;
 		}
 	}

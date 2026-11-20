@@ -420,8 +420,7 @@ import java.util.Set;
 	@Override
 	public boolean isSingleProductStorageMatching(@NonNull final ProductId productId)
 	{
-		final List<IHUProductStorage> productStorages = getProductStorages();
-		return isSingleProductStorageMatching(productStorages, productId);
+		return isSingleProductStorageMatching(getNonEmptyProductStorages(), productId);
 	}
 
 	private static boolean isSingleProductStorageMatching(@NonNull final List<IHUProductStorage> productStorages, @NotNull final ProductId productId)
@@ -432,8 +431,18 @@ import java.util.Set;
 	@Override
 	public boolean isEmptyOrSingleProductStorageMatching(@NonNull final ProductId productId)
 	{
-		final List<IHUProductStorage> productStorages = getProductStorages();
+		final List<IHUProductStorage> productStorages = getNonEmptyProductStorages();
 		return productStorages.isEmpty() || isSingleProductStorageMatching(productStorages, productId);
+	}
+
+	/**
+	 * A product whose quantity was taken out completely keeps its storage record with qty zero; such a product is not on the HU anymore.
+	 */
+	private List<IHUProductStorage> getNonEmptyProductStorages()
+	{
+		return streamProductStorages()
+				.filter(productStorage -> !productStorage.isEmpty())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 }

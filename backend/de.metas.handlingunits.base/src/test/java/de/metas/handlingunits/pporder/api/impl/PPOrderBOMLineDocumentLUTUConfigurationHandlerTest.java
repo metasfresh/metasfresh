@@ -7,10 +7,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -105,6 +108,47 @@ public class PPOrderBOMLineDocumentLUTUConfigurationHandlerTest
 
 		assertThat(newConfig.getM_LU_HU_PI_ID()).isEqualTo(storedConfig.getM_LU_HU_PI_ID());
 		assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(itemOfStoredLU.getM_HU_PI_Item_ID());
+	}
+
+	@Test
+	public void keeps_stored_config_when_it_already_uses_the_product_specific_LU_item()
+	{
+		final I_M_HU_PI_Item itemOfProduct = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+		itemOfProduct.setM_Product_ID(productId.getRepoId());
+		save(itemOfProduct);
+		final I_M_HU_LUTU_Configuration configOnProductItem = PPOrderBOMLineDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(bomLineWithStoredConfig);
+		assertThat(configOnProductItem.getM_LU_HU_PI_Item_ID()).isEqualTo(itemOfProduct.getM_HU_PI_Item_ID());
+		save(configOnProductItem);
+		bomLineWithStoredConfig.setM_HU_LUTU_Configuration(configOnProductItem);
+		save(bomLineWithStoredConfig);
+
+		final I_M_HU_LUTU_Configuration result = PPOrderBOMLineDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(bomLineWithStoredConfig);
+
+		assertThat(result).isNotNull();
+		assertThat(result.getM_HU_LUTU_Configuration_ID()).isEqualTo(configOnProductItem.getM_HU_LUTU_Configuration_ID());
+	}
+
+	/** the partner of the BOM line's manufacturing order decides which product-specific LU items apply */
+	@Test
+	public void product_specific_LU_item_of_the_orders_partner_supersedes_only_for_that_partner()
+	{
+		final I_C_BPartner partnerA = BusinessTestHelper.createBPartner("A");
+		final I_M_HU_PI_Item itemOfProductAndPartnerA = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("4"));
+		itemOfProductAndPartnerA.setM_Product_ID(productId.getRepoId());
+		itemOfProductAndPartnerA.setC_BPartner_ID(partnerA.getC_BPartner_ID());
+		save(itemOfProductAndPartnerA);
+
+		assertThat(PPOrderBOMLineDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(bomLineWithStoredConfig))
+				.as("order without partner: the item of partner A does not apply").isNotNull();
+
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(bomLineWithStoredConfig.getPP_Order(), I_PP_Order.class);
+		ppOrder.setC_BPartner_ID(partnerA.getC_BPartner_ID());
+		save(ppOrder);
+
+		assertThat(PPOrderBOMLineDocumentLUTUConfigurationHandler.instance.getCurrentLUTUConfigurationOrNull(bomLineWithStoredConfig)).isNull();
+		final I_M_HU_LUTU_Configuration newConfig = PPOrderBOMLineDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(bomLineWithStoredConfig);
+		assertThat(newConfig.getM_LU_HU_PI_ID()).isEqualTo(piLU.getM_HU_PI_ID());
+		assertThat(newConfig.getM_LU_HU_PI_Item_ID()).isEqualTo(itemOfProductAndPartnerA.getM_HU_PI_Item_ID());
 	}
 
 	@Test

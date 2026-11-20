@@ -122,6 +122,9 @@ public class ScannableCodeFormatPart
 				case GTIN:
 					result.gtin(GTIN.ofNullableString(valueStr));
 					break;
+				case PackId:
+					result.packId(valueStr);
+					break;
 			}
 
 			return BooleanWithReason.TRUE;
