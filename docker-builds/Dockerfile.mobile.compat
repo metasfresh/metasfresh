@@ -11,7 +11,7 @@ RUN yarn install
 COPY misc/services/mobile-webui/mobile-webui-frontend/ .
 
 RUN yarn lint
-# RUN yarn test --ci
+RUN CI=true yarn test --ci --runInBand --watchAll=false
 
 RUN yarn build
 

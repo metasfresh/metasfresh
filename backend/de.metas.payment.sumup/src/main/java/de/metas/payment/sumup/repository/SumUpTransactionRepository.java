@@ -13,6 +13,7 @@ import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpEventsDispatcher;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpPollSchedule;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
@@ -25,9 +26,12 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ForUpdate;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.AddDurationQueryFilterModifier;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +43,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -357,6 +362,14 @@ public class SumUpTransactionRepository
 		{
 			sqlQueryBuilder.addEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_Status, query.getStatus().getCode());
 		}
+		if (query.getExcludeNotFoundConfirmedAtAge() != null)
+		{
+			sqlQueryBuilder.filter(createExcludeNotFoundConfirmedAtAgeFilter(query.getExcludeNotFoundConfirmedAtAge()));
+		}
+		if (query.getPollDueAt() != null)
+		{
+			sqlQueryBuilder.filter(createPollDueFilter(query.getPollDueAt()));
+		}
 		if (query.getPosRef() != null)
 		{
 			final SumUpPOSRef posRef = query.getPosRef();
@@ -375,6 +388,53 @@ public class SumUpTransactionRepository
 		}
 
 		return sqlQueryBuilder;
+	}
+
+	/**
+	 * Leaves out the transactions for which SumUp confirmed that it has no transaction by a lookup made at least {@code age}
+	 * after metasfresh created them: SumUp never reported the transaction (no stored answer, {@code JsonResponse}), and its
+	 * last lookup succeeded ({@code SUMUP_LastSync_Status} OK, i.e. SumUp's "not found") at or after {@code Created + age}.
+	 * Every other transaction is kept, in particular one whose last lookup failed, one never looked up, one SumUp knows (even
+	 * if still PENDING), and one whose last "not found" came earlier than that.
+	 */
+	ICompositeQueryFilter<I_SUMUP_Transaction> createExcludeNotFoundConfirmedAtAgeFilter(@NonNull final Duration age)
+	{
+		final String lastLookupAt = I_SUMUP_Transaction.COLUMNNAME_SUMUP_LastSync_Timestamp;
+		return queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+				.setJoinOr()
+				// SumUp reported the transaction
+				.addNotNull(I_SUMUP_Transaction.COLUMNNAME_JsonResponse)
+				// the last lookup failed, or none was made
+				.addNotEqualsFilter(I_SUMUP_Transaction.COLUMNNAME_SUMUP_LastSync_Status, LastSyncStatus.OK.getCode())
+				.addEqualsFilter(lastLookupAt, null)
+				// SumUp's "not found" came before Created + age
+				.addCompareFilter(I_SUMUP_Transaction.COLUMNNAME_Created,
+						CompareQueryFilter.Operator.GREATER,
+						ModelColumnNameValue.forColumnName(lastLookupAt),
+						new AddDurationQueryFilterModifier(age));
+	}
+
+	/**
+	 * The transactions due for the SumUp poller's cycle at the given time, by {@link SumUpPollSchedule}, from
+	 * {@code Created} and the last lookup {@code SUMUP_LastSync_Timestamp}. A transaction never looked up (no timestamp) is
+	 * due by the first branch, so the other branches need not handle a missing timestamp.
+	 */
+	private ICompositeQueryFilter<I_SUMUP_Transaction> createPollDueFilter(@NonNull final Instant now)
+	{
+		final String created = I_SUMUP_Transaction.COLUMNNAME_Created;
+		final String lastLookupAt = I_SUMUP_Transaction.COLUMNNAME_SUMUP_LastSync_Timestamp;
+		return queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+				.setJoinOr()
+				// never looked up
+				.addEqualsFilter(lastLookupAt, null)
+				// fast phase: every cycle
+				.addCompareFilter(created, CompareQueryFilter.Operator.GREATER, Timestamp.from(now.minus(SumUpPollSchedule.FAST_PHASE)))
+				// medium phase: once a minute
+				.addFilter(queryBL.createCompositeQueryFilter(I_SUMUP_Transaction.class)
+						.addCompareFilter(created, CompareQueryFilter.Operator.GREATER, Timestamp.from(now.minus(SumUpPollSchedule.MEDIUM_PHASE)))
+						.addCompareFilter(lastLookupAt, CompareQueryFilter.Operator.LESS_OR_EQUAL, Timestamp.from(now.minus(SumUpPollSchedule.MEDIUM_INTERVAL))))
+				// slow phase (also true in the earlier phases)
+				.addCompareFilter(lastLookupAt, CompareQueryFilter.Operator.LESS_OR_EQUAL, Timestamp.from(now.minus(SumUpPollSchedule.SLOW_INTERVAL)));
 	}
 
 	/**
@@ -470,9 +530,11 @@ public class SumUpTransactionRepository
 
 		try (IAutoCloseable ignored = SumUpEventsDispatcher.temporaryForceSendingChangeEventsIf(isForceSendingChangeEvents))
 		{
+			// newest first: the query is limited, and transactions whose lookups keep failing stay in it whatever their age,
+			// so a recent transaction (a payment the cashier is waiting for) must never be pushed out by older ones
 			toSqlQuery(query)
 					.clearOrderBys()
-					.orderBy(I_SUMUP_Transaction.COLUMNNAME_SUMUP_Transaction_ID)
+					.orderByDescending(I_SUMUP_Transaction.COLUMNNAME_SUMUP_Transaction_ID)
 					.create()
 					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 					.iterateAndStream()

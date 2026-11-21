@@ -6,6 +6,7 @@ import {
   toQRCodeString,
 } from '../../../utils/qrCode/hu';
 import { ScanCompleteness } from '../../../utils/qrCode/common';
+import { convertScannedBarcodeToResolvedResult } from '../../../containers/activities/picking/PickLineScanScreen';
 import { setupCounterpart } from '../../../utils/translations';
 
 const COMPLETE_HU_QR =
@@ -204,6 +205,71 @@ describe('huQRCodes tests', () => {
           isUnique: false,
           isTUToBePickedAsWhole: false,
         });
+      });
+    });
+    describe('Custom QR Code format with a PACK_ID part', () => {
+      const F_POS = {
+        name: 'F_POS',
+        parts: [
+          { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
+          { type: 'BEST_BEFORE_DATE', startPosition: 28, endPosition: 33, dateFormat: 'yyMMdd' },
+          { type: 'LOT', startPosition: 36, endPosition: 44 },
+          { type: 'PACK_ID', startPosition: 47, endPosition: 0 },
+        ],
+      };
+      const LABEL2 = '010950600013435291P0000421726110710A1/B002C3922';
+
+      it('parseQRCodeString recognizes the label and returns the pack ID', () => {
+        const result = parseQRCodeString({ string: LABEL2, customQRCodeFormats: [F_POS], returnFalseOnError: false });
+        expect(result.barcodeType).toBe('CUSTOM');
+        expect(result.packId).toBe('2');
+        expect(result.productNo).toBe('P000042');
+        expect(result.lotNo).toBe('A1/B002C3');
+        expect(result.bestBeforeDate).toBe('2026-11-07');
+      });
+
+      it.each(['1', '3', '10'])('parseQRCodeString reads pack ID %s', (n) => {
+        const result = parseQRCodeString({
+          string: `${LABEL2.slice(0, 46)}${n}`,
+          customQRCodeFormats: [F_POS],
+          returnFalseOnError: false,
+        });
+        expect(result.barcodeType).toBe('CUSTOM');
+        expect(result.packId).toBe(n);
+      });
+
+      it('parseQRCodeString reads the 49-character form (character 29 at 26 and 46)', () => {
+        const GS = String.fromCharCode(29);
+        const F_POS_49 = {
+          name: 'F_POS_49',
+          parts: [
+            { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
+            { type: 'BEST_BEFORE_DATE', startPosition: 29, endPosition: 34, dateFormat: 'yyMMdd' },
+            { type: 'LOT', startPosition: 37, endPosition: 45 },
+            { type: 'PACK_ID', startPosition: 49, endPosition: 0 },
+          ],
+        };
+        const label49 = `${LABEL2.substring(0, 25)}${GS}${LABEL2.substring(25, 44)}${GS}${LABEL2.substring(44)}`;
+        expect(label49).toHaveLength(49);
+        const result = parseQRCodeString({
+          string: label49,
+          customQRCodeFormats: [F_POS_49],
+          returnFalseOnError: false,
+        });
+        expect(result.barcodeType).toBe('CUSTOM');
+        expect(result.packId).toBe('2');
+        expect(result.productNo).toBe('P000042');
+        expect(result.lotNo).toBe('A1/B002C3');
+      });
+
+      it('convertScannedBarcodeToResolvedResult passes the pack ID on in qrCode', async () => {
+        const result = await convertScannedBarcodeToResolvedResult({
+          scannedBarcode: LABEL2,
+          customQRCodeFormats: [F_POS],
+        });
+        expect(result.qrCode.packId).toBe('2');
+        expect(result.qrCode.lotNo).toBe('A1/B002C3');
+        expect(result.qrCode.bestBeforeDate).toBe('2026-11-07');
       });
     });
     describe('Custom QR Code format', () => {

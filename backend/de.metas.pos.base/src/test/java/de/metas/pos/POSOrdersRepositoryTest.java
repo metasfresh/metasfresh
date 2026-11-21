@@ -1,5 +1,7 @@
 package de.metas.pos;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.util.Services;
@@ -7,11 +9,17 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Issue;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,12 +29,20 @@ class POSOrdersRepositoryTest
 	private static final POSTerminalId TERMINAL_2 = POSTerminalId.ofRepoId(2);
 
 	private POSOrdersRepository repository;
+	private IADTableDAO adTableDAO;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		adTableDAO = Services.get(IADTableDAO.class);
 		repository = new POSOrdersRepository(new POSOrderEventDispatcher(Optional.empty()), new POSOrderVersionSource());
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	private int newOrder(final POSTerminalId terminalId)
@@ -60,7 +76,7 @@ class POSOrdersRepositoryTest
 	private void newIssue(final String tableName, final int recordId, final String errorCode)
 	{
 		final I_AD_Issue issue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class);
-		issue.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(tableName));
+		issue.setAD_Table_ID(adTableDAO.retrieveTableId(tableName));
 		issue.setRecord_ID(recordId);
 		issue.setErrorCode(errorCode);
 		InterfaceWrapperHelper.saveRecord(issue);
@@ -114,5 +130,93 @@ class POSOrdersRepositoryTest
 
 		assertThat(repository.listIssueErrorCodesByPaymentId(payment)).containsExactly("CodeA", POSOrdersRepository.NO_ERROR_CODE);
 		assertThat(repository.listIssueErrorCodesByPaymentId(otherPayment)).containsExactly("CodeOther");
+	}
+
+	/**
+	 * A card payment with an unknown result naming a SumUp transaction that metasfresh does not have, saved at the given time
+	 *
+	 * @param checkoutStartedAt the start of its checkout, or null if none was recorded
+	 */
+	private POSPaymentId newUnknownCardPaymentToImport(final String savedAt, @Nullable final String checkoutStartedAt, final String clientTransactionId)
+	{
+		SystemTime.setFixedTimeSource(savedAt);
+		final I_C_POS_Payment payment = InterfaceWrapperHelper.newInstance(I_C_POS_Payment.class);
+		payment.setC_POS_Order_ID(newOrder(TERMINAL_1));
+		payment.setPOSPaymentMethod(POSPaymentMethod.CARD.getCode());
+		payment.setPOSPaymentProcessingStatus(POSPaymentProcessingStatus.UNKNOWN.getCode());
+		payment.setSUMUP_ClientTransactionID(clientTransactionId);
+		payment.setCardCheckoutStartedAt(checkoutStartedAt != null ? Timestamp.from(Instant.parse(checkoutStartedAt)) : null);
+		InterfaceWrapperHelper.saveRecord(payment);
+		return POSPaymentId.ofRepoId(payment.getC_POS_Payment_ID());
+	}
+
+	private List<POSPaymentId> streamCardPaymentsToImport(final String checkoutStartedAfter)
+	{
+		try (final Stream<POSCardPaymentToImport> stream = repository.streamCardPaymentsToImport(Instant.parse(checkoutStartedAfter)))
+		{
+			return stream.map(toImport -> toImport.getId().getPaymentId()).collect(Collectors.toList());
+		}
+	}
+
+	@Test
+	void streamCardPaymentsToImport_onlyThoseWhoseCheckoutStartedAfterTheGivenTime()
+	{
+		final POSPaymentId startedBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-started-before");
+		final POSPaymentId startedAfter = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T11:00:00Z", "ctid-started-after");
+		// without a recorded checkout start: its creation counts
+		final POSPaymentId createdBefore = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", null, "ctid-created-before");
+		final POSPaymentId createdAfter = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", null, "ctid-created-after");
+
+		assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
+				.containsExactly(startedAfter, createdAfter)
+				.doesNotContain(startedBefore, createdBefore);
+	}
+
+	/**
+	 * A payment whose SumUp lookups are failing (an outage recorded on the payment) is still looked up, however long ago its
+	 * checkout started: only a lookup that SumUp answered ends the background lookups after the cutoff, so a charge SumUp
+	 * approved during the outage is still imported.
+	 */
+	@Test
+	void streamCardPaymentsToImport_alsoThoseCheckedOutBeforeTheGivenTime_whoseLookupsAreFailing()
+	{
+		final POSPaymentId failing = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-failing");
+		final I_C_POS_Payment failingRecord = InterfaceWrapperHelper.load(failing, I_C_POS_Payment.class);
+		failingRecord.setCardLookupFailingSince(Timestamp.from(Instant.parse("2026-11-16T09:01:00Z")));
+		InterfaceWrapperHelper.saveRecord(failingRecord);
+		final POSPaymentId answered = newUnknownCardPaymentToImport("2026-11-16T09:00:00Z", "2026-11-16T09:00:00Z", "ctid-answered");
+
+		assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z"))
+				.containsExactly(failing)
+				.doesNotContain(answered);
+	}
+
+	/**
+	 * Each payment comes with the start of its checkout, or, without a recorded start, its creation time: the sweep's poll
+	 * schedule counts the payment's age from it.
+	 */
+	@Test
+	void streamCardPaymentsToImport_carriesTheCheckoutStart_orTheCreationTime()
+	{
+		newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T10:59:00Z", "ctid-started");
+		newUnknownCardPaymentToImport("2026-11-16T11:30:00Z", null, "ctid-created");
+
+		try (final Stream<POSCardPaymentToImport> stream = repository.streamCardPaymentsToImport(Instant.parse("2026-11-16T10:00:00Z")))
+		{
+			assertThat(stream.map(POSCardPaymentToImport::getCheckoutStartedAt).collect(Collectors.toList()))
+					.containsExactly(Instant.parse("2026-11-16T10:59:00Z"), Instant.parse("2026-11-16T11:30:00Z"));
+		}
+	}
+
+	@Test
+	void streamCardPaymentsToImport_notThoseWhoseSumUpTransactionMetasfreshHas()
+	{
+		final POSPaymentId withoutTransaction = newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-missing");
+		newUnknownCardPaymentToImport("2026-11-16T11:00:00Z", "2026-11-16T11:00:00Z", "ctid-stored");
+		final I_SUMUP_Transaction trx = InterfaceWrapperHelper.newInstance(I_SUMUP_Transaction.class);
+		trx.setSUMUP_ClientTransactionId("ctid-stored");
+		InterfaceWrapperHelper.saveRecord(trx);
+
+		assertThat(streamCardPaymentsToImport("2026-11-16T10:00:00Z")).containsExactly(withoutTransaction);
 	}
 }

@@ -3,7 +3,6 @@ package de.metas.handlingunits.pporder.api.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -61,6 +60,8 @@ import java.util.Properties;
 {
 	public static final transient PPOrderDocumentLUTUConfigurationHandler instance = new PPOrderDocumentLUTUConfigurationHandler();
 
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
 	private PPOrderDocumentLUTUConfigurationHandler()
 	{
 		super();
@@ -76,14 +77,13 @@ import java.util.Properties;
 
 		//
 		// LU/TU COnfiguration
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
 				cuUOMId,
 				bpartnerId,
 				true, // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
-				retrieveLUPIIdSupersededByProductSpecificLUItem(ppOrder.getM_HU_LUTU_Configuration(), cuProductId), // stay on the stored LU packing instruction
+				getLUPIIdSupersededByProductSpecificLUItem(ppOrder, tuPIItemProduct), // stay on the stored LU packing instruction
 				BigDecimal.ZERO);
 
 		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();
@@ -192,7 +192,7 @@ import java.util.Properties;
 			return null;
 		}
 
-		if (retrieveLUPIIdSupersededByProductSpecificLUItem(lutuConfiguration, ProductId.ofRepoId(documentLine.getM_Product_ID())) != null)
+		if (getLUPIIdSupersededByProductSpecificLUItem(documentLine, getM_HU_PI_Item_Product(documentLine)) != null)
 		{
 			return null; // a new configuration is derived, which uses the product-specific LU item
 		}
@@ -201,30 +201,16 @@ import java.util.Properties;
 	}
 
 	/**
-	 * @return the configuration's LU packing instruction if it has an item of its own for the product that the configuration does not use; {@code null} otherwise
+	 * Checks the stored configuration with the TU packing instruction, product and partner that {@link #createNewLUTUConfiguration(I_PP_Order)} derives with.
+	 *
+	 * @param tuPIItemProduct the TU packing instruction the new configuration is derived with, see {@link #getM_HU_PI_Item_Product(I_PP_Order)}
 	 */
 	@Nullable
-	/* package */ static HuPackingInstructionsId retrieveLUPIIdSupersededByProductSpecificLUItem(
-			@Nullable final I_M_HU_LUTU_Configuration lutuConfiguration,
-			@NonNull final ProductId productId)
+	private HuPackingInstructionsId getLUPIIdSupersededByProductSpecificLUItem(@NonNull final I_PP_Order ppOrder, @NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
-		if (lutuConfiguration == null)
-		{
-			return null;
-		}
-
-		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_ID());
-		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(lutuConfiguration.getM_HU_PI_Item_Product_ID());
-		if (luPIId == null || tuPIItemProductId == null || lutuConfiguration.getM_LU_HU_PI_Item_ID() <= 0)
-		{
-			return null;
-		}
-
-		final boolean superseded = Services.get(IHandlingUnitsDAO.class)
-				.getTUPIItemForLUPIAndItemProduct(BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID()), luPIId, tuPIItemProductId, productId)
-				.filter(luPIItem -> luPIItem.getM_Product_ID() > 0)
-				.filter(luPIItem -> luPIItem.getM_HU_PI_Item_ID() != lutuConfiguration.getM_LU_HU_PI_Item_ID())
-				.isPresent();
-		return superseded ? luPIId : null;
+		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+		return lutuConfigurationFactory.getLUPIIdSupersededByProductSpecificLUItem(ppOrder.getM_HU_LUTU_Configuration(), tuPIItemProductId, productId, bpartnerId);
 	}
 }
