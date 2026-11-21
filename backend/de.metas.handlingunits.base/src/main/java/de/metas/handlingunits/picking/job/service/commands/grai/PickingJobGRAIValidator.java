@@ -35,7 +35,7 @@ public class PickingJobGRAIValidator
 	// State
 	@NonNull private final SalesOrderDummyGRAIProviders salesOrderDummyGRAIProviders;
 	/** computed on first use: customers that do not require GRAIs never need it */
-	@Nullable private ImmutableSet<HuId> _cusBookedWithOwnQRCode;
+	@Nullable private ImmutableSet<HuId> _cusBookedInCUQtyEntryMode;
 	@NonNull private final CustomerGRAIConfigProvider customerGRAIConfigProvider;
 
 	@Builder
@@ -61,17 +61,16 @@ public class PickingJobGRAIValidator
 	}
 
 	/**
-	 * The picks that were booked in a CU quantity entry mode: such a pick records the CU itself as picked HU, with the CU's own QR code.
-	 * Manual records the box's QR code with a CU of a partly filled box, so the check follows what was picked, not the customer's current mode.
-	 * One batch query for all picked HUs; a QR code shared by several HUs (split HUs) is no error.
+	 * The picks that were booked in a CU quantity entry mode ({@link PickingJobHUService#filterCUsBookedInCUQtyEntryMode}, the same rule the close of all targets uses):
+	 * the check follows what was picked, not the customer's current mode.
 	 */
 	@NonNull
-	private ImmutableSet<HuId> getCUsBookedWithOwnQRCode()
+	private ImmutableSet<HuId> getCUsBookedInCUQtyEntryMode()
 	{
-		ImmutableSet<HuId> result = this._cusBookedWithOwnQRCode;
+		ImmutableSet<HuId> result = this._cusBookedInCUQtyEntryMode;
 		if (result == null)
 		{
-			result = this._cusBookedWithOwnQRCode = huService.filterHUsAssignedToOwnQRCode(
+			result = this._cusBookedInCUQtyEntryMode = huService.filterCUsBookedInCUQtyEntryMode(
 					pickingJob.getLines().stream()
 							.flatMap(line -> line.getPickedHUInfos().stream())
 							.collect(ImmutableSet.toImmutableSet()));
@@ -86,7 +85,7 @@ public class PickingJobGRAIValidator
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), getCUsBookedWithOwnQRCode());
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), getCUsBookedInCUQtyEntryMode());
 
 		if (graiRequired == GRAIRequired.Yes)
 		{

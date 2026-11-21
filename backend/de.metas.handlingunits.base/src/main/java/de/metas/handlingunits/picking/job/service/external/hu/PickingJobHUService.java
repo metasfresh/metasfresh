@@ -144,25 +144,28 @@ public class PickingJobHUService
 		return huGraiService.getSnapshots(huIds);
 	}
 
-	/** Test convenience: treats every CU of {@code huIds} as booked in a CU quantity entry mode. The completion check passes the set it determined. */
+	/** Test convenience: treats every CU in a box (TU) of {@code huIds} as booked in a CU quantity entry mode. The completion check passes the set it determined. */
 	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds)
 	{
-		return getGraiSnapshotsOfBoxes(huIds, huIds);
+		return getGraiSnapshotsOfBoxes(huIds, filterCUsInTU(huIds));
 	}
 
 	/**
-	 * The GRAI snapshots of the picked HUs. A CU that was booked in a CU quantity entry mode ({@code cusBookedWithOwnQRCode}) sits in a box (TU) which carries
-	 * the GRAI and a CU has no GRAI snapshot of its own, so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
+	 * The GRAI snapshots of the picked HUs. A CU that was booked in a CU quantity entry mode ({@code cusBookedInCUQtyEntryMode}, see
+	 * {@link #filterCUsBookedInCUQtyEntryMode(Collection)}) sits in a box (TU) which carries the GRAI and a CU has no GRAI snapshot of its own,
+	 * so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
+	 *
+	 * @param cusBookedInCUQtyEntryMode CUs in a box (TU) only
 	 */
 	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithOwnQRCode)
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedInCUQtyEntryMode)
 	{
-		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithOwnQRCode));
+		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedInCUQtyEntryMode));
 	}
 
-	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithOwnQRCode)
+	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedInCUQtyEntryMode)
 	{
 		// CUs of the same box share their parent item: walk up once per parent item, not once per CU
 		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
@@ -170,7 +173,7 @@ public class PickingJobHUService
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
 			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-			if (cusBookedWithOwnQRCode.contains(huId) && isCUInTU(hu))
+			if (cusBookedInCUQtyEntryMode.contains(huId))
 			{
 				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getTUIdOrSelf(hu)));
 			}
@@ -473,13 +476,18 @@ public class PickingJobHUService
 	@NonNull
 	public ImmutableSet<HuId> filterCUsBookedInCUQtyEntryMode(@NonNull final Collection<HUInfo> pickedHUInfos)
 	{
-		final ImmutableSet<HuId> assignedToOwnQRCode = filterHUsAssignedToOwnQRCode(pickedHUInfos);
-		if (assignedToOwnQRCode.isEmpty())
+		return filterCUsInTU(filterHUsAssignedToOwnQRCode(pickedHUInfos));
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> filterCUsInTU(@NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		return handlingUnitsBL.getByIds(assignedToOwnQRCode).stream()
+		return handlingUnitsBL.getByIds(huIds).stream()
 				.filter(this::isCUInTU)
 				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
 				.collect(ImmutableSet.toImmutableSet());

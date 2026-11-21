@@ -90,6 +90,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -758,12 +759,18 @@ public class PickingJobService implements PickingSlotListener
 	 */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
-		final ImmutableSet<HuId> cusBookedInNewMode = huService.filterCUsBookedInCUQtyEntryMode(
-				pickingJob.getLines().stream()
-						.flatMap(line -> line.getPickedHUInfos().stream())
-						.collect(ImmutableSet.toImmutableSet()));
+		final Map<Boolean, List<PickingJobLine>> linesByCurrentModeLabelRequired = pickingJob.getLines().stream()
+				.collect(Collectors.partitioningBy(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired()));
+		// only the lines the current mode does not settle are checked for packs booked in a new mode (that check walks each picked CU up to its box)
+		final List<PickingJobLine> linesToCheckForNewModeBookings = linesByCurrentModeLabelRequired.get(false);
+		final ImmutableSet<HuId> cusBookedInNewMode = linesToCheckForNewModeBookings.isEmpty()
+				? ImmutableSet.of()
+				: huService.filterCUsBookedInCUQtyEntryMode(
+						linesToCheckForNewModeBookings.stream()
+								.flatMap(line -> line.getPickedHUInfos().stream())
+								.collect(ImmutableSet.toImmutableSet()));
 		final List<PickingJobLine> newModeLines = pickingJob.getLines().stream()
-				.filter(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired()
+				.filter(line -> linesByCurrentModeLabelRequired.get(true).contains(line)
 						|| line.getPickedHUIds().stream().anyMatch(cusBookedInNewMode::contains))
 				.collect(ImmutableList.toImmutableList());
 		if (newModeLines.isEmpty())

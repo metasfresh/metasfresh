@@ -1507,31 +1507,11 @@ class PickingJobCUQtyEntryPickTest
 		void closingAllTargets_queuesEachLinesBoxOnItsOwnLinesSlot()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-			final HUInfo source = sourceBox("QR-X");
-			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
-			createPackageable("salesOrder-x-A", helper.shipToBPLocationId);
-			createPackageable("salesOrder-x-B", customerB);
-			PickingJob job = helper.pickingJobService.createPickingJob(
-							PickingJobCreateRequest.builder()
-									.aggregationType(PickingJobAggregationType.PRODUCT)
-									.pickerId(UserId.ofRepoId(1234))
-									.isAllowPickingAnyHU(true)
-									.build())
-					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-			assertThat(job.getLines()).as("one line per customer").hasSize(2);
-			final PickingJobLine lineA = job.getLines().stream()
-					.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
-					.findFirst()
-					.orElseThrow(() -> new AssertionError("no line of customer A"));
-			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
-			job = pickOnLine(job, lineA.getId(), source, "3", label(PRODUCT_NO, LOT_A));
-			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
-			final PickingSlotId slotB = createPickingSlot("SLOT-B");
-			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
+			final BoxOfCustomerA given = pickIntoBoxOfCustomerA_thenScanSlotB("x", "3", label(PRODUCT_NO, LOT_A));
 
-			helper.pickingJobService.closeLUAndTUPickingTargets(job);
+			helper.pickingJobService.closeLUAndTUPickingTargets(given.job);
 
-			assertThat(queuedSlotsOf(boxA)).as("customer A's box is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
+			assertThat(queuedSlotsOf(given.boxA)).as("customer A's box is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
 		}
 
 		/**
@@ -1543,33 +1523,13 @@ class PickingJobCUQtyEntryPickTest
 		void newModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheBoxOnItsOwnLinesSlot()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-			final HUInfo source = sourceBox("QR-X4");
-			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
-			createPackageable("salesOrder-x4-A", helper.shipToBPLocationId);
-			createPackageable("salesOrder-x4-B", customerB);
-			PickingJob job = helper.pickingJobService.createPickingJob(
-							PickingJobCreateRequest.builder()
-									.aggregationType(PickingJobAggregationType.PRODUCT)
-									.pickerId(UserId.ofRepoId(1234))
-									.isAllowPickingAnyHU(true)
-									.build())
-					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-			assertThat(job.getLines()).as("one line per customer").hasSize(2);
-			final PickingJobLine lineA = job.getLines().stream()
-					.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
-					.findFirst()
-					.orElseThrow(() -> new AssertionError("no line of customer A"));
-			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
-			job = pickOnLine(job, lineA.getId(), source, "3", label(PRODUCT_NO, LOT_A));
-			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
-			final PickingSlotId slotB = createPickingSlot("SLOT-B");
-			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
+			final BoxOfCustomerA given = pickIntoBoxOfCustomerA_thenScanSlotB("x4", "3", label(PRODUCT_NO, LOT_A));
 
 			setProfile(CUQtyEntryMode.MANUAL); // an administrator switches the customer to Manual while the job is open
 
-			helper.pickingJobService.closeLUAndTUPickingTargets(job);
+			helper.pickingJobService.closeLUAndTUPickingTargets(given.job);
 
-			assertThat(queuedSlotsOf(boxA)).as("customer A's box, booked in Scan once, is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
+			assertThat(queuedSlotsOf(given.boxA)).as("customer A's box, booked in Scan once, is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
 		}
 
 		/**
@@ -1580,30 +1540,11 @@ class PickingJobCUQtyEntryPickTest
 		void manual_closingAllTargets_queuesTheBoxOnTheLastScannedSlot_asToday()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
-			final HUInfo source = sourceBox("QR-X2");
-			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
-			createPackageable("salesOrder-x2-A", helper.shipToBPLocationId);
-			createPackageable("salesOrder-x2-B", customerB);
-			PickingJob job = helper.pickingJobService.createPickingJob(
-							PickingJobCreateRequest.builder()
-									.aggregationType(PickingJobAggregationType.PRODUCT)
-									.pickerId(UserId.ofRepoId(1234))
-									.isAllowPickingAnyHU(true)
-									.build())
-					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-			final PickingJobLine lineA = job.getLines().stream()
-					.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
-					.findFirst()
-					.orElseThrow(() -> new AssertionError("no line of customer A"));
-			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
-			job = pickOnLine(job, lineA.getId(), source, "1", null);
-			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
-			final PickingSlotId slotB = createPickingSlot("SLOT-B");
-			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
+			final BoxOfCustomerA given = pickIntoBoxOfCustomerA_thenScanSlotB("x2", "1", null);
 
-			helper.pickingJobService.closeLUAndTUPickingTargets(job);
+			helper.pickingJobService.closeLUAndTUPickingTargets(given.job);
 
-			assertThat(queuedSlotsOf(boxA)).as("Manual: the close queues the box on the slot scanned last, as before").contains(slotB);
+			assertThat(queuedSlotsOf(given.boxA)).as("Manual: the close queues the box on the slot scanned last, as before").contains(given.slotB);
 		}
 
 		/**
@@ -1615,7 +1556,7 @@ class PickingJobCUQtyEntryPickTest
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
-			final BPartnerId customerAId = helper.shipToBPLocationId.getBpartnerId();
+			final BPartnerId customerAId = customerAId();
 			helper.updateMobileProfile(profile -> {
 				final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A new mode", profile.getDefaultPickingJobOptions());
 				helper.configService.updatePickingJobOptionsCUQtyEntry(optionsA, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId());
@@ -1626,24 +1567,9 @@ class PickingJobCUQtyEntryPickTest
 			});
 			final HUInfo sourceA = sourceBox("QR-X3A");
 			final HUInfo sourceB = sourceBox("QR-X3B");
-			createPackageable("salesOrder-x3-A", helper.shipToBPLocationId);
-			createPackageable("salesOrder-x3-B", customerB);
-			PickingJob job = helper.pickingJobService.createPickingJob(
-							PickingJobCreateRequest.builder()
-									.aggregationType(PickingJobAggregationType.PRODUCT)
-									.pickerId(UserId.ofRepoId(1234))
-									.isAllowPickingAnyHU(true)
-									.build())
-					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-			assertThat(job.getLines()).as("one line per customer").hasSize(2);
-			final PickingJobLine lineA = job.getLines().stream()
-					.filter(line -> line.getCustomerId().equals(customerAId))
-					.findFirst()
-					.orElseThrow(() -> new AssertionError("no line of customer A"));
-			final PickingJobLine lineB = job.getLines().stream()
-					.filter(line -> !line.getCustomerId().equals(customerAId))
-					.findFirst()
-					.orElseThrow(() -> new AssertionError("no line of customer B"));
+			PickingJob job = createTwoCustomerProductJob("x3", customerB);
+			final PickingJobLine lineA = lineOfCustomerA(job);
+			final PickingJobLine lineB = lineOfCustomerB(job);
 			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
 			job = pickOnLine(job, lineA.getId(), sourceA, "3", label(PRODUCT_NO, LOT_A));
 			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box of A")).getTuIdNotNull();
@@ -1660,6 +1586,72 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(queuedSlotsOf(boxA)).as("new-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
 			assertThat(queuedSlotsOf(boxB)).as("Manual customer B: the slot scanned last, as before").contains(slotC);
 			assertThat(jobClosed.getTuPickingTargetEffective(lineB.getId())).as("Manual line's target closed").isEmpty();
+		}
+
+		/** The state before the close: customer A's line picked into a new box on slot A, then the picker scanned customer B's slot (B). */
+		private final class BoxOfCustomerA
+		{
+			private final PickingJob job;
+			private final HuId boxA;
+			private final PickingSlotId slotB;
+
+			private BoxOfCustomerA(final PickingJob job, final HuId boxA, final PickingSlotId slotB)
+			{
+				this.job = job;
+				this.boxA = boxA;
+				this.slotB = slotB;
+			}
+		}
+
+		/** Picks in the profile's current mode; {@code testId} keeps the order numbers and the source QR code unique. */
+		private BoxOfCustomerA pickIntoBoxOfCustomerA_thenScanSlotB(final String testId, final String qty, @Nullable final ScannedCode cuLabel)
+		{
+			final HUInfo source = sourceBox("QR-" + testId.toUpperCase());
+			PickingJob job = createTwoCustomerProductJob(testId, helper.createBPartnerAndLocationId("customerB"));
+			final PickingJobLine lineA = lineOfCustomerA(job);
+			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineA.getId(), source, qty, cuLabel);
+			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
+			final PickingSlotId slotB = createPickingSlot("SLOT-B");
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
+			return new BoxOfCustomerA(job, boxA, slotB);
+		}
+
+		/** A product job over one order of customer A and one of customer B (one line per customer), on slot A. */
+		private PickingJob createTwoCustomerProductJob(final String testId, final BPartnerLocationId customerB)
+		{
+			createPackageable("salesOrder-" + testId + "-A", helper.shipToBPLocationId);
+			createPackageable("salesOrder-" + testId + "-B", customerB);
+			final PickingJob job = helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.PRODUCT)
+									.pickerId(UserId.ofRepoId(1234))
+									.isAllowPickingAnyHU(true)
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+			assertThat(job.getLines()).as("one line per customer").hasSize(2);
+			return job;
+		}
+
+		private BPartnerId customerAId()
+		{
+			return helper.shipToBPLocationId.getBpartnerId();
+		}
+
+		private PickingJobLine lineOfCustomerA(final PickingJob job)
+		{
+			return job.getLines().stream()
+					.filter(line -> line.getCustomerId().equals(customerAId()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("no line of customer A"));
+		}
+
+		private PickingJobLine lineOfCustomerB(final PickingJob job)
+		{
+			return job.getLines().stream()
+					.filter(line -> !line.getCustomerId().equals(customerAId()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("no line of customer B"));
 		}
 	}
 }
