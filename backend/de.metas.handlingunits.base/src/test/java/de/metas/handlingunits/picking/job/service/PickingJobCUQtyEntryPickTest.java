@@ -39,6 +39,8 @@ import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGRAIValidator;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
@@ -82,9 +84,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -374,6 +380,43 @@ class PickingJobCUQtyEntryPickTest
 		return orderAndLineId;
 	}
 
+	/** A product job over one order of customer A and one of customer B (one line per customer), on slot A. */
+	private PickingJob createTwoCustomerProductJob(final String testId, final BPartnerLocationId customerB)
+	{
+		createPackageable("salesOrder-" + testId + "-A", helper.shipToBPLocationId);
+		createPackageable("salesOrder-" + testId + "-B", customerB);
+		final PickingJob job = helper.pickingJobService.createPickingJob(
+						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.PRODUCT)
+								.pickerId(UserId.ofRepoId(1234))
+								.isAllowPickingAnyHU(true)
+								.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+		assertThat(job.getLines()).as("one line per customer").hasSize(2);
+		return job;
+	}
+
+	private BPartnerId customerAId()
+	{
+		return helper.shipToBPLocationId.getBpartnerId();
+	}
+
+	private PickingJobLine lineOfCustomerA(final PickingJob job)
+	{
+		return job.getLines().stream()
+				.filter(line -> line.getCustomerId().equals(customerAId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no line of customer A"));
+	}
+
+	private PickingJobLine lineOfCustomerB(final PickingJob job)
+	{
+		return job.getLines().stream()
+				.filter(line -> !line.getCustomerId().equals(customerAId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no line of customer B"));
+	}
+
 	private PickingJob pickOnLine(final PickingJob job, final PickingJobLineId lineId, final HUInfo source, final String qty, final ScannedCode cuLabel)
 	{
 		return helper.pickingJobService.processStepEvent(job, PickingJobStepEvent.builder()
@@ -477,7 +520,12 @@ class PickingJobCUQtyEntryPickTest
 
 	private void setCustomerGraiRequired(final GRAIRequired graiRequired)
 	{
-		final I_C_BPartner customer = InterfaceWrapperHelper.load(helper.shipToBPLocationId.getBpartnerId(), I_C_BPartner.class);
+		setCustomerGraiRequired(helper.shipToBPLocationId.getBpartnerId(), graiRequired);
+	}
+
+	private static void setCustomerGraiRequired(final BPartnerId customerId, final GRAIRequired graiRequired)
+	{
+		final I_C_BPartner customer = InterfaceWrapperHelper.load(customerId, I_C_BPartner.class);
 		customer.setGRAIRequired(graiRequired.getCode());
 		InterfaceWrapperHelper.save(customer);
 	}
@@ -501,6 +549,46 @@ class PickingJobCUQtyEntryPickTest
 			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+		}
+
+		/**
+		 * A product job of customer A (GRAI required) and customer B (no GRAI), both booking in Scan once. Finding the CUs booked in a CU quantity
+		 * entry mode walks each CU up to its box (several queries per CU), so the completion check does it only for the lines that need GRAI:
+		 * B's CUs are not looked up. A's box has no GRAI, so completion is refused as usual.
+		 */
+		@Test
+		void graiCheck_looksUpBookedCUsOnlyOfLinesThatRequireGrai()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			setCustomerGraiRequired(GRAIRequired.Yes);
+			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
+			setCustomerGraiRequired(customerB.getBpartnerId(), GRAIRequired.No);
+			final HUInfo sourceA = sourceBox("QR-G1A");
+			final HUInfo sourceB = sourceBox("QR-G1B");
+			PickingJob job = createTwoCustomerProductJob("g1", customerB);
+			final PickingJobLineId lineAId = lineOfCustomerA(job).getId();
+			final PickingJobLineId lineBId = lineOfCustomerB(job).getId();
+			job = helper.pickingJobService.setTUPickingTarget(job, lineAId, TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineAId, sourceA, "3", label(PRODUCT_NO, LOT_A));
+			job = helper.pickingJobService.setTUPickingTarget(job, lineBId, TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineBId, sourceB, "2", label(PRODUCT_NO, LOT_B));
+			final PickingJob pickedJob = job;
+			final ImmutableSet<HuId> cusOfA = pickedJob.getLineById(lineAId).getPickedHUIds();
+			assertThat(cusOfA).as("A booked one CU").hasSize(1);
+			assertThat(pickedJob.getLineById(lineBId).getPickedHUIds()).as("B booked one CU").hasSize(1);
+			final PickingJobHUService huServiceSpy = Mockito.spy(helper.huService);
+
+			assertThatThrownBy(() -> PickingJobGRAIValidator.builder()
+					.huService(huServiceSpy)
+					.bpartnerService(helper.bpartnerService)
+					.pickingJob(pickedJob)
+					.build()
+					.validate())
+					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
+
+			@SuppressWarnings("unchecked") final ArgumentCaptor<Collection<HUInfo>> lookedUp = ArgumentCaptor.forClass(Collection.class);
+			Mockito.verify(huServiceSpy).filterCUsBookedInCUQtyEntryMode(lookedUp.capture());
+			assertThat(lookedUp.getValue()).extracting(HUInfo::getId).as("only the CUs of the GRAI customer are looked up").containsExactlyElementsOf(cusOfA);
 		}
 
 		/**
@@ -1615,43 +1703,6 @@ class PickingJobCUQtyEntryPickTest
 			final PickingSlotId slotB = createPickingSlot("SLOT-B");
 			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
 			return new BoxOfCustomerA(job, boxA, slotB);
-		}
-
-		/** A product job over one order of customer A and one of customer B (one line per customer), on slot A. */
-		private PickingJob createTwoCustomerProductJob(final String testId, final BPartnerLocationId customerB)
-		{
-			createPackageable("salesOrder-" + testId + "-A", helper.shipToBPLocationId);
-			createPackageable("salesOrder-" + testId + "-B", customerB);
-			final PickingJob job = helper.pickingJobService.createPickingJob(
-							PickingJobCreateRequest.builder()
-									.aggregationType(PickingJobAggregationType.PRODUCT)
-									.pickerId(UserId.ofRepoId(1234))
-									.isAllowPickingAnyHU(true)
-									.build())
-					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
-			assertThat(job.getLines()).as("one line per customer").hasSize(2);
-			return job;
-		}
-
-		private BPartnerId customerAId()
-		{
-			return helper.shipToBPLocationId.getBpartnerId();
-		}
-
-		private PickingJobLine lineOfCustomerA(final PickingJob job)
-		{
-			return job.getLines().stream()
-					.filter(line -> line.getCustomerId().equals(customerAId()))
-					.findFirst()
-					.orElseThrow(() -> new AssertionError("no line of customer A"));
-		}
-
-		private PickingJobLine lineOfCustomerB(final PickingJob job)
-		{
-			return job.getLines().stream()
-					.filter(line -> !line.getCustomerId().equals(customerAId()))
-					.findFirst()
-					.orElseThrow(() -> new AssertionError("no line of customer B"));
 		}
 	}
 }

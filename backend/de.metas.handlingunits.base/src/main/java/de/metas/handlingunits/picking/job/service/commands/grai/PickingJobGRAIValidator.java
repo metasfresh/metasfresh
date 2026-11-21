@@ -63,6 +63,7 @@ public class PickingJobGRAIValidator
 	/**
 	 * The picks that were booked in a CU quantity entry mode ({@link PickingJobHUService#filterCUsBookedInCUQtyEntryMode}, the same rule the close of all targets uses):
 	 * the check follows what was picked, not the customer's current mode.
+	 * Only the picks of lines that require GRAIs are looked up: the lookup walks each CU up to its box.
 	 */
 	@NonNull
 	private ImmutableSet<HuId> getCUsBookedInCUQtyEntryMode()
@@ -72,6 +73,7 @@ public class PickingJobGRAIValidator
 		{
 			result = this._cusBookedInCUQtyEntryMode = huService.filterCUsBookedInCUQtyEntryMode(
 					pickingJob.getLines().stream()
+							.filter(line -> !extractGRAIValidationSegment(line).getGraiRequired().isNo())
 							.flatMap(line -> line.getPickedHUInfos().stream())
 							.collect(ImmutableSet.toImmutableSet()));
 		}
