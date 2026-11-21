@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { test } from "../../../playwright.config";
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
@@ -5,15 +6,37 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
+import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from '../../utils/cuQtyEntryScanOnce';
 
-const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
-    return await Backend.createMasterdata({
+restoreSysconfigsAfterEach(test);
+
+/**
+ * @param {boolean} [allowQuickPackAll] profile switch of the Quick Pack All button
+ * @param {string} [cuQtyEntryMode] profile CU quantity entry mode; omitted = not sent (Manual)
+ * @param {object[]} [customers] customer records of the mobile config (`{ customer, cuQtyEntryMode }`)
+ * @param {string} [aggregationType] 'sales_order' (one customer per job) or 'product' (one job per product, a line per customer)
+ * @param {boolean} [secondCustomer] a second customer with an order of the same products (needs a 'customer2' record if it has a mode)
+ */
+const createMasterdata = async ({
+                                    allowQuickPackAll = true,
+                                    cuQtyEntryMode,
+                                    customers = [{ customer: "customer1" }],
+                                    aggregationType = 'sales_order',
+                                    secondCustomer = false,
+                                } = {}) => {
+    const orderLines = [
+        { product: 'P1', qty: 10 },
+        { product: 'P2', qty: 10 },
+        { product: 'P3', qty: 10 },
+    ];
+    return await createMasterdataRememberingSysconfigs({
         language: 'en_US',
         request: {
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
             login: { user: { language: 'en_US', workplace: "workplace1" } },
             mobileConfig: {
                 picking: {
-                    aggregationType: "sales_order",
+                    aggregationType,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
                     allowQuickPackAll,
@@ -21,12 +44,11 @@ const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
                     pickTo: ['CU', 'LU_CU'],
                     allowCompletingPartialPickingJob: false,
                     allowPickingAnyCustomer: false,
-                    customers: [
-                        { customer: "customer1" },
-                    ],
+                    ...(cuQtyEntryMode ? { cuQtyEntryMode } : {}),
+                    customers,
                 }
             },
-            bpartners: { "customer1": {} },
+            bpartners: { "customer1": {}, ...(secondCustomer ? { "customer2": {} } : {}) },
             warehouses: { "wh": {} },
             pickingSlots: { slot1: {} },
             workplaces: { "workplace1": { warehouse: 'wh', pickingSlot: 'slot1' } },
@@ -48,12 +70,16 @@ const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
                     bpartner: 'customer1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [
-                        { product: 'P1', qty: 10 },
-                        { product: 'P2', qty: 10 },
-                        { product: 'P3', qty: 10 },
-                    ]
-                }
+                    lines: orderLines,
+                },
+                ...(secondCustomer ? {
+                    "SO2": {
+                        bpartner: 'customer2',
+                        warehouse: 'wh',
+                        datePromised: '2025-03-01T00:00:00.000+02:00',
+                        lines: orderLines,
+                    }
+                } : {}),
             },
         }
     })
@@ -129,4 +155,118 @@ test('Expect Pick All button hidden when feature is not active', async ({ page }
 
     await PickingJobScreen.expectPickAllButtonHidden();
 
+});
+
+
+//
+// CU quantity entry modes (SCAN_EACH_CU, SCAN_ONCE_ENTER_QTY): Quick Pack All would book every line without a label scan
+// (no duplicate check, no pack ID, no box, no label lot / best-before), so the button is hidden and the call is refused.
+//
+
+const MSG_QUICK_PACK_ALL_NOT_ALLOWED = "Quick Pack is not allowed";
+const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
+const MODE_SCAN_EACH = 'SCAN_EACH_CU';
+const MODE_MANUAL = 'MANUAL';
+
+const openJob = async (masterdata, { productJob = false } = {}) => {
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    if (productJob) {
+        // one job per product: P1 holds one line per customer (10 + 10)
+        return await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 20, productId: masterdata.products.P1.id });
+    }
+    // the launcher of freshly created orders can take a while to show up (the list is reloaded if it does not)
+    await PickingJobsListScreen.waitForJobVisible({ documentNo: masterdata.salesOrders.SO1.documentNo, reloadIfMissing: true });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    return await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+};
+
+/** The button is hidden, the direct call is refused with the new message, nothing is picked and the job stays open. */
+const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2', 'P3'] }) => {
+    await PickingJobScreen.expectPickAllButtonHiddenAfterQtyAvailable();
+
+    const { status, body } = await Backend.postPickAll({ wfProcessId: `picking-${pickingJobId}` });
+    expect(status, `answer: ${body}`).toBeGreaterThanOrEqual(400);
+    expect(body).toContain(MSG_QUICK_PACK_ALL_NOT_ALLOWED);
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                docStatus: 'Drafted',
+                shipmentSchedules: Object.fromEntries(products.map((product) => [product, { qtyPicked: [] }])),
+            }
+        },
+    });
+};
+
+// noinspection JSUnusedLocalSymbols
+test('profile mode Scan once: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick All button with CU quantity entry modes');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ allowQuickPackAll: true, cuQtyEntryMode: MODE_SCAN_ONCE });
+    const { pickingJobId } = await openJob(masterdata);
+    await expectQuickPackAllRefused({ pickingJobId });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('profile Manual, customer record Scan each CU: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick All button with CU quantity entry modes');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({
+        allowQuickPackAll: true,
+        cuQtyEntryMode: MODE_MANUAL,
+        customers: [{ customer: "customer1", cuQtyEntryMode: MODE_SCAN_EACH }],
+    });
+    const { pickingJobId } = await openJob(masterdata);
+    await expectQuickPackAllRefused({ pickingJobId });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('mixed job (customer 1 Manual, customer 2 Scan once): no Quick Pack All button, the direct call is refused for the whole job', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick All button with CU quantity entry modes');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({
+        allowQuickPackAll: true,
+        aggregationType: 'product',
+        secondCustomer: true,
+        customers: [
+            { customer: "customer1", cuQtyEntryMode: MODE_MANUAL },
+            { customer: "customer2", cuQtyEntryMode: MODE_SCAN_ONCE },
+        ],
+    });
+    const { pickingJobId } = await openJob(masterdata, { productJob: true });
+    await expectQuickPackAllRefused({ pickingJobId, products: ['P1'] });   // the product job holds the lines of P1 only
+});
+
+// noinspection JSUnusedLocalSymbols
+test('control: the same mixed two-customer product job with Manual only shows the Quick Pack All button', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick All button with CU quantity entry modes');
+    allure.severity('normal');
+
+    // proves the data of the mixed-job case does show the button: its hiding there is the mode, not the setup
+    const masterdata = await createMasterdata({
+        allowQuickPackAll: true,
+        aggregationType: 'product',
+        secondCustomer: true,
+        customers: [{ customer: "customer1" }, { customer: "customer2" }],
+    });
+    await openJob(masterdata, { productJob: true });
+    await PickingJobScreen.expectPickAllButtonVisible();
 });

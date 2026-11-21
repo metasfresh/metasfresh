@@ -13,6 +13,7 @@ import { getLinesArrayFromActivity, isAnonymousPickHUsOnTheFly } from '../../../
 import {
   getCurrentPickFromHUQRCode,
   isAllowPickingAnyHUOnHeaderLevel,
+  isQuickPackAllAllowed,
   isUserEditable as isUserEditableFunc,
 } from '../../../utils/picking';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
@@ -42,8 +43,13 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const dispatch = useDispatch();
 
   const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
-  const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: allowQuickPackAll });
-  const isShowQuickPackAllButton = allowQuickPackAll && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
+  const isQuickPackAllAllowedForJob = isQuickPackAllAllowed({
+    allowQuickPackAll,
+    lines: getLinesArrayFromActivity(activity),
+  });
+  const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: isQuickPackAllAllowedForJob });
+  const isShowQuickPackAllButton =
+    isQuickPackAllAllowedForJob && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
 
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 

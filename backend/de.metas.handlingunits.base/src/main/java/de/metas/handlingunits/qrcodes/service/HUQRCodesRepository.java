@@ -296,24 +296,9 @@ public class HUQRCodesRepository
 	@NonNull
 	public List<HUQRCodeAssignment> getHUAssignmentsByQRCode(@NonNull final Collection<HUQRCode> huQRCodes)
 	{
-		if (huQRCodes.isEmpty())
-		{
-			return ImmutableList.of();
-		}
+		final List<HUQRCodeAssignment> huQrCodeAssignments = getHUAssignmentsByQRCodeIfExist(huQRCodes);
 
-		final Set<String> qrCodeIds = huQRCodes.stream()
-				.map(HUQRCode::getId)
-				.map(HUQRCodeUniqueId::getAsString)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableList<I_M_HU_QRCode> huQrCodes = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, qrCodeIds)
-				.create()
-				.listImmutable(I_M_HU_QRCode.class);
-
-		final List<HUQRCodeAssignment> huQrCodeAssignments = toHUQRCodeAssignment(huQrCodes).collect(ImmutableList.toImmutableList());
-
+		final Set<String> qrCodeIds = toUniqueIdStrings(huQRCodes);
 		if (qrCodeIds.size() != huQrCodeAssignments.size())
 		{
 			throw new AdempiereException("HuQRCodeAssignment not found for some of the QRCodes!")
@@ -322,6 +307,35 @@ public class HUQRCodesRepository
 					.setParameter("qrCodeIds", qrCodeIds);
 		}
 		return huQrCodeAssignments;
+	}
+
+	/**
+	 * Like {@link #getHUAssignmentsByQRCode(Collection)}, but a QR code without an assignment is skipped instead of failing the call.
+	 */
+	@NonNull
+	public List<HUQRCodeAssignment> getHUAssignmentsByQRCodeIfExist(@NonNull final Collection<HUQRCode> huQRCodes)
+	{
+		if (huQRCodes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList<I_M_HU_QRCode> huQrCodes = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, toUniqueIdStrings(huQRCodes))
+				.create()
+				.listImmutable(I_M_HU_QRCode.class);
+
+		return toHUQRCodeAssignment(huQrCodes).collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static Set<String> toUniqueIdStrings(@NonNull final Collection<HUQRCode> huQRCodes)
+	{
+		return huQRCodes.stream()
+				.map(HUQRCode::getId)
+				.map(HUQRCodeUniqueId::getAsString)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

@@ -60,6 +60,8 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
 		@Nullable Boolean allowQuickPackAll;
 		@Nullable Boolean showPromptWhenOverPicking;
+		@Nullable String cuQtyEntryMode;
+		@Nullable String cuLabelFormatName;
 
 		@Nullable List<Customer> customers;
 		
@@ -73,6 +75,8 @@ public class JsonMobileConfigRequest
 		public static class Customer
 		{
 			@NonNull Identifier customer;
+			@Nullable String cuQtyEntryMode;
+			@Nullable String cuLabelFormatName;
 		}
 
 		@Value

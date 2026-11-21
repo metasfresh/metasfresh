@@ -1,12 +1,16 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -46,6 +50,8 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
@@ -87,6 +93,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -129,10 +136,81 @@ public class PickingJobHUService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
 
+	/** The GRAI snapshots of the given HUs as they are, without looking for a box. Test convenience: the completion check uses {@link #getGraiSnapshotsOfBoxes(Set, Set)}. */
+	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
 	{
 		return huGraiService.getSnapshots(huIds);
+	}
+
+	/** Test convenience: treats every CU in a box (TU) of {@code huIds} as booked in a CU quantity entry mode. The completion check passes the set it determined. */
+	@VisibleForTesting
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds)
+	{
+		return getGraiSnapshotsOfBoxes(huIds, filterCUsInTU(huIds));
+	}
+
+	/**
+	 * The GRAI snapshots of the picked HUs. A CU that was booked in a CU quantity entry mode ({@code cusBookedInCUQtyEntryMode}, see
+	 * {@link #filterCUsBookedInCUQtyEntryMode(Collection)}) sits in a box (TU) which carries the GRAI and a CU has no GRAI snapshot of its own,
+	 * so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
+	 *
+	 * @param cusBookedInCUQtyEntryMode CUs in a box (TU) only
+	 */
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedInCUQtyEntryMode)
+	{
+		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedInCUQtyEntryMode));
+	}
+
+	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedInCUQtyEntryMode)
+	{
+		// CUs of the same box share their parent item: walk up once per parent item, not once per CU
+		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
+		{
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+			if (cusBookedInCUQtyEntryMode.contains(huId))
+			{
+				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getTUIdOrSelf(hu)));
+			}
+			else
+			{
+				result.add(huId);
+			}
+		}
+		return result.build();
+	}
+
+	/**
+	 * @return true for a CU (virtual HU) whose parent is a TU (box); false for a top-level CU, for a CU directly on an LU (no box) and for an
+	 * aggregated TU (also a virtual HU, but it stands for TUs on an LU)
+	 */
+	public boolean isCUInTU(@NonNull final I_M_HU hu)
+	{
+		return handlingUnitsBL.isVirtual(hu)
+				&& !handlingUnitsBL.isAggregateHU(hu)
+				&& hu.getM_HU_Item_Parent_ID() > 0
+				&& getTU(hu) != null;
+	}
+
+	/** @return the TU the HU is in, or null if it is not in a TU (top-level, or directly on an LU) */
+	@Nullable
+	private I_M_HU getTU(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(hu);
+		return tu != null && handlingUnitsBL.isTransportUnit(tu) ? tu : null;
+	}
+
+	/** @return the id of the TU the HU is in; the HU's own id if it is not in a TU */
+	@NonNull
+	private HuId getTUIdOrSelf(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU tu = getTU(hu);
+		return HuId.ofRepoId((tu != null ? tu : hu).getM_HU_ID());
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)
@@ -333,6 +411,15 @@ public class PickingJobHUService
 		return huPIItemProductBL.getById(huPIItemProductId);
 	}
 
+	/** The TU packing instructions the given packing names; {@code null} for the virtual packing (no TU). */
+	@Nullable
+	public HuPackingInstructionsId getPackingTuPIId(@NonNull final HUPIItemProduct packingInfo)
+	{
+		return packingInfo.getId().isVirtualHU()
+				? null
+				: handlingUnitsBL.getPackingInstructionsId(packingInfo.getPiItemId());
+	}
+
 	public IHUQRCode parsePickFromScannedCode(final ScannedCode pickFromScannedCode) {return huQRCodesService.parse(pickFromScannedCode);}
 
 	public ExplainedOptional<HUInfo> resolvePickFromHUQRCode(
@@ -357,6 +444,54 @@ public class PickingJobHUService
 	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId) {return huQRCodesService.getOrCreateQRCodesByHuId(huId);}
 
 	public HuId getHuIdByQRCode(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCode(huQRCode);}
+
+	/**
+	 * @return the ids of those HUs whose recorded QR code is assigned to the HU itself (one batch query; a QR code shared by several HUs is no error)
+	 */
+	@NonNull
+	public ImmutableSet<HuId> filterHUsAssignedToOwnQRCode(@NonNull final Collection<HUInfo> huInfos)
+	{
+		if (huInfos.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableMap<HUQRCodeUniqueId, HUQRCodeAssignment> assignmentsByQRCodeId = Maps.uniqueIndex(
+				huQRCodesService.getHUAssignmentsByQRCodeIfExist(huInfos.stream().map(HUInfo::getQrCode).collect(ImmutableSet.toImmutableSet())),
+				HUQRCodeAssignment::getId);
+
+		return huInfos.stream()
+				.filter(huInfo -> {
+					final HUQRCodeAssignment assignment = assignmentsByQRCodeId.get(huInfo.getQrCode().getId());
+					return assignment != null && assignment.isAssignedToHuId(huInfo.getId());
+				})
+				.map(HUInfo::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return the ids of those picked HUs that were booked in a CU quantity entry mode: a CU in a box (TU) whose recorded QR code is its own.
+	 * Manual books a whole box (a TU, not a CU) or a CU with the box's QR code, so a Manual pick is never in the result.
+	 */
+	@NonNull
+	public ImmutableSet<HuId> filterCUsBookedInCUQtyEntryMode(@NonNull final Collection<HUInfo> pickedHUInfos)
+	{
+		return filterCUsInTU(filterHUsAssignedToOwnQRCode(pickedHUInfos));
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> filterCUsInTU(@NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return handlingUnitsBL.getByIds(huIds).stream()
+				.filter(this::isCUInTU)
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode);}
 

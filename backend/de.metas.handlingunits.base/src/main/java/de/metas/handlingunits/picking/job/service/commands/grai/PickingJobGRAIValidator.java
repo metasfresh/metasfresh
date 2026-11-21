@@ -20,6 +20,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import java.util.Collection;
 import java.util.Map;
 
@@ -32,6 +34,8 @@ public class PickingJobGRAIValidator
 
 	// State
 	@NonNull private final SalesOrderDummyGRAIProviders salesOrderDummyGRAIProviders;
+	/** computed on first use: customers that do not require GRAIs never need it */
+	@Nullable private ImmutableSet<HuId> _cusBookedInCUQtyEntryMode;
 	@NonNull private final CustomerGRAIConfigProvider customerGRAIConfigProvider;
 
 	@Builder
@@ -56,6 +60,26 @@ public class PickingJobGRAIValidator
 		getPickedHUIdsBySegment().forEach(this::validate);
 	}
 
+	/**
+	 * The picks that were booked in a CU quantity entry mode ({@link PickingJobHUService#filterCUsBookedInCUQtyEntryMode}, the same rule the close of all targets uses):
+	 * the check follows what was picked, not the customer's current mode.
+	 * Only the picks of lines that require GRAIs are looked up: the lookup walks each CU up to its box.
+	 */
+	@NonNull
+	private ImmutableSet<HuId> getCUsBookedInCUQtyEntryMode()
+	{
+		ImmutableSet<HuId> result = this._cusBookedInCUQtyEntryMode;
+		if (result == null)
+		{
+			result = this._cusBookedInCUQtyEntryMode = huService.filterCUsBookedInCUQtyEntryMode(
+					pickingJob.getLines().stream()
+							.filter(line -> !extractGRAIValidationSegment(line).getGraiRequired().isNo())
+							.flatMap(line -> line.getPickedHUInfos().stream())
+							.collect(ImmutableSet.toImmutableSet()));
+		}
+		return result;
+	}
+
 	private void validate(
 			@NonNull final GRAIValidationSegment segment,
 			@NonNull final Collection<HuId> pickedHUIds)
@@ -63,7 +87,7 @@ public class PickingJobGRAIValidator
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshots(ImmutableSet.copyOf(pickedHUIds));
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), getCUsBookedInCUQtyEntryMode());
 
 		if (graiRequired == GRAIRequired.Yes)
 		{

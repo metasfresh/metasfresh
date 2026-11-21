@@ -12,6 +12,7 @@ import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
@@ -63,6 +64,11 @@ public class ScannableCodeFormatsCollection
 		}
 
 		return ExplainedOptional.emptyBecause(notMatchingExplanation.build());
+	}
+
+	public Optional<ScannableCodeFormat> getById(@NonNull final ScannableCodeFormatId id)
+	{
+		return formats.stream().filter(format -> ScannableCodeFormatId.equals(format.getId(), id)).findFirst();
 	}
 
 	public boolean isEmpty() {return formats.isEmpty();}

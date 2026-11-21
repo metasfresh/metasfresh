@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
-import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToast, expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
+import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -18,6 +19,48 @@ export const GetQuantityDialog = {
 
     waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
         await containerElement().waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Asserts the dialog is not on screen. */
+    expectNotShown: async () => await test.step(`${NAME} - Expect dialog not shown`, async () => {
+        await expect(containerElement()).toHaveCount(0);
+    }),
+
+    /**
+     * Asserts the open quantity shown by the dialog (`qty-target`, raw number). In Scan once it drops after every booking.
+     * It updates only after the booking round trip (`/picking/event`) ends, so it gets the slow-action budget (CLAUDE.md: SLOW_ACTION_TIMEOUT for dialog waits).
+     */
+    expectQtyTarget: async (expected) => await test.step(`${NAME} - Expect qty target '${expected}'`, async () => {
+        await expect(page.getByTestId('qty-target')).toBeVisible();
+        await expect(page.getByTestId('qty-target')).toHaveAttribute('data-internalvalue', `${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Asserts that no rejected quantity / reject reason is shown (Scan once: a smaller count is not a rejection). */
+    expectNoQtyRejected: async () => await test.step(`${NAME} - Expect no rejected qty`, async () => {
+        await expect(page.locator('#qty-rejected')).toHaveCount(0);
+    }),
+
+    /**
+     * Presses OK in Scan once and stays: the quantity block remains open until the line is fully booked.
+     * @param {number} [expectedQtyTarget] open quantity after the booking (auto-retried); omit when the line is done
+     */
+    clickDoneStayOpen: async ({ expectedQtyTarget } = {}) => await test.step(`${NAME} - Press OK, stay on the line`, async () => {
+        await page.getByTestId('done-button').tap();
+        if (expectedQtyTarget != null) {
+            await GetQuantityDialog.expectQtyTarget(expectedQtyTarget);
+        }
+    }),
+
+    /** Presses OK where the backend must refuse the booking: error toast with the text, the dialog stays open. */
+    clickDoneRefused: async ({ expectedError }) => await test.step(`${NAME} - Press OK, expect refusal '${expectedError}'`, async () => {
+        await expectErrorToast(
+            `${NAME} refusal`,
+            async () => {
+                await page.getByTestId('done-button').tap();
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+        await GetQuantityDialog.waitForDialog();
     }),
 
     expectQtyEntered: async (expected) => await test.step(`${NAME} - Expect QtyEntered to be '${expected}'`, async () => {
@@ -74,7 +117,10 @@ export const GetQuantityDialog = {
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
         const prevQtyTarget = await page.locator('[data-testid="qty-target"]').innerText();
 
-        await page.getByTestId('qrCode-input').type(qrCode);
+        // Send the code like a hardware scanner: all keys in one burst, then Enter. Never type it key by key:
+        // the scanner reader ends a scan at a pause longer than barcodeScanner.inputText.debounceMillis (default 300 ms).
+        // Sent only once the scanner listens: right after the dialog opens, its input is there before the listener is.
+        await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: qrCode, testId: 'qrCode-input' });
         await page.locator('[data-testid="qrCode-input"]').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
         await page.waitForFunction((prevQtyTarget) => {

@@ -228,6 +228,13 @@ public class HUQRCodesService
 		return huQRCodesRepository.getHUAssignmentByQRCode(huQRCode);
 	}
 
+	/** The assignments of the given QR codes; a QR code without an assignment is skipped. A QR code can be assigned to several HUs. */
+	@NonNull
+	public List<HUQRCodeAssignment> getHUAssignmentsByQRCodeIfExist(@NonNull final Collection<HUQRCode> huQRCodes)
+	{
+		return huQRCodesRepository.getHUAssignmentsByQRCodeIfExist(huQRCodes);
+	}
+
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)
 	{
 		final HUQRCode existingQRCode = getFirstQRCodeByHuIdIfExists(huId).orElse(null);

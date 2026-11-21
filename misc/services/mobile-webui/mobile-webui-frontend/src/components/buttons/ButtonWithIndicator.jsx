@@ -29,6 +29,7 @@ const ButtonWithIndicator = ({
   onClick,
   children,
   additionalCssClass,
+  type,
   ...otherProps
 }) => {
   const testId = computeTestId({ testIdParam, captionKey });
@@ -62,6 +63,7 @@ const ButtonWithIndicator = ({
       {...extractTestDataProps(otherProps)}
       className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}
+      type={type}
       onClick={fireOnClick}
     >
       <div className="full-size-btn">
@@ -129,6 +131,8 @@ ButtonWithIndicator.propTypes = {
   disabled: PropTypes.bool,
   children: PropTypes.node,
   additionalCssClass: PropTypes.string,
+  /** `button` for a button inside a form that must not submit it; absent = the browser default */
+  type: PropTypes.oneOf(['button', 'submit']),
   onClick: PropTypes.func.isRequired,
 };
 

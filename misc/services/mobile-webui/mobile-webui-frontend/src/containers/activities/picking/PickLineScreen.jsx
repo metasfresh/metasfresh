@@ -26,6 +26,7 @@ import { toastError } from '../../../utils/toast';
 import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
 import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
+import { getCUQtyEntryPolicy } from '../../../constants/CUQtyEntryMode';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -50,6 +51,7 @@ const PickLineScreen = () => {
     qtyToPickRemaining,
     uom,
     manuallyClosed,
+    cuQtyEntryMode,
     additionalHeaderProperties,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
@@ -63,6 +65,7 @@ const PickLineScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties,
+    isLiveRefresh: getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired,
   });
 
   const onPickFromManufacturingOrderClicked = () => {
@@ -107,6 +110,8 @@ const PickLineScreen = () => {
         activityId,
         lineId,
         qrCode: pickFromHUQRCode,
+        // a line in a CU quantity entry mode continues where the picker left it: the quantity block reopens
+        isResume: getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired,
       })
     );
   };
@@ -221,6 +226,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     manuallyClosed: line?.manuallyClosed,
+    cuQtyEntryMode: line?.cuQtyEntryMode,
     additionalHeaderProperties: line?.additionalHeaderProperties,
   };
 };
@@ -235,8 +241,24 @@ export const useHeaderUpdate = ({
   qtyToPick,
   qtyPicked,
   additionalHeaderProperties,
+  rootDataAttributes,
+  // new CU quantity entry modes only: refresh the header while the screen stays mounted; Manual refreshes on url/caption only
+  isLiveRefresh = false,
 }) => {
   const dispatch = useDispatch();
+  // fixed-length deps: null in Manual (refresh on url/caption only), a value key in the new modes
+  const liveKey = isLiveRefresh
+    ? JSON.stringify([
+        pickingSlot?.caption,
+        pickingUnit,
+        packingItemName,
+        uom,
+        qtyToPick,
+        qtyPicked,
+        rootDataAttributes ?? null,
+        additionalHeaderProperties?.entries ?? null,
+      ])
+    : null;
   useEffect(() => {
     dispatch(
       updateHeaderEntry({
@@ -268,9 +290,10 @@ export const useHeaderUpdate = ({
           },
           ...(additionalHeaderProperties?.entries || []),
         ],
+        rootDataAttributes,
       })
     );
-  }, [url, caption]);
+  }, [url, caption, liveKey]);
 };
 
 export default PickLineScreen;

@@ -2,6 +2,7 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
@@ -60,6 +61,7 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final PickingJobOptions pickingJobOptions;
 	@NonNull private final DisplayValueProvider displayValueProvider;
 	@NonNull private final HUCache huCache;
+	private final Map<BPartnerId, PickingJobOptions> lineOptionsByCustomerId = new ConcurrentHashMap<>();
 
 	@Builder
 	private JsonPickingJobConverterCommand(
@@ -111,6 +113,9 @@ public class JsonPickingJobConverterCommand
 			group.getValue().stream()
 					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
 							.displayGroupKey(group.getKey())
+							.cuQtyEntryMode(getLineOptions(line).getCUQtyEntryModeOrDefault().getCode())
+							.cuLabelFormatId(getLineOptions(line).getCULabelFormatId().orElse(null))
+							.packingTuPIId(huService.getPackingTuPIId(line.getPackingInfo()))
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
 									getAdditionalHeaderProperties(line), jsonOpts))
@@ -119,6 +124,13 @@ public class JsonPickingJobConverterCommand
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
+	}
+
+	/** The options of the line's own customer: a mixed product job can hold lines of different customers, each with its own mode / format. */
+	@NonNull
+	private PickingJobOptions getLineOptions(@NonNull final PickingJobLine line)
+	{
+		return lineOptionsByCustomerId.computeIfAbsent(line.getCustomerId(), pickingJobRestService::getPickingJobOptions);
 	}
 
 	@Nullable

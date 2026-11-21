@@ -5,6 +5,7 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.scannable_code.format.repository.ScannableCodeFormatRepository;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,8 @@ public class ScannableCodeFormatService
 	public ExplainedOptional<ParsedScannedCode> parse(@NonNull final ScannedCode scannedCode) {return repository.getAll().parse(scannedCode);}
 
 	public ScannableCodeFormatsCollection getAll() {return repository.getAll();}
+
+	public Optional<ScannableCodeFormat> getById(@NonNull final ScannableCodeFormatId id) {return repository.getById(id);}
 
 	public ScannableCodeFormat create(@NonNull final ScannableCodeFormatCreateRequest request)
 	{

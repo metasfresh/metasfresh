@@ -7,6 +7,7 @@ import * as uiTrace from './ui_trace';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { ContextualError } from './ContextualError';
+import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from './toastLayout';
 
 export const toastErrorFromObj = (obj, toastId) => {
   console.log('toastErrorFromObj', { obj });
@@ -44,7 +45,8 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     autoClose: 1000 * 60 * 5,
     position: 'bottom-center',
     transition: Bounce,
-    bodyStyle: { overflow: 'auto' },
+    style: ERROR_TOAST_STYLE,
+    bodyStyle: ERROR_TOAST_BODY_STYLE,
     toastId,
   });
 

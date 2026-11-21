@@ -12,6 +12,7 @@ const DialogButton = ({
   caption: captionParam,
   className,
   disabled,
+  type,
   onClick,
 }) => {
   const testId = computeTestId({ testIdParam, captionKey, suffix: 'button' });
@@ -26,7 +27,14 @@ const DialogButton = ({
   const fireOnClick = uiTrace.traceFunction(onClick, { eventName: 'dialogButtonClick', captionKey, caption });
 
   return (
-    <button id={id} data-testid={testId} className={cx('button', className)} disabled={disabled} onClick={fireOnClick}>
+    <button
+      id={id}
+      data-testid={testId}
+      className={cx('button', className)}
+      disabled={disabled}
+      type={type}
+      onClick={fireOnClick}
+    >
       {caption}
     </button>
   );
@@ -39,6 +47,8 @@ DialogButton.propTypes = {
   caption: PropTypes.string,
   className: PropTypes.string,
   disabled: PropTypes.bool,
+  /** `button` for a button inside a form that must not submit it; absent = the browser default (submit in a form) */
+  type: PropTypes.oneOf(['button', 'submit']),
   onClick: PropTypes.func.isRequired,
 };
 

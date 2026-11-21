@@ -4,12 +4,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
+import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -30,31 +35,34 @@ import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -544,5 +552,124 @@ class PickingJobGraiScanPickEndToEndTest
 				.as("scanning a GRAI for a TU type that lacks the GRAI attribute slot must fail loud at scan time")
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
+	}
+
+	private static final String GRAI_COUNT_MISMATCH_KEY = "de.metas.handlingunits.picking.GRAICountMismatch";
+
+	/** Completion-time GRAI check ({@link PickingJobHUService#getGraiSnapshots}): which HU carries the GRAI of a picked HU. */
+	@Nested
+	class GetGraiSnapshots
+	{
+		/**
+		 * CU quantity entry modes: the picked HU of a new-mode line is the CU (virtual HU) inside the open box (TU).
+		 * The GRAI lives on the box, so the completion-time GRAI check must read the box: a box without GRAI is refused.
+		 */
+		@Test
+		void newMode_pickedCUInsideBox_boxWithoutGrai_isRefused()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final HuId cuId = createBoxWithCU(productId).getCuId();
+
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(cuId)).assertAllGraisAssigned())
+					.as("a CU in a box without GRAI must fail the GRAI count check")
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
+		}
+
+		/** Same as above, but the box carries its GRAI: accepted. */
+		@Test
+		void newMode_pickedCUInsideBox_boxWithGrai_isAccepted()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final BoxWithCU box = createBoxWithCU(productId);
+			setGraiOnBox(box.getTuId(), GRAI.parse(GRAI_CANONICAL));
+
+			helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
+		}
+
+		/** Several CUs of the same box are checked once, via their box. */
+		@Test
+		void newMode_severalCUsInSameBox_boxCheckedOnce()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final BoxWithCU box = createBoxWithCU(productId);
+
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId(), box.getTuId()));
+
+			assertThat(snapshots).hasSize(1);
+		}
+
+		/** A picked TU is checked as itself, in every mode. */
+		@Test
+		void pickedTUWithoutGrai_isRefused()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final HuId tuId = createBoxWithCU(productId).getTuId();
+
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
+		}
+
+		/**
+		 * Manual mode is unchanged: a picked CU is NOT replaced by its box (the CU has no GRAI snapshot of its own, as before),
+		 * so a box without GRAI is not refused through its CU.
+		 */
+		@Test
+		void manualMode_pickedCUInsideBox_isNotMappedToBox()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final HuId cuId = createBoxWithCU(productId).getCuId();
+
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshots(ImmutableSet.of(cuId));
+
+			assertThat(snapshots).isEmpty();
+			snapshots.assertAllGraisAssigned();
+		}
+
+		/** YesWithDummyGRAIs + new mode: the box of a picked CU gets the dummy GRAI at completion (the box is the GRAI carrier). */
+		@Test
+		void newMode_dummyGRAIs_writtenOnTheBoxOfThePickedCU()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final BoxWithCU box = createBoxWithCU(productId);
+			final DummyGRAIProvider dummyGRAIProvider = new DummyGRAIProvider(DummyGRAITemplate.migros("1234567890"), 1);
+			final GRAI expectedGrai = DummyGRAITemplate.migros("1234567890").buildGRAI(1);
+
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId()));
+			Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> helper.huService.generateMissingGRAIs(snapshots, dummyGRAIProvider));
+
+			assertThat(helper.huService.getGrais(box.getTuId())).isEqualTo(GRAISet.of(expectedGrai));
+			helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
+		}
+	}
+
+	private void setGraiOnBox(final HuId tuId, final GRAI grai)
+	{
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			try (final IAutoCloseable ignored = helper.huService.temporarySetNewHContextForProcessing())
+			{
+				helper.huService.setGrais(tuId, GRAISet.of(grai));
+			}
+		});
+	}
+
+	@Value
+	private static class BoxWithCU
+	{
+		@NonNull HuId tuId;
+		@NonNull HuId cuId;
+	}
+
+	private BoxWithCU createBoxWithCU(final ProductId productId)
+	{
+		createGraiTuPI(productId, true); // TU PI WITH the GRAI slot
+		final HuPackingInstructionsId tuPIId = helper.huService.resolveHuPackingInstructionsId(GRAI.parse(GRAI_CANONICAL));
+		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("5", productId));
+		final I_M_HU cu = CollectionUtils.singleElement(Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(tuId));
+		return new BoxWithCU(tuId, HuId.ofRepoId(cu.getM_HU_ID()));
 	}
 }

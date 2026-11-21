@@ -118,6 +118,17 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveByVHUAndShipmentScheduleId(
+			@NonNull final I_M_HU vhu,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return retrieveSchedsQtyPickedForVHUQuery(vhu)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.list();
+	}
+
+	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(final int shipmentScheduleId, final int tuHUId, final String trxName)
 	{
 		Preconditions.checkArgument(shipmentScheduleId > 0, "shipmentScheduleId > 0");

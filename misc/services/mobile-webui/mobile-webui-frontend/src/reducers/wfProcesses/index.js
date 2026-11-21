@@ -7,6 +7,7 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
+import { pickingReducer } from './picking';
 import { trl } from '../../utils/translations';
 import { shallowEqual, useSelector } from 'react-redux';
 
@@ -134,7 +135,7 @@ const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });
   draftState = activityUserConfirmationReducer({ draftState, action });
-  //draftState = pickingReducer({ draftState, action });
+  draftState = pickingReducer({ draftState, action });
   draftState = distributionReducer({ draftState, action });
   draftState = generateHUQRCodesReducer({ draftState, action });
   draftState = manufacturingIssueReducer({ draftState, action });

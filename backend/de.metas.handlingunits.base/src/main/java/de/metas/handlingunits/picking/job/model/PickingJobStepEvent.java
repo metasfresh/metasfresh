@@ -50,6 +50,7 @@ public class PickingJobStepEvent
 	boolean isCloseTarget;
 	boolean isSetGrais;
 	@Nullable GRAISet graiCodes;
+	@Nullable ScannedCode cuLabel;
 
 	//
 	// Event Type: UNPICK
