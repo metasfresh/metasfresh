@@ -64,6 +64,58 @@ export const BarcodeScannerComponent = {
         }, scannedCode);
     }),
 
+    /**
+     * Like {@link BarcodeScannerComponent.type}, but sends the code only once the scanner listens.
+     *
+     * The scanner input (`#input-text`) is in the DOM as soon as React commits it; the scanner's window
+     * `keydown` listener (useKeyboardBarcodeReader) is added later, in a useEffect. Keys sent in between reach
+     * no listener and the scan is lost (CI trace: keys sent 4 ms before "Enabled keyboard barcode reader").
+     *
+     * How it knows the scanner listens: while it collects a scan, the scanner shows the collected keys in its
+     * input (onReadInProgress). So the keys are sent without the final Enter; if the input then shows the code,
+     * the scanner got them and Enter ends the scan; if the input did not change, no listener saw them and the
+     * keys are sent again a little later. Only for a scanner that shows the scan in this input (the hardware
+     * scanner input of BarcodeScannerComponent): with any other listener the keys would be sent more than once.
+     */
+    typeWhenScannerListens: async ({ scannedCode, testId }) => await test.step(`${NAME} - Type scanned code once the scanner listens`, async () => {
+        if (!scannedCode) {
+            throw new Error("Invalid scannedCode provided. Must not be empty.");
+        }
+        console.log('Scanning scanned code (once the scanner listens):\n' + scannedCode);
+
+        await BarcodeScannerComponent.waitToAttach({ testId });
+        const selector = testId ? `#input-text[data-testid="${testId}"]` : '#input-text';
+
+        const deadline = Date.now() + SLOW_ACTION_TIMEOUT;
+        for (; ;) {
+            const result = await page.evaluate(({ code, selector }) => {
+                const valueBefore = document.querySelector(selector)?.value;
+                for (const char of code) {
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+                    document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+                }
+                const valueAfter = document.querySelector(selector)?.value;
+                if (valueAfter === valueBefore) {
+                    return { sent: false }; // no listener saw the keys: nothing was collected
+                }
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+                return { sent: true, collected: valueAfter };
+            }, { code: scannedCode, selector });
+
+            if (result.sent) {
+                if (result.collected !== scannedCode) {
+                    throw new Error(`The scanner collected '${result.collected}' instead of the scanned code '${scannedCode}'`);
+                }
+                return;
+            }
+            if (Date.now() > deadline) {
+                throw new Error(`The scanner (${selector}) did not listen within ${SLOW_ACTION_TIMEOUT} ms`);
+            }
+            await page.waitForTimeout(50);
+        }
+    }),
+
     typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {
         let scannedCode;
         let testId;

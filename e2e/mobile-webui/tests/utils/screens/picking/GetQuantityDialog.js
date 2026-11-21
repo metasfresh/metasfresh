@@ -119,7 +119,8 @@ export const GetQuantityDialog = {
 
         // Send the code like a hardware scanner: all keys in one burst, then Enter. Never type it key by key:
         // the scanner reader ends a scan at a pause longer than barcodeScanner.inputText.debounceMillis (default 300 ms).
-        await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'qrCode-input' });
+        // Sent only once the scanner listens: right after the dialog opens, its input is there before the listener is.
+        await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: qrCode, testId: 'qrCode-input' });
         await page.locator('[data-testid="qrCode-input"]').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
         await page.waitForFunction((prevQtyTarget) => {
