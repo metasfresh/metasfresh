@@ -231,10 +231,7 @@ public class PackToHUsProducer
 		{
 			final I_M_HU tuRecord = handlingUnitsBL.getById(packToInfo.getTu().getTuIdNotNull());
 			final ImmutableSet<HuId> allowedReservedVhuIds = request.getAllowedReservedVhuIds();
-			final HUTransformService huTransformService = HUTransformService.builderForHUcontext()
-					.huContext(huContext)
-					.allowedReservedVhuIds(allowedReservedVhuIds)
-					.build();
+			final HUTransformService huTransformService = newHUTransformService(huContext, allowedReservedVhuIds);
 			// CU quantity entry: the source was already merged into ONE new CU of the booked quantity (reservations honoured there), so that CU goes into the box as is
 			final I_M_HU cuRecord = request.isBookAsSingleCUInBox()
 					? pickFromHUsToPack.getSingleHU().toM_HU()
@@ -242,9 +239,7 @@ public class PackToHUsProducer
 							.sourceHUs(pickFromHUsToPack.toHUsList())
 							.productId(productId)
 							.qtyCU(qtyPicked)
-							.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
-									? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
-									: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
+							.reservedVHUsPolicy(toReservedHUsPolicy(allowedReservedVhuIds))
 							.build());
 			huTransformService.addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
 
@@ -370,22 +365,33 @@ public class PackToHUsProducer
 	{
 		final IHUContext huContext = request.getHuContext();
 		final ImmutableSet<HuId> allowedReservedVhuIds = request.getAllowedReservedVhuIds();
-		final I_M_HU singleCU = HUTransformService.builderForHUcontext()
-				.huContext(huContext)
-				.allowedReservedVhuIds(allowedReservedVhuIds)
-				.build()
+		final I_M_HU singleCU = newHUTransformService(huContext, allowedReservedVhuIds)
 				.husToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
 						.sourceHUs(pickFromHUs.toHUsList())
 						.productId(request.getProductId())
 						.qtyCU(request.getQtyPicked())
-						.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
-								? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
-								: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
+						.reservedVHUsPolicy(toReservedHUsPolicy(allowedReservedVhuIds))
 						.build());
 
 		final PickFromHUsList result = new PickFromHUsList();
 		result.add(newPickFromHU().huContext(huContext).hu(singleCU).build());
 		return result;
+	}
+
+	/** The one rule for which reserved source pieces a pick may use: only not reserved ones, except the reserved VHUs the request allows. */
+	private static ReservedHUsPolicy toReservedHUsPolicy(@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
+		return allowedReservedVhuIds.isEmpty()
+				? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
+				: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds);
+	}
+
+	private static HUTransformService newHUTransformService(@NonNull final IHUContext huContext, @NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
+		return HUTransformService.builderForHUcontext()
+				.huContext(huContext)
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build();
 	}
 
 	private PickFromHU.PickFromHUBuilder newPickFromHU()
