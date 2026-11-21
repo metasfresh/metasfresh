@@ -4,8 +4,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.hu_consolidation.mobile.shipment.HUConsolidationShipmentService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
+
+import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
@@ -14,16 +17,50 @@ public class HUConsolidationTargetCloser
 	@NonNull private final HUConsolidationLabelPrinter labelPrinter;
 	@NonNull private final HUConsolidationShipmentService shipmentService;
 
+	static final Runnable NO_PRINT = () -> {};
+
 	public HUConsolidationJob closeTarget(@NonNull final HUConsolidationJob job)
+	{
+		return close(job, target -> {
+			labelPrinter.printLabel(target);
+			return NO_PRINT;
+		}).getJob();
+	}
+
+	/**
+	 * Like {@link #closeTarget(HUConsolidationJob)}, but does not print the label: the label printing is returned in {@link CloseTargetResult}, for the caller to run.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException before the shipment is created, if the label cannot be printed
+	 */
+	public CloseTargetResult closeTargetDeferringLabelPrint(@NonNull final HUConsolidationJob job)
+	{
+		return close(job, labelPrinter::preparePrintLabel);
+	}
+
+	/**
+	 * @param labelPrintStep called first, with the LU target to be closed, before the shipment is created;
+	 *                       either prints now or prepares the print; returns the print that is still to run (a no-op if none)
+	 */
+	private CloseTargetResult close(
+			@NonNull final HUConsolidationJob job,
+			@NonNull final Function<HUConsolidationTarget, Runnable> labelPrintStep)
 	{
 		final HUConsolidationTarget currentTarget = job.getCurrentTarget();
 		if (currentTarget != null && currentTarget.getLuId() != null)
 		{
-			labelPrinter.printLabel(currentTarget);
+			final Runnable printLabelAction = labelPrintStep.apply(currentTarget);
 			shipmentService.createShipmentForLUs(job, ImmutableSet.of(currentTarget.getLuIdNotNull()));
+			return new CloseTargetResult(job.withCurrentTarget(null), printLabelAction);
 		}
 
-		return job.withCurrentTarget(null);
+		return new CloseTargetResult(job.withCurrentTarget(null), NO_PRINT);
+	}
+
+	@Value
+	public static class CloseTargetResult
+	{
+		@NonNull HUConsolidationJob job;
+		@NonNull Runnable printLabelAction;
 	}
 
 	public HUConsolidationJob closeAssumingNoActualTarget(@NonNull final HUConsolidationJob job)

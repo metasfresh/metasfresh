@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @Builder
@@ -43,17 +44,30 @@ class HULabelPrintCommand
 
 	public void execute()
 	{
+		prepare().ifPresent(printAction -> trxManager.runAfterClose((trx) ->
+		{
+			if (trx != null && !trx.isCommittedOK()) {return;}
+			printAction.run();
+		}));
+	}
+
+	/**
+	 * Validates the request (e.g. a label config must apply) and returns the printing without running it.
+	 *
+	 * @return the printing action (prints immediately, throws if the printing fails); empty if there is nothing to print
+	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed, e.g. no label config applies
+	 */
+	public Optional<Runnable> prepare()
+	{
 		final BatchToPrintCollector batchToPrintCollector = newBatchesToPrintCollector();
 		batchToPrintCollector.explodeAndAddAll(HUToReportWrapper.ofList(handlingUnitsBL.getByIds(request.getHuIds())));
 		batchToPrintCollector.explodeAndAddAll(request.getHus());
 		if (batchToPrintCollector.isEmpty())
 		{
-			return;
+			return Optional.empty();
 		}
 
-		trxManager.runAfterClose((trx) ->
-		{
-			if (trx != null && !trx.isCommittedOK()) {return;}
+		return Optional.of(() -> {
 			//M_HU_Storage persistence may be delayed by de.metas.handlingunits.storage.impl.SaveOnCommitHUStorageDAO
 			huQRCodesService.generateForExistingHUs(batchToPrintCollector.getHuIds());
 			batchToPrintCollector.forEach(this::printBatchNow);

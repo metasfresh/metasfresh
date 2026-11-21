@@ -1,9 +1,11 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices.ShipmentAllocation;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
 import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -20,6 +22,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -29,6 +32,7 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +40,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.fail;
@@ -48,6 +53,8 @@ class AssertHUExpectationsCommand
 	@NonNull private final AssertExpectationsCommandServices services;
 	@NonNull private final MasterdataContext context;
 	@NonNull final Map<String, JsonHUExpectation> expectations;
+
+	private static final Duration SHIPMENT_TIMEOUT = Duration.ofSeconds(60);
 
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
 
@@ -164,6 +171,30 @@ class AssertHUExpectationsCommand
 		if (expectation.getAttributes() != null)
 		{
 			assertAttributes(expectation.getAttributes(), huId);
+		}
+
+		if (expectation.getAttributesNotEmpty() != null)
+		{
+			assertAttributesNotEmpty(expectation.getAttributesNotEmpty(), huId);
+		}
+
+		if (expectation.getIsShipmentCompleted() != null)
+		{
+			assertShipmentCompleted(expectation.getIsShipmentCompleted(), huId);
+		}
+
+		if (expectation.getShippedTUCount() != null)
+		{
+			assertShippedTUCount(expectation.getShippedTUCount(), huId);
+		}
+
+		if (expectation.getArchiveProcessId() != null && expectation.getArchiveCount() == null)
+		{
+			throw new AdempiereException("archiveProcessId requires archiveCount: " + expectation);
+		}
+		if (expectation.getArchiveCount() != null)
+		{
+			assertThat(services.countArchivesOfHU(huId, expectation.getArchiveProcessId())).as("AD_Archive count").isEqualTo(expectation.getArchiveCount());
 		}
 
 		if (expectation.getTus() != null)
@@ -304,6 +335,82 @@ class AssertHUExpectationsCommand
 				}
 			});
 		});
+	}
+
+	private void assertAttributesNotEmpty(@NonNull final List<String> attributeCodes, @NonNull final HuId huId)
+	{
+		final ImmutableAttributeSet actualAttributes = services.getAttributes(getHUById(huId));
+		softly(() -> {
+			softlyPutContext("attributesNotEmpty", attributeCodes);
+			softlyPutContext("actualAttributes", actualAttributes);
+			for (final String attributeCodeStr : attributeCodes)
+			{
+				final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
+				softlyPutContext("attributeCode", attributeCode);
+				assertThat(actualAttributes.hasAttribute(attributeCode)).as("has attribute " + attributeCode).isEqualTo(true);
+				final String actualValue = actualAttributes.getValueAsString(attributeCode);
+				assertThat(actualValue != null && !actualValue.trim().isEmpty()).as("attribute " + attributeCode + " not empty (actual: " + actualValue + ")").isEqualTo(true);
+			}
+		});
+	}
+
+	/**
+	 * Completing the consolidation job only enqueues the shipment generation (async), so poll until all allocations of the LU
+	 * point to a completed shipment, or the timeout elapses.
+	 * Only {@code true} is supported: "not shipped" would pass on the first poll, before the async generation ran, so it proves nothing.
+	 */
+	private void assertShipmentCompleted(final boolean expected, @NonNull final HuId huId)
+	{
+		if (!expected)
+		{
+			throw new AdempiereException("isShipmentCompleted=false is not supported (it would pass before the async shipment generation ran); only true can be asserted");
+		}
+
+		final List<ShipmentAllocation> allocations = waitForShipmentCompleted(huId);
+		final boolean completed = isShipmentCompleted(allocations);
+		assertThat(completed).as("Shipment completed (M_InOut.DocStatus of the LU's picked-qty records: " + allocations + ")").isEqualTo(true);
+	}
+
+	/** Number of distinct TUs ({@code M_ShipmentSchedule_QtyPicked.M_TU_HU_ID}) of the LU whose shipment is completed; pins that ALL crates were shipped, not just some. */
+	private void assertShippedTUCount(final int expected, @NonNull final HuId luId)
+	{
+		final List<ShipmentAllocation> allocations = waitForShipmentCompleted(luId);
+		final long actual = allocations.stream()
+				.filter(ShipmentAllocation::isShipmentCompleted)
+				.map(ShipmentAllocation::getTuId)
+				.filter(Objects::nonNull)
+				.distinct()
+				.count();
+		assertThat((int)actual).as("Shipped TU count (picked-qty records of the LU: " + allocations + ")").isEqualTo(expected);
+	}
+
+	private List<ShipmentAllocation> waitForShipmentCompleted(@NonNull final HuId luId)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		List<ShipmentAllocation> allocations;
+		while (true)
+		{
+			allocations = services.getShipmentAllocationsByLU(luId);
+			if (isShipmentCompleted(allocations) || stopwatch.elapsed().compareTo(SHIPMENT_TIMEOUT) >= 0)
+			{
+				break;
+			}
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				break;
+			}
+		}
+		return allocations;
+	}
+
+	private static boolean isShipmentCompleted(@NonNull final List<ShipmentAllocation> allocations)
+	{
+		return !allocations.isEmpty() && allocations.stream().allMatch(ShipmentAllocation::isShipmentCompleted);
 	}
 
 	private void assertAttributeValue_String(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)

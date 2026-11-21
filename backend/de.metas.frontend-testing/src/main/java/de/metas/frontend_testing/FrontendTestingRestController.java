@@ -11,6 +11,8 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.bpartner.JsonUpdateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.bpartner.UpdateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsResponse;
 import de.metas.frontend_testing.masterdata.shipment.GenerateShipmentsCommand;
@@ -164,5 +166,17 @@ public class FrontendTestingRestController
 				.request(request)
 				.build()
 				.execute());
+	}
+
+	@PostMapping("updateBPartner")
+	public void updateBPartner(@RequestBody @NonNull final JsonUpdateBPartnerRequest request)
+	{
+		callInContext(() -> {
+			UpdateBPartnerCommand.builder()
+					.request(request)
+					.build()
+					.execute();
+			return null;
+		});
 	}
 }

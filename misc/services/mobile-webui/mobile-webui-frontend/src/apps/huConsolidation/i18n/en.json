@@ -4,6 +4,9 @@
     "New": "New LU",
     "Current": "Current"
   },
+  "HUConsolidationActivity": {
+    "scanGRAI": "Scan (GRAI)"
+  },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",
     "closeTarget": "Close",

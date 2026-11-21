@@ -45,7 +45,7 @@ export const SelectHUConsolidationTargetScreen = {
     }),
 
     clickCloseTargetButton: async () => await step(`${NAME} - Click Close Target LU button`, async () => {
-        await page.locator('#CloseTarget-button').tap();
+        await page.locator('#closeTarget-button').tap();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

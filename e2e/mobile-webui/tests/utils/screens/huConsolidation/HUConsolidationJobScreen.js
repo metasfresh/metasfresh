@@ -1,4 +1,4 @@
-import { page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUConsolidationJobsListScreen } from './HUConsolidationJobsListScreen';
 import { SelectHUConsolidationTargetScreen } from './SelectHUConsolidationTargetScreen';
@@ -6,8 +6,11 @@ import { PickingSlotScreen } from './PickingSlotScreen';
 import { Backend } from '../Backend';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
+import { GRAIScanScreen } from './GRAIScanScreen';
 
 const NAME = 'HUConsolidationJobScreen';
+/** data-testid of the "Scan (GRAI)" button on the job screen */
+const SCAN_GRAI_BUTTON_TESTID = 'scanGRAI-button';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
 
@@ -91,6 +94,75 @@ export const HUConsolidationJobScreen = {
         await PickingSlotScreen.waitForScreen();
     }),
 
+    /** Tap the job-level "Scan (GRAI)" button: opens the scan screen. */
+    clickScanGRAIButton: async () => await step(`${NAME} - Click Scan (GRAI) button`, async () => {
+        await page.getByTestId(SCAN_GRAI_BUTTON_TESTID).tap();
+        await GRAIScanScreen.waitForScreen();
+    }),
+
+    /**
+     * Expect the "Scan (GRAI)" button to be shown or hidden; when shown, optionally also its disabled state and its caption.
+     * @param {{visible: boolean, disabled?: boolean, caption?: string}} params
+     */
+    expectScanGRAIButton: async ({ visible, disabled, caption }) => await test.step(`${NAME} - Expect Scan (GRAI) button visible=${visible} disabled=${disabled} caption=${caption}`, async () => {
+        const button = page.getByTestId(SCAN_GRAI_BUTTON_TESTID);
+        if (!visible) {
+            await expect(button).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+            return;
+        }
+        await expect(button).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        if (disabled != null) {
+            if (disabled) await expect(button).toBeDisabled();
+            else await expect(button).toBeEnabled();
+        }
+        if (caption != null) {
+            await expect(button).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
+        }
+    }),
+
+    /** Expect the "Scan (GRAI)" button to sit below the pallet button and above the picking slot rows. */
+    expectScanGRAIButtonBetweenPalletButtonAndSlots: async () => await test.step(`${NAME} - Expect Scan (GRAI) button below the pallet button and above the picking slots`, async () => {
+        const topOf = async (locator) => (await locator.boundingBox())?.y;
+        const scanButton = page.getByTestId(SCAN_GRAI_BUTTON_TESTID);
+        await expect(scanButton).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const palletY = await topOf(page.getByTestId('targetLU-button'));
+        const scanY = await topOf(scanButton);
+        const firstSlotY = await topOf(page.locator('[data-pickingslotid]').first());
+        expect(palletY).toBeLessThan(scanY);
+        expect(scanY).toBeLessThan(firstSlotY);
+    }),
+
+    /** Expect the picking slot row caption to show the given HU count, e.g. "slot1 (2 HUs)" / "(1 HU)". */
+    expectPickingSlotHUCount: async ({ pickingSlotId, countHUs }) => await test.step(`${NAME} - Expect slot ${pickingSlotId} to hold ${countHUs} HU(s)`, async () => {
+        const unit = countHUs === 1 ? 'HU' : 'HUs';
+        const slotRow = page.locator(`[data-pickingslotid="${pickingSlotId}"]`);
+        await expect(slotRow).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(slotRow)
+            .toContainText(`(${countHUs} ${unit})`, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Expect the pallet (target LU) button caption to no longer show the pallet TYPE name, i.e. it shows the open pallet's QR code. */
+    expectTargetLUCaptionNotContains: async ({ text }) => await test.step(`${NAME} - Expect target LU caption not to contain '${text}'`, async () => {
+        await expect(page.getByTestId('targetLU-button')).not.toContainText(text, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Expect the pallet (target LU) button caption to start with the given text ("Neues Gebinde" / "New LU" / "Offenes Gebinde: ..." / "Current: ..."). */
+    expectTargetLUCaptionStartsWith: async ({ text }) => await test.step(`${NAME} - Expect target LU caption to start with '${text}'`, async () => {
+        await expect(page.getByTestId('targetLU-button')).toHaveText(new RegExp('^\\s*' + text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Expect the Fertigstellen ("Complete") button and the Rückgängig ("Abort") button captions. */
+    expectCompleteAndAbortCaptions: async ({ complete, abort }) => await test.step(`${NAME} - Expect captions '${complete}' / '${abort}'`, async () => {
+        await expect(page.locator('#last-confirm-button')).toContainText(complete, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('#abort-button')).toContainText(abort, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Leave the job screen with the Back button (the job stays started), back to the job list. */
+    goBack: async () => await step(`${NAME} - Go back to the job list`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await HUConsolidationJobsListScreen.waitForScreen();
+    }),
+
     consolidateAll: async ({ pickingSlotId }) => await step(`${NAME} - Consolidate All`, async () => {
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId });
         await PickingSlotScreen.clickConsolidateAllButton();
@@ -106,6 +178,26 @@ export const HUConsolidationJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await HUConsolidationJobsListScreen.waitForScreen();
+    }),
+
+    /**
+     * Tap Rückgängig / Abort and confirm with Ja, when the server refuses (a real pallet is the current target):
+     * the job screen stays, no job list.
+     */
+    abortRefused: async () => await step(`${NAME} - Abort (refused, stays on the job screen)`, async () => {
+        await page.locator('#abort-button').tap();
+        await YesNoDialog.waitForDialog();
+        // listener right before the action that fires the call: wait for the abort answer, so a navigation that
+        // follows an accepted abort cannot be missed by the checks below
+        const abortAnswered = page.waitForResponse(
+            (resp) => resp.url().includes('/wfProcess/') && resp.url().endsWith('/abort') && resp.request().method() === 'POST',
+            { timeout: SLOW_ACTION_TIMEOUT }
+        );
+        await YesNoDialog.clickYesButton();
+        await abortAnswered;
+        await expect(page.locator('#WFLaunchersScreen')).toHaveCount(0);
+        await HUConsolidationJobScreen.waitForScreen();
+        await HUConsolidationJobScreen.expectVisible();
     }),
 
     complete: async () => await step(`${NAME} - Complete`, async () => {

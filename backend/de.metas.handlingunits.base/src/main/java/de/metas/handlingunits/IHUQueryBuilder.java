@@ -110,6 +110,16 @@ public interface IHUQueryBuilder
 
 	Optional<HuId> firstIdOnly();
 
+	/**
+	 * Checks if at least one {@link I_M_HU} is matched by our criteria.
+	 * Use it for pure existence checks: it stops at the first match and, unlike {@link #firstIdOnly()}, does not fail when there are several matches.
+	 * Like all executors of this builder, it applies the criteria set so far; it does not change them.
+	 * Unlike {@link #list()} and the first-match executors, it ignores {@link #setErrorIfNoHUs(boolean, String)}: no match just returns {@code false}.
+	 *
+	 * @return {@code true} if there is at least one match; {@code false} if none
+	 */
+	boolean anyMatch();
+
 	/** Counts how many {@link I_M_HU}s are matched by our criteria */
 	int count();
 

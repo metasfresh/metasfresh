@@ -173,6 +173,26 @@ public class HUQueryBuilderTest
 		assertThat(huFilters.accept(hus.get(4))).isTrue();
 	}
 
+	@Test
+	public void anyMatch_noMatchingHU_false()
+	{
+		final I_M_Warehouse emptyWh = newInstance(I_M_Warehouse.class);
+		save(emptyWh);
+
+		assertThat(huQueryBuilder.addOnlyInWarehouseId(WarehouseId.ofRepoId(emptyWh.getM_Warehouse_ID())).anyMatch()).isFalse();
+	}
+
+	@Test
+	public void anyMatch_severalMatchingHUs_true_noException()
+	{
+		// 2 HUs match (locator-product, locator-product-nosourceHU); unlike firstIdOnly() it shall not fail because of that
+		huQueryBuilder
+				.addOnlyWithProduct(product)
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+
+		assertThat(huQueryBuilder.anyMatch()).isTrue();
+	}
+
 	private void createReservationRecord(final OrderLineId orderLineId, final I_M_HU hu)
 	{
 		hu.setIsReserved(true);

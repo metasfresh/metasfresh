@@ -75,6 +75,20 @@ export const Backend = {
     }),
 
     /**
+     * Registers the picking slot's queue under the given HU aliases (in pick order) and returns { context, qrCodes }
+     * (the global QR code per alias). Fails when the slot's queue does not hold exactly these HUs.
+     */
+    getPickingSlotCrates: async ({ title, slotQrCode, aliases }) => {
+        const { context } = await Backend.expect({
+            title,
+            pickingSlots: { [slotQrCode]: { queue: aliases.map((hu) => ({ hu })) } },
+        });
+        const qrCodes = {};
+        for (const alias of aliases) qrCodes[alias] = await Backend.getHUQRCodeByIdentifier({ identifier: alias });
+        return { context, qrCodes };
+    },
+
+    /**
      * Resolve a masterdata identifier (e.g. `"lu1"`) to the underlying handling-unit's
      * global QR code string. Used by tests that need to scan an HU which was created
      * indirectly (typically by a picking flow) and therefore has no QR code under
@@ -155,6 +169,30 @@ export const Backend = {
         assertNoErrors({ responseBody });
 
         return responseBody;
+    }),
+
+    /**
+     * Update a business partner after the fact (test support): sets {@code C_BPartner.GRAIRequired}, e.g. to flip the partner
+     * between picking and consolidation.
+     *
+     * @param {Object} args
+     * @param {number} args.bpartnerId - the C_BPartner_ID returned by createMasterdata (`bpartners.<key>.id`).
+     * @param {'Y'|'N'|'D'} args.graiRequired - the new C_BPartner.GRAIRequired.
+     */
+    updateBPartner: async ({ bpartnerId, graiRequired }) => await test.step(`Backend: update bpartner ${bpartnerId} GRAIRequired=${graiRequired}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/updateBPartner`, {
+            data: { bpartnerId, graiRequired },
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+            throw new Error(`updateBPartner failed: HTTP ${response.status()}`);
+        }
     }),
 
     /**

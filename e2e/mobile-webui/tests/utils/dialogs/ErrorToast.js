@@ -29,6 +29,12 @@ export const ErrorToast = {
             });
     },
 
+    /** Asserts the DOM id of the toast that contains the given toast body (the scanner reuses one fixed id for its error toast). */
+    expectToastId: async (toastBody, expectedId) => {
+        const toastElement = toastBody.locator('xpath=ancestor::*[contains(@class,"Toastify__toast--error")][1]');
+        await expect(toastElement).toHaveAttribute('id', expectedId);
+    },
+
     closePopup: async () => {
         // A single failure must surface as EXACTLY ONE error toast. Stacked duplicate toasts are a
         // UI/UX defect (the operator wonders "did it fail twice?", and on the small mobile viewport
@@ -47,9 +53,11 @@ export const ErrorToast = {
         }
 
         const closeButton = page.locator('.Toastify__close-button--error').first();
-        await closeButton.scrollIntoViewIfNeeded({ timeout: FAST_ACTION_TIMEOUT });
-        await closeButton.tap({ timeout: FAST_ACTION_TIMEOUT });
+        // tap() waits for actionability itself; the SLOW budget because the stability check needs rendered frames, which a loaded host delays
+        await closeButton.tap({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+        // react-toastify ignores a new toast with the same id until the previous one has fully exited (known product gap: a quick rescan shows no message); wait for that
+        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     },
 
     // Assert exactly N non-blocking success/info toasts (`.Toastify__toast--success`) are shown — one

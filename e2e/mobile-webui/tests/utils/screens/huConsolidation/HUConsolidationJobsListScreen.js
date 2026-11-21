@@ -1,5 +1,6 @@
 import { page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { test } from '../../../../playwright.config';
+import { expect } from '@playwright/test';
 import { HUConsolidationJobScreen } from './HUConsolidationJobScreen';
 
 const NAME = 'HUConsolidationJobsListScreen';
@@ -18,6 +19,11 @@ export const HUConsolidationJobsListScreen = {
         return {
             pickingJobId: await HUConsolidationJobScreen.getJobId(),
         }
+    }),
+
+    /** Expect no job button for the given ship-to (e.g. after Fertigstellen completed its job). */
+    expectJobNotListed: async ({ customerLocationId }) => await test.step(`${NAME} - Expect job of ship-to ${customerLocationId} not listed`, async () => {
+        await expect(locateJobButtons({ customerLocationId })).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 };
 

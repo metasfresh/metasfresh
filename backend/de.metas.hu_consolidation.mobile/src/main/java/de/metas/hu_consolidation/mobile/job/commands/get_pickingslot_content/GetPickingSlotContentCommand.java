@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -18,6 +17,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductBL;
@@ -41,7 +41,7 @@ public class GetPickingSlotContentCommand
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
-	@NonNull private final PickingJobBPartnerService pickingJobBPartnerService;
+	@NonNull private final HUConsolidationGRAIPresence graiPresence;
 
 	@NonNull private final HUConsolidationJobId jobId;
 	@NonNull private final PickingSlotId pickingSlotId;
@@ -56,10 +56,10 @@ public class GetPickingSlotContentCommand
 			throw new AdempiereException("Job " + jobId + " does not have picking slot " + pickingSlotId);
 		}
 
-		// Show the GRAI scanner only when the customer requires GRAI — same rule (and same source) picking uses.
-		final boolean graiScanEnabled = !pickingJobBPartnerService.getGRAIRequired(job.getCustomerId()).isNo();
-
 		final PickingSlotQueue queue = pickingSlotService.getPickingSlotQueue(pickingSlotId);
+
+		// Show the GRAI scanner only when a crate of this slot carries a GRAI (same rule as the job screen button).
+		final boolean graiScanEnabled = graiPresence.isAnyGRAIPresent(queue.getHuIds());
 
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(queue.getHuIds());
 		final ImmutableMap<HuId, I_M_HU> husById = Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));

@@ -35,6 +35,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
+import de.metas.scannable_code.ScannedCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -219,6 +220,15 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 				.huId(request.getHuId())
 				.grai(grai)
 				.build());
+		return toWFProcess(job);
+	}
+
+	public WFProcess consolidateByScan(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final HUConsolidationJob job = jobService.consolidateByScan(HUConsolidationJobId.ofWFProcessId(wfProcessId), scannedCode, callerId);
 		return toWFProcess(job);
 	}
 

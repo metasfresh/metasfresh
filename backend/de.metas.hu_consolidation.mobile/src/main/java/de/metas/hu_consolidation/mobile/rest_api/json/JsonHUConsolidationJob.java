@@ -19,4 +19,7 @@ public class JsonHUConsolidationJob
 	@NonNull ImmutableList<JsonHUConsolidationJobPickingSlot> pickingSlots;
 	
 	@Nullable JsonHUConsolidationTarget currentTarget;
+
+	/** true iff an active top-level HU in the job's slots carries a GRAI */
+	boolean graiScanEnabled;
 }
