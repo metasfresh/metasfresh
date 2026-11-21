@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -49,12 +50,15 @@ public class C_ReferenceNo_StepDef
 
 	private final C_ReferenceNo_StepDefData referenceNoTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final TestContext restTestContext;
 
 	public C_ReferenceNo_StepDef(@NonNull final C_ReferenceNo_StepDefData referenceNoTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final TestContext restTestContext)
 	{
 		this.referenceNoTable = referenceNoTable;
 		this.invoiceTable = invoiceTable;
+		this.restTestContext = restTestContext;
 	}
 
 	@And("update C_ReferenceNo:")
@@ -82,6 +86,23 @@ public class C_ReferenceNo_StepDef
 		saveRecord(referenceNoRecord);
 	}
 
+	/**
+	 * Loads the reference number of the given type that is linked to the given invoice.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_ReferenceNo_ID.Identifier</b> — (required) alias for the loaded reference number<br>
+	 *   <b>Record_ID.Identifier</b> — (required, identifier-ref) the invoice<br>
+	 *   <b>C_ReferenceNo_Type_ID.Identifier</b> — (optional) the type ID; nothing is loaded without it<br>
+	 *   <b>REST.Context</b> — (optional) REST context variable that receives the loaded ReferenceNo value<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And load C_ReferenceNo:
+	 *   | C_ReferenceNo_ID.Identifier | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | REST.Context |
+	 *   | referenceNo_1               | invoice_1            | 540006                           | invoiceRef   |
+	 * </pre>
+	 */
 	@And("load C_ReferenceNo:")
 	public void load_C_ReferenceNo(@NonNull final DataTable dataTable)
 	{
@@ -121,6 +142,12 @@ public class C_ReferenceNo_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_ReferenceNo.class);
 			referenceNoTable.putOrReplace(identifier, referenceNoRecord);
+
+			final String restContextVariableName = DataTableUtil.extractStringOrNullForColumnName(row, "REST.Context");
+			if (Check.isNotBlank(restContextVariableName))
+			{
+				restTestContext.setVariable(restContextVariableName, referenceNoRecord.getReferenceNo());
+			}
 		}
 	}
 }

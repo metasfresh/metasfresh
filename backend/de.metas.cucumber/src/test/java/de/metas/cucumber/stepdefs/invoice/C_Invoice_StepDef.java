@@ -1033,14 +1033,15 @@ public class C_Invoice_StepDef
 	 *   <b>Identifier</b> — (required) identifier of the invoice to update<br>
 	 *   <b>DateInvoiced</b> — (optional) the new invoice date<br>
 	 *   <b>Description</b> — (optional) the new invoice description<br>
-	 *   <b>C_PaymentTerm_ID</b> — (optional, identifier-ref) the new payment term<br>
+	 *   <b>POReference</b> — (optional) the new PO reference<br>
+	 *   <b>C_PaymentTerm_ID</b> — (optional, identifier-ref; falls back to the payment term's value) the new payment term<br>
 	 *   Older features prefix the optional columns with <code>OPT.</code> (e.g. <code>OPT.DateInvoiced</code>); both forms are read.
 	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, C_PaymentTerm_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_Invoice:
-	 *   | Identifier | Description |
-	 *   | inv_1      | Invoice 1   |
+	 *   | Identifier | Description | POReference |
+	 *   | inv_1      | Invoice 1   | PO_4711     |
 	 * </pre>
 	 */
 	@And("update C_Invoice:")
@@ -1056,6 +1057,7 @@ public class C_Invoice_StepDef
 
 		row.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateInvoiced).ifPresent(invoice::setDateInvoiced);
 		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_Description).ifPresent(invoice::setDescription);
+		row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(invoice::setPOReference);
 
 		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
 		// resolve correctly even when the DB record has a unique timestamped Value.
@@ -1064,7 +1066,7 @@ public class C_Invoice_StepDef
 
 		InterfaceWrapperHelper.save(invoice);
 
-		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+		invoiceIdentifier.putOrReplace(invoiceTable, invoice);
 	}
 
 	/**
