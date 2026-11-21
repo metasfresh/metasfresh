@@ -17,7 +17,9 @@ import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPick
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 public class HUConsolidationJobService
 {
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final HUConsolidationGRAIPresence graiPresence;
@@ -113,12 +116,15 @@ public class HUConsolidationJobService
 
 	public HUConsolidationJob closeTarget(@NonNull final HUConsolidationJobId jobId, @NonNull final UserId callerId)
 	{
+		// the print below is only "after the commit" if updateById opens its own transaction
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		// the label printing prepared inside the transaction by the mapper; stays a no-op when this call did not close a target
-		final AtomicReference<Runnable> printLabelActionRef = new AtomicReference<>(() -> {});
+		final AtomicReference<Runnable> printLabelActionRef = new AtomicReference<>(HUConsolidationTargetCloser.NO_PRINT);
 
 		final HUConsolidationJob jobClosed = jobRepository.updateById(jobId, job -> {
 			job.assertUserCanEdit(callerId);
-			final HUConsolidationTargetCloser.ClosedTarget closed = targetCloser.closeTargetDeferringLabelPrint(job);
+			final HUConsolidationTargetCloser.CloseTargetResult closed = targetCloser.closeTargetDeferringLabelPrint(job);
 			printLabelActionRef.set(closed.getPrintLabelAction());
 			return closed.getJob();
 		});
@@ -153,7 +159,7 @@ public class HUConsolidationJobService
 	 */
 	public HUConsolidationJob consolidateByScan(
 			@NonNull final HUConsolidationJobId jobId,
-			@NonNull final ScannedCode scannedCode,
+			@Nullable final ScannedCode scannedCode,
 			@NonNull final UserId callerId)
 	{
 		final HUConsolidationJob job = getJobById(jobId);

@@ -24,6 +24,7 @@ public class HUConsolidationLabelPrinter
 	 *
 	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed
 	 */
+	@NonNull
 	public Runnable preparePrintLabel(@NonNull final HUConsolidationTarget target)
 	{
 		return huLabelService.preparePrint(toPrintRequest(target));

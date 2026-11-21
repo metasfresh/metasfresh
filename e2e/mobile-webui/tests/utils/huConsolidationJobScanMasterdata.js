@@ -4,7 +4,15 @@ import { Backend } from './screens/Backend';
 export const HU_LABEL_PROCESS_ID = Number(process.env.HU_LABEL_PROCESS_ID || 540412);
 
 /** Order date of the sales orders (the value every existing consolidation spec uses; its accounting period is open). */
-const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+02:00';
+export const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+02:00';
+
+/** A single-line sales order of masterdata warehouse `wh`, dated {@link DATE_PROMISED}: `tu` is the key of the packing instructions item the line is ordered in. */
+export const jobScanSalesOrder = ({ bpartner, product, qty, tu }) => ({
+    bpartner,
+    warehouse: 'wh',
+    datePromised: DATE_PROMISED,
+    lines: [{ product, qty, piItemProduct: tu }],
+});
 
 /**
  * Masterdata of the job-scan scenarios: partner BP1 (graiRequired 'Y'), two slots, three single-line sales orders:
@@ -51,9 +59,9 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpar
                 ...handlingUnits,
             },
             salesOrders: salesOrders ?? {
-                SO1: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
-                SO2: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
-                SO3: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
+                SO1: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
+                SO2: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
+                SO3: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
             },
         },
     });
@@ -68,7 +76,7 @@ export const createNoGraiPartnerMasterdata = async ({ language = 'en_US' } = {})
     bpartners: { BP1: { graiRequired: 'N' } },
     pickingSlots: { slot1: {} },
     salesOrders: {
-        SO1: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
-        SO2: { bpartner: 'BP1', warehouse: 'wh', datePromised: DATE_PROMISED, lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
+        SO1: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
+        SO2: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
     },
 });

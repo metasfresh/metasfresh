@@ -225,7 +225,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 
 	public WFProcess consolidateByScan(
 			@NonNull final WFProcessId wfProcessId,
-			@NonNull final ScannedCode scannedCode,
+			@Nullable final ScannedCode scannedCode,
 			@NonNull final UserId callerId)
 	{
 		final HUConsolidationJob job = jobService.consolidateByScan(HUConsolidationJobId.ofWFProcessId(wfProcessId), scannedCode, callerId);

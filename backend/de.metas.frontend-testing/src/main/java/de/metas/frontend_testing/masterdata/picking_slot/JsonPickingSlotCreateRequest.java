@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonPickingSlotCreateRequest
 {
-	/** Picking slot code to use as is, e.g. a short one that fits a phone screen; the request fails if a slot with this code already exists. Default = the identifier plus a timestamp (unique). */
-	@Nullable String code;
 	@Nullable Identifier locator;
 	@Nullable Identifier bpartnerLocation;
 }

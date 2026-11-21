@@ -7,7 +7,7 @@ import java.util.Optional;
 
 /**
  * Resolves a scanned code of one code type to a crate among the crates of the job.
- * A new code type = one new implementation (a Spring component); nothing else changes.
+ * A new code type = one new implementation (a Spring component); the chain's "unrecognized code" message names the supported types.
  */
 public interface HUConsolidationScannedCodeResolver
 {

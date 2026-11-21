@@ -3,36 +3,6 @@
  * no matter which picking slot the crate is in, instead of opening every picking slot first. Scanned crates go onto the open pallet;
  * the scan screen stays open after each scan (OK beep, or error beep + error toast), Back returns to the job screen, where the
  * crate counts have dropped; Fertigstellen prints the pallet label and ships.
- *
- * Covered here:
- *   - the reference flow: three crates (2 packing instructions, 3 distinct GRAIs) picked with a GRAI scan into 2 picking slots;
- *     the worker opens the ship-to, chooses a new pallet, taps "Scan (GRAI)" (scan screen), scans two crates of two slots in a row
- *     (dot form, GS1 8003 form) without a tap in between, the screen stays; Back shows the dropped slot counts and the pallet QR
- *     as caption, the 2 crates are children of the pallet; scanning the last GRAI crate returns to the job screen by itself;
- *     Fertigstellen -> Ja removes the ship-to from the job list, the pallet holds the 3 crates, has an SSCC18, belongs to the
- *     partner, its shipment is completed and one label was archived.
- *   - rejected scans: every rejected scan shows exactly one error toast with the right text, moves nothing and the scan screen
- *     stays open.
- *   - button states (de_DE + en_US): "Scan (GRAI)" is disabled before a pallet is chosen, enabled after, and disabled again
- *     when the pallet is closed (Schliessen).
- *   - presence rule: a job whose slot holds only a pallet shows no button; with the partner on 'N' a GRAI crate still shows it
- *     and the slot screen scanner follows the presence rule; the button is shown only while a crate carries a GRAI.
- *   - Rückgängig: before any crate it voids the job and goes back to the job list; after a scan moved a crate onto the pallet
- *     it is refused silently, the job screen stays and nothing changes.
- *   - duplicate GRAI (de_DE + en_US): 2 crates of the job (two slots) carry the same GRAI (picking with pickTo:['TU'] accepts
- *     the same GRAI twice, no dedupe without an LU); the scan shows the message AD_Message 545693 ("Mehrere HUs fuer diesen
- *     QR-Code gefunden" / "Multiple HUs found for this QR code"), nothing moves, the scan screen stays open.
- *   - fallback: 3 GRAI crates + 1 crate without GRAI in one slot: scan 2, Back, move the crate without GRAI by tap in the slot
- *     screen, the button is still shown, scan the last GRAI crate: the scan screen returns to the job screen by itself, all
- *     4 crates on the pallet, button hidden.
- *   - existing pallet: a pallet chosen by scanning its QR code ("QR scannen") takes the scanned crates; the scan screen stays
- *     open between the scans and closes after the last crate.
- *   - slot-screen scanner follows the presence rule:
- *     (a) partner on 'N', slot holds one crate with a GRAI (stamped via the HU Manager) and one without: the slot screen shows
- *         the scanner, a scan moves the GRAI crate, the reloaded slot screen then shows no scanner, the other crate is still
- *         moved by tap.
- *     (b) crates without GRAI picked under 'N', the partner is set to 'Y' afterwards: the slot screen shows no scanner,
- *         the tap still moves a crate.
  */
 import { test } from '../../../playwright.config';
 import { expect } from '@playwright/test';
@@ -57,7 +27,7 @@ import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
+import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
 import { expectErrorToast } from '../../utils/common';
 
@@ -311,10 +281,10 @@ test('Rejected scans: one right message per scan, nothing moves, the scan screen
         bpartners: { BP1: { graiRequired: 'Y' }, BP2: { graiRequired: 'Y' } },
         pickingSlots: { slot1: {}, slot2: {}, slot3: {} },
         salesOrders: {
-            SO1: { bpartner: 'BP1', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
-            SO2: { bpartner: 'BP1', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
-            SO3: { bpartner: 'BP2', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
-            SO4: { bpartner: 'BP1', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
+            SO1: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
+            SO2: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
+            SO3: jobScanSalesOrder({ bpartner: 'BP2', product: 'P1', qty: 4, tu: 'TU1' }),
+            SO4: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
         },
     });
     // the values found BEFORE the masterdata call; restored by the afterEach above (also when the test failed)
@@ -490,8 +460,8 @@ test('Presence rule: a job whose slot holds only a pallet shows no button, the o
         bpartners: { BP1: { graiRequired: 'Y' }, BP2: { graiRequired: 'Y' } },
         pickingSlots: { slot1: {}, slot2: {} },
         salesOrders: {
-            SO1: { bpartner: 'BP1', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
-            SO2: { bpartner: 'BP2', warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00', lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
+            SO1: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
+            SO2: jobScanSalesOrder({ bpartner: 'BP2', product: 'P1', qty: 4, tu: 'TU1' }),
         },
     });
     const { slot1, slot2 } = masterdata.pickingSlots;
@@ -580,29 +550,42 @@ test('Partner on N, one crate with a GRAI (stamped via the HU Manager): button s
     });
 });
 
-/**
- * Fixture: two crates without GRAI picked while the partner is on 'N'; the partner is on 'Y' at Verdichtung time
- * (the button reads no partner flag). With withGraiCrate the P1 crate is picked afterwards under 'Y' with a GRAI scan.
- */
-const pickTwoCrates = async ({ masterdata, withGraiCrate }) => {
+/** Picks the P1 crate (SO1) and the P2 crate (SO2) into slot1 while the partner is on 'N'; returns their ids / QR codes. */
+const pickTwoCratesWithoutGrai = async ({ masterdata }) => {
     const { slot1 } = masterdata.pickingSlots;
     const { SO1, SO2 } = masterdata.salesOrders;
-    const bpartnerId = masterdata.bpartners.BP1.id;
+    const { PI_P1, PI_P2 } = masterdata.packingInstructions;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await pickOneCrateWithoutGrai({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P1.tuName, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+    await pickOneCrateWithoutGrai({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P2.tuName, huQrCode: masterdata.handlingUnits.HU2.qrCode });
+    return await Backend.getPickingSlotCrates({ title: 'two crates without GRAI in slot1', slotQrCode: slot1.qrCode, aliases: ['crateP1', 'crateP2'] });
+};
+
+const openJobWithPallet = async ({ masterdata }) => {
+    await ApplicationsListScreen.startApplication('huConsolidation');
+    await HUConsolidationJobsListScreen.waitForScreen();
+    await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+    await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
+};
+
+/**
+ * Fixture: a crate without GRAI (P2) picked while the partner is on 'N'; the partner is on 'Y' afterwards and the P1 crate is picked
+ * under 'Y' with a GRAI scan (the button reads no partner flag).
+ */
+const pickCrateWithoutGraiThenGraiCrate = async ({ masterdata }) => {
+    const { slot1 } = masterdata.pickingSlots;
+    const { SO1, SO2 } = masterdata.salesOrders;
     const { PI_P1, PI_P2 } = masterdata.packingInstructions;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await pickOneCrateWithoutGrai({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P2.tuName, huQrCode: masterdata.handlingUnits.HU2.qrCode });
-    if (!withGraiCrate) {
-        await pickOneCrateWithoutGrai({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P1.tuName, huQrCode: masterdata.handlingUnits.HU1.qrCode });
-    }
-    await Backend.updateBPartner({ bpartnerId, graiRequired: 'Y' });
-    if (withGraiCrate) {
-        const grai = graiWithSerial(PI_P1.grai, `${Date.now()}1`);
-        await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai, huQrCode: masterdata.handlingUnits.HU1.qrCode });
-        return { grai };
-    }
-    return {};
+    await Backend.updateBPartner({ bpartnerId: masterdata.bpartners.BP1.id, graiRequired: 'Y' });
+    const grai = graiWithSerial(PI_P1.grai, `${Date.now()}1`);
+    await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+    return { grai };
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -615,7 +598,8 @@ test('Two crates without GRAI (partner on Y at Verdichtung time): no button', as
 
     const masterdata = await createNoGraiPartnerMasterdata();
     const { slot1 } = masterdata.pickingSlots;
-    await pickTwoCrates({ masterdata, withGraiCrate: false });
+    await pickTwoCratesWithoutGrai({ masterdata });
+    await Backend.updateBPartner({ bpartnerId: masterdata.bpartners.BP1.id, graiRequired: 'Y' });
 
     await ApplicationsListScreen.startApplication('huConsolidation');
     await HUConsolidationJobsListScreen.waitForScreen();
@@ -635,7 +619,7 @@ test('One GRAI crate + one without: button shown, gone after the GRAI crate is s
 
     const masterdata = await createNoGraiPartnerMasterdata();
     const { slot1 } = masterdata.pickingSlots;
-    const { grai } = await pickTwoCrates({ masterdata, withGraiCrate: true });
+    const { grai } = await pickCrateWithoutGraiThenGraiCrate({ masterdata });
     let targetLUQRCode;
     const { context } = await Backend.getPickingSlotCrates({ title: 'two crates in slot1', slotQrCode: slot1.qrCode, aliases: ['crateNoGrai', 'crateGrai'] });
 
@@ -732,26 +716,6 @@ test('Rückgängig -> Ja after one scanned crate: stays on the job screen, nothi
     });
 });
 
-/** Picks the P1 crate (SO1) and the P2 crate (SO2) into slot1 while the partner is on 'N'; returns their ids / QR codes. */
-const pickTwoCratesWithoutGrai = async ({ masterdata }) => {
-    const { slot1 } = masterdata.pickingSlots;
-    const { SO1, SO2 } = masterdata.salesOrders;
-    const { PI_P1, PI_P2 } = masterdata.packingInstructions;
-
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await pickOneCrateWithoutGrai({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P1.tuName, huQrCode: masterdata.handlingUnits.HU1.qrCode });
-    await pickOneCrateWithoutGrai({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P2.tuName, huQrCode: masterdata.handlingUnits.HU2.qrCode });
-    return await Backend.getPickingSlotCrates({ title: 'two crates without GRAI in slot1', slotQrCode: slot1.qrCode, aliases: ['crateP1', 'crateP2'] });
-};
-
-const openJobWithPallet = async ({ masterdata }) => {
-    await ApplicationsListScreen.startApplication('huConsolidation');
-    await HUConsolidationJobsListScreen.waitForScreen();
-    await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
-    await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
-};
-
 // noinspection JSUnusedLocalSymbols
 test('Partner on N, one GRAI crate + one without: slot screen scanner moves the GRAI crate, then disappears; tap still works', async ({ page: _page }) => {
     // === ALLURE METADATA ===
@@ -831,15 +795,14 @@ test('Fallback: 3 GRAI crates + 1 crate without GRAI, the tap moves the crate wi
     await allure.story('HU Consolidation - GRAI scan screen');
     await allure.severity('critical');
 
-    const datePromised = '2025-03-01T00:00:00.000+02:00';
     const masterdata = await createJobScanMasterdata({
         bpartners: { BP1: { graiRequired: 'N' } },
         pickingSlots: { slot1: {} },
         salesOrders: {
-            SO1: { bpartner: 'BP1', warehouse: 'wh', datePromised, lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
-            SO2: { bpartner: 'BP1', warehouse: 'wh', datePromised, lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
-            SO3: { bpartner: 'BP1', warehouse: 'wh', datePromised, lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }] },
-            SO4: { bpartner: 'BP1', warehouse: 'wh', datePromised, lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }] },
+            SO1: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
+            SO2: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
+            SO3: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
+            SO4: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
         },
     });
     const { slot1 } = masterdata.pickingSlots;
@@ -972,7 +935,7 @@ for (const language of ['de_DE', 'en_US']) {
 
         await LoginScreen.login(masterdata.login.user);
         await ApplicationsListScreen.expectVisible();
-        // E12: picking has no duplicate check without an LU, so the same GRAI is scanned for the SO1 crate (slot1) and the SO3 crate (slot2)
+        // picking has no duplicate check without an LU, so the same GRAI is scanned for the SO1 crate (slot1) and the SO3 crate (slot2)
         await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai: graiDuplicate, huQrCode: masterdata.handlingUnits.HU1.qrCode });
         await pickOneGraiCrate({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, grai: graiOther, huQrCode: masterdata.handlingUnits.HU2.qrCode });
         await pickOneGraiCrate({ documentNo: SO3.documentNo, slotQrCode: slot2.qrCode, grai: graiDuplicate, huQrCode: masterdata.handlingUnits.HU1.qrCode });

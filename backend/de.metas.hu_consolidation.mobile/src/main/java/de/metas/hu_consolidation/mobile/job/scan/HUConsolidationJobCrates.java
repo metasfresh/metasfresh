@@ -69,8 +69,6 @@ public final class HUConsolidationJobCrates
 		return ofQueues(pickingSlotService.getNotEmptyQueues(PickingSlotQueueQuery.onlyPickingSlotIds(pickingSlotIds)).getQueues());
 	}
 
-	public boolean isEmpty() {return pickingSlotIdsByHuId.isEmpty();}
-
 	public int getCountHUs(@NonNull final PickingSlotId pickingSlotId)
 	{
 		return countHUsByPickingSlotId.getOrDefault(pickingSlotId, 0);
