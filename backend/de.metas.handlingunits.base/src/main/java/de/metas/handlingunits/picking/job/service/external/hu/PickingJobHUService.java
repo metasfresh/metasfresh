@@ -41,8 +41,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -52,6 +50,8 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
@@ -144,10 +144,6 @@ public class PickingJobHUService
 		return huGraiService.getSnapshots(huIds);
 	}
 
-	/**
-	 * The GRAI snapshots of the picked HUs. A CU that was booked in a CU quantity entry mode ({@code cusBookedWithOwnQRCode}) sits in a box (TU) which carries
-	 * the GRAI and a CU has no GRAI snapshot of its own, so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
-	 */
 	/** Test convenience: treats every CU of {@code huIds} as booked in a CU quantity entry mode. The completion check passes the set it determined. */
 	@VisibleForTesting
 	@NonNull
@@ -156,6 +152,10 @@ public class PickingJobHUService
 		return getGraiSnapshotsOfBoxes(huIds, huIds);
 	}
 
+	/**
+	 * The GRAI snapshots of the picked HUs. A CU that was booked in a CU quantity entry mode ({@code cusBookedWithOwnQRCode}) sits in a box (TU) which carries
+	 * the GRAI and a CU has no GRAI snapshot of its own, so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
+	 */
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithOwnQRCode)
 	{
