@@ -57,10 +57,10 @@ class HULabelPrintCommand
 	}
 
 	/**
-	 * Does the part which can fail early (e.g. missing label config), right now, and returns the actual printing to be run by the caller
-	 * (e.g. after its transaction was committed, so that a print failure can be shown to the user).
+	 * Validates the request (e.g. a label config must apply) and returns the printing without running it.
 	 *
-	 * @return the printing action or {@code null} if there is nothing to print
+	 * @return the printing action (prints immediately, throws if the printing fails) or {@code null} if there is nothing to print
+	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed, e.g. no label config applies
 	 */
 	@Nullable
 	public Runnable prepare()

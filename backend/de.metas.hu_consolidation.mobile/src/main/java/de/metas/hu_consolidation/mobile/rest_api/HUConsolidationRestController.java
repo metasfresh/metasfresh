@@ -157,7 +157,7 @@ public class HUConsolidationRestController
 	{
 		assertApplicationAccess();
 
-		final WFProcess wfProcess = mobileApplication.consolidateByScan(WFProcessId.ofString(wfProcessIdStr), request.getScannedCode(), getLoggedUserId());
+		final WFProcess wfProcess = mobileApplication.consolidateByScan(WFProcessId.ofString(wfProcessIdStr), request.toScannedCode(), getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
 

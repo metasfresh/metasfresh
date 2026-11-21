@@ -19,8 +19,10 @@ public class HUConsolidationLabelPrinter
 	}
 
 	/**
-	 * Checks right now that the label can be printed (e.g. a label config exists) and returns the printing itself,
-	 * to be run by the caller after its transaction was committed, so that a print failure reaches the caller.
+	 * Validates that the target's label can be printed (e.g. a label config exists) and returns the printing without running it.
+	 * Running the returned action prints immediately and throws if the printing fails.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed
 	 */
 	public Runnable preparePrintLabel(@NonNull final HUConsolidationTarget target)
 	{

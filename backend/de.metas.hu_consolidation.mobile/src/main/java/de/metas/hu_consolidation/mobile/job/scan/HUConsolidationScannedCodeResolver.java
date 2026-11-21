@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
+import de.metas.scannable_code.ScannedCode;
 import lombok.NonNull;
 
 import java.util.Optional;
@@ -15,5 +16,5 @@ public interface HUConsolidationScannedCodeResolver
 	 * @throws org.adempiere.exceptions.AdempiereException {@code HU_NOT_FOUND} if no crate of the job matches (also when {@code jobCrates} is empty, without any query),
 	 *                                                     {@code HU_AMBIGUOUS} if more than one matches.
 	 */
-	Optional<HUConsolidationScannedCrate> resolve(@NonNull String scannedCode, @NonNull HUConsolidationJobCrates jobCrates);
+	Optional<HUConsolidationScannedCrate> resolve(@NonNull ScannedCode scannedCode, @NonNull HUConsolidationJobCrates jobCrates);
 }

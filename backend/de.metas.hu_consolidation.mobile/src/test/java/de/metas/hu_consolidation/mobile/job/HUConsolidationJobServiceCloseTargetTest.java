@@ -111,7 +111,7 @@ class HUConsolidationJobServiceCloseTargetTest
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
 	}
 
-	/** No LU label config: fails before the close, as today (no shipment, pallet stays open). */
+	/** No LU label config: fails before the close (no shipment, pallet stays open). */
 	@Test
 	void closeTarget_noLabelConfig_failsBeforeClose_nothingChanges()
 	{

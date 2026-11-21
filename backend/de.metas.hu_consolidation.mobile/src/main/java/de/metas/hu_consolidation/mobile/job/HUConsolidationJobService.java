@@ -2,7 +2,6 @@ package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
-import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
 import de.metas.hu_consolidation.mobile.job.commands.complete.CompleteCommand;
@@ -17,10 +16,9 @@ import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
-import de.metas.util.StringUtils;
+import de.metas.scannable_code.ScannedCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -126,7 +124,6 @@ public class HUConsolidationJobService
 		});
 
 		// Print after the close was committed, so that a print failure is shown to the operator while the pallet stays closed
-		// (like picking: PickingJobService saves, then prints).
 		printLabelActionRef.get().run();
 
 		return jobClosed;
@@ -156,20 +153,14 @@ public class HUConsolidationJobService
 	 */
 	public HUConsolidationJob consolidateByScan(
 			@NonNull final HUConsolidationJobId jobId,
-			@NonNull final String scannedCode,
+			@NonNull final ScannedCode scannedCode,
 			@NonNull final UserId callerId)
 	{
 		final HUConsolidationJob job = getJobById(jobId);
 		job.assertUserCanEdit(callerId);
 
-		final String scannedCodeNorm = StringUtils.trimBlankToNull(scannedCode);
-		if (scannedCodeNorm == null)
-		{
-			throw new AdempiereException(MobileQRCodeMessages.INVALID_GRAI_BARCODE, scannedCode);
-		}
-
 		final HUConsolidationJobCrates jobCrates = HUConsolidationJobCrates.load(job.getPickingSlotIds(), pickingSlotService);
-		final HUConsolidationScannedCrate crate = scannedCodeResolvers.resolve(scannedCodeNorm, jobCrates);
+		final HUConsolidationScannedCrate crate = scannedCodeResolvers.resolve(scannedCode, jobCrates);
 
 		return consolidate(ConsolidateRequest.builder()
 				.callerId(callerId)

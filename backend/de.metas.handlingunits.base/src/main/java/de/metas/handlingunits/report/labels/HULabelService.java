@@ -61,9 +61,10 @@ public class HULabelService
 	}
 
 	/**
-	 * Like {@link #print(HULabelPrintRequest)} but the printing is not deferred to after-transaction-close:
-	 * the label config check happens now, the returned action does the printing when run by the caller
-	 * (so that a print failure reaches the caller).
+	 * Validates the request (e.g. a label config must apply) and returns the printing without running it.
+	 * Running the returned action prints immediately, not after the transaction closed, and throws if the printing fails.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed, e.g. no label config applies
 	 */
 	@NonNull
 	public Runnable preparePrint(@NonNull final HULabelPrintRequest request)

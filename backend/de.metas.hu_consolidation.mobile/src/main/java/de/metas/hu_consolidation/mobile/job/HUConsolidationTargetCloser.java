@@ -26,11 +26,9 @@ public class HUConsolidationTargetCloser
 	}
 
 	/**
-	 * Closes the current target and creates the shipment like {@link #closeTarget(HUConsolidationJob)},
-	 * but does NOT run the label printing: it only checks that printing is possible (as today, a failure here fails the close)
-	 * and returns the printing, which the caller shall run after its transaction was committed,
-	 * so that a print failure reaches the operator instead of being swallowed by an after-commit listener
-	 * while the pallet stays closed (same as picking, see PickingJobService#closeLUAndTUPickingTargets).
+	 * Like {@link #closeTarget(HUConsolidationJob)}, but does not print the label: the label printing is returned in {@link ClosedTarget}, for the caller to run.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException before the shipment is created, if the label cannot be printed
 	 */
 	public ClosedTarget closeTargetDeferringLabelPrint(@NonNull final HUConsolidationJob job)
 	{

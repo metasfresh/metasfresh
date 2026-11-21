@@ -55,7 +55,7 @@ public class CreatePackingInstructionsCommand
 {
 	private static final Logger logger = LogManager.getLogger(CreatePackingInstructionsCommand.class);
 
-	/** {@code AD_JavaClass_ID} of {@code CopyHUAttributeTransferStrategy}, as used by the live LU SSCC18 {@code M_HU_PI_Attribute}. */
+	/** {@code AD_JavaClass_ID} of {@code CopyHUAttributeTransferStrategy}, as used by the LU SSCC18 {@code M_HU_PI_Attribute}. */
 	private static final JavaClassId HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID = JavaClassId.ofRepoId(540027);
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);

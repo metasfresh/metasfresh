@@ -5,6 +5,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -22,9 +23,9 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
-	public Optional<HUConsolidationScannedCrate> resolve(@NonNull final String scannedCode, @NonNull final HUConsolidationJobCrates jobCrates)
+	public Optional<HUConsolidationScannedCrate> resolve(@NonNull final ScannedCode scannedCode, @NonNull final HUConsolidationJobCrates jobCrates)
 	{
-		final GRAI grai = GRAI.parse(scannedCode);
+		final GRAI grai = GRAI.parse(scannedCode.getAsString());
 		if (grai == null)
 		{
 			return Optional.empty();
