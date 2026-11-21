@@ -3,8 +3,6 @@ import { Backend } from './screens/Backend';
 /** AD_Process_ID of the LU label report: core "LU SSCC-Barcode-Etikett" (540412); override via env HU_LABEL_PROCESS_ID when the image uses another label process. */
 export const HU_LABEL_PROCESS_ID = Number(process.env.HU_LABEL_PROCESS_ID || 540412);
 
-/** AD_Process_ID of a process that cannot print a label (core "Anlage zur Provisionsabrechnung" 540094: its jasper file does not exist in this installation); override via env NOT_A_LABEL_PROCESS_ID. */
-export const NOT_A_LABEL_PROCESS_ID = Number(process.env.NOT_A_LABEL_PROCESS_ID || 540094);
 /** Order date of the sales orders (the value every existing consolidation spec uses; its accounting period is open). */
 const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+02:00';
 
@@ -13,10 +11,10 @@ const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+
  * SO1 (P1) -> slot1, SO2 (P2) -> slot1, SO3 (P1) -> slot2. Product aggregation + pickTo:['TU'] so each pick
  * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config.
  *
- * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object, huLabelConfigs?: object}} [overrides]
- *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata); `huLabelConfigs` replaces the default label config of BP1 (e.g. `{}` = none, so the label print of a closed pallet fails).
+ * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object, huLabelConfigs?: object, packingInstructions?: object}} [overrides]
+ *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata); `huLabelConfigs` replaces the default label config of BP1 (e.g. `{}` = none); `packingInstructions` replaces the default PI_P1 / PI_P2 (e.g. PI_P2 with its own LU without SSCC18, so the SSCC label of a closed pallet of that type has no SSCC to print).
  */
-export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits, huLabelConfigs } = {}) => {
+export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits, huLabelConfigs, packingInstructions } = {}) => {
     return await Backend.createMasterdata({
         language,
         request: {
@@ -30,6 +28,7 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpar
                     allowPickingAnyHU: true,
                     pickTo: pickTo ?? ['TU'],
                     allowCompletingPartialPickingJob: true,
+                    anonymousPickHUsOnTheFly: false, // the picking profile is shared and persistent: a spec that left it on would send the pick line tap straight to the quantity screen
                 },
             },
             bpartners: bpartners ?? { BP1: { graiRequired: 'Y' } },
@@ -39,7 +38,7 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpar
                 P1: { prices: [{ price: 1 }] },
                 P2: { prices: [{ price: 1 }] },
             },
-            packingInstructions: {
+            packingInstructions: packingInstructions ?? {
                 PI_P1: { lu: 'LU', luSSCC18: true, qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
                 PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
             },

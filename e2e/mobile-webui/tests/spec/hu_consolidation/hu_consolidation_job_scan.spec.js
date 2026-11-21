@@ -57,7 +57,7 @@ import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID, NOT_A_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
+import { createJobScanMasterdata, createNoGraiPartnerMasterdata, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
 import { expectErrorToast } from '../../utils/common';
 
@@ -214,6 +214,7 @@ test('Scan (GRAI) opens the scan screen: 3 crates from 2 slots scanned there, Ba
 
     await test.step('Scan (GRAI) opens the scan screen; 2 crates from 2 slots in a row, the screen stays open', async () => {
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
+        await HUConsolidationJobScreen.expectScanGRAIButtonBetweenPalletButtonAndSlots();
         await HUConsolidationJobScreen.clickScanGRAIButton();
         await GRAIScanScreen.expectVisible();
         // header caption of the scan screen; the URL is the scan screen route of the job opened with the pallet chosen above
@@ -999,20 +1000,22 @@ for (const language of ['de_DE', 'en_US']) {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('TC23 Schliessen with a failing label print (label process fails): error shown, pallet closed anyway, shipment as today', async ({ page: _page }) => {
+test('Schliessen of a pallet whose label print fails: error shown, pallet closed anyway and shipped', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
     await allure.story('HU Consolidation - GRAI scan screen');
     await allure.severity('critical');
 
-    // The label print of the closed pallet fails: the partner's LU label config points to a process that cannot print a label
-    // (AD_Process 540094, whose report file does not exist), so the print raises an error. The customer's variant of the same failure
-    // (pallet type without SSCC18; the customer label process prints a null SSCC) takes the same code path, but needs the
-    // customer's label report, which core CI does not have.
+    // The label print of the closed pallet fails as for the customer's Einwegpalette: the pallet type has no SSCC18 attribute
+    // (PI_P2 gets its own LU, the default one is shared with PI_P1, which puts SSCC18 on it), and the SSCC label prints the empty SSCC.
     const masterdata = await createJobScanMasterdata({
         language: 'de_DE',
-        huLabelConfigs: { lc1: { bpartner: 'BP1', huUnitType: 'LU', sourceDocType: 'PI', process: NOT_A_LABEL_PROCESS_ID, autoPrint: true } },
+        packingInstructions: {
+            PI_P1: { lu: 'LU', luSSCC18: true, qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+            PI_P2: { lu: 'LU_NO_SSCC', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
+        },
+        huLabelConfigs: { lc1: { bpartner: 'BP1', huUnitType: 'LU', sourceDocType: 'PI', process: HU_LABEL_PROCESS_ID, autoPrint: true } },
         sysconfigs: {
             'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
@@ -1054,7 +1057,7 @@ test('TC23 Schliessen with a failing label print (label process fails): error sh
     });
 
     await Backend.expect({
-        title: 'the pallet is shipped as today: shipment completed once the async shipment work package ran',
+        title: 'the closed pallet is shipped: shipment completed once the async shipment work package ran',
         hus: { [targetLUQRCode]: { isShipmentCompleted: true } },
     });
     await Backend.expect({
@@ -1069,7 +1072,7 @@ const ERROR_BEEP_HZ = 100;
 const SCANNER_ERROR_TOAST_ID = 'BarcodeScannerComponentError';
 
 // noinspection JSUnusedLocalSymbols
-test('TC24 Slot screen: a refused GRAI scan plays the error beep with the scanner\'s one error message, an accepted scan the OK beep', async ({ page: _page }) => {
+test('Slot screen: a refused GRAI scan plays the error beep with the scanner\'s one error message, an accepted scan the OK beep', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');

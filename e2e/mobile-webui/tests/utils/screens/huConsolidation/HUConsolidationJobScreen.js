@@ -120,6 +120,18 @@ export const HUConsolidationJobScreen = {
         }
     }),
 
+    /** Expect the "Scan (GRAI)" button to sit below the pallet button and above the picking slot rows. */
+    expectScanGRAIButtonBetweenPalletButtonAndSlots: async () => await test.step(`${NAME} - Expect Scan (GRAI) button below the pallet button and above the picking slots`, async () => {
+        const topOf = async (locator) => (await locator.boundingBox())?.y;
+        const scanButton = page.getByTestId(SCAN_GRAI_BUTTON_TESTID);
+        await expect(scanButton).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const palletY = await topOf(page.getByTestId('targetLU-button'));
+        const scanY = await topOf(scanButton);
+        const firstSlotY = await topOf(page.locator('[data-pickingslotid]').first());
+        expect(palletY).toBeLessThan(scanY);
+        expect(scanY).toBeLessThan(firstSlotY);
+    }),
+
     /** Expect the picking slot row caption to show the given HU count, e.g. "slot1 (2 HUs)" / "(1 HU)". */
     expectPickingSlotHUCount: async ({ pickingSlotId, countHUs }) => await test.step(`${NAME} - Expect slot ${pickingSlotId} to hold ${countHUs} HU(s)`, async () => {
         const unit = countHUs === 1 ? 'HU' : 'HUs';
