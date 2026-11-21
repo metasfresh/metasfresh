@@ -746,17 +746,25 @@ public class PickingJobService implements PickingSlotListener
 	/**
 	 * Closes the job's targets and every line's targets.
 	 * <p>
-	 * Lines whose customer uses a new CU quantity entry mode: each line's closed HUs go to that line's picking slot queue. In a job with
-	 * line-level targets (product job) every customer's line has its own slot, and the slot the picker scanned last belongs to another
-	 * customer (an HU queued on two slots cannot be shipped). An existing HU that is the open target of two lines with different slots
-	 * would be queued on both; lines of different customers do not share a target.
+	 * Lines whose customer uses a new CU quantity entry mode, or which hold a pack booked in such a mode: each line's closed HUs go to that line's
+	 * picking slot queue. In a job with line-level targets (product job) every customer's line has its own slot, and the slot the picker scanned
+	 * last belongs to another customer (an HU queued on two slots cannot be shipped). An existing HU that is the open target of two lines with
+	 * different slots would be queued on both; lines of different customers do not share a target.
+	 * <p>
+	 * A pack booked in a new mode keeps its line on its own slot after the customer was switched to Manual while the job is open: the close follows
+	 * what was booked (as the un-pick and the GRAI completion check do), not only the customer's current mode.
 	 * <p>
 	 * Manual lines (and all lines of a job without a new-mode line): unchanged, all closed HUs go to the slot scanned last.
 	 */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
+		final ImmutableSet<HuId> cusBookedInNewMode = huService.filterCUsBookedInCUQtyEntryMode(
+				pickingJob.getLines().stream()
+						.flatMap(line -> line.getPickedHUInfos().stream())
+						.collect(ImmutableSet.toImmutableSet()));
 		final List<PickingJobLine> newModeLines = pickingJob.getLines().stream()
-				.filter(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired())
+				.filter(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired()
+						|| line.getPickedHUIds().stream().anyMatch(cusBookedInNewMode::contains))
 				.collect(ImmutableList.toImmutableList());
 		if (newModeLines.isEmpty())
 		{

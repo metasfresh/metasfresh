@@ -466,6 +466,25 @@ public class PickingJobHUService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	/**
+	 * @return the ids of those picked HUs that were booked in a CU quantity entry mode: a CU in a box (TU) whose recorded QR code is its own.
+	 * Manual books a whole box (a TU, not a CU) or a CU with the box's QR code, so a Manual pick is never in the result.
+	 */
+	@NonNull
+	public ImmutableSet<HuId> filterCUsBookedInCUQtyEntryMode(@NonNull final Collection<HUInfo> pickedHUInfos)
+	{
+		final ImmutableSet<HuId> assignedToOwnQRCode = filterHUsAssignedToOwnQRCode(pickedHUInfos);
+		if (assignedToOwnQRCode.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return handlingUnitsBL.getByIds(assignedToOwnQRCode).stream()
+				.filter(this::isCUInTU)
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public Optional<HuId> getHuIdByQRCodeIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode);}
 
 	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode);}

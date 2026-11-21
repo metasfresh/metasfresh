@@ -1535,6 +1535,44 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		/**
+		 * (x4) Mode switched while the job is open: customer A's box was booked in Scan once, then the customer is switched to Manual before all
+		 * targets are closed. The close follows how the box was booked (the CU booked with its own QR code), not the customer's current mode,
+		 * so A's box is still queued on A's slot only, not on the slot scanned last for customer B.
+		 */
+		@Test
+		void newModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheBoxOnItsOwnLinesSlot()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = sourceBox("QR-X4");
+			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
+			createPackageable("salesOrder-x4-A", helper.shipToBPLocationId);
+			createPackageable("salesOrder-x4-B", customerB);
+			PickingJob job = helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.PRODUCT)
+									.pickerId(UserId.ofRepoId(1234))
+									.isAllowPickingAnyHU(true)
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+			assertThat(job.getLines()).as("one line per customer").hasSize(2);
+			final PickingJobLine lineA = job.getLines().stream()
+					.filter(line -> line.getCustomerId().equals(helper.shipToBPLocationId.getBpartnerId()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("no line of customer A"));
+			job = helper.pickingJobService.setTUPickingTarget(job, lineA.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+			job = pickOnLine(job, lineA.getId(), source, "3", label(PRODUCT_NO, LOT_A));
+			final HuId boxA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no box")).getTuIdNotNull();
+			final PickingSlotId slotB = createPickingSlot("SLOT-B");
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
+
+			setProfile(CUQtyEntryMode.MANUAL); // an administrator switches the customer to Manual while the job is open
+
+			helper.pickingJobService.closeLUAndTUPickingTargets(job);
+
+			assertThat(queuedSlotsOf(boxA)).as("customer A's box, booked in Scan once, is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
+		}
+
+		/**
 		 * (x2) Manual: the same two-customer product job queues the box on the slot scanned last, as today (the per-line slot is only for the
 		 * new quantity entry modes).
 		 */
