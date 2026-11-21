@@ -90,7 +90,7 @@ export const PickLineScanScreen = {
     rescanCULabelRefused: async (label, expectedText) => await step(`${NAME} - Rescan CU label, expect refusal '${expectedText}'`, async () => {
         await expectErrorToast(
             `${NAME} label rescan refusal`,
-            async () => await BarcodeScannerComponent.type({ scannedCode: label, testId: 'rescanCULabel-input' }),
+            async () => await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label, testId: 'rescanCULabel-input' }),
             async ({ textContent }) => {
                 expect(textContent).toContain(expectedText);
                 await expectToastCloseButtonOnScreen();
@@ -114,7 +114,7 @@ export const PickLineScanScreen = {
 
     /** Scans one raw CU label into the quantity block's own scanner (Scan once: a new label replaces the remembered one). */
     rescanCULabel: async (label) => await step(`${NAME} - Rescan CU label in the quantity block`, async () => {
-        await BarcodeScannerComponent.type({ scannedCode: label, testId: 'rescanCULabel-input' });
+        await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label, testId: 'rescanCULabel-input' });
     }),
 
     /** Asserts that the open box shown in the header ("Current") carries the given caption (the TU type name of a GRAI box). */
@@ -137,14 +137,14 @@ export const PickLineScanScreen = {
 
     /** Scans a GRAI inside the open quantity block: opens a new box, the block stays. */
     rescanGrai: async (graiString) => await step(`${NAME} - Rescan GRAI ${graiString} in the quantity block`, async () => {
-        await BarcodeScannerComponent.type({ scannedCode: graiString, testId: 'rescanCULabel-input' });
+        await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: graiString, testId: 'rescanCULabel-input' });
     }),
 
     /** Scans a GRAI inside the open quantity block that must be refused: error toast with the text, the block stays. */
     rescanGraiRefused: async (graiString, expectedText) => await step(`${NAME} - Rescan GRAI, expect refusal '${expectedText}'`, async () => {
         await expectErrorToast(
             `${NAME} GRAI refusal`,
-            async () => await BarcodeScannerComponent.type({ scannedCode: graiString, testId: 'rescanCULabel-input' }),
+            async () => await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: graiString, testId: 'rescanCULabel-input' }),
             ({ textContent }) => expect(textContent).toContain(expectedText)
         );
         await GetQuantityDialog.waitForDialog();
