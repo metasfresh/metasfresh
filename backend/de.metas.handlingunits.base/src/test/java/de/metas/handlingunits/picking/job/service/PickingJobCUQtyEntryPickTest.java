@@ -88,6 +88,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -553,6 +554,43 @@ class PickingJobCUQtyEntryPickTest
 					.as("Manual-shaped CU: checked as it is, the CU has no GRAI snapshot").isEmpty();
 			assertThat(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(cuId), ImmutableSet.of(cuId)))
 					.as("CU booked with its own QR code: its box is checked").extracting(snapshot -> snapshot.getHuId()).containsExactly(boxId);
+		}
+
+		/**
+		 * One QR code can be assigned to several HUs (a split HU shares the source's QR code). A customer that does not require GRAIs
+		 * must complete a job picked from such a HU, as on the base branch: no QR code lookup may run, let alone throw.
+		 */
+		@Test
+		void pickedHUWithQRCodeSharedBySeveralHUs_graiNotRequired_completes()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			setCustomerGraiRequired(GRAIRequired.No);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-SHARED-N");
+			final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
+			// the QR code becomes shared after the pick (a split HU shares the source's QR code), so the pick itself is not what is under test
+			final HuId otherHuSharingTheQRCode = helper.createVHU(productId, "4");
+			final HUInfo pickedCU = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUInfos());
+			helper.huService.getHuQRCodesService().assign(pickedCU.getQrCode(), ImmutableSet.of(pickedCU.getId(), otherHuSharingTheQRCode));
+
+			assertThatCode(() -> helper.pickingJobService.complete(job)).doesNotThrowAnyException();
+		}
+
+		/** Same shared QR code, GRAI required: the check judges the GRAI (box without GRAI is refused), not a QR code lookup failure. */
+		@Test
+		void pickedHUWithQRCodeSharedBySeveralHUs_graiRequiredYes_isRefusedForTheMissingGrai()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			setCustomerGraiRequired(GRAIRequired.Yes);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-SHARED-Y");
+			final PickingJob job = pickEach(openBoxFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
+			// the QR code becomes shared after the pick (a split HU shares the source's QR code), so the pick itself is not what is under test
+			final HuId otherHuSharingTheQRCode = helper.createVHU(productId, "4");
+			final HUInfo pickedCU = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUInfos());
+			helper.huService.getHuQRCodesService().assign(pickedCU.getQrCode(), ImmutableSet.of(pickedCU.getId(), otherHuSharingTheQRCode));
+
+			assertThatThrownBy(() -> helper.pickingJobService.complete(job))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
 		/** Manual mode: the picked HU is the box itself (asserted below); the box has no GRAI, so completion is refused. */

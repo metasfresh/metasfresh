@@ -1,6 +1,9 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUContextHolder;
@@ -38,6 +41,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -131,7 +136,8 @@ public class PickingJobHUService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
 
-	/** The picked HUs as they are (Manual mode). */
+	/** The GRAI snapshots of the given HUs as they are, without looking for a box. Test convenience: the completion check uses {@link #getGraiSnapshotsOfBoxes(Set, Set)}. */
+	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
 	{
@@ -140,8 +146,10 @@ public class PickingJobHUService
 
 	/**
 	 * The GRAI snapshots of the picked HUs. A CU that was booked in a CU quantity entry mode ({@code cusBookedWithOwnQRCode}) sits in a box (TU) which carries
-	 * the GRAI and a CU has no GRAI snapshot of its own, so it is replaced by its TU. The one-argument form treats every CU of {@code huIds} as booked that way. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
+	 * the GRAI and a CU has no GRAI snapshot of its own, so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
 	 */
+	/** Test convenience: treats every CU of {@code huIds} as booked in a CU quantity entry mode. The completion check passes the set it determined. */
+	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds)
 	{
@@ -433,6 +441,30 @@ public class PickingJobHUService
 	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId) {return huQRCodesService.getOrCreateQRCodesByHuId(huId);}
 
 	public HuId getHuIdByQRCode(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCode(huQRCode);}
+
+	/**
+	 * @return the ids of those HUs whose recorded QR code is assigned to the HU itself (one batch query; a QR code shared by several HUs is no error)
+	 */
+	@NonNull
+	public ImmutableSet<HuId> filterHUsAssignedToOwnQRCode(@NonNull final Collection<HUInfo> huInfos)
+	{
+		if (huInfos.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableMap<HUQRCodeUniqueId, HUQRCodeAssignment> assignmentsByQRCodeId = Maps.uniqueIndex(
+				huQRCodesService.getHUAssignmentsByQRCodeIfExist(huInfos.stream().map(HUInfo::getQrCode).collect(ImmutableSet.toImmutableSet())),
+				HUQRCodeAssignment::getId);
+
+		return huInfos.stream()
+				.filter(huInfo -> {
+					final HUQRCodeAssignment assignment = assignmentsByQRCodeId.get(huInfo.getQrCode().getId());
+					return assignment != null && assignment.isAssignedToHuId(huInfo.getId());
+				})
+				.map(HUInfo::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode);}
 

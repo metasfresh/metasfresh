@@ -9,7 +9,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
-import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
@@ -20,6 +19,8 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -33,7 +34,8 @@ public class PickingJobGRAIValidator
 
 	// State
 	@NonNull private final SalesOrderDummyGRAIProviders salesOrderDummyGRAIProviders;
-	@NonNull private ImmutableSet<HuId> cusBookedWithOwnQRCode = ImmutableSet.of();
+	/** computed on first use: customers that do not require GRAIs never need it */
+	@Nullable private ImmutableSet<HuId> _cusBookedWithOwnQRCode;
 	@NonNull private final CustomerGRAIConfigProvider customerGRAIConfigProvider;
 
 	@Builder
@@ -55,22 +57,26 @@ public class PickingJobGRAIValidator
 
 	public void validate()
 	{
-		this.cusBookedWithOwnQRCode = extractCUsBookedWithOwnQRCode();
 		getPickedHUIdsBySegment().forEach(this::validate);
 	}
 
 	/**
 	 * The picks that were booked in a CU quantity entry mode: such a pick records the CU itself as picked HU, with the CU's own QR code.
 	 * Manual records the box's QR code with a CU of a partly filled box, so the check follows what was picked, not the customer's current mode.
+	 * One batch query for all picked HUs; a QR code shared by several HUs (split HUs) is no error.
 	 */
 	@NonNull
-	private ImmutableSet<HuId> extractCUsBookedWithOwnQRCode()
+	private ImmutableSet<HuId> getCUsBookedWithOwnQRCode()
 	{
-		return pickingJob.getLines().stream()
-				.flatMap(line -> line.getPickedHUInfos().stream())
-				.filter(huInfo -> huService.getHuIdByQRCodeIfExists(huInfo.getQrCode()).filter(huInfo.getId()::equals).isPresent())
-				.map(HUInfo::getId)
-				.collect(ImmutableSet.toImmutableSet());
+		ImmutableSet<HuId> result = this._cusBookedWithOwnQRCode;
+		if (result == null)
+		{
+			result = this._cusBookedWithOwnQRCode = huService.filterHUsAssignedToOwnQRCode(
+					pickingJob.getLines().stream()
+							.flatMap(line -> line.getPickedHUInfos().stream())
+							.collect(ImmutableSet.toImmutableSet()));
+		}
+		return result;
 	}
 
 	private void validate(
@@ -80,7 +86,7 @@ public class PickingJobGRAIValidator
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), cusBookedWithOwnQRCode);
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), getCUsBookedWithOwnQRCode());
 
 		if (graiRequired == GRAIRequired.Yes)
 		{
