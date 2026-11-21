@@ -107,6 +107,7 @@ class PickingJobCUQtyEntryPickTest
 	private static final String GRAI_CANONICAL = "7613204.00307.999999";
 
 	private static final AdMessageKey CU_NO_OPEN_BOX = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
+	private static final AdMessageKey CU_EACH_ONLY_FOR_PIECES = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES");
 	private static final AdMessageKey PICK_OVERDELIVERY_BLOCKED = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	private PickingJobTestHelper helper;
@@ -1345,6 +1346,27 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		/** the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */
+		/** a line counted in kg is refused in Scan each CU (1 scan = 1 pack cannot be a kg quantity): the approved message, nothing booked. */
+		@Test
+		void kgLine_refusedWithApprovedMessage_nothingBooked()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final ProductId kgProductId = BusinessTestHelper.createProductId("PRD0002", huTestHelper.uomKg);
+			final I_M_HU_PI_Item_Product kgPiip = huTestHelper.assignProduct(huTestHelper.createHU_PI_Item_Material(huTestHelper.createHUDefinition("TU-4kg", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit)), kgProductId, new BigDecimal("4"), huTestHelper.uomKg);
+			kgPiip.setIsDefaultForProduct(true);
+			InterfaceWrapperHelper.save(kgPiip);
+			productId = kgProductId;
+			final HuId sourceId = helper.createVHU(kgProductId, "100");
+			final HUInfo source = HUInfo.builder().id(sourceId).qrCode(helper.createQRCode(sourceId, "QR-KG")).build();
+			final PickingJob job = openBoxFromLinePacking(createJob(HUPIItemProductId.ofRepoId(kgPiip.getM_HU_PI_Item_Product_ID()), true));
+
+			assertFails(() -> pick(job, source, "1", label("PRD0002", LOT_A), false, null), CU_EACH_ONLY_FOR_PIECES);
+
+			assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).as("nothing booked").isEmpty();
+			final IHUStorage sourceStorage = huTestHelper.createMutableHUContextOutOfTransaction().getHUStorageFactory().getStorage(handlingUnitsBL.getById(sourceId));
+			assertThat(sourceStorage.getQuantity(kgProductId, huTestHelper.uomKg).toBigDecimal()).as("source untouched").isEqualByComparingTo("100");
+		}
+
 		@Test
 		void labelWithoutPackId_refused()
 		{

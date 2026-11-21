@@ -75,6 +75,9 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -114,6 +117,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
 	private final static AdMessageKey CU_NO_OPEN_BOX_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
+	private final static AdMessageKey CU_EACH_ONLY_FOR_PIECES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES");
 	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	//
@@ -261,7 +265,11 @@ public class PickingJobPickCommand
 		}
 		else if (this.pickingUnit.isCU())
 		{
-			// Scan each CU: one pack per label, whatever quantity the client sent. One pack = one unit of the line UOM (the mode is meant for piece-counted lines)
+			// Scan each CU: one pack per label, whatever quantity the client sent. One pack = one unit of the line UOM, so the line must be counted in pieces
+			if (cuQtyEntryPolicy.isPackIdRequired() && !X12DE355.EACH.equals(Services.get(IUOMDAO.class).getX12DE355ById(UomId.ofRepoId(uom.getC_UOM_ID()))))
+			{
+				throw new AdempiereException(CU_EACH_ONLY_FOR_PIECES_ERROR_MSG).markAsUserValidationError();
+			}
 			this.qtyToPickCUs = Quantity.of(cuQtyEntryPolicy.getQtyToPickCUs(qtyToPickBD), uom);
 			this.qtyToPickTUs = null;
 

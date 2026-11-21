@@ -372,3 +372,21 @@ test('Pallet target (Scan each CU): pallet + new box: every scan books one CU in
         });
     });
 });
+
+// A pack is one unit of the line UOM, so Scan each CU cannot book a quantity counted in kg: the scan is refused with the instruction to ask the administrator
+const MSG_EACH_ONLY_FOR_PIECES = "'Scan each CU' works only for lines counted in pieces. Please have your administrator set the CU quantity entry for this customer to 'Manual' or 'Scan once, enter quantity'.";
+
+// noinspection JSUnusedLocalSymbols
+test('a line counted in kg: a pack scan is refused with the "pieces only" message, nothing is booked', async ({ page }) => {
+    allureMeta('Scan each CU kg line');
+
+    const masterdata = await newMasterdata({
+        orders: [{ key: 'A', qty: 3 }],
+        products: { P1: { price: 1, uom: 'KGM', randomValue: { size: 7, isIncludeDigits: true } } },
+    });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
+    await openScanEachLine({ index: 1 });
+
+    await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot: uniqueLot(), packId: 1 }), MSG_EACH_ONLY_FOR_PIECES);
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
+});
