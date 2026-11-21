@@ -1345,7 +1345,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source: only 2 taken").isEqualByComparingTo("98");
 		}
 
-		/** the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */
 		/** a line counted in kg is refused in Scan each CU (1 scan = 1 pack cannot be a kg quantity): the approved message, nothing booked. */
 		@Test
 		void kgLine_refusedWithApprovedMessage_nothingBooked()
@@ -1367,6 +1366,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(sourceStorage.getQuantity(kgProductId, huTestHelper.uomKg).toBigDecimal()).as("source untouched").isEqualByComparingTo("100");
 		}
 
+		/** the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */
 		@Test
 		void labelWithoutPackId_refused()
 		{
