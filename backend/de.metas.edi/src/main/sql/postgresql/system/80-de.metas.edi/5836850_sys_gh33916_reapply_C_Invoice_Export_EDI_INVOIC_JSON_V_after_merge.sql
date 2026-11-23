@@ -1,0 +1,179 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/C_Invoice_Export_EDI_INVOIC_JSON_V.sql
+-- Re-applies the merged view definition: 5836680 (payment reference, per-line buyer-order-number flag) was written against an older
+-- definition than 5833750 / 5835830 (LATERAL line source, Packaging, Line_Type, CUs per TU, delivery note) and would revert them.
+
+DROP VIEW IF EXISTS C_Invoice_Export_EDI_INVOIC_JSON_V$new
+;
+
+CREATE OR REPLACE VIEW C_Invoice_Export_EDI_INVOIC_JSON_V$new AS
+SELECT invoic_v.c_invoice_id,
+       JSON_BUILD_OBJECT(
+               'metasfresh_INVOIC', JSON_AGG(
+               JSON_BUILD_OBJECT(
+                       'Invoice_ID', invoic_v.c_invoice_id,
+                       'Invoice_Receiver_Tec_GLN', invoic_v.ReceiverGLN,
+                       'Invoice_Sender_Tec_GLN', invoic_v.SenderGLN,
+                       'Invoice_Sender_CountryCode', invoic_v.CountryCode,
+                       'Invoice_Sender_VATaxId', invoic_v.VATaxId,
+                       'Invoice_DocumentNo', invoic_v.Invoice_DocumentNo,
+                       'Invoice_Date', invoic_v.DateInvoiced,
+                       'Invoice_Acct_Date', invoic_v.DateAcct,
+                   -- doctype-related
+                       'DocType_Base', invoic_v.docbasetype,
+                       'DocType_Sub', invoic_v.docsubtype,
+                       'CreditMemo_Reason', invoic_v.CreditMemoReason,
+                       'CreditMemo_ReasonText', invoic_v.CreditMemoReasonText,
+                   -- order
+                       'Order_POReference', invoic_v.POReference,
+                       'Invoice_PaymentReference', (SELECT rn.referenceno
+                                                    FROM c_referenceno_doc rnd
+                                                             JOIN c_referenceno rn ON rn.c_referenceno_id = rnd.c_referenceno_id AND rn.isactive = 'Y'
+                                                    WHERE rnd.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'C_Invoice')
+                                                      AND rnd.record_id = invoic_v.c_invoice_id
+                                                      AND rnd.isactive = 'Y'
+                                                      AND rn.c_referenceno_type_id IN (SELECT c_referenceno_type_id FROM c_referenceno_type WHERE name = 'InvoiceReference' AND isactive = 'Y')
+                                                    ORDER BY rnd.created DESC, rnd.c_referenceno_doc_id DESC
+                                                    LIMIT 1),
+                       'Order_Date', invoic_v.DateOrdered,
+                   -- shipment
+                       'Shipment_Date', invoic_v.MovementDate,
+                       'Shipment_DocumentNo', invoic_v.Shipment_DocumentNo,
+                       'DESADV_DocumentNo', invoic_v.EDIDesadvDocumentNo,
+                   -- money
+                       'Invoice_Currency_Code', invoic_v.ISO_Code,
+                       'Invoice_GrandTotal', invoic_v.GrandTotal,
+                       'Invoice_TotalLines', invoic_v.TotalLines,
+                   -- tax
+                       'Invoice_TotalVAT', invoic_v.TotalVAT,
+                       'Invoice_TotalVATBaseAmt', invoic_v.TotalTaxBaseAmt,
+                   -- surcharge
+                       'Invoice_SurchargeAmt', invoic_v.SurchargeAmt,
+                       'Invoice_TotalLinesWithSurchargeAmt', invoic_v.TotalLinesWithSurchargeAmt,
+                       'Invoice_TotalVATWithSurchargeAmt', invoic_v.TotalVatWithSurchargeAmt,
+                       'Invoice_GrandTotalWithSurchargeAmt', invoic_v.GrandTotalWithSurchargeAmt,
+                       'Partners', edi_119_v.json_data,
+                       'PaymentTerms', edi_120_v.json_data,
+                       'PaymentDiscounts', edi_140_v.json_data,
+                       'Lines', edi_500_v.json_data,
+                       'Sums', edi_901_991_v.json_data,
+                       'Version', '0.2'
+                   )
+           )
+           ) AS embedded_json
+FROM edi_cctop_invoic_v invoic_v
+         LEFT JOIN (SELECT c_invoice_id,
+                           JSON_AGG(JSON_BUILD_OBJECT(
+                                   'EANCOM_LocationType', eancom_locationtype,
+                                   'GLN', GLN,
+                                   'Name', Name,
+                                   'Name2', Name2,
+                                   'PartnerNo', Value,
+                                   'VATaxID', VATaxID,
+                                   'ReferenceNo', ReferenceNo,
+                                   'SiteName', SiteName,
+                                   'Setup_Place_No', Setup_Place_No,
+                                   'Address1', Address1,
+                                   'Address2', Address2,
+                                   'Postal', Postal,
+                                   'City', City,
+                                   'CountryCode', CountryCode,
+                                   'Phone', Phone,
+                                   'Fax', Fax,
+                                   'CustomEdiAttributes', attr_v.json_data
+                               )) AS json_data
+                    FROM edi_cctop_119_v cctop119
+                             LEFT JOIN (SELECT bpartner_value,
+                                               ad_client_id,
+                                               ad_org_id,
+                                               JSON_AGG(JSON_BUILD_OBJECT(bpartner_attr_value.attr_value, bpartner_attr_value.valuestring
+                                                   )) AS json_data
+                                        FROM edi_bpartner_attribute_valuestring_v bpartner_attr_value
+                                        GROUP BY bpartner_value, ad_client_id, ad_org_id) attr_v ON attr_v.bpartner_value = cctop119.value AND attr_v.ad_client_id = cctop119.ad_client_id AND (cctop119.ad_org_id = 0 OR attr_v.ad_org_id = cctop119.ad_org_id)
+                    GROUP BY c_invoice_id) edi_119_v ON edi_119_v.c_invoice_id = invoic_v.c_invoice_id
+         LEFT JOIN (SELECT c_invoice_id,
+                           JSON_AGG(JSON_BUILD_OBJECT(
+                                   'Net_Days', NetDays
+                               )) AS json_data
+                    FROM edi_cctop_120_v
+                    GROUP BY c_invoice_id) edi_120_v ON edi_120_v.c_invoice_id = invoic_v.c_invoice_id
+         LEFT JOIN (SELECT c_invoice_id,
+                           JSON_AGG(JSON_BUILD_OBJECT(
+                                   'Discount_Name', Name,
+                                   'Tax_Percent', Rate,
+                                   'Discount_Days', discountdays,
+                                   'Discount_Percent', Discount,
+                                   'Discount_BaseAmt', DiscountBaseAmt,
+                                   'Discount_Amt', DiscountAmt
+                               )) AS json_data
+                    FROM edi_cctop_140_v
+                    GROUP BY c_invoice_id) edi_140_v ON edi_140_v.c_invoice_id = invoic_v.c_invoice_id
+         LEFT JOIN LATERAL (SELECT JSON_AGG(JSON_BUILD_OBJECT(
+                                            'Invoice_Line', v.line,
+                                            'Invoice_QtyInvoiced', v.QtyInvoiced,
+                                            'Invoice_QtyInvoiced_UOM', v.eancom_uom,
+                                            'ORDERS_Line', v.externalseqno,
+                                            'ORDERS_QtyInvoiced', v.qtyEnteredInBPartnerUOM,
+                                            'ORDERS_QtyInvoiced_UOM', uom.x12de355,
+                                            'Order_POReference', v.orderporeference,
+                                            'Order_IsPOReferenceBuyerOrderNo', COALESCE(o.IsPOReferenceBuyerOrderNo = 'Y' AND NULLIF(o.poreference, '') IS NOT NULL, FALSE),
+                                            'Order_Line', CASE WHEN v.IsPackagingMaterial = 'Y' AND v.c_orderline_id IS NULL THEN NULL ELSE v.orderline END,
+                                            'Order_QtyInvoiced', v.QtyInvoicedInOrderedUOM,
+                                            'Order_QtyInvoiced_UOM', v.eancom_ordered_uom,
+                                            'Currency_Code', v.iso_code,
+                                            'PricePerUnit', v.priceactual,
+                                            'PriceUOM', v.eancom_price_uom,
+                                            'Discount_Amt', v.discount,
+                                            'QtyBasedOn', v.invoicableqtybasedon,
+                                            'NetAmt', v.linenetamt,
+                                            'Tax_Percent', v.rate,
+                                            'Tax_Amount', v.taxamtinfo,
+                                        -- product
+                                            'Product_Name', v.name || v.name2,
+                                            'Product_Description', v.productdescription,
+                                            'Product_Buyer_CU_GTIN', v.Buyer_GTIN_CU,
+                                            'Product_Buyer_TU_GTIN', v.Buyer_GTIN_TU,
+                                            'Product_Buyer_ProductNo', v.CustomerProductNo,
+                                            'Product_Supplier_TU_GTIN', v.Supplier_GTIN_CU,
+                                            'Product_Supplier_ProductNo', v.Value,
+                                            'Product_DepositType', v.Product_DepositType,
+                                            'Packaging', CASE WHEN v.IsPackagingMaterial = 'Y'
+                                                                  THEN JSON_BUILD_OBJECT('IsPackagingMaterial', TRUE)
+                                                         END,
+                                            'Line_Type', CASE WHEN ol_t.isgroupcompensationline = 'Y' AND ol_t.groupcompensationtype = 'S' THEN 'Charge'
+                                                              WHEN ol_t.isgroupcompensationline = 'Y' THEN 'Allowance'
+                                                              ELSE 'Item'
+                                                         END,
+                                            'QtyCUsPerTU', v.QtyCUsPerTU,
+                                            'QtyCUsPerTU_UOM', v.QtyCUsPerTU_UOM,
+                                            'Shipment_DocumentNo', v.Shipment_DocumentNo
+                                        ) ORDER BY v.line, v.m_inout_id NULLS LAST) AS json_data
+                                   FROM edi_invoic_json_line_v v
+                                            LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
+                                            LEFT JOIN c_orderline ol_t ON ol_t.c_orderline_id = v.c_orderline_id AND ol_t.isactive = 'Y'
+                                            LEFT JOIN c_order o ON o.c_order_id = ol_t.c_order_id
+                                   WHERE v.c_invoice_id = invoic_v.c_invoice_id) edi_500_v ON TRUE
+         LEFT JOIN (SELECT c_invoice_id,
+                           JSON_AGG(JSON_BUILD_OBJECT(
+                                            'TotalAmt', TotalAmt,
+                                            'Tax_Amt', TaxAmt,
+                                            'Tax_BaseAmt', TaxBaseAmt,
+                                            'Tax_Percent', Rate,
+                                            'Tax_Exempt', IsTaxExempt = 'Y',
+                                            'SurchargeAmt', SurchargeAmt,
+                                            'Tax_BaseAmtWithSurchargeAmt', TaxBaseAmtWithSurchargeAmt,
+                                            'Tax_AmtWithSurchargeAmt', TaxAmtWithSurchargeAmt
+                                        ) ORDER BY rate DESC) AS json_data
+                    FROM edi_cctop_901_991_v
+                    GROUP BY c_invoice_id) edi_901_991_v ON edi_901_991_v.c_invoice_id = invoic_v.c_invoice_id
+GROUP BY invoic_v.c_invoice_id
+;
+
+SELECT db_alter_view(
+    'C_Invoice_Export_EDI_INVOIC_JSON_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('C_Invoice_Export_EDI_INVOIC_JSON_V$new'))
+);
+
+DROP VIEW IF EXISTS C_Invoice_Export_EDI_INVOIC_JSON_V$new
+;
