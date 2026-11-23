@@ -1,9 +1,11 @@
 package de.metas.bpartner.impexp;
 
 import de.metas.banking.api.BankRepository;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.impexp.ImportRecordsAsyncExecutor;
 import de.metas.impexp.MockedImportRecordsAsyncExecutor;
@@ -14,16 +16,14 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import org.compiere.model.I_C_BPartner;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
