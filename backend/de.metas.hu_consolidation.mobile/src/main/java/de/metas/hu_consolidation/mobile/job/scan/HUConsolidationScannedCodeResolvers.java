@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The replaceable chain of {@link HUConsolidationScannedCodeResolver}s: the first one that recognizes the code wins.
@@ -31,10 +30,10 @@ public class HUConsolidationScannedCodeResolvers
 		{
 			for (final HUConsolidationScannedCodeResolver resolver : resolvers)
 			{
-				final Optional<HUConsolidationScannedCrate> crate = resolver.resolve(scannedCode, queues);
-				if (crate.isPresent())
+				final HUConsolidationScannedCrate crate = resolver.resolve(scannedCode, queues).orElse(null);
+				if (crate != null)
 				{
-					return crate.get();
+					return crate;
 				}
 			}
 		}

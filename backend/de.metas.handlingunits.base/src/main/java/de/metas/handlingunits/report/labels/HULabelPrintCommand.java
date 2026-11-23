@@ -48,10 +48,9 @@ class HULabelPrintCommand
 	}
 
 	/**
-	 * Validates the request (e.g. a label config must apply) and returns the printing without running it.
+	 * The command behind {@link HULabelService#preparePrint(HULabelPrintRequest)}, which states the full contract.
 	 *
-	 * @return the printing action (prints immediately, throws if the printing fails); empty if there is nothing to print
-	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed, e.g. no label config applies
+	 * @return the printing action; empty if there is nothing to print
 	 */
 	public Optional<HULabelPrintAction> prepare()
 	{

@@ -140,9 +140,7 @@ class HUConsolidationScannedCodeResolversTest
 			final I_M_HU crate1 = createTopLevelHU(GRAI);
 			final I_M_HU crate2 = createTopLevelHU(null);
 
-			final Optional<HUConsolidationScannedCrate> crate = graiResolver.resolve(ScannedCode.ofString("not-a-grai"), queues(crate1, crate2));
-
-			assertThat(crate).isEmpty();
+			assertThat(graiResolver.resolve(ScannedCode.ofString("not-a-grai"), queues(crate1, crate2))).isEmpty();
 		}
 
 		@Test

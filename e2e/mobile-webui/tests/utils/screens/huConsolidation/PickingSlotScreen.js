@@ -66,10 +66,7 @@ export const PickingSlotScreen = {
     /**
      * Scan the GRAI of a crate in this slot and wait until the backend has moved it onto the target pallet.
      *
-     * `waitNotLoading` is not enough here: the screen shows no spinner while a scan is processed (only while the slot
-     * content loads), so the consolidate call can still be running when the test goes on. Its answer then updates the
-     * job (e.g. the "Scan (GRAI)" button disappears once no crate with a GRAI is left), which moves the job screen's
-     * buttons under a tap that is already on its way: a tap on Complete landed on Abort.
+     * `waitNotLoading` is not enough here: the screen shows no spinner while a scan is processed.
      *
      * @param {string} graiString - Canonical GRAI string ("{companyPrefix}.{assetType}.{serial}")
      */
@@ -85,12 +82,12 @@ export const PickingSlotScreen = {
         await PickingSlotScreen.waitNotLoading();
     }),
 
-    /** The GRAI scanner is present — shown only when the consolidation customer requires GRAI. */
+    /** The GRAI scanner is present — shown when a crate of the slot carries a GRAI. */
     expectScannerVisible: async () => await test.step(`${NAME} - Expect GRAI scanner present`, async () => {
         await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
     }),
 
-    /** The GRAI scanner is absent — the customer does not require GRAI. */
+    /** The GRAI scanner is absent — no crate of the slot carries a GRAI. */
     expectScannerNotVisible: async () => await test.step(`${NAME} - Expect GRAI scanner absent`, async () => {
         await BarcodeScannerComponent.expectNotAttached({ testId: GRAI_SCANNER_TESTID });
     }),
