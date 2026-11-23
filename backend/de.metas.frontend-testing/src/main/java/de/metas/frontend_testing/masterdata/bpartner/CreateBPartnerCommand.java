@@ -240,7 +240,8 @@ public class CreateBPartnerCommand
 	private JsonCreateBPartnerResponse update(@NonNull final BPartnerId bpartnerId)
 	{
 		if (request.getBpartnerCode() != null || request.getName() != null || request.getGln() != null
-				|| request.getLocations() != null || request.getContacts() != null)
+				|| request.getLocations() != null || request.getContacts() != null
+				|| request.isVendor() || !request.isCustomer() || !request.isSoPriceList()) // not the defaults: explicitly set
 		{
 			throw new AdempiereException("Business partner " + bpIdentifier + " already exists: only graiRequired can be updated");
 		}

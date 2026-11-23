@@ -2,11 +2,11 @@ package de.metas.hu_consolidation.mobile.job.scan;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.picking.slot.PickingSlotQueues;
-import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.slot.PickingSlotQueue;
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.picking.api.PickingSlotId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;

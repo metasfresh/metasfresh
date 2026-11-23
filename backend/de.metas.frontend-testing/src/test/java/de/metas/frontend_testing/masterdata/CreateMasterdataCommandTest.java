@@ -1,10 +1,10 @@
 package de.metas.frontend_testing.masterdata;
 
-import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
-import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
