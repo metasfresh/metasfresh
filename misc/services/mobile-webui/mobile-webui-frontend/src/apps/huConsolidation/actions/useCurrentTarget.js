@@ -1,7 +1,7 @@
 import { useWFActivity } from '../../../reducers/wfProcesses';
 import { getCurrentTarget } from '../reducers';
 import * as api from '../api';
-import { getWFProcess } from '../../../api/workflow';
+import { getWFProcess } from '../../../api/launchers';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
 import { toastErrorFromObj } from '../../../utils/toast';

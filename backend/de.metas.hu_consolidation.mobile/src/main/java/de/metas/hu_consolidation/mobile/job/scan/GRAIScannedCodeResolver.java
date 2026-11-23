@@ -1,10 +1,10 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
-import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;

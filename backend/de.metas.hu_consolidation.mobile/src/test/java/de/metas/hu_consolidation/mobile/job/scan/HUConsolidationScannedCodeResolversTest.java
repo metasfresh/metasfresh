@@ -1,9 +1,9 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
-import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.i18n.AdMessageKey;

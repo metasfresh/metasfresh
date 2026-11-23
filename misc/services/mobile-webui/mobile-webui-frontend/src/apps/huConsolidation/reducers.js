@@ -18,7 +18,7 @@ export const getPickingSlotById = ({ activity, pickingSlotId }) => {
   );
 };
 
-/** true iff an active top-level HU in the job's slots carries a GRAI */
+/** Whether the backend enables the GRAI scan for the job. */
 export const isGRAIScanEnabled = ({ activity }) => {
   return getHUConsolidationJob({ activity }).graiScanEnabled ?? false;
 };
