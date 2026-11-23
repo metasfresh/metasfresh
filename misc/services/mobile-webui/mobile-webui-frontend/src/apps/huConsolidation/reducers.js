@@ -6,6 +6,11 @@ export const getHUConsolidationJob = ({ activity }) => {
   return activity?.dataStored?.job ?? {};
 };
 
+/** Whether the job was already loaded into the activity (it is not, e.g., right after a reload of a screen). */
+export const isHUConsolidationJobLoaded = ({ activity }) => {
+  return activity?.dataStored?.job != null;
+};
+
 export const getCurrentTarget = ({ activity }) => {
   return getHUConsolidationJob({ activity }).currentTarget;
 };

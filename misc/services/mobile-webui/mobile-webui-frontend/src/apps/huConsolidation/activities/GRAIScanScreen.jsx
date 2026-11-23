@@ -5,7 +5,7 @@ import { useWFActivity } from '../../../reducers/wfProcesses';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { trl } from '../../../utils/translations';
 import { huConsolidationJobLocation } from '../routes';
-import { isGRAIScanEnabled as isGRAIScanEnabledFunc } from '../reducers';
+import { isGRAIScanEnabled as isGRAIScanEnabledFunc, isHUConsolidationJobLoaded } from '../reducers';
 import { useConsolidateByScan } from '../actions/useConsolidateByScan';
 
 /**
@@ -26,7 +26,7 @@ export const GRAIScanScreen = () => {
 
   // the backend flag also drives the button on the job screen (the button is also disabled without a pallet): scan no longer enabled -> back to the job screen
   // (not before the job is loaded, e.g. after a reload of this screen)
-  const isJobLoaded = activity?.dataStored?.job != null;
+  const isJobLoaded = isHUConsolidationJobLoaded({ activity });
   useEffect(() => {
     if (isJobLoaded && !isGRAIScanEnabled) {
       history.goBack();
