@@ -164,7 +164,6 @@ public class HUConsolidationJobService
 			@NonNull final UserId callerId)
 	{
 		final HUConsolidationJob job = getJobById(jobId);
-		job.assertUserCanEdit(callerId);
 
 		final PickingSlotQueues queues = pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds());
 		final HUConsolidationScannedCrate crate = scannedCodeResolvers.resolve(scannedCode, queues);

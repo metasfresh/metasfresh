@@ -29,6 +29,7 @@ import java.util.Properties;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IJavaClassDAO extends ISingletonService
 {
@@ -48,5 +49,11 @@ public interface IJavaClassDAO extends ISingletonService
 	I_AD_JavaClass retriveJavaClassOrNull(final Properties ctx, final int adJavaClassId);
 
 	I_AD_JavaClass_Type retrieveJavaClassTypeOrNull(Properties ctx, String internalName);
+
+	/**
+	 * @return the ID of the active {@code AD_JavaClass} with the given {@code Classname}
+	 * @throws org.adempiere.exceptions.AdempiereException if there is no such record
+	 */
+	JavaClassId getJavaClassIdByClassname(@NonNull String classname);
 
 }

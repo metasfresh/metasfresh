@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.attribute.HUPIAttributeCreateRequest;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.HUItemType;
@@ -25,7 +26,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
-import de.metas.javaclasses.JavaClassId;
+import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
@@ -57,13 +58,11 @@ public class CreatePackingInstructionsCommand
 {
 	private static final Logger logger = LogManager.getLogger(CreatePackingInstructionsCommand.class);
 
-	/** {@code AD_JavaClass_ID} of {@code CopyHUAttributeTransferStrategy}, as used by the LU SSCC18 {@code M_HU_PI_Attribute}. */
-	private static final JavaClassId HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID = JavaClassId.ofRepoId(540027);
-
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IJavaClassDAO javaClassDAO = Services.get(IJavaClassDAO.class);
 	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final MasterdataContext context;
@@ -253,7 +252,7 @@ public class CreatePackingInstructionsCommand
 				.piVersionId(lu.getPivId())
 				.attributeId(sscc18AttributeId)
 				.propagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation)
-				.transferStrategyJavaClassId(HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID)
+				.transferStrategyJavaClassId(javaClassDAO.getJavaClassIdByClassname(CopyHUAttributeTransferStrategy.class.getName()))
 				.displayed(true)
 				.readOnly(true)
 				.onlyIfInProductAttributeSet(true)

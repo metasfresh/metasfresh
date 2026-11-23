@@ -8,7 +8,8 @@ import java.util.Optional;
 
 /**
  * Resolves a scanned code of one code type to a crate among the crates of the job.
- * A new code type = one new implementation (a Spring component); the chain's "unrecognized code" message names the supported types.
+ * A new code type needs one new implementation (a Spring component) and its own "not a valid code" message: the chain
+ * throws the fixed {@code MobileQRCodeMessages.INVALID_GRAI_BARCODE} when no resolver recognizes the code.
  */
 public interface HUConsolidationScannedCodeResolver
 {

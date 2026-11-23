@@ -36,10 +36,13 @@ export const useCurrentTarget = ({ wfProcessId, activityId }) => {
       .catch((error) => {
         toastErrorFromObj(error);
         // The pallet is closed even when printing its label failed, so show the actual job state, not the stale open pallet.
-        return getWFProcess({ wfProcessId })
-          .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-          .catch((reloadError) => console.error('Failed reloading the job after a close error', reloadError))
-          .then(() => false);
+        return (
+          getWFProcess({ wfProcessId })
+            .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+            // best effort: the close error is already shown and must stay visible; a failed reload only leaves the stale state, which the next load refreshes
+            .catch(() => undefined)
+            .then(() => false)
+        );
       })
       .finally(() => setProcessing(false));
   };

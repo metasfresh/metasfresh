@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -141,6 +143,10 @@ public class CreatePackingInstructionsCommandTest
 		sscc18Attribute.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
 		InterfaceWrapperHelper.saveRecord(sscc18Attribute);
 
+		final I_AD_JavaClass copyStrategyClass = InterfaceWrapperHelper.newInstance(I_AD_JavaClass.class);
+		copyStrategyClass.setClassname(CopyHUAttributeTransferStrategy.class.getName());
+		InterfaceWrapperHelper.saveRecord(copyStrategyClass);
+
 		luItems("{\"lu\":\"LU\",\"qtyTUsPerLU\":30,\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4,\"luSSCC18\":true}");
 
 		final I_M_HU_PI_Version luVersion = Services.get(IQueryBL.class)
@@ -158,7 +164,7 @@ public class CreatePackingInstructionsCommandTest
 		assertThat(luAttributes.get(0).isActive()).isTrue();
 		// mirrors the standard EUR-pallet LU SSCC18 row
 		assertThat(luAttributes.get(0).getPropagationType()).isEqualTo(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
-		assertThat(luAttributes.get(0).getHU_TansferStrategy_JavaClass_ID()).isEqualTo(540027);
+		assertThat(luAttributes.get(0).getHU_TansferStrategy_JavaClass_ID()).isEqualTo(copyStrategyClass.getAD_JavaClass_ID());
 		assertThat(luAttributes.get(0).isReadOnly()).isTrue();
 		assertThat(luAttributes.get(0).isDisplayed()).isTrue();
 		assertThat(luAttributes.get(0).isUseInASI()).isTrue();
