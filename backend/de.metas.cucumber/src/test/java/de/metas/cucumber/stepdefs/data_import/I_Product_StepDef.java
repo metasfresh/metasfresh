@@ -6,6 +6,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
@@ -36,6 +37,7 @@ public class I_Product_StepDef
 {
 	@NonNull private final I_Product_StepDefData iProductTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	/**
@@ -66,6 +68,8 @@ public class I_Product_StepDef
 	 * <b>ProductCategory_Value</b> — (optional) product category search key<br>
 	 * <b>BPartner_Value</b> — (optional) BPartner search key to resolve<br>
 	 * <b>M_Product_Identifier</b> — (optional) copies Value from the referenced M_Product (for upsert tests)<br>
+	 * <b>UPC</b> — (optional) product UPC<br>
+	 * <b>AD_Org_ID</b> — (optional) identifier of a previously created AD_Org; defaults to the main org<br>
 	 */
 	@Given("metasfresh contains I_Product:")
 	public void metasfresh_contains_I_Product(@NonNull final DataTable dataTable)
@@ -76,7 +80,9 @@ public class I_Product_StepDef
 	private void createIProduct(@NonNull final DataTableRow row)
 	{
 		final I_I_Product record = InterfaceWrapperHelper.newInstance(I_I_Product.class);
-		record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		record.setAD_Org_ID(row.getAsOptionalIdentifier(I_I_Product.COLUMNNAME_AD_Org_ID)
+									.map(orgTable::getIdAsInt)
+									.orElse(StepDefConstants.ORG_ID.getRepoId()));
 
 		// Value/Name: copy from referenced M_Product, or use explicit value, or auto-generate
 		final StepDefDataIdentifier mProductIdentifier = row.getAsOptionalIdentifier("M_Product_Identifier").orElse(null);
@@ -101,6 +107,8 @@ public class I_Product_StepDef
 				.ifPresent(record::setX12DE355);
 		row.getAsOptionalString(I_I_Product.COLUMNNAME_BPartner_Value)
 				.ifPresent(record::setBPartner_Value);
+		row.getAsOptionalString(I_I_Product.COLUMNNAME_UPC)
+				.ifPresent(record::setUPC);
 		// IsStocked is a List column (not YesNo) so we must set it as a String, not Boolean.
 		row.getAsOptionalString(I_I_Product.COLUMNNAME_IsStocked)
 				.ifPresent(value -> InterfaceWrapperHelper.setValue(record, I_I_Product.COLUMNNAME_IsStocked, value));
@@ -142,6 +150,8 @@ public class I_Product_StepDef
 	 * @cucumber.columns
 	 * <b>Identifier</b> — (required) alias referencing a previously created I_Product record<br>
 	 * <b>I_ErrorMsg</b> — (optional) expected error message substring; also asserts I_IsImported='E' and C_BPartner_ID=0<br>
+	 * <b>I_ErrorMsg_Contains</b> — (optional) expected error message substring; also asserts I_IsImported='E' (unlike I_ErrorMsg, no BPartner assertion)<br>
+	 * <b>I_ErrorMsg_NotContains</b> — (optional) error message substring that must NOT be in I_ErrorMsg (the row may have other errors)<br>
 	 * <b>IsResolved</b> — (optional, boolean) if true, asserts C_BPartner_ID &gt; 0<br>
 	 */
 	@Then("validate I_Product:")
@@ -170,6 +180,27 @@ public class I_Product_StepDef
 			assertThat(record.getC_BPartner_ID())
 					.as("I_Product[%s].C_BPartner_ID should be 0 (NULL)", rowIdentifier)
 					.isEqualTo(0);
+		});
+
+		row.getAsOptionalString("I_ErrorMsg_Contains").ifPresent(expectedErr -> {
+			final String dbErrorMsg = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
+					"SELECT COALESCE(I_ErrorMsg, '') FROM I_Product WHERE I_Product_ID=?", record.getI_Product_ID());
+			final String dbImported = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
+					"SELECT I_IsImported FROM I_Product WHERE I_Product_ID=?", record.getI_Product_ID());
+			assertThat(dbErrorMsg)
+					.as("I_Product[%s].I_ErrorMsg should contain '%s'", rowIdentifier, expectedErr)
+					.contains(expectedErr);
+			assertThat(dbImported)
+					.as("I_Product[%s].I_IsImported should be 'E'", rowIdentifier)
+					.isEqualTo("E");
+		});
+
+		row.getAsOptionalString("I_ErrorMsg_NotContains").ifPresent(unexpectedErr -> {
+			final String dbErrorMsg = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
+					"SELECT COALESCE(I_ErrorMsg, '') FROM I_Product WHERE I_Product_ID=?", record.getI_Product_ID());
+			assertThat(dbErrorMsg)
+					.as("I_Product[%s].I_ErrorMsg should not contain '%s'", rowIdentifier, unexpectedErr)
+					.doesNotContain(unexpectedErr);
 		});
 
 		if (row.getAsOptionalBoolean("IsResolved").orElseFalse())
