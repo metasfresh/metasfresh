@@ -121,6 +121,14 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
+	/**
+	 * SysConfig that gates the HU Editor "Lot No" column. Ships OFF by default; set to {@code Y} per instance to enable.
+	 * MUST equal the key the {@link HUEditorRow#FIELDNAME_Lot} {@code @ViewColumn} derives from
+	 * {@code displayedSysConfigPrefix = }{@link HUEditorRow#SYSCFG_PREFIX}, i.e. {@code <prefix>.<fieldName>.IsDisplayed},
+	 * so the same key both displays the column and triggers the value extraction below.
+	 */
+	private static final String SYSCFG_ShowLotNo = HUEditorRow.SYSCFG_PREFIX + "." + HUEditorRow.FIELDNAME_Lot + ".IsDisplayed";
+
 	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
 	private final ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
 	private final ImmutableMap<String, Boolean> rowAttributesAlwaysReadonlyByReferencingTableName;
@@ -370,7 +378,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 							.build())
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService)
-					.adReferenceService(adReferenceService);
+					.adReferenceService(adReferenceService)
+					.showLotNumber(Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_ShowLotNo, false));
 
 			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
 

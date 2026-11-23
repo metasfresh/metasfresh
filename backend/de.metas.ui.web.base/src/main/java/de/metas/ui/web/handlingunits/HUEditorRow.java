@@ -232,6 +232,18 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	})
 	private final LocalDate bestBeforeDate;
 
+	// Reuses the existing M_HU.Lot virtual column (AD_Column 563221, element "Lot-Nr.") that the HU Editor's
+	// "Lot-Nr." filter already resolves (its ColumnSQL reads the 'Lot-Nummer' HU attribute). The value is
+	// populated from I_M_HU#getLot() in SqlHUEditorViewRepository, gated by the same SysConfig key.
+	public static final String FIELDNAME_Lot = I_M_HU.COLUMNNAME_Lot;
+	@Getter
+	@ViewColumn(fieldName = FIELDNAME_Lot, captionKey = "Lot No", widgetType = DocumentFieldWidgetType.Text, sorting = false,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 85, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 85, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
+	private final String lotNumber;
+
 	public static final String FIELDNAME_WeightGross = "WeightGross";
 	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = Displayed.FALSE)
 	private final BigDecimal weightGross;
@@ -278,6 +290,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		qtyCU = builder.qtyCU;
 		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
+		lotNumber = builder.getLotNumber();
 
 		clearanceStatus = builder.clearanceStatus;
 
@@ -707,6 +720,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		private BigDecimal qtyCU;
 		private BigDecimal weightGross;
 		private LocalDate bestBeforeDate;
+		private String lotNumber;
 		private LocatorId locatorId;
 		private String locatorCaption;
 		private BPartnerId bpartnerId;
@@ -874,6 +888,17 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		private LocalDate getBestBeforeDate()
 		{
 			return bestBeforeDate;
+		}
+
+		public Builder setLotNumber(final String lotNumber)
+		{
+			this.lotNumber = lotNumber;
+			return this;
+		}
+
+		private String getLotNumber()
+		{
+			return lotNumber;
 		}
 
 		public Builder setLocator(final LocatorId locatorId, final String locatorCaption)
