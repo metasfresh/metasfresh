@@ -49,7 +49,7 @@ public class JsonCreateBPartnerRequest
 	 * Whether to create a sales price list (true) or purchase price list (false).
 	 * For vendors, this should typically be false.
 	 * For customers, this should typically be true.
-	 * Default: true (sales price list). Used when the partner is created (its pricing system).
+	 * Default: true (sales price list). Used when a pricing system is created for the partner (on create, or on an update that adds one).
 	 */
 	@Nullable Boolean isSoPriceList;
 

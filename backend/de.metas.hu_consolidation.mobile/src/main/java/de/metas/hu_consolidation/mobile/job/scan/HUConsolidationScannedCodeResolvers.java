@@ -15,8 +15,8 @@ import java.util.Optional;
 /**
  * The replaceable chain of {@link HUConsolidationScannedCodeResolver}s: the first one that recognizes the code wins.
  * The order of the injected resolvers does not matter as long as the code types of the resolvers are disjoint.
- * A new code type needs a new {@link HUConsolidationScannedCodeResolver} and its own "not a valid code" message, because the message below names GRAI.
- * If no resolver recognizes the code (or the code is blank, i.e. {@code null}), the message names GRAI because GRAI is the only supported code type.
+ * If no resolver recognizes the code (or the code is blank, i.e. {@code null}), the message names GRAI, the only supported code type;
+ * a new code type needs a new {@link HUConsolidationScannedCodeResolver} and its own "not a valid code" message.
  */
 @Component
 @RequiredArgsConstructor
