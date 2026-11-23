@@ -245,8 +245,8 @@ public class C_OLCand_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_OLCand:
-	 *   | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_Override_ID.Identifier |
-	 *   | olCand                 | huItemProduct                                    |
+	 *   | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_Override_ID.Identifier | POReference |
+	 *   | olCand                 | huItemProduct                                    | PO_4711     |
 	 * </pre>
 	 */
 	@And("update C_OLCand:")

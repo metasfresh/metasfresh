@@ -1311,7 +1311,6 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
-
 	/**
 	 * Updates fields of an existing {@code M_InOut} (e.g. before or after completion, or a non-quantity field before reactivation) and saves it.
 	 *
