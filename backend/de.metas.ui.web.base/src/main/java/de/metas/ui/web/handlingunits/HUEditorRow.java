@@ -237,7 +237,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	// populated from I_M_HU#getLot() in SqlHUEditorViewRepository, gated by the same SysConfig key.
 	public static final String FIELDNAME_Lot = I_M_HU.COLUMNNAME_Lot;
 	@Getter
-	@ViewColumn(fieldName = FIELDNAME_Lot, captionKey = "Lot No", widgetType = DocumentFieldWidgetType.Text, sorting = false,
+	@ViewColumn(fieldName = FIELDNAME_Lot, captionKey = FIELDNAME_Lot, widgetType = DocumentFieldWidgetType.Text, sorting = false,
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 85, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 85, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
