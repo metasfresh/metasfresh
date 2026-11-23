@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -105,6 +106,19 @@ public interface IHUQueryBuilder
 
 	/** Retrieves first {@link I_M_HU} */
 	I_M_HU first();
+
+	/**
+	 * Retrieves the one and only {@link I_M_HU} matched by our criteria.
+	 * Fetches at most 2 rows. Like {@link #exists()}, it ignores {@link #setErrorIfNoHUs(boolean, String)}: the caller says what to throw.
+	 *
+	 * @param notFoundExceptionSupplier       supplies the exception to throw if there is no match
+	 * @param moreThanOneFoundExceptionSupplier supplies the exception to throw if there is more than one match
+	 * @return the matched HU, never {@code null}
+	 */
+	@NonNull
+	<X extends Throwable> I_M_HU firstOnlyNotNull(
+			@NonNull Supplier<? extends X> notFoundExceptionSupplier,
+			@NonNull Supplier<? extends X> moreThanOneFoundExceptionSupplier) throws X;
 
 	Optional<HuId> firstId();
 

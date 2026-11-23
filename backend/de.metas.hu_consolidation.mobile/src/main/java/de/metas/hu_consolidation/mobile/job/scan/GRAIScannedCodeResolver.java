@@ -1,7 +1,7 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
@@ -31,20 +31,19 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 			return Optional.empty();
 		}
 
-		final ImmutableSet<HuId> huIds = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, jobCrates.getHuIds())
-				.map(query -> query.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString()).listIds())
-				.orElse(ImmutableSet.of());
+		final IHUQueryBuilder cratesQuery = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, jobCrates.getHuIds())
+				.orElseThrow(() -> huNotFound(grai))
+				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString());
 
-		if (huIds.isEmpty())
-		{
-			throw new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND).setParameter("grai", grai.toCanonicalString());
-		}
-		if (huIds.size() > 1)
-		{
-			throw new AdempiereException(MobileQRCodeMessages.HU_AMBIGUOUS).setParameter("grai", grai.toCanonicalString());
-		}
-
-		final HuId huId = huIds.iterator().next();
+		final HuId huId = HuId.ofRepoId(cratesQuery.firstOnlyNotNull(
+				() -> huNotFound(grai),
+				() -> new AdempiereException(MobileQRCodeMessages.HU_AMBIGUOUS).setParameter("grai", grai.toCanonicalString())
+		).getM_HU_ID());
 		return Optional.of(HUConsolidationScannedCrate.of(huId, jobCrates.getPickingSlotId(huId)));
+	}
+
+	private static AdempiereException huNotFound(@NonNull final GRAI grai)
+	{
+		return new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND).setParameter("grai", grai.toCanonicalString());
 	}
 }
