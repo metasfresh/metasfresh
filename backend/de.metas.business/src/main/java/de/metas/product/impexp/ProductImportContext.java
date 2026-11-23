@@ -60,6 +60,7 @@ final class ProductImportContext
 		final I_I_Product currentImportRecord = getCurrentImportRecord();
 
 		return currentImportRecord != null
+				&& importRecord.getAD_Org_ID() == currentImportRecord.getAD_Org_ID()
 				&& Objects.equals(importRecord.getValue(), currentImportRecord.getValue());
 	}
 
