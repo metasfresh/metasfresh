@@ -23,6 +23,7 @@ import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.HUConsol
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -35,7 +36,6 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
-import de.metas.scannable_code.ScannedCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;

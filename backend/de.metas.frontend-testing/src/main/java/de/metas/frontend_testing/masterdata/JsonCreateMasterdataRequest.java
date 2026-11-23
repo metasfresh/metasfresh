@@ -5,8 +5,8 @@ import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCod
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
-import de.metas.frontend_testing.masterdata.hu_label_config.JsonHULabelConfigRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
+import de.metas.frontend_testing.masterdata.hu_label_config.JsonHULabelConfigRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;

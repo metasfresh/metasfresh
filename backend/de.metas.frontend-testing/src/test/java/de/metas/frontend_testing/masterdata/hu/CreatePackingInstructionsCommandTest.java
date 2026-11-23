@@ -15,8 +15,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

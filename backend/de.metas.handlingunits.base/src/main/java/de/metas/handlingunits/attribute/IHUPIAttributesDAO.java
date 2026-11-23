@@ -42,7 +42,6 @@ public interface IHUPIAttributesDAO extends ISingletonService
 
 	void deleteByVersionId(HuPackingInstructionsVersionId versionId);
 
-
 	/**
 	 * Creates an active {@code M_HU_PI_Attribute} as described by the request.
 	 */

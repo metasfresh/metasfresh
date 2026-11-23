@@ -16,12 +16,12 @@ import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResol
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.user.UserId;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
