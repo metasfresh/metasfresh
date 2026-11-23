@@ -85,7 +85,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 				.shipToAddress(shipToAddress)
 				.pickingSlots(toJsonHUConsolidationJobPickingSlots(job.getPickingSlotIds(), queues))
 				.currentTarget(JsonHUConsolidationTarget.ofNullable(job.getCurrentTarget()))
-				.graiScanEnabled(graiScanPolicy.isGRAIScanEnabled(queues.getHuIds()))
+				.graiScanEnabled(graiScanPolicy.isGRAIScanEnabled(queues))
 				.build();
 	}
 
