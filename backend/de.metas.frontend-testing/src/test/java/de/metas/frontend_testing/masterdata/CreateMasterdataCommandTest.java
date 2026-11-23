@@ -1,14 +1,14 @@
 package de.metas.frontend_testing.masterdata;
 
+import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
-import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
-import de.metas.frontend_testing.masterdata.hu_label_config.JsonHULabelConfigRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
+import de.metas.frontend_testing.masterdata.hu_label_config.JsonHULabelConfigRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
@@ -20,6 +20,8 @@ import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequ
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.process.AdProcessId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -164,8 +166,8 @@ public class CreateMasterdataCommandTest
 		final JsonCreateMasterdataRequest request = JsonCreateMasterdataRequest.builder()
 				.huLabelConfigs(ImmutableMap.of("lc1", JsonHULabelConfigRequest.builder()
 						.bpartner(Identifier.ofString("bp1"))
-						.huUnitType("LU")
-						.sourceDocType("PI")
+						.huUnitType(HuUnitType.LU)
+						.sourceDocType(HULabelSourceDocType.Picking)
 						.process(AdProcessId.ofRepoId(540412))
 						.autoPrint(true)
 						.build()))
@@ -175,8 +177,8 @@ public class CreateMasterdataCommandTest
 		assertThat(request.getHuLabelConfigs()).hasSize(1);
 		final JsonHULabelConfigRequest labelConfig = request.getHuLabelConfigs().get("lc1");
 		assertThat(labelConfig.getBpartner()).isEqualTo(Identifier.ofString("bp1"));
-		assertThat(labelConfig.getHuUnitType()).isEqualTo("LU");
-		assertThat(labelConfig.getSourceDocType()).isEqualTo("PI");
+		assertThat(labelConfig.getHuUnitType()).isEqualTo(HuUnitType.LU);
+		assertThat(labelConfig.getSourceDocType()).isEqualTo(HULabelSourceDocType.Picking);
 		assertThat(labelConfig.getProcess()).isEqualTo(AdProcessId.ofRepoId(540412));
 		assertThat(labelConfig.isAutoPrint()).isTrue();
 		assertThat(JsonCreateMasterdataRequest.builder().build().getHuLabelConfigs()).isNull();

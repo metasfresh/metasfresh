@@ -11,8 +11,6 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
-import de.metas.frontend_testing.masterdata.bpartner.JsonUpdateBPartnerRequest;
-import de.metas.frontend_testing.masterdata.bpartner.UpdateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsResponse;
 import de.metas.frontend_testing.masterdata.shipment.GenerateShipmentsCommand;
@@ -47,6 +45,13 @@ import javax.annotation.PostConstruct;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+/**
+ * Test-support endpoints for the frontend (E2E) tests.
+ * <p>
+ * Masterdata is created AND updated through the one createMasterdata endpoint: to update an entity created earlier,
+ * send its identifier again with the changed fields (see {@code CreateBPartnerCommand}).
+ * Do not add per-entity update endpoints.
+ */
 @RequestMapping(FrontendTestingRestController.ENDPOINT)
 @RestController
 @Profile(Profiles.PROFILE_App)
@@ -166,17 +171,5 @@ public class FrontendTestingRestController
 				.request(request)
 				.build()
 				.execute());
-	}
-
-	@PostMapping("updateBPartner")
-	public void updateBPartner(@RequestBody @NonNull final JsonUpdateBPartnerRequest request)
-	{
-		callInContext(() -> {
-			UpdateBPartnerCommand.builder()
-					.request(request)
-					.build()
-					.execute();
-			return null;
-		});
 	}
 }

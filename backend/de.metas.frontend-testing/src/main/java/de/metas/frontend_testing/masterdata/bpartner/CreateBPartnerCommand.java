@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
@@ -21,6 +22,7 @@ import de.metas.user.UserId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,8 +44,14 @@ import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Creates a business partner, or - when the request's identifier already stands for a business partner of the masterdata
+ * context - updates it (only {@code graiRequired}). Masterdata is created and updated through the one createMasterdata
+ * endpoint; do not add per-entity update endpoints.
+ */
 public class CreateBPartnerCommand
 {
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final RandomGLNGenerator randomGLNGenerator = new RandomGLNGenerator();
 	@NonNull private final CurrencyRepository currencyRepository;
 
@@ -95,6 +103,12 @@ public class CreateBPartnerCommand
 
 	public JsonCreateBPartnerResponse execute()
 	{
+		final BPartnerId existingBPartnerId = context.getOptionalId(bpIdentifier, BPartnerId.class).orElse(null);
+		if (existingBPartnerId != null)
+		{
+			return update(existingBPartnerId);
+		}
+
 		final PricingSystemId pricingSystemId = createPricingSystem();
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
@@ -216,6 +230,32 @@ public class CreateBPartnerCommand
 				.gln(singleGLN)
 				.locations(responseLocations)
 				.contacts(responseContacts)
+				.build();
+	}
+
+	/**
+	 * The identifier already stands for a business partner of this masterdata context (e.g. created by an earlier call):
+	 * the request updates it instead of creating another one. Only {@code graiRequired} can be updated.
+	 */
+	private JsonCreateBPartnerResponse update(@NonNull final BPartnerId bpartnerId)
+	{
+		if (request.getBpartnerCode() != null || request.getName() != null || request.getGln() != null
+				|| request.getLocations() != null || request.getContacts() != null)
+		{
+			throw new AdempiereException("Business partner " + bpIdentifier + " already exists: only graiRequired can be updated");
+		}
+
+		final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
+		final GRAIRequired graiRequired = request.getGraiRequired();
+		if (graiRequired != null)
+		{
+			bpartner.setGRAIRequired(graiRequired.getCode());
+			bpartnerDAO.save(bpartner);
+		}
+
+		return JsonCreateBPartnerResponse.builder()
+				.id(bpartnerId)
+				.bpartnerCode(bpartner.getValue())
 				.build();
 	}
 

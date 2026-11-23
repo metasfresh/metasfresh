@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata.hu_label_config;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.process.AdProcessId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,12 +23,11 @@ public class JsonHULabelConfigRequest
 	/** The business partner the config is scoped to ({@code M_HU_Label_Config.C_BPartner_ID}); never a global config. */
 	@NonNull Identifier bpartner;
 
-	/** HU unit type the config applies to: JSON codes {@code LU}, {@code TU} or {@code V} (virtual, the {@code M_HU_PI_Version.HU_UnitType} code - not the enum name {@code VHU}).
-	 * Kept as String: {@code HuUnitType} has two {@code @JsonCreator} methods, so Jackson cannot deserialize it directly. */
-	@NonNull String huUnitType;
+	/** HU unit type the config applies to: JSON codes {@code LU}, {@code TU} or {@code V} (virtual, the {@code M_HU_PI_Version.HU_UnitType} code - not the enum name {@code VHU}). */
+	@NonNull HuUnitType huUnitType;
 
 	/** {@code M_HU_Label_Config.HU_SourceDocType} code (e.g. {@code PI}=Picking). If null, the config matches any source document type. */
-	@Nullable String sourceDocType;
+	@Nullable HULabelSourceDocType sourceDocType;
 
 	/** {@code M_HU_Label_Config.LabelReport_Process_ID} (an AD_Process_ID). */
 	@NonNull AdProcessId process;

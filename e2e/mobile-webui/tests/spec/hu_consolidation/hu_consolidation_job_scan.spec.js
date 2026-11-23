@@ -582,7 +582,7 @@ const pickCrateWithoutGraiThenGraiCrate = async ({ masterdata }) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await pickOneCrateWithoutGrai({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P2.tuName, huQrCode: masterdata.handlingUnits.HU2.qrCode });
-    await Backend.updateBPartner({ bpartnerId: masterdata.bpartners.BP1.id, graiRequired: 'Y' });
+    await Backend.updateBPartner({ graiRequired: 'Y' });
     const grai = graiWithSerial(PI_P1.grai, `${Date.now()}1`);
     await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai, huQrCode: masterdata.handlingUnits.HU1.qrCode });
     return { grai };
@@ -599,7 +599,7 @@ test('Two crates without GRAI (partner on Y at Verdichtung time): no button', as
     const masterdata = await createNoGraiPartnerMasterdata();
     const { slot1 } = masterdata.pickingSlots;
     await pickTwoCratesWithoutGrai({ masterdata });
-    await Backend.updateBPartner({ bpartnerId: masterdata.bpartners.BP1.id, graiRequired: 'Y' });
+    await Backend.updateBPartner({ graiRequired: 'Y' });
 
     await ApplicationsListScreen.startApplication('huConsolidation');
     await HUConsolidationJobsListScreen.waitForScreen();
@@ -771,7 +771,7 @@ test('Crates without GRAI picked under N, partner set to Y afterwards: no slot s
     const masterdata = await createNoGraiPartnerMasterdata();
     const { slot1 } = masterdata.pickingSlots;
     const { context } = await pickTwoCratesWithoutGrai({ masterdata });
-    await Backend.updateBPartner({ bpartnerId: masterdata.bpartners.BP1.id, graiRequired: 'Y' });
+    await Backend.updateBPartner({ graiRequired: 'Y' });
 
     await openJobWithPallet({ masterdata });
     await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 2 });
@@ -817,7 +817,7 @@ test('Fallback: 3 GRAI crates + 1 crate without GRAI, the tap moves the crate wi
     await ApplicationsListScreen.expectVisible();
     // the crate without GRAI is picked first, while the partner is on 'N'; the 3 GRAI crates under 'Y'
     await pickOneCrateWithoutGrai({ documentNo: SO4.documentNo, slotQrCode: slot1.qrCode, tuName: PI_P2.tuName, huQrCode: masterdata.handlingUnits.HU2.qrCode });
-    await Backend.updateBPartner({ bpartnerId: masterdata.bpartners.BP1.id, graiRequired: 'Y' });
+    await Backend.updateBPartner({ graiRequired: 'Y' });
     await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai: grai1, huQrCode: masterdata.handlingUnits.HU1.qrCode });
     await pickOneGraiCrate({ documentNo: SO2.documentNo, slotQrCode: slot1.qrCode, grai: grai2, huQrCode: masterdata.handlingUnits.HU2.qrCode });
     await pickOneGraiCrate({ documentNo: SO3.documentNo, slotQrCode: slot1.qrCode, grai: grai3, huQrCode: masterdata.handlingUnits.HU1.qrCode });

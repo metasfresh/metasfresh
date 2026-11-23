@@ -176,23 +176,21 @@ export const Backend = {
      * between picking and consolidation.
      *
      * @param {Object} args
-     * @param {number} args.bpartnerId - the C_BPartner_ID returned by createMasterdata (`bpartners.<key>.id`).
+     * @param {string} [args.bpartnerKey='BP1'] - the key the partner got in the earlier createMasterdata call (`bpartners.<key>`).
      * @param {'Y'|'N'|'D'} args.graiRequired - the new C_BPartner.GRAIRequired.
      */
-    updateBPartner: async ({ bpartnerId, graiRequired }) => await test.step(`Backend: update bpartner ${bpartnerId} GRAIRequired=${graiRequired}`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/updateBPartner`, {
-            data: { bpartnerId, graiRequired },
-            headers: {
-                'Content-Type': 'application/json',
-            }
+    updateBPartner: async ({ bpartnerKey = 'BP1', graiRequired }) => await test.step(`Backend: update bpartner ${bpartnerKey} GRAIRequired=${graiRequired}`, async () => {
+        // the createMasterdata channel updates an already created partner when its key is sent again;
+        // keep the first call's masterdata (login, ids): the update response only carries the partner
+        const lastMasterdata = testContext.lastMasterdata;
+        await Backend.createMasterdata({
+            request: {
+                bpartners: {
+                    [bpartnerKey]: { graiRequired },
+                },
+            },
         });
-
-        if (!response.ok()) {
-            const responseBody = await response.json();
-            assertNoErrors({ responseBody });
-            throw new Error(`updateBPartner failed: HTTP ${response.status()}`);
-        }
+        testContext.lastMasterdata = lastMasterdata;
     }),
 
     /**

@@ -24,6 +24,7 @@ public class JsonCreateBPartnerRequest
 	 * Sets {@code C_BPartner.GRAIRequired}.
 	 * (De)serialized by its code: {@code 'Y'}=Yes, {@code 'N'}=No, {@code 'D'}=YesWithDummyGRAIs.
 	 * If null, the business partner is left unchanged.
+	 * Also the one field that can be updated on an existing business partner: send it with the identifier of an already created partner.
 	 */
 	@Nullable GRAIRequired graiRequired;
 
