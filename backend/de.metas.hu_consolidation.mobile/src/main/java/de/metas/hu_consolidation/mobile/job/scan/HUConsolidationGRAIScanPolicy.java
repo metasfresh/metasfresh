@@ -1,11 +1,15 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
 
 /**
  * One rule for "Scan (GRAI)" being offered, on the job screen and on the slot screen:
@@ -18,7 +22,17 @@ public class HUConsolidationGRAIScanPolicy
 
 	public boolean isGRAIScanEnabled(@NonNull final PickingSlotQueues queues)
 	{
-		return HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, queues.getHuIds())
+		return isGRAIScanEnabled(queues.getHuIds());
+	}
+
+	public boolean isGRAIScanEnabled(@NonNull final PickingSlotQueue queue)
+	{
+		return isGRAIScanEnabled(queue.getHuIds());
+	}
+
+	private boolean isGRAIScanEnabled(@NonNull final Collection<HuId> crateHuIds)
+	{
+		return HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, crateHuIds)
 				.map(query -> query.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_GRAI).anyMatch())
 				.orElse(false);
 	}

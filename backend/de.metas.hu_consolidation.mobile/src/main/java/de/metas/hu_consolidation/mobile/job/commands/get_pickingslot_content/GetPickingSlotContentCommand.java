@@ -1,7 +1,6 @@
 package de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content;
 
 import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -10,7 +9,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
-import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -61,7 +59,7 @@ public class GetPickingSlotContentCommand
 		final PickingSlotQueue queue = pickingSlotService.getPickingSlotQueue(pickingSlotId);
 
 		// same decision as for the job screen button, see HUConsolidationGRAIScanPolicy
-		final boolean graiScanEnabled = graiScanPolicy.isGRAIScanEnabled(PickingSlotQueues.ofList(ImmutableList.of(queue)));
+		final boolean graiScanEnabled = graiScanPolicy.isGRAIScanEnabled(queue);
 
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(queue.getHuIds());
 		final ImmutableMap<HuId, I_M_HU> husById = Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));

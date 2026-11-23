@@ -46,8 +46,6 @@ import java.util.Properties;
 import java.util.function.Supplier;
 
 /**
- * Test-support endpoints for the frontend (E2E) tests.
- * <p>
  * Masterdata is created AND updated through the one createMasterdata endpoint: to update an entity created earlier,
  * send its identifier again with the changed fields (see {@code CreateBPartnerCommand}).
  * Do not add per-entity update endpoints.

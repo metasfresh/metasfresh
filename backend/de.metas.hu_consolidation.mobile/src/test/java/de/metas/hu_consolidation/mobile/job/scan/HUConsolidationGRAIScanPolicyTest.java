@@ -136,4 +136,16 @@ class HUConsolidationGRAIScanPolicyTest
 		createTopLevelHU(GRAI_CODE); // other job
 		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(mine)))).isFalse();
 	}
+
+	@Test
+	void singleQueue_isDecidedLikeQueues()
+	{
+		final HuId graiCrate = GRAICrateTestFixtures.id(createTopLevelHU(GRAI_CODE));
+		final HuId plainCrate = GRAICrateTestFixtures.id(createTopLevelHU(null));
+		final PickingSlotId slotId = PickingSlotId.ofRepoId(1);
+
+		assertThat(scanPolicy.isGRAIScanEnabled(GRAICrateTestFixtures.queue(slotId, graiCrate, plainCrate))).isTrue();
+		assertThat(scanPolicy.isGRAIScanEnabled(GRAICrateTestFixtures.queue(slotId, plainCrate))).isFalse();
+		assertThat(scanPolicy.isGRAIScanEnabled(GRAICrateTestFixtures.queue(slotId))).isFalse();
+	}
 }
