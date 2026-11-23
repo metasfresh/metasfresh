@@ -121,7 +121,10 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Product.COLUMNNAME_ProductCategory_Value;
+		// AD_Org_ID, Value: rows of the same product (same org and search key) shall be consecutive, see ProductImportContext#isSameProduct
+		return I_I_Product.COLUMNNAME_ProductCategory_Value
+				+ ", " + I_I_Product.COLUMNNAME_AD_Org_ID
+				+ ", " + I_I_Product.COLUMNNAME_Value;
 	}
 
 	@Override

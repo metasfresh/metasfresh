@@ -19,6 +19,12 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import org.compiere.model.I_C_BPartner;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+
 import java.util.Properties;
 
 /*
@@ -72,6 +78,31 @@ public class BPartnerImportProcess_SimpleCase_Test
 		importProcess.importRecord(new Mutable<>(), ibpartner, false /* isInsertOnly */);
 
 		BPartnerImportTestHelper.assertImported(ibpartner);
+	}
+
+	@Test
+	public void sameSearchKeyInDifferentOrgs_isImportedAsSeparateBPartners()
+	{
+		final I_I_BPartner rowOrgA = prepareImportSingleBPartner();
+		rowOrgA.setAD_Org_ID(1000001);
+		save(rowOrgA);
+		final I_I_BPartner rowOrgB = prepareImportSingleBPartner();
+		rowOrgB.setAD_Org_ID(1000002);
+		save(rowOrgB);
+
+		final BPartnerImportProcess importProcess = new BPartnerImportProcess();
+		importProcess.setCtx(ctx);
+		final Mutable<Object> state = new Mutable<>();
+		importProcess.importRecord(state, rowOrgA, false /* isInsertOnly */);
+		importProcess.importRecord(state, rowOrgB, false /* isInsertOnly */);
+
+		assertThat(rowOrgB.getC_BPartner_ID()).isNotEqualTo(rowOrgA.getC_BPartner_ID());
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bpartnerA = bpartnersRepo.getById(BPartnerId.ofRepoId(rowOrgA.getC_BPartner_ID()));
+		final I_C_BPartner bpartnerB = bpartnersRepo.getById(BPartnerId.ofRepoId(rowOrgB.getC_BPartner_ID()));
+		assertThat(bpartnerA.getAD_Org_ID()).isEqualTo(1000001);
+		assertThat(bpartnerB.getAD_Org_ID()).isEqualTo(1000002);
+		assertThat(bpartnerA.getValue()).isEqualTo(bpartnerB.getValue());
 	}
 
 	/**

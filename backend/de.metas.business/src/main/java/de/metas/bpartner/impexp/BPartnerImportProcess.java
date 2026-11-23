@@ -238,7 +238,8 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 	protected String getImportOrderBySql()
 	{
 		// gody: 20070113 - Order so the same values are consecutive.
-		return I_I_BPartner.COLUMNNAME_BPValue
+		return I_I_BPartner.COLUMNNAME_AD_Org_ID
+				+ ", " + I_I_BPartner.COLUMNNAME_BPValue
 				+ ", " + I_I_BPartner.COLUMNNAME_GlobalId
 				+ ", " + I_I_BPartner.COLUMNNAME_I_BPartner_ID;
 	}
