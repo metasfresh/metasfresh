@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Presence of a GRAI on an active top-level HU among the given crates (the "Scan (GRAI)" button rule).
+ * Presence of a GRAI on an active top-level HU among the given crates (the "Scan (GRAI)" rule).
  * Runs on real (POJO) HU / attribute rows, so the query filters (active, top-level, attribute not null) are exercised.
  */
 class HUConsolidationGRAIScanPolicyTest

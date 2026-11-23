@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 
 /**
- * One rule for "Scan (GRAI)" being offered, on the job screen and on the slot screen:
- * at least one of the crates queued in the given picking slots is an active top-level HU that carries a GRAI.
+ * Decides whether "Scan (GRAI)" is offered for the given picking slot queues:
+ * true if at least one of the crates queued in the given picking slots is an active top-level HU that carries a GRAI.
  */
 @Component
 public class HUConsolidationGRAIScanPolicy

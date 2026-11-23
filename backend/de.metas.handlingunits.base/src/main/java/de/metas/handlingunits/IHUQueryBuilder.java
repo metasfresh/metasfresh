@@ -109,7 +109,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Retrieves the one and only {@link I_M_HU} matched by our criteria.
-	 * Fetches at most 2 rows. Like {@link #anyMatch()}, it ignores {@link #setErrorIfNoHUs(boolean, String)}: the caller says what to throw.
+	 * Fetches at most 2 rows. Like {@link #anyMatch()}, it ignores {@link #setErrorIfNoHUs(boolean, String)}.
 	 *
 	 * @param notFoundExceptionSupplier         supplies the exception to throw if there is no match
 	 * @param moreThanOneFoundExceptionSupplier supplies the exception to throw if there is more than one match

@@ -27,7 +27,7 @@ public class HUConsolidationTargetCloser
 	}
 
 	/**
-	 * Like {@link #closeTarget(HUConsolidationJob)}, but does not print the label: the label printing is returned in {@link CloseTargetResult}, for the caller to run.
+	 * Like {@link #closeTarget(HUConsolidationJob)}, but does not print the label: the label printing is returned in {@link CloseTargetResult}.
 	 *
 	 * @throws org.adempiere.exceptions.AdempiereException before the shipment is created, if the label cannot be printed
 	 */

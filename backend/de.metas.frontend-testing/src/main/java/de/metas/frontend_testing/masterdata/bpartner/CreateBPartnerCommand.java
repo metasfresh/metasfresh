@@ -223,7 +223,8 @@ public class CreateBPartnerCommand
 	}
 
 	/**
-	 * Sets the partner header from the request: a new partner gets the defaults, an existing one only the fields given in the request.
+	 * Sets the partner header from the request: a new partner gets the defaults, an existing one only the fields given in the request;
+	 * in both cases a customer or vendor without a pricing system gets one (its price list is a sales price list unless {@code isSoPriceList} says otherwise).
 	 */
 	private void setHeader(@NonNull final I_C_BPartner bpartner, final boolean isNew)
 	{
@@ -275,15 +276,17 @@ public class CreateBPartnerCommand
 			bpartner.setIsCustomer(isCustomer);
 		}
 
-		// A new partner gets a pricing system for each side (customer: sales, vendor: purchase)
-		if (isNew)
+		// A customer needs a sales pricing system and a vendor a purchase one; a side that has none yet gets it (on create and on update)
+		final boolean needsSalesPricingSystem = bpartner.isCustomer() && bpartner.getM_PricingSystem_ID() <= 0;
+		final boolean needsPurchasePricingSystem = bpartner.isVendor() && bpartner.getPO_PricingSystem_ID() <= 0;
+		if (needsSalesPricingSystem || needsPurchasePricingSystem)
 		{
 			final PricingSystemId pricingSystemId = createPricingSystem();
-			if (isCustomer)
+			if (needsSalesPricingSystem)
 			{
 				bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 			}
-			if (isVendor)
+			if (needsPurchasePricingSystem)
 			{
 				bpartner.setPO_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 			}

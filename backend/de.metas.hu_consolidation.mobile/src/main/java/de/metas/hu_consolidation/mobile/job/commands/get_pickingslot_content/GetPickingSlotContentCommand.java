@@ -58,7 +58,6 @@ public class GetPickingSlotContentCommand
 
 		final PickingSlotQueue queue = pickingSlotService.getPickingSlotQueue(pickingSlotId);
 
-		// same decision as for the job screen button, see HUConsolidationGRAIScanPolicy
 		final boolean graiScanEnabled = graiScanPolicy.isGRAIScanEnabled(queue);
 
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(queue.getHuIds());
