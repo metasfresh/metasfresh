@@ -112,7 +112,7 @@ public class CreateBPartnerCommand
 		}
 
 		final I_C_BPartner bpartner = isNew
-				? InterfaceWrapperHelper.newInstance(I_C_BPartner.class)
+				? bpartnerDAO.newBPartner()
 				: bpartnerDAO.getById(existingBPartnerId);
 		setHeader(bpartner, isNew);
 		bpartnerDAO.save(bpartner);

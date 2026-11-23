@@ -152,6 +152,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public I_C_BPartner newBPartner()
+	{
+		return InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+	}
+
+	@Override
 	public void saveOutOfTrx(@NonNull final I_C_BPartner bpartner)
 	{
 		InterfaceWrapperHelper.save(bpartner, ITrx.TRXNAME_None);

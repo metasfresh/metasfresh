@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -21,10 +22,12 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllocQuery;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -37,11 +40,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Archive;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -65,7 +66,8 @@ public class AssertExpectationsCommandServices
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -161,22 +163,25 @@ public class AssertExpectationsCommandServices
 	 */
 	public List<ShipmentAllocation> getShipmentAllocationsByLU(@NonNull final HuId luId)
 	{
-		final List<I_M_ShipmentSchedule_QtyPicked> allocs = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_LU_HU_ID, luId)
-				.create()
-				.list();
+		final List<I_M_ShipmentSchedule_QtyPicked> allocs = new ArrayList<>();
+		// the query requires an explicit shipped / not-shipped selector, so we ask for both
+		for (final boolean alreadyShipped : new boolean[] { true, false })
+		{
+			allocs.addAll(shipmentScheduleAllocDAO.list(
+					I_M_ShipmentSchedule_QtyPicked.class,
+					ShipmentScheduleAllocQuery.builder().onlyLUIds(ImmutableSet.of(luId)).alreadyShipped(alreadyShipped).build()));
+		}
 
 		final Set<InOutLineId> inOutLineIds = allocs.stream()
 				.map(alloc -> InOutLineId.ofRepoIdOrNull(alloc.getM_InOutLine_ID()))
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		final Map<InOutLineId, I_M_InOutLine> linesById = InterfaceWrapperHelper.loadByRepoIdAwares(inOutLineIds, I_M_InOutLine.class).stream()
+		final Map<InOutLineId, I_M_InOutLine> linesById = inOutDAO.getLinesByIds(inOutLineIds, I_M_InOutLine.class).stream()
 				.collect(Collectors.toMap(line -> InOutLineId.ofRepoId(line.getM_InOutLine_ID()), line -> line));
 		final Set<InOutId> inOutIds = linesById.values().stream()
 				.map(line -> InOutId.ofRepoId(line.getM_InOut_ID()))
 				.collect(Collectors.toSet());
-		final Map<InOutId, I_M_InOut> inOutsById = InterfaceWrapperHelper.loadByRepoIdAwares(inOutIds, I_M_InOut.class).stream()
+		final Map<InOutId, I_M_InOut> inOutsById = inOutDAO.getByIds(inOutIds, I_M_InOut.class).stream()
 				.collect(Collectors.toMap(inout -> InOutId.ofRepoId(inout.getM_InOut_ID()), inout -> inout));
 
 		final ArrayList<ShipmentAllocation> result = new ArrayList<>();
@@ -207,14 +212,6 @@ public class AssertExpectationsCommandServices
 	 */
 	public int countArchivesOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
 	{
-		final IQueryBuilder<I_AD_Archive> queryBuilder = queryBL.createQueryBuilder(I_AD_Archive.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_HU.class))
-				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, huId);
-		if (processId != null)
-		{
-			queryBuilder.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Process_ID, processId);
-		}
-		return queryBuilder.create().count();
+		return archiveDAO.countArchives(TableRecordReference.of(I_M_HU.Table_Name, huId), processId);
 	}
 }

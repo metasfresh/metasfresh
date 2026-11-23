@@ -7,6 +7,8 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.javaclasses.JavaClassId;
+import de.metas.handlingunits.attribute.HUPIAttributeCreateRequest;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.HUItemType;
@@ -62,6 +64,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
@@ -246,17 +249,16 @@ public class CreatePackingInstructionsCommand
 	{
 		final AttributeId sscc18AttributeId = attributeDAO.getAttributeIdByCode(AttributeConstants.ATTR_SSCC18_Value);
 
-		final I_M_HU_PI_Attribute piAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
-		piAttribute.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
-		piAttribute.setM_Attribute_ID(sscc18AttributeId.getRepoId());
-		piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
-		piAttribute.setHU_TansferStrategy_JavaClass_ID(HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID.getRepoId());
-		piAttribute.setIsDisplayed(true);
-		piAttribute.setIsReadOnly(true);
-		piAttribute.setIsOnlyIfInProductAttributeSet(true);
-		piAttribute.setUseInASI(true);
-		piAttribute.setIsActive(true);
-		saveRecord(piAttribute);
+		huPIAttributesDAO.createPIAttribute(HUPIAttributeCreateRequest.builder()
+				.piVersionId(lu.getPivId())
+				.attributeId(sscc18AttributeId)
+				.propagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation)
+				.transferStrategyJavaClassId(HU_TRANSFER_STRATEGY_COPY_JAVA_CLASS_ID)
+				.displayed(true)
+				.readOnly(true)
+				.onlyIfInProductAttributeSet(true)
+				.useInASI(true)
+				.build());
 
 		logger.info("Declared SSCC18 HU-attribute slot (M_Attribute_ID={}) on LU M_HU_PI_Version_ID={}", sscc18AttributeId, lu.getPivId());
 	}
