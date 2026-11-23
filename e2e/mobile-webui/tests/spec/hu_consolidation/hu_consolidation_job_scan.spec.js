@@ -230,8 +230,10 @@ test('Scan (GRAI) opens the scan screen: 3 crates from 2 slots scanned there, Ba
     });
 
     await test.step('Fertigstellen -> Ja: back on the job list, ship-to gone', async () => {
-        await HUConsolidationJobScreen.complete();
-        await HUConsolidationJobsListScreen.expectJobNotListed({ customerLocationId });
+        await HUConsolidationJobsListScreen.expectJobNotListedAfter({
+            customerLocationId,
+            trigger: () => HUConsolidationJobScreen.complete(),
+        });
     });
 
     await Backend.expect({
