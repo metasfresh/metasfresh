@@ -1,6 +1,7 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.report.labels.HULabelPrintAction;
 import de.metas.hu_consolidation.mobile.shipment.HUConsolidationShipmentService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +18,11 @@ public class HUConsolidationTargetCloser
 	@NonNull private final HUConsolidationLabelPrinter labelPrinter;
 	@NonNull private final HUConsolidationShipmentService shipmentService;
 
-	static final Runnable NO_PRINT = () -> {};
-
 	public HUConsolidationJob closeTarget(@NonNull final HUConsolidationJob job)
 	{
 		return close(job, target -> {
 			labelPrinter.printLabel(target);
-			return NO_PRINT;
+			return HULabelPrintAction.NOTHING;
 		}).getJob();
 	}
 
@@ -43,24 +42,24 @@ public class HUConsolidationTargetCloser
 	 */
 	private CloseTargetResult close(
 			@NonNull final HUConsolidationJob job,
-			@NonNull final Function<HUConsolidationTarget, Runnable> labelPrintStep)
+			@NonNull final Function<HUConsolidationTarget, HULabelPrintAction> labelPrintStep)
 	{
 		final HUConsolidationTarget currentTarget = job.getCurrentTarget();
 		if (currentTarget != null && currentTarget.getLuId() != null)
 		{
-			final Runnable printLabelAction = labelPrintStep.apply(currentTarget);
+			final HULabelPrintAction printLabelAction = labelPrintStep.apply(currentTarget);
 			shipmentService.createShipmentForLUs(job, ImmutableSet.of(currentTarget.getLuIdNotNull()));
 			return new CloseTargetResult(job.withCurrentTarget(null), printLabelAction);
 		}
 
-		return new CloseTargetResult(job.withCurrentTarget(null), NO_PRINT);
+		return new CloseTargetResult(job.withCurrentTarget(null), HULabelPrintAction.NOTHING);
 	}
 
 	@Value
 	public static class CloseTargetResult
 	{
 		@NonNull HUConsolidationJob job;
-		@NonNull Runnable printLabelAction;
+		@NonNull HULabelPrintAction printLabelAction;
 	}
 
 	public HUConsolidationJob closeAssumingNoActualTarget(@NonNull final HUConsolidationJob job)

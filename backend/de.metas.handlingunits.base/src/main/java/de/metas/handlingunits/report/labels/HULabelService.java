@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class HULabelService
 {
-	private static final Runnable NO_PRINT = () -> {};
 	private final static AdValRuleId HU_LABEL_PRINTING_OPTIONS_VAL_RULE_ID = AdValRuleId.ofRepoId(540604);
 
 	@NonNull private final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
@@ -68,9 +67,9 @@ public class HULabelService
 	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed, e.g. no label config applies
 	 */
 	@NonNull
-	public Runnable preparePrint(@NonNull final HULabelPrintRequest request)
+	public HULabelPrintAction preparePrint(@NonNull final HULabelPrintRequest request)
 	{
-		return newPrintCommand(request).prepare().orElse(NO_PRINT);
+		return newPrintCommand(request).prepare().orElse(HULabelPrintAction.NOTHING);
 	}
 
 	private HULabelPrintCommand newPrintCommand(@NonNull final HULabelPrintRequest request)

@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job;
 
+import de.metas.handlingunits.report.labels.HULabelPrintAction;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
@@ -25,7 +26,7 @@ public class HUConsolidationLabelPrinter
 	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed
 	 */
 	@NonNull
-	public Runnable preparePrintLabel(@NonNull final HUConsolidationTarget target)
+	public HULabelPrintAction preparePrintLabel(@NonNull final HUConsolidationTarget target)
 	{
 		return huLabelService.preparePrint(toPrintRequest(target));
 	}

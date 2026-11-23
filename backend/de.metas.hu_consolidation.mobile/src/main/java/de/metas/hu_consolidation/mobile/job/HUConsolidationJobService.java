@@ -3,6 +3,7 @@ package de.metas.hu_consolidation.mobile.job;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelPrintAction;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
 import de.metas.hu_consolidation.mobile.job.commands.complete.CompleteCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateCommand;
@@ -120,7 +121,7 @@ public class HUConsolidationJobService
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		// the label printing prepared inside the transaction by the mapper; stays a no-op when this call did not close a target
-		final AtomicReference<Runnable> printLabelActionRef = new AtomicReference<>(HUConsolidationTargetCloser.NO_PRINT);
+		final AtomicReference<HULabelPrintAction> printLabelActionRef = new AtomicReference<>(HULabelPrintAction.NOTHING);
 
 		final HUConsolidationJob jobClosed = jobRepository.updateById(jobId, job -> {
 			job.assertUserCanEdit(callerId);
@@ -130,7 +131,7 @@ public class HUConsolidationJobService
 		});
 
 		// Print after the close was committed, so that a print failure is shown to the operator while the pallet stays closed
-		printLabelActionRef.get().run();
+		printLabelActionRef.get().print();
 
 		return jobClosed;
 	}

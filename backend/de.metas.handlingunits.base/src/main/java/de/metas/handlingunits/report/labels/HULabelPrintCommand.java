@@ -44,11 +44,7 @@ class HULabelPrintCommand
 
 	public void execute()
 	{
-		prepare().ifPresent(printAction -> trxManager.runAfterClose((trx) ->
-		{
-			if (trx != null && !trx.isCommittedOK()) {return;}
-			printAction.run();
-		}));
+		prepare().ifPresent(printAction -> trxManager.runAfterCloseIfCommitted(printAction::print));
 	}
 
 	/**
@@ -57,7 +53,7 @@ class HULabelPrintCommand
 	 * @return the printing action (prints immediately, throws if the printing fails); empty if there is nothing to print
 	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed, e.g. no label config applies
 	 */
-	public Optional<Runnable> prepare()
+	public Optional<HULabelPrintAction> prepare()
 	{
 		final BatchToPrintCollector batchToPrintCollector = newBatchesToPrintCollector();
 		batchToPrintCollector.explodeAndAddAll(HUToReportWrapper.ofList(handlingUnitsBL.getByIds(request.getHuIds())));
@@ -67,7 +63,7 @@ class HULabelPrintCommand
 			return Optional.empty();
 		}
 
-		return Optional.of(() -> {
+		return Optional.<HULabelPrintAction>of(() -> {
 			//M_HU_Storage persistence may be delayed by de.metas.handlingunits.storage.impl.SaveOnCommitHUStorageDAO
 			huQRCodesService.generateForExistingHUs(batchToPrintCollector.getHuIds());
 			batchToPrintCollector.forEach(this::printBatchNow);
