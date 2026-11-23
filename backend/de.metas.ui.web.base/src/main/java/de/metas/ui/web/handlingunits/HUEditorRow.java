@@ -239,8 +239,8 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	@Getter
 	@ViewColumn(fieldName = FIELDNAME_Lot, captionKey = FIELDNAME_Lot, widgetType = DocumentFieldWidgetType.Text, sorting = false,
 			layouts = {
-					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 85, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
-					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 85, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 21, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 21, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
 	private final String lotNumber;
 
