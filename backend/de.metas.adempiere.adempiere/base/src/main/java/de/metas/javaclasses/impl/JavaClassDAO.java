@@ -40,10 +40,11 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 public class JavaClassDAO implements IJavaClassDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public List<I_AD_JavaClass> retrieveAllJavaClasses(final I_AD_JavaClass_Type type)
 	{
@@ -116,16 +117,12 @@ public class JavaClassDAO implements IJavaClassDAO
 	@Override
 	public JavaClassId getJavaClassIdByClassname(@NonNull final String classname)
 	{
-		final I_AD_JavaClass record = Services.get(IQueryBL.class)
+		final I_AD_JavaClass record = queryBL
 				.createQueryBuilder(I_AD_JavaClass.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_JavaClass.COLUMNNAME_Classname, classname)
 				.create()
-				.firstOnly(I_AD_JavaClass.class);
-		if (record == null)
-		{
-			throw new AdempiereException("No active AD_JavaClass found for Classname=" + classname);
-		}
+				.firstOnlyNotNull(I_AD_JavaClass.class);
 		return JavaClassId.ofRepoId(record.getAD_JavaClass_ID());
 	}
 }

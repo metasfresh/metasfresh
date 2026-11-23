@@ -52,7 +52,7 @@ public interface IJavaClassDAO extends ISingletonService
 
 	/**
 	 * @return the ID of the active {@code AD_JavaClass} with the given {@code Classname}
-	 * @throws org.adempiere.exceptions.AdempiereException if there is no such record
+	 * @throws org.adempiere.exceptions.AdempiereException if there is no such record, or more than one
 	 */
 	JavaClassId getJavaClassIdByClassname(@NonNull String classname);
 
