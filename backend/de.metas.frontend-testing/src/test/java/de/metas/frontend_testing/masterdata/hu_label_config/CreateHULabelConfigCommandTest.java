@@ -9,6 +9,7 @@ import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Label_Config;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
@@ -56,6 +57,7 @@ public class CreateHULabelConfigCommandTest
 		final BPartnerId bpartnerId = createPartner("BP1");
 
 		CreateHULabelConfigCommand.builder()
+				.huLabelConfigRepository(new HULabelConfigRepository())
 				.context(context)
 				.request(JsonHULabelConfigRequest.builder()
 						.bpartner(Identifier.ofString("BP1"))
@@ -84,6 +86,7 @@ public class CreateHULabelConfigCommandTest
 		createPartner("BP1");
 
 		CreateHULabelConfigCommand.builder()
+				.huLabelConfigRepository(new HULabelConfigRepository())
 				.context(context)
 				.request(JsonHULabelConfigRequest.builder()
 						.bpartner(Identifier.ofString("BP1"))
@@ -107,7 +110,7 @@ public class CreateHULabelConfigCommandTest
 				"{\"bpartner\":\"BP1\",\"huUnitType\":\"V\",\"process\":540412}", JsonHULabelConfigRequest.class);
 
 		createPartner("BP1");
-		CreateHULabelConfigCommand.builder().context(context).request(request).build().execute();
+		CreateHULabelConfigCommand.builder().huLabelConfigRepository(new HULabelConfigRepository()).context(context).request(request).build().execute();
 
 		assertThat(singleRecord().isApplyToCUs()).isTrue();
 	}

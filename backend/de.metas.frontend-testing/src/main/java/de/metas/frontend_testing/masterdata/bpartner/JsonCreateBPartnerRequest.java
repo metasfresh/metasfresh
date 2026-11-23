@@ -24,7 +24,6 @@ public class JsonCreateBPartnerRequest
 	 * Sets {@code C_BPartner.GRAIRequired}.
 	 * (De)serialized by its code: {@code 'Y'}=Yes, {@code 'N'}=No, {@code 'D'}=YesWithDummyGRAIs.
 	 * If null, the business partner is left unchanged.
-	 * Also the one field that can be updated on an existing business partner: send it with the identifier of an already created partner.
 	 */
 	@Nullable GRAIRequired graiRequired;
 
@@ -36,23 +35,23 @@ public class JsonCreateBPartnerRequest
 
 	/**
 	 * Whether this business partner is a vendor (purchase side).
-	 * Default: false
+	 * Default for a new partner: false
 	 */
-	@Builder.Default boolean isVendor = false;
+	@Nullable Boolean isVendor;
 
 	/**
 	 * Whether this business partner is a customer (sales side).
-	 * Default: true
+	 * Default for a new partner: true
 	 */
-	@Builder.Default boolean isCustomer = true;
+	@Nullable Boolean isCustomer;
 
 	/**
 	 * Whether to create a sales price list (true) or purchase price list (false).
 	 * For vendors, this should typically be false.
 	 * For customers, this should typically be true.
-	 * Default: true (sales price list)
+	 * Default: true (sales price list). Used when the partner is created (its pricing system).
 	 */
-	@Builder.Default boolean isSoPriceList = true;
+	@Nullable Boolean isSoPriceList;
 
 	@Value
 	@Builder

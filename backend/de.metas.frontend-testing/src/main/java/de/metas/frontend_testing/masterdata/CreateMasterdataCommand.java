@@ -318,6 +318,7 @@ public class CreateMasterdataCommand
 	private Object createHULabelConfig(final String identifier, final JsonHULabelConfigRequest request)
 	{
 		CreateHULabelConfigCommand.builder()
+				.huLabelConfigRepository(services.huLabelConfigRepository)
 				.context(context)
 				.request(request)
 				.build()

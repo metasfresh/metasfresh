@@ -46,8 +46,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Creates a business partner, or - when the request's identifier already stands for a business partner of the masterdata
- * context - updates it (only {@code graiRequired}). Masterdata is created and updated through the one createMasterdata
- * endpoint; do not add per-entity update endpoints.
+ * context (e.g. created by an earlier call) - updates its header with the values given in the request.
+ * Locations and contacts are created only together with a new partner.
+ * Masterdata is created and updated through the one createMasterdata endpoint; do not add per-entity update endpoints.
  */
 public class CreateBPartnerCommand
 {
@@ -104,50 +105,27 @@ public class CreateBPartnerCommand
 	public JsonCreateBPartnerResponse execute()
 	{
 		final BPartnerId existingBPartnerId = context.getOptionalId(bpIdentifier, BPartnerId.class).orElse(null);
-		if (existingBPartnerId != null)
+		final boolean isNew = existingBPartnerId == null;
+		if (!isNew)
 		{
-			return update(existingBPartnerId);
+			assertUpdatable();
 		}
 
-		final PricingSystemId pricingSystemId = createPricingSystem();
+		final I_C_BPartner bpartner = isNew
+				? InterfaceWrapperHelper.newInstance(I_C_BPartner.class)
+				: bpartnerDAO.getById(existingBPartnerId);
+		setHeader(bpartner, isNew);
+		bpartnerDAO.save(bpartner);
 
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bpartner.setValue(bpValue);
-
-		// Use custom name if provided (max 100 chars), otherwise use value
-		final String customName = request.getName();
-		if (Check.isNotBlank(customName) && customName.length() > 100)
-		{
-			throw new AdempiereException("bpartner name must not exceed 100 characters");
-		}
-		final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
-		bpartner.setName(bpName);
-		bpartner.setIsCompany(true);
-		bpartner.setCompanyName(bpName);
-		bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
-		bpartner.setIsVendor(request.isVendor());
-		bpartner.setIsCustomer(request.isCustomer());
-		bpartner.setAD_Org_ID(orgId.getRepoId());
-		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
-
-		final GRAIRequired graiRequired = request.getGraiRequired();
-		if (graiRequired != null)
-		{
-			bpartner.setGRAIRequired(graiRequired.getCode());
-		}
-
-		// Set pricing system based on vendor/customer flags
-		if (request.isCustomer())
-		{
-			bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Sales pricing system
-		}
-		if (request.isVendor())
-		{
-			bpartner.setPO_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Purchase pricing system
-		}
-
-		InterfaceWrapperHelper.saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+		if (!isNew)
+		{
+			return JsonCreateBPartnerResponse.builder()
+					.id(bpartnerId)
+					.bpartnerCode(bpartner.getValue())
+					.build();
+		}
+
 		context.putIdentifier(bpIdentifier, bpartnerId);
 
 		final BPartnerLocationId singleBPLocationId;
@@ -234,30 +212,82 @@ public class CreateBPartnerCommand
 	}
 
 	/**
-	 * The identifier already stands for a business partner of this masterdata context (e.g. created by an earlier call):
-	 * the request updates it instead of creating another one. Only {@code graiRequired} can be updated.
+	 * Locations and contacts are created only together with a new partner; the partner header can be created and updated.
 	 */
-	private JsonCreateBPartnerResponse update(@NonNull final BPartnerId bpartnerId)
+	private void assertUpdatable()
 	{
-		if (request.getBpartnerCode() != null || request.getName() != null || request.getGln() != null
-				|| request.getLocations() != null || request.getContacts() != null
-				|| request.isVendor() || !request.isCustomer() || !request.isSoPriceList()) // not the defaults: explicitly set
+		if (request.getGln() != null || request.getLocations() != null || request.getContacts() != null)
 		{
-			throw new AdempiereException("Business partner " + bpIdentifier + " already exists: only graiRequired can be updated");
+			throw new AdempiereException("Business partner " + bpIdentifier + " already exists: its header can be updated, but not gln, locations, contacts");
+		}
+	}
+
+	/**
+	 * Sets the partner header from the request: a new partner gets the defaults, an existing one only the fields given in the request.
+	 */
+	private void setHeader(@NonNull final I_C_BPartner bpartner, final boolean isNew)
+	{
+		final String customName = request.getName();
+		if (Check.isNotBlank(customName) && customName.length() > 100)
+		{
+			throw new AdempiereException("bpartner name must not exceed 100 characters");
 		}
 
-		final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
+		if (isNew)
+		{
+			bpartner.setValue(bpValue);
+			// Use custom name if provided (max 100 chars), otherwise use value
+			final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
+			bpartner.setName(bpName);
+			bpartner.setIsCompany(true);
+			bpartner.setCompanyName(bpName);
+			bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
+			bpartner.setAD_Org_ID(orgId.getRepoId());
+			bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
+		}
+		else
+		{
+			if (request.getBpartnerCode() != null)
+			{
+				bpartner.setValue(bpValue);
+			}
+			if (Check.isNotBlank(customName))
+			{
+				bpartner.setName(customName);
+				bpartner.setCompanyName(customName);
+			}
+		}
+
 		final GRAIRequired graiRequired = request.getGraiRequired();
 		if (graiRequired != null)
 		{
 			bpartner.setGRAIRequired(graiRequired.getCode());
-			bpartnerDAO.save(bpartner);
 		}
 
-		return JsonCreateBPartnerResponse.builder()
-				.id(bpartnerId)
-				.bpartnerCode(bpartner.getValue())
-				.build();
+		final Boolean isVendor = isNew ? CoalesceUtil.coalesceNotNull(request.getIsVendor(), false) : request.getIsVendor();
+		final Boolean isCustomer = isNew ? CoalesceUtil.coalesceNotNull(request.getIsCustomer(), true) : request.getIsCustomer();
+		if (isVendor != null)
+		{
+			bpartner.setIsVendor(isVendor);
+		}
+		if (isCustomer != null)
+		{
+			bpartner.setIsCustomer(isCustomer);
+		}
+
+		// A new partner gets a pricing system for each side (customer: sales, vendor: purchase)
+		if (isNew)
+		{
+			final PricingSystemId pricingSystemId = createPricingSystem();
+			if (isCustomer)
+			{
+				bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+			}
+			if (isVendor)
+			{
+				bpartner.setPO_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+			}
+		}
 	}
 
 	private I_C_BPartner_Location createBPLocation(
@@ -392,7 +422,7 @@ public class CreateBPartnerCommand
 		priceList.setIsTaxIncluded(false);
 		priceList.setPricePrecision(2);
 		priceList.setIsActive(true);
-		priceList.setIsSOPriceList(request.isSoPriceList());
+		priceList.setIsSOPriceList(CoalesceUtil.coalesceNotNull(request.getIsSoPriceList(), true));
 		priceList.setC_Country_ID(countryId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(priceList);
 
