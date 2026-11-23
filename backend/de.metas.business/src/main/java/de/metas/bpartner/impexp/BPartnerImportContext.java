@@ -63,6 +63,7 @@ final class BPartnerImportContext
 		final I_I_BPartner currentImportRecord = getCurrentImportRecord();
 
 		return currentImportRecord != null
+				&& importRecord.getAD_Org_ID() == currentImportRecord.getAD_Org_ID()
 				&& Objects.equals(importRecord.getBPValue(), currentImportRecord.getBPValue())
 				&& Objects.equals(importRecord.getGlobalId(), currentImportRecord.getGlobalId());
 	}
