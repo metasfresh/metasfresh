@@ -202,7 +202,7 @@ public class M_InOut_StepDef
 	 * <b>MovementDate</b> — (optional) expected movement date, e.g., "2022-05-17"<br>
 	 * <b>processed</b> — (required) true/false<br>
 	 * <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
-	 * <b>POReference</b> — (optional) expected PO reference<br>
+	 * <b>POReference</b> — (optional) expected PO reference; {@code null} asserts that it is not set<br>
 	 * <b>AD_InputDataSource_ID.InternalName</b> — (optional) expected input data source internal name<br>
 	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
 	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
@@ -248,7 +248,7 @@ public class M_InOut_StepDef
 
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
 				.filter(Check::isNotBlank)
-				.ifPresent(poReference -> softly.assertThat(inout.getPOReference()).isEqualTo(poReference));
+				.ifPresent(poReference -> softly.assertThat(inout.getPOReference()).as("POReference").isEqualTo(DataTableUtil.nullToken2Null(poReference)));
 
 		row.getAsOptionalBoolean("processed")
 				.ifPresent(processed -> softly.assertThat(inout.isProcessed()).isEqualTo(processed));
@@ -772,20 +772,22 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
-
 	/**
-	 * Updates existing {@link I_M_InOut} records (e.g. to set a non-quantity field before reactivation).
-	 * <p>
-	 * Columns:
-	 * <ul>
-	 *     <li>M_InOut_ID (required): identifier of the shipment to update.</li>
-	 *     <li>OPT.M_Tour_ID (optional): identifier of an {@link de.metas.tourplanning.model.I_M_Tour} to set on the shipment.</li>
-	 * </ul>
-	 * Example:
+	 * Updates fields of an existing {@code M_InOut} (e.g. before or after completion, or to set a
+	 * non-quantity field before reactivation) and saves it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment/receipt to update<br>
+	 *   <b>MovementDate</b> — (optional) new movement date, e.g. 2022-05-17<br>
+	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 *   <b>M_Tour_ID</b> — (optional, identifier-ref) a {@link de.metas.tourplanning.model.I_M_Tour} to set on the shipment<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Tour_StepDefData
+	 * @cucumber.example
 	 * <pre>
 	 * And update M_InOut:
-	 *   | M_InOut_ID | OPT.M_Tour_ID |
-	 *   | shipment   | tour          |
+	 *   | M_InOut_ID | MovementDate | POReference | OPT.M_Tour_ID |
+	 *   | shipment_1 | 2022-05-17   | PO_4711     | tour          |
 	 * </pre>
 	 */
 	@And("update M_InOut:")
@@ -799,6 +801,8 @@ public class M_InOut_StepDef
 					.ifPresent(inOut::setMovementDate);
 			row.getAsOptionalIdentifier("M_Tour_ID")
 					.ifPresent(tourIdentifier -> inOut.setM_Tour_ID(tourTable.get(tourIdentifier).getM_Tour_ID()));
+			row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
+					.ifPresent(inOut::setPOReference);
 
 			InterfaceWrapperHelper.saveRecord(inOut);
 		});
