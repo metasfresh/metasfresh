@@ -11,7 +11,7 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateComm
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
 import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
-import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
@@ -36,7 +36,7 @@ public class HUConsolidationJobService
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final PickingSlotService pickingSlotService;
-	@NonNull private final HUConsolidationGRAIPresence graiPresence;
+	@NonNull private final HUConsolidationGRAIScanPolicy graiScanPolicy;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HUConsolidationAvailableTargetsFinder availableTargetsFinder;
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
@@ -183,7 +183,7 @@ public class HUConsolidationJobService
 				.jobRepository(jobRepository)
 				.huQRCodesService(huQRCodesService)
 				.pickingSlotService(pickingSlotService)
-				.graiPresence(graiPresence)
+				.graiScanPolicy(graiScanPolicy)
 				.jobId(jobId)
 				.pickingSlotId(pickingSlotId)
 				.build()

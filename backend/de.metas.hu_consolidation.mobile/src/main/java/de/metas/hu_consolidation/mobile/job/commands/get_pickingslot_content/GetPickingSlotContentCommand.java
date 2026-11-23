@@ -17,7 +17,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
-import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductBL;
@@ -41,7 +41,7 @@ public class GetPickingSlotContentCommand
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
-	@NonNull private final HUConsolidationGRAIPresence graiPresence;
+	@NonNull private final HUConsolidationGRAIScanPolicy graiScanPolicy;
 
 	@NonNull private final HUConsolidationJobId jobId;
 	@NonNull private final PickingSlotId pickingSlotId;
@@ -58,8 +58,8 @@ public class GetPickingSlotContentCommand
 
 		final PickingSlotQueue queue = pickingSlotService.getPickingSlotQueue(pickingSlotId);
 
-		// same decision as for the job screen button, see HUConsolidationGRAIPresence
-		final boolean graiScanEnabled = graiPresence.isAnyGRAIPresent(queue.getHuIds());
+		// same decision as for the job screen button, see HUConsolidationGRAIScanPolicy
+		final boolean graiScanEnabled = graiScanPolicy.isGRAIScanEnabled(queue.getHuIds());
 
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(queue.getHuIds());
 		final ImmutableMap<HuId, I_M_HU> husById = Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));

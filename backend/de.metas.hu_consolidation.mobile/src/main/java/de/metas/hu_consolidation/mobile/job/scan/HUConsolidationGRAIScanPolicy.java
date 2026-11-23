@@ -14,11 +14,11 @@ import java.util.Collection;
  * at least one of the given crates is an active top-level HU that carries a GRAI.
  */
 @Component
-public class HUConsolidationGRAIPresence
+public class HUConsolidationGRAIScanPolicy
 {
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-	public boolean isAnyGRAIPresent(@NonNull final Collection<HuId> huIds)
+	public boolean isGRAIScanEnabled(@NonNull final Collection<HuId> huIds)
 	{
 		return HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, huIds)
 				.map(query -> query.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_GRAI).anyMatch())

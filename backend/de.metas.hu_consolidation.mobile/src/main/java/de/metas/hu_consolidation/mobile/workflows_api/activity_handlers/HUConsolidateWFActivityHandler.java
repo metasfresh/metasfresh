@@ -6,7 +6,7 @@ import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
-import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJob;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlot;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
@@ -39,7 +39,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
-	@NonNull private final HUConsolidationGRAIPresence graiPresence;
+	@NonNull private final HUConsolidationGRAIScanPolicy graiScanPolicy;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -85,7 +85,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 				.shipToAddress(shipToAddress)
 				.pickingSlots(toJsonHUConsolidationJobPickingSlots(job.getPickingSlotIds(), queues))
 				.currentTarget(JsonHUConsolidationTarget.ofNullable(job.getCurrentTarget()))
-				.graiScanEnabled(graiPresence.isAnyGRAIPresent(queues.getHuIds()))
+				.graiScanEnabled(graiScanPolicy.isGRAIScanEnabled(queues.getHuIds()))
 				.build();
 	}
 

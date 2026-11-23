@@ -7,7 +7,7 @@ import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.shipment.HUConsolidationShipmentService;
 import de.metas.user.UserId;
@@ -57,7 +57,7 @@ class HUConsolidationJobServiceCloseTargetTest
 		service = new HUConsolidationJobService(
 				jobRepository,
 				mock(PickingSlotService.class),
-				mock(HUConsolidationGRAIPresence.class),
+				mock(HUConsolidationGRAIScanPolicy.class),
 				mock(HUQRCodesService.class),
 				mock(HUConsolidationAvailableTargetsFinder.class),
 				targetCloser,
