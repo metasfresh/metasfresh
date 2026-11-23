@@ -1,7 +1,7 @@
 package de.metas.hu_consolidation.mobile.job;
 
-import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.labels.HULabelPrintAction;
@@ -12,7 +12,6 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequ
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
 import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
-import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;

@@ -1,9 +1,9 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
@@ -205,7 +205,6 @@ public class HUQueryBuilderTest
 		huReservationRecord.setC_OrderLineSO_ID(orderLineId.getRepoId());
 		saveRecord(huReservationRecord);
 	}
-
 
 	@Test
 	public void firstOnlyNotNull_oneFound_returnsIt()
