@@ -137,6 +137,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private final boolean showBestBeforeDate;
 	private final boolean showWeightGross;
+	private final boolean showLotNumber;
 
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
@@ -153,6 +154,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final ADReferenceService adReferenceService,
 			final boolean showBestBeforeDate,
 			final boolean showWeightGross,
+			final boolean showLotNumber,
 			@Nullable final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate)
 	{
 		this.windowId = windowId;
@@ -161,6 +163,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		this.adReferenceService = adReferenceService;
 		this.showBestBeforeDate = showBestBeforeDate;
 		this.showWeightGross = showWeightGross;
+		this.showLotNumber = showLotNumber;
 
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
@@ -294,6 +297,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (showWeightGross)
 		{
 			huEditorRow.setWeightGross(extractWeightGross(attributesProvider, rowId));
+		}
+
+		// Reuse the existing M_HU.Lot virtual column (its ColumnSQL resolves the 'Lot-Nummer' HU attribute,
+		// the same source the HU Editor "Lot-Nr." filter uses) rather than a parallel attribute lookup.
+		if (showLotNumber)
+		{
+			huEditorRow.setLotNumber(hu.getLot());
 		}
 
 		//
