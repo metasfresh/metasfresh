@@ -87,7 +87,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId      | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId      | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | prepay_02112026 | prepay_customer          | SOO         | prepayType              | true      | WP        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -160,7 +160,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId       | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId       | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_prepay_1 | partner_prepay           | SOO         | prepayType              | true      | WP        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -222,7 +222,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId         | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId         | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_candtype_1 | partner_candtype         | SOO         | standardType            | true      | CO        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -283,7 +283,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId       | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId       | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_notype_1 | partner_notype           | SOO         | standardType            | true      | CO        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -354,7 +354,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId      | C_BPartner_ID.Identifier | Bill_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId      | C_BPartner_ID.Identifier | Bill_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_buyer_1 | partner_buyer            | partner_bill                | SOO         | prepayType              | true      | WP        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -418,7 +418,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId         | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId         | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_inactive_1 | partner_inactive         | SOO         | standardType            | true      | CO        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -485,7 +485,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId           | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId           | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_foreignorg_1 | partner_foreignorg       | SOO         | standardType            | true      | CO        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -552,7 +552,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId        | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId        | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_candorg_1 | partner_candorg          | SOO         | prepayType              | true      | WP        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
@@ -616,7 +616,7 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId       | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | C_Order_ID.Identifier | ExternalId       | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
       | order                 | partner_nonsoo_1 | partner_nonsoo           | SOO         | standardType            | true      | CO        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |

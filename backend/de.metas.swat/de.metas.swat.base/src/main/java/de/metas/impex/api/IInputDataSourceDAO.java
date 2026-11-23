@@ -4,6 +4,7 @@ import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 import java.util.Optional;
 import java.util.Properties;
@@ -33,6 +34,13 @@ import java.util.Properties;
 public interface IInputDataSourceDAO extends ISingletonService
 {
 	I_AD_InputDataSource getById(final InputDataSourceId id);
+
+	/**
+	 * @return the data source's "EDI channel" flag ({@code AD_InputDataSource.IsEDIChannel}).
+	 * Cached; the cache is invalidated after any {@code AD_InputDataSource} change is committed (also on other nodes).
+	 * @throws org.adempiere.exceptions.AdempiereException if there is no data source with the given ID
+	 */
+	boolean isEDIChannel(@NonNull InputDataSourceId id);
 
 	I_AD_InputDataSource retrieveInputDataSource(Properties ctx, String internalName, boolean throwEx, String trxName);
 
