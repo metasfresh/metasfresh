@@ -58,7 +58,7 @@ public class GetPickingSlotContentCommand
 
 		final PickingSlotQueue queue = pickingSlotService.getPickingSlotQueue(pickingSlotId);
 
-		// Show the GRAI scanner only when a crate of this slot carries a GRAI (same rule as the job screen button).
+		// same decision as for the job screen button, see HUConsolidationGRAIPresence
 		final boolean graiScanEnabled = graiPresence.isAnyGRAIPresent(queue.getHuIds());
 
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(queue.getHuIds());

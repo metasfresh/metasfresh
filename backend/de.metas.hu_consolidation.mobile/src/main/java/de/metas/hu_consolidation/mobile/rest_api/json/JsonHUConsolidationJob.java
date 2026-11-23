@@ -20,6 +20,6 @@ public class JsonHUConsolidationJob
 	
 	@Nullable JsonHUConsolidationTarget currentTarget;
 
-	/** true iff an active top-level HU in the job's slots carries a GRAI */
+	/** Whether the mobile UI shows the GRAI scanner for this job; decided by the backend. */
 	boolean graiScanEnabled;
 }
