@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job;
 
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -11,7 +12,7 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequ
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
 import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
-import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationJobCrates;
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
@@ -166,8 +167,8 @@ public class HUConsolidationJobService
 		final HUConsolidationJob job = getJobById(jobId);
 		job.assertUserCanEdit(callerId);
 
-		final HUConsolidationJobCrates jobCrates = HUConsolidationJobCrates.load(job.getPickingSlotIds(), pickingSlotService);
-		final HUConsolidationScannedCrate crate = scannedCodeResolvers.resolve(scannedCode, jobCrates);
+		final PickingSlotQueues queues = pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds());
+		final HUConsolidationScannedCrate crate = scannedCodeResolvers.resolve(scannedCode, queues);
 
 		return consolidate(ConsolidateRequest.builder()
 				.callerId(callerId)

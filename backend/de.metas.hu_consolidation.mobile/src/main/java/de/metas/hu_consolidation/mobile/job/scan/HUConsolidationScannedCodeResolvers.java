@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.scannable_code.ScannedCode;
 import lombok.NonNull;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The replaceable chain of {@link HUConsolidationScannedCodeResolver}s: the first one that recognizes the code wins.
@@ -22,32 +24,21 @@ public class HUConsolidationScannedCodeResolvers
 	@NonNull private final List<HUConsolidationScannedCodeResolver> resolvers;
 
 	@NonNull
-	public HUConsolidationScannedCrate resolve(@Nullable final ScannedCode scannedCode, @NonNull final HUConsolidationJobCrates jobCrates)
+	public HUConsolidationScannedCrate resolve(@Nullable final ScannedCode scannedCode, @NonNull final PickingSlotQueues queues)
 	{
 		if (scannedCode != null)
 		{
-			final HUConsolidationScannedCrate crate = resolveNonBlank(scannedCode, jobCrates);
-			if (crate != null)
+			for (final HUConsolidationScannedCodeResolver resolver : resolvers)
 			{
-				return crate;
+				final Optional<HUConsolidationScannedCrate> crate = resolver.resolve(scannedCode, queues);
+				if (crate.isPresent())
+				{
+					return crate.get();
+				}
 			}
 		}
 
 		// a blank code and a code of an unsupported type end here alike
 		throw new AdempiereException(MobileQRCodeMessages.INVALID_GRAI_BARCODE, scannedCode != null ? scannedCode.getAsString() : "");
-	}
-
-	@Nullable
-	private HUConsolidationScannedCrate resolveNonBlank(@NonNull final ScannedCode scannedCode, @NonNull final HUConsolidationJobCrates jobCrates)
-	{
-		for (final HUConsolidationScannedCodeResolver resolver : resolvers)
-		{
-			final HUConsolidationScannedCrate crate = resolver.resolve(scannedCode, jobCrates).orElse(null);
-			if (crate != null)
-			{
-				return crate;
-			}
-		}
-		return null;
 	}
 }

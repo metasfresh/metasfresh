@@ -1,12 +1,13 @@
 package de.metas.hu_consolidation.mobile.workflows_api.activity_handlers;
 
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIPresence;
-import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationJobCrates;
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJob;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlot;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
@@ -78,20 +79,20 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 		final String shipToAddress = renderedAddressProvider.getAddress(job.getShipToBPLocationId());
 
 		// one queue read serves both the slot counts and the GRAI presence
-		final HUConsolidationJobCrates jobCrates = HUConsolidationJobCrates.load(job.getPickingSlotIds(), pickingSlotService);
+		final PickingSlotQueues queues = pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds());
 
 		return JsonHUConsolidationJob.builder()
 				.id(job.getId())
 				.shipToAddress(shipToAddress)
-				.pickingSlots(toJsonHUConsolidationJobPickingSlots(job.getPickingSlotIds(), jobCrates))
+				.pickingSlots(toJsonHUConsolidationJobPickingSlots(job.getPickingSlotIds(), queues))
 				.currentTarget(JsonHUConsolidationTarget.ofNullable(job.getCurrentTarget()))
-				.graiScanEnabled(graiPresence.isAnyGRAIPresent(jobCrates.getHuIds()))
+				.graiScanEnabled(graiPresence.isAnyGRAIPresent(queues.getHuIds()))
 				.build();
 	}
 
 	private ImmutableList<JsonHUConsolidationJobPickingSlot> toJsonHUConsolidationJobPickingSlots(
 			@NonNull final Set<PickingSlotId> pickingSlotIds,
-			@NonNull final HUConsolidationJobCrates jobCrates)
+			@NonNull final PickingSlotQueues queues)
 	{
 		if (pickingSlotIds.isEmpty())
 		{
@@ -104,7 +105,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 				.map(pickingSlotIdAndCaption -> JsonHUConsolidationJobPickingSlot.builder()
 						.pickingSlotId(pickingSlotIdAndCaption.getPickingSlotId())
 						.pickingSlotQRCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toPrintableQRCode().toJsonDisplayableQRCode())
-						.countHUs(jobCrates.getCountHUs(pickingSlotIdAndCaption.getPickingSlotId()))
+						.countHUs(queues.getCountHUs(pickingSlotIdAndCaption.getPickingSlotId()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}

@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -23,7 +24,7 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
-	public Optional<HUConsolidationScannedCrate> resolve(@NonNull final ScannedCode scannedCode, @NonNull final HUConsolidationJobCrates jobCrates)
+	public Optional<HUConsolidationScannedCrate> resolve(@NonNull final ScannedCode scannedCode, @NonNull final PickingSlotQueues queues)
 	{
 		final GRAI grai = GRAI.parse(scannedCode.getAsString());
 		if (grai == null)
@@ -31,7 +32,7 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 			return Optional.empty();
 		}
 
-		final IHUQueryBuilder cratesQuery = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, jobCrates.getHuIds())
+		final IHUQueryBuilder cratesQuery = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, queues.getHuIds())
 				.orElseThrow(() -> huNotFound(grai))
 				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString());
 
@@ -39,7 +40,7 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 				() -> huNotFound(grai),
 				() -> new AdempiereException(MobileQRCodeMessages.HU_AMBIGUOUS).setParameter("grai", grai.toCanonicalString())
 		).getM_HU_ID());
-		return Optional.of(HUConsolidationScannedCrate.of(huId, jobCrates.getPickingSlotId(huId)));
+		return Optional.of(HUConsolidationScannedCrate.of(huId, queues.getPickingSlotId(huId)));
 	}
 
 	private static AdempiereException huNotFound(@NonNull final GRAI grai)

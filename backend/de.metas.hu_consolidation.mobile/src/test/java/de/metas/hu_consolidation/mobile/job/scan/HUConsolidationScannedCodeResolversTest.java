@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job.scan;
 
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -52,9 +53,9 @@ class HUConsolidationScannedCodeResolversTest
 
 	private static HuId id(final I_M_HU hu) {return GRAICrateTestFixtures.id(hu);}
 
-	private static HUConsolidationJobCrates jobCrates(final I_M_HU hu1, final I_M_HU hu2)
+	private static PickingSlotQueues queues(final I_M_HU hu1, final I_M_HU hu2)
 	{
-		return HUConsolidationJobCrates.ofQueues(ImmutableList.of(
+		return PickingSlotQueues.ofList(ImmutableList.of(
 				GRAICrateTestFixtures.queue(SLOT_1, id(hu1)),
 				GRAICrateTestFixtures.queue(SLOT_2, id(hu2))));
 	}
@@ -71,7 +72,7 @@ class HUConsolidationScannedCodeResolversTest
 		// without the guard the filter on HU ids would vanish and the HU of the other job would be found
 		createTopLevelHU(GRAI);
 
-		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, HUConsolidationJobCrates.EMPTY))
+		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, PickingSlotQueues.EMPTY))
 				.satisfies(ex -> assertMessage(ex, MobileQRCodeMessages.HU_NOT_FOUND));
 	}
 
@@ -81,7 +82,7 @@ class HUConsolidationScannedCodeResolversTest
 		final I_M_HU crate1 = createTopLevelHU(OTHER_GRAI);
 		final I_M_HU crate2 = createTopLevelHU(null);
 
-		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, jobCrates(crate1, crate2)))
+		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, queues(crate1, crate2)))
 				.satisfies(ex -> assertMessage(ex, MobileQRCodeMessages.HU_NOT_FOUND));
 	}
 
@@ -91,7 +92,7 @@ class HUConsolidationScannedCodeResolversTest
 		final I_M_HU crate1 = createTopLevelHU(GRAI);
 		final I_M_HU crate2 = createTopLevelHU(GRAI);
 
-		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, jobCrates(crate1, crate2)))
+		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, queues(crate1, crate2)))
 				.satisfies(ex -> assertMessage(ex, MobileQRCodeMessages.HU_AMBIGUOUS));
 	}
 
@@ -102,7 +103,7 @@ class HUConsolidationScannedCodeResolversTest
 		final I_M_HU crate2 = createTopLevelHU(GRAI);
 		createTopLevelHU(GRAI); // another job: same GRAI, not in the job's crates
 
-		final HUConsolidationScannedCrate crate = resolvers.resolve(SCANNED_GRAI, jobCrates(crate1, crate2));
+		final HUConsolidationScannedCrate crate = resolvers.resolve(SCANNED_GRAI, queues(crate1, crate2));
 
 		assertThat(crate).isEqualTo(HUConsolidationScannedCrate.of(id(crate2), SLOT_2));
 	}
@@ -115,7 +116,7 @@ class HUConsolidationScannedCodeResolversTest
 		save(crate1);
 		final I_M_HU crate2 = createTopLevelHU(null);
 
-		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, jobCrates(crate1, crate2)))
+		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, queues(crate1, crate2)))
 				.satisfies(ex -> assertMessage(ex, MobileQRCodeMessages.HU_NOT_FOUND));
 	}
 
@@ -126,7 +127,7 @@ class HUConsolidationScannedCodeResolversTest
 		final I_M_HU tuInsideLU = createTUInside(lu, GRAI);
 
 		// even if its id were among the job's crates, only top-level HUs are crates
-		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, jobCrates(lu, tuInsideLU)))
+		assertThatThrownBy(() -> resolvers.resolve(SCANNED_GRAI, queues(lu, tuInsideLU)))
 				.satisfies(ex -> assertMessage(ex, MobileQRCodeMessages.HU_NOT_FOUND));
 	}
 
@@ -139,7 +140,7 @@ class HUConsolidationScannedCodeResolversTest
 			final I_M_HU crate1 = createTopLevelHU(GRAI);
 			final I_M_HU crate2 = createTopLevelHU(null);
 
-			final Optional<HUConsolidationScannedCrate> crate = graiResolver.resolve(ScannedCode.ofString("not-a-grai"), jobCrates(crate1, crate2));
+			final Optional<HUConsolidationScannedCrate> crate = graiResolver.resolve(ScannedCode.ofString("not-a-grai"), queues(crate1, crate2));
 
 			assertThat(crate).isEmpty();
 		}
@@ -150,7 +151,7 @@ class HUConsolidationScannedCodeResolversTest
 			final I_M_HU crate1 = createTopLevelHU(GRAI);
 			final I_M_HU crate2 = createTopLevelHU(null);
 
-			assertThatThrownBy(() -> resolvers.resolve(ScannedCode.ofString("not-a-grai"), jobCrates(crate1, crate2)))
+			assertThatThrownBy(() -> resolvers.resolve(ScannedCode.ofString("not-a-grai"), queues(crate1, crate2)))
 					.satisfies(ex -> assertMessage(ex, MobileQRCodeMessages.INVALID_GRAI_BARCODE));
 		}
 	}
@@ -158,7 +159,7 @@ class HUConsolidationScannedCodeResolversTest
 	@Test
 	void blankCode_isInvalidGraiBarcode()
 	{
-		assertThatThrownBy(() -> resolvers.resolve(null, HUConsolidationJobCrates.EMPTY))
+		assertThatThrownBy(() -> resolvers.resolve(null, PickingSlotQueues.EMPTY))
 				.satisfies(ex -> assertMessage(ex, MobileQRCodeMessages.INVALID_GRAI_BARCODE));
 	}
 
@@ -172,6 +173,6 @@ class HUConsolidationScannedCodeResolversTest
 
 		final HUConsolidationScannedCodeResolvers chain = new HUConsolidationScannedCodeResolvers(ImmutableList.of(notMine, mine, neverReached));
 
-		assertThat(chain.resolve(ScannedCode.ofString("whatever"), HUConsolidationJobCrates.EMPTY)).isEqualTo(expected);
+		assertThat(chain.resolve(ScannedCode.ofString("whatever"), PickingSlotQueues.EMPTY)).isEqualTo(expected);
 	}
 }
