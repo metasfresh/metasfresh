@@ -3578,9 +3578,9 @@ Feature: invoice payment allocation
 
     # Discount DR 12.21 less tax correction CR 0.31 = 11.90 on the discount account; tax correction DR 0.31 on the tax account.
     And Fact_Acct records balances for documents alloc are matching
-      | AccountConceptualName  | C_Tax_ID | SourceBalance |
-      | PayDiscount_Rev_Acct   | tax26    | 11.90 EUR     |
-      | T_Due_Acct             | tax26    | 0.31 EUR      |
+      | AccountConceptualName | C_Tax_ID | SourceBalance |
+      | PayDiscount_Rev_Acct  | tax26    | 11.90 EUR     |
+      | T_Due_Acct            | tax26    | 0.31 EUR      |
 
 
 # ############################################################################################################################################
@@ -3666,9 +3666,9 @@ Feature: invoice payment allocation
 
     # Discount DR 17.19 less tax correction CR 0.44 = 16.75 on the discount account; tax correction DR 0.44 on the tax account.
     And Fact_Acct records balances for documents alloc are matching
-      | AccountConceptualName  | C_Tax_ID | SourceBalance |
-      | PayDiscount_Rev_Acct   | tax26    | 16.75 EUR     |
-      | T_Due_Acct             | tax26    | 0.44 EUR      |
+      | AccountConceptualName | C_Tax_ID | SourceBalance |
+      | PayDiscount_Rev_Acct  | tax26    | 16.75 EUR     |
+      | T_Due_Acct            | tax26    | 0.44 EUR      |
 
 
 # ############################################################################################################################################
