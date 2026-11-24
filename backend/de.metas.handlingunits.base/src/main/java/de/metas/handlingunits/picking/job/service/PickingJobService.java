@@ -527,7 +527,7 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * A pallet type (LU PI) is offered only if it has an LU-TU item that the picks onto a new LU can use.
+	 * A pallet type (LU PI) is offered only if it has an LU-TU item that can be used when picking onto a new LU.
 	 * Nothing is scanned yet, so the line's picking unit stands for how the line is picked:
 	 * <ul>
 	 * <li>a line picked in TUs is assumed to put whole TUs of its product onto the new LU, so it can use items without product and items for its product
