@@ -114,17 +114,20 @@ class HULabelPrintCommand
 
 		private ExplainedOptional<HULabelConfig> getLabelConfig(final @NonNull HUToReport hu)
 		{
-			return cache.computeIfAbsent(toHULabelConfigQuery(hu), huLabelConfigService::getFirstMatching);
+			return cache.computeIfAbsent(toHULabelConfigQuery(sourceDocType, hu), huLabelConfigService::getFirstMatching);
 		}
+	}
 
-		private HULabelConfigQuery toHULabelConfigQuery(final @NonNull HUToReport hu)
-		{
-			return HULabelConfigQuery.builder()
-					.sourceDocType(sourceDocType)
-					.huUnitType(hu.getHUUnitType())
-					.bpartnerId(hu.getBPartnerId())
-					.build();
-		}
+	/**
+	 * The label config lookup of one HU: also used by {@link HULabelService#getLabelConfig(HULabelSourceDocType, HUToReport)}.
+	 */
+	static HULabelConfigQuery toHULabelConfigQuery(@NonNull final HULabelSourceDocType sourceDocType, final @NonNull HUToReport hu)
+	{
+		return HULabelConfigQuery.builder()
+				.sourceDocType(sourceDocType)
+				.huUnitType(hu.getHUUnitType())
+				.bpartnerId(hu.getBPartnerId())
+				.build();
 	}
 
 	private static class BatchToPrintCollector

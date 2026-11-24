@@ -11,9 +11,9 @@ export const HU_LABEL_PROCESS_ID = Number(process.env.HU_LABEL_PROCESS_ID || 540
 export const LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID = 584998;
 
 /**
- * Defaults as on the customer's instance: the legacy picking label (fallback for every label without a label config) is not configured
+ * Settings as on the customer's instance: the legacy picking label (fallback for every label without a label config) is not configured
  * (-1 takes the same code path as the inactive sysconfig), and the scanner's live timing / manual input.
- * A test's `sysconfigs` override these; the spec restores the previous values afterwards.
+ * Only the tests of the customer's setup pass them (`sysconfigs`); {@link restoreJobScanSysconfigs} writes the previous values back after each test.
  */
 export const LIVE_DEFAULT_SYSCONFIGS = {
     'de.metas.ui.web.picking.PickingLabel.AD_Process_ID': '-1',
@@ -43,10 +43,10 @@ export const jobScanSalesOrder = ({ bpartner, product, qty, tu }) => ({
  *   `pickingProfile` are merged over the defaults (`pickingProfile` = fields of mobileConfig.picking, e.g. the customer's pallet-only profile); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata); `huLabelConfigs` replaces the default label config of BP1 (e.g. `{}` = none); `packingInstructions` replaces the default PI_P1 / PI_P2 (e.g. PI_P2 with its own LU without SSCC18, so the SSCC label of a closed pallet of that type has no SSCC to print).
  */
 export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pickingProfile, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits, huLabelConfigs, packingInstructions } = {}) => {
-    return await Backend.createMasterdata({
+    const masterdata = await Backend.createMasterdata({
         language,
         request: {
-            sysconfigs: { ...LIVE_DEFAULT_SYSCONFIGS, ...sysconfigs },
+            ...(sysconfigs ? { sysconfigs } : {}),
             login: { user: { language } },
             mobileConfig: {
                 picking: {
@@ -86,6 +86,26 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pick
             },
         },
     });
+    // keep the values found before the FIRST masterdata call of the test; the later calls only see this test's own values
+    if (sysconfigsToRestore === null) {
+        sysconfigsToRestore = masterdata.previousSysconfigs ?? {};
+    }
+    return masterdata;
+};
+
+/** Sysconfig values found before the first masterdata call of the running test (null = no call yet). */
+let sysconfigsToRestore = null;
+
+/**
+ * Writes back the sysconfig values found before the test's first masterdata call, so the next test (and the next spec) sees the database as
+ * before. Call it in `test.afterEach` of every spec that uses this masterdata; it also runs when the test failed.
+ */
+export const restoreJobScanSysconfigs = async () => {
+    const sysconfigs = sysconfigsToRestore;
+    sysconfigsToRestore = null;
+    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
+        await Backend.setSysconfigs(sysconfigs);
+    }
 };
 
 /**

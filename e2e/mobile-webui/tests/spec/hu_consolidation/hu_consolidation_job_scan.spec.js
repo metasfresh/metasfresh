@@ -27,18 +27,13 @@ import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, HU_LABEL_PROCESS_ID, LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
+import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, restoreJobScanSysconfigs, HU_LABEL_PROCESS_ID, LIVE_DEFAULT_SYSCONFIGS, LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
 import { attachScreenshot, expectErrorToast } from '../../utils/common';
 
-// sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
-let sysconfigsToRestore = null;
+// sysconfigs changed by a test are written back afterwards (also when it failed), so later tests and specs see the DB as before
 test.afterEach(async () => {
-    const sysconfigs = sysconfigsToRestore;
-    sysconfigsToRestore = null;
-    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
-        await Backend.setSysconfigs(sysconfigs);
-    }
+    await restoreJobScanSysconfigs();
 });
 
 /** Opens the single-line picking job of the sales order and scans the picking slot. */
@@ -151,8 +146,6 @@ test('Scan (GRAI) opens the scan screen: 3 crates from 2 slots scanned there, Ba
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
         },
     });
-    // the values found BEFORE the masterdata call; restored by the afterEach below (also when the test failed)
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2 } = masterdata.pickingSlots;
     const { SO1, SO2, SO3 } = masterdata.salesOrders;
 
@@ -291,8 +284,6 @@ test('Rejected scans: one right message per scan, nothing moves, the scan screen
             SO4: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
         },
     });
-    // the values found BEFORE the masterdata call; restored by the afterEach above (also when the test failed)
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2, slot3 } = masterdata.pickingSlots;
     const { SO1, SO2, SO3, SO4 } = masterdata.salesOrders;
 
@@ -988,7 +979,6 @@ test('Schliessen of a pallet whose label print fails: error shown, pallet closed
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
         },
     });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1 } = masterdata.pickingSlots;
     const { SO2 } = masterdata.salesOrders;
     const { PI_P2 } = masterdata.packingInstructions;
@@ -1041,6 +1031,9 @@ const GS1_SYSCONFIGS = {
     'de.metas.handlingunit.GS1ExtensionDigit': '0',
 };
 
+/** The customer's settings (legacy picking label off, live scanner timing / manual input) + the GS1 code of the pallet's SSCC18. */
+const CUSTOMER_SYSCONFIGS = { ...LIVE_DEFAULT_SYSCONFIGS, ...GS1_SYSCONFIGS };
+
 /**
  * Picks GRAI crates (one of SO1, one of SO2 if `twoCrates`) into slot1, opens the ship-to job, chooses a new pallet and scans the crates onto it;
  * returns the pallet's QR code.
@@ -1085,10 +1078,10 @@ const putOneCrateOnANewPallet = async ({ masterdata }) => await putCratesOnANewP
  */
 const createPalletLabelOnlyMasterdata = async () => await createJobScanMasterdata({
     language: 'de_DE',
-    sysconfigs: GS1_SYSCONFIGS,
+    sysconfigs: CUSTOMER_SYSCONFIGS,
 });
 
-/** Exactly one label of the pallet label process, archived and in the printing queue; the pallet is shipped. */
+/** Exactly one label of the pallet label process, archived and in the printing queue; no label for any crate on it; the pallet is shipped. */
 const expectPalletShippedWithItsLabelPrinted = async ({ targetLUQRCode, crateCount }) => {
     await Backend.expect({
         title: 'the pallet is shipped; exactly one label of the pallet label process is archived and in the printing queue (nothing for the crates)',
@@ -1100,6 +1093,8 @@ const expectPalletShippedWithItsLabelPrinted = async ({ targetLUQRCode, crateCou
                 archiveCount: 1,
                 archiveProcessId: LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID,
                 printingQueueCount: 1,
+                // the crates on the pallet: no label archived for any of them
+                tus: Array.from({ length: crateCount }, () => ({ archiveCount: 0 })),
             },
         },
     });
@@ -1119,7 +1114,6 @@ test.describe('Pallet label configured, crate label not (the customer\'s label s
         await allure.severity('critical');
 
         const masterdata = await createPalletLabelOnlyMasterdata();
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
 
         const targetLUQRCode = await putCratesOnANewPallet({ masterdata, twoCrates: true });
 
@@ -1140,7 +1134,6 @@ test.describe('Pallet label configured, crate label not (the customer\'s label s
         await allure.severity('critical');
 
         const masterdata = await createPalletLabelOnlyMasterdata();
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
         const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
 
         const targetLUQRCode = await putCratesOnANewPallet({ masterdata, twoCrates: true });
@@ -1181,9 +1174,8 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
         const masterdata = await createJobScanMasterdata({
             language: 'de_DE',
             huLabelConfigs: {},
-            sysconfigs: GS1_SYSCONFIGS,
+            sysconfigs: CUSTOMER_SYSCONFIGS,
         });
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
 
         const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
 
@@ -1220,9 +1212,8 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
         const masterdata = await createJobScanMasterdata({
             language: 'de_DE',
             huLabelConfigs: {},
-            sysconfigs: GS1_SYSCONFIGS,
+            sysconfigs: CUSTOMER_SYSCONFIGS,
         });
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
         const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
 
         const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
@@ -1262,9 +1253,8 @@ test('Pallet-only picking (the customer\'s profile): the picked pallet is scanne
             aggregationType: 'sales_order',
             alwaysSplitHUsEnabled: true,
         },
-        sysconfigs: GS1_SYSCONFIGS,
+        sysconfigs: CUSTOMER_SYSCONFIGS,
     });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1 } = masterdata.pickingSlots;
     const { PI_P1 } = masterdata.packingInstructions;
     const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
@@ -1325,9 +1315,8 @@ test.describe('Pallet type that does not take the crate type, on the customer\'s
                 PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
                 PI_P3: { lu: 'LU_OTHER', qtyTUsPerLU: 20, tu: 'TU3', product: 'P1', qtyCUsPerTU: 4 },
             },
-            sysconfigs: GS1_SYSCONFIGS,
+            sysconfigs: CUSTOMER_SYSCONFIGS,
         });
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
         const { slot1 } = masterdata.pickingSlots;
         const { PI_P1, PI_P3 } = masterdata.packingInstructions;
         const grai = graiWithSerial(PI_P1.grai, `${Date.now()}1`);
@@ -1381,7 +1370,6 @@ test('Slot screen: a refused GRAI scan plays the error beep with the scanner\'s 
         sysconfigs: { 'mobileui.frontend.barcodeScanner.scanDuplicatesIntervalMillis': '0' },
         pickingSlots: { slot1: {}, slot2: {} },
     });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2 } = masterdata.pickingSlots;
     const { SO1, SO2 } = masterdata.salesOrders;
     const serialBase = String(Date.now());

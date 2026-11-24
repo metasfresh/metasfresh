@@ -3,15 +3,17 @@ package de.metas.hu_consolidation.mobile.job;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.report.labels.HULabelConfig;
-import de.metas.handlingunits.report.labels.HULabelConfigQuery;
+import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.process.AdProcessId;
 import de.metas.report.PrintCopies;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
@@ -23,6 +25,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,9 +37,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -93,28 +98,30 @@ class HUConsolidationJobServiceCloseTargetTest
 		job = jobRepository.updateById(newJob.getId(), j -> j.withCurrentTarget(
 				HUConsolidationTarget.builder().caption("LU").luId(LU_ID).build()));
 
+		// a real pallet: its packing instruction version says LU (the label lookup reads the unit type from it)
+		final I_M_HU_PI_Version luPIVersion = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Version.class);
+		luPIVersion.setHU_UnitType(X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		InterfaceWrapperHelper.saveRecord(luPIVersion);
+
 		final I_M_HU lu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
 		lu.setM_HU_ID(LU_ID.getRepoId());
+		lu.setM_HU_PI_Version_ID(luPIVersion.getM_HU_PI_Version_ID());
 		lu.setC_BPartner_ID(CUSTOMER.getRepoId());
 		InterfaceWrapperHelper.saveRecord(lu);
 	}
 
-	/** Whether a label config applies to the pallet (the LU of the customer, source document type picking). */
+	/** Whether a label config applies to the pallet (the LU of the customer, source document type picking), as the label print looks it up. */
 	private void givenLULabelConfigured(final boolean configured)
 	{
-		final HULabelConfigQuery luQuery = HULabelConfigQuery.builder()
-				.sourceDocType(HULabelSourceDocType.Picking)
-				.huUnitType(HuUnitType.LU)
-				.bpartnerId(CUSTOMER)
-				.build();
-		when(huLabelService.getFirstMatching(any(HULabelConfigQuery.class))).thenReturn(ExplainedOptional.emptyBecause("no label config"));
+		when(huLabelService.getLabelConfig(any(HULabelSourceDocType.class), any(HUToReport.class))).thenReturn(ExplainedOptional.emptyBecause("no label config"));
 		if (configured)
 		{
-			when(huLabelService.getFirstMatching(luQuery)).thenReturn(ExplainedOptional.of(HULabelConfig.builder()
-					.printFormatProcessId(AdProcessId.ofRepoId(584998))
-					.autoPrint(true)
-					.autoPrintCopies(PrintCopies.ONE)
-					.build()));
+			when(huLabelService.getLabelConfig(eq(HULabelSourceDocType.Picking), argThat(hu -> hu != null && LU_ID.equals(hu.getHUId()) && hu.getHUUnitType() == HuUnitType.LU && CUSTOMER.equals(hu.getBPartnerId()))))
+					.thenReturn(ExplainedOptional.of(HULabelConfig.builder()
+							.printFormatProcessId(AdProcessId.ofRepoId(584998))
+							.autoPrint(true)
+							.autoPrintCopies(PrintCopies.ONE)
+							.build()));
 		}
 	}
 
@@ -174,6 +181,22 @@ class HUConsolidationJobServiceCloseTargetTest
 				.cause().hasMessage("Process not found");
 
 		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
+	}
+
+	/** A database error while preparing the label means a broken transaction: the close is aborted, nothing is shipped. */
+	@Test
+	void closeTarget_labelPrepareFailsWithDBException_closeAborted()
+	{
+		givenLULabelConfigured(true);
+		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenThrow(new DBException("connection lost"));
+
+		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
+				.isInstanceOf(DBException.class)
+				.isNotInstanceOf(HUConsolidationLabelNotPrintedException.class)
+				.hasMessageContaining("connection lost");
+
+		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet still open").isNotNull();
+		verify(shipmentService, never()).createShipmentForLUs(any(), any());
 	}
 
 	@Test

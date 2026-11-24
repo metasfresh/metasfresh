@@ -33,6 +33,7 @@ import de.metas.inoutcandidate.api.ShipmentScheduleAllocQuery;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.printing.api.IPrintingDAO;
 import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -40,12 +41,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +70,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	@NonNull private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -219,14 +220,14 @@ public class AssertExpectationsCommandServices
 	}
 
 	/**
-	 * @return the number of {@code C_Printing_Queue} records of the HU's {@code AD_Archive} records (only of the given process, if set)
+	 * @return the number of the HU's {@code AD_Archive} records (only of the given process, if set) that have a {@code C_Printing_Queue} record
 	 */
 	public int countPrintingQueueRecordsOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
 	{
-		final String sql = "SELECT COUNT(1) FROM C_Printing_Queue q"
-				+ " INNER JOIN AD_Archive a ON a.AD_Archive_ID = q.AD_Archive_ID"
-				+ " WHERE a.AD_Table_ID = ? AND a.Record_ID = ? AND (? <= 0 OR a.AD_Process_ID = ?)";
-		final int processRepoId = processId != null ? processId.getRepoId() : -1;
-		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql, InterfaceWrapperHelper.getTableId(I_M_HU.class), huId.getRepoId(), processRepoId, processRepoId);
+		return (int)archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(I_M_HU.Table_Name, huId), QueryLimit.NO_LIMIT)
+				.stream()
+				.filter(archive -> processId == null || processId.getRepoId() == archive.getAD_Process_ID())
+				.filter(archive -> printingDAO.retrievePrintingQueue(archive) != null)
+				.count();
 	}
 }

@@ -57,6 +57,8 @@ class AssertHUExpectationsCommand
 	@NonNull final Map<String, JsonHUExpectation> expectations;
 
 	private static final Duration SHIPMENT_TIMEOUT = Duration.ofSeconds(60);
+	/** How long the printing queue count must stay after it reached the expected one, so that a record created shortly after is counted too. */
+	private static final Duration PRINTING_QUEUE_SETTLE_TIME = Duration.ofSeconds(3);
 
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
 
@@ -413,27 +415,39 @@ class AssertHUExpectationsCommand
 		return allocations;
 	}
 
-	/** @return the printing queue count once it reached the expected one, or the last count after {@link #SHIPMENT_TIMEOUT} (queue records may be created after the archive) */
+	/**
+	 * @return the printing queue count once it reached the expected one and then stayed for {@link #PRINTING_QUEUE_SETTLE_TIME} (so a record that
+	 * comes later is counted too), or the last count after {@link #SHIPMENT_TIMEOUT} (queue records may be created after the archive)
+	 */
 	private int waitForPrintingQueueCount(@NonNull final HuId huId, @Nullable final AdProcessId processId, final int expected)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		int count;
 		while (true)
 		{
-			count = services.countPrintingQueueRecordsOfHU(huId, processId);
-			if (count >= expected || stopwatch.elapsed().compareTo(SHIPMENT_TIMEOUT) >= 0)
+			final int count = services.countPrintingQueueRecordsOfHU(huId, processId);
+			if (count >= expected)
+			{
+				return sleep(PRINTING_QUEUE_SETTLE_TIME) ? services.countPrintingQueueRecordsOfHU(huId, processId) : count;
+			}
+			if (stopwatch.elapsed().compareTo(SHIPMENT_TIMEOUT) >= 0 || !sleep(Duration.ofSeconds(1)))
 			{
 				return count;
 			}
-			try
-			{
-				Thread.sleep(1000);
-			}
-			catch (final InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				return count;
-			}
+		}
+	}
+
+	/** @return false if interrupted */
+	private static boolean sleep(@NonNull final Duration duration)
+	{
+		try
+		{
+			Thread.sleep(duration.toMillis());
+			return true;
+		}
+		catch (final InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			return false;
 		}
 	}
 

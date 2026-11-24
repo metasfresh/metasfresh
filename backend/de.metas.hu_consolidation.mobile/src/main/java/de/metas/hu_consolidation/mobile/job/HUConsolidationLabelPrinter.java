@@ -1,10 +1,8 @@
 package de.metas.hu_consolidation.mobile.job;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.report.labels.HULabelConfigQuery;
+import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelPrintAction;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
@@ -38,17 +36,12 @@ public class HUConsolidationLabelPrinter
 	}
 
 	/**
-	 * @return true if a label config applies to the target's LU, i.e. the label of {@link #preparePrintLabel} is set up
+	 * @return true if a label config applies to the target's LU, i.e. the label of {@link #preparePrintLabel} is set up (the print's own lookup)
 	 */
 	public boolean isLabelConfigured(@NonNull final HUConsolidationTarget target)
 	{
 		final I_M_HU lu = handlingUnitsBL.getById(target.getLuIdNotNull());
-		return huLabelService.getFirstMatching(HULabelConfigQuery.builder()
-						.sourceDocType(SOURCE_DOC_TYPE)
-						.huUnitType(HuUnitType.LU)
-						.bpartnerId(BPartnerId.ofRepoIdOrNull(lu.getC_BPartner_ID()))
-						.build())
-				.isPresent();
+		return huLabelService.getLabelConfig(SOURCE_DOC_TYPE, HUToReportWrapper.of(lu)).isPresent();
 	}
 
 	private static HULabelPrintRequest toPrintRequest(@NonNull final HUConsolidationTarget target)

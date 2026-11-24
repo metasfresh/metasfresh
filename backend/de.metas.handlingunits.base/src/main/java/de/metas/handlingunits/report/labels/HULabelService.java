@@ -55,6 +55,14 @@ public class HULabelService
 		return huLabelConfigService.getFirstMatching(query);
 	}
 
+	/**
+	 * @return the label config that {@link #print(HULabelPrintRequest)} uses for the given HU (the same lookup)
+	 */
+	public ExplainedOptional<HULabelConfig> getLabelConfig(@NonNull final HULabelSourceDocType sourceDocType, @NonNull final HUToReport hu)
+	{
+		return huLabelConfigService.getFirstMatching(HULabelPrintCommand.toHULabelConfigQuery(sourceDocType, hu));
+	}
+
 	public void print(@NonNull final HULabelPrintRequest request)
 	{
 		newPrintCommand(request).execute();
