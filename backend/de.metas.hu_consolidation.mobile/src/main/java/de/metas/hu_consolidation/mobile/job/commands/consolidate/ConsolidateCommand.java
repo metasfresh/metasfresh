@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.grai.GRAI;
@@ -18,6 +19,7 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.i18n.AdMessageKey;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -32,7 +34,10 @@ import java.util.Set;
 
 public class ConsolidateCommand
 {
+	private static final AdMessageKey MSG_PALLET_TYPE_DOES_NOT_TAKE_CRATE_TYPE = AdMessageKey.of("de.metas.hu_consolidation.mobile.job.PALLET_TYPE_DOES_NOT_TAKE_CRATE_TYPE");
+
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -223,6 +228,8 @@ public class ConsolidateCommand
 			return;
 		}
 
+		fromTUs.forEach(tu -> assertNewLUTakesTU(luPackingInstructionsId, tu));
+
 		final I_M_HU firstTU = fromTUs.get(0);
 		final I_M_HU lu = huTransformService.tuToNewLU(firstTU, QtyTU.ONE, luPackingInstructionsId)
 				.getSingleLURecord();
@@ -236,6 +243,25 @@ public class ConsolidateCommand
 		final HuId luId = HuId.ofRepoId(lu.getM_HU_ID());
 		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(luId);
 		setCurrentTarget(HUConsolidationTarget.ofExistingLU(luId, qrCode));
+	}
+
+	/**
+	 * Fails with an operator message if a new LU of the given packing instructions has no item for the TU's packing instructions
+	 * (the same lookup as {@link HUTransformService#tuToNewLU(I_M_HU, QtyTU, HuPackingInstructionsId)}).
+	 */
+	private void assertNewLUTakesTU(@NonNull final HuPackingInstructionsId luPIId, @NonNull final I_M_HU tu)
+	{
+		final HuPackingInstructionsId tuPIId = handlingUnitsBL.getEffectivePackingInstructionsId(tu);
+		if (!tuPIId.isRealPackingInstructions())
+		{
+			return;
+		}
+
+		final boolean luTakesTU = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, IHandlingUnitsBL.extractBPartnerIdOrNull(tu), null).isPresent();
+		if (!luTakesTU)
+		{
+			throw new AdempiereException(MSG_PALLET_TYPE_DOES_NOT_TAKE_CRATE_TYPE, handlingUnitsBL.getPIName(luPIId), handlingUnitsBL.getPIName(tuPIId));
+		}
 	}
 
 	private void consolidate_FromTUs_ToExistingLU(@NonNull final List<I_M_HU> fromTUs, @NonNull final HuId luId)

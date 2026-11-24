@@ -17,6 +17,7 @@ import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -31,6 +32,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -195,6 +197,10 @@ class AssertHUExpectationsCommand
 		if (expectation.getArchiveCount() != null)
 		{
 			assertThat(services.countArchivesOfHU(huId, expectation.getArchiveProcessId())).as("AD_Archive count").isEqualTo(expectation.getArchiveCount());
+		}
+		if (expectation.getPrintingQueueCount() != null)
+		{
+			assertThat(waitForPrintingQueueCount(huId, expectation.getArchiveProcessId(), expectation.getPrintingQueueCount())).as("C_Printing_Queue count").isEqualTo(expectation.getPrintingQueueCount());
 		}
 
 		if (expectation.getTus() != null)
@@ -405,6 +411,30 @@ class AssertHUExpectationsCommand
 			}
 		}
 		return allocations;
+	}
+
+	/** @return the printing queue count once it reached the expected one, or the last count after {@link #SHIPMENT_TIMEOUT} (queue records may be created after the archive) */
+	private int waitForPrintingQueueCount(@NonNull final HuId huId, @Nullable final AdProcessId processId, final int expected)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		int count;
+		while (true)
+		{
+			count = services.countPrintingQueueRecordsOfHU(huId, processId);
+			if (count >= expected || stopwatch.elapsed().compareTo(SHIPMENT_TIMEOUT) >= 0)
+			{
+				return count;
+			}
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				return count;
+			}
+		}
 	}
 
 	private static boolean isShipmentCompleted(@NonNull final List<ShipmentAllocation> allocations)

@@ -22,6 +22,6 @@
   },
   "CompleteActivity": {
     "ok": "OK",
-    "completed": "Fertiggestellt und versendet."
+    "completed": "Fertiggestellt, Lieferung wird erstellt."
   }
 }

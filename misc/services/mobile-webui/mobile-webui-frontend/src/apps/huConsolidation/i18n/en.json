@@ -22,6 +22,6 @@
   },
   "CompleteActivity": {
     "ok": "OK",
-    "completed": "Completed and shipped."
+    "completed": "Completed, the shipment is being created."
   }
 }

@@ -3,6 +3,24 @@ import { Backend } from './screens/Backend';
 /** AD_Process_ID of the LU label report: core "LU SSCC-Barcode-Etikett" (540412); override via env HU_LABEL_PROCESS_ID when the image uses another label process. */
 export const HU_LABEL_PROCESS_ID = Number(process.env.HU_LABEL_PROCESS_ID || 540412);
 
+/**
+ * Core "LU QR Code Label" report (AD_Process_ID 584998, migration 5626660_sys_gh12534_Add_ReportForLU_QR_Label.sql): an LU label process
+ * WITHOUT an M_HU_Process row, like the customer's own SSCC label process. With such a pallet label, the crates on the pallet are looked up
+ * for a crate label of their own. The default label of the job-scan masterdata.
+ */
+export const LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID = 584998;
+
+/**
+ * Defaults as on the customer's instance: the legacy picking label (fallback for every label without a label config) is not configured
+ * (-1 takes the same code path as the inactive sysconfig), and the scanner's live timing / manual input.
+ * A test's `sysconfigs` override these; the spec restores the previous values afterwards.
+ */
+export const LIVE_DEFAULT_SYSCONFIGS = {
+    'de.metas.ui.web.picking.PickingLabel.AD_Process_ID': '-1',
+    'mobileui.frontend.barcodeScanner.inputText.debounceMillis': '1000',
+    'mobileui.frontend.barcodeScanner.mode.manual.enabled': 'Y',
+};
+
 /** Order date of the sales orders (the value every existing consolidation spec uses; its accounting period is open). */
 export const DATE_PROMISED = process.env.E2E_DATE_PROMISED || '2025-03-01T00:00:00.000+02:00';
 
@@ -17,16 +35,18 @@ export const jobScanSalesOrder = ({ bpartner, product, qty, tu }) => ({
 /**
  * Masterdata of the job-scan scenarios: partner BP1 (graiRequired 'Y'), two slots, three single-line sales orders:
  * SO1 (P1) -> slot1, SO2 (P2) -> slot1, SO3 (P1) -> slot2. Product aggregation + pickTo:['TU'] so each pick
- * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config.
+ * materialises as a top-level GRAI-bearing crate. The LU PI has an SSCC18 attribute; BP1 has its own LU label config, with the customer's
+ * label setup: a pallet label process without M_HU_Process, no crate label config, legacy picking label off ({@link LIVE_DEFAULT_SYSCONFIGS}).
  *
- * @param {{language?: string, sysconfigs?: object, pickTo?: string[], bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object, huLabelConfigs?: object, packingInstructions?: object}} [overrides]
- *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata); `huLabelConfigs` replaces the default label config of BP1 (e.g. `{}` = none); `packingInstructions` replaces the default PI_P1 / PI_P2 (e.g. PI_P2 with its own LU without SSCC18, so the SSCC label of a closed pallet of that type has no SSCC to print).
+ * @param {{language?: string, sysconfigs?: object, pickTo?: string[], pickingProfile?: object, bpartners?: object, pickingSlots?: object, salesOrders?: object, handlingUnits?: object, huLabelConfigs?: object, packingInstructions?: object}} [overrides]
+ *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `sysconfigs` and
+ *   `pickingProfile` are merged over the defaults (`pickingProfile` = fields of mobileConfig.picking, e.g. the customer's pallet-only profile); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata); `huLabelConfigs` replaces the default label config of BP1 (e.g. `{}` = none); `packingInstructions` replaces the default PI_P1 / PI_P2 (e.g. PI_P2 with its own LU without SSCC18, so the SSCC label of a closed pallet of that type has no SSCC to print).
  */
-export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits, huLabelConfigs, packingInstructions } = {}) => {
+export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pickingProfile, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits, huLabelConfigs, packingInstructions } = {}) => {
     return await Backend.createMasterdata({
         language,
         request: {
-            ...(sysconfigs ? { sysconfigs } : {}),
+            sysconfigs: { ...LIVE_DEFAULT_SYSCONFIGS, ...sysconfigs },
             login: { user: { language } },
             mobileConfig: {
                 picking: {
@@ -37,6 +57,7 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpar
                     pickTo: pickTo ?? ['TU'],
                     allowCompletingPartialPickingJob: true,
                     anonymousPickHUsOnTheFly: false, // the picking profile is shared and persistent: a spec that left it on would send the pick line tap straight to the quantity screen
+                    ...pickingProfile,
                 },
             },
             bpartners: bpartners ?? { BP1: { graiRequired: 'Y' } },
@@ -51,7 +72,7 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, bpar
                 PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
             },
             huLabelConfigs: huLabelConfigs ?? {
-                lc1: { bpartner: 'BP1', huUnitType: 'LU', sourceDocType: 'PI', process: HU_LABEL_PROCESS_ID, autoPrint: true },
+                lc1: { bpartner: 'BP1', huUnitType: 'LU', sourceDocType: 'PI', process: LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID, autoPrint: true },
             },
             handlingUnits: {
                 HU1: { product: 'P1', warehouse: 'wh', qty: 100 },
