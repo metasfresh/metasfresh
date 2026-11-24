@@ -75,6 +75,7 @@ class HULabelPrintCommand
 				.huLabelConfigProvider(new HULabelConfigProvider(huLabelConfigService, request.getSourceDocType()))
 				.huProcessDAO(huProcessDAO)
 				.failOnMissingLabelConfig(request.isFailOnMissingLabelConfig())
+				.skipIncludedHUsWithoutLabelConfig(request.isSkipIncludedHUsWithoutLabelConfig())
 				.onlyIfAutoPrint(request.isOnlyIfAutoPrint())
 				.printCopiesOverride(request.getPrintCopiesOverride())
 				.build();
@@ -132,6 +133,7 @@ class HULabelPrintCommand
 		private final IMHUProcessDAO huProcessDAO;
 
 		private final boolean failOnMissingLabelConfig;
+		private final boolean skipIncludedHUsWithoutLabelConfig;
 		private final boolean onlyIfAutoPrint;
 		private final PrintCopies printCopiesOverride;
 		private final ArrayList<BatchToPrint> batches = new ArrayList<>();
@@ -142,6 +144,7 @@ class HULabelPrintCommand
 				@NonNull final HULabelConfigProvider huLabelConfigProvider,
 				@NonNull final IMHUProcessDAO huProcessDAO,
 				final boolean failOnMissingLabelConfig,
+				final boolean skipIncludedHUsWithoutLabelConfig,
 				final boolean onlyIfAutoPrint,
 				@Nullable final PrintCopies printCopiesOverride)
 		{
@@ -149,6 +152,7 @@ class HULabelPrintCommand
 			this.huProcessDAO = huProcessDAO;
 
 			this.failOnMissingLabelConfig = failOnMissingLabelConfig;
+			this.skipIncludedHUsWithoutLabelConfig = skipIncludedHUsWithoutLabelConfig;
 			this.onlyIfAutoPrint = onlyIfAutoPrint;
 			this.printCopiesOverride = printCopiesOverride;
 		}
@@ -218,8 +222,7 @@ class HULabelPrintCommand
 			{
 				for (final HUToReport includedHU : hu.getIncludedHUs())
 				{
-					// the included TUs' labels were not asked for: a TU without a label config is skipped, it does not prevent the LU's label
-					final HULabelConfig includeHULabelConfig = getLabelConfigOrNull(includedHU, false);
+					final HULabelConfig includeHULabelConfig = getLabelConfigOrNull(includedHU, failOnMissingLabelConfig && !skipIncludedHUsWithoutLabelConfig);
 					if (includeHULabelConfig != null)
 					{
 						add(includedHU, PrintInstructions.of(includeHULabelConfig));

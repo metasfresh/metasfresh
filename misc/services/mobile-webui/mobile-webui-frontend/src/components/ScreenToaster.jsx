@@ -1,9 +1,13 @@
 import React from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import { useLocationChange } from '../hooks/useLocationChange';
+import { showToastErrorsOnNextScreen } from '../utils/toast';
 
 const ScreenToaster = () => {
-  useLocationChange(() => toast.dismiss());
+  useLocationChange(() => {
+    toast.dismiss();
+    showToastErrorsOnNextScreen();
+  });
 
   return (
     <ToastContainer

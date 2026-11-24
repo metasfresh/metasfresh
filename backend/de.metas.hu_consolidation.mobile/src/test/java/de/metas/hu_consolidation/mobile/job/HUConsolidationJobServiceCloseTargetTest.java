@@ -15,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,6 +35,8 @@ class HUConsolidationJobServiceCloseTargetTest
 {
 	private static final UserId CALLER = UserId.ofRepoId(100);
 	private static final HuId LU_ID = HuId.ofRepoId(555);
+	/** the operator message says the pallet was closed and shipped, and only its label failed */
+	private static final String MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED = "de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED";
 
 	private HUConsolidationJobRepository jobRepository;
 	private HULabelService huLabelService;
@@ -88,6 +91,7 @@ class HUConsolidationJobServiceCloseTargetTest
 
 		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
 				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
 				.hasMessageContaining("SSCC label print failed");
 
 		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
@@ -102,6 +106,7 @@ class HUConsolidationJobServiceCloseTargetTest
 		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenThrow(noConfig);
 
 		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
+				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
 				.hasMessageContaining("No label config found");
 
 		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
@@ -119,6 +124,19 @@ class HUConsolidationJobServiceCloseTargetTest
 		assertThat(result.getCurrentTarget()).isNull();
 		assertThat(printed).isTrue();
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
+	}
+
+	/** Only the pallet's own label must be configured: crates on it without a label config are skipped, as in picking. */
+	@Test
+	void closeTarget_labelRequest_failsOnlyOnTheMissingPalletLabelConfig()
+	{
+		service.closeTarget(job.getId(), CALLER);
+
+		final ArgumentCaptor<HULabelPrintRequest> request = ArgumentCaptor.forClass(HULabelPrintRequest.class);
+		verify(huLabelService).preparePrint(request.capture());
+		assertThat(request.getValue().getHuIds()).containsExactly(LU_ID);
+		assertThat(request.getValue().isFailOnMissingLabelConfig()).isTrue();
+		assertThat(request.getValue().isSkipIncludedHUsWithoutLabelConfig()).isTrue();
 	}
 
 	@Test

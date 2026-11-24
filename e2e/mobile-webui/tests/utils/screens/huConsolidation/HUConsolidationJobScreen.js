@@ -201,10 +201,15 @@ export const HUConsolidationJobScreen = {
     }),
 
     complete: async () => await step(`${NAME} - Complete`, async () => {
+        await HUConsolidationJobScreen.tapCompleteAndConfirm();
+        await HUConsolidationJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Taps the complete button and answers "Yes", without waiting for the next screen (e.g. when an error toast is expected). */
+    tapCompleteAndConfirm: async () => await step(`${NAME} - Tap complete and confirm`, async () => {
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
-        await HUConsolidationJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
 

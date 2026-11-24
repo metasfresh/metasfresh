@@ -29,8 +29,13 @@ public class HULabelPrintRequest
 	@Nullable PrintCopies printCopiesOverride;
 
 	/**
-	 * Fail if no label config applies to one of the requested HUs ({@link #hus}, {@link #huIds}).
-	 * The TUs included in a requested LU are not requested: a TU without a label config is skipped either way.
+	 * Fail if no label config applies to an HU whose label is printed.
 	 */
 	boolean failOnMissingLabelConfig;
+
+	/**
+	 * If set, {@link #failOnMissingLabelConfig} applies only to the requested HUs ({@link #hus}, {@link #huIds}):
+	 * the TUs included in a requested LU, whose labels are printed along with the LU's, are skipped when no label config applies to them.
+	 */
+	boolean skipIncludedHUsWithoutLabelConfig;
 }

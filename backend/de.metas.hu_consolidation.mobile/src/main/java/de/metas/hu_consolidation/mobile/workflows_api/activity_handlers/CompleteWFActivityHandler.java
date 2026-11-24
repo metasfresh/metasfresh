@@ -58,8 +58,8 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 
 	public static WFActivityStatus computeActivityState(final HUConsolidationJob job)
 	{
-		// TODO
-		return WFActivityStatus.NOT_STARTED;
+		// completed e.g. although its label could not be printed afterwards: the mobile UI then shows the job list, not the completed job
+		return job.isProcessed() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override

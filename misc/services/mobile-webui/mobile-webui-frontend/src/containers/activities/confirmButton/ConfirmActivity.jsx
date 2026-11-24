@@ -3,9 +3,14 @@ import PropTypes from 'prop-types';
 import { DEFAULT_TIMEOUT_MILLIS, postUserConfirmation } from '../../../api/confirmation';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
+import {
+  extractUserFriendlyErrorMessageFromAxiosError,
+  toastError,
+  toastErrorOnNextScreen,
+} from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
 import { appLaunchersLocation } from '../../../routes/launchers';
+import { getWFProcess } from '../../../api/launchers';
 import { setActivityProcessing, updateWFProcess } from '../../../actions/WorkflowActions';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { usePositiveNumberSetting } from '../../../reducers/settings';
@@ -64,6 +69,8 @@ const ConfirmActivity = ({
         });
         if (isNetworkFailure) {
           setErrorMessage(message);
+        } else if (isLastActivity) {
+          showErrorOnJobListIfCompletedAnyway({ axiosError });
         } else {
           toastError({ axiosError });
         }
@@ -72,6 +79,27 @@ const ConfirmActivity = ({
         sendingRef.current = false;
         dispatch(setActivityProcessing({ wfProcessId, activityId, processing: false }));
       });
+  };
+
+  /**
+   * The backend may report an error after it has completed the job (e.g. its label could not be printed afterwards).
+   * Reload the job: if it is completed, show the job list as on success, so that the completed job is not offered for completion again,
+   * and show the error there. Otherwise show the error here.
+   */
+  const showErrorOnJobListIfCompletedAnyway = ({ axiosError }) => {
+    getWFProcess({ wfProcessId })
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+        const activity = wfProcess?.activities?.find((activity) => activity.activityId === activityId);
+        if (activity?.componentProps?.confirmed) {
+          toastErrorOnNextScreen({ axiosError });
+          history.push(appLaunchersLocation({ applicationId }));
+        } else {
+          toastError({ axiosError });
+        }
+      })
+      // the reload failed: show the error here, as before
+      .catch(() => toastError({ axiosError }));
   };
 
   const onCancelError = () => {

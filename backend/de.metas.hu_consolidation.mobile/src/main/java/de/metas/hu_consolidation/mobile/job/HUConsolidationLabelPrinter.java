@@ -37,6 +37,8 @@ public class HUConsolidationLabelPrinter
 				.huId(target.getLuIdNotNull())
 				.onlyIfAutoPrint(false)
 				.failOnMissingLabelConfig(true)
+				// only the pallet's own label must be configured: crates on it without a label config are skipped (as in picking)
+				.skipIncludedHUsWithoutLabelConfig(true)
 				.build();
 	}
 }

@@ -1108,81 +1108,91 @@ test('Fertigstellen: the pallet label is printed and the pallet shipped although
     });
 });
 
-// noinspection JSUnusedLocalSymbols
-test('Schliessen of a pallet without any label config: error shown, pallet closed anyway and shipped', async ({ page: _page }) => {
-    // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00248');
-    await allure.story('HU Consolidation - GRAI scan screen');
-    await allure.severity('critical');
+/**
+ * The message shown when the pallet was closed (or the job completed) and shipped, but its label could not be printed
+ * (AD_Message de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED, de_DE): it must say that the pallet is done and shipped.
+ */
+const expectPalletShippedLabelNotPrintedMessage = ({ textContent }) => {
+    expect(textContent).toContain('Abgeschlossen und versendet');
+    expect(textContent).toContain('Etikett');
+};
 
-    const masterdata = await createJobScanMasterdata({
-        language: 'de_DE',
-        huLabelConfigs: {},
-        sysconfigs: { ...GS1_SYSCONFIGS, ...NO_LEGACY_PICKING_LABEL },
-    });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
+// The customer's handheld (Zebra TC22)
+test.describe('Pallet without any label config, on the customer\'s handheld', () => {
+    test.use({ viewport: { width: 411, height: 823 }, deviceScaleFactor: 2.625 });
 
-    const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
+    // noinspection JSUnusedLocalSymbols
+    test('Schliessen of a pallet without any label config: message that the pallet is closed and shipped, pallet closed anyway and shipped', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
 
-    await test.step('Schliessen: an error message is shown AND the pallet is closed (no open pallet on the job screen)', async () => {
-        await expectErrorToast('label of the pallet without label config', async () => {
-            await HUConsolidationJobScreen.clickLUTargetButton();
-            await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
-        }, ({ textContent }) => {
-            // only "an error message is shown" is required (no wording), so any non-empty message passes
-            expect((textContent ?? '').trim().length).toBeGreaterThan(0);
+        const masterdata = await createJobScanMasterdata({
+            language: 'de_DE',
+            huLabelConfigs: {},
+            sysconfigs: { ...GS1_SYSCONFIGS, ...NO_LEGACY_PICKING_LABEL },
         });
-        await SelectHUConsolidationTargetScreen.goBack();
-        await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: 'Neues Gebinde' });
-    });
+        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
 
-    await Backend.expect({
-        title: 'the closed pallet is shipped, no label archived',
-        hus: { [targetLUQRCode]: { isShipmentCompleted: true, archiveCount: 0 } },
-    });
-    await Backend.expect({
-        title: 'the shipped pallet has HUStatus E (shipped)',
-        hus: { [targetLUQRCode]: { huStatus: 'E' } },
-    });
-});
+        const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
 
-// noinspection JSUnusedLocalSymbols
-test('Fertigstellen with a pallet without any label config: error shown, job completed and pallet shipped anyway', async ({ page: _page }) => {
-    // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00248');
-    await allure.story('HU Consolidation - GRAI scan screen');
-    await allure.severity('critical');
+        await test.step('Schliessen: the message says the pallet is closed and shipped, and the pallet is closed (no open pallet on the job screen)', async () => {
+            await expectErrorToast('pallet closed and shipped, its label not printed', async () => {
+                await HUConsolidationJobScreen.clickLUTargetButton();
+                await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
+            }, expectPalletShippedLabelNotPrintedMessage);
+            await SelectHUConsolidationTargetScreen.goBack();
+            await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: 'Neues Gebinde' });
+        });
 
-    const masterdata = await createJobScanMasterdata({
-        language: 'de_DE',
-        huLabelConfigs: {},
-        sysconfigs: { ...GS1_SYSCONFIGS, ...NO_LEGACY_PICKING_LABEL },
-    });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
-    const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
-
-    const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
-
-    await test.step('Fertigstellen -> Ja: an error message is shown', async () => {
-        await expectErrorToast('label of the pallet without label config', async () => {
-            await HUConsolidationJobScreen.complete();
-        }, ({ textContent }) => {
-            expect((textContent ?? '').trim().length).toBeGreaterThan(0);
+        await Backend.expect({
+            title: 'the closed pallet is shipped, no label archived',
+            hus: { [targetLUQRCode]: { isShipmentCompleted: true, archiveCount: 0 } },
+        });
+        await Backend.expect({
+            title: 'the shipped pallet has HUStatus E (shipped)',
+            hus: { [targetLUQRCode]: { huStatus: 'E' } },
         });
     });
 
-    await test.step('Back: the job is completed, its ship-to is no longer listed', async () => {
-        await HUConsolidationJobsListScreen.expectJobNotListedAfter({
-            customerLocationId,
-            trigger: () => HUConsolidationJobScreen.goBack(),
-        });
-    });
+    // noinspection JSUnusedLocalSymbols
+    test('Fertigstellen with a pallet without any label config: back on the job list with the message that the job is done and shipped', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
 
-    await Backend.expect({
-        title: 'the pallet is shipped, no label archived',
-        hus: { [targetLUQRCode]: { isShipmentCompleted: true, archiveCount: 0 } },
+        const masterdata = await createJobScanMasterdata({
+            language: 'de_DE',
+            huLabelConfigs: {},
+            sysconfigs: { ...GS1_SYSCONFIGS, ...NO_LEGACY_PICKING_LABEL },
+        });
+        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
+        const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
+
+        const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
+
+        await test.step('Fertigstellen -> Ja: the job list is shown by itself, without the job, with the message that it is done and shipped', async () => {
+            await HUConsolidationJobsListScreen.expectJobNotListedAfter({
+                customerLocationId,
+                trigger: () => expectErrorToast('job completed and shipped, the pallet label not printed', async () => {
+                    await HUConsolidationJobScreen.tapCompleteAndConfirm();
+                }, async ({ textContent, toast }) => {
+                    expectPalletShippedLabelNotPrintedMessage({ textContent });
+                    // the message is read on the job list, not on the (completed) job's screen
+                    await HUConsolidationJobsListScreen.waitForScreen();
+                    await expect(toast).toBeVisible();
+                }),
+            });
+        });
+
+        await Backend.expect({
+            title: 'the pallet is shipped, no label archived',
+            hus: { [targetLUQRCode]: { isShipmentCompleted: true, archiveCount: 0 } },
+        });
     });
 });
 

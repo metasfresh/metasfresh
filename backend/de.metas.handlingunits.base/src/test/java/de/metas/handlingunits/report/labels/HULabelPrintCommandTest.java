@@ -31,14 +31,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 /**
- * Printing the label of an LU whose crates (TUs) have no label config of their own:
- * only the label asked for (the LU's) must be configured; a crate without a label config is skipped, it does not abort the LU label.
+ * Printing the label of an LU whose crates (TUs) have no label config of their own.
+ * By default a missing label config fails, also for a crate; with {@link HULabelPrintRequest#isSkipIncludedHUsWithoutLabelConfig()},
+ * only the label asked for (the LU's) must be configured and a crate without a label config is skipped.
  */
 class HULabelPrintCommandTest
 {
 	private static final BPartnerId CUSTOMER = BPartnerId.ofRepoId(2810);
-	/** an LU label process without an M_HU_Process row, so the labels are collected the standard way (LU + each included TU) */
-	private static final AdProcessId LU_LABEL_PROCESS = AdProcessId.ofRepoId(585458);
+	/** an LU label process without an M_HU_Process row (here: none exists), so the labels are collected the standard way (LU + each included TU) */
+	private static final AdProcessId LU_LABEL_PROCESS = AdProcessId.ofRepoId(584998);
 
 	private HULabelService huLabelService;
 	private HULabelConfigRepository labelConfigRepository;
@@ -65,7 +66,7 @@ class HULabelPrintCommandTest
 		// no TU label config, and the legacy sysconfig de.metas.ui.web.picking.PickingLabel.AD_Process_ID is not set
 	}
 
-	private Optional<HULabelPrintAction> preparePrint(@NonNull final HUToReport hu)
+	private Optional<HULabelPrintAction> preparePrint(@NonNull final HUToReport hu, final boolean skipIncludedHUsWithoutLabelConfig)
 	{
 		return HULabelPrintCommand.builder()
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
@@ -78,6 +79,7 @@ class HULabelPrintCommandTest
 						.hu(hu)
 						.onlyIfAutoPrint(false)
 						.failOnMissingLabelConfig(true)
+						.skipIncludedHUsWithoutLabelConfig(skipIncludedHUsWithoutLabelConfig)
 						.build())
 				.build()
 				.prepare();
@@ -94,13 +96,24 @@ class HULabelPrintCommandTest
 				.build();
 	}
 
+	/** The default, e.g. for the WebUI label processes (WEBUI_M_HU_PrintReceiptLabel, WEBUI_Picking_TU_Label): a crate without a label config fails. */
 	@Test
-	void luLabelConfigured_cratesNotConfigured_onlyTheLULabelIsPrinted()
+	void luLabelConfigured_cratesNotConfigured_byDefault_failsWithTheMissingConfigMessage()
+	{
+		givenLULabelConfigOnly();
+
+		assertThatThrownBy(() -> preparePrint(luWithTwoCrates(), false))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("de.metas.ui.web.picking.PickingLabel.AD_Process_ID");
+	}
+
+	@Test
+	void luLabelConfigured_cratesNotConfigured_skipIncludedHUsWithoutLabelConfig_onlyTheLULabelIsPrinted()
 	{
 		givenLULabelConfigOnly();
 		final TestHU lu = luWithTwoCrates();
 
-		final Optional<HULabelPrintAction> printAction = preparePrint(lu);
+		final Optional<HULabelPrintAction> printAction = preparePrint(lu, true);
 
 		assertThat(printAction).as("the LU label is printed").isPresent();
 		printAction.get().print();
@@ -113,10 +126,10 @@ class HULabelPrintCommandTest
 	}
 
 	@Test
-	void luLabelNotConfigured_failsWithTheMissingConfigMessage()
+	void luLabelNotConfigured_skipIncludedHUsWithoutLabelConfig_stillFailsWithTheMissingConfigMessage()
 	{
 		// no label config at all: the label asked for (the LU's) cannot be printed
-		assertThatThrownBy(() -> preparePrint(luWithTwoCrates()))
+		assertThatThrownBy(() -> preparePrint(luWithTwoCrates(), true))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("de.metas.ui.web.picking.PickingLabel.AD_Process_ID");
 	}

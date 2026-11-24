@@ -15,6 +15,7 @@ import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
+import de.metas.i18n.AdMessageKey;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
@@ -22,6 +23,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 public class HUConsolidationJobService
 {
+	private static final AdMessageKey MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED = AdMessageKey.of("de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED");
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -70,16 +74,17 @@ public class HUConsolidationJobService
 		// the print below is only "after the commit" if the completion is not part of a surrounding transaction
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		final HUConsolidationTargetCloser.CloseTargetResult completed = CompleteCommand.builder()
-				.jobRepository(jobRepository)
-				.targetCloser(targetCloser)
-				//
-				.job(job)
-				//
-				.build().execute();
+		final HUConsolidationTargetCloser.CloseTargetResult completed = trxManager.callInThreadInheritedTrx(
+				() -> CompleteCommand.builder()
+						.jobRepository(jobRepository)
+						.targetCloser(targetCloser)
+						//
+						.job(job)
+						//
+						.build().execute());
 
 		// Print after the job was completed, so that a label print failure is shown to the operator while the job stays completed (like on close target)
-		completed.getPrintLabelAction().print();
+		printLabelOfClosedTarget(completed.getPrintLabelAction());
 
 		return completed.getJob();
 	}
@@ -139,9 +144,29 @@ public class HUConsolidationJobService
 		});
 
 		// Print after the close was committed, so that a print failure is shown to the operator while the pallet stays closed
-		printLabelActionRef.get().print();
+		printLabelOfClosedTarget(printLabelActionRef.get());
 
 		return jobClosed;
+	}
+
+	/**
+	 * Runs the label print of a target that was already closed and shipped.
+	 *
+	 * @throws AdempiereException if the label could not be printed; its message tells the operator that the pallet is nevertheless closed and shipped
+	 */
+	private static void printLabelOfClosedTarget(@NonNull final HULabelPrintAction printLabelAction)
+	{
+		try
+		{
+			printLabelAction.print();
+		}
+		catch (final Exception ex)
+		{
+			final AdempiereException labelError = AdempiereException.wrapIfNeeded(ex);
+			final AdempiereException shippedButLabelNotPrinted = new AdempiereException(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED, labelError.getLocalizedMessage());
+			shippedButLabelNotPrinted.initCause(labelError);
+			throw shippedButLabelNotPrinted;
+		}
 	}
 
 	public void printTargetLabel(@NonNull final HUConsolidationJobId jobId, @NotNull final UserId callerId)

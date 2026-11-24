@@ -22,6 +22,23 @@ export const toastErrorFromObj = (obj, toastId) => {
   }
 };
 
+let toastErrorsOnNextScreen = [];
+
+/**
+ * Shows the error on the next screen: screen changes dismiss all toasts (see ScreenToaster), so a toast shown right before navigating would be lost.
+ * Takes the same parameters as {@link toastError}.
+ */
+export const toastErrorOnNextScreen = (errorParams) => {
+  toastErrorsOnNextScreen.push(errorParams);
+};
+
+/** Called by ScreenToaster once the toasts of the previous screen were dismissed. */
+export const showToastErrorsOnNextScreen = () => {
+  const errors = toastErrorsOnNextScreen;
+  toastErrorsOnNextScreen = [];
+  errors.forEach((errorParams) => toastError(errorParams));
+};
+
 export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context, toastId }) => {
   let code;
   let message;
