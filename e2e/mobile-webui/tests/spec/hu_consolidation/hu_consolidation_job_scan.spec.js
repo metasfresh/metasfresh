@@ -1126,7 +1126,7 @@ test('Schliessen of a pallet without any label config: error shown, pallet close
     const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
 
     await test.step('Schliessen: an error message is shown AND the pallet is closed (no open pallet on the job screen)', async () => {
-        await expectErrorToast('no label is configured for the pallet', async () => {
+        await expectErrorToast('label of the pallet without label config', async () => {
             await HUConsolidationJobScreen.clickLUTargetButton();
             await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
         }, ({ textContent }) => {
@@ -1166,7 +1166,7 @@ test('Fertigstellen with a pallet without any label config: error shown, job com
     const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
 
     await test.step('Fertigstellen -> Ja: an error message is shown', async () => {
-        await expectErrorToast('no label is configured for the pallet', async () => {
+        await expectErrorToast('label of the pallet without label config', async () => {
             await HUConsolidationJobScreen.complete();
         }, ({ textContent }) => {
             expect((textContent ?? '').trim().length).toBeGreaterThan(0);

@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -43,8 +44,14 @@ public class HUConsolidationTargetCloser
 		{
 			return labelPrinter.preparePrintLabel(target);
 		}
+		catch (final DBException dbError)
+		{
+			// the transaction is broken: closing the target cannot continue
+			throw dbError;
+		}
 		catch (final AdempiereException labelError)
 		{
+			// e.g. no label config applies: thrown when the print runs, i.e. after the target was closed
 			return () -> {
 				throw labelError;
 			};

@@ -67,6 +67,9 @@ public class HUConsolidationJobService
 
 	public HUConsolidationJob complete(@NonNull final HUConsolidationJob job)
 	{
+		// the print below is only "after the commit" if the completion is not part of a surrounding transaction
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		final HUConsolidationTargetCloser.CloseTargetResult completed = CompleteCommand.builder()
 				.jobRepository(jobRepository)
 				.targetCloser(targetCloser)
