@@ -1,4 +1,4 @@
-import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
+import { POLICY } from '../../../../testSupport/picking/testPolicies';
 import React from 'react';
 import { render } from '@testing-library/react';
 import { useOnClose, NEXT_NextPickingLine } from '../../../../containers/activities/picking/PickLineScanScreen';

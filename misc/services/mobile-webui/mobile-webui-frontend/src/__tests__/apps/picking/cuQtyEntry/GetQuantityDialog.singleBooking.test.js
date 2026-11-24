@@ -1,4 +1,4 @@
-import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
+import { POLICY } from '../../../../testSupport/picking/testPolicies';
 import React from 'react';
 import '@testing-library/jest-dom';
 import { act, fireEvent, render, screen } from '@testing-library/react';
