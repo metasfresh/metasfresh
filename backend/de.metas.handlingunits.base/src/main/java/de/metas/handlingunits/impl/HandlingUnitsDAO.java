@@ -104,7 +104,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1059,7 +1058,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return retrieveParentLUPIs(piItemIds, bpartnerId, ANY_PRODUCT);
+		return retrieveParentLUPIs(piItemIds, bpartnerId, false, null);
 	}
 
 	@Override
@@ -1068,15 +1067,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final ProductId productId)
 	{
-		return retrieveParentLUPIs(piItemIds, bpartnerId, queryBuilder -> addProductFilter(queryBuilder, productId));
+		return retrieveParentLUPIs(piItemIds, bpartnerId, true, productId);
 	}
 
-	private static final Consumer<IQueryBuilder<I_M_HU_PI_Item>> ANY_PRODUCT = queryBuilder -> {};
-
+	/**
+	 * @param isFilterByProduct if {@code true}, every level only follows items without product and items for {@code productId} (see {@link #addProductFilter(IQueryBuilder, ProductId)})
+	 */
 	private ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
 			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
 			@Nullable final BPartnerId bpartnerId,
-			@NonNull final Consumer<IQueryBuilder<I_M_HU_PI_Item>> productFilter)
+			final boolean isFilterByProduct,
+			@Nullable final ProductId productId)
 	{
 		if (piItemIds.isEmpty())
 		{
@@ -1096,7 +1097,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piIdsToCheck)
 					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
-			productFilter.accept(parentItemsQueryBuilder);
+			if (isFilterByProduct)
+			{
+				addProductFilter(parentItemsQueryBuilder, productId);
+			}
 
 			parentItemsQueryBuilder
 					.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)

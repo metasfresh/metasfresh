@@ -18,7 +18,8 @@ export const SelectPickTargetLUScreen = {
 
     /** Checks the offered pallet types (LU packing instructions) by their names. */
     expectLUButtons: async ({ offered = [], notOffered = [] }) => await test.step(`${NAME} - Expect LU buttons offered=${offered} notOffered=${notOffered}`, async () => {
-        // the offered ones first: once they are visible, the list is rendered and the absence of the others is meaningful
+        // Buttons are matched by text (substring); the testing API makes packing-instruction names unique (name + timestamp).
+        // The offered ones first: once they are visible, the list is rendered and the absence of the others is meaningful.
         for (const lu of offered) {
             await expect(page.locator('button').filter({ hasText: lu })).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
         }

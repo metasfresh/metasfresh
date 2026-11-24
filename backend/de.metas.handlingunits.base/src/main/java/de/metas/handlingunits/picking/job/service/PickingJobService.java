@@ -527,9 +527,11 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * A pallet type (LU PI) is offered only if it has an LU-TU item which the picks onto a new LU can use:
+	 * A pallet type (LU PI) is offered only if it has an LU-TU item that the picks onto a new LU can use.
+	 * Nothing is scanned yet, so the line's picking unit stands for how the line is picked:
 	 * <ul>
-	 * <li>a line picked in TUs puts whole TUs of its product onto the new LU, so it can use items without product and items for its product;</li>
+	 * <li>a line picked in TUs is assumed to put whole TUs of its product onto the new LU, so it can use items without product and items for its product
+	 * (if such a line is picked from loose stock, the pick can still fail on a pallet type that has only product-specific items);</li>
 	 * <li>a line picked in CUs (loose quantity) builds its new LU without product, so it can only use items without product.</li>
 	 * </ul>
 	 * Without {@code lineId}, a pallet type is offered if it is offered for at least one of the job's lines.
@@ -540,42 +542,36 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId)
 	{
 		final BPartnerId customerId = pickingJob.getCustomerId();
+		final Stream<PickingJobLine> lines = lineId != null
+				? Stream.of(pickingJob.getLineById(lineId))
+				: pickingJob.streamLines();
 
-		final ImmutableSet<HuPackingInstructionsIdAndCaption> luPIs;
-		if (lineId != null)
-		{
-			final PickingJobLine line = pickingJob.getLineById(lineId);
-			final BPartnerId lineCustomerId = CoalesceUtil.coalesce(line.getCustomerId(), customerId);
-			luPIs = ImmutableSet.copyOf(huService.getLUPIsForProduct(getTUPIItems(ImmutableSet.of(line.getProductId()), lineCustomerId), customerId, getProductPackedOntoNewLU(line)));
-		}
-		else
-		{
-			luPIs = pickingJob.streamLines()
-					.map(line -> LUTargetsKey.of(line.getProductId(), getProductPackedOntoNewLU(line)))
-					.distinct()
-					.flatMap(key -> huService.getLUPIsForProduct(getTUPIItems(ImmutableSet.of(key.getProductId()), customerId), customerId, key.getProductPackedOntoNewLU()).stream())
-					.collect(ImmutableSet.toImmutableSet());
-		}
-
-		return luPIs.stream()
+		return lines
+				.map(line -> LUTargetsKey.of(line, customerId))
+				.distinct()
+				.flatMap(key -> huService.getLUPIsForProduct(getTUPIItems(ImmutableSet.of(key.getProductId()), key.getTuCustomerId()), customerId, key.getProductForNewLU()).stream())
+				.distinct()
 				.map(PickingJobService::toPickingTarget)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * @return the line's product if the line is picked in whole TUs; {@code null} if it is picked in CUs, because then the new LU is built without product
-	 */
-	@Nullable
-	private static ProductId getProductPackedOntoNewLU(@NonNull final PickingJobLine line)
-	{
-		return line.getPickingUnit().isTU() ? line.getProductId() : null;
-	}
-
-	@Value(staticConstructor = "of")
+	@Value
 	private static class LUTargetsKey
 	{
 		@NonNull ProductId productId;
-		@Nullable ProductId productPackedOntoNewLU;
+		@Nullable BPartnerId tuCustomerId;
+		/**
+		 * The line's product if the line is picked in whole TUs; {@code null} if it is picked in CUs, because then the new LU is built without product
+		 */
+		@Nullable ProductId productForNewLU;
+
+		static LUTargetsKey of(@NonNull final PickingJobLine line, @Nullable final BPartnerId jobCustomerId)
+		{
+			return new LUTargetsKey(
+					line.getProductId(),
+					CoalesceUtil.coalesce(line.getCustomerId(), jobCustomerId),
+					line.getPickingUnit().isTU() ? line.getProductId() : null);
+		}
 	}
 
 	@NonNull

@@ -397,10 +397,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Like {@link #retrieveParentLUPIs(Set, BPartnerId)}, but only via parent items that can be used when packing {@code productId}:
-	 * items without product, and items for {@code productId}.
+	 * items without product, and items for {@code productId}. The rule applies on every level of the chain up to the LU.
 	 *
 	 * @param productId the product to be packed; {@code null} means product-less packing, which can only use items without product
-	 *                  (same rule as {@link #retrieveFirstPIItem(I_M_HU_PI, I_M_HU_PI, BPartnerId, ProductId)}).
+	 *                  (same rule as {@link #retrieveFirstPIItem(HuPackingInstructionsId, HuPackingInstructionsId, BPartnerId, ProductId)}).
 	 */
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProduct(
 			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
