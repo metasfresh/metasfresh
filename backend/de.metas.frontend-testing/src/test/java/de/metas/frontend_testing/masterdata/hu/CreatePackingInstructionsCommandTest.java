@@ -7,8 +7,10 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -120,6 +122,44 @@ public class CreatePackingInstructionsCommandTest
 		assertThat(items).hasSize(1);
 		assertThat(items.get(0).getM_Product_ID()).isLessThanOrEqualTo(0);
 		assertThat(items.get(0).getQty()).isEqualByComparingTo(BigDecimal.valueOf(30));
+	}
+
+	/**
+	 * Several entries on the same TU packing instruction (e.g. one per product) share its one material item, like a real TU packing instruction
+	 * that holds several products: code that resolves "the" material item of a TU (e.g. a TU's capacity) requires exactly one.
+	 */
+	@Test
+	public void execute_tuReusedByAnotherEntry_sharesTheTUsMaterialItem() throws Exception
+	{
+		createProduct("P1");
+		createProduct("P2");
+
+		execute("PI_P1", "{\"lu\":\"LU\",\"qtyTUsPerLU\":30,\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4}");
+		execute("PI_P2", "{\"tu\":\"TU\",\"product\":\"P2\",\"qtyCUsPerTU\":4}");
+
+		final List<I_M_HU_PI_Item> materialItems = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_PI_Item.class)
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_Material)
+				.create()
+				.list();
+		assertThat(materialItems).hasSize(1);
+
+		final List<I_M_HU_PI_Item_Product> itemProducts = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, materialItems.get(0).getM_HU_PI_Item_ID())
+				.create()
+				.list();
+		assertThat(itemProducts).hasSize(2);
+	}
+
+	private void execute(final String identifier, final String json) throws Exception
+	{
+		CreatePackingInstructionsCommand.builder()
+				.context(context)
+				.request(jsonMapper.readValue(json, JsonPackingInstructionsRequest.class))
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
 	}
 
 	@Test
