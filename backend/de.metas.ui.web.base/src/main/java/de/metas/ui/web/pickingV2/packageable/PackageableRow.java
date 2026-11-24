@@ -196,9 +196,12 @@ public final class PackageableRow implements IViewRow
 		return values.get(this);
 	}
 
+	/**
+	 * @return true if any of this row's shipment schedules is locked, also when they are locked by different users (in which case {@link #lockedByUser} is null).
+	 */
 	public boolean isLocked()
 	{
-		return lockedByUser != null;
+		return packageables.stream().anyMatch(packageable -> packageable.getLockedBy() != null);
 	}
 
 	public boolean isNotLocked()
