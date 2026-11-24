@@ -559,12 +559,12 @@ public class M_HU_StepDef
 	}
 
 	/**
-	 * Moves TUs onto an existing LU, like the HU editor's transform action "TU to existing LU".
+	 * Transforms TUs onto an existing LU via {@link HUTransformService#tuToExistingLU}, the same call as the HU editor's transform action "TU to existing LU".
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>sourceTU</b> — (required, identifier-ref) the TU (or aggregate TU) to move<br>
-	 *   <b>tuQty</b> — (required) number of TUs to move<br>
+	 *   <b>sourceTU</b> — (required, identifier-ref) the TU (or aggregate TU) to transform<br>
+	 *   <b>tuQty</b> — (required) number of TUs to transform<br>
 	 *   <b>targetLU</b> — (required, identifier-ref) the existing LU<br>
 	 * @cucumber.depends StepDefData: M_HU_StepDefData
 	 * @cucumber.example
