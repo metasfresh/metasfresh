@@ -107,18 +107,28 @@ public class JsonObjectMapperHolder
 	/**
 	 * Mapper for the Spring MVC {@code MappingJackson2HttpMessageConverter} that binds REST request bodies and writes REST responses.
 	 * <p>
-	 * Same configuration as {@link #newJsonObjectMapper()}, except that unknown JSON properties in a request body are ignored instead of rejected.
-	 * That restores the pre-JDK25 REST behaviour: on base, the springfox {@code @EnableWebMvc} made Spring use its own default
-	 * {@code Jackson2ObjectMapperBuilder}-built converter mapper, which has {@code FAIL_ON_UNKNOWN_PROPERTIES} disabled; with springdoc,
-	 * {@code @EnableWebMvc} is gone and Spring Boot's converter uses our (strict) {@code @Primary} mapper instead.
+	 * On base (pre-JDK25), the springfox {@code @EnableWebMvc} made Spring MVC use its own default converter mapper, built by
+	 * {@code Jackson2ObjectMapperBuilder.json()}; the shared {@code @Primary} mapper was not used for HTTP. With springdoc,
+	 * {@code @EnableWebMvc} is gone and Spring Boot's converter would use our {@code @Primary} mapper instead.
+	 * This mapper is {@link #newJsonObjectMapper()} plus the settings in which that builder mapper differed and which matter on the wire:
+	 * <ul>
+	 * <li>{@code FAIL_ON_UNKNOWN_PROPERTIES} disabled: unknown properties in a request body are ignored instead of rejected;</li>
+	 * <li>{@code WRITE_DATES_AS_TIMESTAMPS} enabled: responses write {@code Instant} / {@code ZonedDateTime} / {@code OffsetDateTime} as
+	 * epoch seconds with nanoseconds, {@code LocalDate} / {@code LocalDateTime} / {@code LocalTime} as arrays and {@code java.util.Date} as epoch milliseconds;</li>
+	 * <li>{@code ADJUST_DATES_TO_CONTEXT_TIME_ZONE} enabled: a zoned/offset date-time in a request body is adjusted to UTC.</li>
+	 * </ul>
+	 * Not taken over: the builder mapper had no {@code GuavaModule} and disabled {@code DEFAULT_VIEW_INCLUSION} (no {@code @JsonView} in use).
 	 * <p>
-	 * The leniency is deliberately limited to the HTTP message converter: {@link #newJsonObjectMapper()} / {@link #sharedJsonObjectMapper()}
-	 * stay strict, because code like {@code JsonMapperUtil.tryDeserializeToType} relies on an unknown property failing in order to tell
-	 * JSON types apart.
+	 * These settings are deliberately limited to the HTTP message converter: {@link #newJsonObjectMapper()} / {@link #sharedJsonObjectMapper()}
+	 * stay as they are (strict, ISO dates), because code like {@code JsonMapperUtil.tryDeserializeToType} relies on an unknown property failing in
+	 * order to tell JSON types apart, and the shared mapper's other users (e.g. RabbitMQ, the app server's websocket, {@link #toJson(Object)}) write ISO dates.
 	 */
 	public static ObjectMapper newHttpMessageConverterJsonObjectMapper()
 	{
-		return newJsonObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		return newJsonObjectMapper()
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+				.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.enable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 	}
 
 	@Nullable

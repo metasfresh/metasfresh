@@ -67,6 +67,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- a real REST response DTO for LenientRestMessageConverterConfigurationTest -->
+            <groupId>de.metas.common.pricing</groupId>
+            <artifactId>de-metas-common-pricing</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
