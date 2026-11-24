@@ -6,12 +6,15 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -25,6 +28,8 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 /**
  * TU -> new LU / existing LU when the LU packing instructions have a generic item (5 TUs per LU)
@@ -165,6 +170,103 @@ public class HUTransformService_ProductSpecificLUItemTest
 		huTransformService.tuToExistingLU(tuToAdd, QtyTU.ofString("2"), existingLU);
 
 		assertLU(existingLU, luPIItemTomato8, 3);
+	}
+
+	/**
+	 * Characterizes the current behaviour, it does not endorse it: a TU of another product (same TU PI) moved onto an LU that was built from
+	 * the tomato-specific item joins that item; the TU's product is not checked, so the LU then holds both products on the tomato item.
+	 */
+	@Test
+	public void tuToExistingLU_existingLUBuiltFromProductSpecificItem_tuOfOtherProduct_currentlyJoinsThatItem()
+	{
+		final I_M_HU tomatoTU = createRealTU(data.helper.pTomatoProductId);
+		final I_M_HU existingLU = huTransformService
+				.tuToNewLU(tomatoTU, QtyTU.ONE, luPIId(), data.helper.pTomatoProductId)
+				.getLURecords().get(0);
+		assertLU(existingLU, luPIItemTomato8, 1);
+
+		final I_M_HU saladTU = createRealTU(data.helper.pSaladProductId);
+		huTransformService.tuToExistingLU(saladTU, QtyTU.ONE, existingLU);
+
+		assertLU(existingLU, luPIItemTomato8, 2);
+		assertThat(handlingUnitsDAO.retrieveParentItem(saladTU).getM_HU_Item_ID())
+				.as("the salad TU hangs on the same LU item as the tomato TU")
+				.isEqualTo(handlingUnitsDAO.retrieveParentItem(tomatoTU).getM_HU_Item_ID());
+		assertThat(handlingUnitsBL.getStorageFactory().getStorage(existingLU).getProductStorages())
+				.extracting(storage -> storage.getProductId(), storage -> storage.getQty().toBigDecimal().intValueExact())
+				.containsExactlyInAnyOrder(tuple(data.helper.pTomatoProductId, 40), tuple(data.helper.pSaladProductId, 40));
+	}
+
+	/** An LU without any item yet (as tuToNewLUs creates it): the lookup has no product context, so the TU is attached via the generic item. */
+	@Test
+	public void tuToExistingLU_emptyLU_tuOfProductWithSpecificItem_attachedViaGenericItem()
+	{
+		final I_M_HU emptyLU = handlingUnitsDAO.createHUBuilder(data.helper.getHUContext())
+				.setLocatorId(data.defaultLocatorId)
+				.create(data.piLU);
+		assertThat(handlingUnitsDAO.retrieveIncludedHUs(emptyLU)).as("precondition").isEmpty();
+
+		huTransformService.tuToExistingLU(createRealTU(data.helper.pTomatoProductId), QtyTU.ONE, emptyLU);
+
+		assertLU(emptyLU, luPIItemGeneric5, 1);
+	}
+
+	/** The LU PI's only item for IFCO TUs is the tomato-specific one; the LU holds a bag TU (generic bag item), so it has no IFCO item yet. */
+	@Test
+	public void tuToExistingLU_onlyProductSpecificItemForTUPI_luHasNoSuchItem_tuOfThatProduct_isRefused()
+	{
+		final I_M_HU lu = createLUWithBagTU_noGenericIFCOItem();
+
+		assertTuToExistingLURefused(createRealTU(data.helper.pTomatoProductId), lu);
+	}
+
+	/** Same as above, with a TU of a product that has no item at all. */
+	@Test
+	public void tuToExistingLU_onlyProductSpecificItemForTUPI_luHasNoSuchItem_tuOfOtherProduct_isRefused()
+	{
+		final I_M_HU lu = createLUWithBagTU_noGenericIFCOItem();
+
+		assertTuToExistingLURefused(createRealTU(data.helper.pSaladProductId), lu);
+	}
+
+	private I_M_HU createLUWithBagTU_noGenericIFCOItem()
+	{
+		InterfaceWrapperHelper.delete(luPIItemGeneric5);
+		final I_M_HU lu = huTransformService.tuToNewLU(createRealBagTU(), QtyTU.ONE, luPIId(), null).getLURecords().get(0);
+		assertLU(lu, data.piLU_Item_Bag, 1);
+		return lu;
+	}
+
+	private void assertTuToExistingLURefused(final I_M_HU tu, final I_M_HU lu)
+	{
+		assertThatThrownBy(() -> huTransformService.tuToExistingLU(tu, QtyTU.ONE, lu))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("because there is no link between them");
+		assertThat(handlingUnitsDAO.retrieveParent(tu)).as("the TU stays where it was").isNull();
+		assertLU(lu, data.piLU_Item_Bag, 1);
+	}
+
+	/** @return a standalone real IFCO TU holding 40 of the given product */
+	private I_M_HU createRealTU(final ProductId productId)
+	{
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(data.defaultLocatorId);
+		lutuProducer.setNoLU();
+		lutuProducer.setTUPI(data.piTU_IFCO);
+		lutuProducer.addCUPerTU(productId, BigDecimal.valueOf(40), data.helper.uomKg);
+		data.helper.load(lutuProducer, productId, BigDecimal.valueOf(40), data.helper.uomKg);
+		return CollectionUtils.singleElement(lutuProducer.getCreatedHUs());
+	}
+
+	/** @return a standalone real bag TU holding 8 tomatoes */
+	private I_M_HU createRealBagTU()
+	{
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(data.defaultLocatorId);
+		lutuProducer.setNoLU();
+		lutuProducer.setTUPI(data.piTU_Bag);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("8"), data.helper.uomKg);
+		return CollectionUtils.singleElement(lutuProducer.getCreatedHUs());
 	}
 
 	/** asserts that the LU holds exactly {@code expectedQtyTUs} TUs, all of them attached via {@code expectedItem} */
