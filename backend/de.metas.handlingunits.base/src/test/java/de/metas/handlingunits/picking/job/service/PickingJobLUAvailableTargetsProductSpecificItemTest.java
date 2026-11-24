@@ -78,6 +78,7 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 	private I_M_HU_PI tuPI;
 	private I_M_HU_PI_Item tuMaterialItem;
 	private I_M_HU_PI_Item_Product tuPIIP_A;
+	private I_M_HU_PI_Item_Product tuPIIP_B;
 	private I_M_HU_PI genericLUPI;
 	private I_M_HU_PI_Item genericLUItem;
 
@@ -99,7 +100,7 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 		tuPIIP_A = huTestHelper.assignProduct(tuMaterialItem, productA, new BigDecimal("10"), helper.uomEach);
 		tuPIIP_A.setIsDefaultForProduct(true);
 		InterfaceWrapperHelper.save(tuPIIP_A);
-		huTestHelper.assignProduct(tuMaterialItem, productB, new BigDecimal("10"), helper.uomEach);
+		tuPIIP_B = huTestHelper.assignProduct(tuMaterialItem, productB, new BigDecimal("10"), helper.uomEach);
 
 		// pallet type linked to the TU PI by an item without product; also the source LUs are built on it
 		genericLUPI = huTestHelper.createHUDefinition("GENERIC-PALLET", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -109,6 +110,20 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 	/**
 	 * @return a pallet type whose only LU->TU item is for {@code itemProductId}
 	 */
+	/**
+	 * @return a pallet type linked to the TU only via an intermediate unit (generic item, level 1) and an item for {@code itemProductId} (level 2)
+	 */
+	private I_M_HU_PI createChainLUPIWithOnlyProductItemOnLevel2(final ProductId itemProductId)
+	{
+		final I_M_HU_PI intermediatePI = huTestHelper.createHUDefinition("CRATE-STACK", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		huTestHelper.createHU_PI_Item_IncludedHU(intermediatePI, tuPI, new BigDecimal("5"));
+		final I_M_HU_PI chainLUPI = huTestHelper.createHUDefinition("CHAIN-PALLET", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		final I_M_HU_PI_Item chainLUItem = huTestHelper.createHU_PI_Item_IncludedHU(chainLUPI, intermediatePI, new BigDecimal("8"));
+		chainLUItem.setM_Product_ID(itemProductId.getRepoId());
+		InterfaceWrapperHelper.save(chainLUItem);
+		return chainLUPI;
+	}
+
 	private I_M_HU_PI createLUPIWithOnlyProductItem(final String name, final ProductId itemProductId)
 	{
 		return createLUPIWithOnlyProductItem(name, itemProductId, null);
@@ -374,6 +389,30 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 			final PickingJob pickingJob = createPickingJob(JobLineSpec.of(productA, tuPIIP_A), JobLineSpec.of(productA, tuPIIP_A), JobLineSpec.of(productA, tuPIIP_A));
 
 			assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA)).doesNotContain(idOf(luPIForB));
+		}
+
+		/**
+		 * TU -> intermediate unit (generic item) -> pallet (item for A only): the product-specific item is on level 2.
+		 * Neither a B line in TUs nor an A line in CUs can use that pallet, so it must not be offered.
+		 */
+		@Test
+		void productSpecificItemOnLevel2_notUsableByAnyLine_isNotOffered()
+		{
+			final I_M_HU_PI chainLUPI = createChainLUPIWithOnlyProductItemOnLevel2(productA);
+			final PickingJob pickingJob = createPickingJob(JobLineSpec.of(productB, tuPIIP_B), JobLineSpec.of(productA, null));
+			assertThat(pickingJob.getLines()).extracting(PickingJobLine::getProductId, PickingJobLine::getPickingUnit)
+					.containsExactlyInAnyOrder(tuple(productB, PickingUnit.TU), tuple(productA, PickingUnit.CU));
+
+			assertThat(jobLUTargets(pickingJob)).containsExactly(idOf(genericLUPI)).doesNotContain(idOf(chainLUPI));
+		}
+
+		@Test
+		void productSpecificItemOnLevel2_usableByALineInTUs_isOffered()
+		{
+			final I_M_HU_PI chainLUPI = createChainLUPIWithOnlyProductItemOnLevel2(productA);
+			final PickingJob pickingJob = createPickingJob(JobLineSpec.of(productB, tuPIIP_B), JobLineSpec.of(productA, tuPIIP_A));
+
+			assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(chainLUPI));
 		}
 
 		/**
