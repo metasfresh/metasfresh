@@ -246,7 +246,7 @@ public class PackToHUsProducerCUQtyEntryTest
 
 		/** (iv) flags off: the source TU is taken as the TU. */
 		@Test
-		public void sourceIsTUWithExactlyOnePack_flagsOff_sourceTUIsTheTU()
+		public void sourceIsTUWithExactlyOnePack_flagsOff_sourceTUIsThePickedTU()
 		{
 			final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("1")));
 
