@@ -213,6 +213,36 @@ Feature: Physical inventory tests
       | M_Product_ID.Identifier | QtyOnHand |
       | XY                      | 200       |
 
+  # Another product on the same TU packing instruction: LU_XY_ONLY has no item for it, so completing the inventory fails with a user error.
+  @from:cucumber
+  @Id:S32544_INV_040
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
+  Scenario: S32544_INV_040 - Inventory+ to LU/TU/CU: pallet packing instruction with an item only for another product is refused
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | XY         |
+      | OTHER      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | LU_XY_ONLY |
+      | TU_PS      |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | LU_XY_ONLY_version | LU_XY_ONLY | LU          |
+      | TU_PS_version      | TU_PS      | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType | Qty | Included_HU_PI_ID | M_Product_ID |
+      | LU_XY_ONLY_XY   | LU_XY_ONLY_version | HU       | 40  | TU_PS             | XY           |
+      | TU_PS_PI_Item   | TU_PS_version      | MI       |     |                   |              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty   |
+      | TUx4_OTHER              | TU_PS_PI_Item   | OTHER        | 4 PCE |
+
+    Then metasfresh fails to complete single line inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | ErrorMessage                    |
+      | inventory1     | warehouse      | 2021-04-16   | OTHER        | 0 PCE   | 200 PCE  | TUx4_OTHER              | LU_XY_ONLY    | ERR_LU_HAS_NO_TU_SUB_PACK_INSTR |
+
   @from:cucumber
 @allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5010

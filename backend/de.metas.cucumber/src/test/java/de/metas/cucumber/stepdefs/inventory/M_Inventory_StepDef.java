@@ -86,6 +86,7 @@ import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.wai
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @RequiredArgsConstructor
 public class M_Inventory_StepDef
@@ -288,7 +289,7 @@ public class M_Inventory_StepDef
 		DataTableRows.of(dataTable).forEach(this::addSingleLineInventory);
 	}
 
-	private void addSingleLineInventory(@NonNull final DataTableRow row) throws InterruptedException
+	private I_M_InventoryLine createSingleLineInventory(@NonNull final DataTableRow row)
 	{
 		row.setAdditionalRowIdentifierColumnName(I_M_Inventory.COLUMNNAME_M_Inventory_ID);
 		final InventoryId inventoryId = createInventory(row);
@@ -297,6 +298,13 @@ public class M_Inventory_StepDef
 		row.setAdditionalRowIdentifierColumnName(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID);
 		final I_M_InventoryLine inventoryLine = addNewInventoryLine(row);
 		SharedTestContext.put("inventoryLine", inventoryLine);
+		return inventoryLine;
+	}
+
+	private void addSingleLineInventory(@NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_M_InventoryLine inventoryLine = createSingleLineInventory(row);
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID());
 
 		inventoryService.completeDocument(inventoryId);
 
@@ -307,6 +315,27 @@ public class M_Inventory_StepDef
 		}
 
 		waitUtilPosted(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId));
+	}
+
+	/**
+	 * Like {@code metasfresh contains single line completed inventories}, but expects the completion to fail.
+	 * Column {@code ErrorMessage}: a text the exception message must contain (e.g. the AD_Message value).
+	 */
+	@Given("metasfresh fails to complete single line inventories")
+	public void failToCompleteSingleLineInventories(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::failToCompleteSingleLineInventory);
+	}
+
+	private void failToCompleteSingleLineInventory(@NonNull final DataTableRow row)
+	{
+		final String expectedMessagePart = row.getAsString("ErrorMessage");
+
+		final I_M_InventoryLine inventoryLine = createSingleLineInventory(row);
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID());
+
+		assertThatThrownBy(() -> inventoryService.completeDocument(inventoryId))
+				.hasMessageContaining(expectedMessagePart);
 	}
 
 	private void loadInventoryLineHUs(final @NotNull DataTableRow row, final InventoryId inventoryId, final InventoryLineId inventoryLineId)

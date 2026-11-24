@@ -103,6 +103,7 @@ public class SyncInventoryQtyToHUsCommand
 	private final Inventory inventory;
 
 	private static final String SYSCONFIG_IgnoreOnInventoryMinusAndNoHU = "inventory.IgnoreOnInventoryMinusAndNoHU";
+	/** Same message as {@link LUTUProducerDestination#getLUItemPI()} gives when it finds no item; kept local so that class stays unchanged. */
 	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	private Map<InventoryAndLineId, I_M_InventoryLine> inventoryLineRecords; // lazy
