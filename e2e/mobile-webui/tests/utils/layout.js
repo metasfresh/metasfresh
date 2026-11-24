@@ -1,4 +1,4 @@
-// Layout soundness of the screen that is shown right now, measured in the browser: nothing sticks out of the screen sideways, no text is cut
+// Layout soundness of the screen that is shown, measured in the browser: nothing sticks out of the screen sideways, no text is cut
 // off, no two controls overlap, every control is big enough to tap, and (a dialog covering the screen) every control of the dialog is on the
 // screen without scrolling. A normal screen of the app scrolls inside `.app-content` (the footer is fixed); a control that must be reachable
 // there is checked with `expectReachable`.
@@ -45,8 +45,8 @@ const measureLayout = ({ scope, minTapSize }) => {
 
     // The app's own chrome (caption bar with its sliding title, fixed footer) and the job header table / job line buttons are base screens,
     // not changed by the CU quantity entry modes: a long customer or slot name is cut there by the base layout (view-header.scss `td { overflow: hidden }`).
-    const isNewModeScreen = (el) => !!el.closest('[data-cu-qty-entry-mode="SCAN_EACH_CU"], [data-cu-qty-entry-mode="SCAN_ONCE_ENTER_QTY"]');
-    const isBaseChrome = (el) => !!el.closest('.app-header, .app-footer') || (!!el.closest('.view-header') && !isNewModeScreen(el));
+    const isLabelBasedScreen = (el) => !!el.closest('[data-cu-qty-entry-mode="SCAN_EACH_CU"], [data-cu-qty-entry-mode="SCAN_ONCE_ENTER_QTY"]');
+    const isBaseChrome = (el) => !!el.closest('.app-header, .app-footer') || (!!el.closest('.view-header') && !isLabelBasedScreen(el));
     const isLineButtonText = (el) => !!el.closest('button[id^="line-"]');
     const all = [...root.querySelectorAll('*')].filter(isShown).filter((el) => !isBaseChrome(el));
     const controls = all.filter((el) => !el.closest('.Toastify') && el.matches('button, input:not([type=hidden]), select, textarea, a[href], [role=button]') && el.getBoundingClientRect().height >= 4);
@@ -127,7 +127,7 @@ const measureLayout = ({ scope, minTapSize }) => {
 };
 
 /**
- * Asserts that the screen shown now (or, with `scope`, the dialog / area) is laid out soundly at this viewport.
+ * Asserts that the screen shown (or, with `scope`, the dialog / area) is laid out soundly at this viewport.
  * @param {string} label what is shown, for the failure message
  * @param {{width: number, height: number}} viewport
  * @param {string} [scope] CSS selector; default: the dialog when one is open, else the whole app (`#root`)
@@ -180,16 +180,19 @@ export const expectOnScreenWithoutScrolling = async (locator, description, viewp
 };
 
 /**
- * The phone sizes the layout specs run at: the Pixel 5 preset of the config; the customer's handheld (Zebra TC22, 6.0 in, 1080x2160 physical
- * px; CSS size not measured: 360x720 @3 or 393x786 @2.75); worst case = a Chrome with address and tool bars shown (360x640 @3).
- * Add a size here to cover it in every layout spec.
+ * The phone sizes of the layout specs: the Pixel 5 preset of the config; the customer's handheld (Zebra TC22, 6.0 in, 1080x2160 physical px;
+ * CSS size not measured: 360x720 @3 or 393x786 @2.75); the worst case = a Chrome with address and tool bars shown (360x640 @3).
+ * Every layout spec runs 49 tests per size (about 80 minutes one after the other on one stack, in two languages), so a normal run (CI) uses only
+ * the worst case: the narrowest and the lowest screen. `LAYOUT_ALL_SIZES=1` runs all sizes (before a change of the screens, or a new size).
+ * Add a size here to cover it.
  */
-export const PHONE_VIEWPORTS = [
+const ALL_PHONE_VIEWPORTS = [
     { name: 'Pixel 5 393x727', width: 393, height: 727, deviceScaleFactor: 2.75 },
     { name: 'Zebra TC22 360x720', width: 360, height: 720, deviceScaleFactor: 3 },
     { name: 'Zebra TC22 393x786', width: 393, height: 786, deviceScaleFactor: 2.75 },
     { name: 'small phone, browser bars shown 360x640', width: 360, height: 640, deviceScaleFactor: 3 },
 ];
+export const PHONE_VIEWPORTS = process.env.LAYOUT_ALL_SIZES ? ALL_PHONE_VIEWPORTS : ALL_PHONE_VIEWPORTS.slice(-1);
 
 /** The session languages the layout specs run in (texts differ in length). */
 export const LAYOUT_LANGUAGES = ['en_US', 'de_DE'];

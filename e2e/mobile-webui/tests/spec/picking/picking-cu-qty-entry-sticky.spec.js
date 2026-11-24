@@ -4,7 +4,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, BEST_BEFORE, book, createMasterdata, restoreSysconfigsAfterEach, labelOf, newFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, BEST_BEFORE, book, createMasterdata, restoreSysconfigsAfterEach, labelOf, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
 
 restoreSysconfigsAfterEach(test);
 
@@ -22,7 +22,7 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
     allureMeta('Pinned count');
 
     // line 1: buyer A, 12; line 2: buyer B, 3 (same product)
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }, { key: 'B', qty: 3 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }, { key: 'B', qty: 3 }] });
     const lotA = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 15 });
 
@@ -90,7 +90,7 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
 test('a label of another lot scanned in the open block replaces the remembered lot; the count stays 5', async ({ page }) => {
     allureMeta('Pinned count, lot change');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }] });
     const lotA = uniqueLot();
     const lotB = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 12 });
@@ -124,7 +124,7 @@ test('a label of another lot scanned in the open block replaces the remembered l
 test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "Wieder öffnen" reopens it, the job completes', async ({ page }) => {
     allureMeta('Close a line short');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await PickLineScanScreen.openBox();
@@ -169,7 +169,7 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
 test('Re-entry via "HU verpacken": the quantity block reopens with the remembered label and the pinned count, the box is kept', async ({ page }) => {
     allureMeta('Re-entry keeps the box');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });

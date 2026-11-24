@@ -53,7 +53,7 @@ const runAndWatchForErrors = async (func) => {
                 async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
                         // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        // an inner expectErrorToast owns this toast: the step ends when func() ends, not now (resolving here
+                        // an inner expectErrorToast owns this toast: the step ends when func() ends, not at this point (resolving here
                         // would end the step while func() is still validating / closing the toast). This watcher is one-shot:
                         // an unexpected error toast later in the same step is not caught by it
                         return await new Promise(() => {});

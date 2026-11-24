@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 
 /**
- * BarcodeScannerComponent.typeWhenScannerListens (the old `type` loses this scan) against a minimal page (no app server): the scanner input is in the DOM before
+ * BarcodeScannerComponent.typeWhenScannerListens (the plain `type` loses this scan) against a minimal page (no app server): the scanner input is in the DOM before
  * the scanner listens.
  *
  * In the app, the scanner input (`#input-text`) is rendered by React's commit, but the window `keydown` listener

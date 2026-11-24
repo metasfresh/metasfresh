@@ -3,7 +3,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, book, labelOf, newFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, book, labelOf, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -23,8 +23,8 @@ restoreSysconfigsAfterEach(test);
 test('real case, buyer A 50 CU in 11 boxes (Scan once), buyer B 6 CU in 2 boxes with one duplicate warning (Scan each CU): 13 boxes, 56 CU, job completed', async ({ page }) => {
     allureMeta('Real case');
 
-    const onceFormat = newFormatName();
-    const packFormat = newFormatName();
+    const onceFormat = uniqueFormatName();
+    const packFormat = uniqueFormatName();
     // profile = Scan once + format without pack-ID part (buyer A, no record); buyer B = record Scan each CU + the pack-ID format
     const masterdata = await createScanEachMasterdata({
         packFormatName: packFormat,

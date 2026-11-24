@@ -1,0 +1,191 @@
+import { test } from "../../../playwright.config";
+import { expect } from "@playwright/test";
+import { page } from "../../utils/common";
+import { expectLayoutSound, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES } from "../../utils/layout";
+import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
+import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
+import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
+import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
+import { uniqueLot } from "../../utils/cuLabel";
+import { allureMeta, book, createMasterdata, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
+
+restoreSysconfigsAfterEach(test);
+
+/**
+ * Layout of the Scan once, mixed-job and real-case screens of the CU quantity entry modes at the phone sizes (PHONE_VIEWPORTS): quantity block
+ * states (count above the open quantity, smaller count, count over several source boxes, reopened block), a line closed short and reopened, a job
+ * with Manual, Scan once and Scan each lines, and the real case of two buyers. Same checker as picking-cu-qty-entry-responsive.spec.js.
+ */
+for (const viewport of PHONE_VIEWPORTS) {
+    test.describe(`Scan once and mixed job screens ${viewport.name}`, () => {
+        test.use({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: viewport.deviceScaleFactor });
+
+        for (const lang of LAYOUT_LANGUAGES) {
+            // noinspection JSUnusedLocalSymbols
+            test(`Scan once: re-entry, closed short, over-max, smaller count, count over several source boxes [${lang}] (${viewport.name})`, async ({ page: _page }) => {
+                allureMeta('Responsive Scan once states');
+                const layout = (label, scope) => expectLayoutSound(`${label} [${lang}]`, viewport, scope);
+
+                const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], language: lang });
+                await startJob(masterdata, { qtyToDeliver: 12 });
+                await openLine({ index: 1 });
+                await PickLineScanScreen.openBox();
+                await scanLabel(labelOf({ masterdata }));
+
+                // above the open quantity
+                await GetQuantityDialog.typeQtyEntered(13);
+                await GetQuantityDialog.expectDoneDisabled();
+                await expect(page.getByTestId('qty-validation-error')).toBeVisible();
+                await layout('Once quantity block, count above the open quantity (validation text)');
+
+                // smaller than open, no rejection prompt
+                await GetQuantityDialog.typeQtyEntered(3);
+                await GetQuantityDialog.expectNoQtyRejected();
+                await layout('Once quantity block, count 3 of 12 (no reject reason asked)');
+                await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
+                await layout('Once quantity block after booking 3 of 12');
+
+                // 5 needs pieces from two source boxes of 4 (one CU of 5)
+                await PickLineScanScreen.nextBox();
+                await book({ qty: 5, expectedQtyTarget: 4 });
+                await layout('Once quantity block after a count of 5 from two source boxes');
+
+                // line screen, "HU verpacken" reopens the block with the remembered count
+                await GetQuantityDialog.clickCancel();
+                await PickingJobScreen.waitForScreen();
+                await PickingJobScreen.clickLineButton({ index: 1 });
+                await PickingJobLineScreen.waitForScreen();
+                await layout('Once line screen with booked boxes, before closing');
+                await PickingJobLineScreen.clickPickHUButton();
+                await GetQuantityDialog.waitForDialog();
+                await layout('Once quantity block reopened by "HU verpacken" (remembered count)');
+                await GetQuantityDialog.clickCancel();   // Cancel leaves either on the scan screen below the block (back leads to the line screen) or on the line screen itself
+                await GetQuantityDialog.waitToClose();
+                await page.locator('#PickLineScreen, #PickLineScanScreen').first().waitFor();
+                if (await page.locator('#PickLineScanScreen').count() > 0) {
+                    await PickLineScanScreen.goBack();
+                }
+                await PickingJobLineScreen.waitForScreen();
+
+                // close short, no reject reason asked; reopen
+                await PickingJobLineScreen.clickCloseButton();
+                await PickingJobLineScreen.expectReOpenButtonVisible();
+                await GetQuantityDialog.expectNotShown();
+                await layout('Once line screen, line closed short ("Wieder oeffnen" shown)');
+                await expectReachable(page.getByTestId('reOpenText-button'), 'Reopen button', viewport);
+                await PickingJobLineScreen.clickReOpenButton();
+                await PickingJobLineScreen.expectCloseButtonVisible();
+                await layout('Once line screen, line reopened');
+                await PickingJobLineScreen.clickCloseButton();
+                await PickingJobLineScreen.goBack();
+                await PickingJobScreen.waitForScreen();
+                await layout('Once job screen, line closed short (ready to complete)');
+            });
+        }
+
+        for (const lang of LAYOUT_LANGUAGES) {
+            // noinspection JSUnusedLocalSymbols
+            test(`mixed job: Manual, Scan once and Scan each lines, switching between them [${lang}] (${viewport.name})`, async ({ page: _page }) => {
+                allureMeta('Responsive mixed job');
+                const layout = (label, scope) => expectLayoutSound(`${label} [${lang}]`, viewport, scope);
+
+                const formatName = uniqueFormatName();
+                const masterdata = await createScanEachMasterdata({
+                    packFormatName: formatName,
+                    profileMode: MODE_SCAN_ONCE,
+                    orders: [{ key: 'A', qty: 12 }, { key: 'B', qty: 12 }, { key: 'C', qty: 2 }],
+                    customers: [
+                        { customer: 'custB', cuQtyEntryMode: MODE_MANUAL },
+                        { customer: 'custC', cuQtyEntryMode: MODE_SCAN_EACH, cuLabelFormatName: formatName },
+                    ],
+                    language: lang,
+                });
+                const lot = uniqueLot();
+                await startJob(masterdata, { qtyToDeliver: 26 });
+                await layout('mixed job screen (Once, Manual and Each line buttons)');
+
+                // line 1: Once
+                await openLine({ index: 1 });
+                await layout('mixed: Once line scan screen');
+                await PickLineScanScreen.openBox();
+                await scanLabel(labelOf({ masterdata, lot }));
+                await layout('mixed: Once quantity block');
+                await GetQuantityDialog.clickCancel();
+                await PickingJobScreen.waitForScreen();
+
+                // line 2: Manual (own slot)
+                await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
+                await PickingJobScreen.clickLineButton({ index: 2 });
+                await GetQuantityDialog.waitForDialog();
+                await layout('mixed: Manual quantity dialog (looks as in a Manual-only job)');
+                await GetQuantityDialog.clickCancel();
+                await PickingJobScreen.waitForScreen();
+
+                // line 3: Each
+                await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
+                await openScanEachLine({ index: 3, openBox: false });
+                await layout('mixed: Each scan screen, no box open');
+                await PickLineScanScreen.openBox();
+                await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
+                await layout('mixed: Each scan screen after a pack was booked');
+                await PickLineScanScreen.goBack();
+                await PickingJobLineScreen.waitForScreen();
+                await layout('mixed: Each line screen with a booked box');
+                await PickingJobLineScreen.goBack();
+                await PickingJobScreen.waitForScreen();
+                await layout('mixed job screen after switching lines');
+            });
+        }
+
+        // noinspection JSUnusedLocalSymbols
+        test(`real case: Once buyer with boxes by Next box and GRAI, Each buyer with GRAI boxes and a duplicate warning (${viewport.name})`, async ({ page: _page }) => {
+            allureMeta('Responsive real case');
+            const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
+
+            const onceFormat = uniqueFormatName();
+            const packFormat = uniqueFormatName();
+            const masterdata = await createScanEachMasterdata({
+                packFormatName: packFormat,
+                profileMode: MODE_SCAN_ONCE,
+                orders: [{ key: 'A', qty: 14 }, { key: 'B', qty: 4, graiRequired: 'Y' }],
+                customers: [{ customer: 'custB', cuQtyEntryMode: MODE_SCAN_EACH, cuLabelFormatName: packFormat }],
+                formats: [{ name: onceFormat, withPackId: false }],
+                packingInstructions: { G1: { tu: 'TU_G1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true } },
+            });
+            const [companyPrefix, assetType] = masterdata.packingInstructions.G1.grai.split('.');
+            const serialBase = Date.now();
+            const graiOfBox = (box) => `${companyPrefix}.${assetType}.${serialBase + box}`;
+            const lot = uniqueLot();
+            await startJob(masterdata, { qtyToDeliver: 18 });
+            await layout('job screen, two customers');
+
+            await openLine({ index: 1 });
+            await PickLineScanScreen.openBox();
+            await scanLabel(labelOf({ masterdata, lot }));
+            await book({ qty: 3, expectedQtyTarget: 11 });
+            await PickLineScanScreen.rescanGrai(graiOfBox(3));
+            await layout('Once quantity block, box opened by a GRAI scan');
+            await book({ qty: 5, expectedQtyTarget: 6 });
+            await PickLineScanScreen.nextBox();
+            await layout('Once quantity block, box opened by Next box');
+            await GetQuantityDialog.typeQtyEntered(6);
+            await GetQuantityDialog.clickDoneStayOpen();
+            await PickingJobScreen.waitForScreen();
+            await layout('job screen, buyer A line done');
+
+            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
+            await openScanEachLine({ index: 2, openBox: false });
+            await PickLineScanScreen.scanGrai(graiOfBox(12));
+            await layout('Each scan screen, box opened by GRAI (GRAI customer)');
+            for (const packId of [1, 2]) await scanPack(packLabelOf({ masterdata, lot, packId }));
+            await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 2 }), MSG_ALREADY_PICKED(2), {
+                whileToastShown: async () => await layout('Each refusal, the duplicate warning (scan screen + toast)'),
+            });
+            await PickLineScanScreen.scanGrai(graiOfBox(13));
+            for (const packId of [3, 4]) await scanPack(packLabelOf({ masterdata, lot, packId }));
+            await PickingJobScreen.waitForScreen();
+            await layout('job screen, both lines done, ready to complete');
+        });
+    });
+}

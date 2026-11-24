@@ -13,13 +13,18 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
 import {
-    allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, labelOf, LAUNCHERS_LIMIT_SYSCONFIGS, MODE_MANUAL, MODE_SCAN_ONCE, newFormatName, openLine,
+    allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, labelOf, LAUNCHERS_LIMIT_SYSCONFIGS, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine,
     restoreSysconfigsAfterEach, scanLabel, setPalletTarget, startJob, unpackFirstBooking,
 } from "../../utils/cuQtyEntryScanOnce";
 import { createScanEachMasterdata, MODE_SCAN_EACH, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
 
+/**
+ * Layout of the screens and refusals shared by Scan each CU and Scan once (box list, label refusals, GRAI-required customers, pallet target,
+ * quick pack all) and of the Scan each CU only states (pieces-only refusal, second lot, finished line, unpack, second job) at the phone sizes
+ * (PHONE_VIEWPORTS), in English and German. Same checker as picking-cu-qty-entry-responsive.spec.js.
+ */
 const MODES = [MODE_SCAN_EACH, MODE_SCAN_ONCE];
 const modeName = (mode) => (mode === MODE_SCAN_EACH ? 'Each' : 'Once');
 
@@ -64,13 +69,13 @@ const openModeLine = async (mode, index = 1) => {
     }
 };
 
-const newMasterdata = async (mode, { lang = 'en_US', orders, ...rest }) =>
+const masterdataOf = async (mode, { lang = 'en_US', orders, ...rest }) =>
     mode === MODE_SCAN_EACH
-        ? await createScanEachMasterdata({ packFormatName: newFormatName(), orders, language: lang, ...rest })
-        : await createMasterdata({ formatName: newFormatName(), orders, language: lang, ...rest });
+        ? await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, language: lang, ...rest })
+        : await createMasterdata({ formatName: uniqueFormatName(), orders, language: lang, ...rest });
 
 for (const viewport of PHONE_VIEWPORTS) {
-    test.describe(`screen ${viewport.name}`, () => {
+    test.describe(`label-based mode screens ${viewport.name}`, () => {
         test.use({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: viewport.deviceScaleFactor });
         const layoutFor = (lang) => (label, scope) => expectLayoutSound(`${label} [${lang}]`, viewport, scope);
 
@@ -79,12 +84,12 @@ for (const viewport of PHONE_VIEWPORTS) {
         for (const lang of languages) {
             const layout = layoutFor(lang);
 
-            // C5, C13 (Each): a line without TU type: "Next box" opens the box list; customer GRAI required: no pick-time GRAI screen, "Fertigstellen" refused
+            // a line without TU type: "Next box" opens the box list; customer GRAI required: no pick-time GRAI screen, "Fertigstellen" refused
             // noinspection JSUnusedLocalSymbols
             test(`Each: line without TU type, GRAI required: box list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createScanEachMasterdata({
-                    packFormatName: newFormatName(), language: lang,
+                    packFormatName: uniqueFormatName(), language: lang,
                     orders: [{ key: 'A', qty: 2, graiRequired: 'Y', piItemProduct: null }], packingInstructions: graiTuType('G1'),
                 });
                 const tuName = masterdata.packingInstructions.P1_20x4.tuName;
@@ -124,7 +129,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             test(`Once: line without TU type, GRAI required: box list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createMasterdata({
-                    formatName: newFormatName(), language: lang,
+                    formatName: uniqueFormatName(), language: lang,
                     orders: [{ key: 'A', qty: 4, graiRequired: 'Y', piItemProduct: null }], packingInstructions: graiTuType('G1'),
                 });
                 const tuName = masterdata.packingInstructions.P1_20x4.tuName;
@@ -162,7 +167,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 const M = modeName(mode);
                 const germanToo = (wanted) => lang === 'en_US' || mode === wanted;
 
-                // C9: no effective format
+                // no effective format
                 // noinspection JSUnusedLocalSymbols
                 if (germanToo(MODE_SCAN_EACH)) test(`${M}: no label format on the profile: refusal [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                     allureMeta('Responsive shared states');
@@ -178,11 +183,11 @@ for (const viewport of PHONE_VIEWPORTS) {
                     await layout(`${M} scan screen after the refusal`);
                 });
 
-                // C10: label of another product
+                // label of another product
                 // noinspection JSUnusedLocalSymbols
                 if (germanToo(MODE_SCAN_ONCE)) test(`${M}: label of another product: refusal [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                     allureMeta('Responsive shared states');
-                    const masterdata = await newMasterdata(mode, {
+                    const masterdata = await masterdataOf(mode, {
                         lang, orders: [{ key: 'A', qty: 3 }],
                         products: { P2: { price: 1, randomValue: { size: 7, isIncludeDigits: true } } },
                     });
@@ -197,12 +202,12 @@ for (const viewport of PHONE_VIEWPORTS) {
                 });
             }
 
-            // D5: a line counted in kg
+            // a line counted in kg
             // noinspection JSUnusedLocalSymbols
             test(`Each: line counted in kg: "pieces only" refusal [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createScanEachMasterdata({
-                    packFormatName: newFormatName(), language: lang, orders: [{ key: 'A', qty: 3 }],
+                    packFormatName: uniqueFormatName(), language: lang, orders: [{ key: 'A', qty: 3 }],
                     products: { P1: { price: 1, uom: 'KGM', randomValue: { size: 7, isIncludeDigits: true } } },
                 });
                 await startJob(masterdata, { qtyToDeliver: 3 });
@@ -218,11 +223,11 @@ for (const viewport of PHONE_VIEWPORTS) {
         for (const lang of languages) {
             const layout = layoutFor(lang);
 
-            // D6: second lot on the same line, D7: scan after the line is done, D9: unpack
+            // second lot on the same line, scan after the line is done, unpack
             // noinspection JSUnusedLocalSymbols
             test(`Each: second lot, finished line re-entered, unpack and rescan [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
-                const masterdata = await createScanEachMasterdata({ packFormatName: newFormatName(), language: lang, orders: [{ key: 'A', qty: 3 }] });
+                const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), language: lang, orders: [{ key: 'A', qty: 3 }] });
                 const lotA = uniqueLot();
                 const lotB = uniqueLot();
                 const gtin = uniqueGTIN();
@@ -239,7 +244,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobScreen.clickLineButton({ index: 1 });
                 await PickingJobLineScreen.waitForScreen();
                 await layout('Each line screen of a done line');
-                await expectReachable(page.locator('#step-0-button'), 'D7 booked CU button', viewport);
+                await expectReachable(page.locator('#step-0-button'), 'booked CU button', viewport);
                 await PickingJobLineScreen.tapPickHUButton();
                 await PickLineScanScreen.waitForScreen();
                 await layout('Each scan screen entered again via Pack HU on a done line');
@@ -252,19 +257,19 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobLineScreen.clickStepButton({ index: 0 });
                 await PickingJobStepScreen.waitForScreen();
                 await layout('Each step screen of a booked CU (unpack)');
-                await expectReachable(page.locator('#unpick-button'), 'D9 Unpack button', viewport);
+                await expectReachable(page.locator('#unpick-button'), 'Unpack button', viewport);
                 await page.locator('#unpick-button').tap();
                 await layout('Each unpack dialog');
                             });
         }
 
-        // D8: the same pack in a second job
+        // the same pack in a second job
         // noinspection JSUnusedLocalSymbols
         test(`Each: the same pack in a second job: job list, second job scan screen (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive shared states');
             const layout = layoutFor('en_US');
             const masterdata = await createScanEachMasterdata({
-                packFormatName: newFormatName(), orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true,
+                packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true,
             });
             const label = packLabelOf({ masterdata, lot: uniqueLot(), packId: 2 });
             await startJob(masterdata, { qtyToDeliver: 2 });
@@ -284,14 +289,14 @@ for (const viewport of PHONE_VIEWPORTS) {
             await layout('Each job screen of job 2 after the same pack booked without a warning');
         });
 
-        // C15, C16: pallet target and box packing, both modes
+        // pallet target and box packing, both modes
         for (const mode of MODES) {
             const M = modeName(mode);
             // noinspection JSUnusedLocalSymbols
             test(`${M}: pallet target + new box, second booking into the open box (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const layout = layoutFor('en_US');
-                const masterdata = await newMasterdata(mode, { orders: [{ key: 'A', qty: 4 }], pickTo: ['LU_TU', 'TU'] });
+                const masterdata = await masterdataOf(mode, { orders: [{ key: 'A', qty: 4 }], pickTo: ['LU_TU', 'TU'] });
                 const lot = uniqueLot();
                 await startJob(masterdata, { qtyToDeliver: 4 });
                 await openModeLine(mode);
@@ -318,7 +323,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             });
         }
 
-        // C14: Quick Pack All is hidden for a job with a new-mode line (mixed job); the Manual-only job still shows it
+        // Quick Pack All is hidden for a job with a label-based-mode line (mixed job); the Manual-only job still shows it
         const buildMasterdata = async (customers) => await createMasterdataRememberingSysconfigs({
             language: 'en_US',
             request: {

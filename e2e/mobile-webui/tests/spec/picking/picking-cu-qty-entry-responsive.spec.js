@@ -11,7 +11,7 @@ import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { allureMeta, labelOf, MODE_MANUAL, MSG_NO_OPEN_BOX, newFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, labelOf, MODE_MANUAL, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
 import { createScanEachMasterdata, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -23,7 +23,7 @@ restoreSysconfigsAfterEach(test);
  * do) must have their primary controls reachable by that scroll.
  *
  * CU quantity entry on a phone-size screen: every control of the quantity block (Scan once), of the Scan each CU scan screen and of the
- * Manual quantity dialog is inside the visible screen, without scrolling. The Manual dialog keeps its layout of today.
+ * Manual quantity dialog is inside the visible screen, without scrolling. The Manual dialog keeps its layout.
  *
  * The sizes (PHONE_VIEWPORTS, utils/layout.js) are a parameter: one block of tests per size.
  */
@@ -66,7 +66,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             allureMeta('Responsive quantity block');
 
             const masterdata = await createMasterdata({
-                formatName: newFormatName(),
+                formatName: uniqueFormatName(),
                 orders: [{ key: 'A', qty: 12 }],
             });
             await startJob(masterdata, { qtyToDeliver: 12 });
@@ -92,7 +92,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             allureMeta('Responsive quantity block');
 
             const masterdata = await createMasterdata({
-                formatName: newFormatName(),
+                formatName: uniqueFormatName(),
                 orders: [{ key: 'A', qty: 12 }],
                 customers: [{ customer: 'custA', cuQtyEntryMode: MODE_MANUAL }], // the line of the buyer books in Manual
             });
@@ -110,7 +110,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 field: await dialog.locator('#qty-input').boundingBox(), ok: await dialog.getByTestId('done-button').boundingBox(),
                 cancel: await dialog.getByTestId('cancel-button').boundingBox(), tableArea,
             }));
-            expect(tableArea.height, 'Manual table area height is 70vh as before the change').toBeCloseTo(viewport.height * 0.7, 0);
+            expect(tableArea.height, 'Manual table area height is 70vh').toBeCloseTo(viewport.height * 0.7, 0);
         });
 
         for (const lang of LAYOUT_LANGUAGES) {
@@ -121,7 +121,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 allureMeta('Responsive quantity block');
                 const layout = (label, scope) => expectLayoutSound(`${label} [${lang}]`, viewport, scope);
 
-                const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }], language: lang });
+                const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], language: lang });
                 await startJob(masterdata, { qtyToDeliver: 12 });
                 await layout('Once job screen');
 
@@ -164,7 +164,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 allureMeta('Responsive quantity block');
                 const layout = (label, scope) => expectLayoutSound(`${label} [${lang}]`, viewport, scope);
 
-                const masterdata = await createScanEachMasterdata({ packFormatName: newFormatName(), orders: [{ key: 'A', qty: 3 }], language: lang });
+                const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }], language: lang });
                 const lot = uniqueLot();
                 const gtin = uniqueGTIN();
                 const pack = (packId) => packLabelOf({ masterdata, lot, gtin, packId });
@@ -203,7 +203,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             allureMeta('Responsive quantity block');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
-            const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }], profileMode: MODE_MANUAL, allowCompletingPartialPickingJob: true });
+            const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], profileMode: MODE_MANUAL, allowCompletingPartialPickingJob: true });
             await startJobWithoutSourceHU(masterdata, { qtyToDeliver: 12 });
             await layout('Manual job screen');
             await PickingJobScreen.clickLineButton({ index: 1 });
@@ -228,7 +228,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             allureMeta('Responsive quantity block');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
-            const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }] });
+            const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }] });
             await startJobWithoutSourceHU(masterdata, { qtyToDeliver: 12 });
             await PickingJobScreen.clickLineButton({ index: 1 });
             await PickingJobLineScreen.waitForScreen();
@@ -250,7 +250,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
             const masterdata = await createMasterdata({
-                formatName: newFormatName(),
+                formatName: uniqueFormatName(),
                 orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
                 products: { P2: { price: 1 } },
                 packingInstructions: {
@@ -283,7 +283,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         test(`Spinner while a booking is in flight (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive quantity block');
 
-            const masterdata = await createScanEachMasterdata({ packFormatName: newFormatName(), orders: [{ key: 'A', qty: 3 }] });
+            const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }] });
             await startJob(masterdata, { qtyToDeliver: 3 });
             await openScanEachLine({ index: 1 });
             await page.route(/\/picking\/event/, async (route) => {
@@ -301,7 +301,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         test(`Scan each CU scan screen: Next box and Close are visible without scrolling (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive quantity block');
 
-            const masterdata = await createScanEachMasterdata({ packFormatName: newFormatName(), orders: [{ key: 'A', qty: 3 }] });
+            const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }] });
             await startJob(masterdata, { qtyToDeliver: 3 });
             await openScanEachLine({ index: 1, openBox: false });
 

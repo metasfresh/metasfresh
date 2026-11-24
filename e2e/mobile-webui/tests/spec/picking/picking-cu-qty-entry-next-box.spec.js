@@ -11,7 +11,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GRAIScreen } from "../../utils/screens/huManager/GRAIScreen";
-import { allureMeta, book, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_BOX, newFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, book, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
 import { createScanEachMasterdata, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -30,11 +30,11 @@ const MSG_GRAI_COUNT = 'TUs have a GRAI';
 const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true, ...extra } });
 
 // noinspection JSUnusedLocalSymbols
-test('GRAI scan with a box open (customer GRAI not required): old box closed with its 5, new box carries the GRAI', async ({ page }) => {
+test('GRAI scan with a box open (customer GRAI not required): the open box is closed with its 5, the next box carries the GRAI', async ({ page }) => {
     allureMeta('Next box by GRAI');
 
     const masterdata = await createMasterdata({
-        formatName: newFormatName(),
+        formatName: uniqueFormatName(),
         orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
         packingInstructions: graiTuType('G1'),
     });
@@ -58,7 +58,7 @@ test('GRAI scan with a box open (customer GRAI not required): old box closed wit
             }
         },
         hus: {
-            tu1: { qtyTUs: 1, storages: { P1: '5 PCE' }, attributes: { GRAI: null } },   // the old box: closed with 5, no GRAI
+            tu1: { qtyTUs: 1, storages: { P1: '5 PCE' }, attributes: { GRAI: null } },   // the closed box: closed with 5, no GRAI
             tu2: { qtyTUs: 1, storages: { P1: '5 PCE' }, attributes: { GRAI: grai } },   // the new box: the scanned GRAI, 5
         },
     });
@@ -69,7 +69,7 @@ test('GRAI of a TU type without capacity for the product is refused; the open bo
     allureMeta('Next box by GRAI');
 
     const masterdata = await createMasterdata({
-        formatName: newFormatName(),
+        formatName: uniqueFormatName(),
         orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
         // the TU type of this GRAI has a capacity row for P2 only, none for the line's product P1
         products: { P2: { price: 1 } },
@@ -102,7 +102,7 @@ test('"Next box" opens a box of the line\'s TU type in one tap (no "Gebinde" lis
     allureMeta('Next box button');
 
     const masterdata = await createMasterdata({
-        formatName: newFormatName(),
+        formatName: uniqueFormatName(),
         orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
         packingInstructions: graiTuType('G1'),
     });
@@ -154,7 +154,7 @@ test('"Next box" opens a box of the line\'s TU type in one tap (no "Gebinde" lis
 test('Scan once: customer GRAI required, no pick-time GRAI screen: first booking without a box is refused, after "Next box" it is booked', async ({ page }) => {
     allureMeta('No pick-time GRAI screen');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10, graiRequired: 'Y' }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10, graiRequired: 'Y' }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
 
@@ -184,7 +184,7 @@ test('mixed job (customer GRAI required + customer not required): the GRAI custo
     allureMeta('Complete a mixed job');
 
     const masterdata = await createMasterdata({
-        formatName: newFormatName(),
+        formatName: uniqueFormatName(),
         orders: [{ key: 'Y', qty: 8, graiRequired: 'Y' }, { key: 'N', qty: 4, graiRequired: 'N' }],
         packingInstructions: graiTuType('G1'),
     });
@@ -254,10 +254,10 @@ const addGraiToBoxesInHUManager = async ({ masterdata, boxes }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('customer GRAI required, box opened with "Next box": "Fertigstellen" is refused as today; after "GRAI scannen" in the HU Manager the job completes', async ({ page }) => {
+test('customer GRAI required, box opened with "Next box": "Fertigstellen" is refused; after "GRAI scannen" in the HU Manager the job completes', async ({ page }) => {
     allureMeta('GRAI customer, box without GRAI');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 5, graiRequired: 'Y' }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 5, graiRequired: 'Y' }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 5 });
     await openLine({ index: 1 });
     await PickLineScanScreen.openBox();
@@ -276,7 +276,7 @@ test('customer GRAI required, box opened with "Next box": "Fertigstellen" is ref
         hus: { tu1: { qtyTUs: 1, storages: { P1: '5 PCE' } } },
     });
 
-    // GRAI on the box in the HU Manager, then back in the job: it completes now
+    // GRAI on the box in the HU Manager, then back in the job: it completes
     await addGraiToBoxesInHUManager({ masterdata, boxes: ['tu1'] });
     await PickingJobScreen.complete();
     await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
@@ -309,7 +309,7 @@ test('line with a box packing "TU x 4 Stk" (customer GRAI required): first booki
     allureMeta('Open box first, box packing line');
 
     const masterdata = await createMasterdata({
-        formatName: newFormatName(),
+        formatName: uniqueFormatName(),
         orders: [{ key: 'A', qty: 8, graiRequired: 'Y' }],
         packingInstructions: graiTuType('G1'),
     });
@@ -347,7 +347,7 @@ test('line with an unlimited-capacity packing that names a TU type: "Next box" o
     allureMeta('Open box first, unlimited capacity packing');
 
     const masterdata = await createMasterdata({
-        formatName: newFormatName(),
+        formatName: uniqueFormatName(),
         orders: [{ key: 'A', qty: 8, graiRequired: 'Y', piItemProduct: 'TU_INF' }],
         // INF: no qtyCUsPerTU, the capacity row of this TU type is unlimited; G1: the GRAI mapped TU type of the next box
         packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' }, ...graiTuType('G1') },
@@ -385,7 +385,7 @@ test('line without a TU type: first booking refused, "Next box" opens the "Gebin
     allureMeta('Open box first, line without a TU type');
 
     const masterdata = await createMasterdata({
-        formatName: newFormatName(),
+        formatName: uniqueFormatName(),
         orders: [{ key: 'A', qty: 12, graiRequired: 'Y', piItemProduct: null }],
         packingInstructions: graiTuType('G1'),
     });
@@ -444,14 +444,14 @@ test('line without a TU type: first booking refused, "Next box" opens the "Gebin
  * The same three line packings in Scan each CU: every pack scan books one CU of 1 into the open box, so each box below holds one CU of 1.
  * The last pack of a line finishes it and the app leaves the scan screen.
  */
-const newScanEachMasterdata = async ({ orders, packingInstructions }) =>
-    await createScanEachMasterdata({ packFormatName: newFormatName(), orders, packingInstructions });
+const scanEachMasterdataOf = async ({ orders, packingInstructions }) =>
+    await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, packingInstructions });
 
 // noinspection JSUnusedLocalSymbols
 test('Scan each CU: line with a box packing "TU x 4 Stk" (customer GRAI required): first scan refused, "Next box" opens box 1, a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
     allureMeta('Scan each CU open box first, box packing line');
 
-    const masterdata = await newScanEachMasterdata({ orders: [{ key: 'A', qty: 2, graiRequired: 'Y' }], packingInstructions: graiTuType('G1') });
+    const masterdata = await scanEachMasterdataOf({ orders: [{ key: 'A', qty: 2, graiRequired: 'Y' }], packingInstructions: graiTuType('G1') });
     const grai = masterdata.packingInstructions.G1.grai;
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
@@ -483,7 +483,7 @@ test('Scan each CU: line with a box packing "TU x 4 Stk" (customer GRAI required
 test('Scan each CU: line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list, a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
     allureMeta('Scan each CU open box first, unlimited capacity packing');
 
-    const masterdata = await newScanEachMasterdata({
+    const masterdata = await scanEachMasterdataOf({
         orders: [{ key: 'A', qty: 2, graiRequired: 'Y', piItemProduct: 'TU_INF' }],
         // INF: no qtyCUsPerTU, the capacity row of this TU type is unlimited; G1: the GRAI mapped TU type of the next box
         packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' }, ...graiTuType('G1') },
@@ -519,7 +519,7 @@ test('Scan each CU: line with an unlimited-capacity packing that names a TU type
 test('Scan each CU: line without a TU type: first scan refused, "Next box" opens the "Gebinde" list (again after a booking), a GRAI scan opens the next box, "Fertigstellen" needs a GRAI on every box', async ({ page }) => {
     allureMeta('Scan each CU open box first, line without a TU type');
 
-    const masterdata = await newScanEachMasterdata({ orders: [{ key: 'A', qty: 3, graiRequired: 'Y', piItemProduct: null }], packingInstructions: graiTuType('G1') });
+    const masterdata = await scanEachMasterdataOf({ orders: [{ key: 'A', qty: 3, graiRequired: 'Y', piItemProduct: null }], packingInstructions: graiTuType('G1') });
     const grai = masterdata.packingInstructions.G1.grai;
     const tuName = masterdata.packingInstructions.P1_20x4.tuName;
     const lot = uniqueLot();

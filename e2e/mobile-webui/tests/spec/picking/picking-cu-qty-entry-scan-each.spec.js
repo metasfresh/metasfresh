@@ -4,7 +4,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
-import { allureMeta, MSG_NO_OPEN_BOX, newFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, MSG_NO_OPEN_BOX, uniqueFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
 import { buildCULabel, uniqueGTIN } from "../../utils/cuLabel";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMAT_MISMATCH, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
@@ -19,14 +19,14 @@ restoreSysconfigsAfterEach(test);
  * Source: one pallet of 20 boxes of 4 pieces (80 pieces). Every case opens box 1 first ("Next box"), except the cases that test the missing box.
  */
 
-const newMasterdata = async ({ orders = [{ key: 'A', qty: 3 }], ...rest } = {}) =>
-    await createScanEachMasterdata({ packFormatName: newFormatName(), orders, ...rest });
+const masterdataOf = async ({ orders = [{ key: 'A', qty: 3 }], ...rest } = {}) =>
+    await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, ...rest });
 
 // noinspection JSUnusedLocalSymbols
 test('scan IDs 1 and 2 book one CU each into the open box, a rescan of ID 1 is warned, ID 3 books the last CU and finishes the line', async ({ page }) => {
     allureMeta('Scan each CU chain');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
     await openScanEachLine({ index: 1 });
@@ -71,7 +71,7 @@ test('scan IDs 1 and 2 book one CU each into the open box, a rescan of ID 1 is w
 test('a scan after the line is done books nothing: the picker re-enters the finished line via "HU verpacken", a new pack is refused', async ({ page }) => {
     allureMeta('Scan each CU line done');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
     await openScanEachLine({ index: 1 });
@@ -101,7 +101,7 @@ test('a scan after the line is done books nothing: the picker re-enters the fini
 test('a second lot on the same line books a CU with that lot; the first CU keeps its lot', async ({ page }) => {
     allureMeta('Scan each CU lots');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2 }] });
     const lotA = uniqueLot();
     const lotB = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
@@ -120,7 +120,7 @@ test('the same pack in two jobs: job 1 picked it, job 2 books it without a warni
 
     // a product job holds every customer who ordered the product: job 1 = both orders; the picker packs customer A's line only
     // and completes; customer B's still open order is offered again and becomes job 2 (same product, same lot, same pack)
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true }); // job 1 completes with customer B's line unpicked
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true }); // job 1 completes with customer B's line unpicked
     const lot = uniqueLot();
     const label = packLabelOf({ masterdata, lot, packId: 2 });
 
@@ -144,7 +144,7 @@ test('the same pack in two jobs: job 1 picked it, job 2 books it without a warni
 test('"Unpack" of a booked CU, then the same label books again without a warning', async ({ page }) => {
     allureMeta('Scan each CU unpick');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2 }] });
     const lot = uniqueLot();
     const label = packLabelOf({ masterdata, lot, packId: 2 });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
@@ -163,7 +163,7 @@ test('"Unpack" of a booked CU, then the same label books again without a warning
 test('box opened by GRAI scan: "Unpack" of the box\'s only pack, then the same label books again into a box that carries the GRAI', async ({ page }) => {
     allureMeta('Scan each CU unpick, GRAI box');
 
-    const masterdata = await newMasterdata({
+    const masterdata = await masterdataOf({
         orders: [{ key: 'A', qty: 2 }],
         packingInstructions: { G1: { tu: 'TU_G1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true } },
     });
@@ -190,7 +190,7 @@ test('box opened by GRAI scan: "Unpack" of the box\'s only pack, then the same l
 test('the box\'s first pack: a rescan is warned; "Unpack" frees only that CU (the other CU stays), then the rescan books', async ({ page }) => {
     allureMeta('Scan each CU first pack of the box');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });
     const lot = uniqueLot();
     const first = packLabelOf({ masterdata, lot, packId: 1 });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
@@ -218,7 +218,7 @@ test('the box\'s first pack: a rescan is warned; "Unpack" frees only that CU (th
 test('lots A, A, B: 3 CUs, the box has no lot (mixed), PackId on no box, the first CU keeps lot A', async ({ page }) => {
     allureMeta('Scan each CU mixed lots');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });
     const lotA = uniqueLot();
     const lotB = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
@@ -241,8 +241,8 @@ test('lots A, A, B: 3 CUs, the box has no lot (mixed), PackId on no box, the fir
 test('buyer B line (Scan each CU, pack-ID format): a label without counter (L0) is refused with the pack-ID text; buyer C line (effective format has no pack-ID part): every label is refused with the pack-ID text', async ({ page }) => {
     allureMeta('Scan each CU needs a pack ID');
 
-    const plainFormat = newFormatName();
-    const masterdata = await newMasterdata({
+    const plainFormat = uniqueFormatName();
+    const masterdata = await masterdataOf({
         orders: [{ key: 'B', qty: 2 }, { key: 'C', qty: 2 }],
         // buyer C: record with Scan each CU and its own format WITHOUT a pack-ID part
         customers: [{ customer: 'custC', cuQtyEntryMode: MODE_SCAN_EACH, cuLabelFormatName: plainFormat }],
@@ -272,7 +272,7 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
 
     // The product carries the GTIN printed on the label: if a rejected label fell back to the GTIN lookup, it would book the product.
     const gtin = uniqueGTIN();
-    const masterdata = await newMasterdata({
+    const masterdata = await masterdataOf({
         orders: [{ key: 'A', qty: 3 }],
         products: { P1: { price: 1, gtin, randomValue: { size: 7, isIncludeDigits: true } } },
     });
@@ -282,13 +282,14 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
 
     const validLabel = buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 });
     await test.step('a label with a "]d2" prefix (a form the format does not read) is refused, nothing is booked', async () => {
-        await PickLineScanScreen.scanCULabelRefused(']d2' + validLabel, MSG_FORMAT_MISMATCH);
+        // the refusal tells why: the first part of the format (constant "01") finds "]d"
+        await PickLineScanScreen.scanCULabelRefused(']d2' + validLabel, `${MSG_FORMAT_MISMATCH}. Nothing was booked. Expected constant '01' but got ']d'`);
     });
     await test.step('a bare GTIN is refused, nothing is booked', async () => {
         await PickLineScanScreen.scanCULabelRefused(gtin, MSG_FORMAT_MISMATCH);
     });
     await test.step('a string of another shape is refused, nothing is booked', async () => {
-        await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', MSG_FORMAT_MISMATCH);
+        await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', `${MSG_FORMAT_MISMATCH}. Nothing was booked. Expected constant '01' but got 'no'`);
     });
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 
@@ -305,7 +306,7 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
 test('Scan each CU: a label scan without an open box is refused with the open-a-box text, nothing is booked; after "Next box" the same scan books', async ({ page }) => {
     allureMeta('Scan each CU needs an open box');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2 }] });
     const label = packLabelOf({ masterdata, packId: 1 });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1, openBox: false });
@@ -321,7 +322,7 @@ test('Scan each CU: a label scan without an open box is refused with the open-a-
 test('Scan each CU: customer GRAI required: no pick-time GRAI screen; (i) first scan without a box is refused, (ii) after "Next box" it books into the box', async ({ page }) => {
     allureMeta('Scan each CU GRAI required customer');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2, graiRequired: 'Y' }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2, graiRequired: 'Y' }] });
     const label = packLabelOf({ masterdata, packId: 1 });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1, openBox: false });
@@ -335,7 +336,7 @@ test('Scan each CU: customer GRAI required: no pick-time GRAI screen; (i) first 
 test('Scan each CU: box packing line: first scan refused without a box; "Next box", then every picked HU is a CU inside a TU of a TU packing (no loose CU)', async ({ page }) => {
     allureMeta('Scan each CU open box first');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
     await openScanEachLine({ index: 1, openBox: false });
     await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), MSG_NO_OPEN_BOX);
@@ -354,7 +355,7 @@ test('Scan each CU: box packing line: first scan refused without a box; "Next bo
 test('Scan each CU: line whose packing is "TU x 4 Stk", box open: a second CU is booked into the open box (no "Cannot pick TUs when TU pick target is set!")', async ({ page }) => {
     allureMeta('Scan each CU box packing');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1 });
     await scanPack(packLabelOf({ masterdata, packId: 1 }));
@@ -368,7 +369,7 @@ test('Scan each CU: line whose packing is "TU x 4 Stk", box open: a second CU is
 test('counters 9 and 10 give pack IDs "9" and "10" through the open-end pack-ID part', async ({ page }) => {
     allureMeta('Scan each CU open-end pack ID');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 2 }] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1 });
     await scanPack(packLabelOf({ masterdata, packId: 9 }));
@@ -380,7 +381,7 @@ test('counters 9 and 10 give pack IDs "9" and "10" through the open-end pack-ID 
 test('Pallet target (Scan each CU): pallet + new box: every scan books one CU into the box on the pallet; "Unpack" of pack 1 frees only that CU', async ({ page }) => {
     allureMeta('Scan each CU pallet target');
 
-    const masterdata = await newMasterdata({ orders: [{ key: 'A', qty: 3 }], pickTo: ['LU_TU', 'TU'] });
+    const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }], pickTo: ['LU_TU', 'TU'] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
     await openScanEachLine({ index: 1, openBox: false });
@@ -416,7 +417,7 @@ const MSG_EACH_ONLY_FOR_PIECES = "'Scan each CU' works only for lines counted in
 test('a line counted in kg: a pack scan is refused with the "pieces only" message, nothing is booked', async ({ page }) => {
     allureMeta('Scan each CU kg line');
 
-    const masterdata = await newMasterdata({
+    const masterdata = await masterdataOf({
         orders: [{ key: 'A', qty: 3 }],
         products: { P1: { price: 1, uom: 'KGM', randomValue: { size: 7, isIncludeDigits: true } } },
     });

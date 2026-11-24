@@ -15,15 +15,16 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 import { DistributionJobScreen } from "../../utils/screens/distribution/DistributionJobScreen";
 import { DistributionLinePickFromScreen } from "../../utils/screens/distribution/DistributionLinePickFromScreen";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
+import { HUMoveScreen } from "../../utils/screens/huManager/HUMoveScreen";
 import { BarcodeScannerComponent } from "../../utils/components/BarcodeScannerComponent";
 import { generateEAN13 } from "../../utils/ean13";
-import { allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, LAUNCHERS_LIMIT_SYSCONFIGS, labelOf, MODE_MANUAL, newFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, LAUNCHERS_LIMIT_SYSCONFIGS, labelOf, MODE_MANUAL, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
 
 restoreSysconfigsAfterEach(test);
 
 /**
  * Manual mode and shared screens (the regression surface of the CU quantity entry PR): every Manual screen and dialog that shares a
- * changed component (quantity dialog, scan step, button row, job screen) must look and behave as before, at each phone size.
+ * changed component (quantity dialog, scan step, button row, job screen) must look and behave , at each phone size.
  * Covered: over-pick confirmation, pallet target dialog, catch weight view, inline GRAI capture, Quick Pack All button, mode by profile / customer
  * record, on-screen keyboard, the shared product-code scan step and the HU Manager dialogs.
  * Same checker and sizes as picking-cu-qty-entry-responsive.spec.js (see there for the size list).
@@ -262,7 +263,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
             // product job with three customers: A has no record (profile default = not sent = Manual), B has an empty record, C has a record Manual
             const masterdata = await createMasterdata({
-                formatName: newFormatName(),
+                formatName: uniqueFormatName(),
                 orders: [{ key: 'A', qty: 4 }, { key: 'B', qty: 4 }, { key: 'C', qty: 4 }],
                 profileMode: MODE_MANUAL, // sent explicitly: the picking profile is shared by every test run on this DB
                 customers: [{ customer: 'custB' }, { customer: 'custC', cuQtyEntryMode: MODE_MANUAL }],
@@ -307,7 +308,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         // noinspection JSUnusedLocalSymbols
         test(`Manual: on-screen keyboard open (screen height cut to 55 %), quantity field and OK stay reachable (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive Manual screens');
-            const manual = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }], profileMode: MODE_MANUAL });
+            const manual = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], profileMode: MODE_MANUAL });
             await startJob(manual, { qtyToDeliver: 12 });
             await PickingJobScreen.clickLineButton({ index: 1 });
             await GetQuantityDialog.waitForDialog();
@@ -317,7 +318,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         // noinspection JSUnusedLocalSymbols
         test(`Scan once: on-screen keyboard open (screen height cut to 55 %), quantity field and OK stay reachable (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive Manual screens');
-            const once = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }] });
+            const once = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }] });
             await startJob(once, { qtyToDeliver: 12 });
             await openLine({ index: 1 });
             await scanLabel(labelOf({ masterdata: once }));
@@ -378,6 +379,32 @@ for (const viewport of PHONE_VIEWPORTS) {
             await page.getByTestId('change-qty-button').tap();
             await page.getByTestId('ChangeHUQtyDialog').waitFor();
             await layout('HU Manager change quantity dialog');
+        });
+
+        // The quantity dialog of the HU Manager move (ReadQtyDialog) shares the dialog class with the picking quantity dialog: it must look .
+        // noinspection JSUnusedLocalSymbols
+        test(`HU Manager move: number of TUs dialog of a pallet with several TUs (${viewport.name})`, async ({ page: _page }) => {
+            allureMeta('Responsive Manual screens');
+            const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
+            const masterdata = await createMasterdataRememberingSysconfigs({
+                language: 'en_US',
+                request: {
+                    login: { user: { language: 'en_US' } },
+                    products: { P1: {} },
+                    warehouses: { wh1: {} },
+                    packingInstructions: { PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 } },
+                    handlingUnits: { HU1: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI' }, HU2: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI' } },
+                },
+            });
+            await login(masterdata, 'huManager');
+            await HUManagerScreen.waitForScreen();
+            await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
+            await page.getByTestId('move-button').tap();
+            await HUMoveScreen.waitForScreen();
+            await BarcodeScannerComponent.type(masterdata.handlingUnits.HU2.qrCode);
+            await page.locator('.get-qty-dialog').waitFor();
+            await layout('HU Manager move: number of TUs dialog');
+            await saveScreenshot(`${viewport.width}x${viewport.height}-HU-Manager-move-number-of-TUs-dialog`);
         });
     });
 }

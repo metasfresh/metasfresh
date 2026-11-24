@@ -3,7 +3,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, newFormatName, openLine, scanLabel, setPalletTarget, SOURCE_QTY, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, scanLabel, setPalletTarget, SOURCE_QTY, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
 
 restoreSysconfigsAfterEach(test);
 
@@ -19,7 +19,7 @@ restoreSysconfigsAfterEach(test);
 test('box opened with "Next box", label scanned, count 5 (needs two source boxes) books ONE CU of 5 in the box', async ({ page }) => {
     allureMeta('Scan once count');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
@@ -51,16 +51,16 @@ test('box opened with "Next box", label scanned, count 5 (needs two source boxes
 test('Scan once field starts empty (not 0) with the zero-as-initial-value setting; a Manual line still shows 0', async ({ page }) => {
     allureMeta('Scan once count');
 
-    let previousSysconfigs = null;
+    let sysconfigsBeforeTest = null;
     try {
         const masterdata = await createMasterdata({
-            formatName: newFormatName(),
+            formatName: uniqueFormatName(),
             orders: [{ key: 'A', qty: 12 }, { key: 'B', qty: 12 }],
             // line 1 (buyer A): profile mode Scan once; line 2 (buyer B): record with Manual
             customers: [{ customer: 'custB', cuQtyEntryMode: MODE_MANUAL }],
             sysconfigs: { 'mobileui.frontend.qtyInput.useZeroAsInitialValue': 'Y' },
         });
-        previousSysconfigs = masterdata.previousSysconfigs;
+        sysconfigsBeforeTest = masterdata.previousSysconfigs;
         await startJob(masterdata, { qtyToDeliver: 24 });
 
         await test.step('Scan once line: field empty after the label scan', async () => {
@@ -72,7 +72,7 @@ test('Scan once field starts empty (not 0) with the zero-as-initial-value settin
             await PickingJobScreen.waitForScreen();
         });
 
-        await test.step('Manual line: field shows 0 as today', async () => {
+        await test.step('Manual line: field shows 0', async () => {
             await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
             await PickingJobScreen.clickLineButton({ index: 2 });
             await GetQuantityDialog.waitForDialog();
@@ -81,8 +81,8 @@ test('Scan once field starts empty (not 0) with the zero-as-initial-value settin
             await PickingJobScreen.waitForScreen();
         });
     } finally {
-        if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
-            await Backend.setSysconfigs(previousSysconfigs);
+        if (sysconfigsBeforeTest && Object.keys(sysconfigsBeforeTest).length > 0) {
+            await Backend.setSysconfigs(sysconfigsBeforeTest);
         }
     }
 });
@@ -91,7 +91,7 @@ test('Scan once field starts empty (not 0) with the zero-as-initial-value settin
 test('Scan once: OK without an open box is refused, nothing is booked; after "Next box" the same booking succeeds', async ({ page }) => {
     allureMeta('Scan once needs an open box');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
 
@@ -126,7 +126,7 @@ test('Scan once: OK without an open box is refused, nothing is booked; after "Ne
 test('the packs come from the "Kommissionieren aus" HU; the source pallet drops by the booked count, nothing is created on the fly', async ({ page }) => {
     allureMeta('Scan once source');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }], anonymousPickHUsOnTheFly: false });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }], anonymousPickHUsOnTheFly: false });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await PickLineScanScreen.openBox();
@@ -153,7 +153,7 @@ test('the packs come from the "Kommissionieren aus" HU; the source pallet drops 
 test('open box holding 3, count 5 (needs two source boxes) books ONE CU of 5 into it', async ({ page }) => {
     allureMeta('Scan once count');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
@@ -198,7 +198,7 @@ test('open box holding 3, count 5 (needs two source boxes) books ONE CU of 5 int
 test('a count smaller than the open quantity is not a rejection', async ({ page }) => {
     allureMeta('Scan once count');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await PickLineScanScreen.openBox();
@@ -228,7 +228,7 @@ test('a count smaller than the open quantity is not a rejection', async ({ page 
 test('the booking that reaches the open quantity finishes the line and goes back to the job screen', async ({ page }) => {
     allureMeta('Scan once line done');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await PickLineScanScreen.openBox();
@@ -259,11 +259,11 @@ test('the booking that reaches the open quantity finishes the line and goes back
 });
 
 // noinspection JSUnusedLocalSymbols
-test('a count above the open quantity is blocked as today, on a Manual line and on a Scan once line', async ({ page }) => {
+test('a count above the open quantity is blocked, on a Manual line and on a Scan once line', async ({ page }) => {
     allureMeta('Over-pick unchanged');
 
     // profile Manual (mode not sent) with a Scan once customer record; both lines order 12 (Manual line counts 3 boxes of 4)
-    const formatName = newFormatName();
+    const formatName = uniqueFormatName();
     const masterdata = await createMasterdata({
         formatName,
         profileMode: null,
@@ -304,7 +304,7 @@ test('a count above the open quantity is blocked as today, on a Manual line and 
 test('on a line whose packing is a box packing, a SECOND CU booking into the open box is accepted', async ({ page }) => {
     allureMeta('Scan once on a box-packed line');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await PickLineScanScreen.openBox();
@@ -313,7 +313,7 @@ test('on a line whose packing is a box packing, a SECOND CU booking into the ope
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
     // the first booking turns the new box into a real box (TU); only a SECOND booking into it reaches the
     // rule "Cannot pick TUs when TU pick target is set!" (PickingJobPickCommand: TU picking unit + existing TU target)
-    await test.step('second booking into the now existing box: no "Cannot pick TUs when TU pick target is set!"', async () => {
+    await test.step('second booking into the existing box: no "Cannot pick TUs when TU pick target is set!"', async () => {
         await GetQuantityDialog.typeQtyEntered(1);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
     });
@@ -339,7 +339,7 @@ test('on a line whose packing is a box packing, a SECOND CU booking into the ope
 test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU each into the box on the pallet; "Next box" + count 4 (a full box) books one CU of 4 in a second box on the same pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
     allureMeta('Scan once pallet target');
 
-    const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 10 }], pickTo: ['LU_TU', 'TU'] });
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }], pickTo: ['LU_TU', 'TU'] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });

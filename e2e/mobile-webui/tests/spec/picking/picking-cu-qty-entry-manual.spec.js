@@ -106,7 +106,7 @@ const scanAndPick = async ({ qrCode, qtyEntered, expectQtyEntered, qtyNotFoundRe
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Manual profile, line of 10 TU is picked as today', async ({ page }) => {
+test('Manual profile, line of 10 TU is picked', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -138,7 +138,7 @@ test('Manual profile, line of 10 TU is picked as today', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Manual profile, partial pick asks a reason, "New TU" behaves as today', async ({ page }) => {
+test('Manual profile, partial pick asks a reason, "New TU" behaves', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -180,7 +180,7 @@ test('Manual profile, partial pick asks a reason, "New TU" behaves as today', as
                 shipmentSchedules: {
                     P1: {},
                     P2: {
-                        // no box (TU) open: each OK of N TU makes N separate TUs (today's behaviour)
+                        // no box (TU) open: each OK of N TU makes N separate TUs (the Manual behaviour)
                         qtyPicked: [
                             { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu2a', lu: '-', processed: false, shipmentLineId: '-' },
                             { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu2b', lu: '-', processed: false, shipmentLineId: '-' },
@@ -188,7 +188,7 @@ test('Manual profile, partial pick asks a reason, "New TU" behaves as today', as
                         ]
                     },
                     P3: {
-                        // "New TU" target set: all 10 TU of the line go into the one new TU (today's behaviour)
+                        // "New TU" target set: all 10 TU of the line go into the one new TU (the Manual behaviour)
                         qtyPicked: [{ qtyPicked: "40 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu3', lu: '-', processed: false, shipmentLineId: '-' }]
                     },
                 }
