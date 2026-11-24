@@ -464,7 +464,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			assertSplit("66.67", "0", "1000", "999.9", "66.67", "66.66", "0.01", true);
 		}
 
-		/** Credit memo (negative matched qty): the amounts are only rounded; stock -75, sold 24.99. */
+		/** Credit memo (negative matched qty): the invoiced -50.005 is rounded to -50.01 before the split; stock -75, sold 24.99. */
 		@Test
 		void creditMemo_halfCent_onlyRounded()
 		{

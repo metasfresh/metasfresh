@@ -506,8 +506,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		// Matched qty for this invoice line. isReversal (invoice-level) flips the sign the reversal MatchInv
 		// stored back to the original receipt's orientation. This is >= 0 for a plain purchase match, but a
-		// credit-memo / material-return match can be negative; computeMatchInvSplit reshapes the on-hand clamp
-		// only for the >= 0 (plain receipt) case and leaves the negative-qty case's split untouched.
+		// credit-memo / material-return match can be negative.
 		final Quantity receiptQty = request.getQty().negateIf(isReversal);
 		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
@@ -524,15 +523,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	/**
-	 * Splits the invoice-vs-receipt price difference like {@link #computeMatchInvSplit}, after rounding both
-	 * {@code invoicedAmt} and {@code receiptAmt} to {@code amountPrecision}. The difference is therefore taken between
-	 * rounded amounts; {@code main - stock - sold} of the result equals the rounded receipt amount.
-	 * <p>
-	 * Returns: {@code main} = the rounded invoiced amount; {@code stock} + {@code sold} = the rounded difference.
-	 * Only the {@code value} of the amounts is rounded; their {@code sourceValue} is rounded only for the stock share
-	 * of a partly-in-stock match with {@code receiptQty >= 0} (computed by a division). In every other case
-	 * (difference zero, {@code receiptQty} zero, all matched qty in stock, credit memo / negative {@code receiptQty})
-	 * the {@code sourceValue} of the results keeps its decimals.
+	 * Rounds the {@code value} of {@code invoicedAmt} and {@code receiptAmt} to {@code amountPrecision}, then splits like
+	 * {@link #computeMatchInvSplit}; in {@code value}: {@code mainAmt} = rounded invoicedAmt, and
+	 * {@code costAdjustmentAmt + alreadyShippedAmt} = rounded invoicedAmt - rounded receiptAmt.
 	 */
 	@VisibleForTesting
 	@Builder(builderMethodName = "prepareMatchInvSplitRounded", builderClassName = "MatchInvSplitRoundedBuilder")
@@ -556,8 +549,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 	/**
 	 * Splits the invoice-vs-receipt price difference: the still-in-stock share adjusts the on-hand cost price, the
-	 * shipped remainder spills to COGS. Expects amounts already on the {@code amountPrecision} grid and rounds only
-	 * the stock share.
+	 * shipped remainder spills to COGS. {@code costAdjustmentAmt + alreadyShippedAmt = amtDifference} in {@code value};
+	 * if {@code amtDifference} is on the {@code amountPrecision} grid, both shares are on it too.
 	 */
 	@VisibleForTesting
 	@Builder(builderMethodName = "prepareMatchInvSplit", builderClassName = "MatchInvSplitBuilder")
@@ -573,8 +566,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		// For a plain purchase match (receiptQty >= 0) a negative on-hand cannot adjust the on-hand cost price,
 		// so clamp it to 0 => the whole difference becomes period cost (COGS), never capitalized. A credit-memo /
-		// material-return match (receiptQty < 0) keeps the pre-existing, un-clamped split unchanged (this method
-		// is behaviour-preserving there — the clamp is a no-op for a negative matched qty).
+		// material-return match (receiptQty < 0) is not clamped.
 		final Quantity onHandForSplit = receiptQty.signum() >= 0
 				? currentCost.getCurrentQty().toZeroIfNegative()
 				: currentCost.getCurrentQty();
