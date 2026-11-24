@@ -107,7 +107,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
-import org.assertj.core.groups.Tuple;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -149,7 +148,6 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -755,48 +753,6 @@ public class M_HU_StepDef
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach(this::validateHUStorage);
-	}
-
-	/**
-	 * Validates that each given HU holds exactly the given products and quantities (an HU may hold several products), no more and no less.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_HU_ID</b> — (required, identifier-ref) alias from M_HU_StepDefData; one row per HU and product<br>
-	 *   <b>M_Product_ID</b> — (required, identifier-ref) alias from M_Product_StepDefData<br>
-	 *   <b>Qty</b> — (required) expected storage quantity of that product in the HU's UOM<br>
-	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Product_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And the M_HU_Storage records of each HU are exactly:
-	 *   | M_HU_ID | M_Product_ID | Qty |
-	 *   | lu_1    | tomato       | 10  |
-	 *   | lu_1    | salad        | 5   |
-	 * </pre>
-	 */
-	@And("the M_HU_Storage records of each HU are exactly:")
-	public void validate_HU_Storages_exactly(@NonNull final DataTable table)
-	{
-		DataTableRows.of(table)
-				.groupBy(COLUMNNAME_M_HU_ID)
-				.values()
-				.forEach(rowsOfHU -> {
-					final HuId huId = rowsOfHU.getFirstRow().getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIdIn(huTable);
-					final List<Tuple> expected = rowsOfHU.stream()
-							.map(row -> tuple(row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIdIn(productTable).getRepoId(),
-									row.getAsBigDecimal(COLUMNNAME_Qty).stripTrailingZeros()))
-							.collect(ImmutableList.toImmutableList());
-
-					final List<I_M_HU_Storage> storages = queryBL.createQueryBuilder(I_M_HU_Storage.class)
-							.addOnlyActiveRecordsFilter()
-							.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huId)
-							.create()
-							.list(I_M_HU_Storage.class);
-					assertThat(storages)
-							.as("M_HU_Storage of M_HU_ID=%s", huId.getRepoId())
-							.extracting(I_M_HU_Storage::getM_Product_ID, storage -> storage.getQty().stripTrailingZeros())
-							.containsExactlyInAnyOrderElementsOf(expected);
-				});
 	}
 
 	/**

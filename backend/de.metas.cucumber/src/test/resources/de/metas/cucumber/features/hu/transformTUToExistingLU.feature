@@ -84,7 +84,7 @@ Feature: Move a TU onto an existing LU whose packing instructions link the TU on
       | M_HU_ID  | Parent | Parent_M_HU_PI_Item_ID |
       | tomatoTU | lu     | luItemIFCOTomato       |
       | bagTU    | lu     | luItemBag              |
-    And the M_HU_Storage records of each HU are exactly:
+    And validate M_HU_Storage exactly:
       | M_HU_ID | M_Product_ID | Qty |
       | lu      | tomato       | 20  |
 
@@ -103,7 +103,7 @@ Feature: Move a TU onto an existing LU whose packing instructions link the TU on
       | M_HU_ID | Parent | Parent_M_HU_PI_Item_ID |
       | saladTU | lu     | luItemIFCOTomato       |
       | bagTU   | lu     | luItemBag              |
-    And the M_HU_Storage records of each HU are exactly:
+    And validate M_HU_Storage exactly:
       | M_HU_ID | M_Product_ID | Qty |
       | lu      | tomato       | 10  |
       | lu      | salad        | 10  |
@@ -126,6 +126,6 @@ Feature: Move a TU onto an existing LU whose packing instructions link the TU on
     Then M_HU are validated:
       | M_HU_ID  | Parent | Parent_M_HU_PI_Item_ID |
       | tomatoTU | lu     | luItemIFCOGeneric      |
-    And the M_HU_Storage records of each HU are exactly:
+    And validate M_HU_Storage exactly:
       | M_HU_ID | M_Product_ID | Qty |
       | lu      | tomato       | 20  |
