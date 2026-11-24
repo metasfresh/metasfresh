@@ -25,7 +25,7 @@ jest.mock('../../../api/launchers', () => ({ getWFProcess: jest.fn() }));
 jest.mock('../../../utils/toast', () => ({
   toastError: jest.fn(),
   extractUserFriendlyErrorMessageFromAxiosError: ({ axiosError }) =>
-    axiosError?.response ? 'Done and shipped. Label not printed: No label is set up for this pallet.' : 'No response',
+    axiosError?.response ? 'Done and shipped. Label not printed: Print failed.' : 'No response',
 }));
 jest.mock('../../../utils/ui_trace', () => ({ trace: jest.fn(), traceFunction: (func) => func }));
 jest.mock('../../../utils/translations', () => ({ trl: (key) => key }));
@@ -81,7 +81,7 @@ describe('HUConsolidationCompleteActivity', () => {
     await completeAndConfirm();
 
     expect(screen.getByTestId('huConsolidation-completed-with-error-dialog')).toHaveTextContent(
-      'Done and shipped. Label not printed: No label is set up for this pallet.'
+      'Done and shipped. Label not printed: Print failed.'
     );
     expect(toastError).not.toHaveBeenCalled();
     expect(failureTrace()).toMatchObject({ httpStatus: 500, isNetworkFailure: false, isCompleted: true });
