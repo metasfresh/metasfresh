@@ -53,7 +53,7 @@ const isEndingBeforePackId = ({ string, format }) =>
  * Reads a CU label with the line's effective format only (no GS1, EAN13 or global QR code).
  *
  * @param isPackIdRequired Scan each CU: the label must carry a pack ID, else `picking.cuLabel.noPackId` (also for a label
- * that ends before the "92" marker / the pack ID part)
+ * that ends before the format's pack ID zone)
  * @returns {{productNo, lotNo, bestBeforeDate, packId}} or {errorKey (translation key), errorDetails (the reason, when known)}
  */
 export const readCULabel = ({ string, format, isPackIdRequired = false }) => {
