@@ -61,13 +61,7 @@ public class CreatePackingInstructionsCommandTest
 
 	private List<I_M_HU_PI_Item> luItems(final String json) throws Exception
 	{
-		final JsonPackingInstructionsRequest request = jsonMapper.readValue(json, JsonPackingInstructionsRequest.class);
-		CreatePackingInstructionsCommand.builder()
-				.context(context)
-				.request(request)
-				.identifier(Identifier.ofString("PI"))
-				.build()
-				.execute();
+		execute("PI", json);
 
 		return queryBL
 				.createQueryBuilder(I_M_HU_PI_Item.class)
