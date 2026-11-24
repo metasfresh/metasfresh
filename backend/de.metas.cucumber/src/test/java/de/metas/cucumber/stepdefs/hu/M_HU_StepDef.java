@@ -107,6 +107,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.groups.Tuple;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -148,6 +149,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -558,6 +560,34 @@ public class M_HU_StepDef
 		}
 	}
 
+	/**
+	 * Moves TUs onto an existing LU, like the HU editor's transform action "TU to existing LU".
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>sourceTU</b> — (required, identifier-ref) the TU (or aggregate TU) to move<br>
+	 *   <b>tuQty</b> — (required) number of TUs to move<br>
+	 *   <b>targetLU</b> — (required, identifier-ref) the existing LU<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And transform TU to existing LU
+	 *   | sourceTU | tuQty | targetLU |
+	 *   | tu_1     | 1     | lu_1     |
+	 * </pre>
+	 */
+	@And("transform TU to existing LU")
+	public void transformTUtoExistingLU(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_HU tuHU = handlingUnitsBL.getById(row.getAsIdentifier("sourceTU").lookupIdIn(huTable));
+			final QtyTU tuQty = QtyTU.ofInt(row.getAsInt("tuQty"));
+			final I_M_HU luHU = handlingUnitsBL.getById(row.getAsIdentifier("targetLU").lookupIdIn(huTable));
+
+			HUTransformService.newInstance().tuToExistingLU(tuHU, tuQty, luHU);
+		});
+	}
+
 	@And("aggregate TUs to new LU")
 	public void aggregateTUsToNewLU(@NonNull final DataTable dataTable)
 	{
@@ -728,6 +758,48 @@ public class M_HU_StepDef
 	}
 
 	/**
+	 * Validates that each given HU holds exactly the given products and quantities (an HU may hold several products), no more and no less.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) alias from M_HU_StepDefData; one row per HU and product<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) alias from M_Product_StepDefData<br>
+	 *   <b>Qty</b> — (required) expected storage quantity of that product in the HU's UOM<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the M_HU_Storage records of each HU are exactly:
+	 *   | M_HU_ID | M_Product_ID | Qty |
+	 *   | lu_1    | tomato       | 10  |
+	 *   | lu_1    | salad        | 5   |
+	 * </pre>
+	 */
+	@And("the M_HU_Storage records of each HU are exactly:")
+	public void validate_HU_Storages_exactly(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table)
+				.groupBy(COLUMNNAME_M_HU_ID)
+				.values()
+				.forEach(rowsOfHU -> {
+					final HuId huId = rowsOfHU.getFirstRow().getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIdIn(huTable);
+					final List<Tuple> expected = rowsOfHU.stream()
+							.map(row -> tuple(row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIdIn(productTable).getRepoId(),
+									row.getAsBigDecimal(COLUMNNAME_Qty).stripTrailingZeros()))
+							.collect(ImmutableList.toImmutableList());
+
+					final List<I_M_HU_Storage> storages = queryBL.createQueryBuilder(I_M_HU_Storage.class)
+							.addOnlyActiveRecordsFilter()
+							.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huId)
+							.create()
+							.list(I_M_HU_Storage.class);
+					assertThat(storages)
+							.as("M_HU_Storage of M_HU_ID=%s", huId.getRepoId())
+							.extracting(I_M_HU_Storage::getM_Product_ID, storage -> storage.getQty().stripTrailingZeros())
+							.containsExactlyInAnyOrderElementsOf(expected);
+				});
+	}
+
+	/**
 	 * Validate M_HU records — alternate step with different column set. Re-loads the HU fresh from DB before validating.
 	 * Supports comma-separated identifiers in M_HU_ID column to validate multiple HUs with same expectations.
 	 *
@@ -739,6 +811,7 @@ public class M_HU_StepDef
 	 *   <b>M_Locator_ID</b> — (optional, identifier-ref) expected locator<br>
 	 *   <b>IsTopLevel</b> — (optional) true/false, whether HU has no parent<br>
 	 *   <b>Parent</b> — (optional, identifier-ref or null) expected parent HU; use "null" for no parent<br>
+	 *   <b>Parent_M_HU_PI_Item_ID</b> — (optional, identifier-ref) expected PI item of the parent HU's item via which the HU is attached<br>
 	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref or null) expected business partner; use "null" for no BPartner<br>
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref or null) expected BP location; use "null" for no location<br>
 	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Locator_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
@@ -920,6 +993,16 @@ public class M_HU_StepDef
 						final HuId expectedParentId = parentHUIdentifier.isNullPlaceholder() ? null : huTable.getId(parentHUIdentifier);
 						final HuId actualParentId = handlingUnitsDAO.retrieveParentId(huRecord);
 						softly.assertThat(actualParentId).as("Parent").isEqualTo(expectedParentId);
+					});
+			row.getAsOptionalIdentifier("Parent_M_HU_PI_Item_ID")
+					.map(huPiItemTable::get)
+					.ifPresent(expectedParentPIItem -> {
+						final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(huRecord);
+						softly.assertThat(parentItem).as("parent HU item").isNotNull();
+						if (parentItem != null)
+						{
+							softly.assertThat(parentItem.getM_HU_PI_Item_ID()).as("Parent_M_HU_PI_Item_ID").isEqualTo(expectedParentPIItem.getM_HU_PI_Item_ID());
+						}
 					});
 			row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_ID)
 					.ifPresent(bpartnerIdentifier -> {

@@ -639,8 +639,9 @@ public class HUTransformService
 
 	/**
 	 * @param luPIItem the LU item via which the TUs shall be attached (e.g. the product-specific item the LU was created with);
-	 *                 {@code null} means that it's looked up; a product-specific item is used only if the LU already has one for the TU's PI
-	 *                 or if the LU PI links the TU's PI only via product-specific items.
+	 *                 {@code null} means that it's looked up; a product-specific item is used only if the LU already has one for the TU's PI,
+	 *                 or if the lookup without product finds no item for the TU's PI (for a partial move from an aggregate TU: the LU/TU producer's own lookup,
+	 *                 which also ignores partner-specific items).
 	 */
 	private LUTUResult tuToExistingLU(
 			@NonNull final I_M_HU sourceTuHU,
@@ -753,7 +754,7 @@ public class HUTransformService
 	}
 
 	/**
-	 * @return the LU's item for the TU's PI (an LU built from a product-specific item keeps it), else the generic item;
+	 * @return the LU's item for the TU's PI (an LU built from a product-specific item keeps it), else the generic item or the LU partner's item without product;
 	 * if the LU PI links the TU PI only via product-specific items, one of those (preferably the TU's product's), because different products on the same LU are allowed.
 	 */
 	@Nullable
