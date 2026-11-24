@@ -41,10 +41,9 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -53,11 +52,13 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class CostingDocuments_StepDef
@@ -170,7 +171,18 @@ public class CostingDocuments_StepDef
 	private void createInvoice(final DataTableRow row) throws Throwable
 	{
 		row.setValueIfMissing(I_C_Invoice.COLUMNNAME_C_Invoice_ID, () -> StepDefDataIdentifier.nextUnnamed("invoice").getAsString());
-		row.setValueIfMissing(I_M_MatchInv.COLUMNNAME_M_MatchInv_ID, () -> StepDefDataIdentifier.nextUnnamed("matchInv").getAsString());
+		if (row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID).isPresent())
+		{
+			// the invoice line is registered and the matches are loaded by "M_MatchInv are found": a match identifier here would be silently dropped
+			if (row.getAsOptionalIdentifier(I_M_MatchInv.COLUMNNAME_M_MatchInv_ID).isPresent())
+			{
+				throw new AdempiereException("Columns " + I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + " and " + I_M_MatchInv.COLUMNNAME_M_MatchInv_ID + " cannot be used together");
+			}
+		}
+		else
+		{
+			row.setValueIfMissing(I_M_MatchInv.COLUMNNAME_M_MatchInv_ID, () -> StepDefDataIdentifier.nextUnnamed("matchInv").getAsString());
+		}
 
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidateStepDef.waitAndLoad_C_Invoice_Candidate(row, 120);
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());

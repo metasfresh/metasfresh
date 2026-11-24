@@ -21,6 +21,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_MatchPO;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class M_MatchPO_StepDef
@@ -48,7 +49,7 @@ public class M_MatchPO_StepDef
 		// when the row names the receipt line, keep only that line's match (an order line can be received in several parts)
 		final List<I_M_MatchPO> matchPOs = matchPODAO.getByOrderLineId(orderLineId).stream()
 				.filter(matchPO -> inoutLineId == null || matchPO.getM_InOutLine_ID() == inoutLineId.getRepoId())
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 		if (matchPOs.isEmpty())
 		{
 			throw new AdempiereException("No M_MatchPO found for " + orderLineId);

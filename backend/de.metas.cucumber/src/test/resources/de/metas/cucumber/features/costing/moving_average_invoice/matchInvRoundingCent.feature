@@ -5,7 +5,7 @@
 @ghActions:run_on_executor6
 Feature: Moving Average Invoice - MatchInv of a rounding cent posts with a valid accounting structure
 ## F1500: Costing
-# One vendor invoice line (101.215 CHF net of the matched share) is matched to two receipt lines of the same order line.
+# One vendor invoice line (net 202.43 CHF; the matched share of each receipt line is 101.215 CHF) is matched to two receipt lines of the same order line.
 # The invoice share and the receipt value are not on the cent grid (101.215 / 133.444), so the MatchInv legs
 # (stock share -32.229, sold share 0) end up with a rest of a cent against the invoice-clearing and receipt amounts,
 # and the posting is refused with "Invalid accounting operation structure".
