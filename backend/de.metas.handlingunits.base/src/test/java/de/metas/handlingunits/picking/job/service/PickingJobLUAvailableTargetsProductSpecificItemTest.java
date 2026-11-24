@@ -9,7 +9,11 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import lombok.NonNull;
+import lombok.Value;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -67,6 +71,7 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 	private HUTestHelper huTestHelper;
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
+	private IHUPIItemProductDAO huPIItemProductDAO;
 
 	private ProductId productA; // picked
 	private ProductId productB; // another product
@@ -83,6 +88,7 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 		huTestHelper = helper.getHuTestHelper();
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 		productA = BusinessTestHelper.createProductId("P-A", helper.uomEach);
@@ -105,9 +111,15 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 	 */
 	private I_M_HU_PI createLUPIWithOnlyProductItem(final String name, final ProductId itemProductId)
 	{
+		return createLUPIWithOnlyProductItem(name, itemProductId, null);
+	}
+
+	private I_M_HU_PI createLUPIWithOnlyProductItem(final String name, final ProductId itemProductId, @Nullable final BPartnerId itemPartnerId)
+	{
 		final I_M_HU_PI luPI = huTestHelper.createHUDefinition(name, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		final I_M_HU_PI_Item item = huTestHelper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("40"));
 		item.setM_Product_ID(itemProductId.getRepoId());
+		item.setC_BPartner_ID(BPartnerId.toRepoId(itemPartnerId));
 		InterfaceWrapperHelper.save(item);
 		return luPI;
 	}
@@ -286,36 +298,121 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 	}
 
 	/**
-	 * Job with a line of A picked in TUs and a line of B picked in CUs: the job-level list is the union of the line lists.
+	 * A line of the job to create: its product and its TU packing instruction ({@code null}: no TU packing, so the line is picked in CUs).
 	 */
-	@Test
-	void jobLevel_isTheUnionOfTheLines()
+	@Value(staticConstructor = "of")
+	private static class JobLineSpec
 	{
-		final I_M_HU_PI luPIForA = createLUPIWithOnlyProductItem("PALLET-A", productA);
-		final I_M_HU_PI luPIForB = createLUPIWithOnlyProductItem("PALLET-B", productB);
+		@NonNull ProductId productId;
+		@Nullable I_M_HU_PI_Item_Product tuPIItemProduct;
+	}
 
-		final OrderAndLineId lineA = helper.createOrderAndLineId("salesOrder1");
-		final I_C_OrderLine orderLineB = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
-		orderLineB.setC_Order_ID(lineA.getOrderRepoId());
-		InterfaceWrapperHelper.save(orderLineB);
-		final OrderAndLineId lineB = OrderAndLineId.ofRepoIds(lineA.getOrderRepoId(), orderLineB.getC_OrderLine_ID());
+	private PickingJob createPickingJob(final JobLineSpec... lineSpecs)
+	{
+		final OrderAndLineId firstLine = helper.createOrderAndLineId("salesOrder1");
+		for (int i = 0; i < lineSpecs.length; i++)
+		{
+			final OrderAndLineId orderAndLineId;
+			if (i == 0)
+			{
+				orderAndLineId = firstLine;
+			}
+			else
+			{
+				final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
+				orderLine.setC_Order_ID(firstLine.getOrderRepoId());
+				InterfaceWrapperHelper.save(orderLine);
+				orderAndLineId = OrderAndLineId.ofRepoIds(firstLine.getOrderRepoId(), orderLine.getC_OrderLine_ID());
+			}
 
-		helper.packageable().orderAndLineId(lineA).productId(productA).huPIItemProductId(HUPIItemProductId.ofRepoId(tuPIIP_A.getM_HU_PI_Item_Product_ID())).qtyToDeliver("30").build();
-		helper.packageable().orderAndLineId(lineB).productId(productB).huPIItemProductId(null).qtyToDeliver("30").build();
+			final I_M_HU_PI_Item_Product tuPIItemProduct = lineSpecs[i].getTuPIItemProduct();
+			helper.packageable()
+					.orderAndLineId(orderAndLineId)
+					.productId(lineSpecs[i].getProductId())
+					.huPIItemProductId(tuPIItemProduct != null ? HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()) : null)
+					.qtyToDeliver("30")
+					.build();
+		}
+
 		final PickingJob pickingJob = helper.pickingJobService.createPickingJob(
 						PickingJobCreateRequest.builder()
 								.aggregationType(PickingJobAggregationType.SALES_ORDER)
 								.pickerId(UserId.ofRepoId(1234))
-								.salesOrderId(lineA.getOrderId())
+								.salesOrderId(firstLine.getOrderId())
 								.deliveryBPLocationId(helper.shipToBPLocationId)
 								.isAllowPickingAnyHU(true)
 								.build())
 				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
-		assertThat(pickingJob.getLines()).extracting(PickingJobLine::getProductId, PickingJobLine::getPickingUnit)
-				.containsExactlyInAnyOrder(tuple(productA, PickingUnit.TU), tuple(productB, PickingUnit.CU));
+		assertThat(pickingJob.getLines()).hasSize(lineSpecs.length);
+		return pickingJob;
+	}
 
-		// A in TUs: generic + A's pallet; B in CUs: generic only
-		assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA)).doesNotContain(idOf(luPIForB));
+	/**
+	 * The job-level list (no line given) is the union of the line lists.
+	 */
+	@Nested
+	class JobLevel
+	{
+		@Test
+		void tuLineAndCuLine_unionOfTheLineLists()
+		{
+			final I_M_HU_PI luPIForA = createLUPIWithOnlyProductItem("PALLET-A", productA);
+			final I_M_HU_PI luPIForB = createLUPIWithOnlyProductItem("PALLET-B", productB);
+			final PickingJob pickingJob = createPickingJob(JobLineSpec.of(productA, tuPIIP_A), JobLineSpec.of(productB, null));
+			assertThat(pickingJob.getLines()).extracting(PickingJobLine::getProductId, PickingJobLine::getPickingUnit)
+					.containsExactlyInAnyOrder(tuple(productA, PickingUnit.TU), tuple(productB, PickingUnit.CU));
+
+			// A in TUs: generic + A's pallet; B in CUs: generic only
+			assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA)).doesNotContain(idOf(luPIForB));
+		}
+
+		@Test
+		void severalLinesOfTheSameProduct_sameListAsOneLine()
+		{
+			final I_M_HU_PI luPIForA = createLUPIWithOnlyProductItem("PALLET-A", productA);
+			final I_M_HU_PI luPIForB = createLUPIWithOnlyProductItem("PALLET-B", productB);
+			final PickingJob pickingJob = createPickingJob(JobLineSpec.of(productA, tuPIIP_A), JobLineSpec.of(productA, tuPIIP_A), JobLineSpec.of(productA, tuPIIP_A));
+
+			assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA)).doesNotContain(idOf(luPIForB));
+		}
+
+		/**
+		 * Without product-specific items, the list is what the product-agnostic lookup over all the job's TU items returned before.
+		 */
+		@Test
+		void genericSetup_severalProducts_sameAsTheProductAgnosticLookup()
+		{
+			final I_M_HU_PI boxPI = huTestHelper.createHUDefinition("BOX", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			final I_M_HU_PI_Item_Product boxPIIP_B = huTestHelper.assignProduct(huTestHelper.createHU_PI_Item_Material(boxPI), productB, new BigDecimal("6"), helper.uomEach);
+			final I_M_HU_PI boxLUPI = huTestHelper.createHUDefinition("BOX-PALLET", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			huTestHelper.createHU_PI_Item_IncludedHU(boxLUPI, boxPI, new BigDecimal("50"));
+			final PickingJob pickingJob = createPickingJob(JobLineSpec.of(productA, tuPIIP_A), JobLineSpec.of(productB, boxPIIP_B), JobLineSpec.of(productA, null));
+
+			final ImmutableSet<HuPackingInstructionsItemId> allTUPIItemIds = huPIItemProductDAO.retrieveForProducts(ImmutableSet.of(productA, productB), pickingJob.getCustomerId())
+					.stream()
+					.map(itemProduct -> HuPackingInstructionsItemId.ofRepoId(itemProduct.getM_HU_PI_Item_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			final List<HuPackingInstructionsId> productAgnosticResult = toLUPIIdsOf(handlingUnitsDAO.retrieveParentLUPIs(allTUPIItemIds, pickingJob.getCustomerId()));
+
+			assertThat(productAgnosticResult).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(boxLUPI));
+			assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrderElementsOf(productAgnosticResult);
+		}
+	}
+
+	/**
+	 * An item for a partner and a product is used only for that partner's job and that product.
+	 */
+	@Test
+	void partnerAndProductItem_offeredOnlyForThatPartner()
+	{
+		final BPartnerId jobCustomerId = helper.shipToBPLocationId.getBpartnerId();
+		final BPartnerId otherPartnerId = helper.createBPartnerAndLocationId("other-partner").getBpartnerId();
+		final I_M_HU_PI luPIForCustomerAndA = createLUPIWithOnlyProductItem("PALLET-CUSTOMER-A", productA, jobCustomerId);
+		final I_M_HU_PI luPIForOtherPartnerAndA = createLUPIWithOnlyProductItem("PALLET-OTHER-A", productA, otherPartnerId);
+		final PickingJob pickingJob = createPickingJob(JobLineSpec.of(productA, tuPIIP_A));
+
+		assertThat(lineLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForCustomerAndA)).doesNotContain(idOf(luPIForOtherPartnerAndA));
+		assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForCustomerAndA));
 	}
 
 	private static List<HuPackingInstructionsId> toLUPIIdsOf(final Set<HuPackingInstructionsIdAndCaption> luPIs)

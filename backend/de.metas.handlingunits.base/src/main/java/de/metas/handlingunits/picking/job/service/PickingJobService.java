@@ -12,6 +12,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.ParentLUPIsQuery;
 import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
@@ -84,13 +85,11 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -543,31 +542,35 @@ public class PickingJobService implements PickingSlotListener
 	{
 		final BPartnerId customerId = pickingJob.getCustomerId();
 
-		final ImmutableSet<HuPackingInstructionsIdAndCaption> luPIs;
+		final ImmutableSet<ParentLUPIsQuery> queries;
 		if (lineId != null)
 		{
 			final PickingJobLine line = pickingJob.getLineById(lineId);
-			luPIs = ImmutableSet.copyOf(huService.getLUPIsForProduct(getTUPIItems(pickingJob, lineId), customerId, getProductForNewLU(line)));
+			queries = ImmutableSet.of(ParentLUPIsQuery.of(getTUPIItems(pickingJob, lineId), getProductForNewLU(line)));
 		}
 		else
 		{
-			// One lookup per product the new LU is built for (null: lines picked in CUs), over the TU items of those lines' products.
-			// The TU items are looked up with the job's customer, as before.
-			final Map<Optional<ProductId>, ImmutableSet<ProductId>> productIdsByProductForNewLU = pickingJob.streamLines()
-					.collect(Collectors.groupingBy(
-							line -> Optional.ofNullable(getProductForNewLU(line)),
-							LinkedHashMap::new,
-							Collectors.mapping(PickingJobLine::getProductId, ImmutableSet.toImmutableSet())));
-
-			luPIs = productIdsByProductForNewLU.entrySet()
-					.stream()
-					.flatMap(entry -> huService.getLUPIsForProduct(getTUPIItems(entry.getValue(), customerId), customerId, entry.getKey().orElse(null)).stream())
-					.collect(ImmutableSet.toImmutableSet());
+			// The TU items of all the job's products, looked up once with the job's customer (as before).
+			final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huService.getPIItemProducts(pickingJob.getProductIds(), customerId);
+			queries = pickingJob.streamLines()
+					.map(line -> ParentLUPIsQuery.of(toTUPIItemIdsUsableFor(tuPIItemProducts, line.getProductId()), getProductForNewLU(line)))
+					.collect(ImmutableSet.toImmutableSet()); // several lines of the same product and picking unit make one query
 		}
 
-		return luPIs.stream()
+		return huService.getLUPIsForProducts(queries, customerId)
+				.stream()
 				.map(PickingJobService::toPickingTarget)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ImmutableSet<HuPackingInstructionsItemId> toTUPIItemIdsUsableFor(
+			@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts,
+			@NonNull final ProductId productId)
+	{
+		return tuPIItemProducts.stream()
+				.filter(itemProduct -> itemProduct.isAllowAnyProduct() || itemProduct.getM_Product_ID() == productId.getRepoId())
+				.map(itemProduct -> HuPackingInstructionsItemId.ofRepoId(itemProduct.getM_HU_PI_Item_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**

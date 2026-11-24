@@ -407,6 +407,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 			@Nullable BPartnerId bpartnerId,
 			@Nullable ProductId productId);
 
+	/**
+	 * @return the union of {@link #retrieveParentLUPIsForProduct(Set, BPartnerId, ProductId)} over the given queries.
+	 * If no parent item reachable from the queries' items is product-specific, this costs a single walk, like {@link #retrieveParentLUPIs(Set, BPartnerId)}.
+	 */
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProducts(
+			@NonNull Collection<ParentLUPIsQuery> queries,
+			@Nullable BPartnerId bpartnerId);
+
 	@NonNull
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
 

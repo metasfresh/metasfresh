@@ -40,6 +40,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.ParentLUPIsQuery;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.IHUBuilder;
@@ -1567,12 +1568,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public Set<HuPackingInstructionsIdAndCaption> getLUPIsForProduct(
-			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
-			@Nullable final BPartnerId bpartnerId,
-			@Nullable final ProductId productId)
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIsForProducts(
+			@NonNull final Collection<ParentLUPIsQuery> queries,
+			@Nullable final BPartnerId bpartnerId)
 	{
-		return handlingUnitsRepo.retrieveParentLUPIsForProduct(tuPIItemIds, bpartnerId, productId);
+		return handlingUnitsRepo.retrieveParentLUPIsForProducts(queries, bpartnerId);
 	}
 
 	@Override
