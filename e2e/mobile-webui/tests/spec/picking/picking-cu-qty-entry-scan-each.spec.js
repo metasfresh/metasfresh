@@ -5,6 +5,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { allureMeta, MSG_NO_OPEN_BOX, newFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
+import { buildCULabel, uniqueGTIN } from "../../utils/cuLabel";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -263,6 +264,43 @@ test('buyer B line (Scan each CU, pack-ID format): a label without counter (L0) 
     });
 
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
+});
+
+const MSG_FORMAT_MISMATCH = 'The label does not match the label format of the picking profile';
+
+// noinspection JSUnusedLocalSymbols
+test('Scan each CU: a label the format rejects is refused and nothing is booked, not even by the product GTIN; the line goes on with a valid label', async ({ page }) => {
+    allureMeta('Scan each CU rejects a label of another form');
+
+    // The product carries the GTIN printed on the label: if a rejected label fell back to the GTIN lookup, it would book the product.
+    const gtin = uniqueGTIN();
+    const masterdata = await newMasterdata({
+        orders: [{ key: 'A', qty: 3 }],
+        products: { P1: { price: 1, gtin, randomValue: { size: 7, isIncludeDigits: true } } },
+    });
+    const lot = uniqueLot();
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
+    await openScanEachLine({ index: 1 });
+
+    const validLabel = buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 });
+    await test.step('a label with a "]d2" prefix (a form the format does not read) is refused, nothing is booked', async () => {
+        await PickLineScanScreen.scanCULabelRefused(']d2' + validLabel, MSG_FORMAT_MISMATCH);
+    });
+    await test.step('a bare GTIN is refused, nothing is booked', async () => {
+        await PickLineScanScreen.scanCULabelRefused(gtin, MSG_FORMAT_MISMATCH);
+    });
+    await test.step('a string of another shape is refused, nothing is booked', async () => {
+        await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', MSG_FORMAT_MISMATCH);
+    });
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
+
+    await test.step('the valid label of the same pack books one CU: the refusals left the line untouched', async () => {
+        await scanPack(validLabel);
+    });
+    await Backend.expect({
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } },
+        hus: { vhu1: { attributes: { 'Lot-Nummer': lot, PackId: '1' } } },
+    });
 });
 
 // noinspection JSUnusedLocalSymbols

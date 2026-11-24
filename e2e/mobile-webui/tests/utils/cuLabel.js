@@ -2,12 +2,11 @@
 // Pure functions: no Playwright import, usable from node and from the specs.
 //
 // Label layout (test values only):
-//   01 GTIN(14) | 91 product value (variable, GS) | 17 best-before yyMMdd | 10 lot (variable) | [GS 92 pack ID (variable)]
-// Raw scanner form: AI digits, GS = \u001d, no "]d2" prefix.
+//   01 GTIN(14) | 91 product value(7) | 17 best-before yyMMdd(6) | 10 lot(9) | [92 pack ID (variable)]
+// Raw scanner form as agreed with the customer: 47 characters with a pack ID of one digit, no separator characters (scanner setting
+// "Send Control Characters as Events" OFF: the two GS characters of the printed code are dropped), no "]d2" prefix.
 
 import { computeGS1CheckDigit, randomDigits } from './gs1.js';
-
-export const GS = '\u001d';
 
 /** Product value length in the label. */
 const PRODUCT_VALUE_LENGTH = 7;
@@ -72,9 +71,9 @@ export const buildCULabel = ({ gtin, productValue, lot, bestBefore = '2026-11-07
     if (!/^\d{14}$/.test(gtin)) {
         throw new Error(`buildCULabel: gtin must be 14 digits, got '${gtin}'`);
     }
-    let label = `01${gtin}91${productValue}${GS}17${toYYMMDD(bestBefore)}10${lot}`;
+    let label = `01${gtin}91${productValue}17${toYYMMDD(bestBefore)}10${lot}`;
     if (packId !== null && packId !== undefined) {
-        label += `${GS}92${packId}`;
+        label += `92${packId}`;
     }
     return label;
 };
@@ -82,9 +81,9 @@ export const buildCULabel = ({ gtin, productValue, lot, bestBefore = '2026-11-07
 /**
  * Builds a scannable-code format (the shape of `customQRCodeFormats` in the masterdata fixtures).
  *
- * Positions follow the label above: markers `01` 1-2, `91` 17-18, `17` 27-28, `10` 35-36,
- * data PRODUCT_CODE 19-25, BEST_BEFORE_DATE 29-34 (yyMMdd), LOT 37-45.
- * withPackId=true adds the `92` marker 47-48 and the pack-ID part 49 with no endPosition (open end).
+ * Positions follow the 47-character label above: markers `01` 1-2, `91` 17-18, `17` 26-27, `10` 34-35,
+ * data PRODUCT_CODE 19-25, BEST_BEFORE_DATE 28-33 (yyMMdd), LOT 36-44.
+ * withPackId=true adds the `92` marker 45-46 and the pack-ID part 47 with no endPosition (open end).
  * withPackId=false keeps only the four markers, so a label without a counter still parses; the
  * counter tail of a longer label is ignored by that format.
  *
@@ -102,15 +101,15 @@ export const buildCULabelFormat = ({ name, withPackId = false }) => {
         { startPosition: 1, endPosition: 2, type: 'CONSTANT', constantValue: '01' },
         { startPosition: 17, endPosition: 18, type: 'CONSTANT', constantValue: '91' },
         { startPosition: 19, endPosition: 25, type: 'PRODUCT_CODE' },
-        { startPosition: 27, endPosition: 28, type: 'CONSTANT', constantValue: '17' },
-        { startPosition: 29, endPosition: 34, type: 'BEST_BEFORE_DATE', dateFormat: 'yyMMdd' },
-        { startPosition: 35, endPosition: 36, type: 'CONSTANT', constantValue: '10' },
-        { startPosition: 37, endPosition: 45, type: 'LOT' },
+        { startPosition: 26, endPosition: 27, type: 'CONSTANT', constantValue: '17' },
+        { startPosition: 28, endPosition: 33, type: 'BEST_BEFORE_DATE', dateFormat: 'yyMMdd' },
+        { startPosition: 34, endPosition: 35, type: 'CONSTANT', constantValue: '10' },
+        { startPosition: 36, endPosition: 44, type: 'LOT' },
     ];
 
     if (withPackId) {
-        parts.push({ startPosition: 47, endPosition: 48, type: 'CONSTANT', constantValue: '92' });
-        parts.push({ startPosition: 49, type: PACK_ID_PART_TYPE });
+        parts.push({ startPosition: 45, endPosition: 46, type: 'CONSTANT', constantValue: '92' });
+        parts.push({ startPosition: 47, type: PACK_ID_PART_TYPE });
     }
 
     return { name, parts };
