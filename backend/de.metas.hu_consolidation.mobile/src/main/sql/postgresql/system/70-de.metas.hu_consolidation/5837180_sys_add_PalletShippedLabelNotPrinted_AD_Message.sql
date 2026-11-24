@@ -45,7 +45,7 @@ FROM AD_Language l, AD_Message t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=546025
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
-UPDATE AD_Message_Trl SET IsTranslated='Y',MsgText='Printing failed.',Updated=TO_TIMESTAMP('2026-11-24 13:05:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+UPDATE AD_Message_Trl SET IsTranslated='Y',MsgText='Error while printing.',Updated=TO_TIMESTAMP('2026-11-24 13:05:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
 WHERE AD_Language='en_US' AND AD_Message_ID=546025
 ;
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-11-24 13:05:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100

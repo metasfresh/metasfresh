@@ -21,6 +21,7 @@
     "scanGRAI": "GRAI scannen, um TU auszuwählen"
   },
   "CompleteActivity": {
-    "ok": "OK"
+    "ok": "OK",
+    "completed": "Fertiggestellt und versendet."
   }
 }

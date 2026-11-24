@@ -51,9 +51,12 @@ public class HUConsolidationTargetCloser
 		}
 		catch (final AdempiereException labelError)
 		{
-			// e.g. no label config applies; thrown when the returned print runs
+			// thrown when the returned print runs
+			final HUConsolidationLabelNotPrintedException labelNotPrinted = labelPrinter.isLabelConfigured(target)
+					? HUConsolidationLabelNotPrintedException.printFailed(labelError)
+					: HUConsolidationLabelNotPrintedException.noLabelConfig(labelError);
 			return () -> {
-				throw HUConsolidationLabelNotPrintedException.noLabelConfig(labelError);
+				throw labelNotPrinted;
 			};
 		}
 	}

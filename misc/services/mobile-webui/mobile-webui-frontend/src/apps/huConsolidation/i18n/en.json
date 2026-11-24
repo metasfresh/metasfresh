@@ -21,6 +21,7 @@
     "scanGRAI": "Scan GRAI to select TU"
   },
   "CompleteActivity": {
-    "ok": "OK"
+    "ok": "OK",
+    "completed": "Completed and shipped."
   }
 }

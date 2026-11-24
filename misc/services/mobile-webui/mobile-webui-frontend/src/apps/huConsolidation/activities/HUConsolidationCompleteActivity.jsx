@@ -13,16 +13,21 @@ import { setActivityProcessing, updateWFProcess } from '../../../actions/Workflo
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { usePositiveNumberSetting } from '../../../reducers/settings';
 import { trl } from '../../../utils/translations';
+import * as uiTrace from '../../../utils/ui_trace';
 
 /**
  * "Complete" of an HU consolidation job: on success, shows the job list.
- * If the request fails but the reloaded job is completed anyway, shows the error in a dialog whose OK shows the job list.
+ * If the request fails but the reloaded job is completed anyway, shows a dialog whose OK shows the job list:
+ * with the server's error, or (no response) a text saying the job is completed.
+ * <p>
+ * Mirrors the shared containers/activities/confirmButton/ConfirmActivity.jsx (send guard, UI trace events, network-error panel)
+ * on purpose, to leave that component unchanged for the other apps: mirror fixes made there.
  */
 const HUConsolidationCompleteActivity = ({ applicationId, wfProcessId, activityId, activityState, isLastActivity }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
-  const [networkErrorMessage, setNetworkErrorMessage] = useState(null);
-  const [completedWithErrorMessage, setCompletedWithErrorMessage] = useState(null);
+  /** @type {[{kind: 'completed'|'networkError', message: string}|null, function]} */
+  const [failure, setFailure] = useState(null);
   // Synchronous guard: isProcessing only re-flows via Redux on the next render, so a fast double-tap would send two requests.
   const sendingRef = useRef(false);
 
@@ -41,23 +46,37 @@ const HUConsolidationCompleteActivity = ({ applicationId, wfProcessId, activityI
   const sendConfirmation = () => {
     if (sendingRef.current) return;
     sendingRef.current = true;
-    setNetworkErrorMessage(null);
+    setFailure(null);
     dispatch(setActivityProcessing({ wfProcessId, activityId, processing: true }));
     postUserConfirmation({ wfProcessId, activityId, timeoutMillis })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
+        uiTrace.trace({ eventName: 'confirmationPosted', wfProcessId, activityId });
         goToJobList();
       })
       .catch((axiosError) => {
-        const message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
         const isNetworkFailure = !axiosError?.response;
+        const message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
         return reloadJobAndCheckCompleted()
           .catch(() => false)
           .then((isCompleted) => {
+            uiTrace.trace({
+              eventName: 'confirmationFailed',
+              wfProcessId,
+              activityId,
+              httpStatus: axiosError?.response?.status ?? null,
+              axiosCode: axiosError?.code ?? null,
+              isNetworkFailure,
+              message,
+              isCompleted,
+            });
             if (isCompleted) {
-              setCompletedWithErrorMessage(message);
+              setFailure({
+                kind: 'completed',
+                message: isNetworkFailure ? trl('huConsolidation.CompleteActivity.completed') : message,
+              });
             } else if (isNetworkFailure) {
-              setNetworkErrorMessage(message);
+              setFailure({ kind: 'networkError', message });
             } else {
               toastError({ axiosError });
             }
@@ -71,12 +90,12 @@ const HUConsolidationCompleteActivity = ({ applicationId, wfProcessId, activityI
 
   return (
     <div className="mt-5">
-      {completedWithErrorMessage && (
+      {failure?.kind === 'completed' && (
         <Dialog
           className="huConsolidation-completed-with-error-dialog"
           testId="huConsolidation-completed-with-error-dialog"
         >
-          <p className="mb-3">{completedWithErrorMessage}</p>
+          <p className="mb-3">{failure.message}</p>
           <div className="buttons is-centered">
             <DialogButton
               testId="huConsolidation-completed-with-error-ok"
@@ -92,17 +111,17 @@ const HUConsolidationCompleteActivity = ({ applicationId, wfProcessId, activityI
         caption={activityState.caption}
         promptQuestion={activityState.componentProps?.question}
         userInstructions={activityState.userInstructions}
-        isUserEditable={activityState.dataStored.isUserEditable && !networkErrorMessage && !completedWithErrorMessage}
+        isUserEditable={activityState.dataStored.isUserEditable && !failure}
         isProcessing={activityState.dataStored.processing}
         completeStatus={activityState.dataStored.completeStatus}
         onUserConfirmed={sendConfirmation}
       />
-      {networkErrorMessage && (
+      {failure?.kind === 'networkError' && (
         <div className="notification is-danger mt-3" data-testid="confirm-activity-error-panel">
           <p className="mb-3">
             <strong>{trl('activities.confirmButton.error.title')}</strong>
           </p>
-          <p className="mb-3">{networkErrorMessage}</p>
+          <p className="mb-3">{failure.message}</p>
           <div className="buttons">
             <ButtonWithIndicator
               testId="confirm-activity-error-retry"
@@ -114,7 +133,7 @@ const HUConsolidationCompleteActivity = ({ applicationId, wfProcessId, activityI
               testId="confirm-activity-error-cancel"
               captionKey="activities.confirmButton.error.cancel"
               disabled={activityState.dataStored.processing}
-              onClick={() => setNetworkErrorMessage(null)}
+              onClick={() => setFailure(null)}
             />
           </div>
         </div>
