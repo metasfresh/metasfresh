@@ -415,9 +415,9 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			assertSplit("133.444", "101.215", "0.914", "2.413", "133.44", "32.22", "0", true);
 		}
 
-		/** Two legs with a half-cent tie: 2585 x 2.309 / 9.4 = 634.975 rounds to 634.98 only if the multiplication comes before the division. */
+		/** Two legs with a half-cent tie: the stock share 2585 x 2.309 / 9.4 = 634.975 rounds HALF_UP to 634.98, the sold share is 1950.02. */
 		@Test
-		void twoLegs_halfCentTie_multiplyFirst()
+		void twoLegs_halfCentTie_roundsHalfUp()
 		{
 			assertSplit("2585.00", "0", "9.4", "2.309", "2585", "634.98", "1950.02", true);
 		}
