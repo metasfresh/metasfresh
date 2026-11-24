@@ -102,6 +102,32 @@ export const Backend = {
 
       return responseBody;
     }),
+
+  /**
+   * Describe HUs by id (read-only), e.g. pallets built by a WebUI action whose ids are known only at runtime.
+   * @param {Object} options
+   * @param {Array<number|string>} options.huIds - M_HU_IDs to describe
+   * @returns {Promise<Array<{huId: number, topLevelHuId: number, huUnitType: string, storages: Object<string, string>, includedTUsCount: number, tuParentPIItemQtys: number[]}>>}
+   *   one entry per HU; storages map M_Product.Value to "<qty> <X12DE355>" (e.g. "160 PCE")
+   */
+  describeHUs: async ({ huIds }) =>
+    await test.step(`Backend: describe HUs ${huIds}`, async () => {
+      const page = getPage();
+      const backendBaseUrl = await getBackendBaseUrl();
+
+      const response = await page.request.post(
+        `${backendBaseUrl}/frontendTesting/describeHUs`,
+        {
+          data: { huIds: huIds.map((huId) => Number(huId)) },
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      const responseBody = await response.json();
+      assertNoErrors({ responseBody });
+
+      return responseBody.hus;
+    }),
 };
 
 // Cached testing API base URL
