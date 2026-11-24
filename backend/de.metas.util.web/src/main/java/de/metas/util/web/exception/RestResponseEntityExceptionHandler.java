@@ -42,6 +42,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import javax.annotation.Nullable;
 
@@ -105,6 +107,16 @@ public class RestResponseEntityExceptionHandler
 				e,
 				"At least one record already existed in the system:" + e.getMessage(),
 				HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
+	/**
+	 * Unknown route. Since Spring 6.1, Spring MVC throws these instead of sending a 404 itself, so without this handler the catch-all
+	 * {@link #handleException(Exception)} would answer 422.
+	 */
+	@ExceptionHandler({ NoResourceFoundException.class, NoHandlerFoundException.class })
+	public ResponseEntity<JsonError> handleNoResourceOrHandlerFound(@NonNull final Exception e)
+	{
+		return logAndCreateError(e, HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(Exception.class)
