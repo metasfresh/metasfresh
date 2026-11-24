@@ -29,7 +29,14 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 /**
  * REST message converter shared by the metasfresh REST entrypoints (app server and webui-api).
  * <p>
- * The converter's mapper is like the shared (strict) {@code @Primary} mapper, but tolerant of unknown request properties, as the pre-JDK25 REST layer was.
+ * The converter's mapper is the shared {@code @Primary} mapper's configuration, plus the settings of the pre-JDK25 REST converter mapper
+ * ({@code Jackson2ObjectMapperBuilder.json()} under springfox's {@code @EnableWebMvc}) that matter on the wire:
+ * <ul>
+ * <li>tolerant of unknown request properties;</li>
+ * <li>date/time values written as timestamps (epoch seconds/milliseconds, {@code java.time} local types as arrays), not as ISO strings;</li>
+ * <li>zoned/offset date/time request values adjusted to UTC.</li>
+ * </ul>
+ * See {@link JsonObjectMapperHolder#newHttpMessageConverterJsonObjectMapper()} for the details.
  * Spring Boot's own converter auto-configuration backs off in favour of this bean.
  * <p>
  * Deliberately <b>not</b> a {@code @Configuration}: it is not picked up by component scanning, but {@code @Import}-ed explicitly by the
