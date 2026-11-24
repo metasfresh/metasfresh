@@ -64,7 +64,7 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     expect(onReadDone).toHaveBeenCalledWith('ABC');
   });
 
-  it('keeps the old behaviour for other targets (a slow pair is buffered)', () => {
+  it('keeps the buffering for other targets (a slow pair is buffered)', () => {
     const onReadDone = jest.fn();
     const { container } = render(<Harness onReadDone={onReadDone} />);
     const other = container.querySelector('#own-scanner-input');

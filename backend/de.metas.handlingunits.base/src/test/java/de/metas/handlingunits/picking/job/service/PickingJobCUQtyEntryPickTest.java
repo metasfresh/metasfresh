@@ -99,7 +99,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 /**
- * The new-mode pick ({@code SCAN_ONCE_ENTER_QTY}) through the real pick command path
+ * The label-based-mode pick ({@code SCAN_ONCE_ENTER_QTY}) through the real pick command path
  * ({@link PickingJobService#processStepEvent}): label read, CUs counted on TU lines, open-box refusal, one CU of N.
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -321,11 +321,11 @@ class PickingJobCUQtyEntryPickTest
 				.orElseThrow(() -> new AssertionError("no CU of " + qty + " in box " + boxId));
 	}
 
-	/** a new-mode line counts CUs even when its packing is a box (TU) packing: the line's picking unit is CU and the quantities are in CUs (100 CU, not 25 TU) */
-	private void assertNewModeLineCountsCUs(final PickingJob job)
+	/** a label-based-mode line counts CUs even when its packing is a box (TU) packing: the line's picking unit is CU and the quantities are in CUs (100 CU, not 25 TU) */
+	private void assertLabelBasedLineCountsCUs(final PickingJob job)
 	{
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
-		assertThat(line.getPickingUnit().isCU()).as("new mode: picking unit is CU").isTrue();
+		assertThat(line.getPickingUnit().isCU()).as("label-based mode: picking unit is CU").isTrue();
 		assertThat(line.getQtyToPick().toBigDecimal()).as("qty to pick in CUs").isEqualByComparingTo("100");
 		assertThat(line.getQtyRemainingToPick().toBigDecimal()).as("qty remaining in CUs").isEqualByComparingTo("100");
 	}
@@ -538,7 +538,7 @@ class PickingJobCUQtyEntryPickTest
 		 * (not passed as a flag). Scan-each-CU picks the CU itself, which sits in a box without GRAI: the box is the GRAI carrier, so completion is refused.
 		 */
 		@Test
-		void newMode_cuPickedInBoxWithoutGrai_graiRequiredYes_isRefused()
+		void labelBasedMode_cuPickedInBoxWithoutGrai_graiRequiredYes_isRefused()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -596,7 +596,7 @@ class PickingJobCUQtyEntryPickTest
 		 * so the box without GRAI still refuses completion.
 		 */
 		@Test
-		void newModePick_thenModeSwitchedToManual_cuPickedInBoxWithoutGrai_isStillRefused()
+		void labelBasedModePick_thenModeSwitchedToManual_cuPickedInBoxWithoutGrai_isStillRefused()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -611,9 +611,9 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
-		/** The reverse switch: a job picked in Manual, then the customer is switched to a new mode: the box is checked as picked (as on the base branch), not looked up by the CU rule. */
+		/** The reverse switch: a job picked in Manual, then the customer is switched to a label-based mode: the box is checked as picked (as on the base branch), not looked up by the CU rule. */
 		@Test
-		void manualPick_thenModeSwitchedToNewMode_boxWithoutGrai_isRefusedAsBefore()
+		void manualPick_thenModeSwitchedToLabelBasedMode_boxWithoutGrai_isRefusedAsBefore()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -708,7 +708,7 @@ class PickingJobCUQtyEntryPickTest
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = sourceBox("QR-A");
 			PickingJob job = createJob(tuPiipId, true);
-			assertNewModeLineCountsCUs(job);
+			assertLabelBasedLineCountsCUs(job);
 			job = openBoxFromLinePacking(job);
 
 			job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
@@ -802,9 +802,9 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("the source box keeps the rest").isEqualByComparingTo("3");
 		}
 
-		/** new mode, open box, PICK with cuLabel = null: refused as a contract violation (no user message), nothing booked. */
+		/** label-based mode, open box, PICK with cuLabel = null: refused as a contract violation (no user message), nothing booked. */
 		@Test
-		void newMode_noCuLabel_refused()
+		void labelBasedMode_noCuLabel_refused()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = sourceBox("QR-J");
@@ -870,9 +870,9 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 		}
 
-		/** Manual: no flag and no refusal: a TU line without a TU target is booked as today (the full TU, not a partial one). */
+		/** Manual: no flag and no refusal: a TU line without a TU target is booked (the full TU, not a partial one). */
 		@Test
-		void manual_noTarget_notRefused_todaysFullTU()
+		void manual_noTarget_notRefused_fullTU()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-E");
@@ -884,11 +884,11 @@ class PickingJobCUQtyEntryPickTest
 			final ImmutableSet<HuId> picked = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
 			assertThat(picked).hasSize(1);
 			final I_M_HU pickedHU = handlingUnitsBL.getById(picked.iterator().next());
-			assertThat(handlingUnitsBL.isTransportUnitOrAggregate(pickedHU)).as("today: the picked HU is the box (TU)").isTrue();
+			assertThat(handlingUnitsBL.isTransportUnitOrAggregate(pickedHU)).as("the picked HU is the box (TU)").isTrue();
 			assertThat(qtyOf(pickedHU)).isEqualByComparingTo("4");
 		}
 
-		/** Manual, virtual-packing line, no TU target, 5 from a box holding two pieces of 4: today's result, one picked HU of 5 without CUs. */
+		/** Manual, virtual-packing line, no TU target, 5 from a box holding two pieces of 4: the Manual result, one picked HU of 5 without CUs. */
 		@Test
 		void manual_fiveFromTwoPieces_noTarget_onePickedHUOf5()
 		{
@@ -905,7 +905,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOf(pickedId)).as("no CU split per source piece").isEmpty();
 		}
 
-		/** Manual, virtual-packing line, open box, 5 from a box holding two pieces of 4: today's result, one CU per source piece (4 + 1) in the box. */
+		/** Manual, virtual-packing line, open box, 5 from a box holding two pieces of 4: the Manual result, one CU per source piece (4 + 1) in the box. */
 		@Test
 		void manual_fiveFromTwoPieces_openBox_oneCUPerSourcePiece()
 		{
@@ -938,9 +938,9 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class ManualAndPallet
 	{
-		/** Manual (new-mode flags off), lots A then B into one open box: the TU lot is overwritten as today. */
+		/** Manual (label-based-mode flags off), lots A then B into one open box: the TU lot is overwritten. */
 		@Test
-		void manual_lotsAThenB_intoOneBox_lotOverwrittenAsToday()
+		void manual_lotsAThenB_intoOneBox_lotOverwritten()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-L");
@@ -950,12 +950,12 @@ class PickingJobCUQtyEntryPickTest
 
 			job = pick(job, source, "2", null, false, LOT_A);
 			final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
-			assertThat(handlingUnitsBL.isTransportUnitOrAggregate(handlingUnitsBL.getById(boxId))).as("today: the first booking's picked HU is the box").isTrue();
+			assertThat(handlingUnitsBL.isTransportUnitOrAggregate(handlingUnitsBL.getById(boxId))).as("the first booking's picked HU is the box").isTrue();
 			job = helper.pickingJobService.setTUPickingTarget(job, targetScope(job), TUPickingTarget.ofExistingHU(boxId, helper.huService.getQRCodeByHuId(boxId)));
 			job = pick(job, source2, "3", null, false, LOT_B);
 
 			assertThat(lotOf(handlingUnitsBL.getById(boxId))).as("TU lot overwritten by the second booking").isEqualTo(LOT_B);
-			assertThat(cusOf(boxId)).extracting(PickingJobCUQtyEntryPickTest.this::lotOf).as("today: the second lot is written on the whole box").containsOnly(LOT_B);
+			assertThat(cusOf(boxId)).extracting(PickingJobCUQtyEntryPickTest.this::lotOf).as("the second lot is written on the whole box").containsOnly(LOT_B);
 		}
 
 		/**
@@ -986,14 +986,14 @@ class PickingJobCUQtyEntryPickTest
 			job = undo(job, boxId, source.getQrCode(), null);
 
 			assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row of the box left").isEqualTo(0);
-			assertThat(pickedQtyOfLine(job)).as("nothing picked any more").isEqualByComparingTo("0");
+			assertThat(pickedQtyOfLine(job)).as("nothing picked").isEqualByComparingTo("0");
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
 		}
 
 		/**
 		 * Manual, CU line, pallet (LU) target and no box (TU): the real pick (the LU_CU structure, as in the over-picking Playwright spec)
 		 * puts the booked CU directly on the pallet. It is not a CU in a box, so the un-pick does not take the CU-in-box path and runs exactly
-		 * the code of before this feature: the HU is not picked any more, the line has nothing picked, and the QtyPicked row of the CU is
+		 * the Manual code: the HU is not picked, the line has nothing picked, and the QtyPicked row of the CU is
 		 * left as it is on the base branch (checked by running this test with the CU-in-box delete removed from the un-pick: same result).
 		 * <p>
 		 * KNOWN BASE DEFECT: the un-pick of a CU picked directly onto an LU leaves its {@code M_ShipmentSchedule_QtyPicked} row, because the
@@ -1026,7 +1026,7 @@ class PickingJobCUQtyEntryPickTest
 
 			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("KNOWN BASE DEFECT, pinned so Manual stays as base: the QtyPicked row of the CU is left; a fix of the defect must update this assertion").isEqualTo(1);
 			assertThat(countAllQtyPickedRows()).as("no other QtyPicked row was touched").isEqualTo(1);
-			assertThat(handlingUnitsBL.getById(pickedHuId).getHUStatus()).as("not picked any more").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(handlingUnitsBL.getById(pickedHuId).getHUStatus()).as("not picked").isEqualTo(X_M_HU.HUSTATUS_Active);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
 		}
@@ -1056,13 +1056,13 @@ class PickingJobCUQtyEntryPickTest
 	}
 
 	/**
-	 * New modes with a pallet (LU) target AND a new box (TU) target: the booking works as without a pallet. The box holds the booked CU,
+	 * Label-based modes with a pallet (LU) target AND a new box (TU) target: the booking works as without a pallet. The box holds the booked CU,
 	 * the box sits on the pallet, the picked HU is the CU (with its PackId in Scan each CU), and the un-pick of that CU removes only that CU.
 	 */
 	@Nested
-	class NewModeAndPallet
+	class LabelBasedModeAndPallet
 	{
-		private PickingJob jobWithPalletAndNewBox()
+		private PickingJob jobWithPalletAndBox()
 		{
 			final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-NM", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 			huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
@@ -1088,11 +1088,11 @@ class PickingJobCUQtyEntryPickTest
 
 		/** Scan each CU, pallet + new box, first scan: one CU of 1 with its PackId is booked, it is the picked HU and its box sits on the pallet. */
 		@Test
-		void scanEachCU_palletAndNewBox_firstScan_oneCUOfOneBooked()
+		void scanEachCU_palletAndBox_firstScan_oneCUOfOneBooked()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LU-EACH");
-			PickingJob job = jobWithPalletAndNewBox();
+			PickingJob job = jobWithPalletAndBox();
 
 			job = pickEach(job, source, LOT_A, "1");
 
@@ -1109,11 +1109,11 @@ class PickingJobCUQtyEntryPickTest
 
 		/** Scan once, pallet + new box, first booking of 3: the picked HU is the CU of 3, not the whole box, and its box sits on the pallet. */
 		@Test
-		void scanOnce_palletAndNewBox_firstBooking_pickedHUIsTheCU()
+		void scanOnce_palletAndBox_firstBooking_pickedHUIsTheCU()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LU-ONCE");
-			PickingJob job = jobWithPalletAndNewBox();
+			PickingJob job = jobWithPalletAndBox();
 
 			job = pick(job, source, "3", label(PRODUCT_NO, LOT_A), false, null);
 
@@ -1129,23 +1129,23 @@ class PickingJobCUQtyEntryPickTest
 
 		/** Scan once, pallet + new box, first booking fills the box (4 into a box of 4): as without a pallet, the box holds ONE CU of 4, sits on the pallet, the CU is the picked HU; undo removes it. */
 		@Test
-		void scanOnce_palletAndNewBox_firstBookingFillsTheBox_oneCUOf4_undo()
+		void scanOnce_palletAndBox_firstBookingFillsTheBox_oneCUOf4_undo()
 		{
-			assertPalletAndNewBox_firstBookingOfQty_oneCU_undo("4", "QR-LU-ONCE-FULL");
+			assertPalletAndBox_firstBookingOfQty_oneCU_undo("4", "QR-LU-ONCE-FULL");
 		}
 
 		/** Scan once, pallet + new box, first booking above the box capacity (5 into a box of 4): as without a pallet, ONE CU of 5 in one box on the pallet; undo removes it. */
 		@Test
-		void scanOnce_palletAndNewBox_firstBookingAboveBoxCapacity_oneCUOf5_undo()
+		void scanOnce_palletAndBox_firstBookingAboveBoxCapacity_oneCUOf5_undo()
 		{
-			assertPalletAndNewBox_firstBookingOfQty_oneCU_undo("5", "QR-LU-ONCE-OVER");
+			assertPalletAndBox_firstBookingOfQty_oneCU_undo("5", "QR-LU-ONCE-OVER");
 		}
 
-		private void assertPalletAndNewBox_firstBookingOfQty_oneCU_undo(final String qty, final String sourceQRCode)
+		private void assertPalletAndBox_firstBookingOfQty_oneCU_undo(final String qty, final String sourceQRCode)
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = helper.createVHUInfo(productId, "100", sourceQRCode);
-			PickingJob job = jobWithPalletAndNewBox();
+			PickingJob job = jobWithPalletAndBox();
 
 			job = pick(job, source, qty, label(PRODUCT_NO, LOT_A), false, null);
 
@@ -1165,18 +1165,18 @@ class PickingJobCUQtyEntryPickTest
 
 			assertThat(handlingUnitsBL.getById(cuId).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
 			assertThat(countQtyPickedRowsOfCU(cuId)).as("no QtyPicked row of the un-picked CU left").isEqualTo(0);
-			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("nothing picked any more").isEmpty();
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("nothing picked").isEmpty();
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("0");
 			assertThat(cusOf(boxId)).as("the CU left the box").isEmpty();
 		}
 
 		/** Scan each CU, pallet + new box, packs 1 and 2 go into the same box on the pallet; undo of pack 1 removes only that CU. */
 		@Test
-		void scanEachCU_palletAndNewBox_twoPacks_undoFirst_removesOnlyThatCU()
+		void scanEachCU_palletAndBox_twoPacks_undoFirst_removesOnlyThatCU()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LU-EACH-U");
-			PickingJob job = jobWithPalletAndNewBox();
+			PickingJob job = jobWithPalletAndBox();
 			job = pickEach(job, source, LOT_A, "1");
 			job = pickEach(job, source, LOT_A, "2");
 
@@ -1205,11 +1205,11 @@ class PickingJobCUQtyEntryPickTest
 
 		/** Scan once, pallet + new box, bookings of 3 then 2 into the same box on the pallet; undo of the 3 removes only that CU. */
 		@Test
-		void scanOnce_palletAndNewBox_twoBookings_undoFirst_removesOnlyThatCU()
+		void scanOnce_palletAndBox_twoBookings_undoFirst_removesOnlyThatCU()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LU-ONCE-U");
-			PickingJob job = jobWithPalletAndNewBox();
+			PickingJob job = jobWithPalletAndBox();
 			job = pick(job, source, "3", label(PRODUCT_NO, LOT_A), false, null);
 			final HuId cu3Id = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
 			job = pick(job, source, "2", label(PRODUCT_NO, LOT_A), false, null);
@@ -1236,17 +1236,17 @@ class PickingJobCUQtyEntryPickTest
 
 		/** Scan each CU, the pallet already exists (made by pack 1) and a second new box is opened: pack 2 is the CU in the new box on the same pallet. */
 		@Test
-		void scanEachCU_existingPalletAndSecondNewBox_cuInNewBoxOnSamePallet()
+		void scanEachCU_existingPalletAndSecondBox_cuInNewBoxOnSamePallet()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LU-EACH-2");
-			PickingJob job = jobWithPalletAndNewBox();
+			PickingJob job = jobWithPalletAndBox();
 			job = pickEach(job, source, LOT_A, "1");
 			final HuId cu1Id = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
 			final HuId box1Id = boxOf(cu1Id);
 			final HuId palletId = palletOf(box1Id);
 			assertThat(job.getLuPickingTargetEffective(CollectionUtils.singleElement(job.getLines()).getId()).map(LUPickingTarget::isExistingLU))
-					.as("the pallet made by pack 1 is now the pallet target").contains(true);
+					.as("the pallet made by pack 1 is the pallet target").contains(true);
 
 			job = openBoxFromLinePacking(job);
 			job = pickEach(job, source, LOT_A, "2");
@@ -1518,7 +1518,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(countQtyPickedRowsOfBox(boxId)).as("no QtyPicked row left in the box").isEqualTo(0);
 			assertThat(countQtyPickedRowsOfCU(cu1Id)).as("no QtyPicked row of the CU left").isEqualTo(0);
 			final TUPickingTarget target = openBoxTarget(job);
-			assertThat(target.isNewTU()).as("the emptied box is not the target any more: an open box of the same type is").isTrue();
+			assertThat(target.isNewTU()).as("the emptied box is not the target: an open box of the same type is").isTrue();
 			assertThat(target.getTuPIIdNotNull()).isEqualTo(tuPIId);
 
 			job = pickEach(job, source, LOT_A, "2");
@@ -1558,7 +1558,7 @@ class PickingJobCUQtyEntryPickTest
 		/**
 		 * (v) The un-pick of a CU in a box removes the CU's own QtyPicked rows from what was booked, not from the current profile: the same
 		 * picked CU un-picked after the profile was switched to Manual still leaves no QtyPicked row of that CU (else the line would count a
-		 * pack that is not picked any more); the other CU's row stays.
+		 * pack that is not picked); the other CU's row stays.
 		 */
 		@Test
 		void profileSwitchedToManualAfterBooking_unpickStillRemovesTheCUsRows()
@@ -1608,7 +1608,7 @@ class PickingJobCUQtyEntryPickTest
 		 * so A's box is still queued on A's slot only, not on the slot scanned last for customer B.
 		 */
 		@Test
-		void newModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheBoxOnItsOwnLinesSlot()
+		void labelBasedModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheBoxOnItsOwnLinesSlot()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final BoxOfCustomerA given = pickIntoBoxOfCustomerA_thenScanSlotB("x4", "3", label(PRODUCT_NO, LOT_A));
@@ -1621,32 +1621,32 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		/**
-		 * (x2) Manual: the same two-customer product job queues the box on the slot scanned last, as today (the per-line slot is only for the
-		 * new quantity entry modes).
+		 * (x2) Manual: the same two-customer product job queues the box on the slot scanned last (the per-line slot is only for the
+		 * label-based quantity entry modes).
 		 */
 		@Test
-		void manual_closingAllTargets_queuesTheBoxOnTheLastScannedSlot_asToday()
+		void manual_closingAllTargets_queuesTheBoxOnTheLastScannedSlot()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			final BoxOfCustomerA given = pickIntoBoxOfCustomerA_thenScanSlotB("x2", "1", null);
 
 			helper.pickingJobService.closeLUAndTUPickingTargets(given.job);
 
-			assertThat(queuedSlotsOf(given.boxA)).as("Manual: the close queues the box on the slot scanned last, as before").contains(given.slotB);
+			assertThat(queuedSlotsOf(given.boxA)).as("Manual: the close queues the box on the slot scanned last").contains(given.slotB);
 		}
 
 		/**
-		 * (x3) Mixed job: customer A uses a new mode (own job options row), customer B is Manual (the profile default). Closing all targets
-		 * queues A's box on A's line slot only and B's box on the slot scanned last, as today; B's target is closed.
+		 * (x3) Mixed job: customer A uses a label-based mode (own job options row), customer B is Manual (the profile default). Closing all targets
+		 * queues A's box on A's line slot only and B's box on the slot scanned last; B's target is closed.
 		 */
 		@Test
-		void mixedJob_newModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
+		void mixedJob_labelBasedModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
 			final BPartnerId customerAId = customerAId();
 			helper.updateMobileProfile(profile -> {
-				final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A new mode", profile.getDefaultPickingJobOptions());
+				final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A label-based mode", profile.getDefaultPickingJobOptions());
 				helper.configService.updatePickingJobOptionsCUQtyEntry(optionsA, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId());
 				return profile.toBuilder()
 						.customerConfigs(PickingCustomerConfigsCollection.ofCollection(ImmutableList.of(
@@ -1671,8 +1671,8 @@ class PickingJobCUQtyEntryPickTest
 
 			final PickingJob jobClosed = helper.pickingJobService.closeLUAndTUPickingTargets(job);
 
-			assertThat(queuedSlotsOf(boxA)).as("new-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
-			assertThat(queuedSlotsOf(boxB)).as("Manual customer B: the slot scanned last, as before").contains(slotC);
+			assertThat(queuedSlotsOf(boxA)).as("label-based-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
+			assertThat(queuedSlotsOf(boxB)).as("Manual customer B: the slot scanned last").contains(slotC);
 			assertThat(jobClosed.getTuPickingTargetEffective(lineB.getId())).as("Manual line's target closed").isEmpty();
 		}
 

@@ -57,10 +57,12 @@ import org.eevolution.api.PPOrderId;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -564,6 +566,37 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return streamLines()
 				.map(PickingJobLine::getPickedHUIds)
 				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** @return the HUs picked on the lines of that product */
+	public ImmutableSet<HuId> getPickedHuIdsOfProduct(@NonNull final ProductId productId)
+	{
+		return streamLines()
+				.filter(line -> ProductId.equals(line.getProductId(), productId))
+				.map(PickingJobLine::getPickedHUIds)
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** @return the lines that match the filter */
+	public ImmutableList<PickingJobLine> getLines(@NonNull final Predicate<PickingJobLine> lineFilter)
+	{
+		return streamLines().filter(lineFilter).collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean hasLine(@NonNull final Predicate<PickingJobLine> lineFilter)
+	{
+		return streamLines().anyMatch(lineFilter);
+	}
+
+	/** @return the HUs picked on the lines that match the filter */
+	public ImmutableSet<HUInfo> getPickedHUInfos(@NonNull final Predicate<PickingJobLine> lineFilter)
+	{
+		return streamLines()
+				.filter(lineFilter)
+				.map(PickingJobLine::getPickedHUInfos)
+				.flatMap(List::stream)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

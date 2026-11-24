@@ -29,7 +29,7 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 final class CustomerCUQtyEntryWriter
 {
-	/** Name prefix of the rows created here; {@link MobileConfigCommand} deletes the ones that no customer references any more. */
+	/** Name prefix of the rows created here; {@link MobileConfigCommand} deletes the ones that no customer references. */
 	static final String JOB_OPTIONS_NAME_PREFIX = "E2E customer ";
 
 	@NonNull private final MobileUIPickingUserProfileService profileService;
@@ -72,12 +72,12 @@ final class CustomerCUQtyEntryWriter
 				.cuQtyEntryMode(cuQtyEntryMode)
 				.cuLabelFormatId(cuLabelFormatId)
 				.build();
-		final PickingJobOptionsId newJobOptionsId = profileService.createPickingJobOptions(
+		final PickingJobOptionsId createdJobOptionsId = profileService.createPickingJobOptions(
 				JOB_OPTIONS_NAME_PREFIX + customerId.getRepoId() + " " + System.currentTimeMillis(),
 				optionsCopy);
 
-		profileService.update(currentProfile -> currentProfile.toBuilder()
-				.customerConfigs(linkJobOptions(currentProfile.getCustomerConfigs(), customerId, newJobOptionsId))
+		profileService.update(profileToUpdate -> profileToUpdate.toBuilder()
+				.customerConfigs(linkJobOptions(profileToUpdate.getCustomerConfigs(), customerId, createdJobOptionsId))
 				.build());
 	}
 

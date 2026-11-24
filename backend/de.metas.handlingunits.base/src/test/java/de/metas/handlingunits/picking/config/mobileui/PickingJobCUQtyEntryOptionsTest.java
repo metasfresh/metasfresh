@@ -56,7 +56,7 @@ class PickingJobCUQtyEntryOptionsTest
 		}
 
 		@Test
-		void customerMode_manual_winsOverProfileNewMode()
+		void customerMode_manual_winsOverProfileLabelBasedMode()
 		{
 			final PickingJobOptions resolved = options(CUQtyEntryMode.MANUAL, null).fallbackTo(options(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null));
 			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.MANUAL);

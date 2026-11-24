@@ -81,7 +81,7 @@ public class PackToHUsProducerCUQtyEntryTest
 
 	private I_M_HU vhu(final String qty) {return handlingUnitsBL.getById(helper.createVHU(productId, qty(qty)));}
 
-	private PackToInfo newBox()
+	private PackToInfo box()
 	{
 		return PackToInfo.builder()
 				.shipToBPLocationId(helper.shipToBPLocationId)
@@ -109,7 +109,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.build();
 	}
 
-	private LUTUResult pack(final I_M_HU source, final String qty, final PackToInfo packToInfo, final boolean isNewModes)
+	private LUTUResult pack(final I_M_HU source, final String qty, final PackToInfo packToInfo, final boolean isLabelBasedModes)
 	{
 		final IHUContext huContext = helper.huTestHelper.createMutableHUContextOutOfTransaction();
 		return producer.packToHU(PackToHURequest.builder()
@@ -121,7 +121,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.documentRef(TableRecordReference.of(source))
 				.checkIfAlreadyPacked(true)
 				.createInventoryForMissingQty(true)
-				.isBookAsSingleCUInBox(isNewModes)
+				.isBookAsSingleCUInBox(isLabelBasedModes)
 				.build());
 	}
 
@@ -146,7 +146,7 @@ public class PackToHUsProducerCUQtyEntryTest
 		setLot(sourceA, "LOT-A");
 		setLot(sourceB, "LOT-B");
 
-		final LUTUResult first = pack(sourceA, "2", newBox(), true);
+		final LUTUResult first = pack(sourceA, "2", box(), true);
 		final I_M_HU box = first.getSingleTU().toHU();
 		final LUTUResult second = pack(sourceB, "3", openBox(box), true);
 		assertThat(first.getSingleTU().isFullTU()).isFalse();
@@ -193,7 +193,7 @@ public class PackToHUsProducerCUQtyEntryTest
 			assertThat(cusOf(sourceTU)).hasSize(2);
 			final I_M_HU piece1 = sourceTU;
 
-			final LUTUResult result = pack(piece1, "5", newBox(), true);
+			final LUTUResult result = pack(piece1, "5", box(), true);
 
 			final LUTUResult.TU tu = result.getSingleTU();
 			assertThat(tu.isFullTU()).as("partial TU, the CU is the picked HU").isFalse();
@@ -209,7 +209,7 @@ public class PackToHUsProducerCUQtyEntryTest
 		{
 			final I_M_HU source = vhu("10");
 
-			final LUTUResult result = pack(source, "1", newBox(), true);
+			final LUTUResult result = pack(source, "1", box(), true);
 
 			final LUTUResult.TU tu = result.getSingleTU();
 			assertThat(tu.isFullTU()).isFalse();
@@ -219,11 +219,11 @@ public class PackToHUsProducerCUQtyEntryTest
 			assertThat(tu.getCUsNotEmpty().get(0).getId()).isEqualTo(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
 		}
 
-		/** (iii) flags off: full TU as today. */
+		/** (iii) flags off: full TU. */
 		@Test
 		public void flagsOff_fullTU()
 		{
-			final LUTUResult result = pack(vhu("10"), "1", newBox(), false);
+			final LUTUResult result = pack(vhu("10"), "1", box(), false);
 
 			assertThat(result.getSingleTU().isFullTU()).isTrue();
 		}
@@ -234,7 +234,7 @@ public class PackToHUsProducerCUQtyEntryTest
 		{
 			final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("1")));
 
-			final LUTUResult result = pack(sourceTU, "1", newBox(), true);
+			final LUTUResult result = pack(sourceTU, "1", box(), true);
 
 			final LUTUResult.TU tu = result.getSingleTU();
 			assertThat(tu.isFullTU()).isFalse();
@@ -244,13 +244,13 @@ public class PackToHUsProducerCUQtyEntryTest
 			assertThat(tu.getCUsNotEmpty().get(0).getId()).isEqualTo(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
 		}
 
-		/** (iv) flags off: the source TU is taken as the box, as today. */
+		/** (iv) flags off: the source TU is taken as the box. */
 		@Test
 		public void sourceIsTUWithExactlyOnePack_flagsOff_sourceTUIsTheBox()
 		{
 			final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("1")));
 
-			final LUTUResult result = pack(sourceTU, "1", newBox(), false);
+			final LUTUResult result = pack(sourceTU, "1", box(), false);
 
 			assertThat(result.getSingleTU().getId()).isEqualTo(HuId.ofRepoId(sourceTU.getM_HU_ID()));
 		}
@@ -278,9 +278,9 @@ public class PackToHUsProducerCUQtyEntryTest
 			assertThat(tu.getCUsNotEmpty().get(0).getId()).isEqualTo(HuId.ofRepoId(cu5.getM_HU_ID()));
 		}
 
-		/** Flags off, open box: full TU as today; the 5 pieces are added as CUs (one source CU of 8 -> 5 taken). */
+		/** Flags off, open box: full TU; the 5 pieces are added as CUs (one source CU of 8 -> 5 taken). */
 		@Test
-		public void flagsOff_fullTUAsToday()
+		public void flagsOff_fullTU()
 		{
 			final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
 
@@ -291,9 +291,9 @@ public class PackToHUsProducerCUQtyEntryTest
 					.containsExactlyInAnyOrder(new BigDecimal("3"), new BigDecimal("5"));
 		}
 
-		/** Flags off, open box, the source holds several pieces (4 + 4): today's error. */
+		/** Flags off, open box, the source holds several pieces (4 + 4): the Manual error. */
 		@Test
-		public void fromTwoPieces_flagsOff_failsAsToday()
+		public void fromTwoPieces_flagsOff_fails()
 		{
 			final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
 			final I_M_HU sourceTU = sourceTUWithTwoPieces();

@@ -24,13 +24,18 @@ jest.mock('../../utils/toast', () => ({
 
 const REJECT_REASONS = [{ key: 'NOT_FOUND', caption: 'Not found' }];
 
-const newStore = ({ useZeroAsInitialValue = false } = {}) => {
+const buildStore = ({ useZeroAsInitialValue = false } = {}) => {
   const store = createStore(combineReducers({ settings }));
   store.dispatch(putSettingsAction({ 'qtyInput.useZeroAsInitialValue': useZeroAsInitialValue ? 'Y' : 'N' }));
   return store;
 };
 
-const renderDialog = ({ cuQtyEntryMode, store = newStore(), onQtyChange = jest.fn().mockResolvedValue(), ...props }) =>
+const renderDialog = ({
+  cuQtyEntryMode,
+  store = buildStore(),
+  onQtyChange = jest.fn().mockResolvedValue(),
+  ...props
+}) =>
   render(
     <Provider store={store}>
       <GetQuantityDialog
@@ -64,7 +69,7 @@ describe('GetQuantityDialog: scan once, enter quantity', () => {
   it('starts empty also when the initial value setting is zero', async () => {
     renderDialog({
       cuQtyEntryMode: CUQtyEntryMode.SCAN_ONCE_ENTER_QTY,
-      store: newStore({ useZeroAsInitialValue: true }),
+      store: buildStore({ useZeroAsInitialValue: true }),
     });
     await act(async () => {});
     expect(document.querySelector('#qty-input').value).toBe('');
@@ -108,7 +113,7 @@ describe('ScanHUAndGetQtyComponent: scan once passes the label', () => {
   it('reports the raw label with the typed count', async () => {
     const onResult = jest.fn().mockResolvedValue();
     render(
-      <Provider store={newStore()}>
+      <Provider store={buildStore()}>
         <ScanHUAndGetQtyComponent
           qtyMax={10}
           qtyTarget={10}

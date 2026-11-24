@@ -100,7 +100,7 @@ public class MobileConfigCommand
 
 	private void updatePickingCUQtyEntryInTrx(@NonNull final JsonMobileConfigRequest.Picking picking)
 	{
-		// the rows of earlier runs' customers (replaced by MobileConfigPickingCommand above) are not referenced any more
+		// the rows of earlier runs' customers (replaced by MobileConfigPickingCommand above) are not referenced
 		mobilePickingConfigService.deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
 
 		// absent = the profile's mandatory mode: the profile writer stores CUQtyEntryMode.DEFAULT for an unset mode

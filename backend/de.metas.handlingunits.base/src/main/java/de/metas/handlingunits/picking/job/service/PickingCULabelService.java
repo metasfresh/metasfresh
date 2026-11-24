@@ -14,6 +14,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
@@ -91,7 +94,7 @@ public class PickingCULabelService
 		{
 			throw userError(MSG_CU_LABEL_NO_PACK_ID);
 		}
-		throw userError(MSG_CU_LABEL_FORMAT_MISMATCH);
+		throw userErrorWithDetails(MSG_CU_LABEL_FORMAT_MISMATCH, parsed.getExplanation());
 	}
 
 	/** Testable core: checks the label data against the line. */
@@ -145,10 +148,7 @@ public class PickingCULabelService
 			@Nullable final String lotNo,
 			@NonNull final String packId)
 	{
-		final ImmutableSet<HuId> pickedHUIds = job.streamLines()
-				.filter(line -> ProductId.equals(line.getProductId(), productId))
-				.flatMap(line -> line.getPickedHUIds().stream())
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<HuId> pickedHUIds = job.getPickedHuIdsOfProduct(productId);
 		if (pickedHUIds.isEmpty())
 		{
 			return false;
@@ -276,5 +276,15 @@ public class PickingCULabelService
 	private static AdempiereException userError(@NonNull final AdMessageKey messageKey, final Object... params)
 	{
 		return new AdempiereException(messageKey, params).markAsUserValidationError();
+	}
+
+	/** The message of the key followed by the details, so the picker sees why (e.g. which part of the label does not fit the format). */
+	private static AdempiereException userErrorWithDetails(@NonNull final AdMessageKey messageKey, @NonNull final ITranslatableString details)
+	{
+		final String errorCode = Services.get(IMsgBL.class).getErrorCode(messageKey);
+		return new AdempiereException(
+				TranslatableStrings.builder().append(TranslatableStrings.adMessage(messageKey)).append(" ").append(details).build(),
+				errorCode != null ? errorCode : messageKey.toAD_Message())
+				.markAsUserValidationError();
 	}
 }

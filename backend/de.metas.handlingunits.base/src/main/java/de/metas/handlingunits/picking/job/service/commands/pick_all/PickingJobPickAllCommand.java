@@ -36,7 +36,7 @@ public class PickingJobPickAllCommand
 	{
 		PickingJob pickingJob = pickingJobService.getById(pickingJobId);
 		pickingJob.assertCanBeEditedBy(callerId);
-		assertNoLineUsesNewCUQtyEntryMode(pickingJob);
+		assertNoLineUsesLabelBasedCUQtyEntryMode(pickingJob);
 
 		PickingJob pickingJobChanged = pickingJob;
 
@@ -55,14 +55,13 @@ public class PickingJobPickAllCommand
 
 	/**
 	 * Pick-all books every line's open quantity without a label scan, which would bypass the pack-ID duplicate check, the box-first rule
-	 * and the label's lot / best-before of the new CU quantity entry modes. The mode is resolved per line (customer value, else profile value);
-	 * one line in a new mode refuses the whole job. Independent of {@code IsAllowQuickPackAll}: a direct call is refused the same way.
+	 * and the label's lot / best-before of the label-based CU quantity entry modes. The mode is resolved per line (customer value, else profile value);
+	 * one line in a label-based mode refuses the whole job. Independent of {@code IsAllowQuickPackAll}: a direct call is refused the same way.
 	 */
-	private void assertNoLineUsesNewCUQtyEntryMode(final PickingJob pickingJob)
+	private void assertNoLineUsesLabelBasedCUQtyEntryMode(final PickingJob pickingJob)
 	{
-		final boolean isAnyLineInNewMode = pickingJob.getLines().stream()
-				.anyMatch(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired());
-		if (isAnyLineInNewMode)
+		final boolean isAnyLineLabelBased = pickingJob.hasLine(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired());
+		if (isAnyLineLabelBased)
 		{
 			throw new AdempiereException(MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED).markAsUserValidationError();
 		}

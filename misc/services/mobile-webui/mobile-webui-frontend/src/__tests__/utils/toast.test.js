@@ -21,4 +21,13 @@ describe('toastError', () => {
     expect(ERROR_TOAST_STYLE).toEqual({ maxHeight: 'calc(100vh - 6rem)' });
     expect(ERROR_TOAST_BODY_STYLE).toEqual({ overflow: 'auto', maxHeight: 'calc(100vh - 8rem)' });
   });
+
+  it('shows the details (the reason) after the message of the key', () => {
+    const toastErrorSpy = jest.spyOn(toast, 'error').mockImplementation(() => undefined);
+
+    toastError({ messageKey: 'picking.cuLabel.formatMismatch', details: "Expected constant '01' but got ']d'" });
+
+    const message = toastErrorSpy.mock.calls[0][0].props.message;
+    expect(message).toMatch(/ Expected constant '01' but got '\]d'$/);
+  });
 });

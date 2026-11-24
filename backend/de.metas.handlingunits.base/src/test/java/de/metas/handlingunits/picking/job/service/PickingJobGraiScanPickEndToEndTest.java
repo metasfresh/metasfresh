@@ -561,11 +561,11 @@ class PickingJobGraiScanPickEndToEndTest
 	class GetGraiSnapshots
 	{
 		/**
-		 * CU quantity entry modes: the picked HU of a new-mode line is the CU (virtual HU) inside the open box (TU).
+		 * CU quantity entry modes: the picked HU of a label-based-mode line is the CU (virtual HU) inside the open box (TU).
 		 * The GRAI lives on the box, so the completion-time GRAI check must read the box: a box without GRAI is refused.
 		 */
 		@Test
-		void newMode_pickedCUInsideBox_boxWithoutGrai_isRefused()
+		void labelBasedMode_pickedCUInsideBox_boxWithoutGrai_isRefused()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId cuId = createBoxWithCU(productId).getCuId();
@@ -578,7 +578,7 @@ class PickingJobGraiScanPickEndToEndTest
 
 		/** Same as above, but the box carries its GRAI: accepted. */
 		@Test
-		void newMode_pickedCUInsideBox_boxWithGrai_isAccepted()
+		void labelBasedMode_pickedCUInsideBox_boxWithGrai_isAccepted()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final BoxWithCU box = createBoxWithCU(productId);
@@ -589,7 +589,7 @@ class PickingJobGraiScanPickEndToEndTest
 
 		/** Several CUs of the same box are checked once, via their box. */
 		@Test
-		void newMode_severalCUsInSameBox_boxCheckedOnce()
+		void labelBasedMode_severalCUsInSameBox_boxCheckedOnce()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final BoxWithCU box = createBoxWithCU(productId);
@@ -615,7 +615,7 @@ class PickingJobGraiScanPickEndToEndTest
 		}
 
 		/**
-		 * Manual mode is unchanged: a picked CU is NOT replaced by its box (the CU has no GRAI snapshot of its own, as before),
+		 * Manual mode is unchanged: a picked CU is NOT replaced by its box (the CU has no GRAI snapshot of its own),
 		 * so a box without GRAI is not refused through its CU.
 		 */
 		@Test
@@ -630,9 +630,9 @@ class PickingJobGraiScanPickEndToEndTest
 			snapshots.assertAllGraisAssigned();
 		}
 
-		/** YesWithDummyGRAIs + new mode: the box of a picked CU gets the dummy GRAI at completion (the box is the GRAI carrier). */
+		/** YesWithDummyGRAIs + label-based mode: the box of a picked CU gets the dummy GRAI at completion (the box is the GRAI carrier). */
 		@Test
-		void newMode_dummyGRAIs_writtenOnTheBoxOfThePickedCU()
+		void labelBasedMode_dummyGRAIs_writtenOnTheBoxOfThePickedCU()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final BoxWithCU box = createBoxWithCU(productId);

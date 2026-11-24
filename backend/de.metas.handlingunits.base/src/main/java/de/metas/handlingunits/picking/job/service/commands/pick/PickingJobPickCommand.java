@@ -158,7 +158,7 @@ public class PickingJobPickCommand
 	@NonNull private PickingJob _pickingJob;
 	@Nullable private PickingJobStepId _stepId;
 	@Nullable PickAttributes _pickAttributes; // lazy
-	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, new modes only
+	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, label-based modes only
 	@Nullable private HUInfo _pickFromHUIdAndQRCode; // lazy
 	@NonNull private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 
@@ -224,12 +224,12 @@ public class PickingJobPickCommand
 		final I_C_UOM uom = line.getUOM();
 		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
 		this.cuLabel = cuLabel;
-		// new modes always book CUs into the open box: never a whole TU
+		// label-based modes always book CUs into the open box: never a whole TU
 		this.isPickWholeTU = isPickWholeTU && cuQtyEntryPolicy.isPickWholeTUAllowed();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
-		this.pickingUnit = line.getPickingUnit(); // CU for new-mode lines: the loader (PickingJobLoaderAndSaver#computePickingUnit) applies that rule
+		this.pickingUnit = line.getPickingUnit(); // CU for label-based-mode lines: the loader (PickingJobLoaderAndSaver#computePickingUnit) applies that rule
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
@@ -414,7 +414,7 @@ public class PickingJobPickCommand
 	{
 		_pickingJob.assertNotProcessed();
 
-		assertNewModeBookingAllowed();
+		assertCULabelBookingAllowed();
 
 		assertNotAboveOrderedQty();
 
@@ -443,7 +443,7 @@ public class PickingJobPickCommand
 		return pickingJobService.getById(_pickingJob.getId());
 	}
 
-	private void assertNewModeBookingAllowed()
+	private void assertCULabelBookingAllowed()
 	{
 		if (!cuQtyEntryPolicy.isLabelRequired())
 		{
@@ -931,7 +931,7 @@ public class PickingJobPickCommand
 		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
 		if (cuQtyEntryPolicy.isPackIdRequired())
 		{
-			setPackIdOnNewCUs(packedHUs, getResolvedCULabel().getPackId());
+			setPackIdOnCreatedCUs(packedHUs, getResolvedCULabel().getPackId());
 		}
 
 		//
@@ -1072,7 +1072,7 @@ public class PickingJobPickCommand
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		// New modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the box's code is assigned to the box only)
+		// Label-based modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the box's code is assigned to the box only)
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryPolicy.isBookedAsSingleCUInBox() ? cu.getId() : tu1.getId());
 		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, 1);
@@ -1201,7 +1201,7 @@ public class PickingJobPickCommand
 		return result;
 	}
 
-	private static void setPackIdOnNewCUs(@NonNull final LUTUResult packedHUs, @Nullable final String packId)
+	private static void setPackIdOnCreatedCUs(@NonNull final LUTUResult packedHUs, @Nullable final String packId)
 	{
 		for (final TU tu : packedHUs.getAllTUs())
 		{

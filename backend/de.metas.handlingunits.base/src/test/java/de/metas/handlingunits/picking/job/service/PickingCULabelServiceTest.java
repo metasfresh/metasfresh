@@ -174,6 +174,19 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
+	void formatMismatch_tellsWhyTheLabelDoesNotFit()
+	{
+		assertThatThrownBy(() -> resolve("]d2" + label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.getErrorCode()).isEqualTo(CU_LABEL_FORMAT_MISMATCH.toAD_Message());
+					// the explanation of the format parser (which part does not fit) follows the message of the key
+					assertThat(adempiereException.getMessage()).contains("01");
+				});
+	}
+
+	@Test
 	void labelEndingBeforeANonPackIdPart_isFormatMismatch()
 	{
 		final String truncatedBeforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 36);

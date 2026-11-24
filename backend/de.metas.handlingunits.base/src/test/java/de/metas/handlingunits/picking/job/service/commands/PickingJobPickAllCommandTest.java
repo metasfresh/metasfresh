@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Quick Pack All ({@link PickingJobService#pickAll}, the entry behind {@code POST /picking/job/{id}/pickAll}) is refused
- * when ANY line of the job has an effective new CU quantity entry mode (customer value, else profile value; resolved per line).
+ * when ANY line of the job has an effective label-based CU quantity entry mode (customer value, else profile value; resolved per line).
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobPickAllCommandTest
@@ -58,7 +58,7 @@ class PickingJobPickAllCommandTest
 	/** one line, effective mode SCAN_ONCE_ENTER_QTY from the profile */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void profileNewMode_refused(final boolean allowQuickPackAll)
+	void profileLabelBasedMode_refused(final boolean allowQuickPackAll)
 	{
 		createProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, allowQuickPackAll);
 		final PickingJob job = createSalesOrderJob("salesOrder-i", helper.shipToBPLocationId);
@@ -68,7 +68,7 @@ class PickingJobPickAllCommandTest
 	/** one line, profile MANUAL + customer record SCAN_EACH_CU: the customer wins */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void customerNewMode_overProfileManual_refused(final boolean allowQuickPackAll)
+	void customerLabelBasedMode_overProfileManual_refused(final boolean allowQuickPackAll)
 	{
 		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, allowQuickPackAll);
 		createCustomerRecord(profile, helper.shipToBPLocationId.getBpartnerId(), CUQtyEntryMode.SCAN_EACH_CU);
@@ -99,7 +99,7 @@ class PickingJobPickAllCommandTest
 		assertRefusedAndNothingPicked(job);
 	}
 
-	/** one line, MANUAL in profile and customer record, IsAllowQuickPackAll = Y: as today, every line picked and the job completed */
+	/** one line, MANUAL in profile and customer record, IsAllowQuickPackAll = Y:, every line picked and the job completed */
 	@Test
 	void manualOnly_pickedAndCompleted()
 	{

@@ -11,7 +11,7 @@ describe('hasLabelRequiredLine', () => {
   it('is false when all lines are MANUAL', () => {
     expect(hasLabelRequiredLine([line(CUQtyEntryMode.MANUAL), line(CUQtyEntryMode.MANUAL)])).toBe(false);
   });
-  it('is true with one new-mode line', () => {
+  it('is true with one label-based-mode line', () => {
     expect(hasLabelRequiredLine([line(CUQtyEntryMode.MANUAL), line(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY)])).toBe(true);
     expect(hasLabelRequiredLine([line(CUQtyEntryMode.SCAN_EACH_CU)])).toBe(true);
   });
@@ -32,7 +32,7 @@ describe('isQuickPackAllAllowed', () => {
   it('is allowed for Manual-only and absent-field jobs', () => {
     expect(isQuickPackAllAllowed({ allowQuickPackAll: true, lines: [line(CUQtyEntryMode.MANUAL), {}] })).toBe(true);
   });
-  it('is refused when a line has a new mode', () => {
+  it('is refused when a line has a label-based mode', () => {
     expect(isQuickPackAllAllowed({ allowQuickPackAll: true, lines: [line(CUQtyEntryMode.SCAN_EACH_CU)] })).toBe(false);
   });
 });

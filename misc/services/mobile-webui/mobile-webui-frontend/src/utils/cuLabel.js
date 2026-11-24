@@ -90,7 +90,7 @@ const isEndingBeforePackId = ({ string, format }) => {
  *
  * @param isPackIdRequired Scan each CU: the label must carry a pack ID, else `picking.cuLabel.noPackId` (also for a label
  * that ends before the "92" marker / the pack ID part)
- * @returns {{productNo, lotNo, bestBeforeDate, packId}} or {errorKey} (translation key)
+ * @returns {{productNo, lotNo, bestBeforeDate, packId}} or {errorKey (translation key), errorDetails (the reason, when known)}
  */
 export const readCULabel = ({ string, format, isPackIdRequired = false }) => {
   if (!format) {
@@ -99,9 +99,11 @@ export const readCULabel = ({ string, format, isPackIdRequired = false }) => {
 
   const parsed = parseCustomQRCode({ string, format });
   if (!parsed || parsed.error) {
-    return {
-      errorKey: isPackIdRequired && isEndingBeforePackId({ string, format }) ? ERROR_noPackId : ERROR_formatMismatch,
-    };
+    if (isPackIdRequired && isEndingBeforePackId({ string, format })) {
+      return { errorKey: ERROR_noPackId };
+    }
+    // the reason why the label does not fit the format (which part, what was expected) is shown with the message
+    return { errorKey: ERROR_formatMismatch, errorDetails: parsed?.error };
   }
   if (isPackIdRequired && !parsed.packId) {
     return { errorKey: ERROR_noPackId };

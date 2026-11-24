@@ -21,7 +21,7 @@ describe('computeSuggestedQty', () => {
     expect(computeSuggestedQty({ lastTypedQty: 5, qtyOpen: 2 })).toBe(2);
   });
 
-  it('is 0 when nothing is open any more', () => {
+  it('is 0 when nothing is open', () => {
     expect(computeSuggestedQty({ lastTypedQty: 5, qtyOpen: 0 })).toBe(0);
   });
 
@@ -38,16 +38,16 @@ describe('computeSuggestedQty', () => {
 
 describe('computeLastTypedQty', () => {
   it('a typed count becomes the last typed value', () => {
-    expect(computeLastTypedQty({ previousLastTypedQty: null, suggestedQty: null, qtyBooked: 5 })).toBe(5);
-    expect(computeLastTypedQty({ previousLastTypedQty: 3, suggestedQty: 3, qtyBooked: '5' })).toBe(5);
+    expect(computeLastTypedQty({ storedLastTypedQty: null, suggestedQty: null, qtyBooked: 5 })).toBe(5);
+    expect(computeLastTypedQty({ storedLastTypedQty: 3, suggestedQty: 3, qtyBooked: '5' })).toBe(5);
   });
 
   it('confirming a capped suggestion keeps the last typed value (typed 5, suggestion 2 confirmed: stays 5)', () => {
-    expect(computeLastTypedQty({ previousLastTypedQty: 5, suggestedQty: 2, qtyBooked: 2 })).toBe(5);
+    expect(computeLastTypedQty({ storedLastTypedQty: 5, suggestedQty: 2, qtyBooked: 2 })).toBe(5);
   });
 
   it('confirming an uncapped suggestion keeps it unchanged', () => {
-    expect(computeLastTypedQty({ previousLastTypedQty: 5, suggestedQty: 5, qtyBooked: 5 })).toBe(5);
+    expect(computeLastTypedQty({ storedLastTypedQty: 5, suggestedQty: 5, qtyBooked: 5 })).toBe(5);
   });
 });
 
@@ -62,7 +62,7 @@ describe('isLineDoneAfterBooking', () => {
     expect(isLineDoneAfterBooking({ qtyBooked: '13', qtyOpen: 12 })).toBe(true);
   });
 
-  it('is true when the open quantity is unknown (today: leave the screen)', () => {
+  it('is true when the open quantity is unknown (leave the screen)', () => {
     expect(isLineDoneAfterBooking({ qtyBooked: 5, qtyOpen: null })).toBe(true);
     expect(isLineDoneAfterBooking({ qtyBooked: 5, qtyOpen: undefined })).toBe(true);
   });
@@ -73,13 +73,13 @@ describe('computeCUEntryToRemember', () => {
 
   it('remembers the typed count and the label of the booking', () => {
     expect(
-      computeCUEntryToRemember({ previousLastTypedQty: null, suggestedQty: null, qtyBooked: '5', ...booking })
+      computeCUEntryToRemember({ storedLastTypedQty: null, suggestedQty: null, qtyBooked: '5', ...booking })
     ).toEqual({ lastTypedQty: 5, label: booking });
   });
 
   it('keeps the typed count when the capped suggestion was confirmed', () => {
     expect(
-      computeCUEntryToRemember({ previousLastTypedQty: 5, suggestedQty: 2, qtyBooked: 2, ...booking }).lastTypedQty
+      computeCUEntryToRemember({ storedLastTypedQty: 5, suggestedQty: 2, qtyBooked: 2, ...booking }).lastTypedQty
     ).toBe(5);
   });
 });

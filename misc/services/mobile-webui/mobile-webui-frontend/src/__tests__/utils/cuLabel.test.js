@@ -75,26 +75,40 @@ describe('cuLabel.readCULabel', () => {
   });
 
   it('reports formatMismatch when a marker is missing (prefix of another code)', () => {
-    expect(readCULabel({ string: 'HU#1#{"id":"x"}', format })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
+    expect(readCULabel({ string: 'HU#1#{"id":"x"}', format })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
+    });
     expect(readCULabel({ string: LABEL.replace('91PTST001', '99PTST001'), format })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
     });
   });
 
   it('reports formatMismatch for a label with a symbology prefix (positions shift)', () => {
-    expect(readCULabel({ string: ']d2' + LABEL, format })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
+    expect(readCULabel({ string: ']d2' + LABEL, format })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
+    });
   });
 
   it('reports formatMismatch for a label shorter than the format', () => {
     expect(readCULabel({ string: LABEL.substring(0, 30), format })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
     });
   });
 
   it('uses only the given format: neither GS1, EAN13 nor the global QR code are tried', () => {
     const globalQr = 'HU#1#{"id":"59c0e3b5845d9fca58ccd9f2a906-30926","packingInfo":{"huUnitType":"V"}}';
-    expect(readCULabel({ string: globalQr, format })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
-    expect(readCULabel({ string: '9506000134352', format })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
+    expect(readCULabel({ string: globalQr, format })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
+    });
+    expect(readCULabel({ string: '9506000134352', format })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
+    });
   });
 });
 
@@ -146,7 +160,10 @@ describe('cuLabel.readCULabel with a PackId part', () => {
       expect(readCULabel({ string, format: packIdFormat, isPackIdRequired: true })).toEqual({
         errorKey: 'picking.cuLabel.noPackId',
       });
-      expect(readCULabel({ string, format: packIdFormat })).toEqual({ errorKey: 'picking.cuLabel.formatMismatch' });
+      expect(readCULabel({ string, format: packIdFormat })).toEqual({
+        errorKey: 'picking.cuLabel.formatMismatch',
+        errorDetails: expect.any(String),
+      });
     }
   });
 
@@ -158,6 +175,7 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     };
     expect(readCULabel({ string: LABEL.substring(0, 49), format: gapFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
     });
     expect(readCULabel({ string: LABEL.substring(0, 46), format: gapFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.noPackId',
@@ -167,6 +185,7 @@ describe('cuLabel.readCULabel with a PackId part', () => {
   it('a label ending before the lot is a format mismatch even when a pack ID is required', () => {
     expect(readCULabel({ string: LABEL.substring(0, 36), format: packIdFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
     });
   });
 

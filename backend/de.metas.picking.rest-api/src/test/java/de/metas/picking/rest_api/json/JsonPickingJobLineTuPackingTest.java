@@ -84,9 +84,9 @@ class JsonPickingJobLineTuPackingTest
 				.piItemId(PI_ITEM_ID);
 	}
 
-	/** a new-mode line on a box (TU) packing counts CUs: the loader gives it picking unit CU, the JSON must then report uom = CU symbol and quantities in CUs (8 CU, not 2 TU) */
+	/** a label-based-mode line on a box (TU) packing counts CUs: the loader gives it picking unit CU, the JSON must then report uom = CU symbol and quantities in CUs (8 CU, not 2 TU) */
 	@Test
-	void newModeLineOnTuPacking_countsCUs()
+	void labelBasedModeLineOnTuPacking_countsCUs()
 	{
 		final HUPIItemProduct packingInfo = packing(540010)
 				.productId(ProductId.ofRepoId(10))

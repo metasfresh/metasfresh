@@ -324,7 +324,7 @@ public class PackToHUsProducer
 	}
 
 	/**
-	 * The new box (TU) made by the first booking is a full TU today. For CU quantity entry the booked CU must be the picked HU,
+	 * Without CU quantity entry the box (TU) made by the first booking is a full TU. For CU quantity entry the booked CU must be the picked HU,
 	 * so the result is the partial TU holding its single CU (as the open box and the pallet cases). With a pallet (LU) target the box
 	 * sits on the pallet: the pallet is kept as produced (incl. its pre-existing flag when the target was an existing pallet).
 	 */

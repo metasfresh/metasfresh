@@ -84,10 +84,10 @@ export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
  * The count to remember after a booking. Confirming the offered suggestion (also a capped one) keeps the count the
  * picker typed; any other count is a newly typed one.
  */
-export const computeLastTypedQty = ({ previousLastTypedQty, suggestedQty, qtyBooked }) => {
+export const computeLastTypedQty = ({ storedLastTypedQty, suggestedQty, qtyBooked }) => {
   const booked = Number(qtyBooked);
-  if (previousLastTypedQty != null && suggestedQty != null && booked === Number(suggestedQty)) {
-    return Number(previousLastTypedQty);
+  if (storedLastTypedQty != null && suggestedQty != null && booked === Number(suggestedQty)) {
+    return Number(storedLastTypedQty);
   }
   return booked;
 };
@@ -100,21 +100,21 @@ export const isLineDoneAfterBooking = ({ qtyBooked, qtyOpen }) => qtyOpen == nul
  * best-before) the next booking uses.
  */
 export const computeCUEntryToRemember = ({
-  previousLastTypedQty,
+  storedLastTypedQty,
   suggestedQty,
   qtyBooked,
   cuLabel,
   lotNo,
   bestBeforeDate,
 }) => ({
-  lastTypedQty: computeLastTypedQty({ previousLastTypedQty, suggestedQty, qtyBooked }),
+  lastTypedQty: computeLastTypedQty({ storedLastTypedQty, suggestedQty, qtyBooked }),
   label: { cuLabel, lotNo, bestBeforeDate },
 });
 
-/** @returns true if at least one of the lines enters CU quantities in a new mode (label scan); false for none / absent field */
+/** @returns true if at least one of the lines enters CU quantities in a label-based mode (label scan); false for none / absent field */
 export const hasLabelRequiredLine = (lines) =>
   (lines ?? []).some((line) => getCUQtyEntryPolicy(line?.cuQtyEntryMode).isLabelRequired);
 
-/** Quick Pack All books whole lines without a CU label, so it is offered only when no line has a new mode. */
+/** Quick Pack All books whole lines without a CU label, so it is offered only when no line has a label-based mode. */
 export const isQuickPackAllAllowed = ({ allowQuickPackAll, lines }) =>
   !!allowQuickPackAll && !hasLabelRequiredLine(lines);

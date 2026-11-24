@@ -278,6 +278,11 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public boolean hasPickedHUIdIn(@NonNull final Set<HuId> huIds)
+	{
+		return getPickedHUIds().stream().anyMatch(huIds::contains);
+	}
+
 	public Optional<HuId> getLastPickedHUId()
 	{
 		return steps.stream()

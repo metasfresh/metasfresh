@@ -69,7 +69,7 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
-  // a CU label carries lot and best-before: the quantity block of a new mode always shows them
+  // a CU label carries lot and best-before: the quantity block of a label-based mode always shows them
   const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
   const isLabelMode = cuQtyEntryPolicy.isLabelRequired;
   const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
@@ -78,7 +78,7 @@ const GetQuantityDialog = ({
   // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
   // smaller count than the open qty is not a rejection
   const isScanOnce = cuQtyEntryPolicy.isScanOnce;
-  // new modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
+  // label-based modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
   const buttonType = isLabelMode ? 'button' : undefined;
 
   const [isProcessing, setProcessing] = useState(false);
@@ -353,7 +353,7 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form
-            // new modes: the OK button's click (also the Enter key's implicit click) books once; a second,
+            // label-based modes: the OK button's click (also the Enter key's implicit click) books once; a second,
             // submit-triggered call would book the same quantity twice. Manual keeps the form submit.
             onSubmit={isLabelMode ? (event) => event.preventDefault() : () => onDialogYes({ isCloseTarget: false })}
           >

@@ -43,7 +43,7 @@ const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // nu
 
 /**
  * "Weitere Kiste": closes the open box (if any), then opens a new one of the line's TU type; a line whose packing
- * names no TU type gets today's box list instead.
+ * names no TU type gets the box list instead.
  */
 // @VisibleForTesting
 export const openNextBox = async ({
@@ -69,7 +69,7 @@ export const openNextBox = async ({
  * Wires the two ways of opening a box (button, GRAI scan) to the picking target APIs of the line.
  *
  * @param setPickingTarget `setPickingTarget` of `useAvailablePickingTargets({type: TU})`
- * @param tuPickingTarget the box currently open on the line, if any
+ * @param tuPickingTarget the box open on the line, if any
  */
 export const useNextBox = ({
   applicationId,

@@ -88,6 +88,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -747,52 +748,45 @@ public class PickingJobService implements PickingSlotListener
 	/**
 	 * Closes the job's targets and every line's targets.
 	 * <p>
-	 * Lines whose customer uses a new CU quantity entry mode, or which hold a pack booked in such a mode: each line's closed HUs go to that line's
+	 * Lines whose customer uses a label-based CU quantity entry mode, or which hold a pack booked in such a mode: each line's closed HUs go to that line's
 	 * picking slot queue. In a job with line-level targets (product job) every customer's line has its own slot, and the slot the picker scanned
 	 * last belongs to another customer (an HU queued on two slots cannot be shipped). An existing HU that is the open target of two lines with
 	 * different slots would be queued on both; lines of different customers do not share a target.
 	 * <p>
-	 * A pack booked in a new mode keeps its line on its own slot after the customer was switched to Manual while the job is open: the close follows
+	 * A pack booked in a label-based mode keeps its line on its own slot after the customer was switched to Manual while the job is open: the close follows
 	 * what was booked (as the un-pick and the GRAI completion check do), not only the customer's current mode.
 	 * <p>
-	 * Manual lines (and all lines of a job without a new-mode line): unchanged, all closed HUs go to the slot scanned last.
+	 * Manual lines (and all lines of a job without a label-based-mode line): unchanged, all closed HUs go to the slot scanned last.
 	 */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
-		final Map<Boolean, List<PickingJobLine>> linesByCurrentModeLabelRequired = pickingJob.getLines().stream()
-				.collect(Collectors.partitioningBy(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired()));
-		// only the lines the current mode does not settle are checked for packs booked in a new mode (that check walks each picked CU up to its box)
-		final List<PickingJobLine> linesToCheckForNewModeBookings = linesByCurrentModeLabelRequired.get(false);
-		final ImmutableSet<HuId> cusBookedInNewMode = linesToCheckForNewModeBookings.isEmpty()
-				? ImmutableSet.of()
-				: huService.filterCUsBookedInCUQtyEntryMode(
-						linesToCheckForNewModeBookings.stream()
-								.flatMap(line -> line.getPickedHUInfos().stream())
-								.collect(ImmutableSet.toImmutableSet()));
-		final List<PickingJobLine> newModeLines = pickingJob.getLines().stream()
-				.filter(line -> linesByCurrentModeLabelRequired.get(true).contains(line)
-						|| line.getPickedHUIds().stream().anyMatch(cusBookedInNewMode::contains))
-				.collect(ImmutableList.toImmutableList());
-		if (newModeLines.isEmpty())
+		final Predicate<PickingJobLine> isLabelRequired = line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired();
+		// only the lines the mode of their customer does not settle are checked for packs booked in a label-based mode (that check walks each picked CU up to its box)
+		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
+		final ImmutableSet<HuId> cusBookedLabelBased = pickingJob.hasLine(isToCheckForLabelBookings)
+				? huService.filterCUsBookedInCUQtyEntryMode(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
+				: ImmutableSet.of();
+		final List<PickingJobLine> labelBasedLines = pickingJob.getLines(line -> isLabelRequired.test(line) || line.hasPickedHUIdIn(cusBookedLabelBased));
+		if (labelBasedLines.isEmpty())
 		{
 			return closeAllTargetsOnLastScannedSlot(pickingJob);
 		}
 		else
 		{
-			return closeTargetsPerNewModeLineSlot(pickingJob, newModeLines);
+			return closeTargetsPerLabelBasedLineSlot(pickingJob, labelBasedLines);
 		}
 	}
 
-	/** Manual lines (and all lines of a job without a new-mode line): all closed HUs go to the slot scanned last. */
+	/** Manual lines (and all lines of a job without a label-based-mode line): all closed HUs go to the slot scanned last. */
 	private PickingJob closeAllTargetsOnLastScannedSlot(@NonNull final PickingJob pickingJob)
 	{
 		return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
 	}
 
-	private PickingJob closeTargetsPerNewModeLineSlot(@NonNull final PickingJob pickingJob, @NonNull final List<PickingJobLine> newModeLines)
+	private PickingJob closeTargetsPerLabelBasedLineSlot(@NonNull final PickingJob pickingJob, @NonNull final List<PickingJobLine> labelBasedLines)
 	{
 		PickingJob pickingJobChanged = closeHeaderTargets(pickingJob);
-		for (final PickingJobLine line : newModeLines)
+		for (final PickingJobLine line : labelBasedLines)
 		{
 			pickingJobChanged = closeLineTargets(pickingJobChanged, line.getId());
 		}

@@ -3,7 +3,7 @@
   // The dialog of GetQuantityDialog (modifier `fits-screen`) is never taller than the screen: the Scan once / Scan each CU modes add a
   // button row and a scanner below the table area, which together with its fixed 70vh pushed the quantity field (centered overflow)
   // off the top of a phone screen. The table area is the part that gives way: it shrinks (and scrolls inside) only when the rest does
-  // not fit. A dialog that fits (Manual) is laid out exactly as before. ReadQtyDialog (HU Manager) shares `get-qty-dialog` but not
+  // not fit. A dialog that fits (Manual) is laid out exactly . ReadQtyDialog (HU Manager) shares `get-qty-dialog` but not
   // the modifier: it is not changed.
   &.fits-screen .message {
     max-height: 100%;

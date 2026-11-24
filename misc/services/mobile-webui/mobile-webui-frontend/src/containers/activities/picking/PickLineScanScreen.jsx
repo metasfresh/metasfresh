@@ -260,7 +260,7 @@ export default PickLineScanScreen;
 //
 
 /**
- * The box open on a new-mode line stays visible in the header (a toast alone is gone when the picker looks back).
+ * The box open on a label-based-mode line stays visible in the header (a toast alone is gone when the picker looks back).
  */
 // @VisibleForTesting
 export const computeOpenBoxHeaderEntries = ({ isLabelRequiredLine, tuPickingTarget }) =>
@@ -269,7 +269,7 @@ export const computeOpenBoxHeaderEntries = ({ isLabelRequiredLine, tuPickingTarg
     : [];
 
 /**
- * Caption and packing name of the quantity block follow the picking unit the line JSON reports (a new-mode line is
+ * Caption and packing name of the quantity block follow the picking unit the line JSON reports (a label-based-mode line is
  * reported in CU, so it shows neither the TU caption nor the packing name).
  */
 // @VisibleForTesting
@@ -289,7 +289,7 @@ export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
 /**
  * The HU the PICK event takes the packs from (`huQRCode`). A line with a CU quantity entry mode takes them from the
  * source HU of the screen URL ("Kommissionieren aus", or the pick-on-the-fly code); the scanned CU label only gives
- * the attributes and travels as `cuLabel`. Manual keeps today: the scanned code is the source HU.
+ * the attributes and travels as `cuLabel`. Manual: the scanned code is the source HU.
  */
 // @VisibleForTesting
 export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }) => {
@@ -299,7 +299,7 @@ export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scanne
 };
 
 /**
- * The source HU of a new-mode pick: the `qrCode` of the screen URL, else the job's current "Kommissionieren aus" HU.
+ * The source HU of a label-based-mode pick: the `qrCode` of the screen URL, else the job's current "Kommissionieren aus" HU.
  * @returns the source HU QR code, or undefined when neither exists (e.g. "Scannen" without a source HU)
  */
 // @VisibleForTesting
@@ -427,7 +427,7 @@ export const convertScannedCULabelToResolvedResult = ({
     return onGrai(parseGraiFromRawInput(scannedBarcode)).then(() => ({ isNextBoxOpened: true }));
   }
 
-  const { errorKey, lotNo, bestBeforeDate, packId, cuLabel } = resolveCULabel({
+  const { errorKey, errorDetails, lotNo, bestBeforeDate, packId, cuLabel } = resolveCULabel({
     string: scannedBarcode,
     format: cuLabelFormat,
     expectedProductNo,
@@ -435,7 +435,7 @@ export const convertScannedCULabelToResolvedResult = ({
     isPackIdRequired: getCUQtyEntryPolicy(cuQtyEntryMode).isPackIdRequired,
   });
   if (errorKey) {
-    throw { messageKey: errorKey };
+    throw { messageKey: errorKey, details: errorDetails };
   }
 
   return { lotNo, bestBeforeDate, packId, cuLabel, isTUToBePickedAsWhole: false };
@@ -646,7 +646,7 @@ export const usePostQtyPicked = ({
     ).then(({ isPickingJobCompleted }) => {
       if (scanOnceMemory && !isPickingJobCompleted) {
         const cuEntryToRemember = computeCUEntryToRemember({
-          previousLastTypedQty: scanOnceMemory.lastTypedQty,
+          storedLastTypedQty: scanOnceMemory.lastTypedQty,
           suggestedQty: scanOnceMemory.suggestedQty,
           qtyBooked: qty,
           cuLabel,

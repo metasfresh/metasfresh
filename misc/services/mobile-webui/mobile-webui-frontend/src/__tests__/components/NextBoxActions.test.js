@@ -34,7 +34,7 @@ jest.mock('react-redux', () => ({ ...jest.requireActual('react-redux'), useDispa
 
 const BOX_TYPE_ID = 1000042;
 
-const newDeps = () => {
+const createDeps = () => {
   const calls = [];
   return {
     calls,
@@ -46,45 +46,45 @@ const newDeps = () => {
 
 describe('openNextBox: the "Weitere Kiste" button', () => {
   it('line names a TU type, a box is open: closes it, then opens a new box of that type', async () => {
-    const deps = newDeps();
+    const deps = createDeps();
     await openNextBox({ ...deps, packingTuPIId: BOX_TYPE_ID, packingItemName: 'Kiste x 4', isTargetOpen: true });
     expect(deps.calls).toEqual(['close', ['set', { tuPIId: BOX_TYPE_ID, caption: 'Kiste x 4' }]]);
   });
 
   it('line names a TU type, no box open (first box): only opens the new box', async () => {
-    const deps = newDeps();
+    const deps = createDeps();
     await openNextBox({ ...deps, packingTuPIId: BOX_TYPE_ID, packingItemName: 'Kiste x 4', isTargetOpen: false });
     expect(deps.calls).toEqual([['set', { tuPIId: BOX_TYPE_ID, caption: 'Kiste x 4' }]]);
   });
 
   it('line names no TU type, a box is open: closes it, then goes to the box list', async () => {
-    const deps = newDeps();
+    const deps = createDeps();
     await openNextBox({ ...deps, packingTuPIId: null, isTargetOpen: true });
     expect(deps.calls).toEqual(['close', 'gotoS7']);
     expect(deps.setTarget).not.toHaveBeenCalled();
   });
 
   it('line names no TU type, no box open: goes to the box list without closing anything', async () => {
-    const deps = newDeps();
+    const deps = createDeps();
     await openNextBox({ ...deps, packingTuPIId: null, isTargetOpen: false });
     expect(deps.calls).toEqual(['gotoS7']);
     expect(deps.closeTarget).not.toHaveBeenCalled();
   });
 
   it('an absent packingTuPIId is treated like null', async () => {
-    const deps = newDeps();
+    const deps = createDeps();
     await openNextBox({ ...deps, isTargetOpen: false });
     expect(deps.calls).toEqual(['gotoS7']);
   });
 
   it('a TU type id of 0 is still a TU type (only null / undefined mean none)', async () => {
-    const deps = newDeps();
+    const deps = createDeps();
     await openNextBox({ ...deps, packingTuPIId: 0, packingItemName: 'x', isTargetOpen: false });
     expect(deps.setTarget).toHaveBeenCalledWith({ target: { tuPIId: 0, caption: 'x' } });
   });
 
   it('a failing close stops the flow: no new box is opened', async () => {
-    const deps = newDeps();
+    const deps = createDeps();
     deps.closeTarget.mockRejectedValue(new Error('close failed'));
     await expect(
       openNextBox({ ...deps, packingTuPIId: BOX_TYPE_ID, packingItemName: 'x', isTargetOpen: true })

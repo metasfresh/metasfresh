@@ -23,14 +23,15 @@ export const toastErrorFromObj = (obj, toastId) => {
   }
 };
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context, toastId }) => {
+/** @param details the reason, shown after the message of `messageKey` */
+export const toastError = ({ axiosError, messageKey, details, fallbackMessageKey, plainMessage, context, toastId }) => {
   let code;
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
     code = extractErrorCodeFromAxiosError(axiosError);
   } else if (messageKey) {
-    message = trl(messageKey);
+    message = details ? `${trl(messageKey)} ${details}` : trl(messageKey);
     code = messageKey;
   } else if (plainMessage) {
     message = plainMessage;
