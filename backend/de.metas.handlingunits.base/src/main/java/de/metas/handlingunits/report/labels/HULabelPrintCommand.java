@@ -75,7 +75,6 @@ class HULabelPrintCommand
 				.huLabelConfigProvider(new HULabelConfigProvider(huLabelConfigService, request.getSourceDocType()))
 				.huProcessDAO(huProcessDAO)
 				.failOnMissingLabelConfig(request.isFailOnMissingLabelConfig())
-				.skipIncludedHUsWithoutLabelConfig(request.isSkipIncludedHUsWithoutLabelConfig())
 				.onlyIfAutoPrint(request.isOnlyIfAutoPrint())
 				.printCopiesOverride(request.getPrintCopiesOverride())
 				.build();
@@ -133,7 +132,6 @@ class HULabelPrintCommand
 		private final IMHUProcessDAO huProcessDAO;
 
 		private final boolean failOnMissingLabelConfig;
-		private final boolean skipIncludedHUsWithoutLabelConfig;
 		private final boolean onlyIfAutoPrint;
 		private final PrintCopies printCopiesOverride;
 		private final ArrayList<BatchToPrint> batches = new ArrayList<>();
@@ -144,7 +142,6 @@ class HULabelPrintCommand
 				@NonNull final HULabelConfigProvider huLabelConfigProvider,
 				@NonNull final IMHUProcessDAO huProcessDAO,
 				final boolean failOnMissingLabelConfig,
-				final boolean skipIncludedHUsWithoutLabelConfig,
 				final boolean onlyIfAutoPrint,
 				@Nullable final PrintCopies printCopiesOverride)
 		{
@@ -152,7 +149,6 @@ class HULabelPrintCommand
 			this.huProcessDAO = huProcessDAO;
 
 			this.failOnMissingLabelConfig = failOnMissingLabelConfig;
-			this.skipIncludedHUsWithoutLabelConfig = skipIncludedHUsWithoutLabelConfig;
 			this.onlyIfAutoPrint = onlyIfAutoPrint;
 			this.printCopiesOverride = printCopiesOverride;
 		}
@@ -167,7 +163,7 @@ class HULabelPrintCommand
 
 		private void explodeAndAdd(final HUToReport hu)
 		{
-			final HULabelConfig huLabelConfig = getLabelConfigOrNull(hu, failOnMissingLabelConfig);
+			final HULabelConfig huLabelConfig = getLabelConfigOrNull(hu);
 			final HUProcessDescriptor huProcessDescriptor = huLabelConfig != null
 					? huProcessDAO.getByProcessIdOrNull(huLabelConfig.getPrintFormatProcessId())
 					: null;
@@ -222,7 +218,7 @@ class HULabelPrintCommand
 			{
 				for (final HUToReport includedHU : hu.getIncludedHUs())
 				{
-					final HULabelConfig includeHULabelConfig = getLabelConfigOrNull(includedHU, failOnMissingLabelConfig && !skipIncludedHUsWithoutLabelConfig);
+					final HULabelConfig includeHULabelConfig = getLabelConfigOrNull(includedHU);
 					if (includeHULabelConfig != null)
 					{
 						add(includedHU, PrintInstructions.of(includeHULabelConfig));
@@ -231,11 +227,8 @@ class HULabelPrintCommand
 			}
 		}
 
-		/**
-		 * @param failIfMissing throw if no label config applies to the given HU; {@code false}: return {@code null} then
-		 */
 		@Nullable
-		private HULabelConfig getLabelConfigOrNull(final HUToReport hu, final boolean failIfMissing)
+		private HULabelConfig getLabelConfigOrNull(final HUToReport hu)
 		{
 			final ExplainedOptional<HULabelConfig> optionalLabelConfig = labelConfigProvider.getLabelConfig(hu);
 			if (optionalLabelConfig.isPresent())
@@ -256,7 +249,7 @@ class HULabelPrintCommand
 			}
 			else
 			{
-				if (failIfMissing)
+				if (failOnMissingLabelConfig)
 				{
 					throw new AdempiereException(optionalLabelConfig.getExplanation());
 				}

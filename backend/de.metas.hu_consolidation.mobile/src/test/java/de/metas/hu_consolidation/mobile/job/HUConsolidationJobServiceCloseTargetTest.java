@@ -211,7 +211,7 @@ class HUConsolidationJobServiceCloseTargetTest
 		verify(huLabelService).preparePrint(request.capture());
 		assertThat(request.getValue().getHuIds()).containsExactly(LU_ID);
 		assertThat(request.getValue().isFailOnMissingLabelConfig()).isFalse();
-		assertThat(request.getValue().isSkipIncludedHUsWithoutLabelConfig()).isTrue();
+		assertThat(request.getValue().isOnlyIfAutoPrint()).isFalse();
 	}
 
 	@Test

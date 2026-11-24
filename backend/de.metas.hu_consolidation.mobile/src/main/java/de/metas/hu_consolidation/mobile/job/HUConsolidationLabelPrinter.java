@@ -40,7 +40,6 @@ public class HUConsolidationLabelPrinter
 				.onlyIfAutoPrint(false)
 				// a pallet without any label config prints nothing and does not fail, as in picking; crates on it without a label config are skipped
 				.failOnMissingLabelConfig(false)
-				.skipIncludedHUsWithoutLabelConfig(true)
 				.build();
 	}
 }
