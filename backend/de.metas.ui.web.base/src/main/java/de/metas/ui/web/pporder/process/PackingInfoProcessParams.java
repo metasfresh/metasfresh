@@ -160,7 +160,7 @@ public class PackingInfoProcessParams
 		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(
 				pip,
 				ILUTUConfigurationFactory.extractBPartnerIdOrNull(defaultLUTUConfig),
-				ProductId.ofRepoIdOrNull(defaultLUTUConfig.getM_Product_ID()));
+				ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID()));
 
 		return luPIItems.stream()
 				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
@@ -256,6 +256,8 @@ public class PackingInfoProcessParams
 		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
 		defaultLUTUConfig.setQtyCUsPerTU(pip.getQty());
 
+		// Product-less (generic items only), unchanged: this fallback runs only with enforcePhysicalTU=true,
+		// and the only builder of this class (WEBUI_PP_Order_Receipt) sets enforcePhysicalTU(false), so it is not reached.
 		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartnerId, null);
 		if (luPIItems.isEmpty())
 		{
