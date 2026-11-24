@@ -6,7 +6,7 @@ import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLine
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { allureMeta, MSG_NO_OPEN_BOX, newFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
 import { buildCULabel, uniqueGTIN } from "../../utils/cuLabel";
-import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
+import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMAT_MISMATCH, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
 
@@ -265,8 +265,6 @@ test('buyer B line (Scan each CU, pack-ID format): a label without counter (L0) 
 
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 });
-
-const MSG_FORMAT_MISMATCH = 'The label does not match the label format of the picking profile';
 
 // noinspection JSUnusedLocalSymbols
 test('Scan each CU: a label the format rejects is refused and nothing is booked, not even by the product GTIN; the line goes on with a valid label', async ({ page }) => {

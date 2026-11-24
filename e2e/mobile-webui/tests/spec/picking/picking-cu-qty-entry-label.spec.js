@@ -7,6 +7,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductValue } from "../../utils/cuLabel";
+import { MSG_FORMAT_MISMATCH } from "../../utils/cuQtyEntryScanEach";
 import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryScanOnce";
 
 restoreSysconfigsAfterEach(test);
@@ -21,7 +22,6 @@ const LINE_QTY = 20;
 const BEST_BEFORE = '2026-11-07';
 
 const MSG_NO_FORMAT = 'No label format set on the picking profile';
-const MSG_FORMAT_MISMATCH = 'The label does not match the label format of the picking profile';
 const MSG_DIFFERENT_PRODUCT = 'The scanned QR Product does not match';
 
 /**

@@ -71,6 +71,12 @@ export const buildCULabel = ({ gtin, productValue, lot, bestBefore = '2026-11-07
     if (!/^\d{14}$/.test(gtin)) {
         throw new Error(`buildCULabel: gtin must be 14 digits, got '${gtin}'`);
     }
+    if (productValue.length !== PRODUCT_VALUE_LENGTH) {
+        throw new Error(`buildCULabel: productValue must be ${PRODUCT_VALUE_LENGTH} characters (no separators: a wrong length shifts every later field), got '${productValue}'`);
+    }
+    if (lot.length !== LOT_LENGTH) {
+        throw new Error(`buildCULabel: lot must be ${LOT_LENGTH} characters, got '${lot}'`);
+    }
     let label = `01${gtin}91${productValue}17${toYYMMDD(bestBefore)}10${lot}`;
     if (packId !== null && packId !== undefined) {
         label += `92${packId}`;
