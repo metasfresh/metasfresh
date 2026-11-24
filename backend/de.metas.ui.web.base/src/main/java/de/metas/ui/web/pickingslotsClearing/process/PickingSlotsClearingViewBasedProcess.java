@@ -83,11 +83,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-	/**
-	 * Same message as {@code LUTUProducerDestination}'s (private there). The LU item is resolved here, product-aware, instead of in
-	 * {@code LUTUProducerDestination.getLUItemPI()}, whose lazy lookup knows no product: making that lookup product-aware would change
-	 * every producer caller at once, which is out of this change's scope (product-specific LU items, picking-slot clearing only).
-	 */
+	/** Same message as {@code LUTUProducerDestination}'s, whose constant is private. */
 	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	public final PickingSlotsClearingView getPickingSlotsClearingView()

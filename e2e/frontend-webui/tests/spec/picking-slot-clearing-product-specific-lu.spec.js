@@ -317,16 +317,20 @@ test.describe('Picking tray clearing: new pallets use the product-specific palle
     });
     await test.step('Expect the "pallet type has no item for this TU" user error', async () => {
       // ERR_LU_HAS_NO_TU_SUB_PACK_INSTR names the pallet and the TU packing instruction; the names are masterdata, not translated
-      const errorText = await startResponse.text();
       expect(startResponse.ok(), 'the action fails').toBe(false);
-      expect(errorText).toContain(masterdata.packingInstructions.PI_LU2.luName);
-      expect(errorText).toContain(masterdata.packingInstructions.PI_OTHER.tuName);
+      const error = await startResponse.json();
+      expect(error.userFriendlyError, 'a user validation error, not a crash').toBe(true);
+      expect(error.message).toContain(masterdata.packingInstructions.PI_LU2.luName);
+      expect(error.message).toContain(masterdata.packingInstructions.PI_OTHER.tuName);
       // the process dialog shows it as an error notification (not a Toastify toast)
       await expect(page.locator('.notification-item.error')).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     });
-    for (const huId of huIdsOf({ masterdata, productIdentifier: 'OTHER' })) {
-      await expect(page.getByTestId(`table-row-${masterdata.pickingSlots.slot1.id}-${huId}`), 'the TU stays in the slot').toBeAttached();
-    }
+    // read from the database, not from the rows rendered before the action
+    const slotHUIds = await ClearingPage.getPickingSlotHUIds({
+      bpartnerId: masterdata.bpartners.BP1.id,
+      pickingSlotId: masterdata.pickingSlots.slot1.id,
+    });
+    expect(slotHUIds.sort(), 'the TUs stay in the slot').toEqual(huIdsOf({ masterdata, productIdentifier: 'OTHER' }).map(String).sort());
     expect(await ClearingPage.getPackingHUIds({ huUnitType: 'LU' }), 'no new pallet').toEqual([]);
     expect(await ClearingPage.getPackingHUIds({ huUnitType: 'TU' }), 'no new TU').toEqual([]);
   });

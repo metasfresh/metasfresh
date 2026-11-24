@@ -7,7 +7,6 @@ import { WEBAPI_BASE_URL } from '../Backend';
 /** Picking Tray Clearing window (PickingSlotsClearingViewFactory) */
 const PICKING_SLOTS_CLEARING_WINDOW_ID = 540371;
 
-
 /**
  * Page object for the desktop "Picking Tray Clearing" window (540371).
  *
@@ -29,16 +28,7 @@ export class PickingSlotsClearingPage {
   static async open({ bpartnerId, pickingSlotId }) {
     return await test.step(`PickingSlotsClearingPage - Open for customer ${bpartnerId}`, async () => {
       const page = getPage();
-      const createViewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${PICKING_SLOTS_CLEARING_WINDOW_ID}`, {
-        headers: { 'Content-Type': 'application/json' },
-        data: {
-          windowId: String(PICKING_SLOTS_CLEARING_WINDOW_ID),
-          viewType: 'grid',
-          filters: [{ filterId: 'BPartner', parameters: [{ parameterName: 'C_BPartner_ID', value: bpartnerId }] }],
-        },
-      });
-      expect(createViewResponse.ok(), 'picking slots clearing view created').toBe(true);
-      this.#viewId = (await createViewResponse.json()).viewId;
+      this.#viewId = await this.#createView({ bpartnerId });
 
       const rows = await this.#getViewRows({ windowId: PICKING_SLOTS_CLEARING_WINDOW_ID, viewId: this.#viewId });
       const slotRow = rows.find((row) => row.id === String(pickingSlotId));
@@ -121,6 +111,20 @@ export class PickingSlotsClearingPage {
     });
   }
 
+  /**
+   * Reads the slot's top-level HUs from a newly created view, i.e. from the database (not from rows rendered earlier).
+   * @returns {Promise<string[]>} M_HU_IDs of the slot's top-level HU rows
+   */
+  static async getPickingSlotHUIds({ bpartnerId, pickingSlotId }) {
+    return await test.step(`PickingSlotsClearingPage - Get HU ids of picking slot ${pickingSlotId}`, async () => {
+      const viewId = await this.#createView({ bpartnerId });
+      const rows = await this.#getViewRows({ windowId: PICKING_SLOTS_CLEARING_WINDOW_ID, viewId });
+      const slotRow = rows.find((row) => row.id === String(pickingSlotId));
+      // top-level HU rows of a slot have the id "<pickingSlotId>-<huId>"
+      return (slotRow?.includedDocuments ?? []).map((row) => row.id.split('-')[1]);
+    });
+  }
+
   /** UI check: the right-hand view shows exactly these top-level rows. */
   static async expectPackingHURows({ huIds }) {
     return await test.step(`PickingSlotsClearingPage - Expect packing HU rows ${huIds}`, async () => {
@@ -179,6 +183,20 @@ export class PickingSlotsClearingPage {
     await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await option.click();
     await expect(input).toHaveValue(text, { timeout: SLOW_ACTION_TIMEOUT });
+  }
+
+  /** Creates a picking slots view filtered by the slot's customer (a DB holds the slots of many customers). */
+  static async #createView({ bpartnerId }) {
+    const response = await getPage().request.post(`${WEBAPI_BASE_URL}/documentView/${PICKING_SLOTS_CLEARING_WINDOW_ID}`, {
+      headers: { 'Content-Type': 'application/json' },
+      data: {
+        windowId: String(PICKING_SLOTS_CLEARING_WINDOW_ID),
+        viewType: 'grid',
+        filters: [{ filterId: 'BPartner', parameters: [{ parameterName: 'C_BPartner_ID', value: bpartnerId }] }],
+      },
+    });
+    expect(response.ok(), 'picking slots clearing view created').toBe(true);
+    return (await response.json()).viewId;
   }
 
   static async #getViewRows({ windowId, viewId }) {
