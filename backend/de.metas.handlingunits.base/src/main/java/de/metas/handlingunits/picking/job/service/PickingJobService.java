@@ -6,7 +6,6 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.location.DocumentLocation;
 import de.metas.handlingunits.HuId;
@@ -77,7 +76,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
@@ -86,11 +84,13 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -542,36 +542,41 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId)
 	{
 		final BPartnerId customerId = pickingJob.getCustomerId();
-		final Stream<PickingJobLine> lines = lineId != null
-				? Stream.of(pickingJob.getLineById(lineId))
-				: pickingJob.streamLines();
 
-		return lines
-				.map(line -> LUTargetsKey.of(line, customerId))
-				.distinct()
-				.flatMap(key -> huService.getLUPIsForProduct(getTUPIItems(ImmutableSet.of(key.getProductId()), key.getTuCustomerId()), customerId, key.getProductForNewLU()).stream())
-				.distinct()
+		final ImmutableSet<HuPackingInstructionsIdAndCaption> luPIs;
+		if (lineId != null)
+		{
+			final PickingJobLine line = pickingJob.getLineById(lineId);
+			luPIs = ImmutableSet.copyOf(huService.getLUPIsForProduct(getTUPIItems(pickingJob, lineId), customerId, getProductForNewLU(line)));
+		}
+		else
+		{
+			// One lookup per product the new LU is built for (null: lines picked in CUs), over the TU items of those lines' products.
+			// The TU items are looked up with the job's customer, as before.
+			final Map<Optional<ProductId>, ImmutableSet<ProductId>> productIdsByProductForNewLU = pickingJob.streamLines()
+					.collect(Collectors.groupingBy(
+							line -> Optional.ofNullable(getProductForNewLU(line)),
+							LinkedHashMap::new,
+							Collectors.mapping(PickingJobLine::getProductId, ImmutableSet.toImmutableSet())));
+
+			luPIs = productIdsByProductForNewLU.entrySet()
+					.stream()
+					.flatMap(entry -> huService.getLUPIsForProduct(getTUPIItems(entry.getValue(), customerId), customerId, entry.getKey().orElse(null)).stream())
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		return luPIs.stream()
 				.map(PickingJobService::toPickingTarget)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Value
-	private static class LUTargetsKey
+	/**
+	 * @return the line's product if the line is picked in whole TUs; {@code null} if it is picked in CUs, because then the new LU is built without product
+	 */
+	@Nullable
+	private static ProductId getProductForNewLU(@NonNull final PickingJobLine line)
 	{
-		@NonNull ProductId productId;
-		@Nullable BPartnerId tuCustomerId;
-		/**
-		 * The line's product if the line is picked in whole TUs; {@code null} if it is picked in CUs, because then the new LU is built without product
-		 */
-		@Nullable ProductId productForNewLU;
-
-		static LUTargetsKey of(@NonNull final PickingJobLine line, @Nullable final BPartnerId jobCustomerId)
-		{
-			return new LUTargetsKey(
-					line.getProductId(),
-					CoalesceUtil.coalesce(line.getCustomerId(), jobCustomerId),
-					line.getPickingUnit().isTU() ? line.getProductId() : null);
-		}
+		return line.getPickingUnit().isTU() ? line.getProductId() : null;
 	}
 
 	@NonNull
@@ -604,7 +609,7 @@ public class PickingJobService implements PickingSlotListener
 		if (lineId != null)
 		{
 			final PickingJobLine line = pickingJob.getLineById(lineId);
-			return getTUPIItems(ImmutableSet.of(line.getProductId()), CoalesceUtil.coalesce(line.getCustomerId(), pickingJob.getCustomerId()));
+			return getTUPIItems(ImmutableSet.of(line.getProductId()), line.getCustomerId());
 		}
 		else
 		{

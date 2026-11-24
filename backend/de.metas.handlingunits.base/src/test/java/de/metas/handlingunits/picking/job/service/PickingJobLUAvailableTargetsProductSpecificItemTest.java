@@ -40,6 +40,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -64,8 +65,8 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 {
 	private PickingJobTestHelper helper;
 	private HUTestHelper huTestHelper;
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private IHandlingUnitsDAO handlingUnitsDAO;
+	private IHandlingUnitsBL handlingUnitsBL;
 
 	private ProductId productA; // picked
 	private ProductId productB; // another product
@@ -80,6 +81,8 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 	{
 		helper = new PickingJobTestHelper();
 		huTestHelper = helper.getHuTestHelper();
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 		productA = BusinessTestHelper.createProductId("P-A", helper.uomEach);
@@ -195,44 +198,51 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 		return CollectionUtils.singleElement(luItemsHoldingTUs);
 	}
 
-	@Test
-	void tuLine_palletTypeWithOnlyAnotherProductsItem_isNotOffered()
+	/**
+	 * The job's line is picked in TUs (whole TUs of product A).
+	 */
+	@Nested
+	class TuLine
 	{
-		final I_M_HU_PI luPIForB = createLUPIWithOnlyProductItem("PALLET-B", productB);
-		final PickingJob pickingJob = createPickingJobForProductA(tuPIIP_A, PickingUnit.TU);
+		@Test
+		void palletTypeWithOnlyAnotherProductsItem_isNotOffered()
+		{
+			final I_M_HU_PI luPIForB = createLUPIWithOnlyProductItem("PALLET-B", productB);
+			final PickingJob pickingJob = createPickingJobForProductA(tuPIIP_A, PickingUnit.TU);
 
-		assertThat(lineLUTargets(pickingJob)).containsExactly(idOf(genericLUPI)).doesNotContain(idOf(luPIForB));
-		assertThat(jobLUTargets(pickingJob)).containsExactly(idOf(genericLUPI));
-	}
+			assertThat(lineLUTargets(pickingJob)).containsExactly(idOf(genericLUPI)).doesNotContain(idOf(luPIForB));
+			assertThat(jobLUTargets(pickingJob)).containsExactly(idOf(genericLUPI));
+		}
 
-	@Test
-	void tuLine_palletTypeWithOnlyThePickedProductsItem_isOffered_andThePickUsesThatItem()
-	{
-		final I_M_HU_PI luPIForA = createLUPIWithOnlyProductItem("PALLET-A", productA);
-		final HUQRCode sourceQRCode = createSourceLUOfProductA_3TUs();
-		final PickingJob pickingJob = createPickingJobForProductA(tuPIIP_A, PickingUnit.TU);
+		@Test
+		void palletTypeWithOnlyThePickedProductsItem_isOffered_andThePickUsesThatItem()
+		{
+			final I_M_HU_PI luPIForA = createLUPIWithOnlyProductItem("PALLET-A", productA);
+			final HUQRCode sourceQRCode = createSourceLUOfProductA_3TUs();
+			final PickingJob pickingJob = createPickingJobForProductA(tuPIIP_A, PickingUnit.TU);
 
-		assertThat(lineLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA));
-		assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA));
+			assertThat(lineLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA));
+			assertThat(jobLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA));
 
-		final PickingJob pickingJobAfterPick = pickOntoNewLU(pickingJob, luPIForA, sourceQRCode, "3");
+			final PickingJob pickingJobAfterPick = pickOntoNewLU(pickingJob, luPIForA, sourceQRCode, "3");
 
-		final Set<HuId> pickedHUIds = CollectionUtils.singleElement(pickingJobAfterPick.getLines()).getPickedHUIds();
-		assertThat(pickedHUIds).isNotEmpty();
-		final I_M_HU_PI_Item luItem = getLUPIItemHoldingTheTUs(pickedHUIds.iterator().next());
-		assertThat(luItem.getM_HU_PI_Version().getM_HU_PI_ID()).isEqualTo(luPIForA.getM_HU_PI_ID());
-		assertThat(luItem.getM_Product_ID()).isEqualTo(productA.getRepoId());
-		assertThat(luItem.getQty()).isEqualByComparingTo("40");
-	}
+			final Set<HuId> pickedHUIds = CollectionUtils.singleElement(pickingJobAfterPick.getLines()).getPickedHUIds();
+			assertThat(pickedHUIds).isNotEmpty();
+			final I_M_HU_PI_Item luItem = getLUPIItemHoldingTheTUs(pickedHUIds.iterator().next());
+			assertThat(luItem.getM_HU_PI_Version().getM_HU_PI_ID()).isEqualTo(luPIForA.getM_HU_PI_ID());
+			assertThat(luItem.getM_Product_ID()).isEqualTo(productA.getRepoId());
+			assertThat(luItem.getQty()).isEqualByComparingTo("40");
+		}
 
-	@Test
-	void tuLine_bothPalletTypes_onlyThePickedProductsIsOffered()
-	{
-		final I_M_HU_PI luPIForA = createLUPIWithOnlyProductItem("PALLET-A", productA);
-		final I_M_HU_PI luPIForB = createLUPIWithOnlyProductItem("PALLET-B", productB);
-		final PickingJob pickingJob = createPickingJobForProductA(tuPIIP_A, PickingUnit.TU);
+		@Test
+		void bothPalletTypes_onlyThePickedProductsIsOffered()
+		{
+			final I_M_HU_PI luPIForA = createLUPIWithOnlyProductItem("PALLET-A", productA);
+			final I_M_HU_PI luPIForB = createLUPIWithOnlyProductItem("PALLET-B", productB);
+			final PickingJob pickingJob = createPickingJobForProductA(tuPIIP_A, PickingUnit.TU);
 
-		assertThat(lineLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA)).doesNotContain(idOf(luPIForB));
+			assertThat(lineLUTargets(pickingJob)).containsExactlyInAnyOrder(idOf(genericLUPI), idOf(luPIForA)).doesNotContain(idOf(luPIForB));
+		}
 	}
 
 	@Test
