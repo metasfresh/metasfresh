@@ -37,7 +37,7 @@ const renderManual = ({ onQtyChange, ...props } = {}) =>
 
 const payloads = (fn) => fn.mock.calls.map(([arg]) => arg.isCloseTarget);
 
-describe('GetQuantityDialog (Manual): as on base', () => {
+describe('GetQuantityDialog (Manual): submit and default buttons', () => {
   it('the form submit (Enter in the quantity field) books with isCloseTarget:false', async () => {
     const onQtyChange = jest.fn(() => Promise.resolve());
     const { container } = renderManual({ onQtyChange });

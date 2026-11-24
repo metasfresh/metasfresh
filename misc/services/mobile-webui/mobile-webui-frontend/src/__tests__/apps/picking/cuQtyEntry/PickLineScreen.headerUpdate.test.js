@@ -73,7 +73,7 @@ describe('useHeaderUpdate: additional header entries', () => {
     expect(shown()).toContain('12');
   });
 
-  it('Manual (no isLiveRefresh): header refreshes on url / caption only, as on base', () => {
+  it('Manual (no isLiveRefresh): header refreshes on url / caption only', () => {
     const { actions, rerenderWith } = renderWithStore({ additionalHeaderProperties: { entries: [] } });
     const n = actions.length;
     rerenderWith({ additionalHeaderProperties: { entries: [] }, qtyPicked: 7, qtyToPick: 12 });
