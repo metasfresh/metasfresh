@@ -1,5 +1,9 @@
 package de.metas.handlingunits.picking.job.service;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProduct;
@@ -30,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -185,6 +190,30 @@ class PickingCULabelServiceTest
 					// the explanation of the format parser (which part does not fit) follows the message of the key
 					assertThat(adempiereException.getMessage()).contains("01");
 				});
+	}
+
+	@Test
+	void formatMismatch_logsTheParserExplanation()
+	{
+		final Logger logger = (Logger)LoggerFactory.getLogger(PickingCULabelService.class);
+		final ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+		logAppender.start();
+		logger.addAppender(logAppender);
+		try
+		{
+			final String label = "]d2" + label(GTIN, PRODUCT_NO, "7");
+			assertFails(() -> resolve(label, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
+
+			assertThat(logAppender.list).hasSize(1);
+			final ILoggingEvent event = logAppender.list.get(0);
+			assertThat(event.getLevel()).isEqualTo(Level.WARN);
+			// the scanned label and the explanation of the format parser (which part does not fit): the same details the picker gets in the toast
+			assertThat(event.getFormattedMessage()).contains(label).contains("01");
+		}
+		finally
+		{
+			logger.detachAppender(logAppender);
+		}
 	}
 
 	@Test
