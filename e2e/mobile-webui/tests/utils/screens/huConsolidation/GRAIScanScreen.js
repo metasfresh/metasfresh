@@ -2,6 +2,7 @@ import { attachScreenshot, expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_T
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { ErrorToast } from '../../dialogs/ErrorToast';
 import { HUConsolidationJobScreen } from './HUConsolidationJobScreen';
 
 const NAME = 'GRAIScanScreen';
@@ -79,6 +80,7 @@ export const GRAIScanScreen = {
         }, async ({ textContent }) => {
             expect(textContent).toContain(message);
             if (screenshotName) {
+                await ErrorToast.expectFullyShown();
                 await attachScreenshot(screenshotName);
             }
         });
