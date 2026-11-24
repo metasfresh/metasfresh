@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * CU quantity entry: {@link PackToHURequest#isBookAsSingleCUInBox()}.
+ * CU quantity entry: {@link PackToHURequest#isBookAsSingleCUInTU()}.
  * Every case builds the request like the pick command does: checkIfAlreadyPacked(true), createInventoryForMissingQty(true).
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -81,7 +81,7 @@ public class PackToHUsProducerCUQtyEntryTest
 
 	private I_M_HU vhu(final String qty) {return handlingUnitsBL.getById(helper.createVHU(productId, qty(qty)));}
 
-	private PackToInfo box()
+	private PackToInfo tu()
 	{
 		return PackToInfo.builder()
 				.shipToBPLocationId(helper.shipToBPLocationId)
@@ -91,7 +91,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.build();
 	}
 
-	private PackToInfo openBox(final I_M_HU box)
+	private PackToInfo openTU(final I_M_HU tu)
 	{
 		final HUQRCode qrCode = HUQRCode.builder()
 				.id(HUQRCodeUniqueId.random())
@@ -105,7 +105,7 @@ public class PackToHUsProducerCUQtyEntryTest
 		return PackToInfo.builder()
 				.shipToBPLocationId(helper.shipToBPLocationId)
 				.shipFromLocatorId(helper.shipFromLocatorId)
-				.tu(TUPickingTarget.ofExistingHU(HuId.ofRepoId(box.getM_HU_ID()), qrCode))
+				.tu(TUPickingTarget.ofExistingHU(HuId.ofRepoId(tu.getM_HU_ID()), qrCode))
 				.build();
 	}
 
@@ -121,7 +121,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.documentRef(TableRecordReference.of(source))
 				.checkIfAlreadyPacked(true)
 				.createInventoryForMissingQty(true)
-				.isBookAsSingleCUInBox(isLabelBasedModes)
+				.isBookAsSingleCUInTU(isLabelBasedModes)
 				.build());
 	}
 
@@ -134,26 +134,26 @@ public class PackToHUsProducerCUQtyEntryTest
 	}
 
 	/**
-	 * (ii) lots A then B into one box (new box, then the open box): each CU keeps its lot and each result names its CU as the picked HU.
+	 * (ii) lots A then B into one TU (new TU, then the open TU): each CU keeps its lot and each result names its CU as the picked HU.
 	 * Emptying the TU lot (mixed lots) is done afterwards by {@code PickedHUAttributesUpdater} recomputing it from the partial TU's CUs;
 	 * without it the HU framework leaves the first lot on the TU, which is not asserted here.
 	 */
 	@Test
-	public void lotsAThenB_intoOneBox_eachCUKeepsItsLot_bothResultsArePartialTUs()
+	public void lotsAThenB_intoOneTU_eachCUKeepsItsLot_bothResultsArePartialTUs()
 	{
 		final I_M_HU sourceA = vhu("10");
 		final I_M_HU sourceB = vhu("10");
 		setLot(sourceA, "LOT-A");
 		setLot(sourceB, "LOT-B");
 
-		final LUTUResult first = pack(sourceA, "2", box(), true);
-		final I_M_HU box = first.getSingleTU().toHU();
-		final LUTUResult second = pack(sourceB, "3", openBox(box), true);
+		final LUTUResult first = pack(sourceA, "2", tu(), true);
+		final I_M_HU tu = first.getSingleTU().toHU();
+		final LUTUResult second = pack(sourceB, "3", openTU(tu), true);
 		assertThat(first.getSingleTU().isFullTU()).isFalse();
 		assertThat(second.getSingleTU().isFullTU()).isFalse();
-		assertThat(lotOf(cusOf(box).stream().filter(cu -> cu.getM_HU_ID() == second.getSingleTU().getCUsNotEmpty().get(0).toHU().getM_HU_ID()).findFirst().get())).isEqualTo("LOT-B");
+		assertThat(lotOf(cusOf(tu).stream().filter(cu -> cu.getM_HU_ID() == second.getSingleTU().getCUsNotEmpty().get(0).toHU().getM_HU_ID()).findFirst().get())).isEqualTo("LOT-B");
 
-		final List<I_M_HU> cus = cusOf(box);
+		final List<I_M_HU> cus = cusOf(tu);
 		assertThat(cus).hasSize(2);
 		assertThat(cus).extracting(cu -> lotOf(cu)).containsExactlyInAnyOrder("LOT-A", "LOT-B");
 	}
@@ -182,18 +182,18 @@ public class PackToHUsProducerCUQtyEntryTest
 	}
 
 	@Nested
-	class NewBox
+	class NewTU
 	{
-		/** (i) new box, N=5 from the pieces 4 + 4 -> one CU of 5, result = partial TU whose single CU is that CU. */
+		/** (i) new TU, N=5 from the pieces 4 + 4 -> one CU of 5, result = partial TU whose single CU is that CU. */
 		@Test
 		public void scanOnceN5_fromTwoPieces_partialTUWithOneCUOf5()
 		{
-			// source = a box (TU) holding two pieces 4 + 4: 5 are taken across both pieces (no inventory needed)
+			// source = a TU holding two pieces 4 + 4: 5 are taken across both pieces (no inventory needed)
 			final I_M_HU sourceTU = sourceTUWithTwoPieces();
 			assertThat(cusOf(sourceTU)).hasSize(2);
 			final I_M_HU piece1 = sourceTU;
 
-			final LUTUResult result = pack(piece1, "5", box(), true);
+			final LUTUResult result = pack(piece1, "5", tu(), true);
 
 			final LUTUResult.TU tu = result.getSingleTU();
 			assertThat(tu.isFullTU()).as("partial TU, the CU is the picked HU").isFalse();
@@ -203,13 +203,13 @@ public class PackToHUsProducerCUQtyEntryTest
 			assertThat(tu.getCUsNotEmpty()).extracting(LUTUResult.TUPart::getId).containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
 		}
 
-		/** (iii) new box, Scan each CU, qty 1 -> partial TU, its CU returned. */
+		/** (iii) new TU, Scan each CU, qty 1 -> partial TU, its CU returned. */
 		@Test
 		public void scanEachCU_qty1_partialTUWithItsCU()
 		{
 			final I_M_HU source = vhu("10");
 
-			final LUTUResult result = pack(source, "1", box(), true);
+			final LUTUResult result = pack(source, "1", tu(), true);
 
 			final LUTUResult.TU tu = result.getSingleTU();
 			assertThat(tu.isFullTU()).isFalse();
@@ -223,97 +223,97 @@ public class PackToHUsProducerCUQtyEntryTest
 		@Test
 		public void flagsOff_fullTU()
 		{
-			final LUTUResult result = pack(vhu("10"), "1", box(), false);
+			final LUTUResult result = pack(vhu("10"), "1", tu(), false);
 
 			assertThat(result.getSingleTU().isFullTU()).isTrue();
 		}
 
-		/** (iv) new box, qty 1, source = a TU of the line's TU packing holding exactly 1 pack -> a NEW box, the source TU is not the picked HU. */
+		/** (iv) new TU, qty 1, source = a TU of the line's TU packing holding exactly 1 pack -> a NEW TU, the source TU is not the picked HU. */
 		@Test
-		public void sourceIsTUWithExactlyOnePack_newBoxIsMade()
+		public void sourceIsTUWithExactlyOnePack_newTUIsMade()
 		{
 			final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("1")));
 
-			final LUTUResult result = pack(sourceTU, "1", box(), true);
+			final LUTUResult result = pack(sourceTU, "1", tu(), true);
 
 			final LUTUResult.TU tu = result.getSingleTU();
 			assertThat(tu.isFullTU()).isFalse();
-			assertThat(tu.getId()).as("the source TU is not the picked box").isNotEqualTo(HuId.ofRepoId(sourceTU.getM_HU_ID()));
+			assertThat(tu.getId()).as("the source TU is not the picked TU").isNotEqualTo(HuId.ofRepoId(sourceTU.getM_HU_ID()));
 			final List<I_M_HU> cus = cusOf(tu.toHU());
 			assertThat(cus).hasSize(1);
 			assertThat(tu.getCUsNotEmpty().get(0).getId()).isEqualTo(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
 		}
 
-		/** (iv) flags off: the source TU is taken as the box. */
+		/** (iv) flags off: the source TU is taken as the TU. */
 		@Test
-		public void sourceIsTUWithExactlyOnePack_flagsOff_sourceTUIsTheBox()
+		public void sourceIsTUWithExactlyOnePack_flagsOff_sourceTUIsTheTU()
 		{
 			final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("1")));
 
-			final LUTUResult result = pack(sourceTU, "1", box(), false);
+			final LUTUResult result = pack(sourceTU, "1", tu(), false);
 
 			assertThat(result.getSingleTU().getId()).isEqualTo(HuId.ofRepoId(sourceTU.getM_HU_ID()));
 		}
 	}
 
 	@Nested
-	class OpenBox
+	class OpenTU
 	{
-		/** (ii) open box holding 3, N=5 -> a second CU of 5 in the box; the result names that CU. */
+		/** (ii) open TU holding 3, N=5 -> a second CU of 5 in the TU; the result names that CU. */
 		@Test
 		public void with3_n5_oneMoreCUOf5()
 		{
-			final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
+			final I_M_HU openTUHU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
 			final I_M_HU source = vhu("8");
 
-			final LUTUResult result = pack(source, "5", openBox(box), true);
+			final LUTUResult result = pack(source, "5", openTU(openTUHU), true);
 
 			final LUTUResult.TU tu = result.getSingleTU();
 			assertThat(tu.isFullTU()).isFalse();
 			assertThat(tu.getCUsNotEmpty()).hasSize(1);
-			final List<I_M_HU> cus = cusOf(box);
+			final List<I_M_HU> cus = cusOf(openTUHU);
 			assertThat(cus).hasSize(2);
 			assertThat(cus).extracting(PackToHUsProducerCUQtyEntryTest.this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class).containsExactlyInAnyOrder(new BigDecimal("3"), new BigDecimal("5"));
 			final I_M_HU cu5 = cus.stream().filter(cu -> qtyOf(cu).compareTo(new BigDecimal("5")) == 0).findFirst().get();
 			assertThat(tu.getCUsNotEmpty().get(0).getId()).isEqualTo(HuId.ofRepoId(cu5.getM_HU_ID()));
 		}
 
-		/** Flags off, open box: full TU; the 5 pieces are added as CUs (one source CU of 8 -> 5 taken). */
+		/** Flags off, open TU: full TU; the 5 pieces are added as CUs (one source CU of 8 -> 5 taken). */
 		@Test
 		public void flagsOff_fullTU()
 		{
-			final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
+			final I_M_HU tu = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
 
-			final LUTUResult result = pack(vhu("8"), "5", openBox(box), false);
+			final LUTUResult result = pack(vhu("8"), "5", openTU(tu), false);
 
 			assertThat(result.getSingleTU().isFullTU()).isTrue();
-			assertThat(cusOf(box)).extracting(PackToHUsProducerCUQtyEntryTest.this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+			assertThat(cusOf(tu)).extracting(PackToHUsProducerCUQtyEntryTest.this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
 					.containsExactlyInAnyOrder(new BigDecimal("3"), new BigDecimal("5"));
 		}
 
-		/** Flags off, open box, the source holds several pieces (4 + 4): the Manual error. */
+		/** Flags off, open TU, the source holds several pieces (4 + 4): the Manual error. */
 		@Test
 		public void fromTwoPieces_flagsOff_fails()
 		{
-			final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
+			final I_M_HU tu = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
 			final I_M_HU sourceTU = sourceTUWithTwoPieces();
 
-			assertThatThrownBy(() -> pack(sourceTU, "5", openBox(box), false))
+			assertThatThrownBy(() -> pack(sourceTU, "5", openTU(tu), false))
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining("exactly one");
 		}
 
-		/** open box holding 3, the source holds two pieces 4 + 4, N=5 -> one new CU of 5 in the box (needs the consolidation to one CU). */
+		/** open TU holding 3, the source holds two pieces 4 + 4, N=5 -> one new CU of 5 in the TU (needs the consolidation to one CU). */
 		@Test
 		public void fromTwoPieces_n5_oneCUOf5()
 		{
-			final I_M_HU box = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
+			final I_M_HU tu = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("3")));
 			final I_M_HU sourceTU = sourceTUWithTwoPieces();
 
-			final LUTUResult result = pack(sourceTU, "5", openBox(box), true);
+			final LUTUResult result = pack(sourceTU, "5", openTU(tu), true);
 
 			assertThat(result.getSingleTU().isFullTU()).isFalse();
-			assertThat(cusOf(box)).extracting(PackToHUsProducerCUQtyEntryTest.this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+			assertThat(cusOf(tu)).extracting(PackToHUsProducerCUQtyEntryTest.this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
 					.containsExactlyInAnyOrder(new BigDecimal("3"), new BigDecimal("5"));
 			assertThat(result.getSingleTU().getCUsNotEmpty()).hasSize(1);
 		}

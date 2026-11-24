@@ -147,9 +147,9 @@ describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
     expect(onResult).not.toHaveBeenCalled();
   });
 
-  it('a GRAI scanned in the quantity block only opens the box: label and block stay', async () => {
+  it('a GRAI scanned in the quantity block only opens the TU: label and block stay', async () => {
     const onResult = jest.fn().mockResolvedValue();
-    const resolveScannedBarcode = async (code) => (code === 'GRAI' ? { isNextBoxOpened: true } : labels[code]);
+    const resolveScannedBarcode = async (code) => (code === 'GRAI' ? { isNextTUOpened: true } : labels[code]);
     renderComponent({ onResult, resolveScannedBarcode });
     await act(async () => {});
     await scan('scanHUBarcode-input', 'RAW-A');

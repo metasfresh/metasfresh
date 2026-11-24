@@ -160,7 +160,7 @@ test('Expect Pick All button hidden when feature is not active', async ({ page }
 
 //
 // CU quantity entry modes (SCAN_EACH_CU, SCAN_ONCE_ENTER_QTY): Quick Pack All would book every line without a label scan
-// (no duplicate check, no pack ID, no box, no label lot / best-before), so the button is hidden and the call is refused.
+// (no duplicate check, no pack ID, no TU, no label lot / best-before), so the button is hidden and the call is refused.
 //
 
 const MSG_QUICK_PACK_ALL_NOT_ALLOWED = "Quick Pack is not allowed";

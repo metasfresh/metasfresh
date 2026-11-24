@@ -19,7 +19,7 @@ const PART_TYPE_IGNORE = 'IGNORE';
 const ERROR_differentProduct = 'activities.picking.qrcode.differentProduct';
 
 /**
- * On a line with a CU quantity entry mode, a scanned string is either a GRAI (opens a box) or a CU label.
+ * On a line with a CU quantity entry mode, a scanned string is either a GRAI (opens a TU) or a CU label.
  *
  * @returns 'GRAI' when the string is a GRAI, else 'CU_LABEL'
  */

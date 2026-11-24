@@ -62,9 +62,9 @@ const translations = {
       noPackId: 'Das Etikett enthält keine Packungs-ID. Es wurde nichts gebucht.',
     },
     pickFromRequired: "Bitte zuerst 'Kommissionieren aus' scannen.",
-    nextBox: 'Weitere Kiste',
-    nextBoxOpened: 'Neue Kiste geöffnet: %(caption)s',
-    nextBoxBusy: 'Es wird gerade eine Kiste geöffnet. Bitte gleich nochmal scannen.',
+    nextTU: 'Weitere Kiste',
+    nextTUOpened: 'Neue Kiste geöffnet: %(caption)s',
+    nextTUBusy: 'Es wird gerade eine Kiste geöffnet. Bitte gleich nochmal scannen.',
   },
   login: {
     submitButton: 'Login',

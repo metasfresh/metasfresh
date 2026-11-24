@@ -58,9 +58,9 @@ const translations = {
       noPackId: 'The label contains no pack ID. Nothing was booked.',
     },
     pickFromRequired: "Please scan 'Pick From' first.",
-    nextBox: 'Next box',
-    nextBoxOpened: 'New box opened: %(caption)s',
-    nextBoxBusy: 'A box is just being opened. Scan again in a moment.',
+    nextTU: 'Next box',
+    nextTUOpened: 'New box opened: %(caption)s',
+    nextTUBusy: 'A box is just being opened. Scan again in a moment.',
   },
   login: {
     submitButton: 'Login',

@@ -562,40 +562,40 @@ class PickingJobGraiScanPickEndToEndTest
 	class GetGraiSnapshots
 	{
 		/**
-		 * CU quantity entry modes: the picked HU of a label-based-mode line is the CU (virtual HU) inside the open box (TU).
-		 * The GRAI lives on the box, so the completion-time GRAI check must read the box: a box without GRAI is refused.
+		 * CU quantity entry modes: the picked HU of a label-based-mode line is the CU (virtual HU) inside the open TU.
+		 * The GRAI lives on the TU, so the completion-time GRAI check must read the TU: a TU without GRAI is refused.
 		 */
 		@Test
-		void labelBasedMode_pickedCUInsideBox_boxWithoutGrai_isRefused()
+		void labelBasedMode_pickedCUInsideTU_tuWithoutGrai_isRefused()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
-			final HuId cuId = createBoxWithCU(productId).getCuId();
+			final HuId cuId = createTUWithCU(productId).getCuId();
 
-			assertThatThrownBy(() -> graiSnapshotsOfBoxes(ImmutableSet.of(cuId)).assertAllGraisAssigned())
-					.as("a CU in a box without GRAI must fail the GRAI count check")
+			assertThatThrownBy(() -> graiSnapshotsOfTUs(ImmutableSet.of(cuId)).assertAllGraisAssigned())
+					.as("a CU in a TU without GRAI must fail the GRAI count check")
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 		}
 
-		/** Same as above, but the box carries its GRAI: accepted. */
+		/** Same as above, but the TU carries its GRAI: accepted. */
 		@Test
-		void labelBasedMode_pickedCUInsideBox_boxWithGrai_isAccepted()
+		void labelBasedMode_pickedCUInsideTU_tuWithGrai_isAccepted()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
-			final BoxWithCU box = createBoxWithCU(productId);
-			setGraiOnBox(box.getTuId(), GRAI.parse(GRAI_CANONICAL));
+			final TUWithCU tu = createTUWithCU(productId);
+			setGraiOnTU(tu.getTuId(), GRAI.parse(GRAI_CANONICAL));
 
-			graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
+			graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId())).assertAllGraisAssigned();
 		}
 
-		/** Several CUs of the same box are checked once, via their box. */
+		/** Several CUs of the same TU are checked once, via their TU. */
 		@Test
-		void labelBasedMode_severalCUsInSameBox_boxCheckedOnce()
+		void labelBasedMode_severalCUsInSameTU_tuCheckedOnce()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
-			final BoxWithCU box = createBoxWithCU(productId);
+			final TUWithCU tu = createTUWithCU(productId);
 
-			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId(), box.getTuId()));
+			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId(), tu.getTuId()));
 
 			assertThat(snapshots).hasSize(1);
 		}
@@ -605,25 +605,25 @@ class PickingJobGraiScanPickEndToEndTest
 		void pickedTUWithoutGrai_isRefused()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
-			final HuId tuId = createBoxWithCU(productId).getTuId();
+			final HuId tuId = createTUWithCU(productId).getTuId();
 
 			assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(tuId)).assertAllGraisAssigned())
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
-			assertThatThrownBy(() -> graiSnapshotsOfBoxes(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+			assertThatThrownBy(() -> graiSnapshotsOfTUs(ImmutableSet.of(tuId)).assertAllGraisAssigned())
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 		}
 
 		/**
-		 * Manual mode: a picked CU is NOT replaced by its box (the CU has no GRAI snapshot of its own),
-		 * so a box without GRAI is not refused through its CU.
+		 * Manual mode: a picked CU is NOT replaced by its TU (the CU has no GRAI snapshot of its own),
+		 * so a TU without GRAI is not refused through its CU.
 		 */
 		@Test
-		void manualMode_pickedCUInsideBox_isNotMappedToBox()
+		void manualMode_pickedCUInsideTU_isNotMappedToTU()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
-			final HuId cuId = createBoxWithCU(productId).getCuId();
+			final HuId cuId = createTUWithCU(productId).getCuId();
 
 			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshots(ImmutableSet.of(cuId));
 
@@ -631,24 +631,24 @@ class PickingJobGraiScanPickEndToEndTest
 			snapshots.assertAllGraisAssigned();
 		}
 
-		/** YesWithDummyGRAIs + label-based mode: the box of a picked CU gets the dummy GRAI at completion (the box is the GRAI carrier). */
+		/** YesWithDummyGRAIs + label-based mode: the TU of a picked CU gets the dummy GRAI at completion (the TU is the GRAI carrier). */
 		@Test
-		void labelBasedMode_dummyGRAIs_writtenOnTheBoxOfThePickedCU()
+		void labelBasedMode_dummyGRAIs_writtenOnTheTUOfThePickedCU()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
-			final BoxWithCU box = createBoxWithCU(productId);
+			final TUWithCU tu = createTUWithCU(productId);
 			final DummyGRAIProvider dummyGRAIProvider = new DummyGRAIProvider(DummyGRAITemplate.migros("1234567890"), 1);
 			final GRAI expectedGrai = DummyGRAITemplate.migros("1234567890").buildGRAI(1);
 
-			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId()));
+			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId()));
 			Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> helper.huService.generateMissingGRAIs(snapshots, dummyGRAIProvider));
 
-			assertThat(helper.huService.getGrais(box.getTuId())).isEqualTo(GRAISet.of(expectedGrai));
-			graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
+			assertThat(helper.huService.getGrais(tu.getTuId())).isEqualTo(GRAISet.of(expectedGrai));
+			graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId())).assertAllGraisAssigned();
 		}
 	}
 
-	private void setGraiOnBox(final HuId tuId, final GRAI grai)
+	private void setGraiOnTU(final HuId tuId, final GRAI grai)
 	{
 		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
 			try (final IAutoCloseable ignored = helper.huService.temporarySetNewHContextForProcessing())
@@ -659,24 +659,24 @@ class PickingJobGraiScanPickEndToEndTest
 	}
 
 	@Value
-	private static class BoxWithCU
+	private static class TUWithCU
 	{
 		@NonNull HuId tuId;
 		@NonNull HuId cuId;
 	}
 
-	private BoxWithCU createBoxWithCU(final ProductId productId)
+	private TUWithCU createTUWithCU(final ProductId productId)
 	{
 		createGraiTuPI(productId, true); // TU PI WITH the GRAI slot
 		final HuPackingInstructionsId tuPIId = helper.huService.resolveHuPackingInstructionsId(GRAI.parse(GRAI_CANONICAL));
 		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("5", productId));
 		final I_M_HU cu = CollectionUtils.singleElement(Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(tuId));
-		return new BoxWithCU(tuId, HuId.ofRepoId(cu.getM_HU_ID()));
+		return new TUWithCU(tuId, HuId.ofRepoId(cu.getM_HU_ID()));
 	}
 
-	/** The GRAI snapshots as the completion check sees them when every CU in a box (TU) of {@code huIds} was booked with a label scan. */
-	private HUGraiSnapshotsCollection graiSnapshotsOfBoxes(final Set<HuId> huIds)
+	/** The GRAI snapshots as the completion check sees them when every CU in a TU of {@code huIds} was booked with a label scan. */
+	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
-		return helper.huService.getGraiSnapshotsOfBoxes(huIds, helper.huService.getCUBookingSpecification().filterCUsInBox(huIds));
+		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.getCUBookingSpecification().filterCUsInTU(huIds));
 	}
 }

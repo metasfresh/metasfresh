@@ -11,7 +11,7 @@ import {
   isInlineGraiCaptureEnabled,
   computeQtyUnitProps,
   computeScannedBarcodeParam,
-  computeOpenBoxHeaderEntries,
+  computeOpenTUHeaderEntries,
   computeRememberedCULabel,
   computePickFromHUQRCode,
   computeSourceHUQRCode,
@@ -120,7 +120,7 @@ describe('PickingLineScanScreen: pick-time GRAI capture', () => {
 describe('PickingLineScanScreen: GRAI scan on a label-based-mode line', () => {
   const A_GRAI = '1234567.12345.SERIAL1';
 
-  it('opens the box from the GRAI and does not read it as a label', async () => {
+  it('opens the TU from the GRAI and does not read it as a label', async () => {
     const onGrai = jest.fn().mockResolvedValue(undefined);
     const result = await convertScannedCULabelToResolvedResult({
       scannedBarcode: A_GRAI,
@@ -129,7 +129,7 @@ describe('PickingLineScanScreen: GRAI scan on a label-based-mode line', () => {
       onGrai,
     });
     expect(onGrai).toHaveBeenCalledWith(A_GRAI);
-    expect(result).toEqual({ isNextBoxOpened: true });
+    expect(result).toEqual({ isNextTUOpened: true });
   });
 
   it('is accepted with and without a label format (never refused)', async () => {
@@ -142,11 +142,11 @@ describe('PickingLineScanScreen: GRAI scan on a label-based-mode line', () => {
           expectedProductNo: 'P1',
           onGrai,
         })
-      ).resolves.toEqual({ isNextBoxOpened: true });
+      ).resolves.toEqual({ isNextTUOpened: true });
     }
   });
 
-  it('a failing box opening is reported, not swallowed', async () => {
+  it('a failing TU opening is reported, not swallowed', async () => {
     const onGrai = jest.fn().mockRejectedValue(new Error('boom'));
     await expect(
       convertScannedCULabelToResolvedResult({ scannedBarcode: A_GRAI, expectedProductNo: 'P1', onGrai })
@@ -187,19 +187,19 @@ describe('PickingLineScanScreen: re-entry hop', () => {
   });
 });
 
-describe('PickingLineScanScreen: the open box is shown in the header', () => {
-  it('a label-based-mode line with an open box shows its caption', () => {
-    expect(computeOpenBoxHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual(
-      [{ caption: expect.any(String), value: 'Kiste 7' }]
-    );
+describe('PickingLineScanScreen: the open TU is shown in the header', () => {
+  it('a label-based-mode line with an open TU shows its caption', () => {
+    expect(computeOpenTUHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual([
+      { caption: expect.any(String), value: 'Kiste 7' },
+    ]);
   });
 
-  it('no open box: no entry', () => {
-    expect(computeOpenBoxHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: null })).toEqual([]);
+  it('no open TU: no entry', () => {
+    expect(computeOpenTUHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: null })).toEqual([]);
   });
 
   it('Manual line: no entry, header unchanged', () => {
-    expect(computeOpenBoxHeaderEntries({ isLabelRequiredLine: false, tuPickingTarget: { caption: 'x' } })).toEqual([]);
+    expect(computeOpenTUHeaderEntries({ isLabelRequiredLine: false, tuPickingTarget: { caption: 'x' } })).toEqual([]);
   });
 });
 

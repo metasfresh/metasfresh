@@ -26,24 +26,24 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
     const lotA = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 15 });
 
-    await test.step('line 1, box 1: scan the label, type 5, OK', async () => {
+    await test.step('line 1, TU 1: scan the label, type 5, OK', async () => {
         await openLine({ index: 1 });
-        await PickLineScanScreen.openBox();
+        await PickLineScanScreen.openTU();
         await scanLabel(labelOf({ masterdata, lot: lotA }));
         await GetQuantityDialog.expectQtyEntered('');  // nothing pinned yet
         await book({ qty: 5, expectedQtyTarget: 7 });
     });
 
-    await test.step('box 2: the suggestion is 5, confirmed without a label scan (open 2 afterwards)', async () => {
+    await test.step('TU 2: the suggestion is 5, confirmed without a label scan (open 2 afterwards)', async () => {
         await GetQuantityDialog.expectQtyEntered(5);
-        await PickLineScanScreen.nextBox();
+        await PickLineScanScreen.nextTU();
         await GetQuantityDialog.expectQtyEntered(5);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });
     });
 
-    await test.step('box 3: the suggestion is MIN(5, 2) = 2, confirmed, the line is done', async () => {
+    await test.step('TU 3: the suggestion is MIN(5, 2) = 2, confirmed, the line is done', async () => {
         await GetQuantityDialog.expectQtyEntered(2);
-        await PickLineScanScreen.nextBox();
+        await PickLineScanScreen.nextTU();
         await GetQuantityDialog.expectQtyEntered(2);
         await GetQuantityDialog.clickDoneStayOpen();
         await PickingJobScreen.waitForScreen();
@@ -53,7 +53,7 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
     await test.step('next line (same product, other customer): the field starts empty', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
         await openLine({ index: 2 });
-        await PickLineScanScreen.openBox();
+        await PickLineScanScreen.openTU();
         await scanLabel(labelOf({ masterdata, lot: lotA }));
         await GetQuantityDialog.expectQtyEntered('');
         await GetQuantityDialog.clickCancel();
@@ -75,7 +75,7 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
             }
         },
         hus: {
-            // boxes 2 and 3 were booked without a scan, on the lot of the one label scanned in box 1
+            // TUs 2 and 3 were booked without a scan, on the lot of the one label scanned in TU 1
             vhu1: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lotA } },
             vhu2: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lotA } },
             vhu3: { storages: { P1: '2 PCE' }, attributes: { 'Lot-Nummer': lotA } },
@@ -95,11 +95,11 @@ test('a label of another lot scanned in the open block replaces the remembered l
     const lotB = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 12 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot: lotA }));
     await book({ qty: 5, expectedQtyTarget: 7 });
 
-    await PickLineScanScreen.nextBox();
+    await PickLineScanScreen.nextTU();
     await PickLineScanScreen.rescanCULabel(labelOf({ masterdata, lot: lotB, bestBefore: BEST_BEFORE_B }));
     await GetQuantityDialog.expectQtyEntered(5);   // the suggestion stayed 5
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });
@@ -113,7 +113,7 @@ test('a label of another lot scanned in the open block replaces the remembered l
             }
         },
         hus: {
-            // box 2 holds one CU of 5 with lot B and its best-before; box 1 keeps lot A
+            // TU 2 holds one CU of 5 with lot B and its best-before; TU 1 keeps lot A
             tu1: { qtyTUs: 1, storages: { P1: '5 PCE' }, cus: [{ qty: '5 PCE', attributes: { 'Lot-Nummer': lotA, 'HU_BestBeforeDate': BEST_BEFORE } }] },
             tu2: { qtyTUs: 1, storages: { P1: '5 PCE' }, cus: [{ qty: '5 PCE', attributes: { 'Lot-Nummer': lotB, 'HU_BestBeforeDate': BEST_BEFORE_B } }] },
         },
@@ -127,7 +127,7 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
     await book({ qty: 6, expectedQtyTarget: 4 });
     await GetQuantityDialog.clickCancel();
@@ -166,14 +166,14 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Re-entry via "HU verpacken": the quantity block reopens with the remembered label and the pinned count, the box is kept', async ({ page }) => {
-    allureMeta('Re-entry keeps the box');
+test('Re-entry via "HU verpacken": the quantity block reopens with the remembered label and the pinned count, the TU is kept', async ({ page }) => {
+    allureMeta('Re-entry keeps the TU');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot }));
     await book({ qty: 6, expectedQtyTarget: 4 });
     await GetQuantityDialog.clickCancel();
@@ -183,7 +183,7 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
 
     await PickingJobLineScreen.clickPickHUButton();           // "HU verpacken": the block reopens, no new label scan
     await GetQuantityDialog.expectQtyEntered(4);              // MIN(last typed 6, open 4)
-    await GetQuantityDialog.clickDoneStayOpen();              // books 4 into the kept box: the line is done
+    await GetQuantityDialog.clickDoneStayOpen();              // books 4 into the kept TU: the line is done
     // a finished line honours the setting PickLineScanScreen.gotoPickingJobOnClose (shipped N): the screen was entered from the line screen ("HU verpacken"), so it leads back there
     await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.goBack();
@@ -199,7 +199,7 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
             }
         },
         hus: {
-            // both bookings sit in the one box, on the remembered lot
+            // both bookings sit in the one TU, on the remembered lot
             tu1: { qtyTUs: 1, storages: { P1: '10 PCE' } },
             vhu1: { storages: { P1: '6 PCE' }, attributes: { 'Lot-Nummer': lot } },
             vhu2: { storages: { P1: '4 PCE' }, attributes: { 'Lot-Nummer': lot } },

@@ -13,43 +13,43 @@ import { toastErrorFromObj, toastNotification } from '../../../utils/toast';
 import { trl } from '../../../utils/translations';
 
 /**
- * Button "Next box" (picking, lines with a CU quantity entry mode that books into boxes).
+ * Button "Next box" (picking, lines with a CU quantity entry mode that books into TUs).
  *
- * What it provides: one tap closes the line's open box (if any) and opens the next box of the line's box type (TU), or leads to the
- * box list when the line's packing names no box type. Booking a CU needs an open box, so without this button the picker would have to
- * leave the quantity screen to start the next box.
+ * What it provides: one tap closes the line's open TU (if any) and opens the next TU of the line's TU type (TU), or leads to the
+ * TU list when the line's packing names no TU type. Booking a CU needs an open TU, so without this button the picker would have to
+ * leave the quantity screen to start the next TU.
  *
  * Why it is here: the screens that show it (the scan step and the quantity block of the picking line) only render it; the logic lives
- * next to it in {@link useOpenNextBox}, which the screens call and which also opens a box for a scanned GRAI.
+ * next to it in {@link useOpenNextTU}, which the screens call and which also opens a TU for a scanned GRAI.
  *
  * When to use it: on a picking line whose `cuQtyEntryPolicy.labelRequired` is true. It is a plain button, it never submits the quantity form.
  */
-const OpenNextBoxButton = ({ isProcessing = false, onNextBox }) => (
+const OpenNextTUButton = ({ isProcessing = false, onNextTU }) => (
   <DialogButton
-    captionKey="picking.nextBox"
-    testId="next-box-button"
+    captionKey="picking.nextTU"
+    testId="next-tu-button"
     className="is-link"
     type="button"
     disabled={isProcessing}
-    onClick={onNextBox}
+    onClick={onNextTU}
   />
 );
 
-OpenNextBoxButton.propTypes = {
+OpenNextTUButton.propTypes = {
   isProcessing: PropTypes.bool,
-  onNextBox: PropTypes.func.isRequired,
+  onNextTU: PropTypes.func.isRequired,
 };
 
-export default OpenNextBoxButton;
+export default OpenNextTUButton;
 
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
 /**
- * "Weitere Kiste": closes the open box (if any), then opens a new one of the line's TU type; a line whose packing
- * names no TU type gets the box list instead.
+ * "Weitere Kiste": closes the open TU (if any), then opens a new one of the line's TU type; a line whose packing
+ * names no TU type gets the TU list instead.
  */
 // @VisibleForTesting
-export const closeAndOpenNextBox = async ({
+export const closeAndOpenNextTU = async ({
   packingTuPIId,
   packingItemName,
   isTargetOpen,
@@ -69,12 +69,12 @@ export const closeAndOpenNextBox = async ({
 };
 
 /**
- * Wires the two ways of opening a box (button, GRAI scan) to the picking target APIs of the line.
+ * Wires the two ways of opening a TU (button, GRAI scan) to the picking target APIs of the line.
  *
  * @param setPickingTarget `setPickingTarget` of `useAvailablePickingTargets({type: TU})`
- * @param tuPickingTarget the box open on the line, if any
+ * @param tuPickingTarget the TU open on the line, if any
  */
-export const useOpenNextBox = ({
+export const useOpenNextTU = ({
   applicationId,
   wfProcessId,
   activityId,
@@ -87,24 +87,24 @@ export const useOpenNextBox = ({
   const dispatch = useDispatch();
   const history = useMobileNavigation();
   const [isProcessing, setProcessing] = useState(false);
-  // synchronous twin of isProcessing: a second tap before the next render must not open a second box
+  // synchronous twin of isProcessing: a second tap before the next render must not open a second TU
   const isInFlightRef = useRef(false);
 
   const isTargetOpen = tuPickingTarget != null;
   const updateWF = (wfProcess) => dispatch(updateWFProcess({ wfProcess }));
 
-  const closeOpenBoxDeps = {
+  const closeOpenTUDeps = {
     isTargetOpen,
     closeTarget: () =>
       closePickingTarget({ wfProcessId, lineId, type: PickingTargetType.TU }).then((wfProcess) => updateWF(wfProcess)),
   };
 
-  // a tap and a GRAI scan share the guard: two overlapping close + open runs would leave an extra empty box.
+  // a tap and a GRAI scan share the guard: two overlapping close + open runs would leave an extra empty TU.
   // `isRethrow`: the scanner's own flow reports the error, so it gets it back instead of a toast.
   const runExclusive = useCallback(async (action, { isRethrow = false } = {}) => {
     if (isInFlightRef.current) {
-      // a scan must not report success for a box that was not opened.
-      if (isRethrow) throw new UserMessageError('picking.nextBoxBusy');
+      // a scan must not report success for a TU that was not opened.
+      if (isRethrow) throw new UserMessageError('picking.nextTUBusy');
       return;
     }
     isInFlightRef.current = true;
@@ -120,10 +120,10 @@ export const useOpenNextBox = ({
     }
   }, []);
 
-  const onNextBox = () =>
+  const onNextTU = () =>
     runExclusive(async () => {
-      await closeAndOpenNextBox({
-        ...closeOpenBoxDeps,
+      await closeAndOpenNextTU({
+        ...closeOpenTUDeps,
         packingTuPIId,
         packingItemName,
         setTarget: ({ target }) => setPickingTarget({ target }).then((wfProcess) => updateWF(wfProcess)),
@@ -139,20 +139,20 @@ export const useOpenNextBox = ({
           ),
       });
       if (hasTUPackingInstructions(packingTuPIId)) {
-        toastNotification({ plainMessage: trl('picking.nextBoxOpened', { caption: packingItemName }) });
+        toastNotification({ plainMessage: trl('picking.nextTUOpened', { caption: packingItemName }) });
       }
     });
 
   const onGraiScanned = (graiString) =>
     runExclusive(
       async () => {
-        // The open box is NOT closed first: the backend replaces the line's box target in one step,
-        // so a GRAI it refuses leaves the open box as it was.
+        // The open TU is NOT closed first: the backend replaces the line's TU target in one step,
+        // so a GRAI it refuses leaves the open TU as it was.
         await setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess));
-        toastNotification({ plainMessage: trl('picking.nextBoxOpened', { caption: graiString }) });
+        toastNotification({ plainMessage: trl('picking.nextTUOpened', { caption: graiString }) });
       },
       { isRethrow: true }
     );
 
-  return { isProcessing, onNextBox, onGraiScanned };
+  return { isProcessing, onNextTU, onGraiScanned };
 };

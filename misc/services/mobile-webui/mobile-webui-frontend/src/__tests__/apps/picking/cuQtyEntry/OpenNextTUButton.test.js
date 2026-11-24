@@ -4,10 +4,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import OpenNextBoxButton, {
-  closeAndOpenNextBox,
-  useOpenNextBox,
-} from '../../../../apps/picking/cuQtyEntry/OpenNextBoxButton';
+import OpenNextTUButton, {
+  closeAndOpenNextTU,
+  useOpenNextTU,
+} from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
 import * as pickingApi from '../../../../api/picking';
 import { toastErrorFromObj, toastNotification } from '../../../../utils/toast';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
@@ -35,7 +35,7 @@ jest.mock('../../../../api/picking', () => ({
 jest.mock('../../../../hooks/useMobileNavigation', () => ({ useMobileNavigation: () => ({ push: jest.fn() }) }));
 jest.mock('react-redux', () => ({ ...jest.requireActual('react-redux'), useDispatch: () => jest.fn() }));
 
-const BOX_TYPE_ID = 1000042;
+const TU_TYPE_ID = 1000042;
 
 const createDeps = () => {
   const calls = [];
@@ -47,83 +47,83 @@ const createDeps = () => {
   };
 };
 
-describe('closeAndOpenNextBox: the "Weitere Kiste" button', () => {
-  it('line names a TU type, a box is open: closes it, then opens a new box of that type', async () => {
+describe('closeAndOpenNextTU: the "Weitere Kiste" button', () => {
+  it('line names a TU type, a TU is open: closes it, then opens a new TU of that type', async () => {
     const deps = createDeps();
-    await closeAndOpenNextBox({
+    await closeAndOpenNextTU({
       ...deps,
-      packingTuPIId: BOX_TYPE_ID,
+      packingTuPIId: TU_TYPE_ID,
       packingItemName: 'Kiste x 4',
       isTargetOpen: true,
     });
-    expect(deps.calls).toEqual(['close', ['set', { tuPIId: BOX_TYPE_ID, caption: 'Kiste x 4' }]]);
+    expect(deps.calls).toEqual(['close', ['set', { tuPIId: TU_TYPE_ID, caption: 'Kiste x 4' }]]);
   });
 
-  it('line names a TU type, no box open (first box): only opens the new box', async () => {
+  it('line names a TU type, no TU open (first TU): only opens the new TU', async () => {
     const deps = createDeps();
-    await closeAndOpenNextBox({
+    await closeAndOpenNextTU({
       ...deps,
-      packingTuPIId: BOX_TYPE_ID,
+      packingTuPIId: TU_TYPE_ID,
       packingItemName: 'Kiste x 4',
       isTargetOpen: false,
     });
-    expect(deps.calls).toEqual([['set', { tuPIId: BOX_TYPE_ID, caption: 'Kiste x 4' }]]);
+    expect(deps.calls).toEqual([['set', { tuPIId: TU_TYPE_ID, caption: 'Kiste x 4' }]]);
   });
 
-  it('line names no TU type, a box is open: closes it, then goes to the box list', async () => {
+  it('line names no TU type, a TU is open: closes it, then goes to the TU list', async () => {
     const deps = createDeps();
-    await closeAndOpenNextBox({ ...deps, packingTuPIId: null, isTargetOpen: true });
+    await closeAndOpenNextTU({ ...deps, packingTuPIId: null, isTargetOpen: true });
     expect(deps.calls).toEqual(['close', 'gotoS7']);
     expect(deps.setTarget).not.toHaveBeenCalled();
   });
 
-  it('line names no TU type, no box open: goes to the box list without closing anything', async () => {
+  it('line names no TU type, no TU open: goes to the TU list without closing anything', async () => {
     const deps = createDeps();
-    await closeAndOpenNextBox({ ...deps, packingTuPIId: null, isTargetOpen: false });
+    await closeAndOpenNextTU({ ...deps, packingTuPIId: null, isTargetOpen: false });
     expect(deps.calls).toEqual(['gotoS7']);
     expect(deps.closeTarget).not.toHaveBeenCalled();
   });
 
   it('an absent packingTuPIId is treated like null', async () => {
     const deps = createDeps();
-    await closeAndOpenNextBox({ ...deps, isTargetOpen: false });
+    await closeAndOpenNextTU({ ...deps, isTargetOpen: false });
     expect(deps.calls).toEqual(['gotoS7']);
   });
 
   it('a TU type id of 0 is still a TU type (only null / undefined mean none)', async () => {
     const deps = createDeps();
-    await closeAndOpenNextBox({ ...deps, packingTuPIId: 0, packingItemName: 'x', isTargetOpen: false });
+    await closeAndOpenNextTU({ ...deps, packingTuPIId: 0, packingItemName: 'x', isTargetOpen: false });
     expect(deps.setTarget).toHaveBeenCalledWith({ target: { tuPIId: 0, caption: 'x' } });
   });
 
-  it('a failing close stops the flow: no new box is opened', async () => {
+  it('a failing close stops the flow: no new TU is opened', async () => {
     const deps = createDeps();
     deps.closeTarget.mockRejectedValue(new Error('close failed'));
     await expect(
-      closeAndOpenNextBox({ ...deps, packingTuPIId: BOX_TYPE_ID, packingItemName: 'x', isTargetOpen: true })
+      closeAndOpenNextTU({ ...deps, packingTuPIId: TU_TYPE_ID, packingItemName: 'x', isTargetOpen: true })
     ).rejects.toThrow('close failed');
     expect(deps.setTarget).not.toHaveBeenCalled();
   });
 });
 
-describe('OpenNextBoxButton component', () => {
-  it('shows one "next box" button that calls onNextBox', () => {
-    const onNextBox = jest.fn();
-    render(<OpenNextBoxButton onNextBox={onNextBox} />);
-    fireEvent.click(screen.getByTestId('next-box-button'));
-    expect(onNextBox).toHaveBeenCalledTimes(1);
+describe('OpenNextTUButton component', () => {
+  it('shows one "next TU" button that calls onNextTU', () => {
+    const onNextTU = jest.fn();
+    render(<OpenNextTUButton onNextTU={onNextTU} />);
+    fireEvent.click(screen.getByTestId('next-tu-button'));
+    expect(onNextTU).toHaveBeenCalledTimes(1);
   });
 
-  it('is disabled while a box is being opened', () => {
-    render(<OpenNextBoxButton isProcessing onNextBox={jest.fn()} />);
-    expect(screen.getByTestId('next-box-button')).toBeDisabled();
+  it('is disabled while a TU is being opened', () => {
+    render(<OpenNextTUButton isProcessing onNextTU={jest.fn()} />);
+    expect(screen.getByTestId('next-tu-button')).toBeDisabled();
   });
 });
 
 const store = () => createStore(combineReducers({ settings }));
 
-describe('next box button placement', () => {
-  const nextBoxActions = <button data-testid="next-box-button">Next box</button>;
+describe('next TU button placement', () => {
+  const nextTUActions = <button data-testid="next-tu-button">Next box</button>;
 
   it('scan once quantity block: button sits in the action area, next to Abbrechen', () => {
     render(
@@ -132,23 +132,23 @@ describe('next box button placement', () => {
           qtyTarget={10}
           uom="PCE"
           cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
-          nextBoxActions={nextBoxActions}
+          nextTUActions={nextTUActions}
           onQtyChange={jest.fn()}
           onCloseDialog={jest.fn()}
         />
       </Provider>
     );
     const buttons = screen.getByTestId('cancel-button').parentElement;
-    expect(buttons).toContainElement(screen.getByTestId('next-box-button'));
+    expect(buttons).toContainElement(screen.getByTestId('next-tu-button'));
   });
 
-  it('Manual quantity block without the prop: no next box button', () => {
+  it('Manual quantity block without the prop: no next TU button', () => {
     render(
       <Provider store={store()}>
         <GetQuantityDialog qtyTarget={10} uom="PCE" onQtyChange={jest.fn()} onCloseDialog={jest.fn()} />
       </Provider>
     );
-    expect(screen.queryByTestId('next-box-button')).toBeNull();
+    expect(screen.queryByTestId('next-tu-button')).toBeNull();
   });
 
   it('scan step (before any booking): button is shown under the scan field', async () => {
@@ -158,19 +158,19 @@ describe('next box button placement', () => {
           qtyMax={1}
           qtyTarget={1}
           uom="PCE"
-          nextBoxActions={nextBoxActions}
+          nextTUActions={nextTUActions}
           onResult={jest.fn()}
         />
       </Provider>
     );
     await act(async () => {});
     expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();
-    expect(screen.getByTestId('next-box-button')).toBeInTheDocument();
+    expect(screen.getByTestId('next-tu-button')).toBeInTheDocument();
   });
 
-  it('a scan that only opened a box does not open the quantity block', async () => {
+  it('a scan that only opened a TU does not open the quantity block', async () => {
     const onResult = jest.fn();
-    const resolveScannedBarcode = jest.fn(async () => ({ isNextBoxOpened: true }));
+    const resolveScannedBarcode = jest.fn(async () => ({ isNextTUOpened: true }));
     render(
       <Provider store={store()}>
         <ScanHUAndGetQtyComponent
@@ -196,7 +196,7 @@ describe('next box button placement', () => {
   });
 });
 
-describe('next box button inside the quantity block form', () => {
+describe('next TU button inside the quantity block form', () => {
   it('is a plain button: a tap books nothing, even with a valid count typed', () => {
     const onQtyChange = jest.fn(() => Promise.resolve());
     render(
@@ -206,32 +206,32 @@ describe('next box button inside the quantity block form', () => {
           qtyInitial={5}
           uom="PCE"
           cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
-          nextBoxActions={<OpenNextBoxButton onNextBox={jest.fn()} />}
+          nextTUActions={<OpenNextTUButton onNextTU={jest.fn()} />}
           onQtyChange={onQtyChange}
           onCloseDialog={jest.fn()}
         />
       </Provider>
     );
-    const button = screen.getByTestId('next-box-button');
+    const button = screen.getByTestId('next-tu-button');
     expect(button).toHaveAttribute('type', 'button');
     fireEvent.click(button);
     expect(onQtyChange).not.toHaveBeenCalled();
   });
 });
 
-describe('useOpenNextBox', () => {
+describe('useOpenNextTU', () => {
   const Harness = ({ exposed }) => {
-    const nextBox = useOpenNextBox({
+    const nextTU = useOpenNextTU({
       applicationId: 'picking',
       wfProcessId: 'wf',
       activityId: 'a',
       lineId: 'l',
-      packingTuPIId: BOX_TYPE_ID,
+      packingTuPIId: TU_TYPE_ID,
       packingItemName: 'Kiste',
       tuPickingTarget: exposed.tuPickingTarget ?? null,
       setPickingTarget: exposed.setPickingTarget,
     });
-    exposed.nextBox = nextBox;
+    exposed.nextTU = nextTU;
     return null;
   };
   const setup = (setPickingTarget, tuPickingTarget = null) => {
@@ -250,14 +250,14 @@ describe('useOpenNextBox', () => {
     pickingApi.setTUPickingTargetFromGrai.mockResolvedValue({});
   });
 
-  it('a second tap while the first is in flight opens no second box', async () => {
+  it('a second tap while the first is in flight opens no second TU', async () => {
     const gate = deferred();
     const setPickingTarget = jest.fn(() => gate.promise);
     const exposed = setup(setPickingTarget);
     let first;
     await act(async () => {
-      first = exposed.nextBox.onNextBox();
-      exposed.nextBox.onNextBox();
+      first = exposed.nextTU.onNextTU();
+      exposed.nextTU.onNextTU();
     });
     expect(setPickingTarget).toHaveBeenCalledTimes(1);
     await act(async () => {
@@ -266,10 +266,10 @@ describe('useOpenNextBox', () => {
     });
   });
 
-  it('success: shows the opened box in a notification', async () => {
+  it('success: shows the opened TU in a notification', async () => {
     const exposed = setup(jest.fn().mockResolvedValue({}));
     await act(async () => {
-      await exposed.nextBox.onNextBox();
+      await exposed.nextTU.onNextTU();
     });
     expect(toastNotification).toHaveBeenCalledTimes(1);
     expect(toastErrorFromObj).not.toHaveBeenCalled();
@@ -279,23 +279,23 @@ describe('useOpenNextBox', () => {
     const error = new Error('refused');
     const exposed = setup(jest.fn().mockRejectedValue(error));
     await act(async () => {
-      await exposed.nextBox.onNextBox();
+      await exposed.nextTU.onNextTU();
     });
     expect(toastErrorFromObj).toHaveBeenCalledWith(error);
     expect(toastNotification).not.toHaveBeenCalled();
   });
 
-  it('a GRAI scan while a tap is in flight opens no second box', async () => {
+  it('a GRAI scan while a tap is in flight opens no second TU', async () => {
     const gate = deferred();
     const setPickingTarget = jest.fn(() => gate.promise);
     const exposed = setup(setPickingTarget);
     let first;
     await act(async () => {
-      first = exposed.nextBox.onNextBox();
-      // the scanner is told (error beep + message) instead of a success for a box that was not opened
-      await expect(exposed.nextBox.onGraiScanned('1234567.12345.S1')).rejects.toMatchObject({
+      first = exposed.nextTU.onNextTU();
+      // the scanner is told (error beep + message) instead of a success for a TU that was not opened
+      await expect(exposed.nextTU.onGraiScanned('1234567.12345.S1')).rejects.toMatchObject({
         name: 'UserMessageError',
-        messageKey: 'picking.nextBoxBusy',
+        messageKey: 'picking.nextTUBusy',
       });
     });
     expect(pickingApi.setTUPickingTargetFromGrai).not.toHaveBeenCalled();
@@ -309,17 +309,17 @@ describe('useOpenNextBox', () => {
     pickingApi.setTUPickingTargetFromGrai.mockRejectedValue(new Error('bad grai'));
     const exposed = setup(jest.fn());
     await act(async () => {
-      await expect(exposed.nextBox.onGraiScanned('1234567.12345.S1')).rejects.toThrow('bad grai');
+      await expect(exposed.nextTU.onGraiScanned('1234567.12345.S1')).rejects.toThrow('bad grai');
     });
   });
 
   describe('a scanned GRAI', () => {
-    const OPEN_BOX = { tuPIId: BOX_TYPE_ID, caption: 'Kiste' };
+    const OPEN_TU = { tuPIId: TU_TYPE_ID, caption: 'Kiste' };
 
-    it('box open: opens the new box from the GRAI without closing the open one first (the backend replaces it)', async () => {
-      const exposed = setup(jest.fn(), OPEN_BOX);
+    it('TU open: opens the new TU from the GRAI without closing the open one first (the backend replaces it)', async () => {
+      const exposed = setup(jest.fn(), OPEN_TU);
       await act(async () => {
-        await exposed.nextBox.onGraiScanned('1234567.12345.S1');
+        await exposed.nextTU.onGraiScanned('1234567.12345.S1');
       });
       expect(pickingApi.setTUPickingTargetFromGrai).toHaveBeenCalledWith({
         wfProcessId: 'wf',
@@ -329,20 +329,20 @@ describe('useOpenNextBox', () => {
       expect(pickingApi.closePickingTarget).not.toHaveBeenCalled();
     });
 
-    it('box open, backend refuses the GRAI: the open box is not closed and the error reaches the caller', async () => {
+    it('TU open, backend refuses the GRAI: the open TU is not closed and the error reaches the caller', async () => {
       pickingApi.setTUPickingTargetFromGrai.mockRejectedValue(new Error('GRAI refused'));
-      const exposed = setup(jest.fn(), OPEN_BOX);
+      const exposed = setup(jest.fn(), OPEN_TU);
       await act(async () => {
-        await expect(exposed.nextBox.onGraiScanned('bad')).rejects.toThrow('GRAI refused');
+        await expect(exposed.nextTU.onGraiScanned('bad')).rejects.toThrow('GRAI refused');
       });
       expect(pickingApi.closePickingTarget).not.toHaveBeenCalled();
       expect(toastNotification).not.toHaveBeenCalled();
     });
 
-    it('no box open: only opens the box from the GRAI and notifies', async () => {
+    it('no TU open: only opens the TU from the GRAI and notifies', async () => {
       const exposed = setup(jest.fn());
       await act(async () => {
-        await exposed.nextBox.onGraiScanned('1234567.12345.S1');
+        await exposed.nextTU.onGraiScanned('1234567.12345.S1');
       });
       expect(pickingApi.setTUPickingTargetFromGrai).toHaveBeenCalledTimes(1);
       expect(pickingApi.closePickingTarget).not.toHaveBeenCalled();

@@ -64,7 +64,7 @@ const ScanHUAndGetQtyComponent = ({
   readAttributes = [],
   cuQtyEntryPolicy = MANUAL_POLICY,
   isShowCloseTargetButton = false,
-  nextBoxActions,
+  nextTUActions,
   suggestedQty,
   rememberedCULabel,
   //
@@ -220,8 +220,8 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const onHUBarcodeResolvedResult = async (resolvedBarcodeDataNew) => {
-    // the scan only opened a box (GRAI): stay on the scan step, nothing to book yet
-    if (resolvedBarcodeDataNew?.isNextBoxOpened) {
+    // the scan only opened a TU (GRAI): stay on the scan step, nothing to book yet
+    if (resolvedBarcodeDataNew?.isNextTUOpened) {
       setProgressStatus(STATUS_READ_HU_BARCODE);
       return;
     }
@@ -288,9 +288,9 @@ const ScanHUAndGetQtyComponent = ({
     }
   };
 
-  // a label scanned inside the quantity block replaces the remembered one; a scan that only opened a box changes nothing
+  // a label scanned inside the quantity block replaces the remembered one; a scan that only opened a TU changes nothing
   const onCULabelRescanned = async (resolvedBarcodeDataNew) => {
-    if (resolvedBarcodeDataNew?.isNextBoxOpened) {
+    if (resolvedBarcodeDataNew?.isNextTUOpened) {
       return;
     }
     setResolvedBarcodeData(resolvedBarcodeDataNew);
@@ -423,11 +423,11 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_HU_BARCODE: {
       return (
         <>
-          {/* The box buttons come first: on a phone the scanner panel (icon, caption, "Enter manually") is tall, and the buttons below it
+          {/* The tu buttons come first: on a phone the scanner panel (icon, caption, "Enter manually") is tall, and the buttons below it
               would sit under the fold. The scanner needs no tap (hardware scan), the buttons do. */}
-          {(nextBoxActions || isPackIdRequired) && (
+          {(nextTUActions || isPackIdRequired) && (
             <div className="buttons is-centered mb-4">
-              {nextBoxActions}
+              {nextTUActions}
               {isPackIdRequired && (
                 <DialogButton
                   captionKey="general.closeText"
@@ -496,7 +496,7 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
-          nextBoxActions={nextBoxActions}
+          nextTUActions={nextTUActions}
           labelRescan={
             isScanOnce ? (
               <BarcodeScannerComponent
@@ -588,8 +588,8 @@ ScanHUAndGetQtyComponent.propTypes = {
   readAttributes: PropTypes.array,
   cuQtyEntryPolicy: CUQtyEntryPolicyPropType,
   isShowCloseTargetButton: PropTypes.bool,
-  nextBoxActions: PropTypes.node,
-  // scan once: the count offered for the next box, and the label of the last booking of this line (re-entry)
+  nextTUActions: PropTypes.node,
+  // scan once: the count offered for the next TU, and the label of the last booking of this line (re-entry)
   suggestedQty: PropTypes.number,
   rememberedCULabel: PropTypes.shape({
     cuLabel: PropTypes.string,

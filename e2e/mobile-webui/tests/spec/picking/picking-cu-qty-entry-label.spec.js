@@ -118,7 +118,7 @@ test('buyer A: Scan once reads the label with the profile format without PackId 
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
 
     await test.step('A, L(1): label with counter is booked', async () => {
         await bookWithLabel({ label: buildCULabel({ gtin, productValue, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1 });
@@ -160,7 +160,7 @@ test('no effective format on the line, another active format that reads the labe
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await PickLineScanScreen.scanCULabelRefused(label, MSG_NO_FORMAT);
 
     await Backend.expect({
@@ -178,7 +178,7 @@ test('label with a "]d2" prefix is refused by the linked format', async ({ page 
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await PickLineScanScreen.scanCULabelRefused(label, MSG_FORMAT_MISMATCH);
 
     await Backend.expect({
@@ -197,7 +197,7 @@ test('label of the line product opens the quantity block, books lot and best-bef
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
 
     await test.step('Label of the line product: quantity block opens, book 5', async () => {
         await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore: BEST_BEFORE, packId: 1 }), qty: 5, expectedQtyTarget: LINE_QTY - 5 });
@@ -239,7 +239,7 @@ test('product match uses the label product part against M_Product.Value, the GTI
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
 
     await test.step('(1) product part = P1 value, GTIN of P2: accepted', async () => {
         await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1 });

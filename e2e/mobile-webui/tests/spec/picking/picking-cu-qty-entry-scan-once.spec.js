@@ -3,27 +3,27 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, scanLabel, setPalletTarget, SOURCE_QTY, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
+import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_TU, uniqueFormatName, openLine, scanLabel, setPalletTarget, SOURCE_QTY, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 
 /**
- * CU quantity entry, Scan once ("one label, type a count"): count, source, box, over-pick, line done, pallet target.
+ * CU quantity entry, Scan once ("one label, type a count"): count, source, TU, over-pick, line done, pallet target.
  *
  * Flow of the app as built: with a source HU scanned ("Kommissionieren aus"), a tap on a line with nothing picked opens its scan screen
  * directly; a label scan opens the quantity block; after OK the picker stays on the line (the block stays open, open quantity drops)
- * until the line is fully booked, then the app goes back to the job screen. Every booking needs an open box (`openBox()`), except the case that tests the missing box.
- * Source: one pallet of 20 boxes of 4 pieces, so a count of 5 needs pieces from two source boxes.
+ * until the line is fully booked, then the app goes back to the job screen. Every booking needs an open TU (`openTU()`), except the case that tests the missing TU.
+ * Source: one pallet of 20 TUs of 4 pieces, so a count of 5 needs pieces from two source TUs.
  */
 // noinspection JSUnusedLocalSymbols
-test('box opened with "Next box", label scanned, count 5 (needs two source boxes) books ONE CU of 5 in the box', async ({ page }) => {
+test('TU opened with "Next box", label scanned, count 5 (needs two source TUs) books ONE CU of 5 in the TU', async ({ page }) => {
     allureMeta('Scan once count');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot }));
     await GetQuantityDialog.expectQtyEntered('');  // the field is empty after the scan
     await GetQuantityDialog.typeQtyEntered(5);
@@ -40,7 +40,7 @@ test('box opened with "Next box", label scanned, count 5 (needs two source boxes
             }
         },
         hus: {
-            // the box holds exactly one CU of 5, with lot and best-before of the label
+            // the TU holds exactly one CU of 5, with lot and best-before of the label
             tu1: { storages: { P1: '5 PCE' }, cus: [{ qty: '5 PCE', attributes: { 'Lot-Nummer': lot, 'HU_BestBeforeDate': BEST_BEFORE } }] },
             vhu1: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lot, 'HU_BestBeforeDate': BEST_BEFORE } },
         },
@@ -65,7 +65,7 @@ test('Scan once field starts empty (not 0) with the zero-as-initial-value settin
 
         await test.step('Scan once line: field empty after the label scan', async () => {
             await openLine({ index: 1 });
-            await PickLineScanScreen.openBox();
+            await PickLineScanScreen.openTU();
             await scanLabel(labelOf({ masterdata }));
             await GetQuantityDialog.expectQtyEntered('');
             await GetQuantityDialog.clickCancel();
@@ -88,8 +88,8 @@ test('Scan once field starts empty (not 0) with the zero-as-initial-value settin
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan once: OK without an open box is refused, nothing is booked; after "Next box" the same booking succeeds', async ({ page }) => {
-    allureMeta('Scan once needs an open box');
+test('Scan once: OK without an open TU is refused, nothing is booked; after "Next box" the same booking succeeds', async ({ page }) => {
+    allureMeta('Scan once needs an open TU');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
@@ -98,7 +98,7 @@ test('Scan once: OK without an open box is refused, nothing is booked; after "Ne
     // no "Next box", no GRAI scan
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(5);
-    await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_BOX });
+    await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_TU });
 
     await GetQuantityDialog.expectQtyTarget(10);  // line still open 10
     // 'no pick-time GRAI screen' is not asserted: no customer of this data requires a GRAI, so that screen cannot appear anyway
@@ -106,8 +106,8 @@ test('Scan once: OK without an open box is refused, nothing is booked; after "Ne
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } },
     });
 
-    await test.step('open the box, same booking succeeds', async () => {
-        await PickLineScanScreen.openBox();
+    await test.step('open the TU, same booking succeeds', async () => {
+        await PickLineScanScreen.openTU();
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 5 });
     });
 
@@ -129,7 +129,7 @@ test('the packs come from the "Kommissionieren aus" HU; the source pallet drops 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }], anonymousPickHUsOnTheFly: false });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(5);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 5 });
@@ -150,22 +150,22 @@ test('the packs come from the "Kommissionieren aus" HU; the source pallet drops 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('open box holding 3, count 5 (needs two source boxes) books ONE CU of 5 into it', async ({ page }) => {
+test('open TU holding 3, count 5 (needs two source TUs) books ONE CU of 5 into it', async ({ page }) => {
     allureMeta('Scan once count');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot }));
 
-    await test.step('first booking: 3 into the box (leaves 1 piece in the first source box)', async () => {
+    await test.step('first booking: 3 into the TU (leaves 1 piece in the first source TU)', async () => {
         await GetQuantityDialog.typeQtyEntered(3);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 7 });
     });
 
-    await test.step('second booking: 5 (1 + 4 from two source boxes), no "try again" error', async () => {
+    await test.step('second booking: 5 (1 + 4 from two source TUs), no "try again" error', async () => {
         await GetQuantityDialog.typeQtyEntered(5);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });
     });
@@ -184,9 +184,9 @@ test('open box holding 3, count 5 (needs two source boxes) books ONE CU of 5 int
             }
         },
         hus: {
-            // the open box holds 8 = one CU of 3 and ONE CU of 5. No requirement orders the CUs inside a box, and the
+            // the open TU holds 8 = one CU of 3 and ONE CU of 5. No requirement orders the CUs inside a TU, and the
             // backend's `cus` assertion sorts by M_HU_ID (the merged CU of 5 can carry the lower id), so each CU is
-            // asserted by its own content through its picking alias; 3 + 5 = the box total leaves no room for a third CU
+            // asserted by its own content through its picking alias; 3 + 5 = the TU total leaves no room for a third CU
             tu1: { storages: { P1: '8 PCE' } },
             vhu1: { storages: { P1: '3 PCE' }, attributes: { 'Lot-Nummer': lot } },
             vhu2: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lot } },
@@ -201,7 +201,7 @@ test('a count smaller than the open quantity is not a rejection', async ({ page 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(4);
     await GetQuantityDialog.expectNoQtyRejected();   // no reject reason asked
@@ -231,7 +231,7 @@ test('the booking that reaches the open quantity finishes the line and goes back
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
 
     await GetQuantityDialog.typeQtyEntered(8);
@@ -262,7 +262,7 @@ test('the booking that reaches the open quantity finishes the line and goes back
 test('a count above the open quantity is blocked, on a Manual line and on a Scan once line', async ({ page }) => {
     allureMeta('Over-pick refused');
 
-    // profile Manual (mode not sent) with a Scan once customer record; both lines order 12 (Manual line counts 3 boxes of 4)
+    // profile Manual (mode not sent) with a Scan once customer record; both lines order 12 (Manual line counts 3 TUs of 4)
     const formatName = uniqueFormatName();
     const masterdata = await createMasterdata({
         formatName,
@@ -272,7 +272,7 @@ test('a count above the open quantity is blocked, on a Manual line and on a Scan
     });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 24 });
 
-    await test.step('Manual line (3 boxes open): 4 is refused by the validation', async () => {
+    await test.step('Manual line (3 TUs open): 4 is refused by the validation', async () => {
         await PickingJobScreen.clickLineButton({ index: 1 });
         await GetQuantityDialog.waitForDialog();
         await GetQuantityDialog.typeQtyEntered(4);
@@ -285,7 +285,7 @@ test('a count above the open quantity is blocked, on a Manual line and on a Scan
     await test.step('Scan once line (12 open): 13 is refused by the same validation', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
         await openLine({ index: 2 });
-        await PickLineScanScreen.openBox();
+        await PickLineScanScreen.openTU();
         await scanLabel(labelOf({ masterdata }));
         await GetQuantityDialog.typeQtyEntered(13);
         await GetQuantityDialog.expectDoneDisabled();
@@ -301,19 +301,19 @@ test('a count above the open quantity is blocked, on a Manual line and on a Scan
 });
 
 // noinspection JSUnusedLocalSymbols
-test('on a line whose packing is a box packing, a SECOND CU booking into the open box is accepted', async ({ page }) => {
-    allureMeta('Scan once on a box-packed line');
+test('on a line whose packing is a TU packing, a SECOND CU booking into the open TU is accepted', async ({ page }) => {
+    allureMeta('Scan once on a TU-packed line');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(1);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
-    // the first booking turns the new box into a real box (TU); only a SECOND booking into it reaches the
+    // the first booking turns the new TU into a real TU; only a SECOND booking into it reaches the
     // rule "Cannot pick TUs when TU pick target is set!" (PickingJobPickCommand: TU picking unit + existing TU target)
-    await test.step('second booking into the existing box: no "Cannot pick TUs when TU pick target is set!"', async () => {
+    await test.step('second booking into the existing TU: no "Cannot pick TUs when TU pick target is set!"', async () => {
         await GetQuantityDialog.typeQtyEntered(1);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
     });
@@ -336,7 +336,7 @@ test('on a line whose packing is a box packing, a SECOND CU booking into the ope
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU each into the box on the pallet; "Next box" + count 4 (a full box) books one CU of 4 in a second box on the same pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
+test('Pallet target (Scan once): pallet + new TU: counts 3 and 2 book one CU each into the TU on the pallet; "Next box" + count 4 (a full TU) books one CU of 4 in a second TU on the same pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
     allureMeta('Scan once pallet target');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }], pickTo: ['LU_TU', 'TU'] });
@@ -344,9 +344,9 @@ test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU ea
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await setPalletTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
-    await PickLineScanScreen.openBox();
+    await PickLineScanScreen.openTU();
 
-    await test.step('counts 3 and 2: one CU each, in the same box, the box on the pallet', async () => {
+    await test.step('counts 3 and 2: one CU each, in the same TU, the TU on the pallet', async () => {
         await scanLabel(labelOf({ masterdata, lot }));
         await GetQuantityDialog.typeQtyEntered(3);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 7 });
@@ -366,7 +366,7 @@ test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU ea
                 }
             },
             hus: {
-                // the box holds exactly the two booked CUs (vhu1 = the 3, vhu2 = the 2; the box's CU list is not in booking order)
+                // the TU holds exactly the two booked CUs (vhu1 = the 3, vhu2 = the 2; the TU's CU list is not in booking order)
                 tu1: { storages: { P1: '5 PCE' } },
                 vhu1: { storages: { P1: '3 PCE' }, attributes: { 'Lot-Nummer': lot } },
                 vhu2: { storages: { P1: '2 PCE' } },
@@ -374,8 +374,8 @@ test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU ea
         });
     });
 
-    await test.step('"Next box", count 4 (fills the box of 4): one CU of 4 in a second box on the same pallet, as without a pallet', async () => {
-        await PickLineScanScreen.nextBox();
+    await test.step('"Next box", count 4 (fills the TU of 4): one CU of 4 in a second TU on the same pallet, as without a pallet', async () => {
+        await PickLineScanScreen.nextTU();
         await GetQuantityDialog.typeQtyEntered(4);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 1 });
         await Backend.expect({
@@ -394,14 +394,14 @@ test('Pallet target (Scan once): pallet + new box: counts 3 and 2 book one CU ea
             },
             hus: {
                 tu1: { storages: { P1: '5 PCE' } },
-                // the second box holds exactly one CU of 4 (a real box, not an aggregated TU)
+                // the second TU holds exactly one CU of 4 (a real TU, not an aggregated TU)
                 tu2: { storages: { P1: '4 PCE' }, cus: [{ qty: '4 PCE', attributes: { 'Lot-Nummer': lot } }] },
                 vhu3: { storages: { P1: '4 PCE' } },
             },
         });
     });
 
-    await test.step('"Unpack" of the 3: only that CU is freed, the CU of 2 stays in the box on the pallet, the box of 4 stays', async () => {
+    await test.step('"Unpack" of the 3: only that CU is freed, the CU of 2 stays in the TU on the pallet, the TU of 4 stays', async () => {
         await GetQuantityDialog.clickCancel(); // closes the quantity block, back on the line screen
         await unpackFirstBooking({ fromLineScreen: true });
         await Backend.expect({

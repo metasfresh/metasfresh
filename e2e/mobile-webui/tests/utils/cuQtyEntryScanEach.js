@@ -1,5 +1,5 @@
 // Shared setup of the CU quantity entry specs that drive a product-based picking job in Scan each CU
-// ("scan every pack label"; every scan books one CU of 1 into the open box). Builds on cuQtyEntryCommon.js.
+// ("scan every pack label"; every scan books one CU of 1 into the open TU). Builds on cuQtyEntryCommon.js.
 // A Scan each CU label carries a pack ID, so these specs need a format with a pack-ID part
 // (buildCULabelFormat({ withPackId: true })).
 import { PickingJobScreen } from './screens/picking/PickingJobScreen';
@@ -32,13 +32,13 @@ export const createScanEachMasterdata = async ({ packFormatName, orders, custome
         ...rest,
     });
 
-/** Opens the scan screen of a line (source HU known), checks its mode, opens the first box. */
-export const openScanEachLine = async ({ index, mode = MODE_SCAN_EACH, openBox = true }) => {
+/** Opens the scan screen of a line (source HU known), checks its mode, opens the first TU. */
+export const openScanEachLine = async ({ index, mode = MODE_SCAN_EACH, openTU = true }) => {
     await PickingJobScreen.clickLineButton({ index });
     await PickLineScanScreen.waitForScreen();
     await PickLineScanScreen.expectCUQtyEntryMode(mode);
-    if (openBox) {
-        await PickLineScanScreen.openBox();
+    if (openTU) {
+        await PickLineScanScreen.openTU();
     }
 };
 

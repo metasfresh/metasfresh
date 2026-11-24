@@ -65,7 +65,7 @@ public class PickingJobGRAIValidator
 	/**
 	 * The picks that were booked with a label scan ({@link CUBookingSpecification#filterBookedWithLabelScan}):
 	 * the check follows what was picked, not the customer's current mode.
-	 * Only the picks of lines that require GRAIs are looked up: the lookup walks each CU up to its box.
+	 * Only the picks of lines that require GRAIs are looked up: the lookup walks each CU up to its TU.
 	 */
 	@NonNull
 	private ImmutableSet<HuId> getCUsBookedWithLabelScan()
@@ -86,7 +86,7 @@ public class PickingJobGRAIValidator
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), getCUsBookedWithLabelScan());
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfTUs(ImmutableSet.copyOf(pickedHUIds), getCUsBookedWithLabelScan());
 
 		if (graiRequired == GRAIRequired.Yes)
 		{

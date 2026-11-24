@@ -17,7 +17,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonCUQtyEntryPolicy
 {
-	/** a CU label is read: lot / best-before come from it and the box is open before booking */
+	/** a CU label is read: lot / best-before come from it and the TU is open before booking */
 	boolean labelRequired;
 	/** the label must carry a pack ID and one scan books one CU */
 	boolean packIdRequired;

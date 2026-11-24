@@ -157,7 +157,7 @@ public class PickingCULabelService
 			return false;
 		}
 
-		// the picked HUs are CUs inside boxes: not top level
+		// the picked HUs are CUs inside TUs: not top level
 		final ImmutableSet<HuId> huIdsWithPackId = handlingUnitsBL.createHUQueryBuilder()
 				.setOnlyTopLevelHUs(false)
 				.addOnlyHUIds(pickedHUIds)

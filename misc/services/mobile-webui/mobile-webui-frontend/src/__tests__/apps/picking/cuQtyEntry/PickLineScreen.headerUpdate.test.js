@@ -39,21 +39,21 @@ const lastHeaderValues = (actions) => {
 };
 
 describe('useHeaderUpdate: additional header entries', () => {
-  it('shows a box that is opened later, on the same screen, and the next box after it', () => {
+  it('shows a TU that is opened later, on the same screen, and the next TU after it', () => {
     const { actions, rerenderWith } = renderWithStore({
       additionalHeaderProperties: { entries: [] },
       isLiveRefresh: true,
     });
 
-    const box1 = { entries: [{ caption: 'Box', value: 'BOX-1' }] };
-    rerenderWith({ additionalHeaderProperties: box1, isLiveRefresh: true });
-    expect(lastHeaderValues(actions)).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-1' })]));
+    const tu1 = { entries: [{ caption: 'TU', value: 'TU-1' }] };
+    rerenderWith({ additionalHeaderProperties: tu1, isLiveRefresh: true });
+    expect(lastHeaderValues(actions)).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'TU-1' })]));
 
-    const box2 = { entries: [{ caption: 'Box', value: 'BOX-2' }] };
-    rerenderWith({ additionalHeaderProperties: box2, isLiveRefresh: true });
+    const tu2 = { entries: [{ caption: 'TU', value: 'TU-2' }] };
+    rerenderWith({ additionalHeaderProperties: tu2, isLiveRefresh: true });
     const values = lastHeaderValues(actions);
-    expect(values).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-2' })]));
-    expect(values).not.toEqual(expect.arrayContaining([expect.objectContaining({ value: 'BOX-1' })]));
+    expect(values).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'TU-2' })]));
+    expect(values).not.toEqual(expect.arrayContaining([expect.objectContaining({ value: 'TU-1' })]));
   });
 
   it('refreshes the picked and to-pick quantities while staying on the line', () => {

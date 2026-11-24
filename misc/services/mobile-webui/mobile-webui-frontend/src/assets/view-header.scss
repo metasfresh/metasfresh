@@ -32,7 +32,7 @@
   .view-header tbody {
     font-size: 1rem;
 
-    // a long value without a space (customer, the open box's packing name) wraps instead of being cut off at the screen edge
+    // a long value without a space (customer, the open TU's packing name) wraps instead of being cut off at the screen edge
     td {
       overflow-wrap: anywhere;
     }

@@ -15,15 +15,15 @@ const expectToastCloseButtonOnScreen = async () => {
 const NAME = 'PickLineScanScreen';
 
 const containerElement = () => page.locator('#PickLineScanScreen');
-const nextBoxButton = () => page.getByTestId('next-box-button');
-const tapNextBox = async () => {
+const nextTUButton = () => page.getByTestId('next-tu-button');
+const tapNextTU = async () => {
     await PickLineScanScreen.waitForScreen();
-    await nextBoxButton().tap();
+    await nextTUButton().tap();
     // the tap's request has been answered and rendered (a poll right after the tap could still see the button enabled, before the tap took effect)
     await waitForNoInFlightXhr(page, { urlPattern: /\/picking\//, timeout: SLOW_ACTION_TIMEOUT });
-    // the button is disabled while the box is being closed and opened; a booking before that is done is refused (no open box).
-    // Done = the button is usable again, or the screen was left for the box list.
-    await expect.poll(async () => (await nextBoxButton().count()) === 0 || await nextBoxButton().isEnabled(), { timeout: SLOW_ACTION_TIMEOUT }).toBe(true);
+    // the button is disabled while the TU is being closed and opened; a booking before that is done is refused (no open TU).
+    // Done = the button is usable again, or the screen was left for the TU list.
+    await expect.poll(async () => (await nextTUButton().count()) === 0 || await nextTUButton().isEnabled(), { timeout: SLOW_ACTION_TIMEOUT }).toBe(true);
 };
 
 export const PickLineScanScreen = {
@@ -57,9 +57,9 @@ export const PickLineScanScreen = {
     }),
 
     /** Asserts that the "Weitere Kiste" / "Next box" button is not shown (Manual lines never show it). */
-    expectNextBoxButtonHidden: async () => await step(`${NAME} - Expect Next box button hidden`, async () => {
+    expectNextTUButtonHidden: async () => await step(`${NAME} - Expect Next box button hidden`, async () => {
         await PickLineScanScreen.waitForScreen();
-        await expect(nextBoxButton()).toHaveCount(0);
+        await expect(nextTUButton()).toHaveCount(0);
     }),
 
     /** Scans one raw CU label on the pick-line scan screen. */
@@ -101,17 +101,17 @@ export const PickLineScanScreen = {
         await GetQuantityDialog.waitForDialog();
     }),
 
-    /** Taps "Weitere Kiste" / "Next box": opens the next TU (box) of the line. */
-    nextBox: async () => await step(`${NAME} - Next box`, tapNextBox),
+    /** Taps "Weitere Kiste" / "Next box": opens the next TU of the line. */
+    nextTU: async () => await step(`${NAME} - Next box`, tapNextTU),
 
     /**
-     * Opens the first box of a line in CU quantity entry mode, before its first booking (same tap as nextBox).
-     * Returns when the box is open: the "Current" header entry shows it and the button is usable again.
+     * Opens the first TU of a line in CU quantity entry mode, before its first booking (same tap as nextTU).
+     * Returns when the TU is open: the "Current" header entry shows it and the button is usable again.
      */
-    openBox: async () => await step(`${NAME} - Open box`, async () => {
-        await tapNextBox();
+    openTU: async () => await step(`${NAME} - Open TU`, async () => {
+        await tapNextTU();
         await expect(page.locator('tr:has(th:has-text("Current"))').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-        await expect(nextBoxButton()).toBeEnabled();
+        await expect(nextTUButton()).toBeEnabled();
     }),
 
     /** Scans one raw CU label into the quantity block's own scanner (Scan once: a new label replaces the remembered one). */
@@ -119,25 +119,25 @@ export const PickLineScanScreen = {
         await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label, testId: 'rescanCULabel-input' });
     }),
 
-    /** Asserts that the open box shown in the header ("Current") carries the given caption (the TU type name of a GRAI box). */
-    expectOpenBoxCaption: async (caption) => await step(`${NAME} - Expect open box '${caption}'`, async () => {
+    /** Asserts that the open TU shown in the header ("Current") carries the given caption (the TU type name of a GRAI TU). */
+    expectOpenTUCaption: async (caption) => await step(`${NAME} - Expect open TU '${caption}'`, async () => {
         await expect(page.locator('tr:has(th:has-text("Current"))').first()).toContainText(caption, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Asserts that "Weitere Kiste" / "Next box" sits in the quantity block's button row, next to OK. */
-    expectNextBoxButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next box button in the quantity block`, async () => {
-        await expect(page.locator('.get-qty-dialog').getByTestId('next-box-button')).toBeVisible();
+    expectNextTUButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next box button in the quantity block`, async () => {
+        await expect(page.locator('.get-qty-dialog').getByTestId('next-tu-button')).toBeVisible();
     }),
 
-    /** Scans a GRAI on the scan step (before the label): opens a new box. */
+    /** Scans a GRAI on the scan step (before the label): opens a new TU. */
     scanGrai: async (graiString) => await step(`${NAME} - Scan GRAI ${graiString}`, async () => {
         await PickLineScanScreen.waitForScreen();
         await PickLineScanScreen.typeQRCode(graiString);
-        // the box is open once the app confirms it with the GRAI ("Box ... opened"); a label scanned before that has no open box
+        // the TU is open once the app confirms it with the GRAI ("TU ... opened"); a label scanned before that has no open TU
         await expect(page.locator('.Toastify__toast--success', { hasText: graiString })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    /** Scans a GRAI inside the open quantity block: opens a new box, the block stays. */
+    /** Scans a GRAI inside the open quantity block: opens a new TU, the block stays. */
     rescanGrai: async (graiString) => await step(`${NAME} - Rescan GRAI ${graiString} in the quantity block`, async () => {
         await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: graiString, testId: 'rescanCULabel-input' });
     }),

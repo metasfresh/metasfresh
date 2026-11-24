@@ -68,7 +68,7 @@ export const isCatchWeight = ({ line }) => {
 };
 
 /**
- * Scan once: the count the picker is offered for the next box = the last typed count, capped by the open quantity.
+ * Scan once: the count the picker is offered for the next TU = the last typed count, capped by the open quantity.
  *
  * @returns null before the first typed value
  */

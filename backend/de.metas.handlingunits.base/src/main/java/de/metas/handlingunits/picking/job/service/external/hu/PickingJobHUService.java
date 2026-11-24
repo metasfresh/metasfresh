@@ -132,7 +132,7 @@ public class PickingJobHUService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
 
-	/** The GRAI snapshots of the given HUs as they are, without looking for a box. Test convenience: the completion check uses {@link #getGraiSnapshotsOfBoxes(Set, Set)}. */
+	/** The GRAI snapshots of the given HUs as they are, without looking for a TU. Test convenience: the completion check uses {@link #getGraiSnapshotsOfTUs(Set, Set)}. */
 	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
@@ -142,20 +142,20 @@ public class PickingJobHUService
 
 	/**
 	 * The GRAI snapshots of the picked HUs. A CU that was booked with a label scan ({@code cusBookedWithLabelScan}, see
-	 * {@link CUBookingSpecification#filterBookedWithLabelScan(Collection)}) sits in a box (TU) which carries the GRAI and a CU has no GRAI snapshot of its own,
+	 * {@link CUBookingSpecification#filterBookedWithLabelScan(Collection)}) sits in a TU which carries the GRAI and a CU has no GRAI snapshot of its own,
 	 * so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
 	 *
-	 * @param cusBookedWithLabelScan CUs in a box (TU) only
+	 * @param cusBookedWithLabelScan CUs in a TU only
 	 */
 	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshotsOfBoxes(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfTUs(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
 	{
 		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithLabelScan));
 	}
 
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
 	{
-		// CUs of the same box share their parent item: walk up once per parent item, not once per CU
+		// CUs of the same TU share their parent item: walk up once per parent item, not once per CU
 		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
@@ -184,7 +184,7 @@ public class PickingJobHUService
 	@NonNull
 	private HuId getTUIdOrSelf(@NonNull final I_M_HU hu)
 	{
-		return HuId.ofRepoId(getCUBookingSpecification().getBox(hu).orElse(hu).getM_HU_ID());
+		return HuId.ofRepoId(getCUBookingSpecification().getTU(hu).orElse(hu).getM_HU_ID());
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)

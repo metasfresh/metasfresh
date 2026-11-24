@@ -21,7 +21,7 @@ import { createScanEachMasterdata, MODE_SCAN_EACH, openScanEachLine, packLabelOf
 restoreSysconfigsAfterEach(test);
 
 /**
- * Layout of the screens and refusals shared by Scan each CU and Scan once (box list, label refusals, GRAI-required customers, pallet target,
+ * Layout of the screens and refusals shared by Scan each CU and Scan once (TU list, label refusals, GRAI-required customers, pallet target,
  * quick pack all) and of the Scan each CU only states (pieces-only refusal, second lot, finished line, unpack, second job) at the phone sizes
  * (PHONE_VIEWPORTS), in English and German. Same checker as picking-cu-qty-entry-layout-label-modes.spec.js.
  */
@@ -60,10 +60,10 @@ const completeRefusedWithLayout = async (expectedText, whileToastShown) => {
     await PickingJobScreen.waitForScreen();
 };
 
-/** Opens the scan screen of line `index` in the mode; Each opens its first box when asked, Once never (the caller decides). */
+/** Opens the scan screen of line `index` in the mode; Each opens its first TU when asked, Once never (the caller decides). */
 const openModeLine = async (mode, index = 1) => {
     if (mode === MODE_SCAN_EACH) {
-        await openScanEachLine({ index, openBox: false });
+        await openScanEachLine({ index, openTU: false });
     } else {
         await openLine({ index });
     }
@@ -84,9 +84,9 @@ for (const viewport of PHONE_VIEWPORTS) {
         for (const lang of languages) {
             const layout = layoutFor(lang);
 
-            // a line without TU type: "Next box" opens the box list; customer GRAI required: no pick-time GRAI screen, "Fertigstellen" refused
+            // a line without TU type: "Next box" opens the TU list; customer GRAI required: no pick-time GRAI screen, "Fertigstellen" refused
             // noinspection JSUnusedLocalSymbols
-            test(`Each: line without TU type, GRAI required: box list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
+            test(`Each: line without TU type, GRAI required: TU list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createScanEachMasterdata({
                     packFormatName: uniqueFormatName(), language: lang,
@@ -95,21 +95,21 @@ for (const viewport of PHONE_VIEWPORTS) {
                 const tuName = masterdata.packingInstructions.P1_20x4.tuName;
                 const lot = uniqueLot();
                 await startJob(masterdata, { qtyToDeliver: 2 });
-                await openScanEachLine({ index: 1, openBox: false });
-                await layout('Each scan screen, GRAI-required customer, no box open');
+                await openScanEachLine({ index: 1, openTU: false });
+                await layout('Each scan screen, GRAI-required customer, no TU open');
 
-                await PickLineScanScreen.nextBox();
+                await PickLineScanScreen.nextTU();
                 await SelectPickTargetTUScreen.waitForScreen();
                 await layout('Each "Gebinde" list opened by Next box (line without TU type)');
                 await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
                 await PickingJobLineScreen.waitForScreen();
-                await layout('Each line screen after the box type was chosen');
+                await layout('Each line screen after the TU type was chosen');
                 await PickingJobLineScreen.tapPickHUButton();
                 await PickLineScanScreen.waitForScreen();
-                await layout('Each scan screen, box open');
+                await layout('Each scan screen, TU open');
                 await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
 
-                await PickLineScanScreen.nextBox();
+                await PickLineScanScreen.nextTU();
                 await SelectPickTargetTUScreen.waitForScreen();
                 await layout('Each "Gebinde" list again after a booking');
                 await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
@@ -121,12 +121,12 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Each line screen, line done');
                 await PickingJobLineScreen.goBack();
                 await PickingJobScreen.waitForScreen();
-                await layout('Each job screen, line done, boxes without GRAI');
-                await completeRefusedWithLayout(txt(lang, TEXT.graiCount), async () => await layout('Each "Fertigstellen" refused: every box needs a GRAI (job screen + toast)'));
+                await layout('Each job screen, line done, TUs without GRAI');
+                await completeRefusedWithLayout(txt(lang, TEXT.graiCount), async () => await layout('Each "Fertigstellen" refused: every TU needs a GRAI (job screen + toast)'));
             });
 
             // noinspection JSUnusedLocalSymbols
-            test(`Once: line without TU type, GRAI required: box list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
+            test(`Once: line without TU type, GRAI required: TU list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createMasterdata({
                     formatName: uniqueFormatName(), language: lang,
@@ -135,32 +135,32 @@ for (const viewport of PHONE_VIEWPORTS) {
                 const tuName = masterdata.packingInstructions.P1_20x4.tuName;
                 await startJob(masterdata, { qtyToDeliver: 4 });
                 await openLine({ index: 1 });
-                await layout('Once scan screen, GRAI-required customer, no box open');
+                await layout('Once scan screen, GRAI-required customer, no TU open');
                 await scanLabel(labelOf({ masterdata }));
                 await GetQuantityDialog.typeQtyEntered(4);
-                await layout('Once quantity block, GRAI-required customer, no box open');
+                await layout('Once quantity block, GRAI-required customer, no TU open');
 
-                await PickLineScanScreen.nextBox();
+                await PickLineScanScreen.nextTU();
                 await SelectPickTargetTUScreen.waitForScreen();
                 await layout('Once "Gebinde" list opened by Next box (line without TU type)');
                 await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
                 await PickingJobLineScreen.waitForScreen();
-                await layout('Once line screen after the box type was chosen');
+                await layout('Once line screen after the TU type was chosen');
                 await PickingJobLineScreen.tapPickHUButton();
                 await PickLineScanScreen.waitForScreen();
-                await layout('Once scan step after the box type was chosen');
+                await layout('Once scan step after the TU type was chosen');
                 if (await page.locator('.get-qty-dialog').count() === 0) {
                     await scanLabel(labelOf({ masterdata }));
                 }
-                await layout('Once quantity block, box open (opened without GRAI)');
+                await layout('Once quantity block, TU open (opened without GRAI)');
                 await GetQuantityDialog.typeQtyEntered(4);
                 await GetQuantityDialog.clickDoneStayOpen();
                 await PickingJobLineScreen.waitForScreen(); // entered from the line screen: the done line leads back there
                 await layout('Once line screen, line done');
                 await PickingJobLineScreen.goBack();
                 await PickingJobScreen.waitForScreen();
-                await layout('Once job screen, line done, box without GRAI');
-                await completeRefusedWithLayout(txt(lang, TEXT.graiCount), async () => await layout('Once "Fertigstellen" refused: every box needs a GRAI (job screen + toast)'));
+                await layout('Once job screen, line done, TU without GRAI');
+                await completeRefusedWithLayout(txt(lang, TEXT.graiCount), async () => await layout('Once "Fertigstellen" refused: every TU needs a GRAI (job screen + toast)'));
             });
 
             for (const mode of MODES) {
@@ -176,7 +176,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     });
                     await startJob(masterdata, { qtyToDeliver: 3 });
                     await openModeLine(mode);
-                    await PickLineScanScreen.openBox();
+                    await PickLineScanScreen.openTU();
                     await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), txt(lang, TEXT.noFormat), {
                         whileToastShown: async () => await layout(`${M} refusal: no label format on the profile (scan screen + toast)`),
                     });
@@ -193,7 +193,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     });
                     await startJob(masterdata, { qtyToDeliver: 3 });
                     await openModeLine(mode);
-                    await PickLineScanScreen.openBox();
+                    await PickLineScanScreen.openTU();
                     const otherProductLabel = packLabelOf({ masterdata: { products: { P1: masterdata.products.P2 } }, packId: 1 });
                     await PickLineScanScreen.scanCULabelRefused(otherProductLabel, txt(lang, TEXT.differentProduct), {
                         whileToastShown: async () => await layout(`${M} refusal: label of another product (scan screen + toast)`),
@@ -236,7 +236,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await openScanEachLine({ index: 1 });
                 await scanPack(pack(lotA, 1));
                 await scanPack(pack(lotB, 1));
-                await layout('Each scan screen after a second lot was booked (mixed-lot box)');
+                await layout('Each scan screen after a second lot was booked (mixed-lot TU)');
                 await scanPack(pack(lotB, 2));
                 await PickingJobScreen.waitForScreen();
                 await layout('Each job screen, line done (3 of 3)');
@@ -283,17 +283,17 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
             await layout('Each job screen of job 2');
             await openScanEachLine({ index: 1 });
-            await layout('Each scan screen of job 2, box open');
+            await layout('Each scan screen of job 2, TU open');
             await scanPack(label);
             await PickingJobScreen.waitForScreen();
             await layout('Each job screen of job 2 after the same pack booked without a warning');
         });
 
-        // pallet target and box packing, both modes
+        // pallet target and TU packing, both modes
         for (const mode of MODES) {
             const M = modeName(mode);
             // noinspection JSUnusedLocalSymbols
-            test(`${M}: pallet target + new box, second booking into the open box (${viewport.name})`, async ({ page: _page }) => {
+            test(`${M}: pallet target + new TU, second booking into the open TU (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const layout = layoutFor('en_US');
                 const masterdata = await masterdataOf(mode, { orders: [{ key: 'A', qty: 4 }], pickTo: ['LU_TU', 'TU'] });
@@ -302,14 +302,14 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await openModeLine(mode);
                 await layout(`${M} scan screen before the pallet target is set`);
                 await setPalletTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
-                await layout(`${M} scan screen with a pallet target, no box open`);
-                await PickLineScanScreen.openBox();
-                await layout(`${M} scan screen with a pallet target, box open`);
+                await layout(`${M} scan screen with a pallet target, no TU open`);
+                await PickLineScanScreen.openTU();
+                await layout(`${M} scan screen with a pallet target, TU open`);
                 if (mode === MODE_SCAN_EACH) {
                     await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
-                    await layout(`${M} scan screen after the first booking into the box on the pallet`);
+                    await layout(`${M} scan screen after the first booking into the TU on the pallet`);
                     await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
-                    await layout(`${M} scan screen after the second booking into the same box`);
+                    await layout(`${M} scan screen after the second booking into the same TU`);
                 } else {
                     await scanLabel(labelOf({ masterdata, lot }));
                     await layout(`${M} quantity block with a pallet target ("OK und LU schliessen" shown if the app offers it)`);
@@ -318,7 +318,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     await layout(`${M} quantity block after the first booking`);
                     await GetQuantityDialog.typeQtyEntered(1);
                     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });
-                    await layout(`${M} quantity block after the second booking into the same box`);
+                    await layout(`${M} quantity block after the second booking into the same TU`);
                 }
             });
         }

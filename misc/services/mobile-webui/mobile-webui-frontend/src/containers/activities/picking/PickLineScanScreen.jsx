@@ -61,7 +61,7 @@ import {
   SCAN_TYPE_GRAI,
 } from '../../../apps/picking/cuQtyEntry/cuLabel';
 import { parseGraiFromRawInput } from '../../../utils/grai';
-import OpenNextBoxButton, { useOpenNextBox } from '../../../apps/picking/cuQtyEntry/OpenNextBoxButton';
+import OpenNextTUButton, { useOpenNextTU } from '../../../apps/picking/cuQtyEntry/OpenNextTUButton';
 import { UserMessageError } from '../../../utils/UserMessageError';
 import { getCUQtyEntryPolicy, MANUAL_POLICY } from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { rememberCUEntry } from '../../../apps/picking/redux/PickingActions';
@@ -143,7 +143,7 @@ const PickLineScanScreen = () => {
 
   const isLabelRequiredLine = cuQtyEntryPolicy.labelRequired;
   const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
-  const nextBox = useOpenNextBox({
+  const nextTU = useOpenNextTU({
     applicationId,
     wfProcessId,
     activityId,
@@ -160,12 +160,12 @@ const PickLineScanScreen = () => {
     uom,
     qtyToPick,
     qtyPicked,
-    additionalHeaderProperties: { entries: computeOpenBoxHeaderEntries({ isLabelRequiredLine, tuPickingTarget }) },
+    additionalHeaderProperties: { entries: computeOpenTUHeaderEntries({ isLabelRequiredLine, tuPickingTarget }) },
     rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode, 'data-cu-label-scan': String(isLabelRequiredLine) },
     isLiveRefresh: isLabelRequiredLine,
   });
 
-  // not memoized: `nextBox.onGraiScanned` is a new function on every render
+  // not memoized: `nextTU.onGraiScanned` is a new function on every render
   const resolveScannedBarcode = (scannedBarcode) =>
     isLabelRequiredLine
       ? convertScannedCULabelToResolvedResult({
@@ -174,7 +174,7 @@ const PickLineScanScreen = () => {
           expectedProductNo: productNo,
           expectedGS1ProductCodes: gs1ProductCodes,
           cuQtyEntryPolicy,
-          onGrai: nextBox.onGraiScanned,
+          onGrai: nextTU.onGraiScanned,
         })
       : convertScannedBarcodeToResolvedResult({
           scannedBarcode,
@@ -187,7 +187,7 @@ const PickLineScanScreen = () => {
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
-  // scan once: the count offered for the next box (the last typed count, capped by the open quantity)
+  // scan once: the count offered for the next TU (the last typed count, capped by the open quantity)
   const isScanOnce = cuQtyEntryPolicy.scanOnce;
   const suggestedQty = isScanOnce
     ? computeSuggestedQty({ lastTypedQty: cuEntry?.lastTypedQty, qtyOpen: qtyToPickRemaining }) ?? undefined
@@ -243,9 +243,9 @@ const PickLineScanScreen = () => {
       suggestedQty={suggestedQty}
       rememberedCULabel={computeRememberedCULabel({ isScanOnce, isResume, cuEntry })}
       isShowCloseTargetButton={!!luPickingTarget}
-      nextBoxActions={
+      nextTUActions={
         isLabelRequiredLine ? (
-          <OpenNextBoxButton isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} />
+          <OpenNextTUButton isProcessing={nextTU.isProcessing} onNextTU={nextTU.onNextTU} />
         ) : undefined
       }
       //
@@ -266,10 +266,10 @@ export default PickLineScanScreen;
 //
 
 /**
- * The box open on a label-based-mode line stays visible in the header (a toast alone is gone when the picker looks back).
+ * The TU open on a label-based-mode line stays visible in the header (a toast alone is gone when the picker looks back).
  */
 // @VisibleForTesting
-export const computeOpenBoxHeaderEntries = ({ isLabelRequiredLine, tuPickingTarget }) =>
+export const computeOpenTUHeaderEntries = ({ isLabelRequiredLine, tuPickingTarget }) =>
   isLabelRequiredLine && tuPickingTarget?.caption
     ? [{ caption: trl('activities.picking.tuPickingTarget.Current'), value: tuPickingTarget.caption }]
     : [];
@@ -321,7 +321,7 @@ export const computeRememberedCULabel = ({ isScanOnce, isResume, cuEntry }) =>
 
 /**
  * The pick-time GRAI capture (after OK) belongs to the Manual path; in the CU quantity entry modes the picker opens
- * every box beforehand (GRAI scan or "Weitere Kiste"), so it never shows there.
+ * every TU beforehand (GRAI scan or "Weitere Kiste"), so it never shows there.
  */
 // @VisibleForTesting
 export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryPolicy = MANUAL_POLICY }) =>
@@ -418,7 +418,7 @@ export const convertScannedBarcodeToResolvedResult = async ({
 /**
  * A line with a CU quantity entry mode reads the scanned string as a CU label with the line's format only.
  * Returns the label data for the quantity block (lot, best-before) and the raw label; refusals are thrown.
- * A scanned GRAI is accepted on every such line: `onGrai` (required) opens the box from it.
+ * A scanned GRAI is accepted on every such line: `onGrai` (required) opens the TU from it.
  */
 // @VisibleForTesting
 export const convertScannedCULabelToResolvedResult = ({
@@ -430,8 +430,8 @@ export const convertScannedCULabelToResolvedResult = ({
   onGrai,
 }) => {
   if (routeScannedCode(scannedBarcode) === SCAN_TYPE_GRAI) {
-    // a GRAI opens a box, it is never read as a label
-    return onGrai(parseGraiFromRawInput(scannedBarcode)).then(() => ({ isNextBoxOpened: true }));
+    // a GRAI opens a TU, it is never read as a label
+    return onGrai(parseGraiFromRawInput(scannedBarcode)).then(() => ({ isNextTUOpened: true }));
   }
 
   const { errorKey, errorDetails, lotNo, bestBeforeDate, packId, cuLabel } = resolveCULabel({

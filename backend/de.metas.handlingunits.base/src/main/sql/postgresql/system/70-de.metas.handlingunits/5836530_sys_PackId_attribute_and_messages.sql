@@ -1,7 +1,7 @@
--- CU quantity entry: HU attribute PackId on the virtual packing item (version 101, CU level) and the five label / open-box messages.
+-- CU quantity entry: HU attribute PackId on the virtual packing item (version 101, CU level) and the five label / open-TU messages.
 -- New:    M_Attribute PackId (string, read-only values, filled by the picking booking from the label's pack ID part).
 --         M_HU_PI_Attribute on M_HU_PI_Version_ID 101 only (not on the template PI 100). Transfer strategy Skip (as HU_QRCode), propagation NONE.
---         AD_Message de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED, CU_LABEL_NO_PACK_ID, CU_LABEL_FORMAT_MISMATCH, CU_LABEL_NO_FORMAT, CU_NO_OPEN_BOX.
+--         AD_Message de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED, CU_LABEL_NO_PACK_ID, CU_LABEL_FORMAT_MISMATCH, CU_LABEL_NO_FORMAT, CU_NO_OPEN_TU.
 -- The pack ID part type of ScannableCodeFormatPartType is not created by this script.
 
 -- M_Attribute PackId (name German base; M_Attribute has no _Trl table)
@@ -68,10 +68,10 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-18 23:
 UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-18 23:10:25','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=546018
 ;
 
--- AD_Message 5 of 5: CU_NO_OPEN_BOX
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,546019 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-18 23:10:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Bitte öffnen Sie zuerst eine Kiste (GRAI scannen oder ''Weitere Kiste'').','E',TO_TIMESTAMP('2026-11-18 23:10:26','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX')
+-- AD_Message 5 of 5: CU_NO_OPEN_TU
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,546019 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-18 23:10:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Bitte öffnen Sie zuerst eine Kiste (GRAI scannen oder ''Weitere Kiste'').','E',TO_TIMESTAMP('2026-11-18 23:10:26','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits.picking.job.CU_NO_OPEN_TU')
 ;
-UPDATE AD_Message SET ErrorCode='CU_NO_OPEN_BOX', Updated=TO_TIMESTAMP('2026-11-18 23:10:27','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=546019
+UPDATE AD_Message SET ErrorCode='CU_NO_OPEN_TU', Updated=TO_TIMESTAMP('2026-11-18 23:10:27','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=546019
 ;
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language,t.AD_Message_ID,t.MsgText,t.MsgTip,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546019 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;

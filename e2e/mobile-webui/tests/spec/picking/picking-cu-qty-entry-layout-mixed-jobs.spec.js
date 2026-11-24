@@ -14,7 +14,7 @@ restoreSysconfigsAfterEach(test);
 
 /**
  * Layout of the Scan once, mixed-job and real-case screens of the CU quantity entry modes at the phone sizes (PHONE_VIEWPORTS): quantity block
- * states (count above the open quantity, smaller count, count over several source boxes, reopened block), a line closed short and reopened, a job
+ * states (count above the open quantity, smaller count, count over several source TUs, reopened block), a line closed short and reopened, a job
  * with Manual, Scan once and Scan each lines, and the real case of two buyers. Same checker as picking-cu-qty-entry-layout-label-modes.spec.js.
  */
 for (const viewport of PHONE_VIEWPORTS) {
@@ -23,14 +23,14 @@ for (const viewport of PHONE_VIEWPORTS) {
 
         for (const lang of LAYOUT_LANGUAGES) {
             // noinspection JSUnusedLocalSymbols
-            test(`Scan once: re-entry, closed short, over-max, smaller count, count over several source boxes [${lang}] (${viewport.name})`, async ({ page: _page }) => {
+            test(`Scan once: re-entry, closed short, over-max, smaller count, count over several source TUs [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive Scan once states');
                 const layout = (label, scope) => expectLayoutSound(`${label} [${lang}]`, viewport, scope);
 
                 const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], language: lang });
                 await startJob(masterdata, { qtyToDeliver: 12 });
                 await openLine({ index: 1 });
-                await PickLineScanScreen.openBox();
+                await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata }));
 
                 // above the open quantity
@@ -46,17 +46,17 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
                 await layout('Once quantity block after booking 3 of 12');
 
-                // 5 needs pieces from two source boxes of 4 (one CU of 5)
-                await PickLineScanScreen.nextBox();
+                // 5 needs pieces from two source TUs of 4 (one CU of 5)
+                await PickLineScanScreen.nextTU();
                 await book({ qty: 5, expectedQtyTarget: 4 });
-                await layout('Once quantity block after a count of 5 from two source boxes');
+                await layout('Once quantity block after a count of 5 from two source TUs');
 
                 // line screen, "HU verpacken" reopens the block with the remembered count
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
                 await PickingJobScreen.clickLineButton({ index: 1 });
                 await PickingJobLineScreen.waitForScreen();
-                await layout('Once line screen with booked boxes, before closing');
+                await layout('Once line screen with booked TUs, before closing');
                 await PickingJobLineScreen.clickPickHUButton();
                 await GetQuantityDialog.waitForDialog();
                 await layout('Once quantity block reopened by "HU verpacken" (remembered count)');
@@ -108,7 +108,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 // line 1: Once
                 await openLine({ index: 1 });
                 await layout('mixed: Once line scan screen');
-                await PickLineScanScreen.openBox();
+                await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata, lot }));
                 await layout('mixed: Once quantity block');
                 await GetQuantityDialog.clickCancel();
@@ -124,14 +124,14 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 // line 3: Each
                 await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
-                await openScanEachLine({ index: 3, openBox: false });
-                await layout('mixed: Each scan screen, no box open');
-                await PickLineScanScreen.openBox();
+                await openScanEachLine({ index: 3, openTU: false });
+                await layout('mixed: Each scan screen, no TU open');
+                await PickLineScanScreen.openTU();
                 await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
                 await layout('mixed: Each scan screen after a pack was booked');
                 await PickLineScanScreen.goBack();
                 await PickingJobLineScreen.waitForScreen();
-                await layout('mixed: Each line screen with a booked box');
+                await layout('mixed: Each line screen with a booked TU');
                 await PickingJobLineScreen.goBack();
                 await PickingJobScreen.waitForScreen();
                 await layout('mixed job screen after switching lines');
@@ -139,7 +139,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         }
 
         // noinspection JSUnusedLocalSymbols
-        test(`real case: Once buyer with boxes by Next box and GRAI, Each buyer with GRAI boxes and a duplicate warning (${viewport.name})`, async ({ page: _page }) => {
+        test(`real case: Once buyer with TUs by Next box and GRAI, Each buyer with GRAI TUs and a duplicate warning (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive real case');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
@@ -155,34 +155,34 @@ for (const viewport of PHONE_VIEWPORTS) {
             });
             const [companyPrefix, assetType] = masterdata.packingInstructions.G1.grai.split('.');
             const serialBase = Date.now();
-            const graiOfBox = (box) => `${companyPrefix}.${assetType}.${serialBase + box}`;
+            const graiOfTU = (tu) => `${companyPrefix}.${assetType}.${serialBase + tu}`;
             const lot = uniqueLot();
             await startJob(masterdata, { qtyToDeliver: 18 });
             await layout('job screen, two customers');
 
             await openLine({ index: 1 });
-            await PickLineScanScreen.openBox();
+            await PickLineScanScreen.openTU();
             await scanLabel(labelOf({ masterdata, lot }));
             await book({ qty: 3, expectedQtyTarget: 11 });
-            await PickLineScanScreen.rescanGrai(graiOfBox(3));
-            await layout('Once quantity block, box opened by a GRAI scan');
+            await PickLineScanScreen.rescanGrai(graiOfTU(3));
+            await layout('Once quantity block, TU opened by a GRAI scan');
             await book({ qty: 5, expectedQtyTarget: 6 });
-            await PickLineScanScreen.nextBox();
-            await layout('Once quantity block, box opened by Next box');
+            await PickLineScanScreen.nextTU();
+            await layout('Once quantity block, TU opened by Next box');
             await GetQuantityDialog.typeQtyEntered(6);
             await GetQuantityDialog.clickDoneStayOpen();
             await PickingJobScreen.waitForScreen();
             await layout('job screen, buyer A line done');
 
             await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
-            await openScanEachLine({ index: 2, openBox: false });
-            await PickLineScanScreen.scanGrai(graiOfBox(12));
-            await layout('Each scan screen, box opened by GRAI (GRAI customer)');
+            await openScanEachLine({ index: 2, openTU: false });
+            await PickLineScanScreen.scanGrai(graiOfTU(12));
+            await layout('Each scan screen, TU opened by GRAI (GRAI customer)');
             for (const packId of [1, 2]) await scanPack(packLabelOf({ masterdata, lot, packId }));
             await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 2 }), MSG_ALREADY_PICKED(2), {
                 whileToastShown: async () => await layout('Each refusal, the duplicate warning (scan screen + toast)'),
             });
-            await PickLineScanScreen.scanGrai(graiOfBox(13));
+            await PickLineScanScreen.scanGrai(graiOfTU(13));
             for (const packId of [3, 4]) await scanPack(packLabelOf({ masterdata, lot, packId }));
             await PickingJobScreen.waitForScreen();
             await layout('job screen, both lines done, ready to complete');

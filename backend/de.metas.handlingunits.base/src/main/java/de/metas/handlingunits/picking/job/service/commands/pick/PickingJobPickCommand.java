@@ -114,7 +114,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
-	private final static AdMessageKey CU_NO_OPEN_BOX_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_BOX");
+	private final static AdMessageKey CU_NO_OPEN_TU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_TU");
 	private final static AdMessageKey CU_EACH_ONLY_FOR_PIECES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES");
 	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
@@ -224,7 +224,7 @@ public class PickingJobPickCommand
 		final I_C_UOM uom = line.getUOM();
 		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
 		this.cuLabel = cuLabel;
-		// label-based modes always book CUs into the open box: never a whole TU
+		// label-based modes always book CUs into the open TU: never a whole TU
 		this.isPickWholeTU = isPickWholeTU && cuQtyEntryPolicy.isPickWholeTUAllowed();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
@@ -452,7 +452,7 @@ public class PickingJobPickCommand
 
 		if (!getTUPickingTarget().isPresent())
 		{
-			throw new AdempiereException(CU_NO_OPEN_BOX_ERROR_MSG).markAsUserValidationError();
+			throw new AdempiereException(CU_NO_OPEN_TU_ERROR_MSG).markAsUserValidationError();
 		}
 
 		final ResolvedCULabel label = getResolvedCULabel();
@@ -1072,8 +1072,8 @@ public class PickingJobPickCommand
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		// Label-based modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the box's code is assigned to the box only)
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryPolicy.isBookedAsSingleCUInBox() ? cu.getId() : tu1.getId());
+		// Label-based modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the TU's code is assigned to the TU only)
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryPolicy.isBookedAsSingleCUInTU() ? cu.getId() : tu1.getId());
 		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
@@ -1231,7 +1231,7 @@ public class PickingJobPickCommand
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
-						.isBookAsSingleCUInBox(cuQtyEntryPolicy.isBookedAsSingleCUInBox())
+						.isBookAsSingleCUInTU(cuQtyEntryPolicy.isBookedAsSingleCUInTU())
 						.build()
 		);
 	}

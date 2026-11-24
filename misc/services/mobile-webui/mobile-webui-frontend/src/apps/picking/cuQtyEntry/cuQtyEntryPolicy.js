@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
  * (backend/de.metas.handlingunits.base/.../picking/config/mobileui/CUQtyEntryPolicy.java). When you change what the screens need to ask,
  * change the Java classes and this file together.
  *
- * - labelRequired: a CU label is read (lot / best-before come from it, the box is open before booking)
+ * - labelRequired: a CU label is read (lot / best-before come from it, the TU is open before booking)
  * - packIdRequired: the label must carry a pack ID, one scan books one CU
  * - scanOnce: one label is scanned, then the count is typed
  */

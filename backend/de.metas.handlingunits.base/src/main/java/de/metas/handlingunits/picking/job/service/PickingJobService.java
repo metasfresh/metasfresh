@@ -761,7 +761,7 @@ public class PickingJobService implements PickingSlotListener
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
 		final Predicate<PickingJobLine> isLabelRequired = line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired();
-		// only the lines the mode of their customer does not settle are checked for packs booked in a label-based mode (that check walks each picked CU up to its box)
+		// only the lines the mode of their customer does not settle are checked for packs booked in a label-based mode (that check walks each picked CU up to its TU)
 		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
 		final ImmutableSet<HuId> cusBookedLabelBased = pickingJob.hasLine(isToCheckForLabelBookings)
 				? huService.getCUBookingSpecification().filterBookedWithLabelScan(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))

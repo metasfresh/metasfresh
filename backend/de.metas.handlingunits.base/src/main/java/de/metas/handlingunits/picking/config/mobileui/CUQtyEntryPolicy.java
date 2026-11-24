@@ -31,19 +31,19 @@ public final class CUQtyEntryPolicy
 	private final boolean isPackIdUsed;
 
 	/**
-	 * @return true if a pick needs an open box (TU) and a CU label scan: the label supplies lot / best-before, the picked HU is the booked
-	 * CU inside the box (also the QR code owner), and a whole source TU is never picked at once
+	 * @return true if a pick needs an open TU and a CU label scan: the label supplies lot / best-before, the picked HU is the booked
+	 * CU inside the TU (also the QR code owner), and a whole source TU is never picked at once
 	 */
 	public boolean isLabelRequired() {return isLabelScanned;}
 
-	/** @return false: the booked CU goes into the open box, never a whole TU */
+	/** @return false: the booked CU goes into the open TU, never a whole TU */
 	public boolean isPickWholeTUAllowed() {return !isLabelScanned;}
 
 	/** @return true if one label is scanned and the quantity is typed: the label's pack ID is ignored */
 	public boolean isScanOnce() {return isLabelScanned && !isPackIdUsed;}
 
-	/** @return true if every pick is booked as ONE CU inside the open box (the CU is the picked HU, not the box) */
-	public boolean isBookedAsSingleCUInBox() {return isLabelScanned;}
+	/** @return true if every pick is booked as ONE CU inside the open TU (the CU is the picked HU, not the TU) */
+	public boolean isBookedAsSingleCUInTU() {return isLabelScanned;}
 
 	/** @return true if the label must carry a pack ID: it is stored on the CU and a repeated (product, lot, pack ID) in the job is refused */
 	public boolean isPackIdRequired() {return isPackIdUsed;}

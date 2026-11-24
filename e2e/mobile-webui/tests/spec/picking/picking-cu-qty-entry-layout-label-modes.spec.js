@@ -11,7 +11,7 @@ import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { allureMeta, labelOf, MODE_MANUAL, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryCommon";
+import { allureMeta, labelOf, MODE_MANUAL, MSG_NO_OPEN_TU, uniqueFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryCommon";
 import { createScanEachMasterdata, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -29,16 +29,16 @@ restoreSysconfigsAfterEach(test);
  */
 const TEXTS = {
     en_US: {
-        noOpenBox: MSG_NO_OPEN_BOX,
+        noOpenTU: MSG_NO_OPEN_TU,
         alreadyPicked: 'This pack was already picked in this job',
         noPackId: 'The label contains no pack ID',
         formatMismatch: 'does not match the label format',
         pickFromRequired: "Please scan 'Pick From' first.",
         noCapacity: 'has no capacity configured for this product',
-        nextBoxBusy: 'A box is just being opened.',
+        nextTUBusy: 'A box is just being opened.',
     },
     de_DE: {
-        noOpenBox: 'Bitte öffnen Sie zuerst eine Kiste',
+        noOpenTU: 'Bitte öffnen Sie zuerst eine Kiste',
         alreadyPicked: 'Diese Packung wurde',
         noPackId: 'Packungs-ID',
         formatMismatch: 'Etikettenformat',
@@ -73,7 +73,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
             await test.step('Scan once: field, lot, best-before, OK, Cancel and Next box are on the screen', async () => {
                 await openLine({ index: 1 });
-                await PickLineScanScreen.openBox();
+                await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata }));
                 const dialog = page.locator('.get-qty-dialog');
                 await expectInsideScreen(dialog.locator('#qty-input'), 'Scan once quantity field', viewport);
@@ -81,7 +81,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await expectInsideScreen(dialog.getByTestId('bestBeforeDate'), 'Scan once best-before field', viewport);
                 await expectInsideScreen(dialog.getByTestId('done-button'), 'Scan once OK button', viewport);
                 await expectInsideScreen(dialog.getByTestId('cancel-button'), 'Scan once Cancel button', viewport);
-                await expectInsideScreen(dialog.getByTestId('next-box-button'), 'Scan once Next box button', viewport);
+                await expectInsideScreen(dialog.getByTestId('next-tu-button'), 'Scan once Next box button', viewport);
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
             });
@@ -106,7 +106,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await expectInsideScreen(dialog.getByTestId('cancel-button'), 'Manual Cancel button', viewport);
             const tableArea = await dialog.locator('.table-container').boundingBox();
             // positions are printed, to compare the layout before and after a change
-            console.log('MANUAL-DIALOG-BOXES ' + viewport.name + ' ' + JSON.stringify({
+            console.log('MANUAL-DIALOG-TUS ' + viewport.name + ' ' + JSON.stringify({
                 field: await dialog.locator('#qty-input').boundingBox(), ok: await dialog.getByTestId('done-button').boundingBox(),
                 cancel: await dialog.getByTestId('cancel-button').boundingBox(), tableArea,
             }));
@@ -126,19 +126,19 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Once job screen');
 
                 await openLine({ index: 1 });
-                await layout('Once scan screen, no box open');
-                await expectOnScreenWithoutScrolling(page.getByTestId('next-box-button'), 'Once scan screen: Next box button', viewport);
+                await layout('Once scan screen, no TU open');
+                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Once scan screen: Next box button', viewport);
 
                 await scanLabel(labelOf({ masterdata }));
-                await layout('Once quantity block, no box open');
+                await layout('Once quantity block, no TU open');
                 await GetQuantityDialog.typeQtyEntered(5);
                 await GetQuantityDialog.clickDoneRefused({
-                    expectedError: T.noOpenBox,
-                    whileToastShown: async () => await layout('Once refusal no open box (quantity block + toast)'),
+                    expectedError: T.noOpenTU,
+                    whileToastShown: async () => await layout('Once refusal no open TU (quantity block + toast)'),
                 });
 
-                await PickLineScanScreen.openBox();
-                await layout('Once quantity block, box open');
+                await PickLineScanScreen.openTU();
+                await layout('Once quantity block, TU open');
                 await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 7 });
                 await layout('Once quantity block after a booking');
 
@@ -148,8 +148,8 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 await PickingJobScreen.clickLineButton({ index: 1 });
                 await PickingJobLineScreen.waitForScreen();
-                await layout('Once line screen with a booked box');
-                await expectReachable(page.locator('#step-0-button'), 'booked box button', viewport);
+                await layout('Once line screen with a booked TU');
+                await expectReachable(page.locator('#step-0-button'), 'booked TU button', viewport);
 
                 await PickingJobLineScreen.clickStepButton({ index: 0 });
                 await PickingJobStepScreen.waitForScreen();
@@ -169,17 +169,17 @@ for (const viewport of PHONE_VIEWPORTS) {
                 const gtin = uniqueGTIN();
                 const pack = (packId) => packLabelOf({ masterdata, lot, gtin, packId });
                 await startJob(masterdata, { qtyToDeliver: 3 });
-                await openScanEachLine({ index: 1, openBox: false });
-                await layout('Each scan screen, no box open');
-                await expectOnScreenWithoutScrolling(page.getByTestId('next-box-button'), 'Each scan screen: Next box button', viewport);
+                await openScanEachLine({ index: 1, openTU: false });
+                await layout('Each scan screen, no TU open');
+                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Each scan screen: Next box button', viewport);
                 await expectOnScreenWithoutScrolling(page.getByTestId('scan-each-close-button'), 'Each scan screen: Close button', viewport);
 
-                await PickLineScanScreen.scanCULabelRefused(pack(1), T.noOpenBox, {
-                    whileToastShown: async () => await layout('Each refusal no open box (scan screen + toast)'),
+                await PickLineScanScreen.scanCULabelRefused(pack(1), T.noOpenTU, {
+                    whileToastShown: async () => await layout('Each refusal no open TU (scan screen + toast)'),
                 });
 
-                await PickLineScanScreen.openBox();
-                await layout('Each scan screen, box open');
+                await PickLineScanScreen.openTU();
+                await layout('Each scan screen, TU open');
                 await scanPack(pack(1));
                 await layout('Each scan screen after a pack was booked');
                 await PickLineScanScreen.scanCULabelRefused(pack(1), T.alreadyPicked, {
@@ -245,7 +245,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         });
 
         // noinspection JSUnusedLocalSymbols
-        test(`Box by GRAI: box opened toast, refusal, busy refusal (${viewport.name})`, async ({ page: _page }) => {
+        test(`TU by GRAI: TU opened toast, refusal, busy refusal (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive quantity block');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
@@ -261,20 +261,20 @@ for (const viewport of PHONE_VIEWPORTS) {
             await startJob(masterdata, { qtyToDeliver: 20 });
             await openLine({ index: 1 });
             await PickLineScanScreen.scanGrai(masterdata.packingInstructions.G1.grai);
-            await layout('GRAI scan opens a box: "New box opened" toast and header "Current"');
+            await layout('GRAI scan opens a TU: "New box opened" toast and header "Current"');
             await PickLineScanScreen.scanCULabelRefused(masterdata.packingInstructions.GN.grai, TEXTS.en_US.noCapacity, {
                 whileToastShown: async () => await layout('GRAI refusal no capacity (scan screen + toast)'),
             });
 
             await scanLabel(labelOf({ masterdata }));
-            // a box is being opened (slow answer): a GRAI scanned meanwhile is told to wait
+            // a TU is being opened (slow answer): a GRAI scanned meanwhile is told to wait
             await page.route(/\/picking\/job\/[^/]+\/target/, async (route) => {
                 if (route.request().method() === 'POST') await new Promise((resolve) => setTimeout(resolve, 6000));
                 await route.continue();
             });
-            await page.getByTestId('next-box-button').tap();
-            await PickLineScanScreen.rescanCULabelRefused(masterdata.packingInstructions.G1.grai, TEXTS.en_US.nextBoxBusy, {
-                whileToastShown: async () => await layout('Once busy refusal "a box is just being opened" (quantity block + toast)'),
+            await page.getByTestId('next-tu-button').tap();
+            await PickLineScanScreen.rescanCULabelRefused(masterdata.packingInstructions.G1.grai, TEXTS.en_US.nextTUBusy, {
+                whileToastShown: async () => await layout('Once busy refusal "a TU is just being opened" (quantity block + toast)'),
             });
             await page.unroute(/\/picking\/job\/[^/]+\/target/);
         });
@@ -303,9 +303,9 @@ for (const viewport of PHONE_VIEWPORTS) {
 
             const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }] });
             await startJob(masterdata, { qtyToDeliver: 3 });
-            await openScanEachLine({ index: 1, openBox: false });
+            await openScanEachLine({ index: 1, openTU: false });
 
-            await expectOnScreenWithoutScrolling(page.getByTestId('next-box-button'), 'Scan each Next box button', viewport);
+            await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Scan each Next box button', viewport);
             await expectOnScreenWithoutScrolling(page.getByTestId('scan-each-close-button'), 'Scan each Close button', viewport);
         });
     });

@@ -29,7 +29,7 @@ const computeInitialQtyInfo = ({ isScanOnce, qtyInitial, qtyTarget, useZeroAsIni
   if (!isScanOnce) {
     return qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget);
   }
-  // scan once: the offered count of the next box (last typed count, capped by the open qty); empty before the first one
+  // scan once: the offered count of the next TU (last typed count, capped by the open qty); empty before the first one
   return qtyInitial != null
     ? qtyInfos.invalidOfNumber(qtyInitial)
     : qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null });
@@ -61,7 +61,7 @@ const GetQuantityDialog = ({
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
-  nextBoxActions,
+  nextTUActions,
   labelRescan,
   //
   validateQtyEntered,
@@ -74,7 +74,7 @@ const GetQuantityDialog = ({
   const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
 
-  // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
+  // scan once: the picker types how many packs of the scanned label go into the TU; the field starts empty and a
   // smaller count than the open qty is not a rejection
   const isScanOnce = !!cuQtyEntryPolicy?.scanOnce;
   // label-based modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
@@ -532,7 +532,7 @@ const GetQuantityDialog = ({
                 onClick={onCloseDialog}
                 testId="cancel-button"
               />
-              {nextBoxActions}
+              {nextTUActions}
             </div>
           </form>
         )}
@@ -590,7 +590,7 @@ GetQuantityDialog.propTypes = {
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
-  nextBoxActions: PropTypes.node,
+  nextTUActions: PropTypes.node,
   labelRescan: PropTypes.node,
   customQRCodeFormats: PropTypes.array,
 

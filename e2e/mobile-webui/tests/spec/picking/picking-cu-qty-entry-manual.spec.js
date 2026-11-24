@@ -94,7 +94,7 @@ const openLineScanScreen = async ({ index }) => {
     await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.clickScanButton();
     await PickLineScanScreen.waitForScreen();
-    await PickLineScanScreen.expectNextBoxButtonHidden();
+    await PickLineScanScreen.expectNextTUButtonHidden();
 };
 
 /** Scans the HU on the scan screen, answers the quantity dialog, and goes back to the job screen. */
@@ -180,7 +180,7 @@ test('Manual profile, partial pick asks a reason, "New TU" behaves', async ({ pa
                 shipmentSchedules: {
                     P1: {},
                     P2: {
-                        // no box (TU) open: each OK of N TU makes N separate TUs (the Manual behaviour)
+                        // no TU open: each OK of N TU makes N separate TUs (the Manual behaviour)
                         qtyPicked: [
                             { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu2a', lu: '-', processed: false, shipmentLineId: '-' },
                             { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu2b', lu: '-', processed: false, shipmentLineId: '-' },

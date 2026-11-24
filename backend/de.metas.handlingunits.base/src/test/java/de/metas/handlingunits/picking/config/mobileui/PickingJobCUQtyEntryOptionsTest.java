@@ -114,8 +114,8 @@ class PickingJobCUQtyEntryOptionsTest
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isOverPickAlwaysRefused()).isFalse();
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isPickWholeTUAllowed()).isTrue();
 			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isPickWholeTUAllowed()).isFalse();
-			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isBookedAsSingleCUInBox()).isFalse();
-			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isBookedAsSingleCUInBox()).isTrue();
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isBookedAsSingleCUInTU()).isFalse();
+			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isBookedAsSingleCUInTU()).isTrue();
 			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("1");
 			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("7");
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("7");

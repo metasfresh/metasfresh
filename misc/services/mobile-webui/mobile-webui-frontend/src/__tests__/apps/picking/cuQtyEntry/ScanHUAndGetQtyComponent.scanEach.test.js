@@ -44,7 +44,7 @@ const renderComponent = ({ onResult, resolveScannedBarcode, qtyMax = 3, ...props
           })
         }
         onResult={onResult}
-        nextBoxActions={<button type="button">Next box</button>}
+        nextTUActions={<button type="button">Next box</button>}
         {...props}
       />
     </Provider>

@@ -176,11 +176,11 @@ public class PickingJobUnPickCommand
 
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
-		// A picked CU in a box (TU) leaves it as a whole: no quantity moves, so nothing rewrites its QtyPicked rows; they keep pointing to
-		// the box and the top-level lookup below would not find them. Decided by the booked data (the picked HU), not by the line's mode:
+		// A picked CU in a TU leaves it as a whole: no quantity moves, so nothing rewrites its QtyPicked rows; they keep pointing to
+		// the TU and the top-level lookup below would not find them. Decided by the booked data (the picked HU), not by the line's mode:
 		// a picked aggregated TU is not such a CU: it is split out and its rows are handled by the top-level lookup below.
 		final ShipmentScheduleId shipmentScheduleId = step.getScheduleId().getShipmentScheduleId();
-		huIdAndQRCodeList.forEach(huIdAndQRCode -> deleteQtyPickedOfCUInBox(huIdAndQRCode.getHuId(), shipmentScheduleId));
+		huIdAndQRCodeList.forEach(huIdAndQRCode -> deleteQtyPickedOfCUInTU(huIdAndQRCode.getHuId(), shipmentScheduleId));
 
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
 		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
@@ -231,9 +231,9 @@ public class PickingJobUnPickCommand
 		return huService.getByIds(topLevelHUIds);
 	}
 
-	private void deleteQtyPickedOfCUInBox(@NonNull final HuId huId, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	private void deleteQtyPickedOfCUInTU(@NonNull final HuId huId, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		if (huService.getCUBookingSpecification().isCUInBox(huService.getById(huId)))
+		if (huService.getCUBookingSpecification().isCUInTU(huService.getById(huId)))
 		{
 			shipmentScheduleService.deleteByVHUAndShipmentScheduleId(huId, shipmentScheduleId);
 		}
@@ -296,9 +296,9 @@ public class PickingJobUnPickCommand
 	}
 
 	/**
-	 * Un-picking the last CU of the open box (TU) empties it, and the HU framework destroys an emptied TU; a later pick into that target
-	 * would fail ("Illegal M_HU.HUStatus change from D to S"). As for the LU target below, the open box becomes a new box of the same box
-	 * type, which also keeps the box's GRAI: for the picker the box stays open. Like the LU target, only the target of the un-picked
+	 * Un-picking the last CU of the open TU empties it, and the HU framework destroys an emptied TU; a later pick into that target
+	 * would fail ("Illegal M_HU.HUStatus change from D to S"). As for the LU target below, the open TU becomes a new TU of the same TU
+	 * type, which also keeps the TU's GRAI: for the picker the TU stays open. Like the LU target, only the target of the un-picked
 	 * line (line-level jobs) or of the job is checked.
 	 */
 	@NonNull
