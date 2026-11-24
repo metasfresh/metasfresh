@@ -86,8 +86,10 @@ Feature: Moving Average Invoice - MatchInv of a rounding cent posts with a valid
     #
     # The receipts and the invoice post their own side of the same two accounts. Only the asserted line of each
     # document is listed; the row with "*" as account conceptual name accepts the document's other lines.
-    # Receipt side: NotInvoicedReceipts CR 133.44 per receipt, the amount the matches debit on the same account.
-    # Invoice side: the whole invoice line net 202.43 CHF is booked on P_InventoryClearing (one invoice, so one amount for both matches).
+    # Receipt side: NotInvoicedReceipts CR 133.44 per receipt, exactly the amount the match of that receipt line debits on the same account.
+    # Invoice side: P_InventoryClearing DR 202.43 (the whole invoice line). This does NOT reconcile with the matches: they credit 101.22 + 101.22 = 202.44,
+    # a rest of 0.01. That is the known limitation of an invoice line matched more than once (each match is rounded on its own); it is not fixed here
+    # and is planned as a follow-up. The real 202.43 is asserted so that any change of this behaviour shows up.
     #
     And Fact_Acct records are matching
       | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Record_ID |
