@@ -74,7 +74,7 @@ Feature: Moving Average Invoice - MatchInv of a rounding cent posts with a valid
     # Both matches post 1105 / 2060 / 90000 on the cent grid:
     #   NotInvoicedReceipts DR 133.44, P_InventoryClearing CR 101.22, P_Asset CR 32.22 (qty 0).
     #
-    And Wait until documents receipt1,receipt2,matchInv1,matchInv2 are posted
+    And Wait until documents receipt1,receipt2,invoice,matchInv1,matchInv2 are posted
     Then Fact_Acct records are matching
       | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty        | M_Product_ID | Record_ID | C_BPartner_ID |
       | NotInvoicedReceipts_Acct | 133.44    |           | 133.44 CHF  |             | +0.914 KGM | product      | matchInv1 | vendor        |
@@ -83,3 +83,21 @@ Feature: Moving Average Invoice - MatchInv of a rounding cent posts with a valid
       | NotInvoicedReceipts_Acct | 133.44    |           | 133.44 CHF  |             | +0.914 KGM | product      | matchInv2 | vendor        |
       | P_InventoryClearing_Acct |           | 101.22    |             | 101.22 CHF  | -0.914 KGM | product      | matchInv2 | vendor        |
       | P_Asset_Acct             |           | 32.22     |             | 32.22 CHF   | 0 KGM      | product      | matchInv2 | vendor        |
+    #
+    # The receipts and the invoice post their own side of the same two accounts. Only the asserted line of each
+    # document is listed; the row with "*" as account conceptual name accepts the document's other lines.
+    # Receipt side: NotInvoicedReceipts CR 133.44 per receipt, the amount the matches debit on the same account.
+    # Invoice side: the whole invoice line net 202.43 CHF is booked on P_InventoryClearing (one invoice, so one amount for both matches).
+    #
+    And Fact_Acct records are matching
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Record_ID |
+      | *                        |           |           |             |             | receipt1  |
+      | NotInvoicedReceipts_Acct |           | 133.44    |             | 133.44 CHF  | receipt1  |
+    And Fact_Acct records are matching
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Record_ID |
+      | *                        |           |           |             |             | receipt2  |
+      | NotInvoicedReceipts_Acct |           | 133.44    |             | 133.44 CHF  | receipt2  |
+    And Fact_Acct records are matching
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Record_ID |
+      | *                        |           |           |             |             | invoice   |
+      | P_InventoryClearing_Acct | 202.43    |           | 202.43 CHF  |             | invoice   |
