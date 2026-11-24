@@ -372,6 +372,30 @@ class PickingCULabelServiceTest
 		}
 
 		@Test
+		void labelEndingBeforeTheMarker_logsTheParserExplanation()
+		{
+			final Logger logger = (Logger)LoggerFactory.getLogger(PickingCULabelService.class);
+			final ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+			logAppender.start();
+			logger.addAppender(logAppender);
+			try
+			{
+				final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
+				assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
+
+				assertThat(logAppender.list).hasSize(1);
+				final ILoggingEvent event = logAppender.list.get(0);
+				assertThat(event.getLevel()).isEqualTo(Level.WARN);
+				// the picker gets the specific "no pack ID" message; the parser explanation (why the format did not match) is only logged
+				assertThat(event.getFormattedMessage()).contains("Cannot extract part Ignored[46-46]");
+			}
+			finally
+			{
+				logger.detachAppender(logAppender);
+			}
+		}
+
+		@Test
 		void labelEndingBeforeThePackIdPart_hasNoPackId()
 		{
 			final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);

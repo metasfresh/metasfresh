@@ -85,11 +85,11 @@ public class PickingCULabelService
 			return resolve(line, toCULabelData(parsed.get()), policy);
 		}
 
+		logger.warn("CU label refused: label '{}' does not match format {}: {}", label, format.getId(), parsed.getExplanation().getDefaultValue());
 		if (policy.isPackIdRequired() && format.isEndingBeforePackId(label))
 		{
 			throw userError(MSG_CU_LABEL_NO_PACK_ID);
 		}
-		logger.warn("CU label refused: label '{}' does not match format {}: {}", label, format.getId(), parsed.getExplanation().getDefaultValue());
 		throw userErrorWithDetails(MSG_CU_LABEL_FORMAT_MISMATCH, parsed.getExplanation());
 	}
 
