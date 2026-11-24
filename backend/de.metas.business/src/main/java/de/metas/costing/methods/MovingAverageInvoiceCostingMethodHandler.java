@@ -528,8 +528,11 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	 * {@code invoicedAmt} and {@code receiptAmt} to {@code amountPrecision}. The difference is therefore taken between
 	 * rounded amounts; {@code main - stock - sold} of the result equals the rounded receipt amount.
 	 * <p>
-	 * Note: the {@code sourceValue} of the invoiced and receipt amounts is not rounded (the stock share's is, by the
-	 * division), so the source amounts of the resulting cost details may keep more decimals than the posting books.
+	 * Returns: {@code main} = the rounded invoiced amount; {@code stock} + {@code sold} = the rounded difference.
+	 * Only the {@code value} of the amounts is rounded; their {@code sourceValue} is rounded only for the stock share
+	 * of a partly-in-stock match with {@code receiptQty >= 0} (computed by a division). In every other case
+	 * (difference zero, {@code receiptQty} zero, all matched qty in stock, credit memo / negative {@code receiptQty})
+	 * the {@code sourceValue} of the results keeps its decimals.
 	 */
 	@VisibleForTesting
 	@Builder(builderMethodName = "prepareMatchInvSplitRounded", builderClassName = "MatchInvSplitRoundedBuilder")
