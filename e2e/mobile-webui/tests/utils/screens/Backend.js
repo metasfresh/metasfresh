@@ -75,6 +75,25 @@ export const Backend = {
     }),
 
     /**
+     * Removes all HUs from the given picking slots and releases them: every non-empty picking slot is offered as an HU consolidation job
+     * to every later test, so a test empties its own slots afterwards.
+     */
+    emptyPickingSlots: async ({ pickingSlotIds }) => await test.step(`Backend: empty picking slots ${pickingSlotIds.join(', ')}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/emptyPickingSlots`, {
+            data: { pickingSlotIds },
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+        }
+    }),
+
+    /**
      * Registers the picking slot's queue under the given HU aliases (in pick order) and returns { context, qrCodes }
      * (the global QR code per alias). Fails when the slot's queue does not hold exactly these HUs.
      */

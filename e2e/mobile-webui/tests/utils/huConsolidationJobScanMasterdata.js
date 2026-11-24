@@ -13,7 +13,7 @@ export const LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID = 584998;
 /**
  * Settings as on the customer's instance: the legacy picking label (fallback for every label without a label config) is not configured
  * (-1 takes the same code path as the inactive sysconfig), and the scanner's live timing / manual input.
- * Only the tests of the customer's setup pass them (`sysconfigs`); {@link restoreJobScanSysconfigs} writes the previous values back after each test.
+ * Only the tests of the customer's setup pass them (`sysconfigs`); {@link cleanUpAfterJobScanTest} writes the previous values back after each test.
  */
 export const LIVE_DEFAULT_SYSCONFIGS = {
     'de.metas.ui.web.picking.PickingLabel.AD_Process_ID': '-1',
@@ -90,21 +90,31 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pick
     if (sysconfigsToRestore === null) {
         sysconfigsToRestore = masterdata.previousSysconfigs ?? {};
     }
+    Object.values(masterdata.pickingSlots ?? {}).forEach((pickingSlot) => pickingSlotIdsToEmpty.add(pickingSlot.id));
     return masterdata;
 };
 
 /** Sysconfig values found before the first masterdata call of the running test (null = no call yet). */
 let sysconfigsToRestore = null;
+/** Picking slots created by the running test's masterdata. */
+const pickingSlotIdsToEmpty = new Set();
 
 /**
- * Writes back the sysconfig values found before the test's first masterdata call, so the next test (and the next spec) sees the database as
- * before. Call it in `test.afterEach` of every spec that uses this masterdata; it also runs when the test failed.
+ * Leaves the database as the test found it, for the next test (and the next spec or run): writes back the sysconfig values found before the
+ * test's first masterdata call, and empties the test's picking slots (each non-empty picking slot is offered as an HU consolidation job to
+ * every later test). Call it in `test.afterEach` of every spec that uses this masterdata; it also runs when the test failed.
  */
-export const restoreJobScanSysconfigs = async () => {
+export const cleanUpAfterJobScanTest = async () => {
     const sysconfigs = sysconfigsToRestore;
     sysconfigsToRestore = null;
+    const pickingSlotIds = [...pickingSlotIdsToEmpty];
+    pickingSlotIdsToEmpty.clear();
+
     if (sysconfigs && Object.keys(sysconfigs).length > 0) {
         await Backend.setSysconfigs(sysconfigs);
+    }
+    if (pickingSlotIds.length > 0) {
+        await Backend.emptyPickingSlots({ pickingSlotIds });
     }
 };
 

@@ -27,13 +27,13 @@ import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, restoreJobScanSysconfigs, HU_LABEL_PROCESS_ID, LIVE_DEFAULT_SYSCONFIGS, LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
+import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, cleanUpAfterJobScanTest, HU_LABEL_PROCESS_ID, LIVE_DEFAULT_SYSCONFIGS, LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
 import { attachScreenshot, expectErrorToast } from '../../utils/common';
 
-// sysconfigs changed by a test are written back afterwards (also when it failed), so later tests and specs see the DB as before
+// sysconfigs changed by a test are written back and its picking slots emptied afterwards (also when it failed), so later tests and specs see the DB as before
 test.afterEach(async () => {
-    await restoreJobScanSysconfigs();
+    await cleanUpAfterJobScanTest();
 });
 
 /** Opens the single-line picking job of the sales order and scans the picking slot. */
