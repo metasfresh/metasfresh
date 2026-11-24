@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * "Schliessen" (close target) with a failing SSCC label print:
+ * "Schliessen" (close target) and "Fertigstellen" (complete) with a failing SSCC label print:
  * the operator gets the print error AND the pallet is closed anyway (shipment created as usual), like in picking.
  */
 class HUConsolidationJobServiceCloseTargetTest
@@ -137,6 +137,35 @@ class HUConsolidationJobServiceCloseTargetTest
 		assertThat(request.getValue().getHuIds()).containsExactly(LU_ID);
 		assertThat(request.getValue().isFailOnMissingLabelConfig()).isTrue();
 		assertThat(request.getValue().isSkipIncludedHUsWithoutLabelConfig()).isTrue();
+	}
+
+	@Test
+	void complete_noLabelConfig_errorReachesCaller_butJobIsCompletedAndShipmentCreated()
+	{
+		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenThrow(new AdempiereException("No label config found"));
+
+		assertThatThrownBy(() -> service.complete(jobRepository.getById(job.getId())))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
+				.hasMessageContaining("No label config found");
+
+		final HUConsolidationJob jobAfter = jobRepository.getById(job.getId());
+		assertThat(jobAfter.isProcessed()).as("job completed anyway").isTrue();
+		assertThat(jobAfter.getCurrentTarget()).as("pallet closed").isNull();
+		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
+	}
+
+	@Test
+	void complete_labelPrintOk_jobCompletedLabelPrinted()
+	{
+		final AtomicBoolean printed = new AtomicBoolean();
+		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenReturn(() -> printed.set(true));
+
+		final HUConsolidationJob result = service.complete(jobRepository.getById(job.getId()));
+
+		assertThat(result.isProcessed()).isTrue();
+		assertThat(printed).isTrue();
+		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
 	}
 
 	@Test

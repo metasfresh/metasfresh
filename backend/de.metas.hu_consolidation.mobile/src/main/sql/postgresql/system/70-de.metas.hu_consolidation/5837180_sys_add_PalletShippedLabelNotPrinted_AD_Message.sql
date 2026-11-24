@@ -1,10 +1,10 @@
 -- MobileUI HU consolidation: message when the pallet was closed (or the job completed) and shipped, but its label could not be printed.
--- Creates AD_Message de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED; {0} = why the label was not printed.
+-- Creates AD_Message de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED (ErrorCode HUCONS_PALLET_SHIPPED_LABEL_NOT_PRINTED); {0} = why the label was not printed.
 
 -- Value: de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED
 -- 2026-11-24 13:05
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,546023 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-24 13:05','YYYY-MM-DD HH24:MI'),100,'D','Y','Abgeschlossen und versendet. Nur das Etikett der Palette wurde nicht gedruckt: {0}','E',TO_TIMESTAMP('2026-11-24 13:05','YYYY-MM-DD HH24:MI'),100,'de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value)
+VALUES (0,546023 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-24 13:05','YYYY-MM-DD HH24:MI'),100,'D','Y','Abgeschlossen und versendet. Nur das Etikett der Palette wurde nicht gedruckt: {0}','E','HUCONS_PALLET_SHIPPED_LABEL_NOT_PRINTED',TO_TIMESTAMP('2026-11-24 13:05','YYYY-MM-DD HH24:MI'),100,'de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED')
 ;
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip,IsTranslated,AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language,t.AD_Message_ID,t.MsgText,t.MsgTip,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.CreatedBy,t.Updated,t.UpdatedBy,'Y'

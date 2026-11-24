@@ -70,7 +70,8 @@ const ConfirmActivity = ({
         if (isNetworkFailure) {
           setErrorMessage(message);
         } else if (isLastActivity) {
-          showErrorOnJobListIfCompletedAnyway({ axiosError });
+          // returned, so that the activity stays "processing" (not tappable) until the job was reloaded
+          return showErrorOnJobListIfCompletedAnyway({ axiosError });
         } else {
           toastError({ axiosError });
         }
@@ -87,19 +88,21 @@ const ConfirmActivity = ({
    * and show the error there. Otherwise show the error here.
    */
   const showErrorOnJobListIfCompletedAnyway = ({ axiosError }) => {
-    getWFProcess({ wfProcessId })
-      .then((wfProcess) => {
-        dispatch(updateWFProcess({ wfProcess }));
-        const activity = wfProcess?.activities?.find((activity) => activity.activityId === activityId);
-        if (activity?.componentProps?.confirmed) {
-          toastErrorOnNextScreen({ axiosError });
-          history.push(appLaunchersLocation({ applicationId }));
-        } else {
-          toastError({ axiosError });
-        }
-      })
-      // the reload failed: show the error here, as before
-      .catch(() => toastError({ axiosError }));
+    return (
+      getWFProcess({ wfProcessId })
+        .then((wfProcess) => {
+          dispatch(updateWFProcess({ wfProcess }));
+          const activity = wfProcess?.activities?.find((activity) => activity.activityId === activityId);
+          if (activity?.componentProps?.confirmed) {
+            toastErrorOnNextScreen({ axiosError });
+            history.push(appLaunchersLocation({ applicationId }));
+          } else {
+            toastError({ axiosError });
+          }
+        })
+        // the reload failed: show the error here, as before
+        .catch(() => toastError({ axiosError }))
+    );
   };
 
   const onCancelError = () => {
