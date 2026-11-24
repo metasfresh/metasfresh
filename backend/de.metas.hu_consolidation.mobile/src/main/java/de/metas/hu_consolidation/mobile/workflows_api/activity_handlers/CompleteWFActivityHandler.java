@@ -10,6 +10,7 @@ import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfir
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
+import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
@@ -27,6 +28,7 @@ import static de.metas.workflow.rest_api.service.Constants.ARE_YOU_SURE;
 public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("huConsolidation.complete");
+	public static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("huConsolidation/complete");
 
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final HUConsolidationJobService jobService;
@@ -43,10 +45,16 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 			final @NonNull WFActivity wfActivity,
 			final @NonNull JsonOpts jsonOpts)
 	{
-		return UserConfirmationSupportUtil.createUIComponent(
+		// the confirm button's properties, but an own component type
+		final UIComponent confirmButton = UserConfirmationSupportUtil.createUIComponent(
 				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
 						.question(msgBL.getMsg(jsonOpts.getAdLanguage(), ARE_YOU_SURE))
 						.build());
+		return UIComponent.builder()
+				.type(COMPONENT_TYPE)
+				.alwaysAvailableToUser(confirmButton.getAlwaysAvailableToUser())
+				.properties(confirmButton.getProperties())
+				.build();
 	}
 
 	@Override
@@ -58,8 +66,7 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 
 	public static WFActivityStatus computeActivityState(final HUConsolidationJob job)
 	{
-		// TODO
-		return WFActivityStatus.NOT_STARTED;
+		return job.isProcessed() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override

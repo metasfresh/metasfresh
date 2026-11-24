@@ -19,5 +19,9 @@
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All",
     "scanGRAI": "Scan GRAI to select TU"
+  },
+  "CompleteActivity": {
+    "ok": "OK",
+    "completed": "Done, the shipment is being created."
   }
 }

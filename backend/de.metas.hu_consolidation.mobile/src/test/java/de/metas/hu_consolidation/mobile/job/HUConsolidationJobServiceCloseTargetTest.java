@@ -1,20 +1,31 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.error.IErrorManager;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelPrintAction;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.shipment.HUConsolidationShipmentService;
 import de.metas.user.UserId;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,21 +33,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * "Schliessen" (close target) with a failing SSCC label print:
+ * "Schliessen" (close target) and "Fertigstellen" (complete) with a failing SSCC label print:
  * the operator gets the print error AND the pallet is closed anyway (shipment created as usual), like in picking.
  */
 class HUConsolidationJobServiceCloseTargetTest
 {
 	private static final UserId CALLER = UserId.ofRepoId(100);
 	private static final HuId LU_ID = HuId.ofRepoId(555);
+	private static final BPartnerId CUSTOMER = BPartnerId.ofRepoId(2);
+	/** the operator message says the pallet was closed and shipped, and only its label failed */
+	private static final String MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED = "de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED";
+	/** the short reason shown to the operator instead of the technical error, which stays in the cause */
+	private static final String MSG_REASON_PRINT_FAILED = "de.metas.hu_consolidation.mobile.job.LABEL_NOT_PRINTED_REASON_PRINT_FAILED";
 
 	private HUConsolidationJobRepository jobRepository;
+	private IErrorManager errorManager;
 	private HULabelService huLabelService;
 	private HUConsolidationShipmentService shipmentService;
 	private HUConsolidationJobService service;
@@ -46,6 +64,8 @@ class HUConsolidationJobServiceCloseTargetTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		errorManager = mock(IErrorManager.class);
+		Services.registerService(IErrorManager.class, errorManager);
 
 		jobRepository = new HUConsolidationJobRepository();
 		huLabelService = mock(HULabelService.class);
@@ -72,6 +92,33 @@ class HUConsolidationJobServiceCloseTargetTest
 				CALLER);
 		job = jobRepository.updateById(newJob.getId(), j -> j.withCurrentTarget(
 				HUConsolidationTarget.builder().caption("LU").luId(LU_ID).build()));
+
+		// a real pallet: its packing instruction version says LU (the label lookup reads the unit type from it)
+		final I_M_HU_PI_Version luPIVersion = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Version.class);
+		luPIVersion.setHU_UnitType(X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		InterfaceWrapperHelper.saveRecord(luPIVersion);
+
+		final I_M_HU lu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+		lu.setM_HU_ID(LU_ID.getRepoId());
+		lu.setM_HU_PI_Version_ID(luPIVersion.getM_HU_PI_Version_ID());
+		lu.setC_BPartner_ID(CUSTOMER.getRepoId());
+		InterfaceWrapperHelper.saveRecord(lu);
+	}
+
+	/**
+	 * Models the real {@link HULabelService#preparePrint} of a pallet without any label config:
+	 * with {@code failOnMissingLabelConfig} it throws, otherwise nothing is printed (as in picking).
+	 */
+	private void givenNoLabelConfig()
+	{
+		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenAnswer(invocation -> {
+			final HULabelPrintRequest request = invocation.getArgument(0);
+			if (request.isFailOnMissingLabelConfig())
+			{
+				throw new AdempiereException("No label config found");
+			}
+			return HULabelPrintAction.NOTHING;
+		});
 	}
 
 	/** Models the real failure: the label print fails when it runs (e.g. SSCC18 / FNC1 error, missing report file). */
@@ -89,23 +136,55 @@ class HUConsolidationJobServiceCloseTargetTest
 
 		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("SSCC label print failed");
+				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
+				.hasMessageContaining(MSG_REASON_PRINT_FAILED)
+				.hasMessageNotContaining("SSCC label print failed")
+				.cause().hasMessage("SSCC label print failed");
 
 		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
 	}
 
-	/** No LU label config: fails before the close (no shipment, pallet stays open). */
+	/** No LU label config: silent, as in picking: no error, no AD_Issue, nothing printed; the pallet is closed and shipped as usual. */
 	@Test
-	void closeTarget_noLabelConfig_failsBeforeClose_nothingChanges()
+	void closeTarget_noLabelConfig_silent_targetIsClosedAndShipmentCreated()
 	{
-		final AdempiereException noConfig = new AdempiereException("No label config found");
-		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenThrow(noConfig);
+		givenNoLabelConfig();
+
+		final HUConsolidationJob result = service.closeTarget(job.getId(), CALLER);
+
+		assertThat(result.getCurrentTarget()).as("pallet closed").isNull();
+		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed").isNull();
+		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
+		verify(errorManager, never()).createIssue(any(Throwable.class));
+	}
+
+	/** The label print cannot be prepared although a label config applies to the pallet: the print-failed reason. */
+	@Test
+	void closeTarget_labelPrepareFails_reasonPrintFailed()
+	{
+		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenThrow(new AdempiereException("Process not found"));
 
 		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
-				.hasMessageContaining("No label config found");
+				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
+				.hasMessageContaining(MSG_REASON_PRINT_FAILED)
+				.cause().hasMessage("Process not found");
 
-		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet stays open").isNotNull();
+		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
+	}
+
+	/** A database error while preparing the label means a broken transaction: the close is aborted, nothing is shipped. */
+	@Test
+	void closeTarget_labelPrepareFailsWithDBException_closeAborted()
+	{
+		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenThrow(new DBException("connection lost"));
+
+		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
+				.isInstanceOf(DBException.class)
+				.isNotInstanceOf(HUConsolidationLabelNotPrintedException.class)
+				.hasMessageContaining("connection lost");
+
+		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet still open").isNotNull();
 		verify(shipmentService, never()).createShipmentForLUs(any(), any());
 	}
 
@@ -118,6 +197,64 @@ class HUConsolidationJobServiceCloseTargetTest
 		final HUConsolidationJob result = service.closeTarget(job.getId(), CALLER);
 
 		assertThat(result.getCurrentTarget()).isNull();
+		assertThat(printed).isTrue();
+		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
+	}
+
+	/** A missing label config never fails the print (as in picking); crates on the pallet without a label config are skipped. */
+	@Test
+	void closeTarget_labelRequest_neverFailsOnAMissingLabelConfig()
+	{
+		service.closeTarget(job.getId(), CALLER);
+
+		final ArgumentCaptor<HULabelPrintRequest> request = ArgumentCaptor.forClass(HULabelPrintRequest.class);
+		verify(huLabelService).preparePrint(request.capture());
+		assertThat(request.getValue().getHuIds()).containsExactly(LU_ID);
+		assertThat(request.getValue().isFailOnMissingLabelConfig()).isFalse();
+		assertThat(request.getValue().isOnlyIfAutoPrint()).isFalse();
+	}
+
+	@Test
+	void complete_noLabelConfig_silent_jobIsCompletedAndShipmentCreated()
+	{
+		givenNoLabelConfig();
+
+		final HUConsolidationJob result = service.complete(jobRepository.getById(job.getId()));
+
+		assertThat(result.isProcessed()).isTrue();
+		final HUConsolidationJob jobAfter = jobRepository.getById(job.getId());
+		assertThat(jobAfter.isProcessed()).as("job completed").isTrue();
+		assertThat(jobAfter.getCurrentTarget()).as("pallet closed").isNull();
+		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
+		verify(errorManager, never()).createIssue(any(Throwable.class));
+	}
+
+	/** The job repository is not transactional: the job may be saved as completed only after the shipment was committed. */
+	@Test
+	void complete_jobSavedAsCompletedOnlyAfterTheCommit()
+	{
+		final AtomicBoolean completedAtCommit = new AtomicBoolean();
+		doAnswer(invocation -> {
+			Services.get(ITrxManager.class).runAfterCommit(() -> completedAtCommit.set(jobRepository.getById(job.getId()).isProcessed()));
+			return null;
+		}).when(shipmentService).createShipmentForLUs(any(), any());
+
+		final HUConsolidationJob result = service.complete(jobRepository.getById(job.getId()));
+
+		assertThat(completedAtCommit).as("job not yet saved as completed when the shipment is committed").isFalse();
+		assertThat(result.isProcessed()).isTrue();
+		assertThat(jobRepository.getById(job.getId()).isProcessed()).as("saved after the commit").isTrue();
+	}
+
+	@Test
+	void complete_labelPrintOk_jobCompletedLabelPrinted()
+	{
+		final AtomicBoolean printed = new AtomicBoolean();
+		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenReturn(() -> printed.set(true));
+
+		final HUConsolidationJob result = service.complete(jobRepository.getById(job.getId()));
+
+		assertThat(result.isProcessed()).isTrue();
 		assertThat(printed).isTrue();
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
 	}

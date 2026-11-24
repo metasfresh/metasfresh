@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class HUConsolidationLabelPrinter
 {
+	private static final HULabelSourceDocType SOURCE_DOC_TYPE = HULabelSourceDocType.Picking;
+
 	@NonNull private final HULabelService huLabelService;
 
 	public void printLabel(@NonNull final HUConsolidationTarget target)
@@ -33,10 +35,11 @@ public class HUConsolidationLabelPrinter
 		target.assertPrintable();
 
 		return HULabelPrintRequest.builder()
-				.sourceDocType(HULabelSourceDocType.Picking)
+				.sourceDocType(SOURCE_DOC_TYPE)
 				.huId(target.getLuIdNotNull())
 				.onlyIfAutoPrint(false)
-				.failOnMissingLabelConfig(true)
+				// a pallet without any label config prints nothing and does not fail, as in picking; crates on it without a label config are skipped
+				.failOnMissingLabelConfig(false)
 				.build();
 	}
 }

@@ -17,6 +17,7 @@ import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -31,6 +32,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -55,6 +57,8 @@ class AssertHUExpectationsCommand
 	@NonNull final Map<String, JsonHUExpectation> expectations;
 
 	private static final Duration SHIPMENT_TIMEOUT = Duration.ofSeconds(60);
+	/** How long the printing queue count must stay after it reached the expected one, so that a record created shortly after is counted too. */
+	private static final Duration PRINTING_QUEUE_SETTLE_TIME = Duration.ofSeconds(3);
 
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
 
@@ -195,6 +199,10 @@ class AssertHUExpectationsCommand
 		if (expectation.getArchiveCount() != null)
 		{
 			assertThat(services.countArchivesOfHU(huId, expectation.getArchiveProcessId())).as("AD_Archive count").isEqualTo(expectation.getArchiveCount());
+		}
+		if (expectation.getPrintingQueueCount() != null)
+		{
+			assertThat(waitForPrintingQueueCount(huId, expectation.getArchiveProcessId(), expectation.getPrintingQueueCount())).as("C_Printing_Queue count").isEqualTo(expectation.getPrintingQueueCount());
 		}
 
 		if (expectation.getTus() != null)
@@ -405,6 +413,42 @@ class AssertHUExpectationsCommand
 			}
 		}
 		return allocations;
+	}
+
+	/**
+	 * @return the printing queue count once it reached the expected one and then stayed for {@link #PRINTING_QUEUE_SETTLE_TIME} (so a record that
+	 * comes later is counted too), or the last count after {@link #SHIPMENT_TIMEOUT} (queue records may be created after the archive)
+	 */
+	private int waitForPrintingQueueCount(@NonNull final HuId huId, @Nullable final AdProcessId processId, final int expected)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (true)
+		{
+			final int count = services.countPrintingQueueRecordsOfHU(huId, processId);
+			if (count >= expected)
+			{
+				return sleep(PRINTING_QUEUE_SETTLE_TIME) ? services.countPrintingQueueRecordsOfHU(huId, processId) : count;
+			}
+			if (stopwatch.elapsed().compareTo(SHIPMENT_TIMEOUT) >= 0 || !sleep(Duration.ofSeconds(1)))
+			{
+				return count;
+			}
+		}
+	}
+
+	/** @return false if interrupted */
+	private static boolean sleep(@NonNull final Duration duration)
+	{
+		try
+		{
+			Thread.sleep(duration.toMillis());
+			return true;
+		}
+		catch (final InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			return false;
+		}
 	}
 
 	private static boolean isShipmentCompleted(@NonNull final List<ShipmentAllocation> allocations)

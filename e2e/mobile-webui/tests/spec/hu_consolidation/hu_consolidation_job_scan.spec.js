@@ -27,18 +27,13 @@ import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
-import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
+import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, cleanUpAfterJobScanTest, HU_LABEL_PROCESS_ID, LIVE_DEFAULT_SYSCONFIGS, LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
-import { expectErrorToast } from '../../utils/common';
+import { attachScreenshot, expectErrorToast } from '../../utils/common';
 
-// sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
-let sysconfigsToRestore = null;
+// sysconfigs changed by a test are written back and its picking slots emptied afterwards (also when it failed), so later tests and specs see the DB as before
 test.afterEach(async () => {
-    const sysconfigs = sysconfigsToRestore;
-    sysconfigsToRestore = null;
-    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
-        await Backend.setSysconfigs(sysconfigs);
-    }
+    await cleanUpAfterJobScanTest();
 });
 
 /** Opens the single-line picking job of the sales order and scans the picking slot. */
@@ -141,16 +136,16 @@ test('Scan (GRAI) opens the scan screen: 3 crates from 2 slots scanned there, Ba
     await allure.story('HU Consolidation - GRAI scan screen');
     await allure.severity('critical');
 
-    // GS1 manufacturer code + extension digit for the SSCC18 of the pallet
+    // GS1 manufacturer code + extension digit for the SSCC18 of the pallet;
+    // the one test with a pallet label process that has an M_HU_Process row (labels collected via the HU process, no crate lookup)
     const masterdata = await createJobScanMasterdata({
         language: 'de_DE', // German UI, as the customer uses it
+        huLabelConfigs: { lc1: { bpartner: 'BP1', huUnitType: 'LU', sourceDocType: 'PI', process: HU_LABEL_PROCESS_ID, autoPrint: true } },
         sysconfigs: {
             'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
         },
     });
-    // the values found BEFORE the masterdata call; restored by the afterEach below (also when the test failed)
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2 } = masterdata.pickingSlots;
     const { SO1, SO2, SO3 } = masterdata.salesOrders;
 
@@ -289,8 +284,6 @@ test('Rejected scans: one right message per scan, nothing moves, the scan screen
             SO4: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
         },
     });
-    // the values found BEFORE the masterdata call; restored by the afterEach above (also when the test failed)
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2, slot3 } = masterdata.pickingSlots;
     const { SO1, SO2, SO3, SO4 } = masterdata.salesOrders;
 
@@ -964,16 +957,12 @@ for (const language of ['de_DE', 'en_US']) {
     });
 }
 
-// noinspection JSUnusedLocalSymbols
-test('Schliessen of a pallet whose label print fails: error shown, pallet closed anyway and shipped', async ({ page: _page }) => {
-    // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00248');
-    await allure.story('HU Consolidation - GRAI scan screen');
-    await allure.severity('critical');
-
-    // The label print of the closed pallet fails as for the customer's Einwegpalette: the pallet type has no SSCC18 attribute
-    // (PI_P2 gets its own LU, the default one is shared with PI_P1, which puts SSCC18 on it), and the SSCC label prints the empty SSCC.
+/**
+ * The label print of the closed pallet fails as for the customer's Einwegpalette: the pallet type has no SSCC18 attribute
+ * (PI_P2 gets its own LU, the default one is shared with PI_P1, which puts SSCC18 on it), and the SSCC label prints the empty SSCC.
+ * Picks one crate, opens the job, chooses that pallet and scans the crate onto it; returns the masterdata and the pallet's QR code.
+ */
+const putCrateOnPalletWithoutSSCC18 = async () => {
     const masterdata = await createJobScanMasterdata({
         language: 'de_DE',
         packingInstructions: {
@@ -986,7 +975,6 @@ test('Schliessen of a pallet whose label print fails: error shown, pallet closed
             'de.metas.handlingunit.GS1ExtensionDigit': '0',
         },
     });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1 } = masterdata.pickingSlots;
     const { SO2 } = masterdata.salesOrders;
     const { PI_P2 } = masterdata.packingInstructions;
@@ -1007,14 +995,36 @@ test('Schliessen of a pallet whose label print fails: error shown, pallet closed
         await GRAIScanScreen.expectClosedByItself();
         targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
     });
+    return { masterdata, targetLUQRCode };
+};
 
-    await test.step('Schliessen: an error message is shown AND the pallet is closed (no open pallet on the job screen)', async () => {
+/**
+ * The message shown when the pallet was closed (or the job completed) and shipped, but its label print failed
+ * (AD_Messages ...PALLET_SHIPPED_LABEL_NOT_PRINTED + ...LABEL_NOT_PRINTED_REASON_PRINT_FAILED, de_DE): a short reason, never the technical error
+ * (here the FNC1 error of the Jasper report).
+ */
+const expectPalletShippedPrintFailedMessage = (textContent) => {
+    expect(textContent).toContain('Abgeschlossen, Lieferung wird erstellt. Etikett nicht gedruckt: Fehler beim Drucken.');
+    expect(textContent).not.toContain('FNC1');
+    expect(textContent).not.toContain('SysConfig');
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Schliessen of a pallet whose label print fails: error shown, pallet closed anyway and shipped', async ({ page: _page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan screen');
+    await allure.severity('critical');
+
+    const { targetLUQRCode } = await putCrateOnPalletWithoutSSCC18();
+
+    await test.step('Schliessen: the message says closed and shipped, label not printed (error while printing), AND the pallet is closed (no open pallet on the job screen)', async () => {
         await expectErrorToast('label print of the pallet without SSCC18 fails', async () => {
             await HUConsolidationJobScreen.clickLUTargetButton();
             await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
         }, ({ textContent }) => {
-            // only "an error message is shown" is required (no wording), so any non-empty message passes
-            expect((textContent ?? '').trim().length).toBeGreaterThan(0);
+            expectPalletShippedPrintFailedMessage(textContent);
         });
         // the error toast keeps the operator on the target screen; the pallet is closed: Back shows the job screen without an open pallet
         await SelectHUConsolidationTargetScreen.goBack();
@@ -1028,6 +1038,345 @@ test('Schliessen of a pallet whose label print fails: error shown, pallet closed
     await Backend.expect({
         title: 'the shipped pallet has HUStatus E (shipped)',
         hus: { [targetLUQRCode]: { huStatus: 'E' } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Fertigstellen of a pallet whose label print fails: dialog says done and shipped, label not printed; job completed, pallet shipped', async ({ page: _page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan screen');
+    await allure.severity('critical');
+
+    const { masterdata, targetLUQRCode } = await putCrateOnPalletWithoutSSCC18();
+    const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
+
+    await test.step('Fertigstellen -> Ja: a dialog says the job is done and shipped, label not printed (error while printing); OK shows the job list without the job', async () => {
+        await HUConsolidationJobScreen.tapCompleteAndConfirm();
+        expectPalletShippedPrintFailedMessage(await HUConsolidationJobScreen.expectCompletedWithErrorDialog());
+        await HUConsolidationJobsListScreen.expectJobNotListedAfter({
+            customerLocationId,
+            trigger: () => HUConsolidationJobScreen.confirmCompletedWithErrorDialog(),
+        });
+    });
+
+    await Backend.expect({
+        title: 'the pallet is shipped although its label print failed: shipment completed once the async shipment work package ran',
+        hus: { [targetLUQRCode]: { isShipmentCompleted: true } },
+    });
+    await Backend.expect({
+        title: 'the shipped pallet has HUStatus E (shipped)',
+        hus: { [targetLUQRCode]: { huStatus: 'E' } },
+    });
+});
+
+/** Closing a pallet in mobile picking prints its auto-print label once (PickingJobService.closeLUAndTUPickingTargets -> printLULabels) */
+const PALLET_LABELS_PRINTED_BY_PICKING = 1;
+
+const GS1_SYSCONFIGS = {
+    'de.metas.handlingunit.GS1ManufacturerCode': '1234567',
+    'de.metas.handlingunit.GS1ExtensionDigit': '0',
+};
+
+/** The customer's settings (legacy picking label off, live scanner timing / manual input) + the GS1 code of the pallet's SSCC18. */
+const CUSTOMER_SYSCONFIGS = { ...LIVE_DEFAULT_SYSCONFIGS, ...GS1_SYSCONFIGS };
+
+/**
+ * Picks GRAI crates (one of SO1, one of SO2 if `twoCrates`) into slot1, opens the ship-to job, chooses a new pallet and scans the crates onto it;
+ * returns the pallet's QR code.
+ */
+const putCratesOnANewPallet = async ({ masterdata, twoCrates = false }) => {
+    const { slot1 } = masterdata.pickingSlots;
+    const { PI_P1, PI_P2 } = masterdata.packingInstructions;
+    const serialBase = String(Date.now());
+    const crates = [
+        { documentNo: masterdata.salesOrders.SO1.documentNo, grai: graiWithSerial(PI_P1.grai, `${serialBase}1`), huQrCode: masterdata.handlingUnits.HU1.qrCode },
+        ...(twoCrates ? [{ documentNo: masterdata.salesOrders.SO2.documentNo, grai: graiWithSerial(PI_P2.grai, `${serialBase}2`), huQrCode: masterdata.handlingUnits.HU2.qrCode }] : []),
+    ];
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    for (const crate of crates) {
+        await pickOneGraiCrate({ ...crate, slotQrCode: slot1.qrCode });
+    }
+
+    return await test.step(`Open the job, choose a new pallet, scan the ${crates.length} crate(s) onto it`, async () => {
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+        await HUConsolidationJobScreen.setTargetLU({ lu: PI_P1.luName });
+        await HUConsolidationJobScreen.clickScanGRAIButton();
+        for (const [index, crate] of crates.entries()) {
+            await GRAIScanScreen.scanGRAI({ grai: crate.grai });
+            if (index < crates.length - 1) {
+                await GRAIScanScreen.expectVisible();
+            }
+        }
+        await GRAIScanScreen.expectClosedByItself();
+        return await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
+    });
+};
+
+const putOneCrateOnANewPallet = async ({ masterdata }) => await putCratesOnANewPallet({ masterdata });
+
+/**
+ * The customer's label setup: the partner's pallet label process is not an HU process (no M_HU_Process row), there is no crate (TU) label config,
+ * and the legacy picking label sysconfig is off.
+ */
+const createPalletLabelOnlyMasterdata = async () => await createJobScanMasterdata({
+    language: 'de_DE',
+    sysconfigs: CUSTOMER_SYSCONFIGS,
+});
+
+/** Exactly one label of the pallet label process, archived and in the printing queue; no label for any crate on it; the pallet is shipped. */
+const expectPalletShippedWithItsLabelPrinted = async ({ targetLUQRCode, crateCount }) => {
+    await Backend.expect({
+        title: 'the pallet is shipped; exactly one label of the pallet label process is archived and in the printing queue (nothing for the crates)',
+        hus: {
+            [targetLUQRCode]: {
+                bpartner: 'BP1',
+                isShipmentCompleted: true,
+                shippedTUCount: crateCount,
+                archiveCount: 1,
+                archiveProcessId: LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID,
+                printingQueueCount: 1,
+                // the crates on the pallet: no label archived for any of them
+                tus: Array.from({ length: crateCount }, () => ({ archiveCount: 0 })),
+            },
+        },
+    });
+    await Backend.expect({
+        title: 'the shipped pallet has HUStatus E (shipped)',
+        hus: { [targetLUQRCode]: { huStatus: 'E' } },
+    });
+};
+
+test.describe('Pallet label configured, crate label not (the customer\'s label setup)', () => {
+    // noinspection JSUnusedLocalSymbols
+    test('Schliessen: no error, the pallet is closed and shipped, its label is printed although no label is configured for the crates on it', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
+
+        const masterdata = await createPalletLabelOnlyMasterdata();
+
+        const targetLUQRCode = await putCratesOnANewPallet({ masterdata, twoCrates: true });
+
+        await test.step('Schliessen: back on the job screen without an error, no open pallet', async () => {
+            await HUConsolidationJobScreen.closeTargetLU();
+            await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: 'Neues Gebinde' });
+        });
+
+        await expectPalletShippedWithItsLabelPrinted({ targetLUQRCode, crateCount: 2 });
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Fertigstellen: no error, the pallet is shipped, its label is printed although no label is configured for the crates on it', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
+
+        const masterdata = await createPalletLabelOnlyMasterdata();
+        const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
+
+        const targetLUQRCode = await putCratesOnANewPallet({ masterdata, twoCrates: true });
+
+        await test.step('Fertigstellen -> Ja: back on the job list without an error, ship-to gone', async () => {
+            await HUConsolidationJobsListScreen.expectJobNotListedAfter({
+                customerLocationId,
+                trigger: () => HUConsolidationJobScreen.complete(),
+            });
+        });
+
+        await expectPalletShippedWithItsLabelPrinted({ targetLUQRCode, crateCount: 2 });
+    });
+});
+
+// The customer's handheld (Zebra TC22)
+test.describe('Pallet without any label config, on the customer\'s handheld', () => {
+    test.use({ viewport: { width: 411, height: 823 }, deviceScaleFactor: 2.625 });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Schliessen of a pallet without any label config: silent (no error), pallet closed and shipped, as in picking', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
+
+        const masterdata = await createJobScanMasterdata({
+            language: 'de_DE',
+            huLabelConfigs: {},
+            sysconfigs: CUSTOMER_SYSCONFIGS,
+        });
+
+        const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
+
+        await test.step('Schliessen: back on the job screen without an error, no open pallet', async () => {
+            await HUConsolidationJobScreen.closeTargetLU();
+            await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: 'Neues Gebinde' });
+            await ErrorToast.expectNoErrorToast();
+        });
+
+        await Backend.expect({
+            title: 'the closed pallet is shipped, no label archived',
+            hus: { [targetLUQRCode]: { isShipmentCompleted: true, archiveCount: 0 } },
+        });
+        await Backend.expect({
+            title: 'the shipped pallet has HUStatus E (shipped)',
+            hus: { [targetLUQRCode]: { huStatus: 'E' } },
+        });
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Fertigstellen with a pallet without any label config: silent (no error), the pallet is shipped, back on the job list without the job', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
+
+        const masterdata = await createJobScanMasterdata({
+            language: 'de_DE',
+            huLabelConfigs: {},
+            sysconfigs: CUSTOMER_SYSCONFIGS,
+        });
+        const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
+
+        const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
+
+        await test.step('Fertigstellen -> Ja: back on the job list without an error, ship-to gone', async () => {
+            await HUConsolidationJobsListScreen.expectJobNotListedAfter({
+                customerLocationId,
+                trigger: () => HUConsolidationJobScreen.complete(),
+            });
+        });
+
+        await Backend.expect({
+            title: 'the pallet is shipped, no label archived',
+            hus: { [targetLUQRCode]: { isShipmentCompleted: true, archiveCount: 0 } },
+        });
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Pallet-only picking (the customer\'s profile): the picked pallet is scanned as target, Fertigstellen prints its label and ships it', async ({ page: _page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan screen');
+    await allure.severity('critical');
+
+    // The customer's picking profile: pick to pallets only (LU with crates), listed customers only, per sales order, always split
+    const masterdata = await createJobScanMasterdata({
+        language: 'de_DE',
+        pickTo: ['LU_TU'],
+        pickingProfile: {
+            allowPickingAnyCustomer: false,
+            customers: [{ customer: 'BP1' }],
+            aggregationType: 'sales_order',
+            alwaysSplitHUsEnabled: true,
+        },
+        sysconfigs: CUSTOMER_SYSCONFIGS,
+    });
+    const { slot1 } = masterdata.pickingSlots;
+    const { PI_P1 } = masterdata.packingInstructions;
+    const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await pickOnePallet({
+        documentNo: masterdata.salesOrders.SO1.documentNo,
+        slotQrCode: slot1.qrCode,
+        luName: PI_P1.luName,
+        crateGrai: graiWithSerial(PI_P1.grai, `${Date.now()}1`),
+        huQrCode: masterdata.handlingUnits.HU1.qrCode,
+    });
+    const { qrCodes } = await Backend.getPickingSlotCrates({ title: 'slot1 holds the picked pallet', slotQrCode: slot1.qrCode, aliases: ['pallet1'] });
+
+    await test.step('Open the job, scan the picked pallet as target, Fertigstellen -> Ja: back on the job list without an error', async () => {
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId });
+        await HUConsolidationJobScreen.setTargetLU({ qrCode: qrCodes.pallet1 });
+        await HUConsolidationJobsListScreen.expectJobNotListedAfter({
+            customerLocationId,
+            trigger: () => HUConsolidationJobScreen.complete(),
+        });
+    });
+
+    await Backend.expect({
+        title: 'the pallet is shipped; its labels: one when it was closed in picking, one more at Fertigstellen, both in the printing queue',
+        hus: {
+            [qrCodes.pallet1]: {
+                bpartner: 'BP1',
+                isShipmentCompleted: true,
+                archiveCount: PALLET_LABELS_PRINTED_BY_PICKING + 1,
+                archiveProcessId: LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID,
+                printingQueueCount: PALLET_LABELS_PRINTED_BY_PICKING + 1,
+            },
+        },
+    });
+});
+
+// The customer's handheld (Zebra TC22)
+test.describe('Pallet type that does not take the crate type, on the customer\'s handheld', () => {
+    test.use({ viewport: { width: 411, height: 823 }, deviceScaleFactor: 2.625 });
+
+    // noinspection JSUnusedLocalSymbols
+    test('A pallet type that does not take the crate type: clear message, nothing moves; another pallet type takes the crate', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
+
+        // LU_OTHER is offered for BP1 (it carries TU3 of P1), but has no item for TU1: like a one-way pallet that does not take the customer's crate
+        const masterdata = await createJobScanMasterdata({
+            language: 'de_DE',
+            packingInstructions: {
+                PI_P1: { lu: 'LU', luSSCC18: true, qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+                PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
+                PI_P3: { lu: 'LU_OTHER', qtyTUsPerLU: 20, tu: 'TU3', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            sysconfigs: CUSTOMER_SYSCONFIGS,
+        });
+        const { slot1 } = masterdata.pickingSlots;
+        const { PI_P1, PI_P3 } = masterdata.packingInstructions;
+        const grai = graiWithSerial(PI_P1.grai, `${Date.now()}1`);
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await pickOneGraiCrate({ documentNo: masterdata.salesOrders.SO1.documentNo, slotQrCode: slot1.qrCode, grai, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+
+        await test.step('Choose the pallet type that does not take the crate, scan the crate: message naming both types, the crate stays in its slot', async () => {
+            await ApplicationsListScreen.startApplication('huConsolidation');
+            await HUConsolidationJobsListScreen.waitForScreen();
+            await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+            await HUConsolidationJobScreen.setTargetLU({ lu: PI_P3.luName });
+            await HUConsolidationJobScreen.clickScanGRAIButton();
+            await GRAIScanScreen.scanGRAIExpectError({
+                grai,
+                message: `Palettentyp ${PI_P3.luName} nimmt Kistentyp ${PI_P1.tuName} nicht auf.`,
+                screenshotName: 'pallet-type-refuses-crate-message',
+            });
+            await GRAIScanScreen.goBack();
+            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
+        });
+
+        await test.step('Close the empty pallet, choose the pallet type that takes the crate: the scan moves the crate', async () => {
+            await HUConsolidationJobScreen.closeTargetLU();
+            await HUConsolidationJobScreen.setTargetLU({ lu: PI_P1.luName });
+            await HUConsolidationJobScreen.clickScanGRAIButton();
+            await GRAIScanScreen.scanGRAI({ grai });
+            await GRAIScanScreen.expectClosedByItself();
+            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 0 });
+        });
     });
 });
 
@@ -1050,7 +1399,6 @@ test('Slot screen: a refused GRAI scan plays the error beep with the scanner\'s 
         sysconfigs: { 'mobileui.frontend.barcodeScanner.scanDuplicatesIntervalMillis': '0' },
         pickingSlots: { slot1: {}, slot2: {} },
     });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
     const { slot1, slot2 } = masterdata.pickingSlots;
     const { SO1, SO2 } = masterdata.salesOrders;
     const serialBase = String(Date.now());

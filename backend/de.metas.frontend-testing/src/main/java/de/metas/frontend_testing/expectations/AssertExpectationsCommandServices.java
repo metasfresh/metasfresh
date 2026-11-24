@@ -33,6 +33,7 @@ import de.metas.inoutcandidate.api.ShipmentScheduleAllocQuery;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.printing.api.IPrintingDAO;
 import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -67,6 +68,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	@NonNull private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -213,5 +215,13 @@ public class AssertExpectationsCommandServices
 	public int countArchivesOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
 	{
 		return archiveDAO.countArchives(TableRecordReference.of(I_M_HU.Table_Name, huId), processId);
+	}
+
+	/**
+	 * @return the number of {@code C_Printing_Queue} records of the HU's {@code AD_Archive} records (only of the given process, if set)
+	 */
+	public int countPrintingQueueRecordsOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
+	{
+		return printingDAO.countPrintingQueueItems(TableRecordReference.of(I_M_HU.Table_Name, huId), processId);
 	}
 }

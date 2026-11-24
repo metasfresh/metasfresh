@@ -323,6 +323,36 @@ public class HUTransformService_ProductSpecificLUItemTest
 		}
 	}
 
+	@Nested
+	class IsTUAttachableToExistingLU
+	{
+		/** Same judgement as {@link HUTransformService#tuToExistingLU(I_M_HU, QtyTU, I_M_HU)}: a product-specific item for the TU's PI is enough. */
+		@Test
+		public void onlyProductSpecificItemForTUPI_true()
+		{
+			final I_M_HU lu = createLUWithBagTU_noGenericIFCOItem();
+			final I_M_HU saladTU = createRealTU(data.helper.pSaladProductId);
+
+			assertThat(huTransformService.isTUAttachableToExistingLU(saladTU, lu)).isTrue();
+
+			huTransformService.tuToExistingLU(saladTU, QtyTU.ONE, lu);
+			assertAttachedVia(saladTU, lu, luPIItemTomato8);
+		}
+
+		@Test
+		public void noItemForTUPI_false()
+		{
+			final I_M_HU lu = createLUWithBagTU_noGenericIFCOItem();
+			InterfaceWrapperHelper.delete(luPIItemTomato8);
+			final I_M_HU saladTU = createRealTU(data.helper.pSaladProductId);
+
+			assertThat(huTransformService.isTUAttachableToExistingLU(saladTU, lu)).isFalse();
+
+			assertThatThrownBy(() -> huTransformService.tuToExistingLU(saladTU, QtyTU.ONE, lu))
+					.hasMessageContaining("cannot stack TU");
+		}
+	}
+
 	private I_M_HU createLUWithBagTU_noGenericIFCOItem()
 	{
 		InterfaceWrapperHelper.delete(luPIItemGeneric5);
