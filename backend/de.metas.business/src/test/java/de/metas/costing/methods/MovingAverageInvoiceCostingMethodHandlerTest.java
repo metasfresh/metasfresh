@@ -464,7 +464,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			assertSplit("66.67", "0", "1000", "999.9", "66.67", "66.66", "0.01", true);
 		}
 
-		/** Credit memo (negative matched qty): today's formula on rounded inputs. -50.005 rounds to -50.01; unit price -50.01 / -10 = 5.001 rounds to 5.00 at costing precision 2; x -15 = -75.00; sold -50.01 + 75.00 = 24.99. */
+		/** Credit memo (negative matched qty): the amounts are only rounded; stock -75, sold 24.99. */
 		@Test
 		void creditMemo_halfCent_onlyRounded()
 		{
@@ -499,7 +499,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		private void assertSplit(
 				final String invoicedAmt, final String receiptAmt, final String receiptQty, final String onHandQty,
 				final String expectedMain, final String expectedStock, final String expectedSold,
-				final boolean sameSignOrZero)
+				final boolean isSameSignExpected)
 		{
 			final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
 					CostAmount.of(new BigDecimal(invoicedAmt), euroCurrencyId),
@@ -516,7 +516,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			assertThat(sold).isEqualByComparingTo(expectedSold);
 			assertThat(main.subtract(stock).subtract(sold))
 					.isEqualByComparingTo(new BigDecimal(receiptAmt).setScale(2, RoundingMode.HALF_UP));
-			if (sameSignOrZero)
+			if (isSameSignExpected)
 			{
 				assertThat(stock.signum() * sold.signum()).isGreaterThanOrEqualTo(0);
 			}
