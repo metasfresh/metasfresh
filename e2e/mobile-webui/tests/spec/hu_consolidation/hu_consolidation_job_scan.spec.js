@@ -29,7 +29,7 @@ import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerCo
 import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { createJobScanMasterdata, createNoGraiPartnerMasterdata, jobScanSalesOrder, HU_LABEL_PROCESS_ID } from '../../utils/huConsolidationJobScanMasterdata';
 import { graiAs8003, graiWithSerial } from '../../utils/grai';
-import { expectErrorToast } from '../../utils/common';
+import { attachScreenshot, expectErrorToast } from '../../utils/common';
 
 // sysconfigs changed by a test are written back afterwards, so later specs see the DB as before
 let sysconfigsToRestore = null;
@@ -1109,12 +1109,13 @@ test('Fertigstellen: the pallet label is printed and the pallet shipped although
 });
 
 /**
- * The message shown when the pallet was closed (or the job completed) and shipped, but its label could not be printed
- * (AD_Message de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED, de_DE): it must say that the pallet is done and shipped.
+ * The message shown when the pallet was closed (or the job completed) and shipped, but no label is set up for it
+ * (AD_Messages de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED + ..._REASON_NO_LABEL_CONFIG, de_DE):
+ * done and shipped, with a short reason; never the technical error.
  */
-const expectPalletShippedLabelNotPrintedMessage = ({ textContent }) => {
-    expect(textContent).toContain('Abgeschlossen und versendet');
-    expect(textContent).toContain('Etikett');
+const expectPalletShippedNoLabelConfigMessage = (textContent) => {
+    expect(textContent).toContain('Abgeschlossen und versendet. Etikett nicht gedruckt: Für diese Palette ist kein Etikett eingerichtet.');
+    expect(textContent).not.toContain('SysConfig');
 };
 
 // The customer's handheld (Zebra TC22)
@@ -1142,7 +1143,10 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
             await expectErrorToast('pallet closed and shipped, its label not printed', async () => {
                 await HUConsolidationJobScreen.clickLUTargetButton();
                 await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
-            }, expectPalletShippedLabelNotPrintedMessage);
+            }, async ({ textContent }) => {
+                expectPalletShippedNoLabelConfigMessage(textContent);
+                await attachScreenshot('Schliessen-label-not-printed-message');
+            });
             await SelectHUConsolidationTargetScreen.goBack();
             await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: 'Neues Gebinde' });
         });
@@ -1158,7 +1162,7 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
     });
 
     // noinspection JSUnusedLocalSymbols
-    test('Fertigstellen with a pallet without any label config: back on the job list with the message that the job is done and shipped', async ({ page: _page }) => {
+    test('Fertigstellen with a pallet without any label config: a dialog says the job is done and shipped, then the job list without the job', async ({ page: _page }) => {
         // === ALLURE METADATA ===
         await allure.epic('E0105: Picking');
         await allure.tag('F00248');
@@ -1175,17 +1179,13 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
 
         const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
 
-        await test.step('Fertigstellen -> Ja: the job list is shown by itself, without the job, with the message that it is done and shipped', async () => {
+        await test.step('Fertigstellen -> Ja: a dialog says the job is done and shipped; OK shows the job list without the job', async () => {
+            await HUConsolidationJobScreen.tapCompleteAndConfirm();
+            expectPalletShippedNoLabelConfigMessage(await HUConsolidationJobScreen.expectCompletedWithErrorDialog());
+            await attachScreenshot('Fertigstellen-label-not-printed-dialog');
             await HUConsolidationJobsListScreen.expectJobNotListedAfter({
                 customerLocationId,
-                trigger: () => expectErrorToast('job completed and shipped, the pallet label not printed', async () => {
-                    await HUConsolidationJobScreen.tapCompleteAndConfirm();
-                }, async ({ textContent, toast }) => {
-                    expectPalletShippedLabelNotPrintedMessage({ textContent });
-                    // the message is read on the job list, not on the (completed) job's screen
-                    await HUConsolidationJobsListScreen.waitForScreen();
-                    await expect(toast).toBeVisible();
-                }),
+                trigger: () => HUConsolidationJobScreen.confirmCompletedWithErrorDialog(),
             });
         });
 

@@ -113,10 +113,9 @@ class HULabelPrintCommandTest
 		givenLULabelConfigOnly();
 		final TestHU lu = luWithTwoCrates();
 
-		final Optional<HULabelPrintAction> printAction = preparePrint(lu, true);
-
-		assertThat(printAction).as("the LU label is printed").isPresent();
-		printAction.get().print();
+		preparePrint(lu, true)
+				.orElseThrow(() -> new AssertionError("the LU label is printed"))
+				.print();
 
 		final ArgumentCaptor<HULabelDirectPrintRequest> printed = ArgumentCaptor.forClass(HULabelDirectPrintRequest.class);
 		verify(huLabelService).printNow(printed.capture());

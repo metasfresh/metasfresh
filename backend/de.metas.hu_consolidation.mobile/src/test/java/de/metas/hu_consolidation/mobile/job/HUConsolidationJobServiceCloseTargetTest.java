@@ -11,6 +11,8 @@ import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.shipment.HUConsolidationShipmentService;
 import de.metas.user.UserId;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +40,9 @@ class HUConsolidationJobServiceCloseTargetTest
 	private static final HuId LU_ID = HuId.ofRepoId(555);
 	/** the operator message says the pallet was closed and shipped, and only its label failed */
 	private static final String MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED = "de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED";
+	/** the short reasons shown to the operator instead of the technical error, which stays in the cause */
+	private static final String MSG_REASON_NO_LABEL_CONFIG = "de.metas.hu_consolidation.mobile.job.LABEL_NOT_PRINTED_REASON_NO_LABEL_CONFIG";
+	private static final String MSG_REASON_PRINT_FAILED = "de.metas.hu_consolidation.mobile.job.LABEL_NOT_PRINTED_REASON_PRINT_FAILED";
 
 	private HUConsolidationJobRepository jobRepository;
 	private HULabelService huLabelService;
@@ -92,7 +98,9 @@ class HUConsolidationJobServiceCloseTargetTest
 		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
-				.hasMessageContaining("SSCC label print failed");
+				.hasMessageContaining(MSG_REASON_PRINT_FAILED)
+				.hasMessageNotContaining("SSCC label print failed")
+				.cause().hasMessage("SSCC label print failed");
 
 		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
@@ -107,7 +115,9 @@ class HUConsolidationJobServiceCloseTargetTest
 
 		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
 				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
-				.hasMessageContaining("No label config found");
+				.hasMessageContaining(MSG_REASON_NO_LABEL_CONFIG)
+				.hasMessageNotContaining("No label config found")
+				.cause().hasMessage("No label config found");
 
 		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
@@ -147,12 +157,31 @@ class HUConsolidationJobServiceCloseTargetTest
 		assertThatThrownBy(() -> service.complete(jobRepository.getById(job.getId())))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED)
-				.hasMessageContaining("No label config found");
+				.hasMessageContaining(MSG_REASON_NO_LABEL_CONFIG)
+				.hasMessageNotContaining("No label config found")
+				.cause().hasMessage("No label config found");
 
 		final HUConsolidationJob jobAfter = jobRepository.getById(job.getId());
 		assertThat(jobAfter.isProcessed()).as("job completed anyway").isTrue();
 		assertThat(jobAfter.getCurrentTarget()).as("pallet closed").isNull();
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
+	}
+
+	/** The job repository is not transactional: the job may be saved as completed only after the shipment was committed. */
+	@Test
+	void complete_jobSavedAsCompletedOnlyAfterTheCommit()
+	{
+		final AtomicBoolean completedAtCommit = new AtomicBoolean();
+		doAnswer(invocation -> {
+			Services.get(ITrxManager.class).runAfterCommit(() -> completedAtCommit.set(jobRepository.getById(job.getId()).isProcessed()));
+			return null;
+		}).when(shipmentService).createShipmentForLUs(any(), any());
+
+		final HUConsolidationJob result = service.complete(jobRepository.getById(job.getId()));
+
+		assertThat(completedAtCommit).as("job not yet saved as completed when the shipment is committed").isFalse();
+		assertThat(result.isProcessed()).isTrue();
+		assertThat(jobRepository.getById(job.getId()).isProcessed()).as("saved after the commit").isTrue();
 	}
 
 	@Test

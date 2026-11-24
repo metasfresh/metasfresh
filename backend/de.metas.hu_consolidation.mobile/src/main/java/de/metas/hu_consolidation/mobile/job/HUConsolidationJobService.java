@@ -1,6 +1,7 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.error.IErrorManager;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -15,7 +16,7 @@ import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
-import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
@@ -23,8 +24,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -35,9 +36,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 public class HUConsolidationJobService
 {
-	private static final AdMessageKey MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED = AdMessageKey.of("de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED");
+	private static final Logger logger = LogManager.getLogger(HUConsolidationJobService.class);
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final HUConsolidationGRAIScanPolicy graiScanPolicy;
@@ -76,14 +78,16 @@ public class HUConsolidationJobService
 
 		final HUConsolidationTargetCloser.CloseTargetResult completed = trxManager.callInThreadInheritedTrx(
 				() -> CompleteCommand.builder()
-						.jobRepository(jobRepository)
 						.targetCloser(targetCloser)
 						//
 						.job(job)
 						//
 						.build().execute());
 
-		// Print after the job was completed, so that a label print failure is shown to the operator while the job stays completed (like on close target)
+		// the job repository is not transactional: the job is saved as completed only once the shipment was committed
+		jobRepository.save(completed.getJob());
+
+		// Print after the job was completed and saved, so that a failing print does not undo the completion (like on close target)
 		printLabelOfClosedTarget(completed.getPrintLabelAction());
 
 		return completed.getJob();
@@ -152,9 +156,9 @@ public class HUConsolidationJobService
 	/**
 	 * Runs the label print of a target that was already closed and shipped.
 	 *
-	 * @throws AdempiereException if the label could not be printed; its message tells the operator that the pallet is nevertheless closed and shipped
+	 * @throws HUConsolidationLabelNotPrintedException if the label could not be printed; the technical error is logged and recorded as AD_Issue
 	 */
-	private static void printLabelOfClosedTarget(@NonNull final HULabelPrintAction printLabelAction)
+	private void printLabelOfClosedTarget(@NonNull final HULabelPrintAction printLabelAction)
 	{
 		try
 		{
@@ -162,10 +166,15 @@ public class HUConsolidationJobService
 		}
 		catch (final Exception ex)
 		{
-			final AdempiereException labelError = AdempiereException.wrapIfNeeded(ex);
-			final AdempiereException shippedButLabelNotPrinted = new AdempiereException(MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED, labelError.getLocalizedMessage());
-			shippedButLabelNotPrinted.initCause(labelError);
-			throw shippedButLabelNotPrinted;
+			final HUConsolidationLabelNotPrintedException labelNotPrinted = ex instanceof HUConsolidationLabelNotPrintedException
+					? (HUConsolidationLabelNotPrintedException)ex
+					: HUConsolidationLabelNotPrintedException.printFailed(ex);
+
+			final Throwable technicalError = labelNotPrinted.getCause();
+			logger.warn("Label of the closed target was not printed", technicalError);
+			errorManager.createIssue(technicalError);
+
+			throw labelNotPrinted;
 		}
 	}
 
