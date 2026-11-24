@@ -510,22 +510,50 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final Quantity receiptQty = request.getQty().negateIf(isReversal);
 		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
-		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
+		final CurrencyPrecision amountPrecision = utils.getAcctSchemaById(request.getAcctSchemaId()).getStandardPrecision();
 
-		return computeMatchInvSplit(invoicedAmt, amtDifference, receiptQty, currentCost)
+		return computeMatchInvSplitRounded(invoicedAmt, receiptAmt, receiptQty, currentCost, amountPrecision)
 				.negateIf(isReversal);
 	}
 
 	/**
+	 * Splits the invoice-vs-receipt price difference on the accounting-precision grid: invoiced and receipt amounts
+	 * are rounded to {@code amountPrecision} first, so {@code main - stock - sold} equals the rounded receipt value
+	 * and the match posts as a balanced 1:N structure.
+	 * <p>
+	 * Note: only the amounts' values are rounded; their {@code sourceValue} stays unrounded, so the source amounts of
+	 * the resulting cost details may keep more decimals than the posting books.
+	 */
+	@VisibleForTesting
+	static CostAmountDetailed computeMatchInvSplitRounded(
+			@NonNull final CostAmount invoicedAmt,
+			@NonNull final CostAmount receiptAmt,
+			@NonNull final Quantity receiptQty,
+			@NonNull final CurrentCost currentCost,
+			@NonNull final CurrencyPrecision amountPrecision)
+	{
+		final CostAmount invoicedAmtRounded = invoicedAmt.roundToPrecisionIfNeeded(amountPrecision);
+		final CostAmount receiptAmtRounded = receiptAmt.roundToPrecisionIfNeeded(amountPrecision);
+		return computeMatchInvSplit(
+				invoicedAmtRounded,
+				invoicedAmtRounded.subtract(receiptAmtRounded),
+				receiptQty,
+				currentCost,
+				amountPrecision);
+	}
+
+	/**
 	 * Splits the invoice-vs-receipt price difference: the still-in-stock share adjusts the on-hand cost price, the
-	 * shipped remainder spills to COGS.
+	 * shipped remainder spills to COGS. Expects amounts already on the {@code amountPrecision} grid and rounds only
+	 * the stock share.
 	 */
 	@VisibleForTesting
 	static CostAmountDetailed computeMatchInvSplit(
 			@NonNull final CostAmount invoicedAmt,
 			@NonNull final CostAmount amtDifference,
 			@NonNull final Quantity receiptQty,
-			@NonNull final CurrentCost currentCost)
+			@NonNull final CurrentCost currentCost,
+			@NonNull final CurrencyPrecision amountPrecision)
 	{
 		final CostAmount costAdjustmentAmt;
 		final CostAmount alreadyShippedAmt;
@@ -555,11 +583,16 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		}
 		else
 		{
-			final CostAmount priceDifference = amtDifference.isZero() || receiptQty.isZero()
-					? CostAmount.zero(currentCost.getCurrencyId())
-					: amtDifference.divide(receiptQty, currentCost.getPrecision());
-
-			costAdjustmentAmt = priceDifference.multiply(qtyStillInStock);
+			if (receiptQty.signum() >= 0)
+			{
+				// multiply first and divide once: a rounded unit price can overshoot the difference and loses half-cent ties
+				costAdjustmentAmt = amtDifference.multiply(qtyStillInStock).divide(receiptQty, amountPrecision);
+			}
+			else
+			{
+				final CostAmount priceDifference = amtDifference.divide(receiptQty, currentCost.getPrecision());
+				costAdjustmentAmt = priceDifference.multiply(qtyStillInStock).roundToPrecisionIfNeeded(amountPrecision);
+			}
 			alreadyShippedAmt = amtDifference.subtract(costAdjustmentAmt);
 		}
 
