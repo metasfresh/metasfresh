@@ -971,8 +971,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	/**
-	 * Note: a parent built from a product-specific PI item keeps that item for any further child of the given PI (also if it holds aggregated TUs).
-	 * This assumes a single-product parent (LU); the child's own product is not considered.
+	 * Note: a parent built from a product-specific PI item keeps that item for any further child of the given PI (also if it holds aggregated TUs),
+	 * whatever the child's product is (different products on the same parent are allowed).
 	 */
 	@Override
 	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
@@ -1010,19 +1010,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	@Nullable
-	public I_M_HU_PI_Item retrieveParentPIItemForChildHUAllowingProductSpecificOrNull(
+	public I_M_HU_PI_Item retrieveProductSpecificParentPIItemForChildHUOrNull(
 			final I_M_HU parentHU,
 			final I_M_HU_PI piOfChildHU,
 			@Nullable final ProductId childProductId,
 			final IContextAware ctx)
 	{
-		final I_M_HU_PI_Item item = retrieveParentPIItemForChildHUOrNull(parentHU, piOfChildHU, ctx);
-		if (item != null)
-		{
-			return item;
-		}
-
-		// the parent's PI links the child's PI only via product-specific items (if at all); any of them may carry the child, whatever the child's product is
 		final List<I_M_HU_PI_Item> productSpecificItems = orderParentPIItemsForChildHU(
 				createParentPIItemsForChildHUQuery(parentHU, piOfChildHU, ctx)
 						.addNotNull(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID))
@@ -1030,7 +1023,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.list();
 
 		return productSpecificItems.stream()
-				.filter(productSpecificItem -> childProductId != null && productSpecificItem.getM_Product_ID() == childProductId.getRepoId())
+				.filter(productSpecificItem -> ProductId.equals(ProductId.ofRepoIdOrNull(productSpecificItem.getM_Product_ID()), childProductId))
 				.findFirst()
 				.orElseGet(() -> productSpecificItems.isEmpty() ? null : productSpecificItems.get(0));
 	}

@@ -27,10 +27,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 /**
@@ -188,7 +190,7 @@ public class HUTransformService_ProductSpecificLUItemTest
 		 * If that behaviour is changed, update this test to the new behaviour; do not delete it.
 		 */
 		@Test
-		public void existingLUBuiltFromProductSpecificItem_tuOfOtherProduct_currentlyJoinsThatItem()
+		public void existingLUBuiltFromProductSpecificItem_tuOfOtherProduct_joinsThatItem()
 		{
 			final I_M_HU tomatoTU = createRealTU(data.helper.pTomatoProductId);
 			final I_M_HU existingLU = huTransformService
@@ -255,19 +257,51 @@ public class HUTransformService_ProductSpecificLUItemTest
 		@Test
 		public void onlyProductSpecificItemForTUPI_luHasNoSuchItem_oneTUOfAggregate_isAttachedViaThatItem()
 		{
-			final I_M_HU aggregateTU = data.mkAggregateHUWithTotalQtyCU("80"); // 2 TUs a 40kg tomatoes, on an LU via the generic item
-			// deactivate (not delete) the generic item, because the aggregate's current LU item still references it
-			luPIItemGeneric5.setIsActive(false);
-			save(luPIItemGeneric5);
+			final I_M_HU aggregateTU = createAggregateTUof2_thenDeactivateGenericItem();
 			final I_M_HU lu = createLUWithBagTU();
 
 			huTransformService.tuToExistingLU(aggregateTU, QtyTU.ONE, lu);
 
-			assertThat(handlingUnitsDAO.retrieveIncludedHUs(lu))
-					.as("PI items via which the LU's TUs are attached")
-					.extracting(tu -> handlingUnitsDAO.retrieveParentItem(tu).getM_HU_PI_Item_ID())
-					.containsExactlyInAnyOrder(data.piLU_Item_Bag.getM_HU_PI_Item_ID(), luPIItemTomato8.getM_HU_PI_Item_ID());
+			assertLUAttachedVia(lu, data.piLU_Item_Bag, luPIItemTomato8);
 			assertLUStorage(lu, tuple(data.helper.pTomatoProductId, 8 + 40));
+			assertSourceAggregateHasOneTUOf40Left(aggregateTU);
+		}
+
+		/**
+		 * Partial move from an aggregate onto an LU of partner BP whose LU PI links the IFCO TU via a BP-specific item without product and via the tomato item (no generic one).
+		 * The producer's own lookup (without partner and product) finds nothing, so only the product-specific fallback is added: the tomato item is used, the partner item is not.
+		 */
+		@Test
+		public void partialMoveFromAggregate_partnerItemWithoutProductAndProductSpecificItem_usesProductSpecificItem()
+		{
+			final I_M_HU aggregateTU = createAggregateTUof2_thenDeactivateGenericItem();
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("BP").getC_BPartner_ID());
+			data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("20"), bpartnerId);
+			final I_M_HU lu = createLUWithBagTU();
+			lu.setC_BPartner_ID(bpartnerId.getRepoId());
+			save(lu);
+
+			huTransformService.tuToExistingLU(aggregateTU, QtyTU.ONE, lu);
+
+			assertLUAttachedVia(lu, data.piLU_Item_Bag, luPIItemTomato8);
+			assertLUStorage(lu, tuple(data.helper.pTomatoProductId, 8 + 40));
+			assertSourceAggregateHasOneTUOf40Left(aggregateTU);
+		}
+
+		/** Same, but without any product-specific item: the partial move fails as it did before (only product-specific items are added as fallback). */
+		@Test
+		public void partialMoveFromAggregate_onlyPartnerItemWithoutProduct_failsAsBefore()
+		{
+			final I_M_HU aggregateTU = createAggregateTUof2_thenDeactivateGenericItem();
+			InterfaceWrapperHelper.delete(luPIItemTomato8);
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("BP").getC_BPartner_ID());
+			data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("20"), bpartnerId);
+			final I_M_HU lu = createLUWithBagTU();
+			lu.setC_BPartner_ID(bpartnerId.getRepoId());
+			save(lu);
+
+			assertThatThrownBy(() -> huTransformService.tuToExistingLU(aggregateTU, QtyTU.ONE, lu))
+					.hasMessageContaining("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 		}
 
 		/** Two product-specific IFCO items (tomato, then salad) and no generic one: a salad TU picks the salad item, not the lower-ID tomato item. */
@@ -300,6 +334,31 @@ public class HUTransformService_ProductSpecificLUItemTest
 		final I_M_HU lu = huTransformService.tuToNewLU(createRealBagTU(), QtyTU.ONE, luPIId(), null).getLURecords().get(0);
 		assertLU(lu, data.piLU_Item_Bag, 1);
 		return lu;
+	}
+
+	/** @return an aggregate TU of 2 IFCO TUs a 40kg tomatoes, on an LU via the generic item; the generic item is then deactivated (not deleted, because that LU item still references it) */
+	private I_M_HU createAggregateTUof2_thenDeactivateGenericItem()
+	{
+		final I_M_HU aggregateTU = data.mkAggregateHUWithTotalQtyCU("80");
+		luPIItemGeneric5.setIsActive(false);
+		save(luPIItemGeneric5);
+		return aggregateTU;
+	}
+
+	private void assertLUAttachedVia(final I_M_HU lu, final I_M_HU_PI_Item... expectedItems)
+	{
+		assertThat(handlingUnitsDAO.retrieveIncludedHUs(lu))
+				.as("PI items via which the LU's TUs are attached")
+				.extracting(tu -> handlingUnitsDAO.retrieveParentItem(tu).getM_HU_PI_Item_ID())
+				.containsExactlyInAnyOrder(Arrays.stream(expectedItems).map(I_M_HU_PI_Item::getM_HU_PI_Item_ID).toArray(Integer[]::new));
+	}
+
+	private void assertSourceAggregateHasOneTUOf40Left(final I_M_HU aggregateTU)
+	{
+		assertThat(huTransformService.getMaximumQtyTU(aggregateTU).toInt()).as("TUs left in the source aggregate").isEqualTo(1);
+		assertThat(handlingUnitsBL.getStorageFactory().getStorage(aggregateTU).getProductStorages())
+				.extracting(IHUProductStorage::getProductId, storage -> storage.getQty().toBigDecimal().intValueExact())
+				.containsExactly(tuple(data.helper.pTomatoProductId, 40));
 	}
 
 	private void assertAttachedVia(final I_M_HU tu, final I_M_HU lu, final I_M_HU_PI_Item expectedItem)
