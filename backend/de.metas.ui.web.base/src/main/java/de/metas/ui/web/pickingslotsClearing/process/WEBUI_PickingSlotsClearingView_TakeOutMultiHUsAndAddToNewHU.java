@@ -133,6 +133,6 @@ public class WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU extends
 	private IHUProducerAllocationDestination createHUProducer(@NonNull final List<I_M_HU> fromHUs)
 	{
 		final PickingSlotRow pickingRow = getRootRowForSelectedPickingSlotRows();
-		return createNewHUProducer(pickingRow, targetHUPI, getSingleProductIdOrNull(fromHUs), fromHUs);
+		return createNewHUProducer(pickingRow, targetHUPI, fromHUs);
 	}
 }

@@ -51,6 +51,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.i18n.AdMessageKey;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -63,6 +64,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,7 +75,7 @@ public class LUTUProducerDestination
 		implements ILUTUProducerAllocationDestination
 {
 
-	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
+	public static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	// Services
 	private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
@@ -424,9 +426,70 @@ public class LUTUProducerDestination
 			final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
 			final BPartnerId bpartnerId = getBPartnerId();
 			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
-					.orElseThrow(() -> new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, _luPI.getName(), tuPI.getName()).markAsUserValidationError());
+					.orElseThrow(() -> newLUHasNoTUSubPackInstrException(_luPI, tuPI));
 		}
 		return _luPIItem;
+	}
+
+	/**
+	 * Sets the LU PI together with its item and TU PI for the given source HUs, i.e. the HUs whose content is going to be loaded:
+	 * the item of {@code luPI} for the first source TU's packing instruction (of a source LU: of its first included TU) and the product that all
+	 * non-empty sources hold; if they hold several products (or none), the generic item.
+	 * The other sources' TU packing instructions are not checked; their content is packed into the TU PI of that item.
+	 * Call it after {@link #setBPartnerId(BPartnerId)}, because the item can be partner-specific.
+	 *
+	 * @throws HUException {@link #ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if {@code luPI} has no item for that TU packing instruction
+	 *                     (e.g. a CU or an LU without TUs as first source)
+	 */
+	public void setLUPIAndItemForSourceHUs(@NonNull final I_M_HU_PI luPI, @NonNull final List<I_M_HU> sourceHUs)
+	{
+		Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
+
+		final I_M_HU_PI tuPI = getSourceTUPI(sourceHUs.get(0));
+		final I_M_HU_PI_Item luItem = handlingUnitsDAO.retrieveFirstPIItem(
+						HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()),
+						HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()),
+						getBPartnerId(),
+						getSingleProductIdOrNull(sourceHUs))
+				.orElseThrow(() -> newLUHasNoTUSubPackInstrException(luPI, tuPI));
+
+		setLUPI(luPI);
+		setLUItemPI(luItem);
+		setTUPI(luItem.getIncluded_HU_PI());
+	}
+
+	private I_M_HU_PI getSourceTUPI(@NonNull final I_M_HU sourceHU)
+	{
+		final I_M_HU tu = handlingUnitsBL.isLoadingUnit(sourceHU)
+				? handlingUnitsDAO.retrieveIncludedHUs(sourceHU).stream().findFirst().orElse(sourceHU)
+				: sourceHU;
+		return handlingUnitsBL.getEffectivePI(tu);
+	}
+
+	@Nullable
+	private ProductId getSingleProductIdOrNull(@NonNull final List<I_M_HU> hus)
+	{
+		final Set<ProductId> productIds = new HashSet<>();
+		for (final I_M_HU hu : hus)
+		{
+			final IHUStorage storage = handlingUnitsBL.getStorageFactory().getStorage(hu);
+			if (storage.isEmpty())
+			{
+				continue; // an empty HU adds no product
+			}
+			final ProductId productId = storage.getSingleProductIdOrNull();
+			if (productId == null)
+			{
+				return null;
+			}
+			productIds.add(productId);
+		}
+		return productIds.size() == 1 ? productIds.iterator().next() : null;
+	}
+
+	private static HUException newLUHasNoTUSubPackInstrException(@NonNull final I_M_HU_PI luPI, @NonNull final I_M_HU_PI tuPI)
+	{
+		return (HUException)new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, luPI.getName(), tuPI.getName()).markAsUserValidationError();
 	}
 
 	@Override

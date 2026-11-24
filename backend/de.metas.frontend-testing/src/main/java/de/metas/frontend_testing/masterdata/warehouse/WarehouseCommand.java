@@ -141,6 +141,7 @@ public class WarehouseCommand
 		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
 		if (locatorRequest.isAfterPickingLocatorOrFalse())
 		{
+			// fully qualified: the HU module's I_M_Locator (which has IsAfterPickingLocator) clashes with the imported org.compiere one
 			final de.metas.handlingunits.model.I_M_Locator huLocatorRecord = InterfaceWrapperHelper.create(locatorRecord, de.metas.handlingunits.model.I_M_Locator.class);
 			huLocatorRecord.setIsAfterPickingLocator(true);
 			saveRecord(huLocatorRecord);
