@@ -528,8 +528,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	 * are rounded to {@code amountPrecision} first, so {@code main - stock - sold} equals the rounded receipt value
 	 * and the match posts as a balanced 1:N structure.
 	 * <p>
-	 * Note: only the amounts' values are rounded; their {@code sourceValue} stays unrounded, so the source amounts of
-	 * the resulting cost details may keep more decimals than the posting books.
+	 * Note: the {@code sourceValue} of the invoiced and receipt amounts is not rounded (the stock share's is, by the
+	 * division), so the source amounts of the resulting cost details may keep more decimals than the posting books.
 	 */
 	@VisibleForTesting
 	@Builder(builderMethodName = "prepareMatchInvSplitRounded", builderClassName = "MatchInvSplitRoundedBuilder")
