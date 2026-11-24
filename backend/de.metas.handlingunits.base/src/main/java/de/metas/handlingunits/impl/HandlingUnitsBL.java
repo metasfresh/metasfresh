@@ -1567,6 +1567,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIsForProduct(
+			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
+	{
+		return handlingUnitsRepo.retrieveParentLUPIsForProduct(tuPIItemIds, bpartnerId, productId);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{

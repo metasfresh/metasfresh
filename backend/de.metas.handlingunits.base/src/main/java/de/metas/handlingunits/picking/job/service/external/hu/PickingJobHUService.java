@@ -309,11 +309,12 @@ public class PickingJobHUService
 
 	public HuPackingInstructionsId getPackingInstructionsId(@NonNull final I_M_HU hu) {return handlingUnitsBL.getPackingInstructionsId(hu);}
 
-	public Set<HuPackingInstructionsIdAndCaption> getLUPIs(
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIsForProduct(
 			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
-			@Nullable final BPartnerId bpartnerId)
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
 	{
-		return handlingUnitsBL.getLUPIs(tuPIItemIds, bpartnerId);
+		return handlingUnitsBL.getLUPIsForProduct(tuPIItemIds, bpartnerId, productId);
 	}
 
 	public I_M_HU_PI retrievePIDefaultForPicking() {return handlingUnitsBL.retrievePIDefaultForPicking();}

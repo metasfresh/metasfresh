@@ -104,6 +104,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1058,6 +1059,25 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
 			@Nullable final BPartnerId bpartnerId)
 	{
+		return retrieveParentLUPIs(piItemIds, bpartnerId, ANY_PRODUCT);
+	}
+
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProduct(
+			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
+	{
+		return retrieveParentLUPIs(piItemIds, bpartnerId, queryBuilder -> addProductFilter(queryBuilder, productId));
+	}
+
+	private static final Consumer<IQueryBuilder<I_M_HU_PI_Item>> ANY_PRODUCT = queryBuilder -> {};
+
+	private ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final Consumer<IQueryBuilder<I_M_HU_PI_Item>> productFilter)
+	{
 		if (piItemIds.isEmpty())
 		{
 			return ImmutableSet.of();
@@ -1072,10 +1092,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		{
 			final HashSet<HuPackingInstructionsVersionId> parentPIVersionIdsToCheck = new HashSet<>();
 
-			queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+			final IQueryBuilder<I_M_HU_PI_Item> parentItemsQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piIdsToCheck)
-					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId)
+					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
+			productFilter.accept(parentItemsQueryBuilder);
+
+			parentItemsQueryBuilder
 					.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
 					.addOnlyActiveRecordsFilter()
 					.create()

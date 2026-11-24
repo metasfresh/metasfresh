@@ -323,6 +323,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
 			@Nullable BPartnerId bpartnerId);
 
+	/**
+	 * @see IHandlingUnitsDAO#retrieveParentLUPIsForProduct(Set, BPartnerId, ProductId)
+	 */
+	Set<HuPackingInstructionsIdAndCaption> getLUPIsForProduct(
+			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ProductId productId);
+
 	@NonNull
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
 

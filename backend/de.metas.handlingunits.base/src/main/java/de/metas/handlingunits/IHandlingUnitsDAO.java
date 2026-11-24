@@ -388,9 +388,24 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	void setReservedByHUIds(final Set<HuId> huIds, boolean reserved);
 
+	/**
+	 * @return the LU PIs that can hold the PIs of the given items, via active parent items without partner or for {@code bpartnerId}, whatever product those parent items are for.
+	 */
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
 			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
 			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * Like {@link #retrieveParentLUPIs(Set, BPartnerId)}, but only via parent items that can be used when packing {@code productId}:
+	 * items without product, and items for {@code productId}.
+	 *
+	 * @param productId the product to be packed; {@code null} means product-less packing, which can only use items without product
+	 *                  (same rule as {@link #retrieveFirstPIItem(I_M_HU_PI, I_M_HU_PI, BPartnerId, ProductId)}).
+	 */
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProduct(
+			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ProductId productId);
 
 	@NonNull
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
