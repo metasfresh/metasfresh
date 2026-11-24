@@ -139,6 +139,12 @@ public class WarehouseCommand
 		context.putIdentifier(identifier, locatorId);
 
 		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
+		if (locatorRequest.isAfterPickingLocatorOrFalse())
+		{
+			final de.metas.handlingunits.model.I_M_Locator huLocatorRecord = InterfaceWrapperHelper.create(locatorRecord, de.metas.handlingunits.model.I_M_Locator.class);
+			huLocatorRecord.setIsAfterPickingLocator(true);
+			saveRecord(huLocatorRecord);
+		}
 		return toJson(locatorRecord);
 	}
 
