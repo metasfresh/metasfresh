@@ -75,8 +75,8 @@ Feature: Move a TU onto an existing LU whose packing instructions link the TU on
   # ##########################################################################################
   # ##########################################################################################
 
-  Scenario: An IFCO TU of tomatoes is transformed onto the pallet via the item for tomatoes
-    When transform TU to existing LU
+  Scenario: An IFCO TU of tomatoes is moved onto the pallet via the item for tomatoes
+    When move TU to existing LU
       | sourceTU | tuQty | targetLU |
       | tomatoTU | 1     | lu       |
 
@@ -94,8 +94,8 @@ Feature: Move a TU onto an existing LU whose packing instructions link the TU on
   # ##########################################################################################
   # ##########################################################################################
 
-  Scenario: An IFCO TU of salad is transformed onto the pallet via the item for tomatoes, so the pallet holds both products
-    When transform TU to existing LU
+  Scenario: An IFCO TU of salad is moved onto the pallet via the item for tomatoes, so the pallet holds both products
+    When move TU to existing LU
       | sourceTU | tuQty | targetLU |
       | saladTU  | 1     | lu       |
 
@@ -114,12 +114,12 @@ Feature: Move a TU onto an existing LU whose packing instructions link the TU on
   # ##########################################################################################
   # ##########################################################################################
 
-  Scenario: With an additional generic IFCO item, an IFCO TU of tomatoes is transformed onto the pallet via the generic item
+  Scenario: With an additional generic IFCO item, an IFCO TU of tomatoes is moved onto the pallet via the generic item
     Given metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID   | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
       | luItemIFCOGeneric | luVersion          | 5   | HU       | ifcoPI            |
 
-    When transform TU to existing LU
+    When move TU to existing LU
       | sourceTU | tuQty | targetLU |
       | tomatoTU | 1     | lu       |
 

@@ -559,23 +559,24 @@ public class M_HU_StepDef
 	}
 
 	/**
-	 * Transforms TUs onto an existing LU via {@link HUTransformService#tuToExistingLU}, the same call as the HU editor's transform action "TU to existing LU".
+	 * Moves TUs onto an already existing LU via {@link HUTransformService#tuToExistingLU}, the same call as the HU editor's transform action "TU to existing LU".
+	 * Called "move" rather than "transform" because no HU is created: the TUs are attached to an LU that already exists.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>sourceTU</b> — (required, identifier-ref) the TU (or aggregate TU) to transform<br>
-	 *   <b>tuQty</b> — (required) number of TUs to transform<br>
+	 *   <b>sourceTU</b> — (required, identifier-ref) the TU (or aggregate TU) to move<br>
+	 *   <b>tuQty</b> — (required) number of TUs to move<br>
 	 *   <b>targetLU</b> — (required, identifier-ref) the existing LU<br>
 	 * @cucumber.depends StepDefData: M_HU_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * And transform TU to existing LU
+	 * And move TU to existing LU
 	 *   | sourceTU | tuQty | targetLU |
 	 *   | tu_1     | 1     | lu_1     |
 	 * </pre>
 	 */
-	@And("transform TU to existing LU")
-	public void transformTUtoExistingLU(@NonNull final DataTable dataTable)
+	@And("move TU to existing LU")
+	public void moveTUToExistingLU(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_M_HU tuHU = handlingUnitsBL.getById(row.getAsIdentifier("sourceTU").lookupIdIn(huTable));
