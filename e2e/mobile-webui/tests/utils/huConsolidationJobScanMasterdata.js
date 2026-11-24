@@ -42,6 +42,17 @@ export const jobScanSalesOrder = ({ bpartner, product, qty, tu }) => ({
  *   optional replacements of the whole section of the same name (e.g. a second partner, a third slot, a pallet pick); `sysconfigs` and
  *   `pickingProfile` are merged over the defaults (`pickingProfile` = fields of mobileConfig.picking, e.g. the customer's pallet-only profile); `handlingUnits` is added to the two source HUs (e.g. an existing pallet); `language` replaces 'en_US' (user + masterdata); `huLabelConfigs` replaces the default label config of BP1 (e.g. `{}` = none); `packingInstructions` replaces the default PI_P1 / PI_P2 (e.g. PI_P2 with its own LU without SSCC18, so the SSCC label of a closed pallet of that type has no SSCC to print).
  */
+/** The picking profile of the job-scan scenarios (fields of mobileConfig.picking). */
+const JOB_SCAN_PICKING_PROFILE = {
+    aggregationType: 'product',
+    allowPickingAnyCustomer: true,
+    createShipmentPolicy: 'NO',
+    allowPickingAnyHU: true,
+    pickTo: ['TU'],
+    allowCompletingPartialPickingJob: true,
+    anonymousPickHUsOnTheFly: false, // the picking profile is shared and persistent: a spec that left it on would send the pick line tap straight to the quantity screen
+};
+
 export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pickingProfile, bpartners, pickingSlots, salesOrders, sysconfigs, handlingUnits, huLabelConfigs, packingInstructions } = {}) => {
     const masterdata = await Backend.createMasterdata({
         language,
@@ -50,13 +61,8 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pick
             login: { user: { language } },
             mobileConfig: {
                 picking: {
-                    aggregationType: 'product',
-                    allowPickingAnyCustomer: true,
-                    createShipmentPolicy: 'NO',
-                    allowPickingAnyHU: true,
+                    ...JOB_SCAN_PICKING_PROFILE,
                     pickTo: pickTo ?? ['TU'],
-                    allowCompletingPartialPickingJob: true,
-                    anonymousPickHUsOnTheFly: false, // the picking profile is shared and persistent: a spec that left it on would send the pick line tap straight to the quantity screen
                     ...pickingProfile,
                 },
             },
@@ -86,31 +92,49 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pick
             },
         },
     });
-    // keep the values found before the FIRST masterdata call of the test; the later calls only see this test's own values
-    if (sysconfigsToRestore === null) {
-        sysconfigsToRestore = masterdata.previousSysconfigs ?? {};
-    }
-    Object.values(masterdata.pickingSlots ?? {}).forEach((pickingSlot) => pickingSlotIdsToEmpty.add(pickingSlot.id));
+    rememberWhatToRestore({ masterdata, pickingProfile });
     return masterdata;
 };
 
-/** Sysconfig values found before the first masterdata call of the running test (null = no call yet). */
-let sysconfigsToRestore = null;
-/** Picking slots created by the running test's masterdata. */
+/** What the running test changed in shared settings, with the value found before (the first one seen per key), and the picking slots it created. */
+let sysconfigsToRestore = {};
+let pickingProfileToRestore = {};
 const pickingSlotIdsToEmpty = new Set();
 
+const rememberWhatToRestore = ({ masterdata, pickingProfile }) => {
+    Object.entries(masterdata.previousSysconfigs ?? {}).forEach(([name, value]) => {
+        if (!(name in sysconfigsToRestore)) sysconfigsToRestore[name] = value;
+    });
+
+    // the picking profile is one shared record; a field set by `pickingProfile` keeps its value until a request sets it again
+    // (`customers` is not written back: it only applies with allowPickingAnyCustomer false, which is written back, and a spec that uses it sends its own list)
+    const previousPicking = masterdata.mobileConfig?.picking?.previous ?? {};
+    Object.keys(pickingProfile ?? {})
+        .filter((field) => field !== 'customers')
+        .forEach((field) => {
+            if (!(field in pickingProfileToRestore)) pickingProfileToRestore[field] = previousPicking[field];
+        });
+
+    Object.values(masterdata.pickingSlots ?? {}).forEach((pickingSlot) => pickingSlotIdsToEmpty.add(pickingSlot.id));
+};
+
 /**
- * Leaves the database as the test found it, for the next test (and the next spec or run): writes back the sysconfig values found before the
- * test's first masterdata call, and empties the test's picking slots (each non-empty picking slot is offered as an HU consolidation job to
- * every later test). Call it in `test.afterEach` of every spec that uses this masterdata; it also runs when the test failed.
+ * Leaves the database as the test found it, for the next test (and the next spec or run): writes back the sysconfigs and the picking profile fields
+ * the test's masterdata calls changed, with the values found before, and empties the test's picking slots (each non-empty picking slot is offered as an
+ * HU consolidation job to every later test). Call it in `test.afterEach` of every spec that uses this masterdata; it also runs when the test failed.
  */
 export const cleanUpAfterJobScanTest = async () => {
     const sysconfigs = sysconfigsToRestore;
-    sysconfigsToRestore = null;
+    const pickingProfile = pickingProfileToRestore;
     const pickingSlotIds = [...pickingSlotIdsToEmpty];
+    sysconfigsToRestore = {};
+    pickingProfileToRestore = {};
     pickingSlotIdsToEmpty.clear();
 
-    if (sysconfigs && Object.keys(sysconfigs).length > 0) {
+    if (Object.keys(pickingProfile).length > 0) {
+        await Backend.createMasterdata({ request: { mobileConfig: { picking: { ...JOB_SCAN_PICKING_PROFILE, ...pickingProfile } } } });
+    }
+    if (Object.keys(sysconfigs).length > 0) {
         await Backend.setSysconfigs(sysconfigs);
     }
     if (pickingSlotIds.length > 0) {

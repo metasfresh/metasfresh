@@ -27,6 +27,7 @@ import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.process.AdProcessId;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -63,6 +64,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
@@ -479,6 +481,27 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.endOrderBy()
 				.create()
 				.first();
+	}
+
+	@Override
+	public int countPrintingQueueItems(@NonNull final TableRecordReference archivedRecordRef, @Nullable final AdProcessId processId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_AD_Archive> archives = queryBL.createQueryBuilder(I_AD_Archive.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, archivedRecordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, archivedRecordRef.getRecord_ID());
+		if (processId != null)
+		{
+			archives.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Process_ID, processId);
+		}
+
+		return queryBL.createQueryBuilder(I_C_Printing_Queue.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_Printing_Queue.COLUMNNAME_AD_Archive_ID, I_AD_Archive.COLUMNNAME_AD_Archive_ID, archives.create())
+				.create()
+				.count();
 	}
 
 	@Override

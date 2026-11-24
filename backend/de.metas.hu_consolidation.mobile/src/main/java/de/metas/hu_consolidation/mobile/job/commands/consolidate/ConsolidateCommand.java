@@ -23,6 +23,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -33,6 +34,7 @@ import java.util.Set;
 public class ConsolidateCommand
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -223,17 +225,23 @@ public class ConsolidateCommand
 			return;
 		}
 
-		new NewLUTakesTUsAssertion(handlingUnitsBL).assertNewLUTakesTUs(luPackingInstructionsId, fromTUs);
+		final NewLUTakesTUsAssertion newLUTakesTUs = new NewLUTakesTUsAssertion(handlingUnitsBL, huTransformService);
 
-		final I_M_HU firstTU = fromTUs.get(0);
-		final I_M_HU lu = huTransformService.tuToNewLU(firstTU, QtyTU.ONE, luPackingInstructionsId)
-				.getSingleLURecord();
+		// one transaction: if the new pallet does not take one of the other crates, the pallet created for the first crate is rolled back
+		final I_M_HU lu = trxManager.callInThreadInheritedTrx(() -> {
+			final I_M_HU firstTU = fromTUs.get(0);
+			newLUTakesTUs.assertNewLUTakesTU(luPackingInstructionsId, firstTU);
+			final I_M_HU newLU = huTransformService.tuToNewLU(firstTU, QtyTU.ONE, luPackingInstructionsId)
+					.getSingleLURecord();
 
-		if (fromTUs.size() > 1)
-		{
-			final List<I_M_HU> remainingTUs = fromTUs.subList(1, fromTUs.size());
-			huTransformService.tusToExistingLU(remainingTUs, lu);
-		}
+			if (fromTUs.size() > 1)
+			{
+				final List<I_M_HU> remainingTUs = fromTUs.subList(1, fromTUs.size());
+				newLUTakesTUs.assertLUTakesTUs(newLU, remainingTUs);
+				huTransformService.tusToExistingLU(remainingTUs, newLU);
+			}
+			return newLU;
+		});
 
 		final HuId luId = HuId.ofRepoId(lu.getM_HU_ID());
 		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(luId);

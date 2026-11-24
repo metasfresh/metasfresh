@@ -9,9 +9,7 @@ import lombok.NonNull;
 import java.util.Set;
 
 /**
- * Removes all HUs from the given picking slots and releases them (if possible).
- * A test calls it for its own slots afterwards: every non-empty picking slot is offered as an HU consolidation job to every later test,
- * so slots a test left full would make the job list of all later tests (and runs) longer.
+ * Removes all HUs from the queues of the given picking slots, then releases each slot if possible. Other picking slots are not changed.
  */
 @Builder
 public class EmptyPickingSlotsCommand

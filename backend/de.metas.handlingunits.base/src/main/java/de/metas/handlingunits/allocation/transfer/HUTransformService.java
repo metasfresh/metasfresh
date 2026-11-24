@@ -754,6 +754,15 @@ public class HUTransformService
 	}
 
 	/**
+	 * @return {@code true} if the whole given TU can be attached to the given existing LU, i.e. the LU's PI has an item for the TU's (effective) PI:
+	 * the LU's item, the generic item or the LU partner's item without product, else a product-specific item; the same lookup as {@link #tuToExistingLU(I_M_HU, QtyTU, I_M_HU)}
+	 */
+	public boolean isTUAttachableToExistingLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU lu)
+	{
+		return retrieveLUPIItemForTUOrNull(lu, handlingUnitsBL.getEffectivePI(tu), tu) != null;
+	}
+
+	/**
 	 * @return the LU's item for the TU's PI (an LU built from a product-specific item keeps it), else the generic item or the LU partner's item without product;
 	 * if the LU PI links the TU PI only via product-specific items, one of those (preferably the TU's product's), because different products on the same LU are allowed.
 	 */

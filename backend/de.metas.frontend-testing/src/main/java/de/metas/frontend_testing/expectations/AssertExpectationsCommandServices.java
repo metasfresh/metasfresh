@@ -41,11 +41,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -220,14 +218,10 @@ public class AssertExpectationsCommandServices
 	}
 
 	/**
-	 * @return the number of the HU's {@code AD_Archive} records (only of the given process, if set) that have a {@code C_Printing_Queue} record
+	 * @return the number of {@code C_Printing_Queue} records of the HU's {@code AD_Archive} records (only of the given process, if set)
 	 */
 	public int countPrintingQueueRecordsOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
 	{
-		return (int)archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(I_M_HU.Table_Name, huId), QueryLimit.NO_LIMIT)
-				.stream()
-				.filter(archive -> processId == null || processId.getRepoId() == archive.getAD_Process_ID())
-				.filter(archive -> printingDAO.retrievePrintingQueue(archive) != null)
-				.count();
+		return printingDAO.countPrintingQueueItems(TableRecordReference.of(I_M_HU.Table_Name, huId), processId);
 	}
 }

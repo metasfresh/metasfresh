@@ -119,7 +119,7 @@ class HULabelPrintCommand
 	}
 
 	/**
-	 * The label config lookup of one HU: also used by {@link HULabelService#getLabelConfig(HULabelSourceDocType, HUToReport)}.
+	 * @return the label config query of the given HU for the given source document type (by the HU's unit type and partner)
 	 */
 	static HULabelConfigQuery toHULabelConfigQuery(@NonNull final HULabelSourceDocType sourceDocType, final @NonNull HUToReport hu)
 	{

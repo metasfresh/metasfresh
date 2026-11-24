@@ -75,8 +75,7 @@ export const Backend = {
     }),
 
     /**
-     * Removes all HUs from the given picking slots and releases them: every non-empty picking slot is offered as an HU consolidation job
-     * to every later test, so a test empties its own slots afterwards.
+     * Removes all HUs from the queues of the given picking slots (`M_PickingSlot_ID`s), then releases each slot if possible.
      */
     emptyPickingSlots: async ({ pickingSlotIds }) => await test.step(`Backend: empty picking slots ${pickingSlotIds.join(', ')}`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
