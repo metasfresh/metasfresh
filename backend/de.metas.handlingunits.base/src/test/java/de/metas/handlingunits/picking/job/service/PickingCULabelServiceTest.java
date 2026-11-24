@@ -34,9 +34,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
-import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.math.BigDecimal;
@@ -208,7 +208,7 @@ class PickingCULabelServiceTest
 			final ILoggingEvent event = logAppender.list.get(0);
 			assertThat(event.getLevel()).isEqualTo(Level.WARN);
 			// the scanned label and the explanation of the format parser (which part does not fit): the same details the picker gets in the toast
-			assertThat(event.getFormattedMessage()).contains(label).contains("01");
+			assertThat(event.getFormattedMessage()).contains(label).contains("Invalid constant marker");
 		}
 		finally
 		{
