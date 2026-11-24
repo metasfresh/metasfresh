@@ -6,6 +6,8 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.inout.InOutLineId;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
@@ -27,6 +29,7 @@ public class M_MatchPO_StepDef
 
 	@NonNull private final M_MatchPO_StepDefData matchPOTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_InOutLine_StepDefData inoutLineTable;
 
 	@And("^M_MatchPO are found$")
 	public void loadMatchPOs(@NonNull final DataTable table)
@@ -39,7 +42,13 @@ public class M_MatchPO_StepDef
 	public void loadMatchPO(@NonNull final DataTableRow row)
 	{
 		final OrderLineId orderLineId = row.getAsIdentifier(I_M_MatchPO.COLUMNNAME_C_OrderLine_ID).lookupIdIn(orderLineTable);
-		final List<I_M_MatchPO> matchPOs = matchPODAO.getByOrderLineId(orderLineId);
+		final InOutLineId inoutLineId = row.getAsOptionalIdentifier(I_M_MatchPO.COLUMNNAME_M_InOutLine_ID)
+				.map(inoutLineTable::getId)
+				.orElse(null);
+		// when the row names the receipt line, keep only that line's match (an order line can be received in several parts)
+		final List<I_M_MatchPO> matchPOs = matchPODAO.getByOrderLineId(orderLineId).stream()
+				.filter(matchPO -> inoutLineId == null || matchPO.getM_InOutLine_ID() == inoutLineId.getRepoId())
+				.collect(java.util.stream.Collectors.toList());
 		if (matchPOs.isEmpty())
 		{
 			throw new AdempiereException("No M_MatchPO found for " + orderLineId);
