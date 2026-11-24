@@ -285,10 +285,18 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
 	 * <p>
-	 * A parent built from a product-specific PI item keeps that item for any further child of the given PI (single-product parent assumption; the child's own product is not considered).
+	 * A parent built from a product-specific PI item keeps that item for any further child of the given PI, whatever the child's product is (different products on the same parent are allowed).
 	 */
 	@Nullable
 	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, IContextAware ctx);
+
+	/**
+	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve a <b>product-specific</b> PI item (with type HU) of the parent's PI version that can link child and parent:
+	 * the one for {@code childProductId} if there is one, else the first one (same partner filter and order as {@link #retrieveParentPIItemForChildHUOrNull(I_M_HU, I_M_HU_PI, IContextAware)}).
+	 * Items without product are never returned. Any of them may carry the child, whatever the child's product is (different products on the same parent are allowed).
+	 */
+	@Nullable
+	I_M_HU_PI_Item retrieveProductSpecificParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, @Nullable ProductId childProductId, IContextAware ctx);
 
 	/**
 	 * Retrieve first parent item if more are defined.
