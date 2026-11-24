@@ -957,16 +957,12 @@ for (const language of ['de_DE', 'en_US']) {
     });
 }
 
-// noinspection JSUnusedLocalSymbols
-test('Schliessen of a pallet whose label print fails: error shown, pallet closed anyway and shipped', async ({ page: _page }) => {
-    // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00248');
-    await allure.story('HU Consolidation - GRAI scan screen');
-    await allure.severity('critical');
-
-    // The label print of the closed pallet fails as for the customer's Einwegpalette: the pallet type has no SSCC18 attribute
-    // (PI_P2 gets its own LU, the default one is shared with PI_P1, which puts SSCC18 on it), and the SSCC label prints the empty SSCC.
+/**
+ * The label print of the closed pallet fails as for the customer's Einwegpalette: the pallet type has no SSCC18 attribute
+ * (PI_P2 gets its own LU, the default one is shared with PI_P1, which puts SSCC18 on it), and the SSCC label prints the empty SSCC.
+ * Picks one crate, opens the job, chooses that pallet and scans the crate onto it; returns the masterdata and the pallet's QR code.
+ */
+const putCrateOnPalletWithoutSSCC18 = async () => {
     const masterdata = await createJobScanMasterdata({
         language: 'de_DE',
         packingInstructions: {
@@ -999,14 +995,36 @@ test('Schliessen of a pallet whose label print fails: error shown, pallet closed
         await GRAIScanScreen.expectClosedByItself();
         targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
     });
+    return { masterdata, targetLUQRCode };
+};
 
-    await test.step('Schliessen: an error message is shown AND the pallet is closed (no open pallet on the job screen)', async () => {
+/**
+ * The message shown when the pallet was closed (or the job completed) and shipped, but its label print failed
+ * (AD_Messages ...PALLET_SHIPPED_LABEL_NOT_PRINTED + ...LABEL_NOT_PRINTED_REASON_PRINT_FAILED, de_DE): a short reason, never the technical error
+ * (here the FNC1 error of the Jasper report).
+ */
+const expectPalletShippedPrintFailedMessage = (textContent) => {
+    expect(textContent).toContain('Abgeschlossen, Lieferung wird erstellt. Etikett nicht gedruckt: Fehler beim Drucken.');
+    expect(textContent).not.toContain('FNC1');
+    expect(textContent).not.toContain('SysConfig');
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Schliessen of a pallet whose label print fails: error shown, pallet closed anyway and shipped', async ({ page: _page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan screen');
+    await allure.severity('critical');
+
+    const { targetLUQRCode } = await putCrateOnPalletWithoutSSCC18();
+
+    await test.step('Schliessen: the message says closed and shipped, label not printed (error while printing), AND the pallet is closed (no open pallet on the job screen)', async () => {
         await expectErrorToast('label print of the pallet without SSCC18 fails', async () => {
             await HUConsolidationJobScreen.clickLUTargetButton();
             await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
         }, ({ textContent }) => {
-            // only "an error message is shown" is required (no wording), so any non-empty message passes
-            expect((textContent ?? '').trim().length).toBeGreaterThan(0);
+            expectPalletShippedPrintFailedMessage(textContent);
         });
         // the error toast keeps the operator on the target screen; the pallet is closed: Back shows the job screen without an open pallet
         await SelectHUConsolidationTargetScreen.goBack();
@@ -1015,6 +1033,36 @@ test('Schliessen of a pallet whose label print fails: error shown, pallet closed
 
     await Backend.expect({
         title: 'the closed pallet is shipped: shipment completed once the async shipment work package ran',
+        hus: { [targetLUQRCode]: { isShipmentCompleted: true } },
+    });
+    await Backend.expect({
+        title: 'the shipped pallet has HUStatus E (shipped)',
+        hus: { [targetLUQRCode]: { huStatus: 'E' } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Fertigstellen of a pallet whose label print fails: dialog says done and shipped, label not printed; job completed, pallet shipped', async ({ page: _page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan screen');
+    await allure.severity('critical');
+
+    const { masterdata, targetLUQRCode } = await putCrateOnPalletWithoutSSCC18();
+    const customerLocationId = masterdata.bpartners.BP1.bpartnerLocationId;
+
+    await test.step('Fertigstellen -> Ja: a dialog says the job is done and shipped, label not printed (error while printing); OK shows the job list without the job', async () => {
+        await HUConsolidationJobScreen.tapCompleteAndConfirm();
+        expectPalletShippedPrintFailedMessage(await HUConsolidationJobScreen.expectCompletedWithErrorDialog());
+        await HUConsolidationJobsListScreen.expectJobNotListedAfter({
+            customerLocationId,
+            trigger: () => HUConsolidationJobScreen.confirmCompletedWithErrorDialog(),
+        });
+    });
+
+    await Backend.expect({
+        title: 'the pallet is shipped although its label print failed: shipment completed once the async shipment work package ran',
         hus: { [targetLUQRCode]: { isShipmentCompleted: true } },
     });
     await Backend.expect({
