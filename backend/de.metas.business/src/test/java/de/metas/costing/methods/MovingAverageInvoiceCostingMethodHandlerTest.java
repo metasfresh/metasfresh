@@ -396,6 +396,292 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		}
 	}
 
+	/** TC1: reference case, cent-grid legs. */
+	@Test
+	public void matchInvSplit_referenceCase_allInStock_legsOnCentGrid()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("101.215"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("133.444"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("0.914"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("2.413");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("101.22");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("-32.22");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("0");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("133.444").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** TC2: sibling match with the same inputs as TC1 on purpose (one method per TC for traceability). */
+	@Test
+	public void matchInvSplit_referenceCaseSibling_sameLines()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("101.215"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("133.444"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("0.914"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("2.413");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("101.22");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("-32.22");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("0");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("133.444").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** TC3: two legs, half-cent tie, multiply first. */
+	@Test
+	public void matchInvSplit_twoLegs_halfCentTie_multiplyFirst()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("2585.00"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("0"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("9.4"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("2.309");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("2585");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("634.98");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("1950.02");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("0").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** TC4: all in stock, small difference A. */
+	@Test
+	public void matchInvSplit_allInStock_smallDifferenceA()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("121.65"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("119.775"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("1.5"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("4.0257");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("121.65");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("1.87");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("0");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("119.775").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** TC5: all in stock, small difference B. */
+	@Test
+	public void matchInvSplit_allInStock_smallDifferenceB()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("39.45"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("35.805"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("1.5"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("17.3634");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("39.45");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("3.64");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("0");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("35.805").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** TC6: all in stock, small difference C. */
+	@Test
+	public void matchInvSplit_allInStock_smallDifferenceC()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("118.35"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("107.415"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("4.5"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("17.3634");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("118.35");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("10.93");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("0");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("107.415").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** TC7: stock share computed from the booked (rounded) invoice amount. */
+	@Test
+	public void matchInvSplit_twoLegs_stockShareOfBookedInvoiceAmount()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("1601.004975"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("0"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("10"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("6.937");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("1601");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("1110.61");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("490.39");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("0").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** Review Focus 2: stock share never exceeds the difference. */
+	@Test
+	public void matchInvSplit_noOvershoot_stockNeverExceedsDifference()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("66.67"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("0"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("1000"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("999.9");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("66.67");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("66.66");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("0.01");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("0").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** TC12: credit memo, half-cent; only rounded (HALF_UP -50.005 -> -50.01; unit price 5.001 -> 5.00 at costing precision 2; x -15 = -75.00; sold -50.01 + 75.00 = 24.99). */
+	@Test
+	public void matchInvSplit_creditMemo_halfCent_onlyRounded()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("-50.005"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("0"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("-10"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("-15");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("-50.01");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("-75");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("24.99");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("0").setScale(2, java.math.RoundingMode.HALF_UP));
+	}
+
+	/** Review Focus 1: negative on-hand clamped to 0, nothing in stock. */
+	@Test
+	public void matchInvSplit_negativeOnHand_centGrid()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("50.005"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("0"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("10"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("-4");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("50.01");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("0");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("50.01");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("0").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** Review Focus 4: difference rounds to zero. */
+	@Test
+	public void matchInvSplit_differenceRoundsToZero()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("100.004"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("100.00"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("5"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("10");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("100");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("0");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("0");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("100.00").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	/** Review Focus 4: zero matched qty, all to sold. */
+	@Test
+	public void matchInvSplit_zeroMatchedQty()
+	{
+		final CostAmount invoicedAmt = CostAmount.of(new BigDecimal("10.005"), euroCurrencyId);
+		final CostAmount receiptAmt = CostAmount.of(new BigDecimal("0"), euroCurrencyId);
+		final Quantity receiptQty = Quantity.of(new BigDecimal("0"), eachUOM);
+		final CurrentCost currentCost = currentCostWithQty("5");
+
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
+				invoicedAmt, receiptAmt, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualByComparingTo("10.01");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo("0");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo("10.01");
+		// main - stock - sold = receiptAmt rounded to 2 decimals
+		assertThat(split.getMainAmt().toBigDecimal()
+				.subtract(split.getCostAdjustmentAmt().toBigDecimal())
+				.subtract(split.getAlreadyShippedAmt().toBigDecimal()))
+				.isEqualByComparingTo(new BigDecimal("0").setScale(2, java.math.RoundingMode.HALF_UP));
+		// stock and sold have the same sign or are zero
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal().signum() * split.getAlreadyShippedAmt().toBigDecimal().signum()).isGreaterThanOrEqualTo(0);
+	}
+
 	private CurrentCost currentCostWithQty(final String currentQty)
 	{
 		return CurrentCost.builder()
@@ -422,7 +708,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final CurrentCost currentCost = currentCostWithQty("-4");
 
 		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplit(
-				invoicedAmt, amtDifference, receiptQty, currentCost);
+				invoicedAmt, amtDifference, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("50");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("0");
@@ -445,7 +731,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final CurrentCost currentCost = currentCostWithQty("-15");
 
 		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplit(
-				invoicedAmt, amtDifference, receiptQty, currentCost);
+				invoicedAmt, amtDifference, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("50");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("75");
