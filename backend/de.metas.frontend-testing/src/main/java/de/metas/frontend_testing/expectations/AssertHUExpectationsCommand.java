@@ -513,40 +513,6 @@ class AssertHUExpectationsCommand
 		return !allocations.isEmpty() && allocations.stream().allMatch(ShipmentAllocation::isShipmentCompleted);
 	}
 
-	private void assertAttributeValue_String(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
-	{
-		final String actualValueStr = actualAttributes.getValueAsString(attributeCode);
-		assertThat(actualValueStr).as("String attribute " + attributeCode).isEqualTo(expectedValueStr);
-	}
-
-	private void assertAttributeValue_Number(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
-	{
-		final BigDecimal actualValue = actualAttributes.getValueAsBigDecimal(attributeCode);
-		final BigDecimal expectedValue = NumberUtils.asBigDecimal(expectedValueStr);
-		assertThat(actualValue).as("Number attribute " + attributeCode).isEqualTo(expectedValue);
-	}
-
-	private void assertAttributeValue_Date(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
-	{
-		final LocalDate actualValue = actualAttributes.getValueAsLocalDate(attributeCode);
-
-		final LocalDate expectedValue;
-		if (expectedValueStr == null || expectedValueStr.trim().equals("-"))
-		{
-			expectedValue = null;
-		}
-		else if (expectedValueStr.equalsIgnoreCase("today"))
-		{
-			expectedValue = SystemTime.asLocalDate();
-		}
-		else
-		{
-			expectedValue = TimeUtil.asLocalDate(expectedValueStr);
-		}
-
-		assertThat(actualValue).as("Date attribute " + attributeCode).isEqualTo(expectedValue);
-	}
-
 	private void assertTUs(@NonNull final List<JsonHUExpectation> expectations, @NonNull final HuId luId)
 	{
 		final ArrayList<I_M_HU> tus = new ArrayList<>(services.getIncludedHUs(luId));
