@@ -156,16 +156,25 @@ public class PackingInfoProcessParams
 			return LookupValuesList.EMPTY;
 		}
 
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, ILUTUConfigurationFactory.extractBPartnerIdOrNull(getDefaultLUTUConfig()));
+		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(
+				pip,
+				ILUTUConfigurationFactory.extractBPartnerIdOrNull(defaultLUTUConfig),
+				ProductId.ofRepoIdOrNull(defaultLUTUConfig.getM_Product_ID()));
 
 		return luPIItems.stream()
 				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
 				.collect(LookupValuesList.collect());
 	}
 
+	/**
+	 * @param productId the received product: per pallet packing instruction, its item bound to this product is offered instead of the generic one;
+	 *                  {@code null} means only the generic (product-less) items
+	 */
 	private List<I_M_HU_PI_Item> getAvailableLuPIItems(
 			@NonNull final I_M_HU_PI_Item_Product pip,
-			@Nullable final BPartnerId bpartnerId)
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -173,7 +182,8 @@ public class PackingInfoProcessParams
 
 		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
 				null, // huUnitType
-				bpartnerId);
+				bpartnerId,
+				productId);
 	}
 
 	public I_M_HU_LUTU_Configuration getDefaultLUTUConfig()
@@ -246,7 +256,7 @@ public class PackingInfoProcessParams
 		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
 		defaultLUTUConfig.setQtyCUsPerTU(pip.getQty());
 
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartnerId);
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartnerId, null);
 		if (luPIItems.isEmpty())
 		{
 			defaultLUTUConfig.setM_LU_HU_PI_Item(null);
