@@ -8,10 +8,12 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.hu.M_HU_CreateReceipt_StepDef;
 import de.metas.cucumber.stepdefs.hu.M_HU_LUTU_Configuration_StepDef;
+import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDef;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDef;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
+import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDef;
 import de.metas.cucumber.stepdefs.match_po.M_MatchPO_StepDef;
 import de.metas.cucumber.stepdefs.receiptschedule.M_ReceiptSchedule_StepDef;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_Line_StepDef;
@@ -27,6 +29,7 @@ import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvQuery;
 import de.metas.invoice.matchinv.MatchInvType;
@@ -39,8 +42,10 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_MatchInv;
@@ -48,15 +53,21 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
+import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Steps that create completed costing source documents (order, material receipt, invoice, shipment) in one step each.
+ */
 @RequiredArgsConstructor
 public class CostingDocuments_StepDef
 {
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final MatchInvoiceRepository matchInvoiceRepository = SpringContextHolder.instance.getBean(MatchInvoiceRepository.class);
 
 	@NonNull private final C_Order_StepDef orderStepDef;
@@ -72,6 +83,7 @@ public class CostingDocuments_StepDef
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_ShipmentSchedule_StepDef shipmentScheduleStepDef;
+	@NonNull private final C_InvoiceLine_StepDefData invoiceLineTable;
 
 	@Given("for costing, create completed order with one line")
 	public void createOrders(@NonNull final DataTable dataTable)
@@ -94,6 +106,20 @@ public class CostingDocuments_StepDef
 		orderStepDef.completeOrder(order);
 	}
 
+	/**
+	 * Creates and completes a material receipt for the receipt schedule of an order line.
+	 * <p>
+	 * Columns: required {@code C_OrderLine_ID}; optional {@code M_InOut_ID}, {@code M_InOutLine_ID}, {@code M_MatchPO_ID} (identifiers to register
+	 * the created records under), optional {@code QtyToMove_Override} (qty received; default: the receipt schedule's qty to move,
+	 * lets one order line be received in several parts).
+	 * <pre>
+	 * Given for costing, create completed material receipt with one line
+	 *   | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID | QtyToMove_Override |
+	 *   | po_l1          | receipt1   | receipt1_l1    | 0.914              |
+	 * </pre>
+	 *
+	 * @see M_MatchPO_StepDef#loadMatchPO(DataTableRow)
+	 */
 	@Given("for costing, create completed material receipt with one line")
 	public void createMaterialReceipts(@NonNull final DataTable dataTable)
 	{
@@ -111,7 +137,7 @@ public class CostingDocuments_StepDef
 		row.setAdditionalRowIdentifierColumnName(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID);
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleStepDef.waitAndLoadReceiptSchedule(row, 60);
 
-		final ImmutableSet<HuId> huIds = createPlanningHUs(receiptSchedule);
+		final ImmutableSet<HuId> huIds = createPlanningHUs(receiptSchedule, row.getAsOptionalBigDecimal("QtyToMove_Override").orElseGet(receiptSchedule::getQtyToMove));
 
 		final I_M_InOut receipt = createReceiptStepDef.createMaterialReceipt(
 				IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
@@ -130,7 +156,7 @@ public class CostingDocuments_StepDef
 		matchPOStepDef.loadMatchPO(row);
 	}
 
-	private ImmutableSet<HuId> createPlanningHUs(final I_M_ReceiptSchedule receiptSchedule)
+	private ImmutableSet<HuId> createPlanningHUs(final I_M_ReceiptSchedule receiptSchedule, final BigDecimal qtyPerReceivedHU)
 	{
 		final List<I_M_HU> hus = lutuConfigurationStepDef.createLUTUConfigurationForReceiptSchedule(
 				DataTableRow.builder()
@@ -140,7 +166,7 @@ public class CostingDocuments_StepDef
 						.value("IsInfiniteQtyTU", false)
 						.value("QtyTU", 1)
 						.value("IsInfiniteQtyCU", false)
-						.value("QtyCUsPerTU", receiptSchedule.getQtyToMove())
+						.value("QtyCUsPerTU", qtyPerReceivedHU)
 						.value("M_HU_PI_Item_Product_ID", HUPIItemProductId.VIRTUAL_HU)
 						.build()
 		);
@@ -152,6 +178,22 @@ public class CostingDocuments_StepDef
 		return hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
 	}
 
+	/**
+	 * Creates and completes an invoice from the invoice candidate of an order line.
+	 * <p>
+	 * Columns: required {@code C_OrderLine_ID}; optional {@code PriceEntered_Override}, {@code C_Invoice_ID} (identifier),
+	 * optional {@code M_MatchInv_ID} (identifier of the invoice's single material match) or optional {@code C_InvoiceLine_ID}
+	 * (identifier: registers the invoice's single line and loads no match, for invoices that are matched to several
+	 * receipt lines; the matches are then loaded by the step "M_MatchInv are found"). {@code C_InvoiceLine_ID} and
+	 * {@code M_MatchInv_ID} cannot be used together.
+	 * <pre>
+	 * When for costing, create completed invoice with one line
+	 *   | C_OrderLine_ID | PriceEntered_Override | C_Invoice_ID | C_InvoiceLine_ID |
+	 *   | po_l1          | 110.74                | invoice      | invoice_l1       |
+	 * </pre>
+	 *
+	 * @see M_MatchInv_StepDef#loadAndValidateMatchInvoices(DataTable)
+	 */
 	@Given("for costing, create completed invoice with one line")
 	public void createInvoices(@NonNull final DataTable dataTable)
 	{
@@ -162,7 +204,18 @@ public class CostingDocuments_StepDef
 	private void createInvoice(final DataTableRow row) throws Throwable
 	{
 		row.setValueIfMissing(I_C_Invoice.COLUMNNAME_C_Invoice_ID, () -> StepDefDataIdentifier.nextUnnamed("invoice").getAsString());
-		row.setValueIfMissing(I_M_MatchInv.COLUMNNAME_M_MatchInv_ID, () -> StepDefDataIdentifier.nextUnnamed("matchInv").getAsString());
+		if (row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID).isPresent())
+		{
+			// a match identifier here would be silently dropped, so refuse it
+			if (row.getAsOptionalIdentifier(I_M_MatchInv.COLUMNNAME_M_MatchInv_ID).isPresent())
+			{
+				throw new AdempiereException("Columns " + I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + " and " + I_M_MatchInv.COLUMNNAME_M_MatchInv_ID + " cannot be used together");
+			}
+		}
+		else
+		{
+			row.setValueIfMissing(I_M_MatchInv.COLUMNNAME_M_MatchInv_ID, () -> StepDefDataIdentifier.nextUnnamed("matchInv").getAsString());
+		}
 
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidateStepDef.waitAndLoad_C_Invoice_Candidate(row, 120);
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
@@ -175,6 +228,16 @@ public class CostingDocuments_StepDef
 		final I_C_Invoice invoice = invoiceStepDef.waitAndLoadSingleInvoice(invoiceCandidateId);
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		row.getAsOptionalIdentifier("C_Invoice_ID").ifPresent(invoiceIdentifier -> invoiceTable.putOrReplace(invoiceIdentifier, invoice));
+
+		final StepDefDataIdentifier invoiceLineIdentifier = row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID).orElse(null);
+		if (invoiceLineIdentifier != null)
+		{
+			// the match step runs later and needs only the line, so no MatchInv is looked up here
+			final List<? extends I_C_InvoiceLine> invoiceLines = invoiceDAO.retrieveLines(invoiceId);
+			assertThat(invoiceLines).as("invoice lines of " + invoiceId).hasSize(1);
+			invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLines.get(0));
+			return;
+		}
 
 		final MatchInv matchInv = matchInvoiceRepository.firstOnly(MatchInvQuery.builder()
 				.type(MatchInvType.Material)

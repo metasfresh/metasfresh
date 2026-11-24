@@ -54,10 +54,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -396,6 +398,132 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		}
 	}
 
+	@Nested
+	class ComputeMatchInvSplitRounded
+	{
+		/** Invoice 101.215 vs receipt 133.444 for a match fully in stock: both amounts are rounded to cents first, so the stock leg is -32.22 and no sold leg remains. */
+		@Test
+		void referenceCase_allInStock_legsOnCentGrid()
+		{
+			assertSplit("101.215", "133.444", "0.914", "2.413", "101.22", "-32.22", "0", true);
+		}
+
+		/** Mirror of the reference case: invoice above receipt, fully in stock; the stock leg is positive and no sold leg remains. */
+		@Test
+		void referenceCaseMirrored_invoiceAboveReceipt_allInStock()
+		{
+			assertSplit("133.444", "101.215", "0.914", "2.413", "133.44", "32.22", "0", true);
+		}
+
+		/** Two legs with a half-cent tie: the stock share 2585 x 2.309 / 9.4 = 634.975 rounds up to 634.98, the sold share is 1950.02. */
+		@Test
+		void twoLegs_halfCentTie_roundsUp()
+		{
+			assertSplit("2585.00", "0", "9.4", "2.309", "2585", "634.98", "1950.02", true);
+		}
+
+		/** Invoice below receipt and only part in stock: the stock share -2585 x 2.309 / 9.4 = -634.975 rounds away from zero to -634.98, the sold share is the rest and has the same sign. */
+		@Test
+		void twoLegs_negativeDifference_halfCentTie()
+		{
+			assertSplit("0", "2585.00", "9.4", "2.309", "0", "-634.98", "-1950.02", true);
+		}
+
+		/** Fully in stock, invoice 121.65 vs receipt 119.775 (119.78 rounded): stock leg 1.87. */
+		@Test
+		void allInStock_smallDifferenceA()
+		{
+			assertSplit("121.65", "119.775", "1.5", "4.0257", "121.65", "1.87", "0", true);
+		}
+
+		/** Fully in stock, invoice 39.45 vs receipt 35.805 (35.81 rounded): stock leg 3.64. */
+		@Test
+		void allInStock_smallDifferenceB()
+		{
+			assertSplit("39.45", "35.805", "1.5", "17.3634", "39.45", "3.64", "0", true);
+		}
+
+		/** Fully in stock, invoice 118.35 vs receipt 107.415 (107.42 rounded): stock leg 10.93. */
+		@Test
+		void allInStock_smallDifferenceC()
+		{
+			assertSplit("118.35", "107.415", "4.5", "17.3634", "118.35", "10.93", "0", true);
+		}
+
+		/** The stock share is computed from the booked (rounded) invoice amount 1601.00, not from 1601.004975. */
+		@Test
+		void twoLegs_stockShareOfBookedInvoiceAmount()
+		{
+			assertSplit("1601.004975", "0", "10", "6.937", "1601", "1110.61", "490.39", true);
+		}
+
+		/** Difference 66.67, qty 1000, 999.9 in stock: stock share 66.66, sold 0.01; the stock share never exceeds the difference. */
+		@Test
+		void noOvershoot_stockNeverExceedsDifference()
+		{
+			assertSplit("66.67", "0", "1000", "999.9", "66.67", "66.66", "0.01", true);
+		}
+
+		/** Credit memo (negative matched qty): the invoiced -50.005 is rounded to -50.01 before the split; stock -75, sold 24.99. */
+		@Test
+		void creditMemo_halfCent_onlyRounded()
+		{
+			assertSplit("-50.005", "0", "-10", "-15", "-50.01", "-75", "24.99", false);
+		}
+
+		/** Negative on-hand counts as nothing in stock: the whole rounded difference is the sold share. */
+		@Test
+		void negativeOnHand_centGrid()
+		{
+			assertSplit("50.005", "0", "10", "-4", "50.01", "0", "50.01", true);
+		}
+
+		/** Invoice 100.004 and receipt 100.00 are the same amount in cents: no legs. */
+		@Test
+		void differenceRoundsToZero()
+		{
+			assertSplit("100.004", "100.00", "5", "10", "100", "0", "0", true);
+		}
+
+		/** Zero matched qty: no stock share, the whole rounded difference is the sold share. */
+		@Test
+		void zeroMatchedQty()
+		{
+			assertSplit("10.005", "0", "0", "5", "10.01", "0", "10.01", true);
+		}
+
+		/**
+		 * Asserts main / stock / sold, that main - stock - sold equals the receipt amount rounded to cents,
+		 * and (if requested) that stock and sold share the same sign or are zero.
+		 */
+		private void assertSplit(
+				final String invoicedAmt, final String receiptAmt, final String receiptQty, final String onHandQty,
+				final String expectedMain, final String expectedStock, final String expectedSold,
+				final boolean isSameSignExpected)
+		{
+			final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.prepareMatchInvSplitRounded()
+					.invoicedAmt(CostAmount.of(new BigDecimal(invoicedAmt), euroCurrencyId))
+					.receiptAmt(CostAmount.of(new BigDecimal(receiptAmt), euroCurrencyId))
+					.receiptQty(Quantity.of(new BigDecimal(receiptQty), eachUOM))
+					.currentCost(currentCostWithQty(onHandQty))
+					.amountPrecision(CurrencyPrecision.ofInt(2))
+					.build();
+
+			final BigDecimal main = split.getMainAmt().toBigDecimal();
+			final BigDecimal stock = split.getCostAdjustmentAmt().toBigDecimal();
+			final BigDecimal sold = split.getAlreadyShippedAmt().toBigDecimal();
+			assertThat(main).isEqualByComparingTo(expectedMain);
+			assertThat(stock).isEqualByComparingTo(expectedStock);
+			assertThat(sold).isEqualByComparingTo(expectedSold);
+			assertThat(main.subtract(stock).subtract(sold))
+					.isEqualByComparingTo(new BigDecimal(receiptAmt).setScale(2, RoundingMode.HALF_UP));
+			if (isSameSignExpected)
+			{
+				assertThat(stock.signum() * sold.signum()).isGreaterThanOrEqualTo(0);
+			}
+		}
+	}
+
 	private CurrentCost currentCostWithQty(final String currentQty)
 	{
 		return CurrentCost.builder()
@@ -421,8 +549,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final Quantity receiptQty = Quantity.of(10, eachUOM);
 		final CurrentCost currentCost = currentCostWithQty("-4");
 
-		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplit(
-				invoicedAmt, amtDifference, receiptQty, currentCost);
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.prepareMatchInvSplit()
+				.invoicedAmt(invoicedAmt)
+				.amtDifference(amtDifference)
+				.receiptQty(receiptQty)
+				.currentCost(currentCost)
+				.amountPrecision(CurrencyPrecision.ofInt(2))
+				.build();
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("50");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("0");
@@ -444,8 +577,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final Quantity receiptQty = Quantity.of(-10, eachUOM);
 		final CurrentCost currentCost = currentCostWithQty("-15");
 
-		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplit(
-				invoicedAmt, amtDifference, receiptQty, currentCost);
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.prepareMatchInvSplit()
+				.invoicedAmt(invoicedAmt)
+				.amtDifference(amtDifference)
+				.receiptQty(receiptQty)
+				.currentCost(currentCost)
+				.amountPrecision(CurrencyPrecision.ofInt(2))
+				.build();
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("50");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("75");
