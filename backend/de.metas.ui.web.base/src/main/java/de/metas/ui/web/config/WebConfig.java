@@ -80,9 +80,12 @@ public class WebConfig implements WebMvcConfigurer
 	 * {@code location /rest { proxy_pass .../rest/; }} forwards {@code /rest/api/x} as {@code /rest//api/x}; a proxy that maps a prefix
 	 * to the webui-api root forwards e.g. {@code /stomp/...} or {@code /info} with a leading {@code //}.
 	 * Mapped to every path for that reason; the filter does nothing for a path without {@code //}. See {@link DuplicateSlashCollapsingFilter}.
+	 * <p>
+	 * The bean name differs from the app server's registration ({@code FilterRegistrationConfig}), so that neither silently overrides the other
+	 * if both configurations end up in one context.
 	 */
 	@Bean
-	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashFilter()
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> webuiApiDuplicateSlashFilter()
 	{
 		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(PathNormalizingFilterRegistrations.URL_PATTERN_ALL);
 	}

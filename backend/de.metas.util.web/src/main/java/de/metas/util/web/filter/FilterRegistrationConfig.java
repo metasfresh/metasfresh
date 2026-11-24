@@ -62,9 +62,12 @@ public class FilterRegistrationConfig
 	 * <p>
 	 * Mapped to every path, not only {@code /api}: the actuator endpoints ({@code /info}, {@code /health}, ...), the home page and the
 	 * websocket endpoint are served under the same proxy prefix. The filter does nothing for a path without {@code //}.
+	 * <p>
+	 * The bean name differs from the webui-api's registration ({@code de.metas.ui.web.config.WebConfig}), so that neither silently overrides the other
+	 * if both configurations end up in one context.
 	 */
 	@Bean
-	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashFilter()
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> appServerDuplicateSlashFilter()
 	{
 		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(PathNormalizingFilterRegistrations.URL_PATTERN_ALL);
 	}
