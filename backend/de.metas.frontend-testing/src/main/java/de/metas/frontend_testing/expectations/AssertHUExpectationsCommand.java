@@ -357,7 +357,6 @@ class AssertHUExpectationsCommand
 	/**
 	 * Completing the consolidation job only enqueues the shipment generation (async), so poll until all allocations of the LU
 	 * point to a completed shipment, or the timeout elapses.
-	 * Only {@code true} is supported: "not shipped" would pass on the first poll, before the async generation ran, so it proves nothing.
 	 */
 	private void assertShipmentCompleted(final boolean expected, @NonNull final HuId huId)
 	{

@@ -48,7 +48,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Creates a business partner, or - when the request's identifier already stands for a business partner of the masterdata
  * context (e.g. created by an earlier call) - updates its header with the values given in the request.
  * Locations and contacts are created only together with a new partner.
- * Masterdata is created and updated through the one createMasterdata endpoint; do not add per-entity update endpoints.
  */
 public class CreateBPartnerCommand
 {
