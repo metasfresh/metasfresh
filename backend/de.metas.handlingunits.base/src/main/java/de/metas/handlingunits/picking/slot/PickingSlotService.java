@@ -161,6 +161,20 @@ public class PickingSlotService
 		return pickingSlotQueueRepository.getNotEmptyQueues(query);
 	}
 
+	/**
+	 * Loads the queues of the given slots with ONE read.
+	 * An empty slot set gives {@link PickingSlotQueues#EMPTY} without any query ({@link PickingSlotQueueQuery#onlyPickingSlotIds(Set)} requires a non-empty set).
+	 */
+	public PickingSlotQueues getNotEmptyQueues(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		if (pickingSlotIds.isEmpty())
+		{
+			return PickingSlotQueues.EMPTY;
+		}
+
+		return getNotEmptyQueues(PickingSlotQueueQuery.onlyPickingSlotIds(pickingSlotIds));
+	}
+
 	public PickingSlotQueue getPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId)
 	{
 		return pickingSlotQueueRepository.getPickingSlotQueue(pickingSlotId);

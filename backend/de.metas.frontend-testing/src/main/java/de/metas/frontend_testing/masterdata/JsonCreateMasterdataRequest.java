@@ -6,6 +6,7 @@ import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
+import de.metas.frontend_testing.masterdata.hu_label_config.JsonHULabelConfigRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
@@ -53,6 +54,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;
 	@Nullable Map<String, JsonPickingSlotCreateRequest> pickingSlots;
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
+	@Nullable Map<String, JsonHULabelConfigRequest> huLabelConfigs;
 	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;

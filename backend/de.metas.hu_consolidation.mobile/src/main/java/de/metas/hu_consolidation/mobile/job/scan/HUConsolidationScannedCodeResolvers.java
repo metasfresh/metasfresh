@@ -1,0 +1,44 @@
+package de.metas.hu_consolidation.mobile.job.scan;
+
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
+import de.metas.scannable_code.ScannedCode;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+/**
+ * The replaceable chain of {@link HUConsolidationScannedCodeResolver}s: the first one that recognizes the code wins.
+ * The order of the injected resolvers does not matter as long as the code types of the resolvers are disjoint.
+ * If no resolver recognizes the code (or the code is blank, i.e. {@code null}), the message names GRAI, the only supported code type;
+ * a new code type needs a new {@link HUConsolidationScannedCodeResolver} and its own "not a valid code" message.
+ */
+@Component
+@RequiredArgsConstructor
+public class HUConsolidationScannedCodeResolvers
+{
+	@NonNull private final List<HUConsolidationScannedCodeResolver> resolvers;
+
+	@NonNull
+	public HUConsolidationScannedCrate resolve(@Nullable final ScannedCode scannedCode, @NonNull final PickingSlotQueues queues)
+	{
+		if (scannedCode != null)
+		{
+			for (final HUConsolidationScannedCodeResolver resolver : resolvers)
+			{
+				final HUConsolidationScannedCrate crate = resolver.resolve(scannedCode, queues).orElse(null);
+				if (crate != null)
+				{
+					return crate;
+				}
+			}
+		}
+
+		// a blank code and a code of an unsupported type end here alike
+		throw new AdempiereException(MobileQRCodeMessages.INVALID_GRAI_BARCODE, scannedCode != null ? scannedCode.getAsString() : "");
+	}
+}

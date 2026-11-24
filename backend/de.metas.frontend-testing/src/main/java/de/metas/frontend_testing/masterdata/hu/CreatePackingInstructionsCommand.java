@@ -6,6 +6,9 @@ import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
+import de.metas.handlingunits.attribute.HUPIAttributeCreateRequest;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.HUItemType;
@@ -22,6 +25,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
@@ -57,6 +62,8 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IJavaClassDAO javaClassDAO = Services.get(IJavaClassDAO.class);
+	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
@@ -99,12 +106,21 @@ public class CreatePackingInstructionsCommand
 				additionalLUPIItemTestIds.add(MaterialReceiptActivityHandler.extractNewLUTargetTestId(additionalLUPIItem));
 			}
 			luPIItemTestId = MaterialReceiptActivityHandler.extractNewLUTargetTestId(luPIItem);
+
+			if (request.isLuSSCC18())
+			{
+				assignSSCC18Attribute(lu);
+			}
 		}
 		else
 		{
 			if (!request.getAdditionalLUItems().isEmpty())
 			{
 				throw new AdempiereException("additionalLUItems require lu to be set: " + request);
+			}
+			if (request.isLuSSCC18())
+			{
+				throw new AdempiereException("luSSCC18 requires lu to be set: " + request);
 			}
 
 			lu = null;
@@ -220,6 +236,30 @@ public class CreatePackingInstructionsCommand
 		saveRecord(piAttribute);
 
 		logger.info("Declared GRAI HU-attribute slot (M_Attribute_ID={}) on M_HU_PI_Version_ID={}", graiAttributeId, pivId);
+	}
+
+	/**
+	 * Declares the {@code SSCC18} HU-attribute slot on the given LU packing-instruction version, so that LUs
+	 * materialised from this PI get an SSCC18 (as the EUR pallet LU PI of a real instance does).
+	 * Column values mirror the standard EUR-pallet LU SSCC18 {@code M_HU_PI_Attribute} row (incl.
+	 * {@code IsOnlyIfInProductAttributeSet=Y}: its display in the WebUI HU editor depends on the product's attribute set).
+	 */
+	private void assignSSCC18Attribute(@NonNull final PIResult lu)
+	{
+		final AttributeId sscc18AttributeId = attributeDAO.getAttributeIdByCode(AttributeConstants.ATTR_SSCC18_Value);
+
+		huPIAttributesDAO.createPIAttribute(HUPIAttributeCreateRequest.builder()
+				.piVersionId(lu.getPivId())
+				.attributeId(sscc18AttributeId)
+				.propagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation)
+				.transferStrategyJavaClassId(javaClassDAO.getJavaClassIdByClassname(CopyHUAttributeTransferStrategy.class.getName()))
+				.displayed(true)
+				.readOnly(true)
+				.onlyIfInProductAttributeSet(true)
+				.useInASI(true)
+				.build());
+
+		logger.info("Declared SSCC18 HU-attribute slot (M_Attribute_ID={}) on LU M_HU_PI_Version_ID={}", sscc18AttributeId, lu.getPivId());
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job;
 
+import de.metas.handlingunits.report.labels.HULabelPrintAction;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
@@ -15,14 +16,27 @@ public class HUConsolidationLabelPrinter
 
 	public void printLabel(@NonNull final HUConsolidationTarget target)
 	{
+		huLabelService.print(toPrintRequest(target));
+	}
+
+	/**
+	 * Prepares the printing of the target's label, see {@link de.metas.handlingunits.report.labels.HULabelService#preparePrint}.
+	 */
+	@NonNull
+	public HULabelPrintAction preparePrintLabel(@NonNull final HUConsolidationTarget target)
+	{
+		return huLabelService.preparePrint(toPrintRequest(target));
+	}
+
+	private static HULabelPrintRequest toPrintRequest(@NonNull final HUConsolidationTarget target)
+	{
 		target.assertPrintable();
 
-		huLabelService.print(HULabelPrintRequest.builder()
+		return HULabelPrintRequest.builder()
 				.sourceDocType(HULabelSourceDocType.Picking)
 				.huId(target.getLuIdNotNull())
 				.onlyIfAutoPrint(false)
 				.failOnMissingLabelConfig(true)
-				.build());
-
+				.build();
 	}
 }

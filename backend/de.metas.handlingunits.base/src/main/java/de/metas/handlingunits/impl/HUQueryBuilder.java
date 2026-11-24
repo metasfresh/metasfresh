@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -665,6 +666,26 @@ import java.util.stream.Stream;
 	}
 
 	@Override
+	@NonNull
+	public <X extends Throwable> I_M_HU firstOnlyNotNull(
+			@NonNull final Supplier<? extends X> notFoundExceptionSupplier,
+			@NonNull final Supplier<? extends X> moreThanOneFoundExceptionSupplier) throws X
+	{
+		final List<I_M_HU> hus = createQuery()
+				.setLimit(QueryLimit.ofInt(2))
+				.list(I_M_HU.class);
+		if (hus.isEmpty())
+		{
+			throw notFoundExceptionSupplier.get();
+		}
+		if (hus.size() > 1)
+		{
+			throw moreThanOneFoundExceptionSupplier.get();
+		}
+		return hus.get(0);
+	}
+
+	@Override
 	public Optional<HuId> firstId()
 	{
 		final int huRepoId = createQuery().firstId();
@@ -675,6 +696,12 @@ import java.util.stream.Stream;
 	public Optional<HuId> firstIdOnly()
 	{
 		return createQuery().firstIdOnlyOptional(HuId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public boolean anyMatch()
+	{
+		return createQuery().anyMatch();
 	}
 
 	@Override
