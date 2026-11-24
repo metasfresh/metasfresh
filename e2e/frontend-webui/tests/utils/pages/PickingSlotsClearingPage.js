@@ -166,8 +166,8 @@ export class PickingSlotsClearingPage {
     if (expectSuccess) {
       expect(startResponse.ok(), `${actionInternalName} succeeded: ${await startResponse.text()}`).toBe(true);
       await page.locator('.panel-modal').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
     }
-    await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
     return startResponse;
   }
 

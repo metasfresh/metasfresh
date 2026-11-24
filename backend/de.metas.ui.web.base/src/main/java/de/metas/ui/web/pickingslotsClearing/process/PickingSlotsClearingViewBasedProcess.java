@@ -8,23 +8,23 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHUWarehouseDAO;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.i18n.AdMessageKey;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -269,7 +269,8 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 	}
 
 	/**
-	 * @return the packing instruction of the first source TU (for a source LU: of its first included TU)
+	 * @return the packing instruction of the first source TU (for a source LU: of its first included TU).
+	 * The pallet item is resolved for this one TU packing only; source HUs of another TU packing are not checked against it.
 	 */
 	private I_M_HU_PI getSourceTUPI(@NonNull final List<I_M_HU> sourceHUs)
 	{
