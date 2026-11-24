@@ -13,6 +13,7 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDef;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDef;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
+import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDef;
 import de.metas.cucumber.stepdefs.match_po.M_MatchPO_StepDef;
 import de.metas.cucumber.stepdefs.receiptschedule.M_ReceiptSchedule_StepDef;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_Line_StepDef;
@@ -52,7 +53,6 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -117,6 +117,8 @@ public class CostingDocuments_StepDef
 	 *   | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID | QtyToMove_Override |
 	 *   | po_l1          | receipt1   | receipt1_l1    | 0.914              |
 	 * </pre>
+	 *
+	 * @see M_MatchPO_StepDef#loadMatchPO(DataTableRow)
 	 */
 	@Given("for costing, create completed material receipt with one line")
 	public void createMaterialReceipts(@NonNull final DataTable dataTable)
@@ -135,7 +137,7 @@ public class CostingDocuments_StepDef
 		row.setAdditionalRowIdentifierColumnName(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID);
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleStepDef.waitAndLoadReceiptSchedule(row, 60);
 
-		final ImmutableSet<HuId> huIds = createPlanningHUs(receiptSchedule, row.getAsOptionalBigDecimal("QtyToMove_Override").orElse(null));
+		final ImmutableSet<HuId> huIds = createPlanningHUs(receiptSchedule, row.getAsOptionalBigDecimal("QtyToMove_Override").orElseGet(receiptSchedule::getQtyToMove));
 
 		final I_M_InOut receipt = createReceiptStepDef.createMaterialReceipt(
 				IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
@@ -154,7 +156,7 @@ public class CostingDocuments_StepDef
 		matchPOStepDef.loadMatchPO(row);
 	}
 
-	private ImmutableSet<HuId> createPlanningHUs(final I_M_ReceiptSchedule receiptSchedule, @Nullable final BigDecimal qtyToMoveOverride)
+	private ImmutableSet<HuId> createPlanningHUs(final I_M_ReceiptSchedule receiptSchedule, final BigDecimal qtyPerReceivedHU)
 	{
 		final List<I_M_HU> hus = lutuConfigurationStepDef.createLUTUConfigurationForReceiptSchedule(
 				DataTableRow.builder()
@@ -164,7 +166,7 @@ public class CostingDocuments_StepDef
 						.value("IsInfiniteQtyTU", false)
 						.value("QtyTU", 1)
 						.value("IsInfiniteQtyCU", false)
-						.value("QtyCUsPerTU", qtyToMoveOverride != null ? qtyToMoveOverride : receiptSchedule.getQtyToMove())
+						.value("QtyCUsPerTU", qtyPerReceivedHU)
 						.value("M_HU_PI_Item_Product_ID", HUPIItemProductId.VIRTUAL_HU)
 						.build()
 		);
@@ -189,6 +191,8 @@ public class CostingDocuments_StepDef
 	 *   | C_OrderLine_ID | PriceEntered_Override | C_Invoice_ID | C_InvoiceLine_ID |
 	 *   | po_l1          | 110.74                | invoice      | invoice_l1       |
 	 * </pre>
+	 *
+	 * @see M_MatchInv_StepDef#loadAndValidateMatchInvoices(DataTable)
 	 */
 	@Given("for costing, create completed invoice with one line")
 	public void createInvoices(@NonNull final DataTable dataTable)

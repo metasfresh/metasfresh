@@ -46,6 +46,8 @@ public class M_MatchPO_StepDef
 	 *   | M_MatchPO_ID | C_OrderLine_ID | M_InOutLine_ID |
 	 *   | mpo1         | po_l1          | receipt1_l1    |
 	 * </pre>
+	 *
+	 * @see #loadMatchPO(DataTableRow)
 	 */
 	@And("^M_MatchPO are found$")
 	public void loadMatchPOs(@NonNull final DataTable table)
@@ -55,6 +57,9 @@ public class M_MatchPO_StepDef
 				.forEach(this::loadMatchPO);
 	}
 
+	/**
+	 * Loads the single {@code M_MatchPO} of the row's order line (narrowed to the row's receipt line if it names one) and registers it under the row's identifier.
+	 */
 	public void loadMatchPO(@NonNull final DataTableRow row)
 	{
 		final OrderLineId orderLineId = row.getAsIdentifier(I_M_MatchPO.COLUMNNAME_C_OrderLine_ID).lookupIdIn(orderLineTable);
