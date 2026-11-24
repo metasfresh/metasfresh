@@ -1,8 +1,10 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
-import { MANUFACTURING_ORDER_WINDOW_ID } from '../WindowIds';
 
+// window ids kept local (not in WindowIds.js), so that this file merges cleanly into branches whose WindowIds.js differs
+/** Manufacturing Order window (Produktionsauftrag), table PP_Order */
+const MANUFACTURING_ORDER_WINDOW_ID = 53009;
 /** Manufacturing issue/receipt view (PPOrderLinesViewFactory), opened from an order by WEBUI_PP_Order_IssueReceipt_Launcher */
 const MANUFACTURING_ISSUE_RECEIPT_WINDOW_ID = 540328;
 
