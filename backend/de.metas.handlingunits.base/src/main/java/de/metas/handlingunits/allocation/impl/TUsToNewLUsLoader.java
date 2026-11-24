@@ -61,6 +61,10 @@ public class TUsToNewLUsLoader
 		return retrieveLUItem(tu, getSingleProductIdOrNull(tu)) != null;
 	}
 
+	/**
+	 * @param tus top-level TUs for which {@link #isPackToLUAllowed(I_M_HU)} is true; callers filter with it first
+	 *            (a TU without packing instruction version or without an LU item cannot be loaded)
+	 */
 	public void addTUs(@NonNull final Collection<I_M_HU> tus)
 	{
 		tus.forEach(this::addTU);

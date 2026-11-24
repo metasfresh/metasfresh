@@ -1,13 +1,12 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { WEBAPI_BASE_URL } from '../Backend';
 
 // window id kept local (not in WindowIds.js), so that this file merges cleanly into branches whose WindowIds.js differs
 /** Picking Tray Clearing window (PickingSlotsClearingViewFactory) */
 const PICKING_SLOTS_CLEARING_WINDOW_ID = 540371;
 
-/** The webapi as seen by the browser session (same base the picking terminal spec uses). */
-const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || `${FRONTEND_BASE_URL}/rest/api`;
 
 /**
  * Page object for the desktop "Picking Tray Clearing" window (540371).

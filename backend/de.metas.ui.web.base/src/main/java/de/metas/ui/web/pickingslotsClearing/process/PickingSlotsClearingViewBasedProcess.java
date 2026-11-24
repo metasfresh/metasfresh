@@ -83,6 +83,11 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	/**
+	 * Same message as {@code LUTUProducerDestination}'s (private there). The LU item is resolved here, product-aware, instead of in
+	 * {@code LUTUProducerDestination.getLUItemPI()}, whose lazy lookup knows no product: making that lookup product-aware would change
+	 * every producer caller at once, which is out of this change's scope (product-specific LU items, picking-slot clearing only).
+	 */
 	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	public final PickingSlotsClearingView getPickingSlotsClearingView()
@@ -271,6 +276,8 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 	/**
 	 * @return the packing instruction of the first source TU (for a source LU: of its first included TU).
 	 * The pallet item is resolved for this one TU packing only; source HUs of another TU packing are not checked against it.
+	 * A source without a TU (a CU, an LU without included TUs) yields its own packing instruction, for which no pallet item exists:
+	 * the user then gets {@code ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} naming that packing instruction.
 	 */
 	private I_M_HU_PI getSourceTUPI(@NonNull final List<I_M_HU> sourceHUs)
 	{

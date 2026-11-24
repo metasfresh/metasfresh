@@ -38,18 +38,23 @@ class TUsToNewLUsLoaderTest extends AbstractHUTest
 
 	private I_M_HU_PI tuPI;
 	private I_M_HU_PI_Item genericItem30;
-	private I_M_HU_PI_Item xyItem40;
+
+	private IHandlingUnitsBL handlingUnitsBL;
+	private IHandlingUnitsDAO handlingUnitsDAO;
 
 	@Override
 	protected void initialize()
 	{
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		productXY = pTomatoId;
 		productOther = pSaladId;
 
 		tuPI = createTUPI("IFCO");
 		final I_M_HU_PI luPI = helper.createHUDefinition("Pallet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		genericItem30 = createLUItem(luPI, tuPI, 30, null);
-		xyItem40 = createLUItem(luPI, tuPI, 40, productXY);
+		createLUItem(luPI, tuPI, 40, productXY);
 	}
 
 	private I_M_HU_PI createTUPI(final String name)
@@ -98,10 +103,8 @@ class TUsToNewLUsLoaderTest extends AbstractHUTest
 	/**
 	 * @return one line per LU, sorted: "<products of its TUs> x<TU count> item<qty of the item the TUs hang on>"
 	 */
-	private static List<String> describe(final List<I_M_HU> lus)
+	private List<String> describe(final List<I_M_HU> lus)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		return lus.stream()
 				.map(lu -> {
 					final List<I_M_HU> tus = handlingUnitsDAO.retrieveIncludedHUs(lu);
@@ -143,7 +146,7 @@ class TUsToNewLUsLoaderTest extends AbstractHUTest
 		assertThat(lus).hasSize(1);
 		assertThat(describe(lus)).containsExactly(xy() + " x1 item40");
 		InterfaceWrapperHelper.refresh(xyTU);
-		assertThat(Services.get(IHandlingUnitsBL.class).getPIItem(xyTU.getM_HU_Item_Parent())).isEqualTo(xyOnlyItem);
+		assertThat(handlingUnitsBL.getPIItem(xyTU.getM_HU_Item_Parent())).isEqualTo(xyOnlyItem);
 	}
 
 	@Test
@@ -161,14 +164,14 @@ class TUsToNewLUsLoaderTest extends AbstractHUTest
 						.setDateAsToday()
 						.setForceQtyAllocation(true)
 						.create());
-		assertThat(Services.get(IHandlingUnitsBL.class).getStorageFactory().getStorage(mixedTU).getSingleProductIdOrNull())
+		assertThat(handlingUnitsBL.getStorageFactory().getStorage(mixedTU).getSingleProductIdOrNull())
 				.as("fixture: the TU holds two products").isNull();
 
 		assertThat(TUsToNewLUsLoader.isPackToLUAllowed(mixedTU)).isTrue();
 		final List<I_M_HU> lus = load(ImmutableList.of(mixedTU));
 
 		InterfaceWrapperHelper.refresh(mixedTU);
-		assertThat(Services.get(IHandlingUnitsBL.class).getPIItem(mixedTU.getM_HU_Item_Parent())).isEqualTo(genericItem30);
+		assertThat(handlingUnitsBL.getPIItem(mixedTU.getM_HU_Item_Parent())).isEqualTo(genericItem30);
 		assertThat(lus).hasSize(1);
 	}
 

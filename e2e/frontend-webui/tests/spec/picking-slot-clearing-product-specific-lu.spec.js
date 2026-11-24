@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
-import { getPage, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { PickingSlotsClearingPage as ClearingPage } from '../utils/pages/PickingSlotsClearingPage';
 
@@ -24,7 +24,6 @@ import { PickingSlotsClearingPage as ClearingPage } from '../utils/pages/Picking
  */
 
 const PIECES_PER_TU = 4;
-const TESTING_API_BASE_URL = process.env.TESTING_API_BASE_URL || 'http://localhost:8282/api/v2';
 
 /**
  * @param {Object<string, number>} tusPerProduct - product identifier -> number of single TUs to pick into the slot
@@ -98,14 +97,8 @@ const createMasterdata = async ({ tusPerProduct }) => {
  */
 const pickAllTUsIntoSlot = async ({ masterdata }) =>
   await test.step('Pick the TUs into the picking slot (mobile picking REST API)', async () => {
-    const request = getPage().request;
-    const headers = { 'Content-Type': 'application/json', Authorization: masterdata.login.user.token };
-    const call = async (method, path, data) => {
-      const response = await request.fetch(`${TESTING_API_BASE_URL}${path}`, { method, headers, data });
-      const text = await response.text();
-      expect(response.ok(), `${method} ${path}: ${text.substring(0, 1000)}`).toBe(true);
-      return text ? JSON.parse(text) : null;
-    };
+    const call = async (method, path, data) =>
+      await Backend.callAppApi({ method, path, data, authToken: masterdata.login.user.token });
 
     let launcher = null;
     await expect
@@ -237,12 +230,12 @@ test.describe('Picking tray clearing: new pallets use the product-specific palle
     const huIds = Object.keys(tusPerProduct).flatMap((productIdentifier) => huIdsOf({ masterdata, productIdentifier }));
     await ClearingPage.selectHUs({ pickingSlotId: masterdata.pickingSlots.slot1.id, huIds });
     const piResponse = targetPallet === 'LU' ? masterdata.packingInstructions.PI_XY : masterdata.packingInstructions.PI_LU2;
-    await ClearingPage.runTakeOutMultiHUsAndAddToNewHU({
+    const startResponse = await ClearingPage.runTakeOutMultiHUsAndAddToNewHU({
       huPIName: piResponse.luName,
       huPIId: piResponse.luPITestId.replace('pi-', ''),
       expectSuccess,
     });
-    return masterdata;
+    return { masterdata, startResponse };
   };
 
   /** "Take out HU and add to new HU" of one TU's worth (4 pieces) with the pallet packing instruction "LU" as target. */
@@ -264,7 +257,7 @@ test.describe('Picking tray clearing: new pallets use the product-specific palle
   };
 
   test('Take out HUs and add to new HU, pallet target: 50 OTHER TUs on generic pallets of 30', async ({ page }) => { // eslint-disable-line no-unused-vars
-    const masterdata = await takeOutMultiHUsToNewPallet({ tusPerProduct: { OTHER: 50 } });
+    const { masterdata } = await takeOutMultiHUsToNewPallet({ tusPerProduct: { OTHER: 50 } });
     const OTHER = masterdata.products.OTHER.productCode;
 
     const luIds = await ClearingPage.getPackingHUIds({ huUnitType: 'LU' });
@@ -279,7 +272,7 @@ test.describe('Picking tray clearing: new pallets use the product-specific palle
   });
 
   test('Take out HUs and add to new HU, pallet target: 50 XY TUs on XY pallets of 40', async ({ page }) => { // eslint-disable-line no-unused-vars
-    const masterdata = await takeOutMultiHUsToNewPallet({ tusPerProduct: { XY: 50 } });
+    const { masterdata } = await takeOutMultiHUsToNewPallet({ tusPerProduct: { XY: 50 } });
     const XY = masterdata.products.XY.productCode;
 
     const luIds = await ClearingPage.getPackingHUIds({ huUnitType: 'LU' });
@@ -294,7 +287,7 @@ test.describe('Picking tray clearing: new pallets use the product-specific palle
   });
 
   test('Take out HUs and add to new HU, pallet target: XY and OTHER together use the generic pallet item', async ({ page }) => { // eslint-disable-line no-unused-vars
-    const masterdata = await takeOutMultiHUsToNewPallet({ tusPerProduct: { XY: 20, OTHER: 20 } });
+    const { masterdata } = await takeOutMultiHUsToNewPallet({ tusPerProduct: { XY: 20, OTHER: 20 } });
     const XY = masterdata.products.XY.productCode;
     const OTHER = masterdata.products.OTHER.productCode;
 
@@ -317,11 +310,23 @@ test.describe('Picking tray clearing: new pallets use the product-specific palle
   });
 
   test('Take out HUs and add to new HU: a pallet type without an item for the TU gives an error, no new HU', async ({ page }) => {
-    await takeOutMultiHUsToNewPallet({ tusPerProduct: { OTHER: 2 }, targetPallet: 'LU2', expectSuccess: false });
-    await test.step('Expect an error notification', async () => {
-      // the process dialog's user error is shown as an error notification (not a Toastify toast)
+    const { masterdata, startResponse } = await takeOutMultiHUsToNewPallet({
+      tusPerProduct: { OTHER: 2 },
+      targetPallet: 'LU2',
+      expectSuccess: false,
+    });
+    await test.step('Expect the "pallet type has no item for this TU" user error', async () => {
+      // ERR_LU_HAS_NO_TU_SUB_PACK_INSTR names the pallet and the TU packing instruction; the names are masterdata, not translated
+      const errorText = await startResponse.text();
+      expect(startResponse.ok(), 'the action fails').toBe(false);
+      expect(errorText).toContain(masterdata.packingInstructions.PI_LU2.luName);
+      expect(errorText).toContain(masterdata.packingInstructions.PI_OTHER.tuName);
+      // the process dialog shows it as an error notification (not a Toastify toast)
       await expect(page.locator('.notification-item.error')).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     });
+    for (const huId of huIdsOf({ masterdata, productIdentifier: 'OTHER' })) {
+      await expect(page.getByTestId(`table-row-${masterdata.pickingSlots.slot1.id}-${huId}`), 'the TU stays in the slot').toBeAttached();
+    }
     expect(await ClearingPage.getPackingHUIds({ huUnitType: 'LU' }), 'no new pallet').toEqual([]);
     expect(await ClearingPage.getPackingHUIds({ huUnitType: 'TU' }), 'no new TU').toEqual([]);
   });

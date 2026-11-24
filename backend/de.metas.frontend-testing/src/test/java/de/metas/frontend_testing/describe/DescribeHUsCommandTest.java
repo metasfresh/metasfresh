@@ -43,9 +43,15 @@ class DescribeHUsCommandTest extends AbstractHUTest
 	private I_M_HU_PI luPI;
 	private I_M_HU_PI_Item luItem30;
 
+	private IHandlingUnitsBL handlingUnitsBL;
+	private IHandlingUnitsDAO handlingUnitsDAO;
+
 	@Override
 	protected void initialize()
 	{
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		// the UOM symbol differs from its X12DE355 code, so a symbol/code mix-up fails the string assertions
 		uomPCE = helper.uomPCE;
 		uomPCE.setUOMSymbol("Stk");
@@ -150,7 +156,7 @@ class DescribeHUsCommandTest extends AbstractHUTest
 		final List<I_M_HU> lus = helper.createHUs(huContext, producer, new BigDecimal("20"));
 		assertThat(lus).hasSize(1);
 		final I_M_HU lu = lus.get(0);
-		assertThat(Services.get(IHandlingUnitsBL.class).isAggregateHU(Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu).get(0)))
+		assertThat(handlingUnitsBL.isAggregateHU(handlingUnitsDAO.retrieveIncludedHUs(lu).get(0)))
 				.as("fixture: the LU holds an aggregated TU").isTrue();
 
 		final JsonDescribeHUsResponse.HU described = describe(idOf(lu)).getHus().get(0);

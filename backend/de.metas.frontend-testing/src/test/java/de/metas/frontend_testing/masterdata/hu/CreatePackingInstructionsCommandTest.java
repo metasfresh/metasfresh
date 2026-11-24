@@ -34,12 +34,14 @@ public class CreatePackingInstructionsCommandTest
 {
 	private final ObjectMapper jsonMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 	private MasterdataContext context;
+	private IQueryBL queryBL;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		context = new MasterdataContext();
+		queryBL = Services.get(IQueryBL.class);
 	}
 
 	private ProductId createProduct(final String identifier)
@@ -66,7 +68,7 @@ public class CreatePackingInstructionsCommandTest
 				.build()
 				.execute();
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_HU_PI_Item.class)
 				.addNotNull(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID)
 				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
@@ -137,14 +139,14 @@ public class CreatePackingInstructionsCommandTest
 		execute("PI_P1", "{\"lu\":\"LU\",\"qtyTUsPerLU\":30,\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4}");
 		execute("PI_P2", "{\"tu\":\"TU\",\"product\":\"P2\",\"qtyCUsPerTU\":4}");
 
-		final List<I_M_HU_PI_Item> materialItems = Services.get(IQueryBL.class)
+		final List<I_M_HU_PI_Item> materialItems = queryBL
 				.createQueryBuilder(I_M_HU_PI_Item.class)
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_Material)
 				.create()
 				.list();
 		assertThat(materialItems).hasSize(1);
 
-		final List<I_M_HU_PI_Item_Product> itemProducts = Services.get(IQueryBL.class)
+		final List<I_M_HU_PI_Item_Product> itemProducts = queryBL
 				.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, materialItems.get(0).getM_HU_PI_Item_ID())
 				.create()
@@ -189,12 +191,12 @@ public class CreatePackingInstructionsCommandTest
 
 		luItems("{\"lu\":\"LU\",\"qtyTUsPerLU\":30,\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4,\"luSSCC18\":true}");
 
-		final I_M_HU_PI_Version luVersion = Services.get(IQueryBL.class)
+		final I_M_HU_PI_Version luVersion = queryBL
 				.createQueryBuilder(I_M_HU_PI_Version.class)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, "LU")
 				.create()
 				.firstOnlyNotNull(I_M_HU_PI_Version.class);
-		final List<I_M_HU_PI_Attribute> luAttributes = Services.get(IQueryBL.class)
+		final List<I_M_HU_PI_Attribute> luAttributes = queryBL
 				.createQueryBuilder(I_M_HU_PI_Attribute.class)
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, luVersion.getM_HU_PI_Version_ID())
 				.create()
