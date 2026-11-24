@@ -80,23 +80,23 @@ public class JsonCreateBPartnerRequest
 
 	/**
 	 * Whether this business partner is a vendor (purchase side).
-	 * Default: false
+	 * Default for a new partner: false
 	 */
-	@Builder.Default boolean isVendor = false;
+	@Nullable Boolean isVendor;
 
 	/**
 	 * Whether this business partner is a customer (sales side).
-	 * Default: true
+	 * Default for a new partner: true
 	 */
-	@Builder.Default boolean isCustomer = true;
+	@Nullable Boolean isCustomer;
 
 	/**
 	 * Whether to create a sales price list (true) or purchase price list (false).
 	 * For vendors, this should typically be false.
 	 * For customers, this should typically be true.
-	 * Default: true (sales price list)
+	 * Default: true (sales price list). Used when a pricing system is created for the partner (on create, or on an update that adds one).
 	 */
-	@Builder.Default boolean isSoPriceList = true;
+	@Nullable Boolean isSoPriceList;
 
 	/**
 	 * ISO currency code (e.g. {@code "CHF"}) of the price list created for this business partner.

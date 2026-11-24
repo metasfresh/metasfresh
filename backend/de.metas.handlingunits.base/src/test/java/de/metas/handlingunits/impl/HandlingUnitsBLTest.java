@@ -71,6 +71,23 @@ public class HandlingUnitsBLTest
 	}
 
 	@Nested
+	class isTUTypeTakenByLUType
+	{
+		@Test
+		void luTypeWithAnItemForTheTUType_true_otherTUType_false()
+		{
+			final I_M_HU_PI luPI = helper.createHUDefinition("Pallet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			final I_M_HU_PI tuPI = helper.createHUDefinition("Crate", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			final I_M_HU_PI otherTUPI = helper.createHUDefinition("Other crate", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			helper.createHU_PI_Item_IncludedHU(luPI, tuPI, BigDecimal.TEN);
+
+			final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID());
+			assertThat(handlingUnitsBL.isTUTypeTakenByLUType(luPIId, HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()), null)).isTrue();
+			assertThat(handlingUnitsBL.isTUTypeTakenByLUType(luPIId, HuPackingInstructionsId.ofRepoId(otherTUPI.getM_HU_PI_ID()), null)).isFalse();
+		}
+	}
+
+	@Nested
 	class getPackingInstructionsId
 	{
 		@NonNull

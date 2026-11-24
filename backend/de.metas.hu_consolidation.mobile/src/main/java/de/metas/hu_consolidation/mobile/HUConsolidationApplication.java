@@ -23,6 +23,7 @@ import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.HUConsol
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -219,6 +220,15 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 				.huId(request.getHuId())
 				.grai(grai)
 				.build());
+		return toWFProcess(job);
+	}
+
+	public WFProcess consolidateByScan(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final HUConsolidationJob job = jobService.consolidateByScan(HUConsolidationJobId.ofWFProcessId(wfProcessId), scannedCode, callerId);
 		return toWFProcess(job);
 	}
 

@@ -641,7 +641,9 @@ public class HUTransformService
 
 	/**
 	 * @param luPIItem the LU item via which the TUs shall be attached (e.g. the product-specific item the LU was created with);
-	 *                 {@code null} means that it's looked up, which never returns a product-specific item.
+	 *                 {@code null} means that it's looked up; a product-specific item is used only if the LU already has one for the TU's PI,
+	 *                 or if the lookup without product finds no item for the TU's PI (for a partial move from an aggregate TU: the LU/TU producer's own lookup,
+	 *                 which also ignores partner-specific items).
 	 */
 	private LUTUResult tuToExistingLU(
 			@NonNull final I_M_HU sourceTuHU,
@@ -684,15 +686,19 @@ public class HUTransformService
 					&& !handlingUnitsBL.isTUIncludedInLU(sourceTuHU, luHU))
 			{
 				final Capacity tuCapacity = extractTUCapacity(sourceTuHU);
+				final I_M_HU_PI effectiveTuPI = handlingUnitsBL.getEffectivePI(sourceTuHU);
 				final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 				lutuProducer.setLU(luHU);
-				if (luPIItem != null)
+				final I_M_HU_PI_Item luPIItemToUse = luPIItem != null
+						? luPIItem
+						: getProductSpecificLUPIItemIfProducerFindsNoneOrNull(luHU, effectiveTuPI, tuCapacity.getProductId());
+				if (luPIItemToUse != null)
 				{
-					lutuProducer.setLUItemPI(luPIItem);
+					lutuProducer.setLUItemPI(luPIItemToUse);
 				}
 				lutuProducer.setMaxLUs(0);
 				lutuProducer.setMaxTUsPerLUInfinite();
-				lutuProducer.setTUPI(handlingUnitsBL.getEffectivePI(sourceTuHU));
+				lutuProducer.setTUPI(effectiveTuPI);
 				// the partner is only used to find the right (possibly partner-bound) LU->TU item; it is NOT stamped onto the created TUs.
 				// An LU item given by the caller (e.g. the product-specific one the LU was created with) wins.
 				if (luPIItem == null && luItemBPartnerId != null)
@@ -735,6 +741,11 @@ public class HUTransformService
 			}
 			if (parentPIItem == null)
 			{
+				// last resort: a product-specific item (the LU PI links the TU PI only via product-specific items)
+				parentPIItem = retrieveLUPIItemForTUOrNull(luHU, tuPI, tuToAttach);
+			}
+			if (parentPIItem == null)
+			{
 				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
 						.setParameter("tuToAttach", tuToAttach)
 						.setParameter("tuPI", tuPI)
@@ -761,6 +772,58 @@ public class HUTransformService
 		result = result.mergeWith(lu);
 
 		return result;
+	}
+
+	/**
+	 * @return {@code true} if the whole given TU can be attached to the given existing LU, i.e. the LU's PI has an item for the TU's (effective) PI:
+	 * the LU's item, the generic item or the LU partner's item without product, else a product-specific item; the same lookup as {@link #tuToExistingLU(I_M_HU, QtyTU, I_M_HU)}
+	 */
+	public boolean isTUAttachableToExistingLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU lu)
+	{
+		return retrieveLUPIItemForTUOrNull(lu, handlingUnitsBL.getEffectivePI(tu), tu) != null;
+	}
+
+	/**
+	 * @return the LU's item for the TU's PI (an LU built from a product-specific item keeps it), else the generic item or the LU partner's item without product;
+	 * if the LU PI links the TU PI only via product-specific items, one of those (preferably the TU's product's), because different products on the same LU are allowed.
+	 */
+	@Nullable
+	private I_M_HU_PI_Item retrieveLUPIItemForTUOrNull(
+			@NonNull final I_M_HU luHU,
+			@NonNull final I_M_HU_PI tuPI,
+			@NonNull final I_M_HU tu)
+	{
+		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+		if (luPIItem != null)
+		{
+			return luPIItem;
+		}
+
+		final ProductId tuProductId = handlingUnitsBL.getStorageFactory().getStorage(tu).getSingleProductIdOrNull();
+		return handlingUnitsDAO.retrieveProductSpecificParentPIItemForChildHUOrNull(luHU, tuPI, tuProductId, huContext);
+	}
+
+	/**
+	 * The LU/TU producer looks up the LU item by itself, without partner and product (see {@link LUTUProducerDestination#getLUItemPI()}), so it finds no item if the LU PI
+	 * links the TU PI only via partner- or product-specific items. Only in that case, return a product-specific item (different products on the same LU are allowed);
+	 * otherwise {@code null}, so the producer's lookup is unchanged. A partner-specific item without product is not returned, so that case still fails as before.
+	 * <p>
+	 * The check mirrors the producer's lookup, so it uses the LU PI's current version like the producer does; the product-specific item is taken from the LU's own PI version.
+	 */
+	@Nullable
+	private I_M_HU_PI_Item getProductSpecificLUPIItemIfProducerFindsNoneOrNull(
+			@NonNull final I_M_HU luHU,
+			@NonNull final I_M_HU_PI tuPI,
+			@Nullable final ProductId tuProductId)
+	{
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(handlingUnitsBL.getPI(luHU).getM_HU_PI_ID());
+		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
+		if (handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, null).isPresent())
+		{
+			return null;
+		}
+
+		return handlingUnitsDAO.retrieveProductSpecificParentPIItemForChildHUOrNull(luHU, tuPI, tuProductId, huContext);
 	}
 
 	/**

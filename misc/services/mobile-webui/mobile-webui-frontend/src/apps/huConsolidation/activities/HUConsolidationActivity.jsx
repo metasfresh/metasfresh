@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { isUserEditable as isUserEditableFunc } from '../reducers';
+import { isGRAIScanEnabled as isGRAIScanEnabledFunc, isUserEditable as isUserEditableFunc } from '../reducers';
 import { trl } from '../../../utils/translations';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
-import { pickingSlotScreenLocation, selectTargetScreenLocation } from '../routes';
+import { graiScanScreenLocation, pickingSlotScreenLocation, selectTargetScreenLocation } from '../routes';
 import { useWFActivity } from '../../../reducers/wfProcesses';
 import { useCurrentTarget } from '../actions/useCurrentTarget';
 import { toQRCodeDisplayableNoFail } from '../../../utils/qrCode/hu';
@@ -17,9 +17,14 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
 
   const isUserEditable = isUserEditableFunc({ activity });
   const isCurrentTargetSet = !!currentTarget;
+  const isGRAIScanEnabled = isGRAIScanEnabledFunc({ activity });
 
   const onSelectTargetClicked = () => {
     history.push(selectTargetScreenLocation({ applicationId, wfProcessId, activityId }));
+  };
+
+  const onScanGRAIClicked = () => {
+    history.push(graiScanScreenLocation({ applicationId, wfProcessId, activityId }));
   };
 
   return (
@@ -34,6 +39,14 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
         disabled={!isUserEditable}
         onClick={onSelectTargetClicked}
       />
+      {isGRAIScanEnabled && (
+        <ButtonWithIndicator
+          testId="scanGRAI-button"
+          caption={trl('huConsolidation.HUConsolidationActivity.scanGRAI')}
+          disabled={!isUserEditable || !isCurrentTargetSet}
+          onClick={onScanGRAIClicked}
+        />
+      )}
       <PickingSlots
         applicationId={applicationId}
         wfProcessId={wfProcessId}

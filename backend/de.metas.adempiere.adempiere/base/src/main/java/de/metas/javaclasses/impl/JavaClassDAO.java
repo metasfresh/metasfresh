@@ -35,12 +35,16 @@ import org.adempiere.util.proxy.Cached;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class JavaClassDAO implements IJavaClassDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public List<I_AD_JavaClass> retrieveAllJavaClasses(final I_AD_JavaClass_Type type)
 	{
@@ -108,5 +112,17 @@ public class JavaClassDAO implements IJavaClassDAO
 				.addEqualsFilter(I_AD_JavaClass_Type.COLUMNNAME_InternalName, internalName)
 				.create()
 				.firstOnly(I_AD_JavaClass_Type.class);
+	}
+
+	@Override
+	public JavaClassId getJavaClassIdByClassname(@NonNull final String classname)
+	{
+		final I_AD_JavaClass record = queryBL
+				.createQueryBuilder(I_AD_JavaClass.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_JavaClass.COLUMNNAME_Classname, classname)
+				.create()
+				.firstOnlyNotNull(I_AD_JavaClass.class);
+		return JavaClassId.ofRepoId(record.getAD_JavaClass_ID());
 	}
 }

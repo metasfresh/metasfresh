@@ -20,7 +20,7 @@ public class JsonHUConsolidationJobPickingSlotContent
 	@NonNull JsonDisplayableQRCode pickingSlotQRCode;
 	@NonNull List<Item> items;
 
-	/** True when the consolidation customer requires GRAI — drives whether the mobile UI shows the GRAI scanner. */
+	/** Whether the mobile UI shows the GRAI scanner for this picking slot; decided by the backend. */
 	boolean graiScanEnabled;
 
 	//

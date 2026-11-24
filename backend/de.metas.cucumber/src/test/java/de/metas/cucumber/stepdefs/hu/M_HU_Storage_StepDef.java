@@ -25,7 +25,10 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -34,7 +37,11 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.compiere.model.I_M_Product;
+
+import java.util.List;
 
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_M_HU_Storage_ID;
@@ -42,11 +49,13 @@ import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_M_Product_I
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_Qty;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMN_M_HU_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class M_HU_Storage_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final M_HU_StepDefData huTable;
 	private final M_HU_Storage_StepDefData huStorageTable;
@@ -89,6 +98,43 @@ public class M_HU_Storage_StepDef
 			row.getAsOptionalIdentifier(COLUMNNAME_M_HU_Storage_ID)
 					.ifPresent((huStorageIdentifier) -> huStorageTable.putOrReplace(huStorageIdentifier, huStorageRecord));
 		});
+	}
+
+	/**
+	 * Validates that each given HU holds exactly the given products and quantities (an HU may hold several products), no more and no less.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) alias from M_HU_StepDefData; one row per HU and product<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) alias from M_Product_StepDefData<br>
+	 *   <b>Qty</b> — (required) expected storage quantity of that product<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_HU_Storage exactly:
+	 *   | M_HU_ID | M_Product_ID | Qty |
+	 *   | lu_1    | tomato       | 10  |
+	 *   | lu_1    | salad        | 5   |
+	 * </pre>
+	 */
+	@And("validate M_HU_Storage exactly:")
+	public void validate_M_HU_Storage_exactly(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.groupBy(COLUMNNAME_M_HU_ID)
+				.values()
+				.forEach(rowsOfHU -> {
+					final I_M_HU hu = handlingUnitsBL.getById(huTable.getId(rowsOfHU.getFirstRow().getAsIdentifier(COLUMNNAME_M_HU_ID)));
+					final List<Tuple> expected = rowsOfHU.stream()
+							.map(row -> tuple(productTable.getId(row.getAsIdentifier(COLUMNNAME_M_Product_ID)),
+									row.getAsBigDecimal(COLUMNNAME_Qty).stripTrailingZeros()))
+							.collect(ImmutableList.toImmutableList());
+
+					Assertions.assertThat(handlingUnitsBL.getStorageFactory().getHUStorageDAO().retrieveStorages(hu))
+							.as("M_HU_Storage of M_HU_ID=%s", hu.getM_HU_ID())
+							.extracting(storage -> ProductId.ofRepoId(storage.getM_Product_ID()), storage -> storage.getQty().stripTrailingZeros())
+							.containsExactlyInAnyOrderElementsOf(expected);
+				});
 	}
 
 	@And("update M_HU_Storage:")

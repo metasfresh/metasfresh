@@ -15,6 +15,7 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
@@ -52,6 +53,7 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final InOutPackageRepository inOutPackageRepository;
 	@NonNull public final CurrencyRepository currencyRepository;
 	@NonNull public final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull public final HULabelConfigRepository huLabelConfigRepository;
 
 	@NonNull public final DDOrderService ddOrderService;
 	@NonNull public final DDOrderCandidateService ddOrderCandidateService;

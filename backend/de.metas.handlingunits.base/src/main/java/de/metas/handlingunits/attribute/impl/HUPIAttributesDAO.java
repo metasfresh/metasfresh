@@ -24,10 +24,12 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.HUPIAttributeCreateRequest;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -159,5 +161,22 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMN_M_HU_PI_Version_ID, versionId)
 				.create()
 				.delete();
+	}
+
+	@Override
+	public void createPIAttribute(@NonNull final HUPIAttributeCreateRequest request)
+	{
+		final I_M_HU_PI_Attribute record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
+		record.setM_HU_PI_Version_ID(request.getPiVersionId().getRepoId());
+		record.setM_Attribute_ID(request.getAttributeId().getRepoId());
+		record.setPropagationType(request.getPropagationType());
+		final JavaClassId javaClassId = request.getTransferStrategyJavaClassId();
+		record.setHU_TansferStrategy_JavaClass_ID(javaClassId != null ? javaClassId.getRepoId() : -1);
+		record.setIsDisplayed(request.isDisplayed());
+		record.setIsReadOnly(request.isReadOnly());
+		record.setIsOnlyIfInProductAttributeSet(request.isOnlyIfInProductAttributeSet());
+		record.setUseInASI(request.isUseInASI());
+		record.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 }

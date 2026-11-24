@@ -54,6 +54,9 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean massPrinting;
 
 		@Nullable List<PickingJobFacetGroup> filters;
+
+		/** the picking profile before this request's update; not set on {@code previous} itself */
+		@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) Picking previous;
 	}
 
 	//
