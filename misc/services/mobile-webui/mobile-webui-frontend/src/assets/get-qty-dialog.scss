@@ -1,10 +1,11 @@
 .get-qty-dialog {
 
-  // The dialog is never taller than the screen: the Scan once / Scan each CU modes add a button row and a scanner below the
-  // table area, which together with its fixed 70vh pushed the quantity field (centered overflow) off the top of a phone screen.
-  // The table area is the part that gives way: it shrinks (and scrolls inside) only when the rest does not fit. A dialog that
-  // fits (Manual) is laid out exactly as before.
-  .message {
+  // The dialog of GetQuantityDialog (modifier `fits-screen`) is never taller than the screen: the Scan once / Scan each CU modes add a
+  // button row and a scanner below the table area, which together with its fixed 70vh pushed the quantity field (centered overflow)
+  // off the top of a phone screen. The table area is the part that gives way: it shrinks (and scrolls inside) only when the rest does
+  // not fit. A dialog that fits (Manual) is laid out exactly as before. ReadQtyDialog (HU Manager) shares `get-qty-dialog` but not
+  // the modifier: it is not changed.
+  &.fits-screen .message {
     max-height: 100%;
     display: flex;
     flex-direction: column;
@@ -20,17 +21,6 @@
         flex-direction: column;
         min-height: 0;
       }
-    }
-  }
-
-  // The scanner of the Scan once quantity block (label rescan) shows its icon in a smaller size: the full panel (icon, caption, "Enter manually")
-  // would take half of a phone screen and push the quantity fields out of the dialog.
-  .label-rescan .barcode-scanner .hardware-mode-panel.scan-prompt {
-    min-height: 0;
-
-    .scan-prompt-icon {
-      font-size: 3rem;
-      margin-bottom: 0.25rem;
     }
   }
 

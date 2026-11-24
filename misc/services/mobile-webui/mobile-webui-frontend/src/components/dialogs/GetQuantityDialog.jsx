@@ -349,7 +349,7 @@ const GetQuantityDialog = ({
   return (
     <div>
       {isProcessing && <Spinner />}
-      <Dialog className="get-qty-dialog">
+      <Dialog className="get-qty-dialog fits-screen">
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form

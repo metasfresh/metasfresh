@@ -5,6 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { expect } from '@playwright/test';
+import { test } from '../../playwright.config';
 import { page } from './common';
 
 const MIN_TAP_SIZE = 36; // px; Bulma's default button is 40 px high
@@ -176,4 +177,35 @@ export const expectOnScreenWithoutScrolling = async (locator, description, viewp
     expect(box.y + box.height, `${where} (bottom edge: not visible without scrolling)`).toBeLessThanOrEqual(bottomLimit + 0.5);
     expect(box.x, `${where} (left edge)`).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width, `${where} (right edge)`).toBeLessThanOrEqual(viewport.width + 0.5);
+};
+
+/**
+ * The phone sizes the layout specs run at: the Pixel 5 preset of the config; the customer's handheld (Zebra TC22, 6.0 in, 1080x2160 physical
+ * px; CSS size not measured: 360x720 @3 or 393x786 @2.75); worst case = a Chrome with address and tool bars shown (360x640 @3).
+ * Add a size here to cover it in every layout spec.
+ */
+export const PHONE_VIEWPORTS = [
+    { name: 'Pixel 5 393x727', width: 393, height: 727, deviceScaleFactor: 2.75 },
+    { name: 'Zebra TC22 360x720', width: 360, height: 720, deviceScaleFactor: 3 },
+    { name: 'Zebra TC22 393x786', width: 393, height: 786, deviceScaleFactor: 2.75 },
+    { name: 'small phone, browser bars shown 360x640', width: 360, height: 640, deviceScaleFactor: 3 },
+];
+
+/** The session languages the layout specs run in (texts differ in length). */
+export const LAYOUT_LANGUAGES = ['en_US', 'de_DE'];
+
+/** Asserts that the element is completely inside the screen (its box lies within 0..width / 0..height). */
+export const expectInsideScreen = async (locator, description, { width, height }) => {
+    await locator.first().waitFor({ state: 'visible' });
+    const box = await locator.first().boundingBox();
+    expect(box, `${description}: has a box`).not.toBeNull();
+    expect(box.x, `${description}: left edge, box ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);
+    expect(box.y, `${description}: top edge, box ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width, `${description}: right edge, box ${JSON.stringify(box)}`).toBeLessThanOrEqual(width + 0.5);
+    expect(box.y + box.height, `${description}: bottom edge, box ${JSON.stringify(box)}, screen ${width}x${height}`).toBeLessThanOrEqual(height + 0.5);
+};
+
+/** Saves a screenshot of the screen into the test's own output folder (never a fixed path of the machine). */
+export const saveScreenshot = async (name) => {
+    await page.screenshot({ path: test.info().outputPath(`${name.replace(/[^a-zA-Z0-9]+/g, '-')}.png`) });
 };

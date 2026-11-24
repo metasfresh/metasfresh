@@ -1,7 +1,7 @@
 import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
 import { page } from "../../utils/common";
-import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable } from "../../utils/layout";
+import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -25,11 +25,8 @@ restoreSysconfigsAfterEach(test);
  * CU quantity entry on a phone-size screen: every control of the quantity block (Scan once), of the Scan each CU scan screen and of the
  * Manual quantity dialog is inside the visible screen, without scrolling. The Manual dialog keeps its layout of today.
  *
- * VIEWPORTS: the size of the screen as a parameter, one block of tests per size. Pixel 5 preset of the config; the customer's handheld
- * (Zebra TC22, 6.0 in, 1080x2160 physical px; CSS size not measured: 360x720 @3 or 393x786 @2.75); worst case = a Chrome
- * with address and tool bars shown (360x640 @3). Add a size here to cover it.
+ * The sizes (PHONE_VIEWPORTS, utils/layout.js) are a parameter: one block of tests per size.
  */
-const LANGUAGES = ['en_US', 'de_DE'];
 const TEXTS = {
     en_US: {
         noOpenBox: MSG_NO_OPEN_BOX,
@@ -48,12 +45,6 @@ const TEXTS = {
     },
 };
 
-const VIEWPORTS = [
-    { name: 'Pixel 5 393x727', width: 393, height: 727, deviceScaleFactor: 2.75 },
-    { name: 'Zebra TC22 360x720', width: 360, height: 720, deviceScaleFactor: 3 },
-    { name: 'Zebra TC22 393x786', width: 393, height: 786, deviceScaleFactor: 2.75 },
-    { name: 'small phone, browser bars shown 360x640', width: 360, height: 640, deviceScaleFactor: 3 },
-];
 
 /** Like startJob, but the source HU ("Pick from") is not scanned: only the picking slot. */
 const startJobWithoutSourceHU = async (masterdata, { qtyToDeliver }) => {
@@ -65,18 +56,8 @@ const startJobWithoutSourceHU = async (masterdata, { qtyToDeliver }) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
 };
 
-/** Asserts that the element is completely inside the screen (its box lies within 0..width / 0..height). */
-const expectInsideScreen = async (locator, description, { width, height }) => {
-    await locator.first().waitFor({ state: 'visible' });
-    const box = await locator.first().boundingBox();
-    expect(box, `${description}: has a box`).not.toBeNull();
-    expect(box.x, `${description}: left edge, box ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);
-    expect(box.y, `${description}: top edge, box ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);
-    expect(box.x + box.width, `${description}: right edge, box ${JSON.stringify(box)}`).toBeLessThanOrEqual(width + 0.5);
-    expect(box.y + box.height, `${description}: bottom edge, box ${JSON.stringify(box)}, screen ${width}x${height}`).toBeLessThanOrEqual(height + 0.5);
-};
 
-for (const viewport of VIEWPORTS) {
+for (const viewport of PHONE_VIEWPORTS) {
     test.describe(`screen ${viewport.name}`, () => {
         test.use({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: viewport.deviceScaleFactor });
 
@@ -132,7 +113,7 @@ for (const viewport of VIEWPORTS) {
             expect(tableArea.height, 'Manual table area height is 70vh as before the change').toBeCloseTo(viewport.height * 0.7, 0);
         });
 
-        for (const lang of LANGUAGES) {
+        for (const lang of LAYOUT_LANGUAGES) {
             const T = TEXTS[lang];
 
             // noinspection JSUnusedLocalSymbols
@@ -222,7 +203,7 @@ for (const viewport of VIEWPORTS) {
             allureMeta('Responsive quantity block');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
-            const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }], profileMode: null, allowCompletingPartialPickingJob: true });
+            const masterdata = await createMasterdata({ formatName: newFormatName(), orders: [{ key: 'A', qty: 12 }], profileMode: MODE_MANUAL, allowCompletingPartialPickingJob: true });
             await startJobWithoutSourceHU(masterdata, { qtyToDeliver: 12 });
             await layout('Manual job screen');
             await PickingJobScreen.clickLineButton({ index: 1 });
