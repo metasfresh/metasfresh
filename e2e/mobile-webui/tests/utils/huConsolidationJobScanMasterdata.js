@@ -128,7 +128,7 @@ export const cleanUpAfterJobScanTest = async () => {
     const sysconfigs = { ...sysconfigsToRestore };
     const pickingSlotIds = [...pickingSlotIdsToEmpty];
 
-    // every restore runs, also when another one failed; the first error is rethrown after all of them ran.
+    // every restore runs, also when another one failed; a single error is rethrown as is, several as one AggregateError listing every failure message, after all of them ran.
     // One after the other: the masterdata call also writes sysconfigs (the scanner defaults), so the sysconfig restore must come after it.
     const restores = [
         Object.keys(pickingProfile).length > 0
@@ -150,8 +150,11 @@ export const cleanUpAfterJobScanTest = async () => {
     pickingProfileToRestore = {};
     pickingSlotIdsToEmpty.clear();
 
-    if (errors.length > 0) {
+    if (errors.length === 1) {
         throw errors[0];
+    }
+    if (errors.length > 1) {
+        throw new AggregateError(errors, `${errors.length} restores failed: ${errors.map(e => e?.message ?? String(e)).join(' | ')}`);
     }
 };
 
