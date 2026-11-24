@@ -22,10 +22,18 @@
 
 package de.metas.util.web.exception;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import de.metas.Profiles;
+import de.metas.util.Loggables;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -35,7 +43,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.DispatcherServlet;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -61,10 +71,28 @@ class RestResponseEntityExceptionHandlerTest
 		public String dummy() {return "OK";}
 	}
 
+	private Logger handlerLogger;
+	private Logger pageNotFoundLogger;
+	private ListAppender<ILoggingEvent> logAppender;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		logAppender = new ListAppender<>();
+		logAppender.start();
+		handlerLogger = (Logger)LoggerFactory.getLogger(RestResponseEntityExceptionHandler.class);
+		handlerLogger.addAppender(logAppender);
+		pageNotFoundLogger = (Logger)LoggerFactory.getLogger(DispatcherServlet.PAGE_NOT_FOUND_LOG_CATEGORY);
+		pageNotFoundLogger.addAppender(logAppender);
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		handlerLogger.detachAppender(logAppender);
+		pageNotFoundLogger.detachAppender(logAppender);
 	}
 
 	/**
@@ -97,6 +125,34 @@ class RestResponseEntityExceptionHandlerTest
 							.andExpect(status().isNotFound())
 							.andExpect(jsonPath("$.errors[0].message").isNotEmpty());
 				});
+	}
+
+	/**
+	 * An unknown route is logged as before the Spring Boot 3 migration, when Spring 5's {@code DispatcherServlet.noHandlerFound} logged it:
+	 * one WARN line {@code No mapping for <method> <uri>} on the {@code PageNotFound} category, without stack trace; no ERROR.
+	 */
+	@Test
+	void unknownRoute_isLoggedAsWarnWithoutStackTrace()
+	{
+		contextRunner.run(context -> {
+			final MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+
+			// no thread-bound loggable, as on a servlet thread (the test helper binds a console loggable that would swallow a handler log)
+			try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(Loggables.nop()))
+			{
+				mockMvc.perform(get("/api/v2/doesNotExist"))
+						.andExpect(status().isNotFound());
+			}
+
+			assertThat(logAppender.list)
+					.singleElement()
+					.satisfies(event -> {
+						assertThat(event.getLoggerName()).isEqualTo(DispatcherServlet.PAGE_NOT_FOUND_LOG_CATEGORY);
+						assertThat(event.getLevel()).isEqualTo(Level.WARN);
+						assertThat(event.getFormattedMessage()).isEqualTo("No mapping for GET /api/v2/doesNotExist");
+						assertThat(event.getThrowableProxy()).isNull();
+					});
+		});
 	}
 
 	@Test
