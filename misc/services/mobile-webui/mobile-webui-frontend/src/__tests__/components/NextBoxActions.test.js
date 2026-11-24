@@ -281,7 +281,9 @@ describe('useNextBox', () => {
       first = exposed.nextBox.onNextBox();
       // the scanner is told (error beep + message) instead of a success for a box that was not opened
       // an object with a message key (not an Error: the toast would show an Error as a generic server error)
-      await expect(exposed.nextBox.onGraiScanned('1234567.12345.S1')).rejects.toEqual({ messageKey: 'picking.nextBoxBusy' });
+      await expect(exposed.nextBox.onGraiScanned('1234567.12345.S1')).rejects.toEqual({
+        messageKey: 'picking.nextBoxBusy',
+      });
     });
     expect(pickingApi.setTUPickingTargetFromGrai).not.toHaveBeenCalled();
     await act(async () => {
