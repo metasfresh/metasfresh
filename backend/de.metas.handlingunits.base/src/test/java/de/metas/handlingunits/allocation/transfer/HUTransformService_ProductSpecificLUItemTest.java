@@ -16,11 +16,11 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,6 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 /**
@@ -183,10 +182,10 @@ public class HUTransformService_ProductSpecificLUItemTest
 		}
 
 		/**
-		 * Characterizes the current behaviour, it does not endorse it: a TU of another product (same TU PI) moved onto an LU that was built from
-		 * the tomato-specific item joins that item; the TU's product is not checked, so the LU then holds both products on the tomato item.
+		 * A TU of another product (same TU PI) moved onto an LU that was built from the tomato-specific item joins that item; the TU's product is not checked,
+		 * so the LU then holds both products on the tomato item. This is wanted: different products on the same LU are allowed.
 		 * <p>
-		 * This pins the current behaviour pending a product decision. If that behaviour is changed, update this test to the new behaviour; do not delete it.
+		 * If that behaviour is changed, update this test to the new behaviour; do not delete it.
 		 */
 		@Test
 		public void existingLUBuiltFromProductSpecificItem_tuOfOtherProduct_currentlyJoinsThatItem()
@@ -223,43 +222,97 @@ public class HUTransformService_ProductSpecificLUItemTest
 			assertLU(emptyLU, luPIItemGeneric5, 1);
 		}
 
-		/** The LU PI's only item for IFCO TUs is the tomato-specific one; the LU holds a bag TU (generic bag item), so it has no IFCO item yet. */
+		/**
+		 * The LU PI's only item for IFCO TUs is the tomato-specific one; the LU holds a bag TU (generic bag item), so it has no IFCO item yet.
+		 * A tomato IFCO TU is attached via the tomato-specific item.
+		 */
 		@Test
-		public void onlyProductSpecificItemForTUPI_luHasNoSuchItem_tuOfThatProduct_isRefused()
+		public void onlyProductSpecificItemForTUPI_luHasNoSuchItem_tuOfThatProduct_isAttachedViaThatItem()
 		{
 			final I_M_HU lu = createLUWithBagTU_noGenericIFCOItem();
+			final I_M_HU tomatoTU = createRealTU(data.helper.pTomatoProductId);
 
-			assertTuToExistingLURefused(createRealTU(data.helper.pTomatoProductId), lu);
+			huTransformService.tuToExistingLU(tomatoTU, QtyTU.ONE, lu);
+
+			assertAttachedVia(tomatoTU, lu, luPIItemTomato8);
+			assertLUStorage(lu, tuple(data.helper.pTomatoProductId, 8 + 40));
 		}
 
-		/** Same as above, with a TU of a product that has no item at all. */
+		/** Same as above, with a TU of a product that has no item at all: different products on the same LU are allowed, so it is attached via the tomato-specific item. */
 		@Test
-		public void onlyProductSpecificItemForTUPI_luHasNoSuchItem_tuOfOtherProduct_isRefused()
+		public void onlyProductSpecificItemForTUPI_luHasNoSuchItem_tuOfOtherProduct_isAttachedViaTheProductSpecificItem()
 		{
 			final I_M_HU lu = createLUWithBagTU_noGenericIFCOItem();
+			final I_M_HU saladTU = createRealTU(data.helper.pSaladProductId);
 
-			assertTuToExistingLURefused(createRealTU(data.helper.pSaladProductId), lu);
+			huTransformService.tuToExistingLU(saladTU, QtyTU.ONE, lu);
+
+			assertAttachedVia(saladTU, lu, luPIItemTomato8);
+			assertLUStorage(lu, tuple(data.helper.pTomatoProductId, 8), tuple(data.helper.pSaladProductId, 40));
+		}
+
+		/** Same as above, but only one TU of an aggregate of two is moved (this goes through the LU/TU producer instead of attaching the TU directly). */
+		@Test
+		public void onlyProductSpecificItemForTUPI_luHasNoSuchItem_oneTUOfAggregate_isAttachedViaThatItem()
+		{
+			final I_M_HU aggregateTU = data.mkAggregateHUWithTotalQtyCU("80"); // 2 TUs a 40kg tomatoes, on an LU via the generic item
+			// deactivate (not delete) the generic item, because the aggregate's current LU item still references it
+			luPIItemGeneric5.setIsActive(false);
+			save(luPIItemGeneric5);
+			final I_M_HU lu = createLUWithBagTU();
+
+			huTransformService.tuToExistingLU(aggregateTU, QtyTU.ONE, lu);
+
+			assertThat(handlingUnitsDAO.retrieveIncludedHUs(lu))
+					.as("PI items via which the LU's TUs are attached")
+					.extracting(tu -> handlingUnitsDAO.retrieveParentItem(tu).getM_HU_PI_Item_ID())
+					.containsExactlyInAnyOrder(data.piLU_Item_Bag.getM_HU_PI_Item_ID(), luPIItemTomato8.getM_HU_PI_Item_ID());
+			assertLUStorage(lu, tuple(data.helper.pTomatoProductId, 8 + 40));
+		}
+
+		/** Two product-specific IFCO items (tomato, then salad) and no generic one: a salad TU picks the salad item, not the lower-ID tomato item. */
+		@Test
+		public void onlyProductSpecificItemsForTUPI_tuOfSecondProduct_picksItsOwnItem()
+		{
+			final I_M_HU_PI_Item luPIItemSalad6 = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("6"));
+			luPIItemSalad6.setM_Product_ID(data.helper.pSaladProductId.getRepoId());
+			save(luPIItemSalad6);
+			assertThat(luPIItemSalad6.getM_HU_PI_Item_ID()).as("guard: the salad item is not the lowest ID").isGreaterThan(luPIItemTomato8.getM_HU_PI_Item_ID());
+
+			final I_M_HU lu = createLUWithBagTU_noGenericIFCOItem();
+			final I_M_HU saladTU = createRealTU(data.helper.pSaladProductId);
+
+			huTransformService.tuToExistingLU(saladTU, QtyTU.ONE, lu);
+
+			assertAttachedVia(saladTU, lu, luPIItemSalad6);
+			assertLUStorage(lu, tuple(data.helper.pTomatoProductId, 8), tuple(data.helper.pSaladProductId, 40));
 		}
 	}
 
 	private I_M_HU createLUWithBagTU_noGenericIFCOItem()
 	{
 		InterfaceWrapperHelper.delete(luPIItemGeneric5);
+		return createLUWithBagTU();
+	}
+
+	private I_M_HU createLUWithBagTU()
+	{
 		final I_M_HU lu = huTransformService.tuToNewLU(createRealBagTU(), QtyTU.ONE, luPIId(), null).getLURecords().get(0);
 		assertLU(lu, data.piLU_Item_Bag, 1);
 		return lu;
 	}
 
-	private void assertTuToExistingLURefused(final I_M_HU tu, final I_M_HU lu)
+	private void assertAttachedVia(final I_M_HU tu, final I_M_HU lu, final I_M_HU_PI_Item expectedItem)
 	{
-		assertThatThrownBy(() -> huTransformService.tuToExistingLU(tu, QtyTU.ONE, lu))
-				.isInstanceOfSatisfying(AdempiereException.class, ex -> {
-					assertThat(ex).hasMessageContaining("because there is no link between them");
-					assertThat(((I_M_HU)ex.getParameter("luHU")).getM_HU_ID()).as("luHU").isEqualTo(lu.getM_HU_ID());
-					assertThat(((I_M_HU)ex.getParameter("tuToAttach")).getM_HU_ID()).as("tuToAttach").isEqualTo(tu.getM_HU_ID());
-				});
-		assertThat(handlingUnitsDAO.retrieveParent(tu)).as("the TU stays where it was").isNull();
-		assertLU(lu, data.piLU_Item_Bag, 1);
+		assertThat(handlingUnitsDAO.retrieveParent(tu).getM_HU_ID()).as("the TU's parent is the LU").isEqualTo(lu.getM_HU_ID());
+		assertThat(handlingUnitsDAO.retrieveParentItem(tu).getM_HU_PI_Item_ID()).as("PI item via which the TU is attached").isEqualTo(expectedItem.getM_HU_PI_Item_ID());
+	}
+
+	private void assertLUStorage(final I_M_HU lu, final Tuple... expectedProductQtys)
+	{
+		assertThat(handlingUnitsBL.getStorageFactory().getStorage(lu).getProductStorages())
+				.extracting(IHUProductStorage::getProductId, storage -> storage.getQty().toBigDecimal().intValueExact())
+				.containsExactlyInAnyOrder(expectedProductQtys);
 	}
 
 	/** @return a standalone real IFCO TU holding 40 of the given product */

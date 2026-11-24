@@ -998,7 +998,46 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 		}
 
-		final IQueryBuilder<I_M_HU_PI_Item> queryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
+		final IQueryBuilder<I_M_HU_PI_Item> queryBuilder = createParentPIItemsForChildHUQuery(parentHU, piOfChildHU, ctx);
+
+		// no product in context: product-specific items are not eligible
+		addProductFilter(queryBuilder, null);
+
+		return orderParentPIItemsForChildHU(queryBuilder)
+				.create()
+				.first();
+	}
+
+	@Override
+	@Nullable
+	public I_M_HU_PI_Item retrieveParentPIItemForChildHUAllowingProductSpecificOrNull(
+			final I_M_HU parentHU,
+			final I_M_HU_PI piOfChildHU,
+			@Nullable final ProductId childProductId,
+			final IContextAware ctx)
+	{
+		final I_M_HU_PI_Item item = retrieveParentPIItemForChildHUOrNull(parentHU, piOfChildHU, ctx);
+		if (item != null)
+		{
+			return item;
+		}
+
+		// the parent's PI links the child's PI only via product-specific items (if at all); any of them may carry the child, whatever the child's product is
+		final List<I_M_HU_PI_Item> productSpecificItems = orderParentPIItemsForChildHU(
+				createParentPIItemsForChildHUQuery(parentHU, piOfChildHU, ctx)
+						.addNotNull(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID))
+				.create()
+				.list();
+
+		return productSpecificItems.stream()
+				.filter(productSpecificItem -> childProductId != null && productSpecificItem.getM_Product_ID() == childProductId.getRepoId())
+				.findFirst()
+				.orElseGet(() -> productSpecificItems.isEmpty() ? null : productSpecificItems.get(0));
+	}
+
+	private IQueryBuilder<I_M_HU_PI_Item> createParentPIItemsForChildHUQuery(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
 				.addOnlyActiveRecordsFilter()
 
 				// it's an PI-item of the the parent's PI
@@ -1009,18 +1048,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 				// it either has no C_BPartner_ID or a matching one
 				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID());
+	}
 
-		// no product in context: product-specific items are not eligible
-		addProductFilter(queryBuilder, null);
-
+	private static IQueryBuilder<I_M_HU_PI_Item> orderParentPIItemsForChildHU(final IQueryBuilder<I_M_HU_PI_Item> queryBuilder)
+	{
 		return queryBuilder
 				.orderBy()
 				// NULLS FIRST is what orderByDescending(C_BPartner_ID) always did, so the order is unchanged
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.First)
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
-				.endOrderBy()
-				.create()
-				.first();
+				.endOrderBy();
 	}
 
 	@Override

@@ -291,6 +291,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, IContextAware ctx);
 
 	/**
+	 * Like {@link #retrieveParentPIItemForChildHUOrNull(I_M_HU, I_M_HU_PI, IContextAware)}, but if that finds no item (i.e. the parent's PI version links {@code piOfChildHU}
+	 * only via product-specific items), one of those product-specific items is returned: the one for {@code childProductId} if there is one, else the first one
+	 * (same partner filter and order as the generic lookup). So the child is accepted whatever its product is (different products on the same parent are allowed).
+	 */
+	@Nullable
+	I_M_HU_PI_Item retrieveParentPIItemForChildHUAllowingProductSpecificOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, @Nullable ProductId childProductId, IContextAware ctx);
+
+	/**
 	 * Retrieve first parent item if more are defined.
 	 */
 	@Nullable

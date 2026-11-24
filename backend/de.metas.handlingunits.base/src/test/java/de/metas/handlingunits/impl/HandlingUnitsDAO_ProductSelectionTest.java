@@ -313,4 +313,69 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 		// not product-specific => resolved by the query as before (generic before partner-specific)
 		assertThat(parentPIItemForChild(luHU)).isEqualTo(genericItem30);
 	}
+
+	// ---- retrieveParentPIItemForChildHUAllowingProductSpecificOrNull
+
+	private I_M_HU_PI_Item parentPIItemForChildAllowingProductSpecific(final I_M_HU luHU, @Nullable final ProductId childProductId)
+	{
+		return dao.retrieveParentPIItemForChildHUAllowingProductSpecificOrNull(luHU, tuPI, childProductId, helper.getHUContext());
+	}
+
+	@Test
+	void parentPIItemAllowingProductSpecific_genericExists_picksGeneric()
+	{
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), productXY)).isEqualTo(genericItem30);
+	}
+
+	@Test
+	void parentPIItemAllowingProductSpecific_luBuiltFromProductItem_keepsProductItem()
+	{
+		final I_M_HU luHU = createLUHU();
+		dao.createHUItem(luHU, productItem40);
+		assertThat(parentPIItemForChildAllowingProductSpecific(luHU, otherProduct)).isEqualTo(productItem40);
+	}
+
+	@Test
+	void parentPIItemAllowingProductSpecific_noGeneric_childOfThatProduct_picksProductItem()
+	{
+		InterfaceWrapperHelper.delete(genericItem30);
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), productXY)).isEqualTo(productItem40);
+	}
+
+	@Test
+	void parentPIItemAllowingProductSpecific_noGeneric_childOfOtherProduct_picksProductItem()
+	{
+		InterfaceWrapperHelper.delete(genericItem30);
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), otherProduct)).isEqualTo(productItem40);
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), null)).isEqualTo(productItem40);
+	}
+
+	@Test
+	void parentPIItemAllowingProductSpecific_noGeneric_twoProductItems_picksTheChildsProductItem()
+	{
+		InterfaceWrapperHelper.delete(genericItem30);
+		final I_M_HU_PI_Item otherProductItem50 = createItem(new BigDecimal("50"), null, otherProduct);
+
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), otherProduct)).isEqualTo(otherProductItem50);
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), productXY)).isEqualTo(productItem40);
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), null)).as("no product: lowest ID").isEqualTo(productItem40);
+	}
+
+	@Test
+	void parentPIItemAllowingProductSpecific_noGeneric_partnerSpecificProductItemOfOtherPartner_notEligible()
+	{
+		InterfaceWrapperHelper.delete(genericItem30);
+		InterfaceWrapperHelper.delete(productItem40);
+		createItem(new BigDecimal("45"), bpartner, productXY);
+
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), productXY)).isNull();
+	}
+
+	@Test
+	void parentPIItemAllowingProductSpecific_noItemAtAll_null()
+	{
+		InterfaceWrapperHelper.delete(genericItem30);
+		InterfaceWrapperHelper.delete(productItem40);
+		assertThat(parentPIItemForChildAllowingProductSpecific(createLUHU(), productXY)).isNull();
+	}
 }

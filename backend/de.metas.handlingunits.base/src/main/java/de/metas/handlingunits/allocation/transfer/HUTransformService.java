@@ -639,7 +639,8 @@ public class HUTransformService
 
 	/**
 	 * @param luPIItem the LU item via which the TUs shall be attached (e.g. the product-specific item the LU was created with);
-	 *                 {@code null} means that it's looked up, which never returns a product-specific item.
+	 *                 {@code null} means that it's looked up; a product-specific item is used only if the LU already has one for the TU's PI
+	 *                 or if the LU PI links the TU's PI only via product-specific items.
 	 */
 	private LUTUResult tuToExistingLU(
 			@NonNull final I_M_HU sourceTuHU,
@@ -679,15 +680,19 @@ public class HUTransformService
 					&& !handlingUnitsBL.isTUIncludedInLU(sourceTuHU, luHU))
 			{
 				final Capacity tuCapacity = extractTUCapacity(sourceTuHU);
+				final I_M_HU_PI effectiveTuPI = handlingUnitsBL.getEffectivePI(sourceTuHU);
 				final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 				lutuProducer.setLU(luHU);
-				if (luPIItem != null)
+				final I_M_HU_PI_Item luPIItemToUse = luPIItem != null
+						? luPIItem
+						: getProductSpecificLUPIItemIfNoGenericOneOrNull(luHU, effectiveTuPI, tuCapacity.getProductId());
+				if (luPIItemToUse != null)
 				{
-					lutuProducer.setLUItemPI(luPIItem);
+					lutuProducer.setLUItemPI(luPIItemToUse);
 				}
 				lutuProducer.setMaxLUs(0);
 				lutuProducer.setMaxTUsPerLUInfinite();
-				lutuProducer.setTUPI(handlingUnitsBL.getEffectivePI(sourceTuHU));
+				lutuProducer.setTUPI(effectiveTuPI);
 				lutuProducer.addCUPerTU(tuCapacity);
 
 				HULoader.builder()
@@ -714,9 +719,10 @@ public class HUTransformService
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(tuToAttach);
 
+			// different products on the same LU are allowed: if the LU PI links the TU PI only via product-specific items, one of them is used
 			final I_M_HU_PI_Item parentPIItem = luPIItem != null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
 					? luPIItem
-					: handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+					: handlingUnitsDAO.retrieveParentPIItemForChildHUAllowingProductSpecificOrNull(luHU, tuPI, getSingleProductIdOrNull(tuToAttach), huContext);
 			if (parentPIItem == null)
 			{
 				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
@@ -745,6 +751,32 @@ public class HUTransformService
 		result = result.mergeWith(lu);
 
 		return result;
+	}
+
+	/**
+	 * The LU/TU producer looks up the LU item by itself without product (see {@link LUTUProducerDestination#getLUItemPI()}), so it finds no item if the LU PI links the TU PI
+	 * only via product-specific items. Only in that case, return such an item (different products on the same LU are allowed); otherwise {@code null}, so the producer's lookup is unchanged.
+	 */
+	@Nullable
+	private I_M_HU_PI_Item getProductSpecificLUPIItemIfNoGenericOneOrNull(
+			@NonNull final I_M_HU luHU,
+			@NonNull final I_M_HU_PI tuPI,
+			@Nullable final ProductId tuProductId)
+	{
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(handlingUnitsBL.getPI(luHU).getM_HU_PI_ID());
+		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
+		if (handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, null).isPresent())
+		{
+			return null;
+		}
+
+		return handlingUnitsDAO.retrieveParentPIItemForChildHUAllowingProductSpecificOrNull(luHU, tuPI, tuProductId, huContext);
+	}
+
+	@Nullable
+	private ProductId getSingleProductIdOrNull(@NonNull final I_M_HU hu)
+	{
+		return handlingUnitsBL.getStorageFactory().getStorage(hu).getSingleProductIdOrNull();
 	}
 
 	/**
