@@ -1,7 +1,7 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { REMEMBER_CU_ENTRY } from '../../constants/PickingActionTypes';
+import { REMEMBER_CU_ENTRY } from '../../apps/picking/redux/PickingActionTypes';
 
 const COMPONENT_TYPE = 'picking/pickProducts';
 

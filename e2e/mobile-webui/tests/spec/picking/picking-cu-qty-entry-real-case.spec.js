@@ -3,7 +3,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, book, labelOf, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, book, labelOf, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryCommon";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);

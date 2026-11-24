@@ -18,7 +18,7 @@ import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { HUMoveScreen } from "../../utils/screens/huManager/HUMoveScreen";
 import { BarcodeScannerComponent } from "../../utils/components/BarcodeScannerComponent";
 import { generateEAN13 } from "../../utils/ean13";
-import { allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, LAUNCHERS_LIMIT_SYSCONFIGS, labelOf, MODE_MANUAL, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, LAUNCHERS_LIMIT_SYSCONFIGS, labelOf, MODE_MANUAL, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 
@@ -27,7 +27,7 @@ restoreSysconfigsAfterEach(test);
  * changed component (quantity dialog, scan step, button row, job screen) must look and behave , at each phone size.
  * Covered: over-pick confirmation, pallet target dialog, catch weight view, inline GRAI capture, Quick Pack All button, mode by profile / customer
  * record, on-screen keyboard, the shared product-code scan step and the HU Manager dialogs.
- * Same checker and sizes as picking-cu-qty-entry-responsive.spec.js (see there for the size list).
+ * Same checker and sizes as picking-cu-qty-entry-layout-label-modes.spec.js (see there for the size list).
  */
 
 
@@ -212,7 +212,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickGraiScreen.scanGraiBatch({ graiStrings: allGrais.slice(0, 10) });
                 await PickGraiScreen.expectGraiChipCount({ expectedCount: 10 });
                 // not layout-checked with the generic checker: the chips' remove button "x" is 20x20 px by the base design (GRAIScreen.scss .grai-chip-remove,
-                // not changed by this PR); the panel's own controls are checked for reachability instead
+                // not part of the feature); the panel's own controls are checked for reachability instead
                 await expectInsideScreen(page.locator('.grai-screen'), 'GRAI capture panel with 10 chips', { width: viewport.width, height: 100000 });
                 await expectReachable(page.getByTestId('grai-save-button'), 'GRAI Save button', viewport);
                 await PickGraiScreen.clickSave();

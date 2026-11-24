@@ -1,20 +1,21 @@
+import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
 import React from 'react';
 import '@testing-library/jest-dom';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import GetQuantityDialog from '../../components/dialogs/GetQuantityDialog';
-import { reducer as settings } from '../../reducers/settings';
+import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
+import { reducer as settings } from '../../../../reducers/settings';
 
-jest.mock('../../utils/ui_trace', () => ({
+jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
   traceFunction: (func) => func,
   traceLogWarn: jest.fn(),
   putContext: jest.fn(),
 }));
-jest.mock('../../utils/audio', () => ({ beep: jest.fn() }));
-jest.mock('../../utils/toast', () => ({
+jest.mock('../../../../utils/audio', () => ({ beep: jest.fn() }));
+jest.mock('../../../../utils/toast', () => ({
   toastError: jest.fn(),
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
@@ -55,10 +56,10 @@ describe('GetQuantityDialog (Manual): as on base', () => {
   });
 });
 
-describe('GetQuantityDialog (new CU mode): one OK books once', () => {
+describe('GetQuantityDialog (label-based CU quantity entry mode): one OK books once', () => {
   it('a click on OK calls onQtyChange exactly once', async () => {
     const onQtyChange = jest.fn(() => Promise.resolve());
-    renderManual({ onQtyChange, cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' });
+    renderManual({ onQtyChange, cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY });
     await act(async () => {
       fireEvent.click(screen.getByTestId('done-button'));
     });
@@ -69,7 +70,7 @@ describe('GetQuantityDialog (new CU mode): one OK books once', () => {
     const onQtyChange = jest.fn(() => Promise.resolve());
     const { container } = renderManual({
       onQtyChange,
-      cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY',
+      cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY,
       isShowCloseTargetButton: true,
     });
     await act(async () => {

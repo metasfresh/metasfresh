@@ -1,11 +1,11 @@
 // Shared setup of the CU quantity entry specs that drive a product-based picking job in Scan each CU
-// ("scan every pack label"; every scan books one CU of 1 into the open box). Builds on cuQtyEntryScanOnce.js.
+// ("scan every pack label"; every scan books one CU of 1 into the open box). Builds on cuQtyEntryCommon.js.
 // A Scan each CU label carries a pack ID, so these specs need a format with a pack-ID part
 // (buildCULabelFormat({ withPackId: true })).
 import { PickingJobScreen } from './screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from './screens/picking/PickLineScanScreen';
 import { buildCULabel, uniqueGTIN, uniqueLot } from './cuLabel';
-import { BEST_BEFORE, createMasterdata, MODE_SCAN_ONCE } from './cuQtyEntryScanOnce';
+import { BEST_BEFORE, createMasterdata, MODE_SCAN_ONCE } from './cuQtyEntryCommon';
 
 export const MODE_SCAN_EACH = 'SCAN_EACH_CU';
 export { MODE_SCAN_ONCE };
@@ -20,7 +20,7 @@ export const packLabelOf = ({ masterdata, lot = uniqueLot(), packId, bestBefore 
 
 /**
  * Masterdata of a Scan each CU spec: profile mode Scan each CU with the pack-ID format `packFormatName`;
- * `orders`, `customers`, `formats` as in cuQtyEntryScanOnce.createMasterdata.
+ * `orders`, `customers`, `formats` as in cuQtyEntryCommon.createMasterdata.
  */
 export const createScanEachMasterdata = async ({ packFormatName, orders, customers = [], formats = [], ...rest }) =>
     await createMasterdata({

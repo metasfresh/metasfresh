@@ -57,4 +57,29 @@ class JsonScannableCodeFormatTest
 		assertThat(objectMapper.readTree(jsonString).get("id").asInt()).isEqualTo(540123);
 		assertThat(objectMapper.readValue(jsonString, JsonScannableCodeFormat.class).getId()).isEqualTo(ScannableCodeFormatId.ofRepoId(540123));
 	}
+
+	@Test
+	void jsonCarriesThePackIdZone()
+	{
+		final ScannableCodeFormat withPackId = ScannableCodeFormat.builder()
+				.id(ScannableCodeFormatId.ofRepoId(1))
+				.name("with pack ID part")
+				.parts(ImmutableList.of(
+						ScannableCodeFormatPart.builder().startPosition(1).endPosition(4).type(ScannableCodeFormatPartType.ProductCode).build(),
+						ScannableCodeFormatPart.builder().startPosition(5).endPosition(6).type(ScannableCodeFormatPartType.Constant).constantValue("92").build(),
+						ScannableCodeFormatPart.builder().startPosition(7).endPosition(0).type(ScannableCodeFormatPartType.PackId).build()
+				))
+				.build();
+		final JsonScannableCodeFormat json = JsonScannableCodeFormat.of(withPackId);
+		assertThat(json.getPackIdZoneStart()).isEqualTo(5);
+		assertThat(json.getPackIdZoneEnd()).isEqualTo(7);
+
+		final ScannableCodeFormat withoutZone = ScannableCodeFormat.builder()
+				.id(ScannableCodeFormatId.ofRepoId(2))
+				.name("no zone")
+				.parts(ImmutableList.of(ScannableCodeFormatPart.builder().startPosition(1).endPosition(4).type(ScannableCodeFormatPartType.ProductCode).build()))
+				.build();
+		assertThat(JsonScannableCodeFormat.of(withoutZone).getPackIdZoneStart()).isNull();
+		assertThat(JsonScannableCodeFormat.of(withoutZone).getPackIdZoneEnd()).isNull();
+	}
 }

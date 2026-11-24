@@ -4,18 +4,18 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import ScanHUAndGetQtyComponent from '../../components/ScanHUAndGetQtyComponent';
-import { reducer as settings } from '../../reducers/settings';
-import { CUQtyEntryMode } from '../../constants/CUQtyEntryMode';
+import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
+import { reducer as settings } from '../../../../reducers/settings';
+import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
 
-jest.mock('../../utils/ui_trace', () => ({
+jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
   traceFunction: (func) => func,
   traceLogWarn: jest.fn(),
   putContext: jest.fn(),
 }));
-jest.mock('../../utils/audio', () => ({ beep: jest.fn() }));
-jest.mock('../../utils/toast', () => ({
+jest.mock('../../../../utils/audio', () => ({ beep: jest.fn() }));
+jest.mock('../../../../utils/toast', () => ({
   toastError: jest.fn(),
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
@@ -30,7 +30,7 @@ const renderOpenQuantityBlock = async ({ resolveScannedBarcode, isShowCloseTarge
         qtyMax={12}
         qtyTarget={12}
         uom="PCE"
-        cuQtyEntryMode={CUQtyEntryMode.SCAN_ONCE_ENTER_QTY}
+        cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
         isShowCloseTargetButton={isShowCloseTargetButton}
         resolveScannedBarcode={resolveScannedBarcode}
         onResult={jest.fn().mockResolvedValue()}

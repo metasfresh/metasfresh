@@ -8,7 +8,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
-import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryScanOnce";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 

@@ -1,7 +1,13 @@
-import { parseGraiFromRawInput } from './grai';
-import { parseCustomQRCode } from './qrCode/parseCustomQRCode';
-import { BARCODE_TYPE_CUSTOM, isBarcodeProductNoMatching } from './qrCode/common';
+import { parseGraiFromRawInput } from '../../../utils/grai';
+import { parseCustomQRCode } from '../../../utils/qrCode/parseCustomQRCode';
+import { BARCODE_TYPE_CUSTOM, isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 
+/**
+ * Reads the scanned CU label of a picking line (CU quantity entry modes). Java counterpart: `PickingCULabelService`
+ * (backend/de.metas.handlingunits.base/.../picking/job/service/PickingCULabelService.java) does the same checks again on the server
+ * when the pick is booked; change them together. The format comes from the server with its pack ID zone
+ * (`JsonScannableCodeFormat`, `ScannableCodeFormat.getPackIdZone()`).
+ */
 export const SCAN_TYPE_GRAI = 'GRAI';
 export const SCAN_TYPE_CU_LABEL = 'CU_LABEL';
 
@@ -9,11 +15,7 @@ const ERROR_noFormat = 'picking.cuLabel.noFormat';
 const ERROR_formatMismatch = 'picking.cuLabel.formatMismatch';
 const ERROR_noPackId = 'picking.cuLabel.noPackId';
 
-const PART_TYPE_PACK_ID = 'PACK_ID';
-const PART_TYPE_CONSTANT = 'CONSTANT';
 const PART_TYPE_IGNORE = 'IGNORE';
-// the constant marker in front of the pack ID, used only when the format has no PACK_ID part
-const FALLBACK_PACK_ID_MARKER = '92';
 const ERROR_differentProduct = 'activities.picking.qrcode.differentProduct';
 
 /**
@@ -22,46 +24,6 @@ const ERROR_differentProduct = 'activities.picking.qrcode.differentProduct';
  * @returns 'GRAI' when the string is a GRAI, else 'CU_LABEL'
  */
 export const routeScannedCode = (string) => (parseGraiFromRawInput(string) ? SCAN_TYPE_GRAI : SCAN_TYPE_CU_LABEL);
-
-const byStartPosition = (a, b) => a.startPosition - b.startPosition;
-
-/**
- * The pack ID zone of the format: it starts at the constant marker directly in front of the PACK_ID part (or at that
- * part); a format without a PACK_ID part falls back to the constant "92" marker; with neither: undefined.
- * Same rule as the backend `PickingCULabelService.findPackIdZone`.
- *
- * @returns {{zoneStart, zoneEnd}|undefined}
- */
-const findPackIdZone = (parts) => {
-  const packIdPart = [...parts].filter((part) => part.type === PART_TYPE_PACK_ID).sort(byStartPosition)[0];
-  return packIdPart ? zoneBeforePackIdPart(parts, packIdPart) : zoneOfFallbackMarker(parts);
-};
-
-const zoneBeforePackIdPart = (parts, packIdPart) => {
-  const preceding = parts
-    .filter((part) => part.startPosition < packIdPart.startPosition)
-    .sort(byStartPosition)
-    .pop();
-  return {
-    zoneStart: preceding?.type === PART_TYPE_CONSTANT ? preceding.startPosition : packIdPart.startPosition,
-    zoneEnd: packIdPart.startPosition,
-  };
-};
-
-const zoneOfFallbackMarker = (parts) => {
-  const marker = [...parts]
-    .filter((part) => part.type === PART_TYPE_CONSTANT && part.constantValue === FALLBACK_PACK_ID_MARKER)
-    .sort(byStartPosition)[0];
-  if (!marker) {
-    return undefined;
-  }
-  const zoneStart = marker.startPosition;
-  const zoneEnd = Math.min(
-    ...parts.map((part) => part.startPosition).filter((start) => start > zoneStart),
-    zoneStart + FALLBACK_PACK_ID_MARKER.length
-  );
-  return { zoneStart, zoneEnd };
-};
 
 /** @returns true when the parts in front of the zone read the label: it was scanned right, it just has no pack ID */
 const isPrefixReadable = ({ string, format, zoneStart }) => {
@@ -78,12 +40,14 @@ const isPrefixReadable = ({ string, format, zoneStart }) => {
 
 /**
  * @returns true when the label is too short to hold the pack ID zone while every part in front of the zone reads
- * (L0: a label without counter). Same rule as the backend `PickingCULabelService`.
+ * (a label without counter). The backend decides where the zone is (`packIdZoneStart` / `packIdZoneEnd` of the format,
+ * `ScannableCodeFormat.getPackIdZone()`); this only compares lengths.
  */
-const isEndingBeforePackId = ({ string, format }) => {
-  const zone = findPackIdZone(format.parts ?? []);
-  return !!zone && string.length < zone.zoneEnd && isPrefixReadable({ string, format, zoneStart: zone.zoneStart });
-};
+const isEndingBeforePackId = ({ string, format }) =>
+  format.packIdZoneStart != null &&
+  format.packIdZoneEnd != null &&
+  string.length < format.packIdZoneEnd &&
+  isPrefixReadable({ string, format, zoneStart: format.packIdZoneStart });
 
 /**
  * Reads a CU label with the line's effective format only (no GS1, EAN13 or global QR code).
@@ -132,6 +96,11 @@ export const resolveCULabel = ({
   const label = readCULabel({ string, format, isPackIdRequired });
   if (label.errorKey) {
     return label;
+  }
+
+  // like the backend: a label without a product number does not fit the line
+  if (!label.productNo) {
+    return { errorKey: ERROR_formatMismatch };
   }
 
   if (

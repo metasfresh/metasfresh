@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.service;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -22,25 +21,26 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
-import de.metas.scannable_code.format.ScannableCodeFormatPart;
-import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Reads a CU (pack) label with the picking line's effective label format only (never the global format list).
+ * <p>
+ * Mobile app counterpart: {@code misc/services/mobile-webui/mobile-webui-frontend/src/apps/picking/cuQtyEntry/cuLabel.js} reads the label on the
+ * handheld before the pick is sent (same checks: format, pack ID, product); change both together. The refusal texts are the AD_Messages
+ * of the keys above; the app has its own translation keys for the same refusals.
  */
 @Service
 @RequiredArgsConstructor
@@ -50,9 +50,6 @@ public class PickingCULabelService
 	public static final AdMessageKey MSG_CU_LABEL_FORMAT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_FORMAT_MISMATCH");
 	public static final AdMessageKey MSG_CU_LABEL_ALREADY_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED");
 	public static final AdMessageKey MSG_CU_LABEL_NO_FORMAT = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_FORMAT");
-
-	/** the constant marker in front of the pack ID in the label */
-	private static final String PACK_ID_MARKER = "92";
 
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
@@ -74,15 +71,9 @@ public class PickingCULabelService
 			@NonNull final PickingJobLine line,
 			@NonNull final ScannedCode label,
 			@NonNull final CUQtyEntryPolicy policy,
-			@Nullable final ScannableCodeFormatId formatId)
+			@NonNull final Optional<ScannableCodeFormatId> formatId)
 	{
-		final ScannableCodeFormat format = formatId != null
-				? scannableCodeFormatService.getById(formatId).orElse(null)
-				: null;
-		if (format == null)
-		{
-			throw userError(MSG_CU_LABEL_NO_FORMAT);
-		}
+		final ScannableCodeFormat format = getFormat(formatId);
 
 		final ExplainedOptional<ParsedScannedCode> parsed = format.parse(label);
 		if (parsed.isPresent())
@@ -90,15 +81,27 @@ public class PickingCULabelService
 			return resolve(line, toCULabelData(parsed.get()), policy);
 		}
 
-		if (policy.isPackIdRequired() && isEndingBeforePackId(format, label))
+		if (policy.isPackIdRequired() && format.isEndingBeforePackId(label))
 		{
 			throw userError(MSG_CU_LABEL_NO_PACK_ID);
 		}
 		throw userErrorWithDetails(MSG_CU_LABEL_FORMAT_MISMATCH, parsed.getExplanation());
 	}
 
-	/** Testable core: checks the label data against the line. */
-	public ResolvedCULabel resolve(
+	/**
+	 * @throws AdempiereException (user message) with a reason of its own for "no format configured" and for "the configured format does not exist
+	 *                            or is inactive" (a configuration error)
+	 */
+	@NonNull
+	private ScannableCodeFormat getFormat(@NonNull final Optional<ScannableCodeFormatId> formatId)
+	{
+		final ScannableCodeFormatId id = formatId.orElseThrow(() -> userError(MSG_CU_LABEL_NO_FORMAT));
+		return scannableCodeFormatService.getById(id)
+				.orElseThrow(() -> userErrorWithDetails(MSG_CU_LABEL_NO_FORMAT, TranslatableStrings.constant("(format " + id.getRepoId() + " not found or inactive)")));
+	}
+
+	/** Checks the label data against the line. */
+	ResolvedCULabel resolve(
 			@NonNull final PickingJobLine line,
 			@NonNull final CULabelData labelData,
 			@NonNull final CUQtyEntryPolicy policy)
@@ -167,8 +170,7 @@ public class PickingCULabelService
 
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
 		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
-		return huIdsWithPackId.stream()
-				.map(handlingUnitsBL::getById)
+		return handlingUnitsBL.getByIds(huIdsWithPackId).stream()
 				.anyMatch(hu -> hasLotNo(huContext, hu, lotNoNorm));
 	}
 
@@ -179,98 +181,6 @@ public class PickingCULabelService
 				? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
 				: null;
 		return Objects.equals(huLotNo, lotNoNorm);
-	}
-
-	/**
-	 * @return true if the label is too short to hold the pack ID zone while every part before the zone reads.
-	 * See {@link #findPackIdZone} for the zone. A format with no pack ID zone: false.
-	 */
-	private static boolean isEndingBeforePackId(@NonNull final ScannableCodeFormat format, @NonNull final ScannedCode label)
-	{
-		final PackIdZone zone = findPackIdZone(format.getParts());
-		return zone != null
-				&& label.length() < zone.getEnd()
-				&& isPrefixReadable(format, label, zone.getStart());
-	}
-
-	/**
-	 * The zone starts at the constant marker directly in front of the {@link ScannableCodeFormatPartType#PackId} part (or at that part itself).
-	 * A format without a {@code PackId} part falls back to the constant "92" marker; a format with neither has no pack ID zone: null.
-	 */
-	@Nullable
-	private static PackIdZone findPackIdZone(@NonNull final ImmutableList<ScannableCodeFormatPart> parts)
-	{
-		final ScannableCodeFormatPart packIdPart = parts.stream()
-				.filter(part -> part.getType() == ScannableCodeFormatPartType.PackId)
-				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
-				.orElse(null);
-		return packIdPart != null
-				? zoneBeforePackIdPart(parts, packIdPart)
-				: zoneOfFallbackMarker(parts);
-	}
-
-	private static PackIdZone zoneBeforePackIdPart(@NonNull final ImmutableList<ScannableCodeFormatPart> parts, @NonNull final ScannableCodeFormatPart packIdPart)
-	{
-		final ScannableCodeFormatPart precedingMarker = parts.stream()
-				.filter(part -> part.getStartPosition() < packIdPart.getStartPosition())
-				.max(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
-				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant)
-				.orElse(null);
-		return PackIdZone.ofStartAndEnd(
-				precedingMarker != null ? precedingMarker.getStartPosition() : packIdPart.getStartPosition(),
-				packIdPart.getStartPosition());
-	}
-
-	@Nullable
-	private static PackIdZone zoneOfFallbackMarker(@NonNull final ImmutableList<ScannableCodeFormatPart> parts)
-	{
-		final ScannableCodeFormatPart marker = parts.stream()
-				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
-				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
-				.orElse(null);
-		if (marker == null)
-		{
-			return null;
-		}
-
-		final int zoneStart = marker.getStartPosition();
-		// same rule as the frontend cuLabel.js: the zone is the marker itself, cut short by a part starting inside it
-		final int markerEnd = zoneStart + PACK_ID_MARKER.length();
-		final int zoneEnd = Math.min(markerEnd, parts.stream()
-				.mapToInt(ScannableCodeFormatPart::getStartPosition)
-				.filter(start -> start > zoneStart)
-				.min()
-				.orElse(markerEnd));
-		return PackIdZone.ofStartAndEnd(zoneStart, zoneEnd);
-	}
-
-	/** @return true if the parts in front of the pack ID zone read the label: the label was scanned right, it just has no pack ID */
-	private static boolean isPrefixReadable(@NonNull final ScannableCodeFormat format, @NonNull final ScannedCode label, final int zoneStart)
-	{
-		final ImmutableList<ScannableCodeFormatPart> partsBefore = format.getParts().stream()
-				.filter(part -> part.getStartPosition() < zoneStart)
-				.filter(part -> part.getType() != ScannableCodeFormatPartType.Ignored) // separators: the scanned code is trimmed, a trailing one is lost
-				.collect(ImmutableList.toImmutableList());
-		if (partsBefore.isEmpty())
-		{
-			return false;
-		}
-
-		final ScannableCodeFormat prefixFormat = ScannableCodeFormat.builder()
-				.id(format.getId())
-				.name(format.getName())
-				.parts(partsBefore)
-				.build();
-		return prefixFormat.parse(label).isPresent();
-	}
-
-	@Value
-	private static class PackIdZone
-	{
-		int start;
-		int end;
-
-		static PackIdZone ofStartAndEnd(final int start, final int end) {return new PackIdZone(start, end);}
 	}
 
 	private static AdempiereException userError(@NonNull final AdMessageKey messageKey, final Object... params)

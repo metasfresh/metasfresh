@@ -54,11 +54,17 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
 import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
-import { resolveCULabel, routeScannedCode, selectCULabelFormat, SCAN_TYPE_GRAI } from '../../../utils/cuLabel';
+import {
+  resolveCULabel,
+  routeScannedCode,
+  selectCULabelFormat,
+  SCAN_TYPE_GRAI,
+} from '../../../apps/picking/cuQtyEntry/cuLabel';
 import { parseGraiFromRawInput } from '../../../utils/grai';
-import NextBoxActions, { useNextBox } from '../../../components/NextBoxActions';
-import { getCUQtyEntryPolicy } from '../../../constants/CUQtyEntryMode';
-import { rememberCUEntry } from '../../../actions/PickingActions';
+import OpenNextBoxButton, { useOpenNextBox } from '../../../apps/picking/cuQtyEntry/OpenNextBoxButton';
+import { UserMessageError } from '../../../utils/UserMessageError';
+import { getCUQtyEntryPolicy, MANUAL_POLICY } from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
+import { rememberCUEntry } from '../../../apps/picking/redux/PickingActions';
 import { getCUEntry } from '../../../reducers/wfProcesses/picking';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
@@ -94,6 +100,7 @@ const PickLineScanScreen = () => {
     customQRCodeFormats,
     readAttributes,
     cuQtyEntryMode,
+    cuQtyEntryPolicy,
     cuLabelFormatId,
     packingTuPIId,
     cuEntry,
@@ -132,12 +139,11 @@ const PickLineScanScreen = () => {
     lineId,
     type: PickingTargetType.TU,
   });
-  const isInlineGraiCapture = isInlineGraiCaptureEnabled({ graiScanEnabled, tuPickingTarget, cuQtyEntryMode });
+  const isInlineGraiCapture = isInlineGraiCaptureEnabled({ graiScanEnabled, tuPickingTarget, cuQtyEntryPolicy });
 
-  const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
-  const isLabelRequiredLine = cuQtyEntryPolicy.isLabelRequired;
+  const isLabelRequiredLine = cuQtyEntryPolicy.labelRequired;
   const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
-  const nextBox = useNextBox({
+  const nextBox = useOpenNextBox({
     applicationId,
     wfProcessId,
     activityId,
@@ -155,7 +161,7 @@ const PickLineScanScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties: { entries: computeOpenBoxHeaderEntries({ isLabelRequiredLine, tuPickingTarget }) },
-    rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode },
+    rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode, 'data-cu-label-scan': String(isLabelRequiredLine) },
     isLiveRefresh: isLabelRequiredLine,
   });
 
@@ -167,7 +173,7 @@ const PickLineScanScreen = () => {
           cuLabelFormat,
           expectedProductNo: productNo,
           expectedGS1ProductCodes: gs1ProductCodes,
-          cuQtyEntryMode,
+          cuQtyEntryPolicy,
           onGrai: nextBox.onGraiScanned,
         })
       : convertScannedBarcodeToResolvedResult({
@@ -182,7 +188,7 @@ const PickLineScanScreen = () => {
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
   // scan once: the count offered for the next box (the last typed count, capped by the open quantity)
-  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
+  const isScanOnce = cuQtyEntryPolicy.scanOnce;
   const suggestedQty = isScanOnce
     ? computeSuggestedQty({ lastTypedQty: cuEntry?.lastTypedQty, qtyOpen: qtyToPickRemaining }) ?? undefined
     : undefined;
@@ -194,7 +200,7 @@ const PickLineScanScreen = () => {
     expectedProductNo: productNo,
     expectedGS1ProductCodes: gs1ProductCodes,
     scanOnceMemory: isScanOnce ? { lastTypedQty: cuEntry?.lastTypedQty, suggestedQty } : undefined,
-    cuQtyEntryMode,
+    cuQtyEntryPolicy,
     sourceHUQRCode: computeSourceHUQRCode({ qrCode, activity }),
     onClose,
   });
@@ -219,7 +225,7 @@ const PickLineScanScreen = () => {
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       // the source HU of the hop from the line screen is never a CU label
-      scannedBarcode={computeScannedBarcodeParam({ qrCode, cuQtyEntryMode })}
+      scannedBarcode={computeScannedBarcodeParam({ qrCode, cuQtyEntryPolicy })}
       graiScanEnabled={isInlineGraiCapture}
       existingLuGrais={existingLuGrais}
       qtyTargetCaption={trl('general.QtyToPick')}
@@ -233,13 +239,13 @@ const PickLineScanScreen = () => {
       catchWeightUom={catchWeightUom}
       customQRCodeFormats={customQRCodeFormats}
       readAttributes={readAttributes}
-      cuQtyEntryMode={cuQtyEntryMode}
+      cuQtyEntryPolicy={cuQtyEntryPolicy}
       suggestedQty={suggestedQty}
       rememberedCULabel={computeRememberedCULabel({ isScanOnce, isResume, cuEntry })}
       isShowCloseTargetButton={!!luPickingTarget}
       nextBoxActions={
         isLabelRequiredLine ? (
-          <NextBoxActions isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} />
+          <OpenNextBoxButton isProcessing={nextBox.isProcessing} onNextBox={nextBox.onNextBox} />
         ) : undefined
       }
       //
@@ -283,8 +289,8 @@ export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
  * "HU verpacken"; a line with a CU quantity entry mode reads labels only, so it never takes that param as a scan.
  */
 // @VisibleForTesting
-export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
-  getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired ? undefined : qrCode;
+export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryPolicy = MANUAL_POLICY }) =>
+  cuQtyEntryPolicy.labelRequired ? undefined : qrCode;
 
 /**
  * The HU the PICK event takes the packs from (`huQRCode`). A line with a CU quantity entry mode takes them from the
@@ -292,9 +298,9 @@ export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryMode }) =>
  * the attributes and travels as `cuLabel`. Manual: the scanned code is the source HU.
  */
 // @VisibleForTesting
-export const computePickFromHUQRCode = ({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode }) => {
-  if (!getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired) return scannedBarcode;
-  if (!sourceHUQRCode) throw { messageKey: 'picking.pickFromRequired' };
+export const computePickFromHUQRCode = ({ cuQtyEntryPolicy = MANUAL_POLICY, sourceHUQRCode, scannedBarcode }) => {
+  if (!cuQtyEntryPolicy.labelRequired) return scannedBarcode;
+  if (!sourceHUQRCode) throw new UserMessageError('picking.pickFromRequired');
   return sourceHUQRCode;
 };
 
@@ -318,8 +324,8 @@ export const computeRememberedCULabel = ({ isScanOnce, isResume, cuEntry }) =>
  * every box beforehand (GRAI scan or "Weitere Kiste"), so it never shows there.
  */
 // @VisibleForTesting
-export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryMode }) =>
-  graiScanEnabled && tuPickingTarget == null && !getCUQtyEntryPolicy(cuQtyEntryMode).isLabelRequired;
+export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryPolicy = MANUAL_POLICY }) =>
+  graiScanEnabled && tuPickingTarget == null && !cuQtyEntryPolicy.labelRequired;
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
@@ -344,7 +350,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
     customQRCodeFormats,
     readAttributes: getReadAttributesFromActivity({ activity }),
-    cuQtyEntryMode: line?.cuQtyEntryMode,
+    cuQtyEntryMode: line?.cuQtyEntryMode, // only shown as an attribute of the screen (tests); the screens ask the policy
+    cuQtyEntryPolicy: getCUQtyEntryPolicy(line),
     cuLabelFormatId: line?.cuLabelFormatId,
     packingTuPIId: line?.packingTuPIId, // null when the line's packing names no TU
     cuEntry: getCUEntry({ activity, lineId }),
@@ -419,7 +426,7 @@ export const convertScannedCULabelToResolvedResult = ({
   cuLabelFormat,
   expectedProductNo,
   expectedGS1ProductCodes,
-  cuQtyEntryMode,
+  cuQtyEntryPolicy = MANUAL_POLICY,
   onGrai,
 }) => {
   if (routeScannedCode(scannedBarcode) === SCAN_TYPE_GRAI) {
@@ -432,10 +439,10 @@ export const convertScannedCULabelToResolvedResult = ({
     format: cuLabelFormat,
     expectedProductNo,
     expectedGS1ProductCodes,
-    isPackIdRequired: getCUQtyEntryPolicy(cuQtyEntryMode).isPackIdRequired,
+    isPackIdRequired: cuQtyEntryPolicy.packIdRequired,
   });
   if (errorKey) {
-    throw { messageKey: errorKey, details: errorDetails };
+    throw new UserMessageError(errorKey, errorDetails);
   }
 
   return { lotNo, bestBeforeDate, packId, cuLabel, isTUToBePickedAsWhole: false };
@@ -572,7 +579,7 @@ export const usePostQtyPicked = ({
   expectedProductNo,
   expectedGS1ProductCodes,
   scanOnceMemory, // scan once only: the count typed last and the one offered (undefined = do not remember the entry)
-  cuQtyEntryMode,
+  cuQtyEntryPolicy = MANUAL_POLICY,
   sourceHUQRCode,
   onClose,
 }) => {
@@ -616,7 +623,7 @@ export const usePostQtyPicked = ({
 
     let huQRCode;
     try {
-      huQRCode = computePickFromHUQRCode({ cuQtyEntryMode, sourceHUQRCode, scannedBarcode });
+      huQRCode = computePickFromHUQRCode({ cuQtyEntryPolicy, sourceHUQRCode, scannedBarcode });
     } catch (error) {
       return Promise.reject(error);
     }

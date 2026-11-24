@@ -3,7 +3,7 @@ import {
   computeLastTypedQty,
   computeSuggestedQty,
   isLineDoneAfterBooking,
-} from '../../utils/picking';
+} from '../../../../utils/picking';
 
 describe('computeSuggestedQty', () => {
   it('is null before the first typed value', () => {

@@ -756,7 +756,7 @@ public class PickingJobService implements PickingSlotListener
 	 * A pack booked in a label-based mode keeps its line on its own slot after the customer was switched to Manual while the job is open: the close follows
 	 * what was booked (as the un-pick and the GRAI completion check do), not only the customer's current mode.
 	 * <p>
-	 * Manual lines (and all lines of a job without a label-based-mode line): unchanged, all closed HUs go to the slot scanned last.
+	 * Manual lines (and all lines of a job without a label-based-mode line): all closed HUs go to the slot scanned last.
 	 */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
@@ -764,7 +764,7 @@ public class PickingJobService implements PickingSlotListener
 		// only the lines the mode of their customer does not settle are checked for packs booked in a label-based mode (that check walks each picked CU up to its box)
 		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
 		final ImmutableSet<HuId> cusBookedLabelBased = pickingJob.hasLine(isToCheckForLabelBookings)
-				? huService.filterCUsBookedInCUQtyEntryMode(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
+				? huService.getCUBookingSpecification().filterBookedWithLabelScan(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
 				: ImmutableSet.of();
 		final List<PickingJobLine> labelBasedLines = pickingJob.getLines(line -> isLabelRequired.test(line) || line.hasPickedHUIdIn(cusBookedLabelBased));
 		if (labelBasedLines.isEmpty())

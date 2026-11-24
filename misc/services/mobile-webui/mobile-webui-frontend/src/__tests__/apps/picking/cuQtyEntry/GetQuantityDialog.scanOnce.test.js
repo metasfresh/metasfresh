@@ -4,19 +4,19 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import GetQuantityDialog from '../../components/dialogs/GetQuantityDialog';
-import ScanHUAndGetQtyComponent from '../../components/ScanHUAndGetQtyComponent';
-import { putSettingsAction, reducer as settings } from '../../reducers/settings';
-import { CUQtyEntryMode } from '../../constants/CUQtyEntryMode';
+import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
+import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
+import { putSettingsAction, reducer as settings } from '../../../../reducers/settings';
+import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
 
-jest.mock('../../utils/ui_trace', () => ({
+jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
   traceFunction: (func) => func,
   traceLogWarn: jest.fn(),
   putContext: jest.fn(),
 }));
-jest.mock('../../utils/audio', () => ({ beep: jest.fn() }));
-jest.mock('../../utils/toast', () => ({
+jest.mock('../../../../utils/audio', () => ({ beep: jest.fn() }));
+jest.mock('../../../../utils/toast', () => ({
   toastError: jest.fn(),
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
@@ -31,7 +31,7 @@ const buildStore = ({ useZeroAsInitialValue = false } = {}) => {
 };
 
 const renderDialog = ({
-  cuQtyEntryMode,
+  cuQtyEntryPolicy,
   store = buildStore(),
   onQtyChange = jest.fn().mockResolvedValue(),
   ...props
@@ -43,7 +43,7 @@ const renderDialog = ({
         qtyTargetCaption="To pick"
         uom="PCE"
         qtyRejectedReasons={REJECT_REASONS}
-        cuQtyEntryMode={cuQtyEntryMode}
+        cuQtyEntryPolicy={cuQtyEntryPolicy}
         onQtyChange={onQtyChange}
         onCloseDialog={jest.fn()}
         {...props}
@@ -60,7 +60,7 @@ const typeQty = async (value) => {
 
 describe('GetQuantityDialog: scan once, enter quantity', () => {
   it('starts with an empty qty field and a disabled OK', async () => {
-    renderDialog({ cuQtyEntryMode: CUQtyEntryMode.SCAN_ONCE_ENTER_QTY });
+    renderDialog({ cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY });
     await act(async () => {});
     expect(document.querySelector('#qty-input').value).toBe('');
     expect(screen.getByTestId('done-button')).toBeDisabled();
@@ -68,7 +68,7 @@ describe('GetQuantityDialog: scan once, enter quantity', () => {
 
   it('starts empty also when the initial value setting is zero', async () => {
     renderDialog({
-      cuQtyEntryMode: CUQtyEntryMode.SCAN_ONCE_ENTER_QTY,
+      cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY,
       store: buildStore({ useZeroAsInitialValue: true }),
     });
     await act(async () => {});
@@ -76,7 +76,7 @@ describe('GetQuantityDialog: scan once, enter quantity', () => {
   });
 
   it('shows no reject block when fewer than the open qty are typed', async () => {
-    renderDialog({ cuQtyEntryMode: CUQtyEntryMode.SCAN_ONCE_ENTER_QTY });
+    renderDialog({ cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY });
     await typeQty('3');
     expect(document.querySelector('#qty-rejected')).toBeNull();
     expect(screen.getByTestId('done-button')).not.toBeDisabled();
@@ -84,7 +84,7 @@ describe('GetQuantityDialog: scan once, enter quantity', () => {
 
   it('posts the typed count on OK', async () => {
     const onQtyChange = jest.fn().mockResolvedValue();
-    renderDialog({ cuQtyEntryMode: CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, onQtyChange });
+    renderDialog({ cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY, onQtyChange });
     await typeQty('3');
     await act(async () => {
       fireEvent.click(screen.getByTestId('done-button'));
@@ -94,16 +94,16 @@ describe('GetQuantityDialog: scan once, enter quantity', () => {
     );
   });
 
-  it('keeps the existing behaviour when the mode is absent (prefilled with the open qty, reject block shown)', async () => {
-    renderDialog({ cuQtyEntryMode: undefined });
+  it('prefills the open qty and shows the reject block when the mode is absent (prefilled with the open qty, reject block shown)', async () => {
+    renderDialog({ cuQtyEntryPolicy: undefined });
     await act(async () => {});
     expect(document.querySelector('#qty-input').value).toBe('10');
     await typeQty('3');
     expect(document.querySelector('#qty-rejected')).not.toBeNull();
   });
 
-  it('keeps the existing behaviour for MANUAL', async () => {
-    renderDialog({ cuQtyEntryMode: CUQtyEntryMode.MANUAL });
+  it('prefills the open qty and shows the reject block for MANUAL', async () => {
+    renderDialog({ cuQtyEntryPolicy: POLICY.MANUAL });
     await act(async () => {});
     expect(document.querySelector('#qty-input').value).toBe('10');
   });
@@ -118,7 +118,7 @@ describe('ScanHUAndGetQtyComponent: scan once passes the label', () => {
           qtyMax={10}
           qtyTarget={10}
           uom="PCE"
-          cuQtyEntryMode={CUQtyEntryMode.SCAN_ONCE_ENTER_QTY}
+          cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
           resolveScannedBarcode={async () => ({ lotNo: 'L1', cuLabel: 'RAW-LABEL' })}
           onResult={onResult}
         />
@@ -143,13 +143,13 @@ describe('ScanHUAndGetQtyComponent: scan once passes the label', () => {
 
 describe('GetQuantityDialog: lot and best-before come from the label', () => {
   it('are read-only in scan once', async () => {
-    renderDialog({ cuQtyEntryMode: CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, lotNo: 'L1', bestBeforeDate: '2026-11-07' });
+    renderDialog({ cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY, lotNo: 'L1', bestBeforeDate: '2026-11-07' });
     await act(async () => {});
     expect(screen.getByTestId('lotNo')).toBeDisabled();
   });
 
   it('stay editable for Manual when the profile reads the lot', async () => {
-    renderDialog({ cuQtyEntryMode: undefined, readAttributes: ['LotNo'] });
+    renderDialog({ cuQtyEntryPolicy: undefined, readAttributes: ['LotNo'] });
     await act(async () => {});
     expect(screen.getByTestId('lotNo')).not.toBeDisabled();
   });

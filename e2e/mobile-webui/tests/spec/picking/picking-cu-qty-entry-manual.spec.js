@@ -9,7 +9,7 @@ import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLine
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
-import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryScanOnce";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 
@@ -111,7 +111,7 @@ test('Manual profile, line of 10 TU is picked', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story('Manual mode unchanged');
+    allure.story('Manual mode');
     allure.severity('normal');
 
     const masterdata = await createMasterdata({ pickTo: ['LU_TU'] });
@@ -143,7 +143,7 @@ test('Manual profile, partial pick asks a reason, "New TU" behaves', async ({ pa
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story('Manual mode unchanged');
+    allure.story('Manual mode');
     allure.severity('normal');
 
     const masterdata = await createMasterdata({ pickTo: ['TU'] });

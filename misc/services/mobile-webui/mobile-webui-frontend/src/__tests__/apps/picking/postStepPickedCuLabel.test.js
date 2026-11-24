@@ -1,4 +1,4 @@
-import { postStepPicked } from '../../api/picking';
+import { postStepPicked } from '../../../api/picking';
 import axios from 'axios';
 
 jest.mock('axios');

@@ -1,6 +1,6 @@
 import { getLinesArrayFromActivity } from '../reducers/wfProcesses';
 import * as CompleteStatus from '../constants/CompleteStatus';
-import { getCUQtyEntryPolicy } from '../constants/CUQtyEntryMode';
+import { getCUQtyEntryPolicy } from '../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 
 export const isUserEditable = ({ activity }) => activity?.dataStored?.isUserEditable ?? false;
 
@@ -112,8 +112,7 @@ export const computeCUEntryToRemember = ({
 });
 
 /** @returns true if at least one of the lines enters CU quantities in a label-based mode (label scan); false for none / absent field */
-export const hasLabelRequiredLine = (lines) =>
-  (lines ?? []).some((line) => getCUQtyEntryPolicy(line?.cuQtyEntryMode).isLabelRequired);
+export const hasLabelRequiredLine = (lines) => (lines ?? []).some((line) => getCUQtyEntryPolicy(line).labelRequired);
 
 /** Quick Pack All books whole lines without a CU label, so it is offered only when no line has a label-based mode. */
 export const isQuickPackAllAllowed = ({ allowQuickPackAll, lines }) =>

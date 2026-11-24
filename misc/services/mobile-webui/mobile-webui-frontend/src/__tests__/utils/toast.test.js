@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify';
-import { toastError } from '../../utils/toast';
+import { toastError, toastErrorFromObj } from '../../utils/toast';
+import { UserMessageError } from '../../utils/UserMessageError';
 import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from '../../utils/toastLayout';
 
 jest.mock('../../utils/ui_trace', () => ({ trace: jest.fn() }));
@@ -29,5 +30,15 @@ describe('toastError', () => {
 
     const message = toastErrorSpy.mock.calls[0][0].props.message;
     expect(message).toMatch(/ Expected constant '01' but got '\]d'$/);
+  });
+
+  it('shows a UserMessageError as its message with the details, not as a server error', () => {
+    const toastErrorSpy = jest.spyOn(toast, 'error').mockImplementation(() => undefined);
+
+    toastErrorFromObj(new UserMessageError('picking.cuLabel.formatMismatch', 'part 3 does not fit'));
+
+    const message = toastErrorSpy.mock.calls[0][0].props.message;
+    expect(message).toMatch(/ part 3 does not fit$/);
+    expect(toastErrorSpy.mock.calls[0][0].props.code).toBe('picking.cuLabel.formatMismatch');
   });
 });

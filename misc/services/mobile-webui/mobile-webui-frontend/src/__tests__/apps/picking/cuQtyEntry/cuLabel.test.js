@@ -1,4 +1,9 @@
-import { readCULabel, resolveCULabel, routeScannedCode, selectCULabelFormat } from '../../utils/cuLabel';
+import {
+  readCULabel,
+  resolveCULabel,
+  routeScannedCode,
+  selectCULabelFormat,
+} from '../../../../apps/picking/cuQtyEntry/cuLabel';
 
 describe('cuLabel.selectCULabelFormat', () => {
   const f1 = { id: 11, name: 'A', parts: [] };
@@ -123,7 +128,7 @@ describe('cuLabel.resolveCULabel', () => {
     });
   });
 
-  it('refuses another product with the existing differentProduct key', () => {
+  it('refuses another product with the differentProduct key', () => {
     expect(resolveCULabel({ string: LABEL, format, expectedProductNo: 'OTHER01' })).toEqual({
       errorKey: 'activities.picking.qrcode.differentProduct',
     });
@@ -141,6 +146,9 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     id: 8,
     name: 'CU label with pack ID',
     parts: [...markerParts, ...dataParts, constant(47, 48, '92'), { type: 'PACK_ID', startPosition: 49 }],
+    // the zone as the backend publishes it (`JsonScannableCodeFormat`): from the "92" marker to the start of the pack ID
+    packIdZoneStart: 47,
+    packIdZoneEnd: 49,
   };
 
   it('reads the pack ID (open end), also with several digits', () => {
@@ -167,7 +175,7 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     }
   });
 
-  // parity vector with the backend PickingCULabelServiceTest.fallbackMarkerWithGapBeforeNextPart_labelEndingInsideTheGap_isAFormatMismatch
+  // same case as the backend PickingCULabelServiceTest.fallbackMarkerWithGapBeforeNextPart_labelEndingInsideTheGap_isAFormatMismatch
   it('no PackId part, a gap between the "92" marker and the next part: the zone ends after the marker itself', () => {
     const gapFormat = {
       ...packIdFormat,

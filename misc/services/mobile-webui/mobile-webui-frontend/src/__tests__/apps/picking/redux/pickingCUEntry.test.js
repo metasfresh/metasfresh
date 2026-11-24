@@ -1,7 +1,7 @@
-import reducer, { getActivityById } from '../../../reducers/wfProcesses';
-import { getCUEntry } from '../../../reducers/wfProcesses/picking';
-import { rememberCUEntry } from '../../../actions/PickingActions';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
+import reducer, { getActivityById } from '../../../../reducers/wfProcesses';
+import { getCUEntry } from '../../../../reducers/wfProcesses/picking';
+import { rememberCUEntry } from '../../../../apps/picking/redux/PickingActions';
+import { updateWFProcess } from '../../../../actions/WorkflowActions';
 
 const wfProcessId = 'wf1';
 const activityId = 'act1';

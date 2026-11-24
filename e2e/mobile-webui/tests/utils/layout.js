@@ -45,7 +45,7 @@ const measureLayout = ({ scope, minTapSize }) => {
 
     // The app's own chrome (caption bar with its sliding title, fixed footer) and the job header table / job line buttons are base screens,
     // not changed by the CU quantity entry modes: a long customer or slot name is cut there by the base layout (view-header.scss `td { overflow: hidden }`).
-    const isLabelBasedScreen = (el) => !!el.closest('[data-cu-qty-entry-mode="SCAN_EACH_CU"], [data-cu-qty-entry-mode="SCAN_ONCE_ENTER_QTY"]');
+    const isLabelBasedScreen = (el) => !!el.closest('[data-cu-label-scan="true"]');
     const isBaseChrome = (el) => !!el.closest('.app-header, .app-footer') || (!!el.closest('.view-header') && !isLabelBasedScreen(el));
     const isLineButtonText = (el) => !!el.closest('button[id^="line-"]');
     const all = [...root.querySelectorAll('*')].filter(isShown).filter((el) => !isBaseChrome(el));

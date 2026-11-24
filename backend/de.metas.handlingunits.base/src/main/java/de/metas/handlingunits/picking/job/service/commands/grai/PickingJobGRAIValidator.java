@@ -9,9 +9,11 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.hu.CUBookingSpecification;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -35,7 +37,7 @@ public class PickingJobGRAIValidator
 	// State
 	@NonNull private final SalesOrderDummyGRAIProviders salesOrderDummyGRAIProviders;
 	/** computed on first use: customers that do not require GRAIs never need it */
-	@Nullable private ImmutableSet<HuId> _cusBookedInCUQtyEntryMode;
+	@Nullable private ImmutableSet<HuId> _cusBookedWithLabelScan;
 	@NonNull private final CustomerGRAIConfigProvider customerGRAIConfigProvider;
 
 	@Builder
@@ -61,21 +63,18 @@ public class PickingJobGRAIValidator
 	}
 
 	/**
-	 * The picks that were booked in a CU quantity entry mode ({@link PickingJobHUService#filterCUsBookedInCUQtyEntryMode}, the same rule the close of all targets uses):
+	 * The picks that were booked with a label scan ({@link CUBookingSpecification#filterBookedWithLabelScan}, the same rule the close of all targets uses):
 	 * the check follows what was picked, not the customer's current mode.
 	 * Only the picks of lines that require GRAIs are looked up: the lookup walks each CU up to its box.
 	 */
 	@NonNull
-	private ImmutableSet<HuId> getCUsBookedInCUQtyEntryMode()
+	private ImmutableSet<HuId> getCUsBookedWithLabelScan()
 	{
-		ImmutableSet<HuId> result = this._cusBookedInCUQtyEntryMode;
+		ImmutableSet<HuId> result = this._cusBookedWithLabelScan;
 		if (result == null)
 		{
-			result = this._cusBookedInCUQtyEntryMode = huService.filterCUsBookedInCUQtyEntryMode(
-					pickingJob.getLines().stream()
-							.filter(line -> !extractGRAIValidationSegment(line).getGraiRequired().isNo())
-							.flatMap(line -> line.getPickedHUInfos().stream())
-							.collect(ImmutableSet.toImmutableSet()));
+			final ImmutableSet<HUInfo> pickedOfGraiLines = pickingJob.getPickedHUInfos(line -> !extractGRAIValidationSegment(line).getGraiRequired().isNo());
+			result = this._cusBookedWithLabelScan = huService.getCUBookingSpecification().filterBookedWithLabelScan(pickedOfGraiLines);
 		}
 		return result;
 	}
@@ -87,7 +86,7 @@ public class PickingJobGRAIValidator
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), getCUsBookedInCUQtyEntryMode());
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfBoxes(ImmutableSet.copyOf(pickedHUIds), getCUsBookedWithLabelScan());
 
 		if (graiRequired == GRAIRequired.Yes)
 		{

@@ -11,7 +11,7 @@ import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { allureMeta, labelOf, MODE_MANUAL, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, labelOf, MODE_MANUAL, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryCommon";
 import { createScanEachMasterdata, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);

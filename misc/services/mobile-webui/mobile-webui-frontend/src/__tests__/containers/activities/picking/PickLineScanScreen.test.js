@@ -1,3 +1,4 @@
+import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
 import React from 'react';
 import { render } from '@testing-library/react';
 import { toast } from 'react-toastify';
@@ -105,10 +106,9 @@ describe('PickingLineScanScreen: label-based mode label scan', () => {
 describe('PickingLineScanScreen: pick-time GRAI capture', () => {
   it('stays on for Manual  and is switched off in both label-based modes', () => {
     const base = { graiScanEnabled: true, tuPickingTarget: null };
-    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: undefined })).toBe(true);
-    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: 'MANUAL' })).toBe(true);
-    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: 'SCAN_EACH_CU' })).toBe(false);
-    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' })).toBe(false);
+    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryPolicy: POLICY.MANUAL })).toBe(true);
+    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryPolicy: POLICY.SCAN_EACH_CU })).toBe(false);
+    expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY })).toBe(false);
   });
 
   it('keeps the rule of Manual: off when GRAI scanning is not required or a TU target is set', () => {
@@ -174,12 +174,14 @@ describe('PickingLineScanScreen: quantity unit follows the line picking unit fro
 
 describe('PickingLineScanScreen: re-entry hop', () => {
   it('a CU quantity entry mode never reads the source HU of the hop as a scan', () => {
-    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' })).toBeUndefined();
-    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryMode: 'SCAN_EACH_CU' })).toBeUndefined();
+    expect(
+      computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY })
+    ).toBeUndefined();
+    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryPolicy: POLICY.SCAN_EACH_CU })).toBeUndefined();
   });
 
   it('Manual and an absent mode keep the param', () => {
-    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryMode: 'MANUAL' })).toBe('HU#1#{}');
+    expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryPolicy: POLICY.MANUAL })).toBe('HU#1#{}');
     expect(computeScannedBarcodeParam({ qrCode: 'HU#1#{}' })).toBe('HU#1#{}');
     expect(computeScannedBarcodeParam({ qrCode: null })).toBeNull();
   });
@@ -217,17 +219,17 @@ describe('PickingLineScanScreen: the HU the PICK event takes the packs from', ()
 
   it('a CU quantity entry mode picks from the "Kommissionieren aus" HU, never from the scanned label', () => {
     expect(
-      computePickFromHUQRCode({ cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY', sourceHUQRCode, scannedBarcode: label })
+      computePickFromHUQRCode({ cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY, sourceHUQRCode, scannedBarcode: label })
     ).toBe(sourceHUQRCode);
-    expect(computePickFromHUQRCode({ cuQtyEntryMode: 'SCAN_EACH_CU', sourceHUQRCode, scannedBarcode: label })).toBe(
-      sourceHUQRCode
-    );
+    expect(
+      computePickFromHUQRCode({ cuQtyEntryPolicy: POLICY.SCAN_EACH_CU, sourceHUQRCode, scannedBarcode: label })
+    ).toBe(sourceHUQRCode);
   });
 
   it('Manual and an absent mode: the scanned code is the pick-from HU', () => {
-    expect(computePickFromHUQRCode({ cuQtyEntryMode: 'MANUAL', sourceHUQRCode, scannedBarcode: 'HU#1#{}' })).toBe(
-      'HU#1#{}'
-    );
+    expect(
+      computePickFromHUQRCode({ cuQtyEntryPolicy: POLICY.MANUAL, sourceHUQRCode, scannedBarcode: 'HU#1#{}' })
+    ).toBe('HU#1#{}');
     expect(computePickFromHUQRCode({ sourceHUQRCode, scannedBarcode: 'HU#1#{}' })).toBe('HU#1#{}');
   });
 
@@ -240,15 +242,15 @@ describe('PickingLineScanScreen: the HU the PICK event takes the packs from', ()
   });
 
   it('a label-based-mode pick without any source HU is refused with the pick-from message, nothing is posted', () => {
-    ['SCAN_EACH_CU', 'SCAN_ONCE_ENTER_QTY'].forEach((cuQtyEntryMode) => {
+    [POLICY.SCAN_EACH_CU, POLICY.SCAN_ONCE_ENTER_QTY].forEach((cuQtyEntryPolicy) => {
       expect(() =>
-        computePickFromHUQRCode({ cuQtyEntryMode, sourceHUQRCode: undefined, scannedBarcode: label })
+        computePickFromHUQRCode({ cuQtyEntryPolicy, sourceHUQRCode: undefined, scannedBarcode: label })
       ).toThrow(expect.objectContaining({ messageKey: 'picking.pickFromRequired' }));
     });
   });
 
-  it('Manual without a source HU is unchanged (no refusal)', () => {
-    expect(computePickFromHUQRCode({ cuQtyEntryMode: 'MANUAL', scannedBarcode: 'HU#1#{}' })).toBe('HU#1#{}');
+  it('Manual without a source HU: no refusal', () => {
+    expect(computePickFromHUQRCode({ cuQtyEntryPolicy: POLICY.MANUAL, scannedBarcode: 'HU#1#{}' })).toBe('HU#1#{}');
   });
 });
 
@@ -261,7 +263,7 @@ describe('PickingLineScanScreen: no-source refusal reaches the toast', () => {
 
     let postQty;
     const Harness = () => {
-      postQty = usePostQtyPicked({ wfProcessId: 'wf', activityId: 'a', cuQtyEntryMode: 'SCAN_ONCE_ENTER_QTY' });
+      postQty = usePostQtyPicked({ wfProcessId: 'wf', activityId: 'a', cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY });
       return null;
     };
     render(<Harness />);
@@ -271,7 +273,7 @@ describe('PickingLineScanScreen: no-source refusal reaches the toast', () => {
       () => null,
       (e) => e
     );
-    expect(error).toEqual({ messageKey: 'picking.pickFromRequired' });
+    expect(error).toMatchObject({ name: 'UserMessageError', messageKey: 'picking.pickFromRequired' });
     toastErrorFromObj(error);
 
     expect(mockDispatch).not.toHaveBeenCalled();
@@ -292,7 +294,7 @@ describe('PickingLineScanScreen: Manual product mismatch stays synchronous', () 
         wfProcessId: 'wf',
         activityId: 'a',
         expectedProductNo: 'P1',
-        cuQtyEntryMode: 'MANUAL',
+        cuQtyEntryPolicy: POLICY.MANUAL,
       });
       return null;
     };

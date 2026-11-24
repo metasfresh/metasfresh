@@ -1,5 +1,8 @@
 package de.metas.handlingunits.picking.job.service;
 
+import de.metas.handlingunits.picking.job.service.external.hu.CUBookingSpecification;
+import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
+import java.util.Set;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -577,6 +580,8 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOfA).as("A booked one CU").hasSize(1);
 			assertThat(pickedJob.getLineById(lineBId).getPickedHUIds()).as("B booked one CU").hasSize(1);
 			final PickingJobHUService huServiceSpy = Mockito.spy(helper.huService);
+			final CUBookingSpecification specSpy = Mockito.spy(helper.huService.getCUBookingSpecification());
+			Mockito.doReturn(specSpy).when(huServiceSpy).getCUBookingSpecification();
 
 			assertThatThrownBy(() -> PickingJobGRAIValidator.builder()
 					.huService(huServiceSpy)
@@ -587,7 +592,7 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 
 			@SuppressWarnings("unchecked") final ArgumentCaptor<Collection<HUInfo>> lookedUp = ArgumentCaptor.forClass(Collection.class);
-			Mockito.verify(huServiceSpy).filterCUsBookedInCUQtyEntryMode(lookedUp.capture());
+			Mockito.verify(specSpy).filterBookedWithLabelScan(lookedUp.capture());
 			assertThat(lookedUp.getValue()).extracting(HUInfo::getId).as("only the CUs of the GRAI customer are looked up").containsExactlyElementsOf(cusOfA);
 		}
 
@@ -611,9 +616,9 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
-		/** The reverse switch: a job picked in Manual, then the customer is switched to a label-based mode: the box is checked as picked (as on the base branch), not looked up by the CU rule. */
+		/** The reverse switch: a job picked in Manual, then the customer is switched to a label-based mode: the box is checked as picked, not looked up by the CU rule. */
 		@Test
-		void manualPick_thenModeSwitchedToLabelBasedMode_boxWithoutGrai_isRefusedAsBefore()
+		void manualPick_thenModeSwitchedToLabelBasedMode_boxWithoutGrai_isRefused()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -629,7 +634,7 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		/**
-		 * A CU inside a TU that was NOT booked in a CU quantity entry mode (Manual records the box's QR code with such a CU) is checked as it is, as on the base branch:
+		 * A CU inside a TU that was NOT booked in a CU quantity entry mode (Manual records the box's QR code with such a CU) is checked as it is:
 		 * the CU has no GRAI snapshot, so the box is not looked up. Only a CU booked with its own QR code is replaced by its box.
 		 */
 		@Test
@@ -637,7 +642,7 @@ class PickingJobCUQtyEntryPickTest
 		{
 			final HuId boxId = helper.createHU(tuPIId, productId, helper.qty("4", productId));
 			final HuId cuId = HuId.ofRepoId(cusOf(boxId).get(0).getM_HU_ID());
-			assertThat(helper.huService.isCUInTU(handlingUnitsBL.getById(cuId))).as("the CU sits in the box").isTrue();
+			assertThat(helper.huService.getCUBookingSpecification().isCUInBox(handlingUnitsBL.getById(cuId))).as("the CU sits in the box").isTrue();
 
 			assertThat(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(cuId), ImmutableSet.of()))
 					.as("Manual-shaped CU: checked as it is, the CU has no GRAI snapshot").isEmpty();
@@ -647,7 +652,7 @@ class PickingJobCUQtyEntryPickTest
 
 		/**
 		 * One QR code can be assigned to several HUs (a split HU shares the source's QR code). A customer that does not require GRAIs
-		 * must complete a job picked from such a HU, as on the base branch: no QR code lookup may run, let alone throw.
+		 * must complete a job picked from such a HU: no QR code lookup may run, let alone throw.
 		 */
 		@Test
 		void pickedHUWithQRCodeSharedBySeveralHUs_graiNotRequired_completes()
@@ -684,7 +689,7 @@ class PickingJobCUQtyEntryPickTest
 
 		/** Manual mode: the picked HU is the box itself (asserted below); the box has no GRAI, so completion is refused. */
 		@Test
-		void manualMode_boxWithoutGrai_graiRequiredYes_isRefusedAsBefore()
+		void manualMode_boxWithoutGrai_graiRequiredYes_isRefused()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -779,7 +784,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId boxId = openBoxId(job);
 			assertThat(cusOf(boxId)).hasSize(1);
 			assertThat(qtyOf(cusOf(boxId).get(0))).isEqualByComparingTo("5");
-			final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(boxId)))).getAllGrais();
+			final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(graiSnapshotsOfBoxes(ImmutableSet.of(boxId)))).getAllGrais();
 			assertThat(grais.toSet()).as("GRAI kept on the box").containsExactly(GRAI.parse(GRAI_CANONICAL));
 		}
 
@@ -961,7 +966,7 @@ class PickingJobCUQtyEntryPickTest
 		/**
 		 * (y) Manual with a pallet (LU) and a box (TU) target: a booking of 2 (box capacity 4) books the box on the pallet as the picked HU,
 		 * not a CU in a box, so the un-pick's CU-in-box delete does not apply; "Entpacken" leaves no QtyPicked row of the box and nothing
-		 * picked (the Manual un-pick of a box, unchanged).
+		 * picked (the Manual un-pick of a box).
 		 */
 		@Test
 		void manual_palletAndBox_pickedHUIsTheBox_undoLeavesNothingPicked()
@@ -979,7 +984,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId boxId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
 			final I_M_HU box = handlingUnitsBL.getById(boxId);
 			assertThat(handlingUnitsBL.isTransportUnit(box)).as("Manual: the picked HU is the box").isTrue();
-			assertThat(helper.huService.isCUInTU(box)).isFalse();
+			assertThat(helper.huService.getCUBookingSpecification().isCUInBox(box)).isFalse();
 			assertThat(countQtyPickedRowsOfBox(boxId)).isEqualTo(1);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
 
@@ -994,7 +999,7 @@ class PickingJobCUQtyEntryPickTest
 		 * Manual, CU line, pallet (LU) target and no box (TU): the real pick (the LU_CU structure, as in the over-picking Playwright spec)
 		 * puts the booked CU directly on the pallet. It is not a CU in a box, so the un-pick does not take the CU-in-box path and runs exactly
 		 * the Manual code: the HU is not picked, the line has nothing picked, and the QtyPicked row of the CU is
-		 * left as it is on the base branch (checked by running this test with the CU-in-box delete removed from the un-pick: same result).
+		 * left as it is (checked by running this test with the CU-in-box delete removed from the un-pick: same result).
 		 * <p>
 		 * KNOWN BASE DEFECT: the un-pick of a CU picked directly onto an LU leaves its {@code M_ShipmentSchedule_QtyPicked} row, because the
 		 * row has {@code M_TU_HU_ID} = the CU at pick time ({@code HandlingUnitsBL.getTransportUnitHU} returns the CU itself, HandlingUnitsBL.java:846-851),
@@ -1018,7 +1023,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(handlingUnitsBL.isVirtual(pickedHU)).as("the picked HU is a CU").isTrue();
 			assertThat(handlingUnitsBL.getLoadingUnitHU(pickedHU)).as("on the pallet").isNotNull();
 			assertThat(handlingUnitsBL.getTransportUnitHU(pickedHU)).as("no box (TU) around it").satisfies(tu -> assertThat(tu == null || !handlingUnitsBL.isTransportUnit(tu)).isTrue());
-			assertThat(helper.huService.isCUInTU(pickedHU)).isFalse();
+			assertThat(helper.huService.getCUBookingSpecification().isCUInBox(pickedHU)).isFalse();
 			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("the pick booked its QtyPicked row").isEqualTo(1);
 			assertThat(countAllQtyPickedRows()).isEqualTo(1);
 
@@ -1051,7 +1056,7 @@ class PickingJobCUQtyEntryPickTest
 			cuOnPallet.setM_HU_Item_Parent_ID(luHUItem.getM_HU_Item_ID());
 			InterfaceWrapperHelper.save(cuOnPallet);
 
-			assertThat(helper.huService.isCUInTU(cuOnPallet)).isFalse();
+			assertThat(helper.huService.getCUBookingSpecification().isCUInBox(cuOnPallet)).isFalse();
 		}
 	}
 
@@ -1551,7 +1556,7 @@ class PickingJobCUQtyEntryPickTest
 			job = pickEach(job, source, LOT_A, "2");
 
 			final HuId nextBoxId = openBoxId(job);
-			final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(nextBoxId)))).getAllGrais();
+			final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(graiSnapshotsOfBoxes(ImmutableSet.of(nextBoxId)))).getAllGrais();
 			assertThat(grais.toSet()).as("the next pack's box carries the GRAI").containsExactly(GRAI.parse(GRAI_CANONICAL));
 		}
 
@@ -1704,5 +1709,11 @@ class PickingJobCUQtyEntryPickTest
 			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
 			return new BoxOfCustomerA(job, boxA, slotB);
 		}
+	}
+
+	/** The GRAI snapshots as the completion check sees them when every CU in a box (TU) of {@code huIds} was booked with a label scan. */
+	private HUGraiSnapshotsCollection graiSnapshotsOfBoxes(final Set<HuId> huIds)
+	{
+		return helper.huService.getGraiSnapshotsOfBoxes(huIds, helper.huService.getCUBookingSpecification().filterCUsInBox(huIds));
 	}
 }

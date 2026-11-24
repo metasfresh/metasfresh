@@ -4,18 +4,18 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import ScanHUAndGetQtyComponent from '../../components/ScanHUAndGetQtyComponent';
-import { reducer as settings } from '../../reducers/settings';
-import { CUQtyEntryMode } from '../../constants/CUQtyEntryMode';
+import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
+import { reducer as settings } from '../../../../reducers/settings';
+import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
 
-jest.mock('../../utils/ui_trace', () => ({
+jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
   traceFunction: (func) => func,
   traceLogWarn: jest.fn(),
   putContext: jest.fn(),
 }));
-jest.mock('../../utils/audio', () => ({ beep: jest.fn() }));
-jest.mock('../../utils/toast', () => ({
+jest.mock('../../../../utils/audio', () => ({ beep: jest.fn() }));
+jest.mock('../../../../utils/toast', () => ({
   toastError: jest.fn(),
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
@@ -35,7 +35,7 @@ const renderComponent = ({ onResult, resolveScannedBarcode, ...props }) =>
         qtyMax={12}
         qtyTarget={12}
         uom="PCE"
-        cuQtyEntryMode={CUQtyEntryMode.SCAN_ONCE_ENTER_QTY}
+        cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
         resolveScannedBarcode={resolveScannedBarcode ?? (async (code) => labels[code])}
         onResult={onResult}
         {...props}
@@ -88,7 +88,7 @@ describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
           qtyTarget={7}
           suggestedQty={5}
           uom="PCE"
-          cuQtyEntryMode={CUQtyEntryMode.SCAN_ONCE_ENTER_QTY}
+          cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
           resolveScannedBarcode={async (code) => labels[code]}
           onResult={onResult}
         />
@@ -190,7 +190,7 @@ describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
     const onResult = jest.fn().mockResolvedValue();
     renderComponent({
       onResult,
-      cuQtyEntryMode: CUQtyEntryMode.MANUAL,
+      cuQtyEntryPolicy: POLICY.MANUAL,
       resolveScannedBarcode: async () => ({ qtyTarget: 12, qtyMax: 12 }),
     });
     await act(async () => {});

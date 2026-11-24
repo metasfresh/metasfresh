@@ -1,5 +1,5 @@
-// Shared setup of the CU quantity entry specs that drive a product-based picking job in Scan once
-// ("one label, type a count"): masterdata, job start, line open, label scan.
+// Shared setup of the CU quantity entry specs (all modes) that drive a product-based picking job: masterdata, job start, line open, label scan
+// and booking. The examples in the comments are of Scan once ("one label, type a count").
 //
 // Flow of the app as built: with a source HU scanned ("Kommissionieren aus"), a tap on a line with nothing picked opens
 // its scan screen directly; a label scan opens the quantity block; after OK the picker stays on the line (the block
@@ -17,11 +17,11 @@ import { GetQuantityDialog } from './screens/picking/GetQuantityDialog';
 import { PickingJobLineScreen } from './screens/picking/PickingJobLineScreen';
 import { PickingJobStepScreen } from './screens/picking/PickingJobStepScreen';
 import { SelectPickTargetLUScreen } from './screens/picking/SelectPickTargetLUScreen';
-import { buildCULabel, buildCULabelFormat, uniqueGTIN, uniqueLot, uniqueProductValue } from './cuLabel';
+import { buildCULabel, buildCULabelFormat, defaultBestBefore, uniqueGTIN, uniqueLot, uniqueProductValue } from './cuLabel';
 
 export const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
 export const MODE_MANUAL = 'MANUAL';
-export const BEST_BEFORE = '2026-11-07';
+export const BEST_BEFORE = defaultBestBefore();
 export const SOURCE_QTY = 80; // 20 boxes x 4 pieces
 // GS1 AI 8003 GRAI form (AI + pad + company prefix 7613264 + asset type 00309 + check digit + first serial digit); same public test value as tests/spec/humanager/grai.spec.js
 export const GRAI_8003_PREFIX = '8003076132640030951';

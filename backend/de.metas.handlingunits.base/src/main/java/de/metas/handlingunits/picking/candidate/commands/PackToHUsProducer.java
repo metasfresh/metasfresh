@@ -359,7 +359,7 @@ public class PackToHUsProducer
 
 	/**
 	 * Merges the source HUs into ONE new standalone CU of the given quantity and returns it as the only pick-from HU.
-	 * Reserved pieces are skipped / refused as in the existing open-box branch.
+	 * Reserved pieces are skipped / refused as in the open-box branch.
 	 */
 	private PickFromHUsList consolidateToSingleCU(@NonNull final PackToHURequest request, @NonNull final PickFromHUsList pickFromHUs)
 	{

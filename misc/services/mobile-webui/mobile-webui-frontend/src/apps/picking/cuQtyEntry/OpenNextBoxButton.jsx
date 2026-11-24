@@ -2,20 +2,29 @@ import React, { useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-import DialogButton from './dialogs/DialogButton';
-import { closePickingTarget, setTUPickingTargetFromGrai } from '../api/picking';
-import { updateWFProcess } from '../actions/WorkflowActions';
-import { PickingTargetType } from '../constants/PickingTargetType';
-import { selectPickingTargetScreenLocation } from '../routes/picking';
-import { useMobileNavigation } from '../hooks/useMobileNavigation';
-import { toastErrorFromObj, toastNotification } from '../utils/toast';
-import { trl } from '../utils/translations';
+import DialogButton from '../../../components/dialogs/DialogButton';
+import { closePickingTarget, setTUPickingTargetFromGrai } from '../../../api/picking';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { PickingTargetType } from '../../../constants/PickingTargetType';
+import { selectPickingTargetScreenLocation } from '../../../routes/picking';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import { UserMessageError } from '../../../utils/UserMessageError';
+import { toastErrorFromObj, toastNotification } from '../../../utils/toast';
+import { trl } from '../../../utils/translations';
 
 /**
- * The "next box" button of a CU quantity entry mode: one tap, shown in the quantity block's button row (after
- * Abbrechen) and under the scan field on the scan step. A plain button: it never submits the quantity form.
+ * Button "Next box" (picking, lines with a CU quantity entry mode that books into boxes).
+ *
+ * What it provides: one tap closes the line's open box (if any) and opens the next box of the line's box type (TU), or leads to the
+ * box list when the line's packing names no box type. Booking a CU needs an open box, so without this button the picker would have to
+ * leave the quantity screen to start the next box.
+ *
+ * Why it is here: the screens that show it (the scan step and the quantity block of the picking line) only render it; the logic lives
+ * next to it in {@link useOpenNextBox}, which the screens call and which also opens a box for a scanned GRAI.
+ *
+ * When to use it: on a picking line whose `cuQtyEntryPolicy.labelRequired` is true. It is a plain button, it never submits the quantity form.
  */
-const NextBoxActions = ({ isProcessing = false, onNextBox }) => (
+const OpenNextBoxButton = ({ isProcessing = false, onNextBox }) => (
   <DialogButton
     captionKey="picking.nextBox"
     testId="next-box-button"
@@ -26,18 +35,12 @@ const NextBoxActions = ({ isProcessing = false, onNextBox }) => (
   />
 );
 
-NextBoxActions.propTypes = {
+OpenNextBoxButton.propTypes = {
   isProcessing: PropTypes.bool,
   onNextBox: PropTypes.func.isRequired,
 };
 
-export default NextBoxActions;
-
-//
-//
-// -------------------------------------------------------------------------------------
-//
-//
+export default OpenNextBoxButton;
 
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
@@ -46,7 +49,7 @@ const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // nu
  * names no TU type gets the box list instead.
  */
 // @VisibleForTesting
-export const openNextBox = async ({
+export const closeAndOpenNextBox = async ({
   packingTuPIId,
   packingItemName,
   isTargetOpen,
@@ -71,7 +74,7 @@ export const openNextBox = async ({
  * @param setPickingTarget `setPickingTarget` of `useAvailablePickingTargets({type: TU})`
  * @param tuPickingTarget the box open on the line, if any
  */
-export const useNextBox = ({
+export const useOpenNextBox = ({
   applicationId,
   wfProcessId,
   activityId,
@@ -101,8 +104,7 @@ export const useNextBox = ({
   const runExclusive = useCallback(async (action, { isRethrow = false } = {}) => {
     if (isInFlightRef.current) {
       // a scan must not report success for a box that was not opened.
-      // An object with a message key, not an Error: toastErrorFromObj shows an Error as a generic server error, not this text.
-      if (isRethrow) throw { messageKey: 'picking.nextBoxBusy' };
+      if (isRethrow) throw new UserMessageError('picking.nextBoxBusy');
       return;
     }
     isInFlightRef.current = true;
@@ -120,7 +122,7 @@ export const useNextBox = ({
 
   const onNextBox = () =>
     runExclusive(async () => {
-      await openNextBox({
+      await closeAndOpenNextBox({
         ...closeOpenBoxDeps,
         packingTuPIId,
         packingItemName,

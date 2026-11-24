@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service;
 
+import java.util.Set;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
@@ -570,7 +571,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId cuId = createBoxWithCU(productId).getCuId();
 
-			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(cuId)).assertAllGraisAssigned())
+			assertThatThrownBy(() -> graiSnapshotsOfBoxes(ImmutableSet.of(cuId)).assertAllGraisAssigned())
 					.as("a CU in a box without GRAI must fail the GRAI count check")
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
@@ -584,7 +585,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final BoxWithCU box = createBoxWithCU(productId);
 			setGraiOnBox(box.getTuId(), GRAI.parse(GRAI_CANONICAL));
 
-			helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
+			graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
 		}
 
 		/** Several CUs of the same box are checked once, via their box. */
@@ -594,7 +595,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final BoxWithCU box = createBoxWithCU(productId);
 
-			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId(), box.getTuId()));
+			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId(), box.getTuId()));
 
 			assertThat(snapshots).hasSize(1);
 		}
@@ -609,13 +610,13 @@ class PickingJobGraiScanPickEndToEndTest
 			assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(tuId)).assertAllGraisAssigned())
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
-			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+			assertThatThrownBy(() -> graiSnapshotsOfBoxes(ImmutableSet.of(tuId)).assertAllGraisAssigned())
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 		}
 
 		/**
-		 * Manual mode is unchanged: a picked CU is NOT replaced by its box (the CU has no GRAI snapshot of its own),
+		 * Manual mode: a picked CU is NOT replaced by its box (the CU has no GRAI snapshot of its own),
 		 * so a box without GRAI is not refused through its CU.
 		 */
 		@Test
@@ -639,11 +640,11 @@ class PickingJobGraiScanPickEndToEndTest
 			final DummyGRAIProvider dummyGRAIProvider = new DummyGRAIProvider(DummyGRAITemplate.migros("1234567890"), 1);
 			final GRAI expectedGrai = DummyGRAITemplate.migros("1234567890").buildGRAI(1);
 
-			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId()));
+			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId()));
 			Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> helper.huService.generateMissingGRAIs(snapshots, dummyGRAIProvider));
 
 			assertThat(helper.huService.getGrais(box.getTuId())).isEqualTo(GRAISet.of(expectedGrai));
-			helper.huService.getGraiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
+			graiSnapshotsOfBoxes(ImmutableSet.of(box.getCuId())).assertAllGraisAssigned();
 		}
 	}
 
@@ -671,5 +672,11 @@ class PickingJobGraiScanPickEndToEndTest
 		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("5", productId));
 		final I_M_HU cu = CollectionUtils.singleElement(Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(tuId));
 		return new BoxWithCU(tuId, HuId.ofRepoId(cu.getM_HU_ID()));
+	}
+
+	/** The GRAI snapshots as the completion check sees them when every CU in a box (TU) of {@code huIds} was booked with a label scan. */
+	private HUGraiSnapshotsCollection graiSnapshotsOfBoxes(final Set<HuId> huIds)
+	{
+		return helper.huService.getGraiSnapshotsOfBoxes(huIds, helper.huService.getCUBookingSpecification().filterCUsInBox(huIds));
 	}
 }

@@ -15,7 +15,7 @@ import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
 import {
     allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, labelOf, LAUNCHERS_LIMIT_SYSCONFIGS, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine,
     restoreSysconfigsAfterEach, scanLabel, setPalletTarget, startJob, unpackFirstBooking,
-} from "../../utils/cuQtyEntryScanOnce";
+} from "../../utils/cuQtyEntryCommon";
 import { createScanEachMasterdata, MODE_SCAN_EACH, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -23,7 +23,7 @@ restoreSysconfigsAfterEach(test);
 /**
  * Layout of the screens and refusals shared by Scan each CU and Scan once (box list, label refusals, GRAI-required customers, pallet target,
  * quick pack all) and of the Scan each CU only states (pieces-only refusal, second lot, finished line, unpack, second job) at the phone sizes
- * (PHONE_VIEWPORTS), in English and German. Same checker as picking-cu-qty-entry-responsive.spec.js.
+ * (PHONE_VIEWPORTS), in English and German. Same checker as picking-cu-qty-entry-layout-label-modes.spec.js.
  */
 const MODES = [MODE_SCAN_EACH, MODE_SCAN_ONCE];
 const modeName = (mode) => (mode === MODE_SCAN_EACH ? 'Each' : 'Once');

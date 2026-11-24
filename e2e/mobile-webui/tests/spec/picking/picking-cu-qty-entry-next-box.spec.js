@@ -11,7 +11,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GRAIScreen } from "../../utils/screens/huManager/GRAIScreen";
-import { allureMeta, book, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, book, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryCommon";
 import { createScanEachMasterdata, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);

@@ -6,7 +6,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from '../../utils/cuQtyEntryScanOnce';
+import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from '../../utils/cuQtyEntryCommon';
 
 restoreSysconfigsAfterEach(test);
 

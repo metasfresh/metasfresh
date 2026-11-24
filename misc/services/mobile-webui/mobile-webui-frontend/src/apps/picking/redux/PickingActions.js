@@ -1,4 +1,4 @@
-import { REMEMBER_CU_ENTRY } from '../constants/PickingActionTypes';
+import { REMEMBER_CU_ENTRY } from './PickingActionTypes';
 
 /**
  * Remembers, per picking activity, the line the picker is working on in a CU quantity entry mode: the last typed count

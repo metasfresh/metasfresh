@@ -8,6 +8,13 @@
 
 import { computeGS1CheckDigit, randomDigits } from './gs1.js';
 
+/** A best-before date a year ahead of the run, 'YYYY-MM-DD': a fixed date would turn the specs red once it is past. */
+export const defaultBestBefore = () => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 1);
+    return date.toISOString().slice(0, 10);
+};
+
 /** Product value length in the label. */
 const PRODUCT_VALUE_LENGTH = 7;
 /** Lot length in the label. */
@@ -63,11 +70,11 @@ const toYYMMDD = (isoDate) => {
  * @param {string} p.gtin 14-digit GTIN
  * @param {string} p.productValue product value (7 characters)
  * @param {string} p.lot lot (9 characters)
- * @param {string} [p.bestBefore='2026-11-07'] best-before, 'YYYY-MM-DD'
+ * @param {string} [p.bestBefore=defaultBestBefore()] best-before, 'YYYY-MM-DD'
  * @param {string|null} [p.packId=null] pack ID (counter); null = no pack-ID tail
  * @returns {string}
  */
-export const buildCULabel = ({ gtin, productValue, lot, bestBefore = '2026-11-07', packId = null }) => {
+export const buildCULabel = ({ gtin, productValue, lot, bestBefore = defaultBestBefore(), packId = null }) => {
     if (!/^\d{14}$/.test(gtin)) {
         throw new Error(`buildCULabel: gtin must be 14 digits, got '${gtin}'`);
     }

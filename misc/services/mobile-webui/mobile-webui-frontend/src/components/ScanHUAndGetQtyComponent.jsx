@@ -17,7 +17,7 @@ import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickCon
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 import Spinner from './Spinner';
 import { doFinally } from '../utils';
-import { getCUQtyEntryPolicy } from '../constants/CUQtyEntryMode';
+import { CUQtyEntryPolicyPropType, MANUAL_POLICY } from '../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import DialogButton from './dialogs/DialogButton';
 import { isLineDoneAfterBooking } from '../utils/picking';
 
@@ -62,7 +62,7 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   customQRCodeFormats,
   readAttributes = [],
-  cuQtyEntryMode,
+  cuQtyEntryPolicy = MANUAL_POLICY,
   isShowCloseTargetButton = false,
   nextBoxActions,
   suggestedQty,
@@ -78,10 +78,9 @@ const ScanHUAndGetQtyComponent = ({
   onResult,
   onClose: onCloseCallback,
 }) => {
-  const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
-  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
+  const isScanOnce = cuQtyEntryPolicy.scanOnce;
   // scan each CU: every label books one CU at once, the scan step stays (no quantity block)
-  const { isPackIdRequired } = cuQtyEntryPolicy;
+  const isPackIdRequired = cuQtyEntryPolicy.packIdRequired;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   // scan once: the quantity block stays open after a booking (and after a label rescan); a new key (also a new
   // suggestion) gives it the new suggestion and the new label values
@@ -493,7 +492,7 @@ const ScanHUAndGetQtyComponent = ({
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           readAttributes={readAttributes}
-          cuQtyEntryMode={cuQtyEntryMode}
+          cuQtyEntryPolicy={cuQtyEntryPolicy}
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
@@ -587,7 +586,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   customQRCodeFormats: PropTypes.array,
   readAttributes: PropTypes.array,
-  cuQtyEntryMode: PropTypes.string,
+  cuQtyEntryPolicy: CUQtyEntryPolicyPropType,
   isShowCloseTargetButton: PropTypes.bool,
   nextBoxActions: PropTypes.node,
   // scan once: the count offered for the next box, and the label of the last booking of this line (re-entry)

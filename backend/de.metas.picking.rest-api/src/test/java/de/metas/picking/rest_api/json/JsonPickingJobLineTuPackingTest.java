@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -73,6 +74,7 @@ class JsonPickingJobLineTuPackingTest
 				.displayGroupKey("")
 				.allowPickingAnyHU(false)
 				.cuQtyEntryMode(cuQtyEntryMode)
+				.cuQtyEntryPolicy(JsonCUQtyEntryPolicy.of(CUQtyEntryMode.ofCode(cuQtyEntryMode).getPolicy()))
 				.build();
 	}
 

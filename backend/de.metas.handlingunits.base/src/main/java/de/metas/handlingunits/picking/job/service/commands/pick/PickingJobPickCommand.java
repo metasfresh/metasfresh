@@ -473,7 +473,7 @@ public class PickingJobPickCommand
 				// a contract violation, not an operator error: the mobile app always sends the scanned label in these modes
 				throw new AdempiereException("A CU label is required for a pick in the CU quantity entry mode " + pickingJobOptions.getCUQtyEntryModeOrDefault());
 			}
-			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryPolicy, pickingJobOptions.getCULabelFormatId().orElse(null));
+			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryPolicy, pickingJobOptions.getCULabelFormatId());
 		}
 		return _resolvedCULabel;
 	}

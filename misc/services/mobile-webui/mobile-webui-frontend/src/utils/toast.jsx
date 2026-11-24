@@ -7,6 +7,7 @@ import * as uiTrace from './ui_trace';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { ContextualError } from './ContextualError';
+import { UserMessageError } from './UserMessageError';
 import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from './toastLayout';
 
 export const toastErrorFromObj = (obj, toastId) => {
@@ -14,6 +15,8 @@ export const toastErrorFromObj = (obj, toastId) => {
   if (!obj) {
     // shall not happen
     console.error('toastErrorFromObj called without any error');
+  } else if (obj instanceof UserMessageError) {
+    toastError({ messageKey: obj.messageKey, details: obj.details, toastId });
   } else if (isError(obj) || obj instanceof ContextualError) {
     toastError({ axiosError: obj, context: obj?.context, toastId });
   } else if (typeof obj === 'object') {

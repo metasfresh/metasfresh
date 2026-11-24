@@ -7,7 +7,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { uniqueLot } from "../../utils/cuLabel";
-import { allureMeta, book, createMasterdata, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, book, createMasterdata, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine, restoreSysconfigsAfterEach, scanLabel, startJob } from "../../utils/cuQtyEntryCommon";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -15,7 +15,7 @@ restoreSysconfigsAfterEach(test);
 /**
  * Layout of the Scan once, mixed-job and real-case screens of the CU quantity entry modes at the phone sizes (PHONE_VIEWPORTS): quantity block
  * states (count above the open quantity, smaller count, count over several source boxes, reopened block), a line closed short and reopened, a job
- * with Manual, Scan once and Scan each lines, and the real case of two buyers. Same checker as picking-cu-qty-entry-responsive.spec.js.
+ * with Manual, Scan once and Scan each lines, and the real case of two buyers. Same checker as picking-cu-qty-entry-layout-label-modes.spec.js.
  */
 for (const viewport of PHONE_VIEWPORTS) {
     test.describe(`Scan once and mixed job screens ${viewport.name}`, () => {

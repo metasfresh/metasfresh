@@ -14,6 +14,9 @@ import static org.compiere.model.X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_S
 
 /**
  * How the CU quantity is entered when picking (column {@code MobileUI_UserProfile_Picking.CUQtyEntryMode}).
+ * <p>
+ * The mobile app does not know the modes, only what {@link CUQtyEntryPolicy} says about them: adding a mode needs no change in
+ * {@code misc/services/mobile-webui/mobile-webui-frontend/src/apps/picking/cuQtyEntry/cuQtyEntryPolicy.js}, but a new answer the screens need does (see {@link CUQtyEntryPolicy}).
  */
 @AllArgsConstructor
 @Getter

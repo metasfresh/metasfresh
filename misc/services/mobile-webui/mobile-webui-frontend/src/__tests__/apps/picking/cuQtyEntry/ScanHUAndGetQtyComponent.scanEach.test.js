@@ -4,18 +4,18 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import ScanHUAndGetQtyComponent from '../../components/ScanHUAndGetQtyComponent';
-import { reducer as settings } from '../../reducers/settings';
-import { CUQtyEntryMode } from '../../constants/CUQtyEntryMode';
+import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
+import { reducer as settings } from '../../../../reducers/settings';
+import { POLICY } from '../../../../apps/picking/cuQtyEntry/testPolicies';
 
-jest.mock('../../utils/ui_trace', () => ({
+jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
   traceFunction: (func) => func,
   traceLogWarn: jest.fn(),
   putContext: jest.fn(),
 }));
-jest.mock('../../utils/audio', () => ({ beep: jest.fn() }));
-jest.mock('../../utils/toast', () => ({
+jest.mock('../../../../utils/audio', () => ({ beep: jest.fn() }));
+jest.mock('../../../../utils/toast', () => ({
   toastError: jest.fn(),
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
@@ -35,7 +35,7 @@ const renderComponent = ({ onResult, resolveScannedBarcode, qtyMax = 3, ...props
         qtyMax={qtyMax}
         qtyTarget={qtyMax}
         uom="PCE"
-        cuQtyEntryMode={CUQtyEntryMode.SCAN_EACH_CU}
+        cuQtyEntryPolicy={POLICY.SCAN_EACH_CU}
         resolveScannedBarcode={
           resolveScannedBarcode ??
           (async (code) => {
@@ -109,7 +109,7 @@ describe('ScanHUAndGetQtyComponent: Scan each CU loop', () => {
   });
 
   it('a backend refusal (duplicate pack) is toasted and the scan step stays', async () => {
-    const { toastErrorFromObj } = require('../../utils/toast');
+    const { toastErrorFromObj } = require('../../../../utils/toast');
     const onResult = jest.fn().mockRejectedValue({ message: 'already picked' });
     renderComponent({ onResult });
     await act(async () => {});

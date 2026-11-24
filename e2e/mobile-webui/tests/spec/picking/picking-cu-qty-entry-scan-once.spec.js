@@ -3,7 +3,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, scanLabel, setPalletTarget, SOURCE_QTY, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryScanOnce";
+import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, labelOf, MODE_MANUAL, MODE_SCAN_ONCE, MSG_NO_OPEN_BOX, uniqueFormatName, openLine, scanLabel, setPalletTarget, SOURCE_QTY, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 
@@ -260,7 +260,7 @@ test('the booking that reaches the open quantity finishes the line and goes back
 
 // noinspection JSUnusedLocalSymbols
 test('a count above the open quantity is blocked, on a Manual line and on a Scan once line', async ({ page }) => {
-    allureMeta('Over-pick unchanged');
+    allureMeta('Over-pick refused');
 
     // profile Manual (mode not sent) with a Scan once customer record; both lines order 12 (Manual line counts 3 boxes of 4)
     const formatName = uniqueFormatName();

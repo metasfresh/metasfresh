@@ -7,6 +7,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
@@ -18,6 +19,7 @@ import de.metas.handlingunits.rest_api.JsonHUAttributeConverters;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.rest_api.json.JsonCUQtyEntryPolicy;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -61,7 +64,7 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final PickingJobOptions pickingJobOptions;
 	@NonNull private final DisplayValueProvider displayValueProvider;
 	@NonNull private final HUCache huCache;
-	private final Map<BPartnerId, PickingJobOptions> lineOptionsByCustomerId = new ConcurrentHashMap<>();
+	private final Map<BPartnerId, PickingJobOptions> lineOptionsByCustomerId = new HashMap<>();
 
 	@Builder
 	private JsonPickingJobConverterCommand(
@@ -111,16 +114,20 @@ public class JsonPickingJobConverterCommand
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
+					.map(line -> {
+						final PickingJobOptions lineOptions = getLineOptions(line);
+						final CUQtyEntryMode cuQtyEntryMode = lineOptions.getCUQtyEntryModeOrDefault();
+						return JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
 							.displayGroupKey(group.getKey())
-							.cuQtyEntryMode(getLineOptions(line).getCUQtyEntryModeOrDefault().getCode())
-							.cuLabelFormatId(getLineOptions(line).getCULabelFormatId().orElse(null))
+							.cuQtyEntryMode(cuQtyEntryMode.getCode())
+							.cuQtyEntryPolicy(JsonCUQtyEntryPolicy.of(cuQtyEntryMode.getPolicy()))
+							.cuLabelFormatId(lineOptions.getCULabelFormatId().orElse(null))
 							.packingTuPIId(huService.getPackingTuPIId(line.getPackingInfo()))
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
 									getAdditionalHeaderProperties(line), jsonOpts))
-							.build()
-					)
+							.build();
+					})
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);

@@ -18,11 +18,11 @@ import { doFinally } from '../../utils';
 import YesNoDialog from './YesNoDialog';
 import DialogButton from './DialogButton';
 import Dialog from './Dialog';
-import * as uiTrace from './../../utils/ui_trace';
+import * as uiTrace from '../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
-import { getCUQtyEntryPolicy } from '../../constants/CUQtyEntryMode';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
+import { CUQtyEntryPolicyPropType } from '../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 
 /** The offered quantity when the dialog opens. */
 const computeInitialQtyInfo = ({ isScanOnce, qtyInitial, qtyTarget, useZeroAsInitialValue }) => {
@@ -57,7 +57,7 @@ const GetQuantityDialog = ({
   customQRCodeFormats,
   //
   readAttributes = [],
-  cuQtyEntryMode,
+  cuQtyEntryPolicy,
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
@@ -70,14 +70,13 @@ const GetQuantityDialog = ({
   onCloseDialog,
 }) => {
   // a CU label carries lot and best-before: the quantity block of a label-based mode always shows them
-  const cuQtyEntryPolicy = getCUQtyEntryPolicy(cuQtyEntryMode);
-  const isLabelMode = cuQtyEntryPolicy.isLabelRequired;
+  const isLabelMode = !!cuQtyEntryPolicy?.labelRequired;
   const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
 
   // scan once: the picker types how many packs of the scanned label go into the box; the field starts empty and a
   // smaller count than the open qty is not a rejection
-  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
+  const isScanOnce = !!cuQtyEntryPolicy?.scanOnce;
   // label-based modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
   const buttonType = isLabelMode ? 'button' : undefined;
 
@@ -587,7 +586,7 @@ GetQuantityDialog.propTypes = {
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
   readAttributes: PropTypes.array,
-  cuQtyEntryMode: PropTypes.string,
+  cuQtyEntryPolicy: CUQtyEntryPolicyPropType,
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,

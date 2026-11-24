@@ -156,8 +156,12 @@ class JsonPickingJobConverterCommandLineOptionsTest
 		final JsonPickingJobLine lineA = json.getLines().get(0);
 		final JsonPickingJobLine lineB = json.getLines().get(1);
 		assertThat(lineA.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.SCAN_EACH_CU.getCode());
+		assertThat(lineA.getCuQtyEntryPolicy().isLabelRequired()).isTrue();
+		assertThat(lineA.getCuQtyEntryPolicy().isPackIdRequired()).isTrue();
+		assertThat(lineA.getCuQtyEntryPolicy().isScanOnce()).isFalse();
 		assertThat(lineA.getCuLabelFormatId()).isEqualTo(FORMAT_A);
 		assertThat(lineB.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.MANUAL.getCode());
+		assertThat(lineB.getCuQtyEntryPolicy().isLabelRequired()).isFalse();
 		assertThat(lineB.getCuLabelFormatId()).isNull();
 	}
 }

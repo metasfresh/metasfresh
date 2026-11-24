@@ -33,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -131,7 +132,7 @@ class PickingCULabelServiceTest
 
 	private ResolvedCULabel resolve(final String label, final CUQtyEntryMode mode, final ScannableCodeFormatId formatId)
 	{
-		return service.resolve(line(PRODUCT_NO), ScannedCode.ofString(label), mode.getPolicy(), formatId);
+		return service.resolve(line(PRODUCT_NO), ScannedCode.ofString(label), mode.getPolicy(), Optional.ofNullable(formatId));
 	}
 
 	private static void assertFails(final Runnable runnable, final AdMessageKey expected)

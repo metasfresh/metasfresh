@@ -22,6 +22,7 @@
 
 package de.metas.picking.rest_api.json;
 
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -138,6 +139,7 @@ class JsonPickingJobTest
 				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.manuallyClosed(true)
 				.cuQtyEntryMode("MANUAL")
+				.cuQtyEntryPolicy(JsonCUQtyEntryPolicy.of(CUQtyEntryPolicy.MANUAL))
 				.build();
 	}
 
