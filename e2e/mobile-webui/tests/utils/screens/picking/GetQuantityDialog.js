@@ -52,13 +52,16 @@ export const GetQuantityDialog = {
     }),
 
     /** Presses OK where the backend must refuse the booking: error toast with the text, the dialog stays open. */
-    clickDoneRefused: async ({ expectedError }) => await test.step(`${NAME} - Press OK, expect refusal '${expectedError}'`, async () => {
+    clickDoneRefused: async ({ expectedError, whileToastShown }) => await test.step(`${NAME} - Press OK, expect refusal '${expectedError}'`, async () => {
         await expectErrorToast(
             `${NAME} refusal`,
             async () => {
                 await page.getByTestId('done-button').tap();
             },
-            ({ textContent }) => expect(textContent).toContain(expectedError)
+            async ({ textContent }) => {
+                expect(textContent).toContain(expectedError);
+                await whileToastShown?.();
+            }
         );
         await GetQuantityDialog.waitForDialog();
     }),

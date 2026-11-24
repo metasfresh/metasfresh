@@ -424,19 +424,10 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_HU_BARCODE: {
       return (
         <>
-          {useHUScanner ? (
-            <HUScanner onResolvedBarcode={onHUScannerResult} eligibleBarcode={eligibleBarcode} />
-          ) : (
-            <BarcodeScannerComponent
-              key="scanHUBarcode"
-              testId="scanHUBarcode-input"
-              inputPlaceholderText={scanHUPlaceholderText}
-              resolveScannedBarcode={handleResolveHUScannedBarcode}
-              onResolvedResult={onHUBarcodeResolvedResult}
-            />
-          )}
+          {/* The box buttons come first: on a phone the scanner panel (icon, caption, "Enter manually") is tall, and the buttons below it
+              would sit under the fold. The scanner needs no tap (hardware scan), the buttons do. */}
           {(nextBoxActions || isPackIdRequired) && (
-            <div className="buttons is-centered mt-4">
+            <div className="buttons is-centered mb-4">
               {nextBoxActions}
               {isPackIdRequired && (
                 <DialogButton
@@ -447,6 +438,17 @@ const ScanHUAndGetQtyComponent = ({
                 />
               )}
             </div>
+          )}
+          {useHUScanner ? (
+            <HUScanner onResolvedBarcode={onHUScannerResult} eligibleBarcode={eligibleBarcode} />
+          ) : (
+            <BarcodeScannerComponent
+              key="scanHUBarcode"
+              testId="scanHUBarcode-input"
+              inputPlaceholderText={scanHUPlaceholderText}
+              resolveScannedBarcode={handleResolveHUScannedBarcode}
+              onResolvedResult={onHUBarcodeResolvedResult}
+            />
           )}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button

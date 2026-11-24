@@ -71,7 +71,7 @@ export const PickLineScanScreen = {
     }),
 
     /** Scans a raw CU label on the scan step that must be refused: error toast with the text, the quantity block does not open. */
-    scanCULabelRefused: async (label, expectedText) => await step(`${NAME} - Scan CU label, expect refusal '${expectedText}'`, async () => {
+    scanCULabelRefused: async (label, expectedText, { whileToastShown } = {}) => await step(`${NAME} - Scan CU label, expect refusal '${expectedText}'`, async () => {
         await PickLineScanScreen.waitForScreen();
         await expectErrorToast(
             `${NAME} label refusal`,
@@ -79,6 +79,7 @@ export const PickLineScanScreen = {
             async ({ textContent }) => {
                 expect(textContent).toContain(expectedText);
                 await expectToastCloseButtonOnScreen();
+                await whileToastShown?.();
             }
         );
         // the closed toast is still fading out for a moment: the next step's error watcher would see it as a new error
@@ -87,13 +88,14 @@ export const PickLineScanScreen = {
     }),
 
     /** Rescans a raw CU label inside the open quantity block where it must be refused: error toast with the text, the block stays. */
-    rescanCULabelRefused: async (label, expectedText) => await step(`${NAME} - Rescan CU label, expect refusal '${expectedText}'`, async () => {
+    rescanCULabelRefused: async (label, expectedText, { whileToastShown } = {}) => await step(`${NAME} - Rescan CU label, expect refusal '${expectedText}'`, async () => {
         await expectErrorToast(
             `${NAME} label rescan refusal`,
             async () => await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label, testId: 'rescanCULabel-input' }),
             async ({ textContent }) => {
                 expect(textContent).toContain(expectedText);
                 await expectToastCloseButtonOnScreen();
+                await whileToastShown?.();
             }
         );
         await GetQuantityDialog.waitForDialog();

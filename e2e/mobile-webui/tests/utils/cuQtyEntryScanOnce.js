@@ -73,6 +73,7 @@ export const newFormatName = () => `cuqe-so-${uniqueProductValue()}`;
  * @param {string[]} [p.pickTo]
  * @param {object} [p.sysconfigs] sysconfigs to set for the test (on top of the launcher limit)
  * @param {boolean} [p.anonymousPickHUsOnTheFly]
+ * @param {string} [p.language] session language, default en_US
  * @param {boolean} [p.allowCompletingPartialPickingJob] profile flag, always sent (default false) so no spec inherits it from an earlier one; a test that completes a partly picked job passes true
  * @param {{name: string, withPackId?: boolean}[]} [p.formats] formats to create; default = `formatName` without a pack-ID part
  */
@@ -87,6 +88,7 @@ export const createMasterdata = async ({
                                            sysconfigs = {},
                                            anonymousPickHUsOnTheFly = false,
                                            allowCompletingPartialPickingJob = false,
+                                           language = 'en_US',
                                            formats = [{ name: formatName, withPackId: false }],
                                        }) => {
     const bpartners = {};
@@ -104,10 +106,10 @@ export const createMasterdata = async ({
     orders.forEach((_, idx) => { slots[`slot${idx + 1}`] = {}; });
 
     return await createMasterdataRememberingSysconfigs({
-        language: "en_US",
+        language,
         request: {
             sysconfigs: { ...LAUNCHERS_LIMIT_SYSCONFIGS, ...sysconfigs },
-            login: { user: { language: "en_US" } },
+            login: { user: { language } },
             mobileConfig: {
                 picking: {
                     aggregationType: "product",
