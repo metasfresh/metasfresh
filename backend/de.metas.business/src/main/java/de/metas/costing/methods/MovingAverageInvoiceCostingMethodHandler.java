@@ -64,6 +64,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
@@ -512,7 +513,13 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CurrencyPrecision amountPrecision = utils.getAcctSchemaById(request.getAcctSchemaId()).getStandardPrecision();
 
-		return computeMatchInvSplitRounded(invoicedAmt, receiptAmt, receiptQty, currentCost, amountPrecision)
+		return prepareMatchInvSplitRounded()
+				.invoicedAmt(invoicedAmt)
+				.receiptAmt(receiptAmt)
+				.receiptQty(receiptQty)
+				.currentCost(currentCost)
+				.amountPrecision(amountPrecision)
+				.build()
 				.negateIf(isReversal);
 	}
 
@@ -525,6 +532,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	 * the resulting cost details may keep more decimals than the posting books.
 	 */
 	@VisibleForTesting
+	@Builder(builderMethodName = "prepareMatchInvSplitRounded", builderClassName = "MatchInvSplitRoundedBuilder")
 	static CostAmountDetailed computeMatchInvSplitRounded(
 			@NonNull final CostAmount invoicedAmt,
 			@NonNull final CostAmount receiptAmt,
@@ -534,12 +542,13 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final CostAmount invoicedAmtRounded = invoicedAmt.roundToPrecisionIfNeeded(amountPrecision);
 		final CostAmount receiptAmtRounded = receiptAmt.roundToPrecisionIfNeeded(amountPrecision);
-		return computeMatchInvSplit(
-				invoicedAmtRounded,
-				invoicedAmtRounded.subtract(receiptAmtRounded),
-				receiptQty,
-				currentCost,
-				amountPrecision);
+		return prepareMatchInvSplit()
+				.invoicedAmt(invoicedAmtRounded)
+				.amtDifference(invoicedAmtRounded.subtract(receiptAmtRounded))
+				.receiptQty(receiptQty)
+				.currentCost(currentCost)
+				.amountPrecision(amountPrecision)
+				.build();
 	}
 
 	/**
@@ -548,6 +557,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	 * the stock share.
 	 */
 	@VisibleForTesting
+	@Builder(builderMethodName = "prepareMatchInvSplit", builderClassName = "MatchInvSplitBuilder")
 	static CostAmountDetailed computeMatchInvSplit(
 			@NonNull final CostAmount invoicedAmt,
 			@NonNull final CostAmount amtDifference,

@@ -23,6 +23,9 @@ import org.compiere.model.I_M_MatchPO;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Steps for {@code M_MatchPO}: loading the matches of an order line and waiting until they are posted.
+ */
 @RequiredArgsConstructor
 public class M_MatchPO_StepDef
 {
@@ -32,6 +35,18 @@ public class M_MatchPO_StepDef
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final M_InOutLine_StepDefData inoutLineTable;
 
+	/**
+	 * Loads the {@code M_MatchPO} of an order line into the step data (exactly one must be found).
+	 * <p>
+	 * Columns: required {@code C_OrderLine_ID} (identifier); optional {@code M_MatchPO_ID} (identifier to register the match under),
+	 * optional {@code M_InOutLine_ID} (identifier of a receipt line: only the match of that line is considered, needed when
+	 * the order line was received in several parts).
+	 * <pre>
+	 * And M_MatchPO are found
+	 *   | M_MatchPO_ID | C_OrderLine_ID | M_InOutLine_ID |
+	 *   | mpo1         | po_l1          | receipt1_l1    |
+	 * </pre>
+	 */
 	@And("^M_MatchPO are found$")
 	public void loadMatchPOs(@NonNull final DataTable table)
 	{
@@ -48,11 +63,11 @@ public class M_MatchPO_StepDef
 				.orElse(null);
 		// when the row names the receipt line, keep only that line's match (an order line can be received in several parts)
 		final List<I_M_MatchPO> matchPOs = matchPODAO.getByOrderLineId(orderLineId).stream()
-				.filter(matchPO -> inoutLineId == null || matchPO.getM_InOutLine_ID() == inoutLineId.getRepoId())
+				.filter(matchPO -> inoutLineId == null || InOutLineId.equals(InOutLineId.ofRepoIdOrNull(matchPO.getM_InOutLine_ID()), inoutLineId))
 				.collect(Collectors.toList());
 		if (matchPOs.isEmpty())
 		{
-			throw new AdempiereException("No M_MatchPO found for " + orderLineId);
+			throw new AdempiereException("No M_MatchPO found for " + orderLineId + (inoutLineId != null ? " and " + inoutLineId : ""));
 		}
 		else if (matchPOs.size() > 1)
 		{

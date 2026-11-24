@@ -60,6 +60,9 @@ import java.util.List;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Steps that create completed costing source documents (order, material receipt, invoice, shipment) in one step each.
+ */
 @RequiredArgsConstructor
 public class CostingDocuments_StepDef
 {
@@ -103,6 +106,18 @@ public class CostingDocuments_StepDef
 		orderStepDef.completeOrder(order);
 	}
 
+	/**
+	 * Creates and completes a material receipt for the receipt schedule of an order line.
+	 * <p>
+	 * Columns: required {@code C_OrderLine_ID}; optional {@code M_InOut_ID}, {@code M_InOutLine_ID}, {@code M_MatchPO_ID} (identifiers to register
+	 * the created records under), optional {@code QtyToMove_Override} (qty received; default: the receipt schedule's qty to move,
+	 * lets one order line be received in several parts).
+	 * <pre>
+	 * Given for costing, create completed material receipt with one line
+	 *   | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID | QtyToMove_Override |
+	 *   | po_l1          | receipt1   | receipt1_l1    | 0.914              |
+	 * </pre>
+	 */
 	@Given("for costing, create completed material receipt with one line")
 	public void createMaterialReceipts(@NonNull final DataTable dataTable)
 	{
@@ -161,6 +176,20 @@ public class CostingDocuments_StepDef
 		return hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
 	}
 
+	/**
+	 * Creates and completes an invoice from the invoice candidate of an order line.
+	 * <p>
+	 * Columns: required {@code C_OrderLine_ID}; optional {@code PriceEntered_Override}, {@code C_Invoice_ID} (identifier),
+	 * optional {@code M_MatchInv_ID} (identifier of the invoice's single material match) or optional {@code C_InvoiceLine_ID}
+	 * (identifier: registers the invoice's single line and loads no match, for invoices that are matched to several
+	 * receipt lines; the matches are then loaded by the step "M_MatchInv are found"). {@code C_InvoiceLine_ID} and
+	 * {@code M_MatchInv_ID} cannot be used together.
+	 * <pre>
+	 * When for costing, create completed invoice with one line
+	 *   | C_OrderLine_ID | PriceEntered_Override | C_Invoice_ID | C_InvoiceLine_ID |
+	 *   | po_l1          | 110.74                | invoice      | invoice_l1       |
+	 * </pre>
+	 */
 	@Given("for costing, create completed invoice with one line")
 	public void createInvoices(@NonNull final DataTable dataTable)
 	{
@@ -173,7 +202,7 @@ public class CostingDocuments_StepDef
 		row.setValueIfMissing(I_C_Invoice.COLUMNNAME_C_Invoice_ID, () -> StepDefDataIdentifier.nextUnnamed("invoice").getAsString());
 		if (row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID).isPresent())
 		{
-			// the invoice line is registered and the matches are loaded by "M_MatchInv are found": a match identifier here would be silently dropped
+			// a match identifier here would be silently dropped, so refuse it
 			if (row.getAsOptionalIdentifier(I_M_MatchInv.COLUMNNAME_M_MatchInv_ID).isPresent())
 			{
 				throw new AdempiereException("Columns " + I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + " and " + I_M_MatchInv.COLUMNNAME_M_MatchInv_ID + " cannot be used together");
@@ -199,7 +228,7 @@ public class CostingDocuments_StepDef
 		final StepDefDataIdentifier invoiceLineIdentifier = row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID).orElse(null);
 		if (invoiceLineIdentifier != null)
 		{
-			// Register the single invoice line and stop: the invoice's matches are then loaded by the step "M_MatchInv are found"
+			// register the single invoice line and stop (see the method Javadoc)
 			final List<? extends I_C_InvoiceLine> invoiceLines = invoiceDAO.retrieveLines(invoiceId);
 			assertThat(invoiceLines).as("invoice lines of " + invoiceId).hasSize(1);
 			invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLines.get(0));

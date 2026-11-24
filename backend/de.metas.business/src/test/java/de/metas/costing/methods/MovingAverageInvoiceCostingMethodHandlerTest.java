@@ -501,12 +501,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final String expectedMain, final String expectedStock, final String expectedSold,
 				final boolean isSameSignExpected)
 		{
-			final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplitRounded(
-					CostAmount.of(new BigDecimal(invoicedAmt), euroCurrencyId),
-					CostAmount.of(new BigDecimal(receiptAmt), euroCurrencyId),
-					Quantity.of(new BigDecimal(receiptQty), eachUOM),
-					currentCostWithQty(onHandQty),
-					CurrencyPrecision.ofInt(2));
+			final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.prepareMatchInvSplitRounded()
+					.invoicedAmt(CostAmount.of(new BigDecimal(invoicedAmt), euroCurrencyId))
+					.receiptAmt(CostAmount.of(new BigDecimal(receiptAmt), euroCurrencyId))
+					.receiptQty(Quantity.of(new BigDecimal(receiptQty), eachUOM))
+					.currentCost(currentCostWithQty(onHandQty))
+					.amountPrecision(CurrencyPrecision.ofInt(2))
+					.build();
 
 			final BigDecimal main = split.getMainAmt().toBigDecimal();
 			final BigDecimal stock = split.getCostAdjustmentAmt().toBigDecimal();
@@ -548,8 +549,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final Quantity receiptQty = Quantity.of(10, eachUOM);
 		final CurrentCost currentCost = currentCostWithQty("-4");
 
-		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplit(
-				invoicedAmt, amtDifference, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.prepareMatchInvSplit()
+				.invoicedAmt(invoicedAmt)
+				.amtDifference(amtDifference)
+				.receiptQty(receiptQty)
+				.currentCost(currentCost)
+				.amountPrecision(CurrencyPrecision.ofInt(2))
+				.build();
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("50");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("0");
@@ -571,8 +577,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final Quantity receiptQty = Quantity.of(-10, eachUOM);
 		final CurrentCost currentCost = currentCostWithQty("-15");
 
-		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.computeMatchInvSplit(
-				invoicedAmt, amtDifference, receiptQty, currentCost, CurrencyPrecision.ofInt(2));
+		final CostAmountDetailed split = MovingAverageInvoiceCostingMethodHandler.prepareMatchInvSplit()
+				.invoicedAmt(invoicedAmt)
+				.amtDifference(amtDifference)
+				.receiptQty(receiptQty)
+				.currentCost(currentCost)
+				.amountPrecision(CurrencyPrecision.ofInt(2))
+				.build();
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("50");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("75");
