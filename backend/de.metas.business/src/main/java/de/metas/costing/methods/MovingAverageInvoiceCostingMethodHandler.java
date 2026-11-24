@@ -524,9 +524,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	/**
-	 * Splits the invoice-vs-receipt price difference on the accounting-precision grid: invoiced and receipt amounts
-	 * are rounded to {@code amountPrecision} first, so {@code main - stock - sold} equals the rounded receipt value
-	 * and the match posts as a balanced 1:N structure.
+	 * Splits the invoice-vs-receipt price difference like {@link #computeMatchInvSplit}, after rounding both
+	 * {@code invoicedAmt} and {@code receiptAmt} to {@code amountPrecision}. The difference is therefore taken between
+	 * rounded amounts; {@code main - stock - sold} of the result equals the rounded receipt amount.
 	 * <p>
 	 * Note: the {@code sourceValue} of the invoiced and receipt amounts is not rounded (the stock share's is, by the
 	 * division), so the source amounts of the resulting cost details may keep more decimals than the posting books.

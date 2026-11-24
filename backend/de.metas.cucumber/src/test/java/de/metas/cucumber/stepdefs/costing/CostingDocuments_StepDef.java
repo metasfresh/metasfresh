@@ -232,7 +232,7 @@ public class CostingDocuments_StepDef
 		final StepDefDataIdentifier invoiceLineIdentifier = row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID).orElse(null);
 		if (invoiceLineIdentifier != null)
 		{
-			// register the single invoice line and stop (see the method Javadoc)
+			// the match step runs later and needs only the line, so no MatchInv is looked up here
 			final List<? extends I_C_InvoiceLine> invoiceLines = invoiceDAO.retrieveLines(invoiceId);
 			assertThat(invoiceLines).as("invoice lines of " + invoiceId).hasSize(1);
 			invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLines.get(0));

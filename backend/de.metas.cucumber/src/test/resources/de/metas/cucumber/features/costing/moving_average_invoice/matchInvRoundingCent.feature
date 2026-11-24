@@ -76,8 +76,8 @@ Feature: Moving Average Invoice - MatchInv of a rounding cent posts with a valid
     # Each receipt credits the same 133.44 on NotInvoicedReceipts that its match debits.
     #
     # Known limitation: the invoice books 202.43 on P_InventoryClearing, the two matches 101.22 + 101.22 = 202.44.
-    # The 0.01 stays because each match rounds its own share when one invoice line is matched more than once;
-    # a follow-up is planned.
+    # Each match rounds its own share, so with 2+ matches per invoice or receipt line a 0.01 rest can stay on
+    # 1105 / 2060.
     #
     And Wait until documents receipt1,receipt2,invoice,matchInv1,matchInv2 are posted
     Then Fact_Acct records are matching
