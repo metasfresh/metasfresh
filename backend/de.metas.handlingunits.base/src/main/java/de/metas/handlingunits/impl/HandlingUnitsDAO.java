@@ -971,8 +971,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	/**
-	 * Note: a parent built from a product-specific PI item keeps that item for any further child of the given PI (also if it holds aggregated TUs).
-	 * This assumes a single-product parent (LU); the child's own product is not considered.
+	 * Note: a parent built from a product-specific PI item keeps that item for any further child of the given PI (also if it holds aggregated TUs),
+	 * whatever the child's product is (different products on the same parent are allowed).
 	 */
 	@Override
 	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
@@ -998,7 +998,39 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 		}
 
-		final IQueryBuilder<I_M_HU_PI_Item> queryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
+		final IQueryBuilder<I_M_HU_PI_Item> queryBuilder = createParentPIItemsForChildHUQuery(parentHU, piOfChildHU, ctx);
+
+		// no product in context: product-specific items are not eligible
+		addProductFilter(queryBuilder, null);
+
+		return orderParentPIItemsForChildHU(queryBuilder)
+				.create()
+				.first();
+	}
+
+	@Override
+	@Nullable
+	public I_M_HU_PI_Item retrieveProductSpecificParentPIItemForChildHUOrNull(
+			final I_M_HU parentHU,
+			final I_M_HU_PI piOfChildHU,
+			@Nullable final ProductId childProductId,
+			final IContextAware ctx)
+	{
+		final List<I_M_HU_PI_Item> productSpecificItems = orderParentPIItemsForChildHU(
+				createParentPIItemsForChildHUQuery(parentHU, piOfChildHU, ctx)
+						.addNotNull(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID))
+				.create()
+				.list();
+
+		return productSpecificItems.stream()
+				.filter(productSpecificItem -> ProductId.equals(ProductId.ofRepoIdOrNull(productSpecificItem.getM_Product_ID()), childProductId))
+				.findFirst()
+				.orElseGet(() -> productSpecificItems.isEmpty() ? null : productSpecificItems.get(0));
+	}
+
+	private IQueryBuilder<I_M_HU_PI_Item> createParentPIItemsForChildHUQuery(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
 				.addOnlyActiveRecordsFilter()
 
 				// it's an PI-item of the the parent's PI
@@ -1009,18 +1041,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 				// it either has no C_BPartner_ID or a matching one
 				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID());
+	}
 
-		// no product in context: product-specific items are not eligible
-		addProductFilter(queryBuilder, null);
-
+	private static IQueryBuilder<I_M_HU_PI_Item> orderParentPIItemsForChildHU(final IQueryBuilder<I_M_HU_PI_Item> queryBuilder)
+	{
 		return queryBuilder
 				.orderBy()
 				// NULLS FIRST is what orderByDescending(C_BPartner_ID) always did, so the order is unchanged
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.First)
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
-				.endOrderBy()
-				.create()
-				.first();
+				.endOrderBy();
 	}
 
 	@Override
