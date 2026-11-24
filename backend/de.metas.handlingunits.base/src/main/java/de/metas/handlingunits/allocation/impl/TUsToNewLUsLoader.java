@@ -26,19 +26,24 @@ import java.util.Map;
  * Grouping rule:
  * <ul>
  * <li>A TU whose LU item resolves to a <b>product-specific</b> item (e.g. 40 TUs of product XY per pallet) goes onto new LUs of that item;
- * each such product gets its own LUs, filled up to that item's capacity.</li>
+ * each such item gets its own LUs, filled up to its capacity.</li>
  * <li>All other TUs (product without its own item, or a TU holding several products) share the LUs of the generic item, mixed as {@link LULoader} does.</li>
  * </ul>
  * Why: a product-specific LU item states how many TUs of <i>that</i> product fit on the pallet, so its TUs must not be mixed with other products' TUs
  * on it; the generic item is shared by all products, as before.
- * The TUs keep their order within each group, so the result does not depend on how the products are interleaved.
+ * The TUs keep their order within each group, so the product-specific LUs and the number of LUs do not depend on how the products are interleaved;
+ * which product lands on which generic LU does.
  */
 public class TUsToNewLUsLoader
 {
 	@NonNull private final IHUContext huContext;
 
 	private LULoader sharedLoader;
-	private final Map<ProductId, LULoader> productSpecificLoaders = new LinkedHashMap<>();
+	/**
+	 * One loader per product-specific LU item (not per product): a product can have items for several TU packings, and an LU built for one
+	 * of them must not take TUs of the other one (it would hang them on that TU packing's generic item).
+	 */
+	private final Map<Integer, LULoader> productSpecificLoaders = new LinkedHashMap<>();
 
 	@Builder
 	private TUsToNewLUsLoader(@NonNull final IHUContext huContext)
@@ -76,7 +81,7 @@ public class TUsToNewLUsLoader
 		final I_M_HU_PI_Item luItem = productId != null ? retrieveLUItem(tu, productId) : null;
 		if (luItem != null && luItem.getM_Product_ID() > 0)
 		{
-			productSpecificLoaders.computeIfAbsent(productId, ignored -> new LULoader(huContext))
+			productSpecificLoaders.computeIfAbsent(luItem.getM_HU_PI_Item_ID(), ignored -> new LULoader(huContext))
 					.addTU(tu, productId);
 		}
 		else

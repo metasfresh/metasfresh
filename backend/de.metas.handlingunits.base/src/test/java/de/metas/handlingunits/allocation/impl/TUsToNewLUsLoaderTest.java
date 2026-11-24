@@ -37,6 +37,7 @@ class TUsToNewLUsLoaderTest extends AbstractHUTest
 	private ProductId productOther;
 
 	private I_M_HU_PI tuPI;
+	private I_M_HU_PI luPI;
 	private I_M_HU_PI_Item genericItem30;
 
 	private IHandlingUnitsBL handlingUnitsBL;
@@ -52,7 +53,7 @@ class TUsToNewLUsLoaderTest extends AbstractHUTest
 		productOther = pSaladId;
 
 		tuPI = createTUPI("IFCO");
-		final I_M_HU_PI luPI = helper.createHUDefinition("Pallet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		luPI = helper.createHUDefinition("Pallet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		genericItem30 = createLUItem(luPI, tuPI, 30, null);
 		createLUItem(luPI, tuPI, 40, productXY);
 	}
@@ -147,6 +148,26 @@ class TUsToNewLUsLoaderTest extends AbstractHUTest
 		assertThat(describe(lus)).containsExactly(xy() + " x1 item40");
 		InterfaceWrapperHelper.refresh(xyTU);
 		assertThat(handlingUnitsBL.getPIItem(xyTU.getM_HU_Item_Parent())).isEqualTo(xyOnlyItem);
+	}
+
+	/**
+	 * The pallet holds generic and XY items for two TU packings. XY TUs of both TU packings go onto XY pallets of their own TU packing's
+	 * XY item, never onto a generic item.
+	 */
+	@Test
+	void xyTUsOfTwoTUPackings_eachUseTheirXYItem()
+	{
+		final I_M_HU_PI tuPI2 = createTUPI("IFCO2");
+		createLUItem(luPI, tuPI2, 30, null);
+		createLUItem(luPI, tuPI2, 40, productXY);
+
+		final List<I_M_HU> tus = new ArrayList<>();
+		tus.add(createTU(tuPI, productXY));
+		tus.add(createTU(tuPI2, productXY));
+
+		assertThat(describe(load(tus))).containsExactly(
+				xy() + " x1 item40",
+				xy() + " x1 item40");
 	}
 
 	@Test
