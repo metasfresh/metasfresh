@@ -98,7 +98,8 @@ public class CreatePackingInstructionsCommand
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
-			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU(), null);
+			final ProductId luProductId = request.getLuProduct() != null ? context.getId(request.getLuProduct(), ProductId.class) : null;
+			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU(), luProductId);
 			for (final JsonPackingInstructionsRequest.AdditionalLUItem additionalLUItem : request.getAdditionalLUItems())
 			{
 				final ProductId productId = context.getId(additionalLUItem.getProduct(), ProductId.class);
@@ -121,6 +122,10 @@ public class CreatePackingInstructionsCommand
 			if (request.isLuSSCC18())
 			{
 				throw new AdempiereException("luSSCC18 requires lu to be set: " + request);
+			}
+			if (request.getLuProduct() != null)
+			{
+				throw new AdempiereException("luProduct requires lu to be set: " + request);
 			}
 
 			lu = null;
