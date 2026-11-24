@@ -23,7 +23,7 @@ export const SelectPickTargetLUScreen = {
     expectLUButtons: async ({ offered = [], notOffered = [] }) => await test.step(`${NAME} - Expect LU buttons offered=${offered} notOffered=${notOffered}`, async () => {
         // The offered ones first: once they are visible, the list is rendered and the absence of the others is meaningful.
         for (const lu of offered) {
-            await expect(luButton({ lu })).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+            await expect(luButton({ lu })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         }
         for (const lu of notOffered) {
             await expect(luButton({ lu })).toHaveCount(0);
