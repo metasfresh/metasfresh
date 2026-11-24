@@ -23,7 +23,7 @@ import java.util.Set;
  * <ul>
  * <li>A CU is <b>in a TU</b> if it is a virtual HU whose parent is a TU.</li>
  * <li>A CU is <b>booked with a label scan</b> (label-based CU quantity entry mode, see {@code CUQtyEntryPolicy#isLabelRequired()}) if it is in a TU
- * and its recorded QR code is its own. Manual books a whole TU (a TU, not a CU) or a CU with the TU's QR code, so a Manual pick never satisfies this.</li>
+ * and its recorded QR code is its own. Manual books a whole TU or a CU with the TU's QR code, so a Manual pick never satisfies this.</li>
  * </ul>
  * No stored column: the booking kind is not persisted, it is derived from the HU and its QR code assignment.
  */

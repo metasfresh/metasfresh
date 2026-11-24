@@ -244,7 +244,7 @@ public class PackToHUsProducerCUQtyEntryTest
 			assertThat(tu.getCUsNotEmpty().get(0).getId()).isEqualTo(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
 		}
 
-		/** (iv) flags off: the source TU is taken as the TU. */
+		/** (iv) flags off: the source TU is itself the picked TU (no new TU is created). */
 		@Test
 		public void sourceIsTUWithExactlyOnePack_flagsOff_sourceTUIsThePickedTU()
 		{
