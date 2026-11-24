@@ -6,7 +6,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -91,7 +90,6 @@ import java.util.Objects;
 public class SyncInventoryQtyToHUsCommand
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -103,7 +101,6 @@ public class SyncInventoryQtyToHUsCommand
 	private final Inventory inventory;
 
 	private static final String SYSCONFIG_IgnoreOnInventoryMinusAndNoHU = "inventory.IgnoreOnInventoryMinusAndNoHU";
-	/** Same message as {@link LUTUProducerDestination#getLUItemPI()} gives when it finds no item; kept local so that class stays unchanged. */
 	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	private Map<InventoryAndLineId, I_M_InventoryLine> inventoryLineRecords; // lazy
@@ -480,7 +477,6 @@ public class SyncInventoryQtyToHUsCommand
 
 	/**
 	 * The pallet item the TUs of the given product hang on: the product's own item if the pallet packing instruction has one for that TU, else the generic item.
-	 * Without this, the producer would take the first item for the TU without looking at the product (e.g. a pallet of 30 instead of the product's 40).
 	 */
 	private I_M_HU_PI_Item retrieveLUItemForProduct(
 			@NonNull final HuPackingInstructionsId luPIId,
@@ -488,8 +484,8 @@ public class SyncInventoryQtyToHUsCommand
 			@NonNull final ProductId productId)
 	{
 		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
-		return handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, null, productId)
-				.orElseThrow(() -> new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, handlingUnitsBL.getPI(luPIId).getName(), tuPI.getName())
+		return handlingUnitsBL.retrieveFirstPIItem(luPIId, tuPIId, null, productId)
+				.orElseThrow(() -> new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, handlingUnitsBL.getPIName(luPIId), tuPI.getName())
 						.markAsUserValidationError());
 	}
 

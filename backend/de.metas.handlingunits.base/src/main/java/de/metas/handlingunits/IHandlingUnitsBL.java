@@ -562,6 +562,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@NonNull HuPackingInstructionsId includedPIId,
 			@Nullable BPartnerId bpartnerId);
 
+	/**
+	 * Like {@link #retrieveFirstPIItem(HuPackingInstructionsId, HuPackingInstructionsId, BPartnerId)}, but product-aware:
+	 * an item with {@code M_Product_ID} is eligible only if that product equals {@code productId}; product-specific items come first.
+	 */
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull HuPackingInstructionsId includedPIId,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ProductId productId);
+
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
 

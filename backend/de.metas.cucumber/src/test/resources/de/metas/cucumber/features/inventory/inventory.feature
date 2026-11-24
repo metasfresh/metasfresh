@@ -240,7 +240,7 @@ Feature: Physical inventory tests
       | TUx4_OTHER              | TU_PS_PI_Item   | OTHER        | 4 PCE |
 
     Then metasfresh fails to complete single line inventories
-      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | ErrorMessage                    |
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | AD_Message                      |
       | inventory1     | warehouse      | 2021-04-16   | OTHER        | 0 PCE   | 200 PCE  | TUx4_OTHER              | LU_XY_ONLY    | ERR_LU_HAS_NO_TU_SUB_PACK_INSTR |
 
   @from:cucumber

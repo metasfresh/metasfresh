@@ -49,6 +49,7 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.organization.OrgId;
@@ -64,6 +65,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -86,7 +88,7 @@ import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.wai
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RequiredArgsConstructor
 public class M_Inventory_StepDef
@@ -319,7 +321,7 @@ public class M_Inventory_StepDef
 
 	/**
 	 * Like {@code metasfresh contains single line completed inventories}, but expects the completion to fail.
-	 * Column {@code ErrorMessage}: a text the exception message must contain (e.g. the AD_Message value).
+	 * Column {@code AD_Message}: the value of the AD_Message the error must carry (checked on the exception, not on its translated text).
 	 */
 	@Given("metasfresh fails to complete single line inventories")
 	public void failToCompleteSingleLineInventories(@NonNull final DataTable dataTable)
@@ -329,13 +331,27 @@ public class M_Inventory_StepDef
 
 	private void failToCompleteSingleLineInventory(@NonNull final DataTableRow row)
 	{
-		final String expectedMessagePart = row.getAsString("ErrorMessage");
+		final AdMessageKey expectedAdMessage = AdMessageKey.of(row.getAsString("AD_Message"));
 
 		final I_M_InventoryLine inventoryLine = createSingleLineInventory(row);
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID());
 
-		assertThatThrownBy(() -> inventoryService.completeDocument(inventoryId))
-				.hasMessageContaining(expectedMessagePart);
+		final Throwable error = catchThrowable(() -> inventoryService.completeDocument(inventoryId));
+		assertThat(error).as("completing the inventory must fail").isNotNull();
+		assertThat(extractAdMessages(error)).as("AD_Message of the error and its causes").contains(expectedAdMessage);
+	}
+
+	private static List<Object> extractAdMessages(@NonNull final Throwable error)
+	{
+		final List<Object> adMessages = new ArrayList<>();
+		for (Throwable current = error; current != null; current = current.getCause())
+		{
+			if (current instanceof AdempiereException)
+			{
+				adMessages.add(((AdempiereException)current).getParameter("AD_Message"));
+			}
+		}
+		return adMessages;
 	}
 
 	private void loadInventoryLineHUs(final @NotNull DataTableRow row, final InventoryId inventoryId, final InventoryLineId inventoryLineId)
