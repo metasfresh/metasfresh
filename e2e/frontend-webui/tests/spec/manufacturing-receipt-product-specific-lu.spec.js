@@ -3,7 +3,7 @@ import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
-import { ManufacturingOrderReceiptPage as ReceiptDialog } from '../utils/pages/ManufacturingOrderReceiptPage';
+import { PPOrderReceiptProcessDialogPage as ReceiptDialog } from '../utils/pages/PPOrderReceiptProcessDialogPage';
 
 /**
  * Features:

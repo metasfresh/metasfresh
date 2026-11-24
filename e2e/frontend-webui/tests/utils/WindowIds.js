@@ -220,10 +220,3 @@ export const TEST_WINDOW_ID = 127;
  * Window ID: 53009
  */
 export const MANUFACTURING_ORDER_WINDOW_ID = 53009;
-
-/**
- * Manufacturing Issue/Receipt view (opened from a manufacturing order by the action WEBUI_PP_Order_IssueReceipt_Launcher)
- * Custom view backed by PPOrderLinesViewFactory: one row per main product, co-product and component line of the order.
- * Window ID: 540328
- */
-export const MANUFACTURING_ISSUE_RECEIPT_WINDOW_ID = 540328;

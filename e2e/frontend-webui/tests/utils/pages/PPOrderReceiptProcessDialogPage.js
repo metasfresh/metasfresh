@@ -1,7 +1,10 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
-import { MANUFACTURING_ISSUE_RECEIPT_WINDOW_ID, MANUFACTURING_ORDER_WINDOW_ID } from '../WindowIds';
+import { MANUFACTURING_ORDER_WINDOW_ID } from '../WindowIds';
+
+/** Manufacturing issue/receipt view (PPOrderLinesViewFactory), opened from an order by WEBUI_PP_Order_IssueReceipt_Launcher */
+const MANUFACTURING_ISSUE_RECEIPT_WINDOW_ID = 540328;
 
 /**
  * Page object for the desktop production receipt dialog ("Empfangen", process WEBUI_PP_Order_Receipt)
@@ -13,7 +16,7 @@ import { MANUFACTURING_ISSUE_RECEIPT_WINDOW_ID, MANUFACTURING_ORDER_WINDOW_ID } 
  * Dialog fields are addressed by their language-independent ColumnName (`.form-field-<ColumnName>`),
  * list entries by their `data-testid="option-<ID>"`.
  */
-export class ManufacturingOrderReceiptPage {
+export class PPOrderReceiptProcessDialogPage {
   static #field({ columnName }) {
     // scoped to the dialog: the views behind it render some of the same columns too
     return getPage().locator(`.panel-modal-content .form-field-${columnName}`);
@@ -31,7 +34,7 @@ export class ManufacturingOrderReceiptPage {
   }
 
   static async openManufacturingOrder({ ppOrderId }) {
-    return await test.step(`ManufacturingOrderReceiptPage - Open manufacturing order ${ppOrderId}`, async () => {
+    return await test.step(`PPOrderReceiptProcessDialogPage - Open manufacturing order ${ppOrderId}`, async () => {
       const page = getPage();
       await page.goto(`${FRONTEND_BASE_URL}/window/${MANUFACTURING_ORDER_WINDOW_ID}/${ppOrderId}`);
       await page.getByTestId('status-button').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
@@ -40,7 +43,7 @@ export class ManufacturingOrderReceiptPage {
 
   /** Opens the issue/receipt view of the order shown; the launcher is addressed by its internal name. */
   static async openIssueReceiptView() {
-    return await test.step('ManufacturingOrderReceiptPage - Open issue/receipt view', async () => {
+    return await test.step('PPOrderReceiptProcessDialogPage - Open issue/receipt view', async () => {
       const page = getPage();
       await page.keyboard.press('Alt+1'); // actions menu
       const launcher = page.getByTestId('action-WEBUI_PP_Order_IssueReceipt_Launcher');
@@ -64,7 +67,7 @@ export class ManufacturingOrderReceiptPage {
    * That row can come pre-selected, and a click would deselect it.
    */
   static async selectMainProductRow({ productValue }) {
-    return await test.step(`ManufacturingOrderReceiptPage - Select main product row ${productValue}`, async () => {
+    return await test.step(`PPOrderReceiptProcessDialogPage - Select main product row ${productValue}`, async () => {
       const page = getPage();
       const row = page.locator('.panel-modal .table-row').filter({ hasText: productValue }).first();
       await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -77,7 +80,7 @@ export class ManufacturingOrderReceiptPage {
 
   /** The action is chosen by its internal name: the default quick action depends on the order. */
   static async openReceiptDialog() {
-    return await test.step('ManufacturingOrderReceiptPage - Open receipt dialog', async () => {
+    return await test.step('PPOrderReceiptProcessDialogPage - Open receipt dialog', async () => {
       const page = getPage();
       await page.getByTestId('quick-action-dropdown-toggle').click();
       const receiveAction = page.getByTestId('quick-action-WEBUI_PP_Order_Receipt');
@@ -93,7 +96,7 @@ export class ManufacturingOrderReceiptPage {
    * @returns {Promise<{id: string, text: string}[]>} id = M_HU_PI_Item_ID, text = "<PI version name> (<qty> x <TU PI name>)"
    */
   static async getLUPIItemOptions() {
-    return await test.step('ManufacturingOrderReceiptPage - Read pallet entries', async () => {
+    return await test.step('PPOrderReceiptProcessDialogPage - Read pallet entries', async () => {
       const page = getPage();
       const dropdown = this.#field({ columnName: 'M_HU_PI_Item_ID' }).locator('.input-dropdown');
       await dropdown.click();
@@ -123,7 +126,7 @@ export class ManufacturingOrderReceiptPage {
   }
 
   static async startProcess() {
-    return await test.step('ManufacturingOrderReceiptPage - Start', async () => {
+    return await test.step('PPOrderReceiptProcessDialogPage - Start', async () => {
       const startButton = getPage().getByTestId('process-modal-start-button');
       await startButton.click();
       // the dialog is gone when its start button is
