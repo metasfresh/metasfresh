@@ -74,7 +74,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -165,7 +165,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -256,7 +256,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -347,7 +347,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -429,7 +429,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -514,7 +514,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | POReference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |

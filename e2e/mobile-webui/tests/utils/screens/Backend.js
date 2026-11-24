@@ -75,6 +75,20 @@ export const Backend = {
     }),
 
     /**
+     * Registers the picking slot's queue under the given HU aliases (in pick order) and returns { context, qrCodes }
+     * (the global QR code per alias). Fails when the slot's queue does not hold exactly these HUs.
+     */
+    getPickingSlotCrates: async ({ title, slotQrCode, aliases }) => {
+        const { context } = await Backend.expect({
+            title,
+            pickingSlots: { [slotQrCode]: { queue: aliases.map((hu) => ({ hu })) } },
+        });
+        const qrCodes = {};
+        for (const alias of aliases) qrCodes[alias] = await Backend.getHUQRCodeByIdentifier({ identifier: alias });
+        return { context, qrCodes };
+    },
+
+    /**
      * Resolve a masterdata identifier (e.g. `"lu1"`) to the underlying handling-unit's
      * global QR code string. Used by tests that need to scan an HU which was created
      * indirectly (typically by a picking flow) and therefore has no QR code under
@@ -155,6 +169,28 @@ export const Backend = {
         assertNoErrors({ responseBody });
 
         return responseBody;
+    }),
+
+    /**
+     * Update a business partner after the fact (test support): sets {@code C_BPartner.GRAIRequired}, e.g. to flip the partner
+     * between picking and consolidation.
+     *
+     * @param {Object} args
+     * @param {string} [args.bpartnerKey='BP1'] - the key the partner got in the earlier createMasterdata call (`bpartners.<key>`).
+     * @param {'Y'|'N'|'D'} args.graiRequired - the new C_BPartner.GRAIRequired.
+     */
+    updateBPartner: async ({ bpartnerKey = 'BP1', graiRequired }) => await test.step(`Backend: update bpartner ${bpartnerKey} GRAIRequired=${graiRequired}`, async () => {
+        // the createMasterdata channel updates an already created partner when its key is sent again;
+        // keep the first call's masterdata (login, ids): the update response only carries the partner
+        const lastMasterdata = testContext.lastMasterdata;
+        await Backend.createMasterdata({
+            request: {
+                bpartners: {
+                    [bpartnerKey]: { graiRequired },
+                },
+            },
+        });
+        testContext.lastMasterdata = lastMasterdata;
     }),
 
     /**

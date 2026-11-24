@@ -86,6 +86,17 @@ export const abortWorkflowRequest = (wfProcessId) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+/**
+ * @method getWFProcess
+ * @summary Get the current state of a workflow process (e.g. to show the real state after a failed action)
+ * @returns wfProcess
+ */
+export const getWFProcess = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const useLaunchersWebsocket = ({
   enabled,
   userToken,

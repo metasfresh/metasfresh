@@ -238,18 +238,15 @@ test('Scan TU GRAI on PickingSlotScreen → TU consolidated onto target LU', asy
 
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
 
-        // The customer requires GRAI, so the scan affordance is shown.
+        // The slot holds crates that carry a GRAI, so the scan affordance is shown.
         await PickingSlotScreen.expectScannerVisible();
 
-        // Scan first TU's GRAI → consolidates tu1 onto the target LU
-        await PickingSlotScreen.scanGRAI({ graiString: graiP1 });
-        // Assertion between scans: ensures the keyboard hook flushes before the next scan
-        // (CLAUDE.md § "Back-to-Back type() calls — Buffer Concatenation")
-        await PickingSlotScreen.waitNotLoading();
+        // Scan first TU's GRAI → consolidates tu1 onto the target LU. Waiting for the consolidate answer also lets
+        // the keyboard hook flush before the next scan (CLAUDE.md § "Back-to-Back type() calls — Buffer Concatenation")
+        await PickingSlotScreen.scanGRAIAndWaitConsolidated({ graiString: graiP1 });
 
         // Scan second TU's GRAI → consolidates tu2 onto the target LU
-        await PickingSlotScreen.scanGRAI({ graiString: graiP2 });
-        await PickingSlotScreen.waitNotLoading();
+        await PickingSlotScreen.scanGRAIAndWaitConsolidated({ graiString: graiP2 });
 
         // Both TUs are now consolidated; the target is now an existing LU. Capture its QR code
         // so the final assertion can check the LU actually contains both TUs as children.

@@ -220,6 +220,17 @@ public class C_Order
 		}
 	}
 
+	/** Resets {@code IsPOReferenceBuyerOrderNo} when the {@code POReference} changes, unless the same save sets the flag itself. */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_POReference)
+	public void resetIsPOReferenceBuyerOrderNo(@NonNull final I_C_Order order)
+	{
+		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_IsPOReferenceBuyerOrderNo))
+		{
+			return;
+		}
+		order.setIsPOReferenceBuyerOrderNo(false);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID,

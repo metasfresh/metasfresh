@@ -30,7 +30,7 @@ public interface I_C_Order
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_C_Order
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -159,7 +159,7 @@ public interface I_C_Order
 	String COLUMNNAME_AmountTendered = "AmountTendered";
 
 	/**
-	 * Set Bill Business Partner.
+	 * Set Invoice Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -168,7 +168,7 @@ public interface I_C_Order
 	void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
-	 * Get Bill Business Partner.
+	 * Get Invoice Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -313,7 +313,7 @@ public interface I_C_Order
 	String COLUMNNAME_BLDate = "BLDate";
 
 	/**
-	 * Set Address.
+	 * Set Address note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -322,7 +322,7 @@ public interface I_C_Order
 	void setBPartnerAddress (@Nullable java.lang.String BPartnerAddress);
 
 	/**
-	 * Get Address.
+	 * Get Address note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -355,8 +355,8 @@ public interface I_C_Order
 	String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
-	 * Set Activity.
-	 * Business Activity
+	 * Set Kostenstelle.
+	 * Kostenstelle
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -365,8 +365,8 @@ public interface I_C_Order
 	void setC_Activity_ID (int C_Activity_ID);
 
 	/**
-	 * Get Activity.
-	 * Business Activity
+	 * Get Kostenstelle.
+	 * Kostenstelle
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -398,7 +398,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
-	 * Set Business Partner.
+	 * Set Geschäftspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -407,7 +407,7 @@ public interface I_C_Order
 	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Geschäftspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -419,6 +419,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Location.
+	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -428,6 +429,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Location.
+	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -530,8 +532,8 @@ public interface I_C_Order
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
-	 * Set Partner Bank Account.
-	 * Bank Account of the Business Partner
+	 * Set Bankverbindung.
+	 * Bankverbindung des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -540,8 +542,8 @@ public interface I_C_Order
 	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
-	 * Get Partner Bank Account.
-	 * Bank Account of the Business Partner
+	 * Get Bankverbindung.
+	 * Bankverbindung des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -552,7 +554,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
-	 * Set Campaign.
+	 * Set Werbemassnahme.
 	 * Marketing Campaign
 	 *
 	 * <br>Type: TableDir
@@ -562,7 +564,7 @@ public interface I_C_Order
 	void setC_Campaign_ID (int C_Campaign_ID);
 
 	/**
-	 * Get Campaign.
+	 * Get Werbemassnahme.
 	 * Marketing Campaign
 	 *
 	 * <br>Type: TableDir
@@ -626,7 +628,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Conversiontype.
+	 * Set Conversion Type.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -635,7 +637,7 @@ public interface I_C_Order
 	void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/**
-	 * Get Conversiontype.
+	 * Get Conversion Type.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -646,8 +648,8 @@ public interface I_C_Order
 	String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
 
 	/**
-	 * Set Currency.
-	 * The Currency for this record
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -656,8 +658,8 @@ public interface I_C_Order
 	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Currency.
-	 * The Currency for this record
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -829,8 +831,8 @@ public interface I_C_Order
 	String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
 
 	/**
-	 * Set Copy BOM Lines From.
-	 * Copy BOM Lines from an exising BOM
+	 * Set Copy Lines.
+	 * Copy Lines from other Invoice
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -839,8 +841,8 @@ public interface I_C_Order
 	void setCopyFrom (@Nullable java.lang.String CopyFrom);
 
 	/**
-	 * Get Copy BOM Lines From.
-	 * Copy BOM Lines from an exising BOM
+	 * Get Copy Lines.
+	 * Copy Lines from other Invoice
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -875,8 +877,8 @@ public interface I_C_Order
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set Payment.
-	 * Payment identifier
+	 * Set Zahlung.
+	 * Zahlung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -885,8 +887,8 @@ public interface I_C_Order
 	void setC_Payment_ID (int C_Payment_ID);
 
 	/**
-	 * Get Payment.
-	 * Payment identifier
+	 * Get Zahlung.
+	 * Zahlung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -897,8 +899,8 @@ public interface I_C_Order
 	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
-	 * Set Payment Term.
-	 * The terms of Payment (timing, discount)
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -907,8 +909,8 @@ public interface I_C_Order
 	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Payment Term.
-	 * The terms of Payment (timing, discount)
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -946,7 +948,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_POS_ID = "C_POS_ID";
 
 	/**
-	 * Set Project.
+	 * Set Projekt.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
@@ -956,7 +958,7 @@ public interface I_C_Order
 	void setC_Project_ID (int C_Project_ID);
 
 	/**
-	 * Get Project.
+	 * Get Projekt.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
@@ -966,6 +968,56 @@ public interface I_C_Order
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+
+	/**
+	 * Set Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+
+	/**
+	 * Get Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
 	 * Set Copy/Create.
@@ -1175,7 +1227,7 @@ public interface I_C_Order
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Diff. Shipment Address.
+	 * Set Delivery Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1184,7 +1236,7 @@ public interface I_C_Order
 	void setDeliveryToAddress (@Nullable java.lang.String DeliveryToAddress);
 
 	/**
-	 * Get Diff. Shipment Address.
+	 * Get Delivery Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1240,7 +1292,7 @@ public interface I_C_Order
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set End note.
+	 * Set Bottom Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1249,7 +1301,7 @@ public interface I_C_Order
 	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
-	 * Get End note.
+	 * Get Bottom Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1261,7 +1313,7 @@ public interface I_C_Order
 	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
 
 	/**
-	 * Set Process Batch.
+	 * Set Process Order.
 	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
@@ -1271,7 +1323,7 @@ public interface I_C_Order
 	void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Process Batch.
+	 * Get Process Order.
 	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
@@ -1285,6 +1337,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Status.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1294,6 +1347,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Status.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1330,7 +1384,7 @@ public interface I_C_Order
 	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
-	 * Set Document No.
+	 * Set No..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -1340,7 +1394,7 @@ public interface I_C_Order
 	void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Document No.
+	 * Get No..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -1353,7 +1407,8 @@ public interface I_C_Order
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Ship Business Partner.
+	 * Set Shipment Business Partner.
+	 * Business Partner to ship to
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1362,7 +1417,8 @@ public interface I_C_Order
 	void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
 
 	/**
-	 * Get Ship Business Partner.
+	 * Get Shipment Business Partner.
+	 * Business Partner to ship to
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1399,6 +1455,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Ship Location.
+	 * Business Partner Location for shipping to
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1408,6 +1465,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Ship Location.
+	 * Business Partner Location for shipping to
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1689,7 +1747,7 @@ public interface I_C_Order
 	String COLUMNNAME_HandOver_BPartner_Memo = "HandOver_BPartner_Memo";
 
 	/**
-	 * Set unloading address.
+	 * Set Handover Location.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1698,7 +1756,7 @@ public interface I_C_Order
 	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
-	 * Get unloading address.
+	 * Get Handover Location.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1774,7 +1832,7 @@ public interface I_C_Order
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 
 	/**
-	 * Set Incoterm Location.
+	 * Set IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1784,7 +1842,7 @@ public interface I_C_Order
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get Incoterm Location.
+	 * Get IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -2069,8 +2127,8 @@ public interface I_C_Order
 	String COLUMNNAME_IsFixedPreparationDate = "IsFixedPreparationDate";
 
 	/**
-	 * Set Invoiced.
-	 * Is this invoiced?
+	 * Set Fakturiert.
+	 * Fakturiert?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2079,8 +2137,8 @@ public interface I_C_Order
 	void setIsInvoiced (boolean IsInvoiced);
 
 	/**
-	 * Get Invoiced.
-	 * Is this invoiced?
+	 * Get Fakturiert.
+	 * Fakturiert?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2090,6 +2148,31 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsInvoiced = new ModelColumn<>(I_C_Order.class, "IsInvoiced", null);
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
+
+	/**
+	 * Set PO reference is customer's order no..
+	 * The PO reference is the customer's own order number (EDI RFF+ON);
+ otherwise it is our order number (RFF+VN).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPOReferenceBuyerOrderNo (boolean IsPOReferenceBuyerOrderNo);
+
+	/**
+	 * Get PO reference is customer's order no..
+	 * The PO reference is the customer's own order number (EDI RFF+ON);
+ otherwise it is our order number (RFF+VN).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPOReferenceBuyerOrderNo();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsPOReferenceBuyerOrderNo = new ModelColumn<>(I_C_Order.class, "IsPOReferenceBuyerOrderNo", null);
+	String COLUMNNAME_IsPOReferenceBuyerOrderNo = "IsPOReferenceBuyerOrderNo";
 
 	/**
 	 * Set Printed.
@@ -2452,8 +2535,8 @@ public interface I_C_Order
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2462,8 +2545,8 @@ public interface I_C_Order
 	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2522,8 +2605,8 @@ public interface I_C_Order
 	String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -2532,8 +2615,8 @@ public interface I_C_Order
 	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -2746,7 +2829,7 @@ public interface I_C_Order
 	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
-	 * Set Date ready.
+	 * Set Date of Provisioning.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -2755,7 +2838,7 @@ public interface I_C_Order
 	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
 
 	/**
-	 * Get Date ready.
+	 * Get Date of Provisioning.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -2768,6 +2851,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Print Totals.
+	 * Whether the totals section is included in the generated document.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -2777,6 +2861,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Print Totals.
+	 * Whether the totals section is included in the generated document.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -2811,7 +2896,8 @@ public interface I_C_Order
 	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2820,7 +2906,8 @@ public interface I_C_Order
 	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2853,54 +2940,31 @@ public interface I_C_Order
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Promotion Code.
+	 * Set Process Status.
+	 * Process State of the Order: Green: "Completed", Yellow: "In Progress", Red: "Not Started"
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+	@Deprecated
+	void setProcessStatusColor_ID (int ProcessStatusColor_ID);
 
 	/**
-	 * Get Promotion Code.
+	 * Get Process Status.
+	 * Process State of the Order: Green: "Completed", Yellow: "In Progress", Red: "Not Started"
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
-	int getC_PromotionCode_ID();
+	@Deprecated
+	int getProcessStatusColor_ID();
 
-	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
-
-	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
-
-	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
-	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
-
-	/**
-	 * Set Promotion Code 2.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
-
-	/**
-	 * Get Promotion Code 2.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PromotionCode2_ID();
-
-	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
-
-	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
-
-	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
-	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+	ModelColumn<I_C_Order, Object> COLUMN_ProcessStatusColor_ID = new ModelColumn<>(I_C_Order.class, "ProcessStatusColor_ID", null);
+	String COLUMNNAME_ProcessStatusColor_ID = "ProcessStatusColor_ID";
 
 	/**
 	 * Set Qty without Trading Unit.
@@ -3210,7 +3274,8 @@ public interface I_C_Order
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
-	 * Set User 2.
+	 * Set Nutzer 2.
+	 * Nutzerdefiniertes Element Nr. 2
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -3219,7 +3284,8 @@ public interface I_C_Order
 	void setUser2_ID (int User2_ID);
 
 	/**
-	 * Get User 2.
+	 * Get Nutzer 2.
+	 * Nutzerdefiniertes Element Nr. 2
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

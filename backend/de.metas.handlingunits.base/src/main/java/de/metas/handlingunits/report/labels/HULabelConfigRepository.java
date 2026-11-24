@@ -13,6 +13,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
@@ -30,6 +31,33 @@ public class HULabelConfigRepository
 	public ExplainedOptional<HULabelConfig> getFirstMatching(HULabelConfigQuery query)
 	{
 		return getMap().getFirstMatching(query);
+	}
+
+	/**
+	 * Creates an active label config for the one HU unit type of the request.
+	 *
+	 * @return the created config route
+	 */
+	public HULabelConfigRoute create(@NonNull final HULabelConfigCreateRequest request)
+	{
+		final HuUnitType huUnitType = request.getHuUnitType();
+
+		final I_M_HU_Label_Config record = InterfaceWrapperHelper.newInstance(I_M_HU_Label_Config.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setSeqNo(request.getSeqNo().toInt());
+		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+		final HULabelSourceDocType sourceDocType = request.getSourceDocType();
+		record.setHU_SourceDocType(sourceDocType != null ? sourceDocType.getCode() : null);
+		record.setIsApplyToLUs(huUnitType == HuUnitType.LU);
+		record.setIsApplyToTUs(huUnitType == HuUnitType.TU);
+		record.setIsApplyToCUs(huUnitType == HuUnitType.VHU);
+		record.setLabelReport_Process_ID(request.getPrintFormatProcessId().getRepoId());
+		record.setIsAutoPrint(request.isAutoPrint());
+		record.setAutoPrintCopies(request.getAutoPrintCopies().toInt());
+		record.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		return fromRecord(record);
 	}
 
 	private HULabelConfigMap getMap()

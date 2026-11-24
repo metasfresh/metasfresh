@@ -196,7 +196,7 @@ public class M_InOut_StepDef
 	 * <b>DateOrdered</b> — (required) expected date, e.g., "2022-05-17"<br>
 	 * <b>processed</b> — (required) true/false<br>
 	 * <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
-	 * <b>POReference</b> — (optional) expected PO reference<br>
+	 * <b>POReference</b> — (optional) expected PO reference; {@code null} asserts that it is not set<br>
 	 * <b>AD_InputDataSource_ID.InternalName</b> — (optional) expected input data source internal name<br>
 	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
 	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
@@ -235,7 +235,7 @@ public class M_InOut_StepDef
 
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
 				.filter(Check::isNotBlank)
-				.ifPresent(poReference -> softly.assertThat(inout.getPOReference()).isEqualTo(poReference));
+				.ifPresent(poReference -> softly.assertThat(inout.getPOReference()).as("POReference").isEqualTo(DataTableUtil.nullToken2Null(poReference)));
 
 		row.getAsOptionalBoolean("processed")
 				.ifPresent(processed -> softly.assertThat(inout.isProcessed()).isEqualTo(processed));
@@ -749,7 +749,22 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
-	/** Update fields on an existing M_InOut record (e.g. MovementDate before completion). */
+	/**
+	 * Updates fields of an existing {@code M_InOut} (e.g. before or after completion) and saves it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment/receipt to update<br>
+	 *   <b>MovementDate</b> — (optional) new movement date, e.g. 2022-05-17<br>
+	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_InOut:
+	 *   | M_InOut_ID | MovementDate | POReference |
+	 *   | shipment_1 | 2022-05-17   | PO_4711     |
+	 * </pre>
+	 */
 	@And("update M_InOut:")
 	public void update_M_InOut(@NonNull final DataTable dataTable)
 	{
@@ -758,6 +773,8 @@ public class M_InOut_StepDef
 
 			row.getAsOptionalLocalDateTimestamp(I_M_InOut.COLUMNNAME_MovementDate)
 					.ifPresent(inOut::setMovementDate);
+			row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
+					.ifPresent(inOut::setPOReference);
 
 			InterfaceWrapperHelper.saveRecord(inOut);
 		});

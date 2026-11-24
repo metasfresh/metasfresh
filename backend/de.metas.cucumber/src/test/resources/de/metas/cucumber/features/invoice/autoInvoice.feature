@@ -82,7 +82,7 @@ Feature: Enqueue order candidate and auto invoice after shipped
       | C_Order_ID.Identifier |
       | order1                |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId   |
+      | C_Order_ID.Identifier | ExternalId   |
       | order1                | autoInvoice1 |
     And validate the created order lines
       | Identifier   | C_Order_ID | M_Product_ID | QtyOrdered |

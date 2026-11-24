@@ -9,6 +9,7 @@ import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -19,6 +20,8 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,6 +49,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	private I_C_BPartner_Product bpp1;
 	private I_C_BPartner_Product bpp2;
 
+	private C_OLCand orderCandidateMV;
+
 	public C_OLCandMVTest()
 	{
 		ctx = Env.getCtx();
@@ -64,7 +69,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(DocumentLocationBL.newInstanceForUnitTesting());
 
 		// Initialize C_OLCand MV Only!
-		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationsUpdaterService);
+		orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationsUpdaterService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(orderCandidateMV, null);
 	}
 
@@ -176,5 +181,57 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		olCand.setC_BPartner_SalesRep_ID(bpartner1.getC_BPartner_ID());
 
 		Assertions.assertThrows(AdempiereException.class, () -> save(olCand));
+	}
+
+	/**
+	 * The order candidate's POReference reaches the order that its {@code C_Order_Line_Alloc} points to - not the order
+	 * of the order line whose ID happens to be equal to the alloc record's ID.
+	 */
+	@Test
+	public void updatePOReferenceOnSalesOrder_updatesTheAllocatedOrder()
+	{
+		final I_C_Order allocatedOrder = orderWithPOReference("oldPOReference");
+		final I_C_OrderLine allocatedOrderLine = orderLine(allocatedOrder, 0);
+
+		final I_C_OLCand olCand = newInstance(I_C_OLCand.class);
+		olCand.setC_BPartner_ID(bpartner1.getC_BPartner_ID());
+		olCand.setPOReference("newPOReference");
+		InterfaceWrapperHelper.saveRecord(olCand);
+
+		final I_C_Order_Line_Alloc alloc = newInstance(I_C_Order_Line_Alloc.class);
+		alloc.setC_OLCand_ID(olCand.getC_OLCand_ID());
+		alloc.setC_OrderLine_ID(allocatedOrderLine.getC_OrderLine_ID());
+		InterfaceWrapperHelper.saveRecord(alloc);
+
+		// an unrelated order whose line has the alloc record's ID, as happens in a real DB where both tables have their own sequence
+		final I_C_Order otherOrder = orderWithPOReference("otherOrderPOReference");
+		orderLine(otherOrder, alloc.getC_Order_Line_Alloc_ID());
+
+		orderCandidateMV.updatePOReferenceOnSalesOrder(olCand);
+
+		InterfaceWrapperHelper.refresh(allocatedOrder);
+		InterfaceWrapperHelper.refresh(otherOrder);
+		assertThat(allocatedOrder.getPOReference()).isEqualTo("newPOReference");
+		assertThat(otherOrder.getPOReference()).isEqualTo("otherOrderPOReference");
+	}
+
+	private static I_C_Order orderWithPOReference(final String poReference)
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setPOReference(poReference);
+		InterfaceWrapperHelper.saveRecord(order);
+		return order;
+	}
+
+	private static I_C_OrderLine orderLine(final I_C_Order order, final int orderLineId)
+	{
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		if (orderLineId > 0)
+		{
+			orderLine.setC_OrderLine_ID(orderLineId);
+		}
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		InterfaceWrapperHelper.saveRecord(orderLine);
+		return orderLine;
 	}
 }

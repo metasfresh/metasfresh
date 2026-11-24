@@ -23,6 +23,7 @@ package org.adempiere.archive.api;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.process.AdProcessId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -82,4 +83,10 @@ public interface IArchiveDAO extends ISingletonService
 	<T extends I_AD_Archive> T retrieveArchive(@NonNull ArchiveId archiveId, @NonNull Class<T> modelClass);
 
 	void updatePOReferenceIfExists(@NonNull TableRecordReference recordReference, @Nullable String poReference);
+
+	/**
+	 * @param processId if not {@code null}, only archives of this {@code AD_Archive.AD_Process_ID} are counted
+	 * @return the number of active archives of the given record
+	 */
+	int countArchives(@NonNull TableRecordReference recordRef, @Nullable AdProcessId processId);
 }

@@ -283,6 +283,21 @@ public interface ITrxManager extends ISingletonService
 	void runAfterClose(@NonNull Consumer<ITrx> runnable);
 
 	/**
+	 * Run after the current transaction was closed, but only if it was committed (not when it was rolled back).
+	 * If there is no transaction, the code is executed right away.
+	 */
+	default void runAfterCloseIfCommitted(@NonNull final Runnable runnable)
+	{
+		runAfterClose(trx -> {
+			if (trx != null && !trx.isCommittedOK())
+			{
+				return;
+			}
+			runnable.run();
+		});
+	}
+
+	/**
 	 * Commit transaction for given <code>trxName</code>.
 	 *
 	 * @throws TrxException if transaction was not found or is null

@@ -15,6 +15,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -312,5 +313,96 @@ public class HandlingUnitsDAO_ProductSelectionTest extends AbstractHUTest
 
 		// not product-specific => resolved by the query as before (generic before partner-specific)
 		assertThat(parentPIItemForChild(luHU)).isEqualTo(genericItem30);
+	}
+
+	/** Only product-specific items are eligible; generic and partner-only items are not. */
+	@Nested
+	class RetrieveProductSpecificParentPIItemForChildHU
+	{
+		private I_M_HU_PI_Item productSpecificItem(final I_M_HU luHU, @Nullable final ProductId childProductId)
+		{
+			return dao.retrieveProductSpecificParentPIItemForChildHUOrNull(luHU, tuPI, childProductId, helper.getHUContext());
+		}
+
+		private I_M_HU createLUHUOfPartner()
+		{
+			final I_M_HU luHU = createLUHU();
+			luHU.setC_BPartner_ID(bpartner.getRepoId());
+			InterfaceWrapperHelper.save(luHU);
+			return luHU;
+		}
+
+		@Test
+		void genericItemExists_stillPicksProductItem()
+		{
+			assertThat(productSpecificItem(createLUHU(), otherProduct)).isEqualTo(productItem40);
+		}
+
+		@Test
+		void partnerItemWithoutProduct_notEligible()
+		{
+			InterfaceWrapperHelper.delete(genericItem30);
+			InterfaceWrapperHelper.delete(productItem40);
+			partnerItem35();
+
+			assertThat(productSpecificItem(createLUHUOfPartner(), productXY)).isNull();
+		}
+
+		@Test
+		void childOfThatProduct_picksProductItem()
+		{
+			assertThat(productSpecificItem(createLUHU(), productXY)).isEqualTo(productItem40);
+		}
+
+		@Test
+		void childOfOtherProductOrWithoutProduct_picksProductItem()
+		{
+			assertThat(productSpecificItem(createLUHU(), otherProduct)).isEqualTo(productItem40);
+			assertThat(productSpecificItem(createLUHU(), null)).isEqualTo(productItem40);
+		}
+
+		@Test
+		void twoProductItems_picksTheChildsProductItem()
+		{
+			final I_M_HU_PI_Item otherProductItem50 = createItem(new BigDecimal("50"), null, otherProduct);
+
+			assertThat(productSpecificItem(createLUHU(), otherProduct)).isEqualTo(otherProductItem50);
+			assertThat(productSpecificItem(createLUHU(), productXY)).isEqualTo(productItem40);
+			assertThat(productSpecificItem(createLUHU(), null)).as("no product: lowest ID").isEqualTo(productItem40);
+		}
+
+		@Test
+		void productItemOfOtherPartner_notEligible()
+		{
+			InterfaceWrapperHelper.delete(productItem40);
+			createItem(new BigDecimal("45"), bpartner, productXY);
+
+			assertThat(productSpecificItem(createLUHU(), productXY)).isNull();
+		}
+
+		@Test
+		void productItemOfLUsPartner_eligible()
+		{
+			InterfaceWrapperHelper.delete(productItem40);
+			final I_M_HU_PI_Item partnerProductItem45 = createItem(new BigDecimal("45"), bpartner, productXY);
+
+			assertThat(productSpecificItem(createLUHUOfPartner(), productXY)).isEqualTo(partnerProductItem45);
+		}
+
+		/** same order as {@link HandlingUnitsDAO#retrieveParentPIItemForChildHUOrNull}: C_BPartner_ID DESC NULLS FIRST, i.e. the partner-less item first */
+		@Test
+		void partnerLessProductItemBeforeProductItemOfLUsPartner()
+		{
+			createItem(new BigDecimal("45"), bpartner, productXY);
+
+			assertThat(productSpecificItem(createLUHUOfPartner(), productXY)).isEqualTo(productItem40);
+		}
+
+		@Test
+		void noProductItem_null()
+		{
+			InterfaceWrapperHelper.delete(productItem40);
+			assertThat(productSpecificItem(createLUHU(), productXY)).isNull();
+		}
 	}
 }

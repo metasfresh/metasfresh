@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -106,9 +107,32 @@ public interface IHUQueryBuilder
 	/** Retrieves first {@link I_M_HU} */
 	I_M_HU first();
 
+	/**
+	 * Retrieves the one and only {@link I_M_HU} matched by our criteria.
+	 * Fetches at most 2 rows. Like {@link #anyMatch()}, it ignores {@link #setErrorIfNoHUs(boolean, String)}.
+	 *
+	 * @param notFoundExceptionSupplier         supplies the exception to throw if there is no match
+	 * @param moreThanOneFoundExceptionSupplier supplies the exception to throw if there is more than one match
+	 * @return the matched HU, never {@code null}
+	 */
+	@NonNull
+	<X extends Throwable> I_M_HU firstOnlyNotNull(
+			@NonNull Supplier<? extends X> notFoundExceptionSupplier,
+			@NonNull Supplier<? extends X> moreThanOneFoundExceptionSupplier) throws X;
+
 	Optional<HuId> firstId();
 
 	Optional<HuId> firstIdOnly();
+
+	/**
+	 * Checks if at least one {@link I_M_HU} is matched by our criteria.
+	 * Use it for pure existence checks: it stops at the first match and, unlike {@link #firstIdOnly()}, does not fail when there are several matches.
+	 * Like all executors of this builder, it applies the criteria set so far; it does not change them.
+	 * Unlike {@link #list()} and the first-match executors, it ignores {@link #setErrorIfNoHUs(boolean, String)}: no match just returns {@code false}.
+	 *
+	 * @return {@code true} if there is at least one match; {@code false} if none
+	 */
+	boolean anyMatch();
 
 	/** Counts how many {@link I_M_HU}s are matched by our criteria */
 	int count();

@@ -60,6 +60,19 @@ public class BPartnerDAOTest
 	}
 
 	@Test
+	public void newBPartner_isNotSavedUntilSaveIsCalled()
+	{
+		final I_C_BPartner bpartner = bpartnerDAO.newBPartner();
+		bpartner.setValue("newBPartner-test");
+		assertThat(bpartner.getC_BPartner_ID()).isLessThanOrEqualTo(0);
+
+		bpartnerDAO.save(bpartner);
+
+		assertThat(bpartner.getC_BPartner_ID()).isGreaterThan(0);
+		assertThat(bpartnerDAO.getById(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID())).getValue()).isEqualTo("newBPartner-test");
+	}
+
+	@Test
 	public void retrieveAllDiscountSchemaIdsIndexedByBPartnerId()
 	{
 		final I_C_BPartner bPartnerRecord1 = newInstance(I_C_BPartner.class);

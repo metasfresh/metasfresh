@@ -4,6 +4,9 @@
     "New": "Neues Gebinde",
     "Current": "Offenes Gebinde"
   },
+  "HUConsolidationActivity": {
+    "scanGRAI": "Scan (GRAI)"
+  },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",
     "closeTarget": "Schließen",

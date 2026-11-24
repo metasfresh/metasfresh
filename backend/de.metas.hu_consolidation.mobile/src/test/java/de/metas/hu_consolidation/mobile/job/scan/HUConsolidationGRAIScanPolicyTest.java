@@ -1,0 +1,151 @@
+package de.metas.hu_consolidation.mobile.job.scan;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.slot.PickingSlotQueue;
+import de.metas.handlingunits.picking.slot.PickingSlotQueues;
+import de.metas.picking.api.PickingSlotId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+/**
+ * Presence of a GRAI on an active top-level HU among the given crates (the "Scan (GRAI)" rule).
+ * Runs on real (POJO) HU / attribute rows, so the query filters (active, top-level, attribute not null) are exercised.
+ */
+class HUConsolidationGRAIScanPolicyTest
+{
+	private static final String GRAI_CODE = "7613204.00307.1234567890";
+
+	private HUConsolidationGRAIScanPolicy scanPolicy;
+	private GRAICrateTestFixtures fixtures;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		fixtures = new GRAICrateTestFixtures();
+		scanPolicy = new HUConsolidationGRAIScanPolicy();
+	}
+
+	private boolean isEnabled(final Collection<HuId> huIds)
+	{
+		final PickingSlotQueue queue = GRAICrateTestFixtures.queue(PickingSlotId.ofRepoId(1), huIds.toArray(new HuId[0]));
+		return scanPolicy.isGRAIScanEnabled(PickingSlotQueues.ofList(ImmutableList.of(queue)));
+	}
+
+	private I_M_HU createTopLevelHU(final String graiValue) {return fixtures.createTopLevelHU(graiValue);}
+
+	private I_M_HU createTUInside(final I_M_HU lu, final String graiValue) {return fixtures.createTUInside(lu, graiValue);}
+
+	@Test
+	void topLevelCrateWithGRAI_counts()
+	{
+		final I_M_HU crate = createTopLevelHU(GRAI_CODE);
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(crate)))).isTrue();
+	}
+
+	@Test
+	void severalCratesWithGRAI_count_withoutException()
+	{
+		// several GRAI crates in the slots: the check must not demand a unique match
+		final I_M_HU crate1 = createTopLevelHU(GRAI_CODE);
+		final I_M_HU crate2 = createTopLevelHU("7613204.00307.1234567891");
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(crate1), GRAICrateTestFixtures.id(crate2)))).isTrue();
+	}
+
+	@Test
+	void dummyGRAI_counts()
+	{
+		final I_M_HU crate = createTopLevelHU("7613204.00307.DUMMY-1");
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(crate)))).isTrue();
+	}
+
+	@Test
+	void topLevelLUQueuedInSlotWithGRAI_counts()
+	{
+		// slot case: the queued HU is a top-level LU that itself carries the GRAI
+		final I_M_HU lu = createTopLevelHU(GRAI_CODE);
+		assertThat(isEnabled(ImmutableList.of(GRAICrateTestFixtures.id(lu)))).isTrue();
+	}
+
+	@Test
+	void graiTUInsideQueuedLU_doesNotCount()
+	{
+		final I_M_HU lu = createTopLevelHU(null);
+		createTUInside(lu, GRAI_CODE);
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(lu)))).isFalse();
+	}
+
+	@Test
+	void crateWithoutGRAI_doesNotCount()
+	{
+		final I_M_HU crate = createTopLevelHU(null);
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(crate)))).isFalse();
+	}
+
+	@Test
+	void inactiveCrateWithGRAI_doesNotCount()
+	{
+		final I_M_HU crate = createTopLevelHU(GRAI_CODE);
+		crate.setIsActive(false);
+		save(crate);
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(crate)))).isFalse();
+	}
+
+	@Test
+	void emptyStringValue_isCountedByTheFilter_butNotAGRAIOnTheReadSide()
+	{
+		// the filter is "attribute value IS NOT NULL", so '' counts as present ...
+		final I_M_HU crate = createTopLevelHU("");
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(crate)))).isTrue();
+		// ... while the read side (HUGraiSnapshotLoader.readGRAI -> GRAI.ofNullableCanonicalString) sees no GRAI
+		assertThat(GRAI.ofNullableCanonicalString("")).isNull();
+		assertThat(GRAI.ofNullableCanonicalString("  ")).isNull();
+	}
+
+	@Test
+	void nonCanonicalValue_isCountedByTheFilter_readSideRejectsIt()
+	{
+		final I_M_HU crate = createTopLevelHU("not-canonical");
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(crate)))).isTrue();
+		assertThrows(RuntimeException.class, () -> GRAI.ofNullableCanonicalString("not-canonical"));
+	}
+
+	@Test
+	void emptyCrateList_isFalse_withoutQuery_evenIfAnotherActiveTopLevelHUCarriesAGRAI()
+	{
+		// a HU of another job carries a GRAI: without the guard addOnlyHUIds(empty) would drop the filter and find it
+		createTopLevelHU(GRAI_CODE);
+		assertThat(isEnabled(ImmutableSet.of())).isFalse();
+	}
+
+	@Test
+	void crateOfAnotherJob_isNotSeen()
+	{
+		final I_M_HU mine = createTopLevelHU(null);
+		createTopLevelHU(GRAI_CODE); // other job
+		assertThat(isEnabled(ImmutableSet.of(GRAICrateTestFixtures.id(mine)))).isFalse();
+	}
+
+	@Test
+	void singleQueue_isDecidedLikeQueues()
+	{
+		final HuId graiCrate = GRAICrateTestFixtures.id(createTopLevelHU(GRAI_CODE));
+		final HuId plainCrate = GRAICrateTestFixtures.id(createTopLevelHU(null));
+		final PickingSlotId slotId = PickingSlotId.ofRepoId(1);
+
+		assertThat(scanPolicy.isGRAIScanEnabled(GRAICrateTestFixtures.queue(slotId, graiCrate, plainCrate))).isTrue();
+		assertThat(scanPolicy.isGRAIScanEnabled(GRAICrateTestFixtures.queue(slotId, plainCrate))).isFalse();
+		assertThat(scanPolicy.isGRAIScanEnabled(GRAICrateTestFixtures.queue(slotId))).isFalse();
+	}
+}

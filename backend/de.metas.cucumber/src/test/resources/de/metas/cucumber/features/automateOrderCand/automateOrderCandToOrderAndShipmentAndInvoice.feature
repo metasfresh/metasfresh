@@ -70,7 +70,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -147,7 +147,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     # We expect just an order and no shipment and no invoice. Thus the empty identifiers
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 1444_zeroQtyShipped | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -206,7 +206,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 222            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -236,7 +236,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | null                  | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 222            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -303,7 +303,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_S0150_130       | null                  | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_S0150_130       | 444            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -426,7 +426,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 9999           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -567,7 +567,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 744777         | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -650,7 +650,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 888            | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -680,7 +680,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | null                  | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_1               | 888            | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        | Shopware                               | Shopware6            |
 
     And validate the created order lines
@@ -748,7 +748,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_S0150_135       | null                  | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | POReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
       | order_S0150_135       | S0150_135      | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
