@@ -73,6 +73,11 @@ Feature: Moving Average Invoice - MatchInv of a rounding cent posts with a valid
     #
     # Both matches post 1105 / 2060 / 90000 on the cent grid:
     #   NotInvoicedReceipts DR 133.44, P_InventoryClearing CR 101.22, P_Asset CR 32.22 (qty 0).
+    # Each receipt credits the same 133.44 on NotInvoicedReceipts that its match debits.
+    #
+    # Known limitation: the invoice books 202.43 on P_InventoryClearing, the two matches 101.22 + 101.22 = 202.44.
+    # The 0.01 stays because each match rounds its own share when one invoice line is matched more than once;
+    # a follow-up is planned.
     #
     And Wait until documents receipt1,receipt2,invoice,matchInv1,matchInv2 are posted
     Then Fact_Acct records are matching
@@ -83,23 +88,9 @@ Feature: Moving Average Invoice - MatchInv of a rounding cent posts with a valid
       | NotInvoicedReceipts_Acct | 133.44    |           | 133.44 CHF  |             | +0.914 KGM | product      | matchInv2 | vendor        |
       | P_InventoryClearing_Acct |           | 101.22    |             | 101.22 CHF  | -0.914 KGM | product      | matchInv2 | vendor        |
       | P_Asset_Acct             |           | 32.22     |             | 32.22 CHF   | 0 KGM      | product      | matchInv2 | vendor        |
-    #
-    # The receipts and the invoice post their own side of the same two accounts. Only the asserted line of each
-    # document is listed; the row with "*" as account conceptual name accepts the document's other lines.
-    # Receipt side: NotInvoicedReceipts CR 133.44 per receipt, exactly the amount the match of that receipt line debits on the same account.
-    # Invoice side: P_InventoryClearing DR 202.43 (the whole invoice line). This does NOT reconcile with the matches: they credit 101.22 + 101.22 = 202.44,
-    # a rest of 0.01. That is the known limitation of an invoice line matched more than once (each match is rounded on its own); it is not fixed here
-    # and is planned as a follow-up. The real 202.43 is asserted so that any change of this behaviour shows up.
-    #
-    And Fact_Acct records are matching
-      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Record_ID |
-      | *                        |           |           |             |             | receipt1  |
-      | NotInvoicedReceipts_Acct |           | 133.44    |             | 133.44 CHF  | receipt1  |
-    And Fact_Acct records are matching
-      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Record_ID |
-      | *                        |           |           |             |             | receipt2  |
-      | NotInvoicedReceipts_Acct |           | 133.44    |             | 133.44 CHF  | receipt2  |
-    And Fact_Acct records are matching
-      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Record_ID |
-      | *                        |           |           |             |             | invoice   |
-      | P_InventoryClearing_Acct | 202.43    |           | 202.43 CHF  |             | invoice   |
+      | *                        |           |           |             |             |            |              | receipt1  |               |
+      | NotInvoicedReceipts_Acct |           | 133.44    |             | 133.44 CHF  |            |              | receipt1  |               |
+      | *                        |           |           |             |             |            |              | receipt2  |               |
+      | NotInvoicedReceipts_Acct |           | 133.44    |             | 133.44 CHF  |            |              | receipt2  |               |
+      | *                        |           |           |             |             |            |              | invoice   |               |
+      | P_InventoryClearing_Acct | 202.43    |           | 202.43 CHF  |             |            |              | invoice   |               |
