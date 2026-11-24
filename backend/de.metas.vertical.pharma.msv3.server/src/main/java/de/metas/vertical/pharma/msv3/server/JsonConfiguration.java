@@ -44,6 +44,9 @@ public class JsonConfiguration
 	 * REST message converter: like {@link #jsonObjectMapper()}, but tolerant of unknown request properties, as the REST layer was before the springdoc migration.
 	 * Back then, springfox's {@code @EnableWebMvc} (on {@link SwaggerConfig}) made Spring MVC use its own default converter, which ignores unknown properties.
 	 * Without {@code @EnableWebMvc}, Spring Boot's converter would use the strict {@link #jsonObjectMapper()}; it backs off in favour of this bean.
+	 * <p>
+	 * Date/time values are written as timestamps, as before: a plain {@code ObjectMapper} keeps Jackson's default {@code WRITE_DATES_AS_TIMESTAMPS},
+	 * like the builder mapper under {@code @EnableWebMvc} did.
 	 */
 	@Bean
 	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter()
