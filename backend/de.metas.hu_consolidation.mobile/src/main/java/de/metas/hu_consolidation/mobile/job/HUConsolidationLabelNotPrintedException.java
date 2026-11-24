@@ -12,16 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 public class HUConsolidationLabelNotPrintedException extends AdempiereException
 {
 	private static final AdMessageKey MSG_PALLET_SHIPPED_LABEL_NOT_PRINTED = AdMessageKey.of("de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED");
-	private static final AdMessageKey MSG_REASON_NO_LABEL_CONFIG = AdMessageKey.of("de.metas.hu_consolidation.mobile.job.LABEL_NOT_PRINTED_REASON_NO_LABEL_CONFIG");
 	private static final AdMessageKey MSG_REASON_PRINT_FAILED = AdMessageKey.of("de.metas.hu_consolidation.mobile.job.LABEL_NOT_PRINTED_REASON_PRINT_FAILED");
-
-	/**
-	 * @param cause why no label print could be prepared, e.g. no label config applies to the target
-	 */
-	public static HUConsolidationLabelNotPrintedException noLabelConfig(@NonNull final Throwable cause)
-	{
-		return new HUConsolidationLabelNotPrintedException(MSG_REASON_NO_LABEL_CONFIG, cause);
-	}
 
 	/**
 	 * @param cause the error of the label print itself

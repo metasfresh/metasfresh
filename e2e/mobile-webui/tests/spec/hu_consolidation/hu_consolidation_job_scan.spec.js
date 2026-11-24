@@ -1197,22 +1197,12 @@ test.describe('Pallet label configured, crate label not (the customer\'s label s
     });
 });
 
-/**
- * The message shown when the pallet was closed (or the job completed) and shipped, but no label is set up for it
- * (AD_Messages de.metas.hu_consolidation.mobile.job.PALLET_SHIPPED_LABEL_NOT_PRINTED + ..._REASON_NO_LABEL_CONFIG, de_DE):
- * done, the shipment is being created (it is created asynchronously), with a short reason; never the technical error.
- */
-const expectPalletShippedNoLabelConfigMessage = (textContent) => {
-    expect(textContent).toContain('Abgeschlossen, Lieferung wird erstellt. Etikett nicht gedruckt: Für diese Palette ist kein Etikett eingerichtet.');
-    expect(textContent).not.toContain('SysConfig');
-};
-
 // The customer's handheld (Zebra TC22)
 test.describe('Pallet without any label config, on the customer\'s handheld', () => {
     test.use({ viewport: { width: 411, height: 823 }, deviceScaleFactor: 2.625 });
 
     // noinspection JSUnusedLocalSymbols
-    test('Schliessen of a pallet without any label config: message that the pallet is closed and shipped, pallet closed anyway and shipped', async ({ page: _page }) => {
+    test('Schliessen of a pallet without any label config: silent (no error), pallet closed and shipped, as in picking', async ({ page: _page }) => {
         // === ALLURE METADATA ===
         await allure.epic('E0105: Picking');
         await allure.tag('F00248');
@@ -1227,16 +1217,10 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
 
         const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
 
-        await test.step('Schliessen: the message says the pallet is closed and shipped, and the pallet is closed (no open pallet on the job screen)', async () => {
-            await expectErrorToast('pallet closed and shipped, its label not printed', async () => {
-                await HUConsolidationJobScreen.clickLUTargetButton();
-                await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
-            }, async ({ textContent }) => {
-                expectPalletShippedNoLabelConfigMessage(textContent);
-                await attachScreenshot('Schliessen-label-not-printed-message');
-            });
-            await SelectHUConsolidationTargetScreen.goBack();
+        await test.step('Schliessen: back on the job screen without an error, no open pallet', async () => {
+            await HUConsolidationJobScreen.closeTargetLU();
             await HUConsolidationJobScreen.expectTargetLUCaptionStartsWith({ text: 'Neues Gebinde' });
+            await ErrorToast.expectNoErrorToast();
         });
 
         await Backend.expect({
@@ -1250,7 +1234,7 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
     });
 
     // noinspection JSUnusedLocalSymbols
-    test('Fertigstellen with a pallet without any label config: a dialog says the job is done and shipped, then the job list without the job', async ({ page: _page }) => {
+    test('Fertigstellen with a pallet without any label config: silent (no error), the pallet is shipped, back on the job list without the job', async ({ page: _page }) => {
         // === ALLURE METADATA ===
         await allure.epic('E0105: Picking');
         await allure.tag('F00248');
@@ -1266,13 +1250,10 @@ test.describe('Pallet without any label config, on the customer\'s handheld', ()
 
         const targetLUQRCode = await putOneCrateOnANewPallet({ masterdata });
 
-        await test.step('Fertigstellen -> Ja: a dialog says the job is done and shipped; OK shows the job list without the job', async () => {
-            await HUConsolidationJobScreen.tapCompleteAndConfirm();
-            expectPalletShippedNoLabelConfigMessage(await HUConsolidationJobScreen.expectCompletedWithErrorDialog());
-            await attachScreenshot('Fertigstellen-label-not-printed-dialog');
+        await test.step('Fertigstellen -> Ja: back on the job list without an error, ship-to gone', async () => {
             await HUConsolidationJobsListScreen.expectJobNotListedAfter({
                 customerLocationId,
-                trigger: () => HUConsolidationJobScreen.confirmCompletedWithErrorDialog(),
+                trigger: () => HUConsolidationJobScreen.complete(),
             });
         });
 

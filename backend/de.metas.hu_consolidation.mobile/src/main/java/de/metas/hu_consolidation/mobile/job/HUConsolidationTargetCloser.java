@@ -21,7 +21,8 @@ public class HUConsolidationTargetCloser
 	 * Closes the current target (if it is an actual LU): prepares its label print, then creates the shipment for it.
 	 * The label is not printed: the returned {@link CloseTargetResult} holds the print.
 	 * <p>
-	 * A label print that cannot be prepared (e.g. no label config applies to the LU) does not prevent closing the target:
+	 * An LU without any label config prints nothing and closes silently (as in picking).
+	 * A label print that cannot be prepared does not prevent closing the target:
 	 * the returned print then throws {@link HUConsolidationLabelNotPrintedException}.
 	 */
 	public CloseTargetResult closeTarget(@NonNull final HUConsolidationJob job)
@@ -52,9 +53,7 @@ public class HUConsolidationTargetCloser
 		catch (final AdempiereException labelError)
 		{
 			// thrown when the returned print runs
-			final HUConsolidationLabelNotPrintedException labelNotPrinted = labelPrinter.isLabelConfigured(target)
-					? HUConsolidationLabelNotPrintedException.printFailed(labelError)
-					: HUConsolidationLabelNotPrintedException.noLabelConfig(labelError);
+			final HUConsolidationLabelNotPrintedException labelNotPrinted = HUConsolidationLabelNotPrintedException.printFailed(labelError);
 			return () -> {
 				throw labelNotPrinted;
 			};
