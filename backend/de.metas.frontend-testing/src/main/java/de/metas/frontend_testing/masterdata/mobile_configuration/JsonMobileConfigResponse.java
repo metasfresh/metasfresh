@@ -52,7 +52,7 @@ public class JsonMobileConfigResponse
 
 		@Nullable List<PickingJobFacetGroup> filters;
 
-		/** the picking profile before this request's update (so a test can write back what it changed); not set on {@code previous} itself */
+		/** the picking profile before this request's update; not set on {@code previous} itself */
 		@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) Picking previous;
 	}
 

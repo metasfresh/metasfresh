@@ -124,21 +124,34 @@ const rememberWhatToRestore = ({ masterdata, pickingProfile }) => {
  * HU consolidation job to every later test). Call it in `test.afterEach` of every spec that uses this masterdata; it also runs when the test failed.
  */
 export const cleanUpAfterJobScanTest = async () => {
-    const sysconfigs = sysconfigsToRestore;
-    const pickingProfile = pickingProfileToRestore;
+    const pickingProfile = { ...pickingProfileToRestore };
+    const sysconfigs = { ...sysconfigsToRestore };
     const pickingSlotIds = [...pickingSlotIdsToEmpty];
+
+    // every restore runs, also when another one failed; the first error is rethrown after all of them ran.
+    // One after the other: the masterdata call also writes sysconfigs (the scanner defaults), so the sysconfig restore must come after it.
+    const restores = [
+        Object.keys(pickingProfile).length > 0
+            ? () => Backend.createMasterdata({ request: { mobileConfig: { picking: { ...JOB_SCAN_PICKING_PROFILE, ...pickingProfile } } } })
+            : null,
+        Object.keys(sysconfigs).length > 0 ? () => Backend.setSysconfigs(sysconfigs) : null,
+        pickingSlotIds.length > 0 ? () => Backend.emptyPickingSlots({ pickingSlotIds }) : null,
+    ].filter(Boolean);
+    const errors = [];
+    for (const restore of restores) {
+        try {
+            await restore();
+        } catch (error) {
+            errors.push(error);
+        }
+    }
+
     sysconfigsToRestore = {};
     pickingProfileToRestore = {};
     pickingSlotIdsToEmpty.clear();
 
-    if (Object.keys(pickingProfile).length > 0) {
-        await Backend.createMasterdata({ request: { mobileConfig: { picking: { ...JOB_SCAN_PICKING_PROFILE, ...pickingProfile } } } });
-    }
-    if (Object.keys(sysconfigs).length > 0) {
-        await Backend.setSysconfigs(sysconfigs);
-    }
-    if (pickingSlotIds.length > 0) {
-        await Backend.emptyPickingSlots({ pickingSlotIds });
+    if (errors.length > 0) {
+        throw errors[0];
     }
 };
 

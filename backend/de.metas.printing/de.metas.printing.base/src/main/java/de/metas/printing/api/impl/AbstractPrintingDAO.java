@@ -27,7 +27,6 @@ import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueQuery;
-import de.metas.process.AdProcessId;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -49,6 +48,7 @@ import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.model.X_AD_PrinterHW;
+import de.metas.process.AdProcessId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -486,8 +486,6 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public int countPrintingQueueItems(@NonNull final TableRecordReference archivedRecordRef, @Nullable final AdProcessId processId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_AD_Archive> archives = queryBL.createQueryBuilder(I_AD_Archive.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, archivedRecordRef.getAD_Table_ID())

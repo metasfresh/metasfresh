@@ -358,8 +358,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	List<I_M_HU_PI_Item> retrievePIItems(I_M_HU_PI_Version piVersion, @Nullable BPartnerId bpartnerId);
 
 	/**
-	 * @return {@code true} if the LU packing instructions have an item without product for the TU packing instructions (generic, or for the given partner).
-	 * Delegates to {@link IHandlingUnitsDAO#retrieveFirstPIItem(HuPackingInstructionsId, HuPackingInstructionsId, BPartnerId, ProductId)} without product.
+	 * @return {@code true} if the LU packing instructions have an item without product for the TU packing instructions (generic, or for the given partner)
 	 */
 	boolean isTUTypeTakenByLUType(@NonNull HuPackingInstructionsId luPIId, @NonNull HuPackingInstructionsId tuPIId, @Nullable BPartnerId bpartnerId);
 
