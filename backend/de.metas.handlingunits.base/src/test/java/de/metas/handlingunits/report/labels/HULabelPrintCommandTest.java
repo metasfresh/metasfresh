@@ -133,18 +133,6 @@ class HULabelPrintCommandTest
 				.hasMessageContaining("de.metas.ui.web.picking.PickingLabel.AD_Process_ID");
 	}
 
-	/** The lookup the print command uses for each HU, offered to callers that must tell "no label set up" from "print failed". */
-	@Test
-	void getLabelConfig_sameLookupAsThePrint_luConfigured_crateNot()
-	{
-		givenLULabelConfigOnly();
-		final HULabelService service = new HULabelService(new HULabelConfigService(labelConfigRepository), mock(HUQRCodesService.class));
-		final TestHU lu = luWithTwoCrates();
-
-		assertThat(service.getLabelConfig(HULabelSourceDocType.Picking, lu).map(HULabelConfig::getPrintFormatProcessId).orElse(null)).isEqualTo(LU_LABEL_PROCESS);
-		assertThat(service.getLabelConfig(HULabelSourceDocType.Picking, lu.getIncludedHUs().get(0)).isPresent()).isFalse();
-	}
-
 	@Value
 	@Builder
 	private static class TestHU implements HUToReport
