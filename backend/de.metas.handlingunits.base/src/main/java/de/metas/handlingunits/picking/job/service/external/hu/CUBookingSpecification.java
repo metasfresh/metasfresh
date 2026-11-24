@@ -18,8 +18,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Specification (Evans, Domain-Driven Design): how a picked HU was booked. The answer is derived from the HU's shape once, here, so the close of
- * all picking targets, the GRAI completion check and the un-pick all ask the same question instead of each guessing it from the HU.
+ * Specification (Evans, Domain-Driven Design): how a picked HU was booked. The answer is derived from the HU's shape once, here, instead of
+ * each caller guessing it from the HU.
  * <ul>
  * <li>A CU is <b>in a box</b> if it is a virtual HU whose parent is a TU.</li>
  * <li>A CU is <b>booked with a label scan</b> (label-based CU quantity entry mode, see {@code CUQtyEntryPolicy#isLabelRequired()}) if it is in a box

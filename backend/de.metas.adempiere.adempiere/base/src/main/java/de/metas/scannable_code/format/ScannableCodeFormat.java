@@ -71,9 +71,6 @@ public class ScannableCodeFormat
 	 * A format without a pack ID part falls back to the constant "92" marker: the zone is the marker, cut short by a part starting inside it.
 	 * A format with neither has no pack ID zone.
 	 * <p>
-	 * Mobile app counterpart: {@code misc/services/mobile-webui/mobile-webui-frontend/src/apps/picking/cuQtyEntry/cuLabel.js} compares the label length with the zone published by {@code JsonScannableCodeFormat}
-	 * (it does not repeat the rules above); change them together.
-	 * <p>
 	 * Positions are 1-based like {@link ScannableCodeFormatPart#getStartPosition()}; {@link PackIdZone#getEnd()} is the start position of the part after the zone.
 	 */
 	public Optional<PackIdZone> getPackIdZone()

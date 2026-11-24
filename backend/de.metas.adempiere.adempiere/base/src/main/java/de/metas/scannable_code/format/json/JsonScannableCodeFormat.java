@@ -13,8 +13,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * The format as the mobile app gets it. The pack ID zone is computed here ({@link ScannableCodeFormat#getPackIdZone()}), the app only compares lengths
- * in {@code misc/services/mobile-webui/mobile-webui-frontend/src/apps/picking/cuQtyEntry/cuLabel.js}; change both together.
+ * The format as the mobile app gets it, including its pack ID zone ({@link ScannableCodeFormat#getPackIdZone()}).
  */
 @Value
 @Builder

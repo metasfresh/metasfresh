@@ -63,7 +63,7 @@ public class PickingJobGRAIValidator
 	}
 
 	/**
-	 * The picks that were booked with a label scan ({@link CUBookingSpecification#filterBookedWithLabelScan}, the same rule the close of all targets uses):
+	 * The picks that were booked with a label scan ({@link CUBookingSpecification#filterBookedWithLabelScan}):
 	 * the check follows what was picked, not the customer's current mode.
 	 * Only the picks of lines that require GRAIs are looked up: the lookup walks each CU up to its box.
 	 */
