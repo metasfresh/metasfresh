@@ -256,9 +256,7 @@ public class PackingInfoProcessParams
 		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
 		defaultLUTUConfig.setQtyCUsPerTU(pip.getQty());
 
-		// Product-less (generic items only), unchanged: this fallback runs only with enforcePhysicalTU=true,
-		// and the only builder of this class (WEBUI_PP_Order_Receipt) sets enforcePhysicalTU(false), so it is not reached.
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartnerId, null);
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartnerId, productId);
 		if (luPIItems.isEmpty())
 		{
 			defaultLUTUConfig.setM_LU_HU_PI_Item(null);
