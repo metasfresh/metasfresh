@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,9 +94,9 @@ class HUConsolidationJobServiceCloseTargetTest
 		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
 	}
 
-	/** No LU label config: fails before the close (no shipment, pallet stays open). */
+	/** No LU label config: the label cannot even be prepared; the operator gets that error, and the pallet is closed anyway (shipment created as usual). */
 	@Test
-	void closeTarget_noLabelConfig_failsBeforeClose_nothingChanges()
+	void closeTarget_noLabelConfig_errorReachesCaller_butTargetIsClosedAndShipmentCreated()
 	{
 		final AdempiereException noConfig = new AdempiereException("No label config found");
 		when(huLabelService.preparePrint(any(HULabelPrintRequest.class))).thenThrow(noConfig);
@@ -105,8 +104,8 @@ class HUConsolidationJobServiceCloseTargetTest
 		assertThatThrownBy(() -> service.closeTarget(job.getId(), CALLER))
 				.hasMessageContaining("No label config found");
 
-		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet stays open").isNotNull();
-		verify(shipmentService, never()).createShipmentForLUs(any(), any());
+		assertThat(jobRepository.getById(job.getId()).getCurrentTarget()).as("pallet closed anyway").isNull();
+		verify(shipmentService).createShipmentForLUs(any(), eq(ImmutableSet.of(LU_ID)));
 	}
 
 	@Test

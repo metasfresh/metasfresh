@@ -29,16 +29,19 @@ public class CompleteCommand
 		this.job = job;
 	}
 
-	public HUConsolidationJob execute()
+	/**
+	 * @return the completed job and the label print of the closed target, still to be run (see {@link HUConsolidationTargetCloser#closeTarget(HUConsolidationJob)})
+	 */
+	public HUConsolidationTargetCloser.CloseTargetResult execute()
 	{
 		if (job.isProcessed())
 		{
 			throw new AdempiereException("Job is already processed");
 		}
 
-		job = targetCloser.closeTarget(job);
-		job = job.withDocStatus(HUConsolidationJobStatus.Completed);
+		final HUConsolidationTargetCloser.CloseTargetResult closed = targetCloser.closeTarget(job);
+		job = closed.getJob().withDocStatus(HUConsolidationJobStatus.Completed);
 		jobRepository.save(job);
-		return job;
+		return new HUConsolidationTargetCloser.CloseTargetResult(job, closed.getPrintLabelAction());
 	}
 }

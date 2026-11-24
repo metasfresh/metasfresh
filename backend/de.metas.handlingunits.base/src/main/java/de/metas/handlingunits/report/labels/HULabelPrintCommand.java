@@ -163,7 +163,7 @@ class HULabelPrintCommand
 
 		private void explodeAndAdd(final HUToReport hu)
 		{
-			final HULabelConfig huLabelConfig = getLabelConfigOrNull(hu);
+			final HULabelConfig huLabelConfig = getLabelConfigOrNull(hu, failOnMissingLabelConfig);
 			final HUProcessDescriptor huProcessDescriptor = huLabelConfig != null
 					? huProcessDAO.getByProcessIdOrNull(huLabelConfig.getPrintFormatProcessId())
 					: null;
@@ -218,7 +218,8 @@ class HULabelPrintCommand
 			{
 				for (final HUToReport includedHU : hu.getIncludedHUs())
 				{
-					final HULabelConfig includeHULabelConfig = getLabelConfigOrNull(includedHU);
+					// the included TUs' labels were not asked for: a TU without a label config is skipped, it does not prevent the LU's label
+					final HULabelConfig includeHULabelConfig = getLabelConfigOrNull(includedHU, false);
 					if (includeHULabelConfig != null)
 					{
 						add(includedHU, PrintInstructions.of(includeHULabelConfig));
@@ -227,8 +228,11 @@ class HULabelPrintCommand
 			}
 		}
 
+		/**
+		 * @param failIfMissing throw if no label config applies to the given HU; {@code false}: return {@code null} then
+		 */
 		@Nullable
-		private HULabelConfig getLabelConfigOrNull(final HUToReport hu)
+		private HULabelConfig getLabelConfigOrNull(final HUToReport hu, final boolean failIfMissing)
 		{
 			final ExplainedOptional<HULabelConfig> optionalLabelConfig = labelConfigProvider.getLabelConfig(hu);
 			if (optionalLabelConfig.isPresent())
@@ -249,7 +253,7 @@ class HULabelPrintCommand
 			}
 			else
 			{
-				if (failOnMissingLabelConfig)
+				if (failIfMissing)
 				{
 					throw new AdempiereException(optionalLabelConfig.getExplanation());
 				}

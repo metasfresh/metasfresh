@@ -67,13 +67,18 @@ public class HUConsolidationJobService
 
 	public HUConsolidationJob complete(@NonNull final HUConsolidationJob job)
 	{
-		return CompleteCommand.builder()
+		final HUConsolidationTargetCloser.CloseTargetResult completed = CompleteCommand.builder()
 				.jobRepository(jobRepository)
 				.targetCloser(targetCloser)
 				//
 				.job(job)
 				//
 				.build().execute();
+
+		// Print after the job was completed, so that a label print failure is shown to the operator while the job stays completed (like on close target)
+		completed.getPrintLabelAction().print();
+
+		return completed.getJob();
 	}
 
 	public HUConsolidationJob assignJob(@NonNull final HUConsolidationJobId jobId, @NonNull final UserId callerId)
@@ -125,7 +130,7 @@ public class HUConsolidationJobService
 
 		final HUConsolidationJob jobClosed = jobRepository.updateById(jobId, job -> {
 			job.assertUserCanEdit(callerId);
-			final HUConsolidationTargetCloser.CloseTargetResult closed = targetCloser.closeTargetDeferringLabelPrint(job);
+			final HUConsolidationTargetCloser.CloseTargetResult closed = targetCloser.closeTarget(job);
 			printLabelActionRef.set(closed.getPrintLabelAction());
 			return closed.getJob();
 		});

@@ -27,6 +27,10 @@ public class HULabelPrintRequest
 	boolean onlyIfAutoPrint;
 		
 	@Nullable PrintCopies printCopiesOverride;
-	
+
+	/**
+	 * Fail if no label config applies to one of the requested HUs ({@link #hus}, {@link #huIds}).
+	 * The TUs included in a requested LU are not requested: a TU without a label config is skipped either way.
+	 */
 	boolean failOnMissingLabelConfig;
 }
