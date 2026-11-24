@@ -1305,52 +1305,60 @@ test('Pallet-only picking (the customer\'s profile): the picked pallet is scanne
     });
 });
 
-// noinspection JSUnusedLocalSymbols
-test('A pallet type that does not take the crate type: clear message, nothing moves; another pallet type takes the crate', async ({ page: _page }) => {
-    // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00248');
-    await allure.story('HU Consolidation - GRAI scan screen');
-    await allure.severity('critical');
+// The customer's handheld (Zebra TC22)
+test.describe('Pallet type that does not take the crate type, on the customer\'s handheld', () => {
+    test.use({ viewport: { width: 411, height: 823 }, deviceScaleFactor: 2.625 });
 
-    // LU_OTHER is offered for BP1 (it carries TU3 of P1), but has no item for TU1: like a one-way pallet that does not take the customer's crate
-    const masterdata = await createJobScanMasterdata({
-        language: 'de_DE',
-        packingInstructions: {
-            PI_P1: { lu: 'LU', luSSCC18: true, qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
-            PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
-            PI_P3: { lu: 'LU_OTHER', qtyTUsPerLU: 20, tu: 'TU3', product: 'P1', qtyCUsPerTU: 4 },
-        },
-        sysconfigs: GS1_SYSCONFIGS,
-    });
-    sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
-    const { slot1 } = masterdata.pickingSlots;
-    const { PI_P1, PI_P3 } = masterdata.packingInstructions;
-    const grai = graiWithSerial(PI_P1.grai, `${Date.now()}1`);
+    // noinspection JSUnusedLocalSymbols
+    test('A pallet type that does not take the crate type: clear message, nothing moves; another pallet type takes the crate', async ({ page: _page }) => {
+        // === ALLURE METADATA ===
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00248');
+        await allure.story('HU Consolidation - GRAI scan screen');
+        await allure.severity('critical');
 
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await pickOneGraiCrate({ documentNo: masterdata.salesOrders.SO1.documentNo, slotQrCode: slot1.qrCode, grai, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+        // LU_OTHER is offered for BP1 (it carries TU3 of P1), but has no item for TU1: like a one-way pallet that does not take the customer's crate
+        const masterdata = await createJobScanMasterdata({
+            language: 'de_DE',
+            packingInstructions: {
+                PI_P1: { lu: 'LU', luSSCC18: true, qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+                PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
+                PI_P3: { lu: 'LU_OTHER', qtyTUsPerLU: 20, tu: 'TU3', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            sysconfigs: GS1_SYSCONFIGS,
+        });
+        sysconfigsToRestore = masterdata.previousSysconfigs ?? null;
+        const { slot1 } = masterdata.pickingSlots;
+        const { PI_P1, PI_P3 } = masterdata.packingInstructions;
+        const grai = graiWithSerial(PI_P1.grai, `${Date.now()}1`);
 
-    await test.step('Choose the pallet type that does not take the crate, scan the crate: message naming both types, the crate stays in its slot', async () => {
-        await ApplicationsListScreen.startApplication('huConsolidation');
-        await HUConsolidationJobsListScreen.waitForScreen();
-        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
-        await HUConsolidationJobScreen.setTargetLU({ lu: PI_P3.luName });
-        await HUConsolidationJobScreen.clickScanGRAIButton();
-        await GRAIScanScreen.scanGRAIExpectError({ grai, message: `Palettentyp ${PI_P3.luName} nimmt Kistentyp ${PI_P1.tuName} nicht auf.` });
-        await attachScreenshot('pallet-type-refuses-crate-message');
-        await GRAIScanScreen.goBack();
-        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
-    });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await pickOneGraiCrate({ documentNo: masterdata.salesOrders.SO1.documentNo, slotQrCode: slot1.qrCode, grai, huQrCode: masterdata.handlingUnits.HU1.qrCode });
 
-    await test.step('Close the empty pallet, choose the pallet type that takes the crate: the scan moves the crate', async () => {
-        await HUConsolidationJobScreen.closeTargetLU();
-        await HUConsolidationJobScreen.setTargetLU({ lu: PI_P1.luName });
-        await HUConsolidationJobScreen.clickScanGRAIButton();
-        await GRAIScanScreen.scanGRAI({ grai });
-        await GRAIScanScreen.expectClosedByItself();
-        await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 0 });
+        await test.step('Choose the pallet type that does not take the crate, scan the crate: message naming both types, the crate stays in its slot', async () => {
+            await ApplicationsListScreen.startApplication('huConsolidation');
+            await HUConsolidationJobsListScreen.waitForScreen();
+            await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+            await HUConsolidationJobScreen.setTargetLU({ lu: PI_P3.luName });
+            await HUConsolidationJobScreen.clickScanGRAIButton();
+            await GRAIScanScreen.scanGRAIExpectError({
+                grai,
+                message: `Palettentyp ${PI_P3.luName} nimmt Kistentyp ${PI_P1.tuName} nicht auf.`,
+                screenshotName: 'pallet-type-refuses-crate-message',
+            });
+            await GRAIScanScreen.goBack();
+            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
+        });
+
+        await test.step('Close the empty pallet, choose the pallet type that takes the crate: the scan moves the crate', async () => {
+            await HUConsolidationJobScreen.closeTargetLU();
+            await HUConsolidationJobScreen.setTargetLU({ lu: PI_P1.luName });
+            await HUConsolidationJobScreen.clickScanGRAIButton();
+            await GRAIScanScreen.scanGRAI({ grai });
+            await GRAIScanScreen.expectClosedByItself();
+            await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 0 });
+        });
     });
 });
 
