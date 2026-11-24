@@ -9,6 +9,11 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.i18n.AdMessageKey;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
@@ -38,7 +43,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -73,6 +80,10 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	public final PickingSlotsClearingView getPickingSlotsClearingView()
 	{
@@ -206,9 +217,15 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 				.setForceQtyAllocation(false);
 	}
 
+	/**
+	 * @param productId  the single product of the HUs to be moved, or {@code null} if they hold several products; used to pick the LU item when {@code targetHUPI} is an LU
+	 * @param sourceHUs the HUs to be moved; when {@code targetHUPI} is an LU, their TU packing instruction decides which LU item is used
+	 */
 	protected final LUTUProducerDestination createNewHUProducer(
 			@NonNull final PickingSlotRow pickingRow,
-			@NonNull final I_M_HU_PI targetHUPI)
+			@NonNull final I_M_HU_PI targetHUPI,
+			@Nullable final ProductId productId,
+			@NonNull final List<I_M_HU> sourceHUs)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(pickingRow.getBPartnerId());
 		final int bpartnerLocationId = pickingRow.getBPartnerLocationId();
@@ -226,10 +243,22 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 				.setLocatorId(locatorId)
 				.setHUStatus(X_M_HU.HUSTATUS_Picked);
 
-		final String targetHuType = Services.get(IHandlingUnitsBL.class).getHU_UnitType(targetHUPI);
+		final String targetHuType = handlingUnitsBL.getHU_UnitType(targetHUPI);
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(targetHuType))
 		{
+			// the LU item (how many TUs of which TU packing go on the LU) is not implied by the LU packing instruction alone:
+			// resolve it for the moved TUs' packing instruction and product, else the producer has no LU item to build on
+			final I_M_HU_PI tuPI = getSourceTUPI(sourceHUs);
+			final I_M_HU_PI_Item luItem = handlingUnitsDAO.retrieveFirstPIItem(
+							HuPackingInstructionsId.ofRepoId(targetHUPI.getM_HU_PI_ID()),
+							HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()),
+							bpartnerId,
+							productId)
+					.orElseThrow(() -> new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, targetHUPI.getName(), tuPI.getName()).markAsUserValidationError());
+
 			lutuProducer.setLUPI(targetHUPI);
+			lutuProducer.setLUItemPI(luItem);
+			lutuProducer.setTUPI(luItem.getIncluded_HU_PI());
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(targetHuType))
 		{
@@ -237,6 +266,38 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 			lutuProducer.setTUPI(targetHUPI);
 		}
 		return lutuProducer;
+	}
+
+	/**
+	 * @return the packing instruction of the first source TU (for a source LU: of its first included TU)
+	 */
+	private I_M_HU_PI getSourceTUPI(@NonNull final List<I_M_HU> sourceHUs)
+	{
+		Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
+		final I_M_HU sourceHU = sourceHUs.get(0);
+		final I_M_HU tu = handlingUnitsBL.isLoadingUnit(sourceHU)
+				? handlingUnitsDAO.retrieveIncludedHUs(sourceHU).stream().findFirst().orElse(sourceHU)
+				: sourceHU;
+		return handlingUnitsBL.getEffectivePI(tu);
+	}
+
+	/**
+	 * @return the product that all the given HUs hold, or {@code null} if they hold several products (or none)
+	 */
+	@Nullable
+	protected final ProductId getSingleProductIdOrNull(@NonNull final List<I_M_HU> hus)
+	{
+		final Set<ProductId> productIds = new HashSet<>();
+		for (final I_M_HU hu : hus)
+		{
+			final ProductId productId = handlingUnitsBL.getStorageFactory().getStorage(hu).getSingleProductIdOrNull();
+			if (productId == null)
+			{
+				return null;
+			}
+			productIds.add(productId);
+		}
+		return productIds.size() == 1 ? productIds.iterator().next() : null;
 	}
 
 	protected void moveToAfterPickingLocator(@NonNull final I_M_HU hu)

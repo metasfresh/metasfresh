@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
-import { getPage } from '../utils/common';
+import { getPage, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { PickingSlotsClearingPage as ClearingPage } from '../utils/pages/PickingSlotsClearingPage';
 
@@ -189,8 +189,8 @@ const openClearingWindow = async ({ masterdata }) => {
 };
 
 test.describe('Picking tray clearing: new pallets use the product-specific pallet item', () => {
-  // setup creates up to 80 HUs and picks them one by one
-  test.describe.configure({ timeout: 240000 });
+  // setup creates up to 80 HUs and picks them one by one; the clearing action then moves them one by one
+  test.describe.configure({ timeout: 6 * 60 * 1000 });
 
   test.beforeEach(() => {
     allure.epic('E0193: Handling Units');
@@ -222,6 +222,131 @@ test.describe('Picking tray clearing: new pallets use the product-specific palle
         pallet({ storages: { [XY]: '40 PCE' }, includedTUsCount: 10, palletItemQty: 40 }),
         pallet({ storages: { [OTHER]: '80 PCE', [OTHER2]: '40 PCE' }, includedTUsCount: 30, palletItemQty: 30 }),
       ],
+    });
+  });
+
+  /**
+   * "Take out HUs and add to new HU" with a pallet packing instruction as target: the pallet item is the one of the moved
+   * product (none if several products are moved), and the moved TUs fill the new pallets up to its capacity.
+   */
+  const takeOutMultiHUsToNewPallet = async ({ tusPerProduct, targetPallet = 'LU', expectSuccess = true }) => {
+    const masterdata = await createMasterdata({ tusPerProduct });
+    await pickAllTUsIntoSlot({ masterdata });
+    await openClearingWindow({ masterdata });
+
+    const huIds = Object.keys(tusPerProduct).flatMap((productIdentifier) => huIdsOf({ masterdata, productIdentifier }));
+    await ClearingPage.selectHUs({ pickingSlotId: masterdata.pickingSlots.slot1.id, huIds });
+    const piResponse = targetPallet === 'LU' ? masterdata.packingInstructions.PI_XY : masterdata.packingInstructions.PI_LU2;
+    await ClearingPage.runTakeOutMultiHUsAndAddToNewHU({
+      huPIName: piResponse.luName,
+      huPIId: piResponse.luPITestId.replace('pi-', ''),
+      expectSuccess,
+    });
+    return masterdata;
+  };
+
+  /** "Take out HU and add to new HU" of one TU's worth (4 pieces) with the pallet packing instruction "LU" as target. */
+  const takeOutHUToNewPallet = async ({ productIdentifier }) => {
+    const masterdata = await createMasterdata({ tusPerProduct: { [productIdentifier]: 1 } });
+    await pickAllTUsIntoSlot({ masterdata });
+    await openClearingWindow({ masterdata });
+
+    await ClearingPage.selectHUs({
+      pickingSlotId: masterdata.pickingSlots.slot1.id,
+      huIds: huIdsOf({ masterdata, productIdentifier }),
+    });
+    await ClearingPage.runTakeOutHUAndAddToNewHU({
+      huPIName: masterdata.packingInstructions.PI_XY.luName,
+      huPIId: masterdata.packingInstructions.PI_XY.luPITestId.replace('pi-', ''),
+      qtyCUsPerTU: PIECES_PER_TU,
+    });
+    return masterdata;
+  };
+
+  test('Take out HUs and add to new HU, pallet target: 50 OTHER TUs on generic pallets of 30', async ({ page }) => { // eslint-disable-line no-unused-vars
+    const masterdata = await takeOutMultiHUsToNewPallet({ tusPerProduct: { OTHER: 50 } });
+    const OTHER = masterdata.products.OTHER.productCode;
+
+    const luIds = await ClearingPage.getPackingHUIds({ huUnitType: 'LU' });
+    await ClearingPage.expectPackingHURows({ huIds: luIds });
+    await expectPallets({
+      luIds,
+      expected: [
+        pallet({ storages: { [OTHER]: '120 PCE' }, includedTUsCount: 30, palletItemQty: 30 }),
+        pallet({ storages: { [OTHER]: '80 PCE' }, includedTUsCount: 20, palletItemQty: 30 }),
+      ],
+    });
+  });
+
+  test('Take out HUs and add to new HU, pallet target: 50 XY TUs on XY pallets of 40', async ({ page }) => { // eslint-disable-line no-unused-vars
+    const masterdata = await takeOutMultiHUsToNewPallet({ tusPerProduct: { XY: 50 } });
+    const XY = masterdata.products.XY.productCode;
+
+    const luIds = await ClearingPage.getPackingHUIds({ huUnitType: 'LU' });
+    await ClearingPage.expectPackingHURows({ huIds: luIds });
+    await expectPallets({
+      luIds,
+      expected: [
+        pallet({ storages: { [XY]: '160 PCE' }, includedTUsCount: 40, palletItemQty: 40 }),
+        pallet({ storages: { [XY]: '40 PCE' }, includedTUsCount: 10, palletItemQty: 40 }),
+      ],
+    });
+  });
+
+  test('Take out HUs and add to new HU, pallet target: XY and OTHER together use the generic pallet item', async ({ page }) => { // eslint-disable-line no-unused-vars
+    const masterdata = await takeOutMultiHUsToNewPallet({ tusPerProduct: { XY: 20, OTHER: 20 } });
+    const XY = masterdata.products.XY.productCode;
+    const OTHER = masterdata.products.OTHER.productCode;
+
+    const luIds = await ClearingPage.getPackingHUIds({ huUnitType: 'LU' });
+    await ClearingPage.expectPackingHURows({ huIds: luIds });
+    // the split per pallet depends on the loading order; assert the item and the totals
+    const pallets = await Backend.describeHUs({ huIds: luIds });
+    const totals = {};
+    let tusCount = 0;
+    for (const p of pallets) {
+      expect(p.huUnitType).toBe('LU');
+      expect(p.tuParentPIItemQtys, `pallet ${p.huId} is on the generic item`).toEqual([30]);
+      tusCount += p.includedTUsCount;
+      for (const [product, qtyStr] of Object.entries(p.storages)) {
+        totals[product] = (totals[product] ?? 0) + Number(qtyStr.split(' ')[0]);
+      }
+    }
+    expect(totals).toEqual({ [XY]: 80, [OTHER]: 80 });
+    expect(tusCount).toBe(40);
+  });
+
+  test('Take out HUs and add to new HU: a pallet type without an item for the TU gives an error, no new HU', async ({ page }) => {
+    await takeOutMultiHUsToNewPallet({ tusPerProduct: { OTHER: 2 }, targetPallet: 'LU2', expectSuccess: false });
+    await test.step('Expect an error notification', async () => {
+      // the process dialog's user error is shown as an error notification (not a Toastify toast)
+      await expect(page.locator('.notification-item.error')).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    });
+    expect(await ClearingPage.getPackingHUIds({ huUnitType: 'LU' }), 'no new pallet').toEqual([]);
+    expect(await ClearingPage.getPackingHUIds({ huUnitType: 'TU' }), 'no new TU').toEqual([]);
+  });
+
+  test('Take out HU and add to new HU, pallet target: one OTHER TU on the generic pallet item', async ({ page }) => { // eslint-disable-line no-unused-vars
+    const masterdata = await takeOutHUToNewPallet({ productIdentifier: 'OTHER' });
+    const OTHER = masterdata.products.OTHER.productCode;
+
+    const luIds = await ClearingPage.getPackingHUIds({ huUnitType: 'LU' });
+    await ClearingPage.expectPackingHURows({ huIds: luIds });
+    await expectPallets({
+      luIds,
+      expected: [pallet({ storages: { [OTHER]: '4 PCE' }, includedTUsCount: 1, palletItemQty: 30 })],
+    });
+  });
+
+  test('Take out HU and add to new HU, pallet target: one XY TU on the XY pallet item', async ({ page }) => { // eslint-disable-line no-unused-vars
+    const masterdata = await takeOutHUToNewPallet({ productIdentifier: 'XY' });
+    const XY = masterdata.products.XY.productCode;
+
+    const luIds = await ClearingPage.getPackingHUIds({ huUnitType: 'LU' });
+    await ClearingPage.expectPackingHURows({ huIds: luIds });
+    await expectPallets({
+      luIds,
+      expected: [pallet({ storages: { [XY]: '4 PCE' }, includedTUsCount: 1, palletItemQty: 40 })],
     });
   });
 });

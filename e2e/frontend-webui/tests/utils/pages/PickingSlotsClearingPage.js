@@ -145,6 +145,8 @@ export class PickingSlotsClearingPage {
     const action = page.getByTestId(`quick-action-${actionInternalName}`);
     await action.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
+    // the processes move every selected HU one by one: with 80 TUs they can take more than a minute
+    const startResponseTimeout = 3 * 60 * 1000;
     const isStartResponse = (response) =>
       response.request().method() === 'GET' && /\/process\/[^/]+\/[^/]+\/start/.test(response.url());
 
@@ -153,10 +155,10 @@ export class PickingSlotsClearingPage {
       await action.click();
       await page.locator('.panel-modal').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await fillParams();
-      startResponsePromise = page.waitForResponse(isStartResponse, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      startResponsePromise = page.waitForResponse(isStartResponse, { timeout: startResponseTimeout });
       await page.getByTestId('process-modal-start-button').click();
     } else {
-      startResponsePromise = page.waitForResponse(isStartResponse, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      startResponsePromise = page.waitForResponse(isStartResponse, { timeout: startResponseTimeout });
       await action.click();
     }
 
