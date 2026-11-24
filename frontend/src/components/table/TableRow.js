@@ -68,6 +68,7 @@ class TableRow extends PureComponent {
       multilineTextLines,
       cellsExtended: false,
       valueBeforeEditing: null,
+      isPointerEdit: false, // the edited cell's edit was entered by a pointer action (click), not the keyboard
     };
   }
 
@@ -106,6 +107,16 @@ class TableRow extends PureComponent {
   };
 
   /**
+   * @method isGridDateWidget
+   * @summary True when the field's widget is a Date (the grid's date cell). Its widget patches its
+   * own value; the editor's text is a display string, never a stored value.
+   *
+   * @param {string} fieldName - the cell's field name
+   */
+  isGridDateWidget = (fieldName) =>
+    this.props.fieldsByName?.[fieldName]?.widgetType === 'Date';
+
+  /**
    * @method isObjectValuedWidget
    * @summary True when the field's value is a {key, caption} object or a list of them, i.e. its
    * widget is a Lookup, a List, an attribute widget (Address, ProductAttributes), a MultiListValue
@@ -131,10 +142,18 @@ class TableRow extends PureComponent {
    *
    * @param {string} property - the cell's field name
    * @param {*} value - a text or number value; undefined when there is none
+   * @param {boolean} [isStoredValue] - true if the value is the field's stored value (restored on
+   * Escape), not editor text; only then is a Date field written
    * @returns {boolean} true if the value was written
    */
-  writeScalarFieldValue = (property, value) => {
-    if (value === undefined || this.isObjectValuedWidget(property)) {
+  writeScalarFieldValue = (property, value, isStoredValue = false) => {
+    // a Date cell's widget patches its own value (the input text is a display string, no stored
+    // value); only the stored value itself may be written back, on Escape
+    if (
+      value === undefined ||
+      this.isObjectValuedWidget(property) ||
+      (this.isGridDateWidget(property) && !isStoredValue)
+    ) {
       return false;
     }
 
@@ -304,10 +323,16 @@ class TableRow extends PureComponent {
     const { edited, valueBeforeEditing, activeCell } = this.state;
 
     if (edited === property) {
-      if (this.writeScalarFieldValue(property, valueBeforeEditing)) {
+      // A Date cell keeps its stored value: its widget holds a typed date pending until the cell is
+      // left and discards it on Escape. The value to keep is the row's current one (not the one
+      // captured on entry, which a calendar pick has since replaced).
+      const valueToKeep = this.isGridDateWidget(property)
+        ? this.getFieldValue(property)
+        : valueBeforeEditing;
+      if (this.writeScalarFieldValue(property, valueToKeep, true)) {
         // reset the field value to the previous one, so that we won't
         // overwrite it
-        event.target.value = valueBeforeEditing;
+        event.target.value = valueToKeep;
       }
       event.stopPropagation();
 
@@ -333,13 +358,17 @@ class TableRow extends PureComponent {
       return;
     }
 
+    // a Date cell keeps its value in the editor and has it selected, so that typing replaces it
+    const isDate = this.isGridDateWidget(property);
+
     // the value to restore on Escape is captured on entering edit mode (_editProperty)
     this.handleEditProperty({
       event,
       property,
       focus: true,
       readonly,
-      select: true,
+      select: !isDate,
+      mark: isDate,
     });
   };
 
@@ -354,10 +383,27 @@ class TableRow extends PureComponent {
    * @param {boolean} [readonly] - true if cell is readonly
    * @param {boolean} [select] - flag if selected cell should be cleared
    * @param {boolean} [mark] - marks the text(like when you click and hold and select the text)
+   * @param {boolean} [pointer] - true if the edit is entered by a pointer action (click)
    */
-  handleEditProperty = ({ event, property, focus, readonly, select, mark }) => {
+  handleEditProperty = ({
+    event,
+    property,
+    focus,
+    readonly,
+    select,
+    mark,
+    pointer,
+  }) => {
     this._focusCell(property, () => {
-      this._editProperty({ event, property, focus, readonly, select, mark });
+      this._editProperty({
+        event,
+        property,
+        focus,
+        readonly,
+        select,
+        mark,
+        pointer,
+      });
     });
   };
 
@@ -373,7 +419,15 @@ class TableRow extends PureComponent {
    * @param {boolean} [select] - flag if selected cell should be cleared
    * @param {boolean} [mark] - flag if widget content should be selected
    */
-  _editProperty = ({ event, property, focus, readonly, select, mark }) => {
+  _editProperty = ({
+    event,
+    property,
+    focus,
+    readonly,
+    select,
+    mark,
+    pointer,
+  }) => {
     const { listenOnKeys, changeListenOnTrue } = this.props;
 
     const isEditable = typeof readonly !== undefined ? !readonly : true;
@@ -399,6 +453,7 @@ class TableRow extends PureComponent {
       this.setState(
         {
           edited: property,
+          isPointerEdit: !!pointer,
         },
         () => {
           if (focus) {
@@ -642,6 +697,8 @@ class TableRow extends PureComponent {
                   isReadonly,
                   isMandatory,
                   isEdited,
+                  isPointerEdit: isEdited && this.state.isPointerEdit,
+                  isDateCell: this.isGridDateWidget(property),
                   tooltipData,
                   tooltipWidget,
                   tdValue,
