@@ -41,7 +41,7 @@ const isPrefixReadable = ({ string, format, zoneStart }) => {
 /**
  * @returns true when the label is too short to hold the pack ID zone while every part in front of the zone reads
  * (a label without counter). The backend decides where the zone is (`packIdZoneStart` / `packIdZoneEnd` of the format,
- * `ScannableCodeFormat.getPackIdZone()`); this only compares lengths.
+ * `ScannableCodeFormat.getPackIdZone()`); this checks the length against that zone and that the parts in front of it read.
  */
 const isEndingBeforePackId = ({ string, format }) =>
   format.packIdZoneStart != null &&
