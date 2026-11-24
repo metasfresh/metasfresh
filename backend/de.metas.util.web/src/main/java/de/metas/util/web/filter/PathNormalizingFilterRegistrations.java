@@ -29,7 +29,7 @@ import org.springframework.core.Ordered;
 import org.springframework.web.filter.UrlHandlerFilter;
 
 /**
- * Registrations of the two filters that normalize a REST request path before any other filter and the handler mapping see it:
+ * Registrations of the two filters that normalize a request path before any other filter and the handler mapping see it:
  * first {@link DuplicateSlashCollapsingFilter}, then the trailing-slash stripping {@link UrlHandlerFilter}.
  * <p>
  * Collapsing first means that a doubled trailing slash ({@code /api/v2/x//}) reaches the trailing-slash filter as a single
@@ -41,8 +41,11 @@ public class PathNormalizingFilterRegistrations
 	public static final int ORDER_DUPLICATE_SLASH = Ordered.HIGHEST_PRECEDENCE;
 	public static final int ORDER_TRAILING_SLASH = ORDER_DUPLICATE_SLASH + 1;
 
+	/** Servlet URL pattern that matches every request path. */
+	public static final String URL_PATTERN_ALL = "/*";
+
 	/**
-	 * @param servletUrlPattern servlet URL pattern the filter is mapped to, e.g. {@code /api/*}
+	 * @param servletUrlPattern servlet URL pattern the filter is mapped to, e.g. {@link #URL_PATTERN_ALL}
 	 */
 	public static FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashRegistration(@NonNull final String servletUrlPattern)
 	{

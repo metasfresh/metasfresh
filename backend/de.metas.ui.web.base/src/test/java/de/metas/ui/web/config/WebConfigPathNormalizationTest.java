@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static de.metas.util.web.filter.PathNormalizationTestSupport.assertOK;
@@ -45,11 +44,16 @@ class WebConfigPathNormalizationTest
 	private MockMvc mockMvc;
 
 	@RestController
-	@RequestMapping(WebConfig.ENDPOINT_ROOT + "/login")
 	static class DummyRestController
 	{
-		@GetMapping("/isLoggedIn")
+		@GetMapping(WebConfig.ENDPOINT_ROOT + "/login/isLoggedIn")
 		public String isLoggedIn() {return "OK";}
+
+		/**
+		 * Like an actuator endpoint or another path outside {@code /rest}, e.g. the {@code /stomp} websocket endpoint.
+		 */
+		@GetMapping("/info")
+		public String info() {return "OK";}
 	}
 
 	@BeforeEach
@@ -80,5 +84,17 @@ class WebConfigPathNormalizationTest
 	void doubleSlashAndTrailingSlash()
 	{
 		assertOK(mockMvc, tomcatLikeGet("/rest//api/login/isLoggedIn/", "/rest/api/login/isLoggedIn/"));
+	}
+
+	@Test
+	void nonRestPath()
+	{
+		assertOK(mockMvc, tomcatLikeGet("/info", "/info"));
+	}
+
+	@Test
+	void doubleSlashBeforeNonRestPath_asSentByReverseProxy()
+	{
+		assertOK(mockMvc, tomcatLikeGet("//info", "/info"));
 	}
 }

@@ -58,7 +58,7 @@ public class WebConfig implements WebMvcConfigurer
 	/** {@link org.springframework.web.util.pattern.PathPattern} matching every webui-api REST path (any depth) under the {@code /rest} root that {@link #ENDPOINT_ROOT} lives in. */
 	private static final String URL_PATHPATTERN_REST = "/rest/**";
 
-	/** Servlet URL pattern the {@link #trailingSlashRestUrlHandlerFilter()} and {@link #duplicateSlashRestFilter()} are mapped to; the webui-api serves its whole REST surface under {@code /rest}. */
+	/** Servlet URL pattern the {@link #trailingSlashRestUrlHandlerFilter()} is mapped to; the webui-api serves its whole REST surface under {@code /rest}. */
 	private static final String URL_PATTERN_REST = "/rest/*";
 
 	/**
@@ -76,14 +76,15 @@ public class WebConfig implements WebMvcConfigurer
 	}
 
 	/**
-	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the webui-api REST path. {@code frontend/docker/nginx/default.conf}'s
-	 * {@code location /rest { proxy_pass .../rest/; }} forwards {@code /rest/api/x} as {@code /rest//api/x}.
-	 * See {@link DuplicateSlashCollapsingFilter}.
+	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the request path. {@code frontend/docker/nginx/default.conf}'s
+	 * {@code location /rest { proxy_pass .../rest/; }} forwards {@code /rest/api/x} as {@code /rest//api/x}; a proxy that maps a prefix
+	 * to the webui-api root forwards e.g. {@code /stomp/...} or {@code /info} with a leading {@code //}.
+	 * Mapped to every path for that reason; the filter does nothing for a path without {@code //}. See {@link DuplicateSlashCollapsingFilter}.
 	 */
 	@Bean
-	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashRestFilter()
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashFilter()
 	{
-		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(URL_PATTERN_REST);
+		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(PathNormalizingFilterRegistrations.URL_PATTERN_ALL);
 	}
 
 	@Bean

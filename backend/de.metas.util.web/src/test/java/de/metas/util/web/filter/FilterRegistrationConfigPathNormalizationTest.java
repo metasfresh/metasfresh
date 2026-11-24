@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static de.metas.util.web.filter.PathNormalizationTestSupport.assertOK;
@@ -39,18 +38,24 @@ import static de.metas.util.web.filter.PathNormalizationTestSupport.tomcatLikeGe
  * Drives requests through the app server's own path-normalizing filters (every parameterless
  * {@code FilterRegistrationBean} bean of {@link FilterRegistrationConfig}) into a real handler mapping.
  * <p>
- * The requests are shaped like Tomcat delivers them behind a reverse proxy that maps {@code /app/api/...} to {@code /api//...}.
+ * The requests are shaped like Tomcat delivers them behind a reverse proxy that maps {@code /app/...} to {@code //...},
+ * e.g. {@code /app/api/...} to {@code /api//...} and {@code /app/info} to {@code //info}.
  */
 class FilterRegistrationConfigPathNormalizationTest
 {
 	private MockMvc mockMvc;
 
 	@RestController
-	@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2)
 	static class DummyRestController
 	{
-		@GetMapping("/version")
+		@GetMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/version")
 		public String version() {return "OK";}
+
+		/**
+		 * Like an actuator endpoint, which the app server exposes at the root ({@code management.endpoints.web.base-path=/}).
+		 */
+		@GetMapping("/info")
+		public String info() {return "OK";}
 	}
 
 	@BeforeEach
@@ -88,5 +93,17 @@ class FilterRegistrationConfigPathNormalizationTest
 	void doubleSlashAndTrailingSlash()
 	{
 		assertOK(mockMvc, tomcatLikeGet("/api//v2/version/", "/api/v2/version/"));
+	}
+
+	@Test
+	void nonApiPath()
+	{
+		assertOK(mockMvc, tomcatLikeGet("/info", "/info"));
+	}
+
+	@Test
+	void doubleSlashBeforeNonApiPath_asSentByReverseProxy()
+	{
+		assertOK(mockMvc, tomcatLikeGet("//info", "/info"));
 	}
 }

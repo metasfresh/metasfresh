@@ -57,13 +57,16 @@ public class FilterRegistrationConfig
 	}
 
 	/**
-	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the REST API path, e.g. {@code /api//v2/version}
-	 * as sent by a reverse proxy that maps {@code /app/api/...} to {@code /api//...}. See {@link DuplicateSlashCollapsingFilter}.
+	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the request path, e.g. {@code /api//v2/version} or {@code //info},
+	 * as sent by a reverse proxy that maps {@code /app/...} to {@code //...}. See {@link DuplicateSlashCollapsingFilter}.
+	 * <p>
+	 * Mapped to every path, not only {@code /api}: the actuator endpoints ({@code /info}, {@code /health}, ...), the home page and the
+	 * websocket endpoint are served under the same proxy prefix. The filter does nothing for a path without {@code //}.
 	 */
 	@Bean
-	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashApiFilter()
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> duplicateSlashFilter()
 	{
-		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(MetasfreshRestAPIConstants.URL_PATTERN_API);
+		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(PathNormalizingFilterRegistrations.URL_PATTERN_ALL);
 	}
 
 	// NOTE: we are using standard spring CORS filter
