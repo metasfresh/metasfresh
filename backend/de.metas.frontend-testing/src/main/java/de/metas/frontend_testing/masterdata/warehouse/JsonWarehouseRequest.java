@@ -119,6 +119,7 @@ public class JsonWarehouseRequest
 
 		@JsonIgnore
 		public boolean isAfterPickingLocatorOrFalse() {return afterPickingLocator != null && afterPickingLocator;}
+
 		@Nullable Integer priorityNo;
 		@Nullable Boolean isGroundLocator;
 	}

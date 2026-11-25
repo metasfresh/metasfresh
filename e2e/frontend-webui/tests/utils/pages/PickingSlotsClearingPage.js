@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
-import { WEBAPI_BASE_URL } from '../Backend';
+import { WEBAPI_BASE_URL } from '../WebAPIValidation';
 
 // window id kept local (not in WindowIds.js), so that this file merges cleanly into branches whose WindowIds.js differs
 /** Picking Tray Clearing window (PickingSlotsClearingViewFactory) */
