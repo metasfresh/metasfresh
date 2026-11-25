@@ -1,9 +1,9 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.TULoader;

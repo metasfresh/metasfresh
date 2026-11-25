@@ -22,6 +22,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -184,6 +185,29 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 				.filteredOn(candidate -> candidate.getShipmentScheduleQtyPicked().getM_ShipmentSchedule_QtyPicked_ID() == zeroRow.getM_ShipmentSchedule_QtyPicked_ID())
 				.singleElement()
 				.satisfies(candidate -> assertThat(candidate.getQtyPicked().toBigDecimal()).isZero());
+	}
+
+	@Test
+	void restoreAfterReversal_ofBoxRowsWithoutVHU_restoresEveryUnitOfTheBox()
+	{
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("6"), BigDecimal.ZERO);
+		// the rows of a reversed shipment: the units of one country share a row, so the row has no VHU_ID
+		final I_M_ShipmentSchedule_QtyPicked rowDE = createBoxRow(schedule, box, "4");
+		final I_M_ShipmentSchedule_QtyPicked rowFR = createBoxRow(schedule, box, "2");
+		rowDE.setM_InOutLine_ID(1);
+		rowFR.setM_InOutLine_ID(1);
+		saveRecord(rowDE);
+		saveRecord(rowFR);
+
+		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(ImmutableList.of(rowDE, rowFR));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> openRows = retrieveRows(schedule).stream()
+				.filter(row -> row.getM_InOutLine_ID() <= 0)
+				.collect(ImmutableList.toImmutableList());
+		assertThat(openRows).hasSize(3);
+		assertThat(openRows.stream().map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked).reduce(BigDecimal.ZERO, BigDecimal::add)).isEqualByComparingTo("6");
+		assertThat(openRows).allSatisfy(row -> assertThat(row.getVHU_ID()).isPositive());
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

@@ -317,8 +317,7 @@ public class M_InOut
 		if (!huIdsCoveredByPickingJobs.isEmpty())
 		{
 			final List<I_M_ShipmentSchedule_QtyPicked> pickedJobAllocations = assignedQuantities.stream()
-					.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0
-							&& huIdsCoveredByPickingJobs.contains(HuId.ofRepoId(qtyPicked.getVHU_ID())))
+					.filter(qtyPicked -> huShipmentScheduleBL.retrievePickedVhuIds(qtyPicked).stream().anyMatch(huIdsCoveredByPickingJobs::contains))
 					.collect(ImmutableList.toImmutableList());
 			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(pickedJobAllocations);
 		}

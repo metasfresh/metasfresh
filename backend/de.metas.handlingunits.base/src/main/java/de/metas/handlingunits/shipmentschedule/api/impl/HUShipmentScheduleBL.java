@@ -349,62 +349,101 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public void restoreUnshippedQtyPickedIfMissing(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations)
 	{
 		final Set<String> processedKeys = new HashSet<>();
+		// units that a row of its own already stands for: not part of a box row
+		final Set<HuId> unitIdsOfRowsWithUnit = reversedAllocations.stream()
+				.map(alloc -> HuId.ofRepoIdOrNull(alloc.getVHU_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		final IHUStorageFactory storageFactory = huContextFactory.createMutableHUContext().getHUStorageFactory();
+
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : reversedAllocations)
 		{
-			final int vhuRepoId = alloc.getVHU_ID();
-			if (vhuRepoId <= 0)
+			final HuId vhuId = HuId.ofRepoIdOrNull(alloc.getVHU_ID());
+			if (vhuId != null)
 			{
-				continue; // only VHU-backed picked rows can be restored this way
-			}
-			final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID());
-			final HuId vhuId = HuId.ofRepoId(vhuRepoId);
-			if (!processedKeys.add(scheduleId.getRepoId() + "|" + vhuId.getRepoId()))
-			{
-				continue; // already handled this (schedule, VHU) — allocations are consolidated to one row per VHU
-			}
-
-			// If the picking-job reopen (a Completed job) already restored an active un-shipped row, leave it.
-			if (huShipmentScheduleDAO.existsActiveUnshippedQtyPickedForVHU(scheduleId, vhuId))
-			{
+				restoreUnshippedQtyPickedForUnit(alloc, vhuId, alloc.getQtyPicked(), true, processedKeys);
 				continue;
 			}
 
-			// Nothing was restored (e.g. the shipment was recreated via "Generate Shipments", leaving the
-			// picking job Drafted, so its reopen was a no-op). Re-create an active copy of the consolidated
-			// reversed allocation so the picked qty survives this reverse. Direct copy — no step-replay, no
-			// tryMerge — so the qty is not inflated and exactly one active row per tuple is preserved.
-			// M_Picking_Job_Schedule_ID is intentionally NOT copied: the restored row is a plain picked row,
-			// matching the shape a Completed-job reopen produces.
-			final I_M_ShipmentSchedule_QtyPicked restored = newInstance(I_M_ShipmentSchedule_QtyPicked.class, alloc);
-			restored.setAD_Org_ID(alloc.getAD_Org_ID());
-			restored.setM_ShipmentSchedule_ID(alloc.getM_ShipmentSchedule_ID());
-			restored.setVHU_ID(alloc.getVHU_ID());
-			restored.setM_TU_HU_ID(alloc.getM_TU_HU_ID());
-			restored.setM_LU_HU_ID(alloc.getM_LU_HU_ID());
-			restored.setQtyPicked(alloc.getQtyPicked());
+			final HuId tuId = HuId.ofRepoIdOrNull(alloc.getM_TU_HU_ID());
+			if (tuId == null || handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuId)))
+			{
+				continue; // neither a unit nor a box: nothing to restore this way
+			}
+			final ProductId productId = ProductId.ofRepoId(alloc.getM_ShipmentSchedule().getM_Product_ID());
+			for (final I_M_HU unit : retrieveBoxUnitsOfSchedule(handlingUnitsBL.getById(tuId), alloc, storageFactory))
+			{
+				final HuId unitId = HuId.ofRepoId(unit.getM_HU_ID());
+				if (!unitIdsOfRowsWithUnit.contains(unitId))
+				{
+					final BigDecimal unitQty = storageFactory.getStorage(unit).getProductStorage(productId).getQty().toBigDecimal();
+					restoreUnshippedQtyPickedForUnit(alloc, unitId, unitQty, false, processedKeys);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param isWholeRow true if the quantity is the whole quantity of {@code alloc}, false if it is the part of one unit of a box row
+	 */
+	private void restoreUnshippedQtyPickedForUnit(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked alloc,
+			@NonNull final HuId vhuId,
+			@NonNull final BigDecimal qtyPicked,
+			final boolean isWholeRow,
+			@NonNull final Set<String> processedKeys)
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID());
+		if (!processedKeys.add(scheduleId.getRepoId() + "|" + vhuId.getRepoId()))
+		{
+			return; // already handled this (schedule, VHU) — allocations are consolidated to one row per VHU
+		}
+
+		// If the picking-job reopen (a Completed job) already restored an active un-shipped row, leave it.
+		if (huShipmentScheduleDAO.existsActiveUnshippedQtyPickedForVHU(scheduleId, vhuId))
+		{
+			return;
+		}
+
+		// Nothing was restored (e.g. the shipment was recreated via "Generate Shipments", leaving the
+		// picking job Drafted, so its reopen was a no-op). Re-create an active copy of the consolidated
+		// reversed allocation so the picked qty survives this reverse. Direct copy — no step-replay, no
+		// tryMerge — so the qty is not inflated and exactly one active row per tuple is preserved.
+		// M_Picking_Job_Schedule_ID is intentionally NOT copied: the restored row is a plain picked row,
+		// matching the shape a Completed-job reopen produces.
+		final I_M_ShipmentSchedule_QtyPicked restored = newInstance(I_M_ShipmentSchedule_QtyPicked.class, alloc);
+		restored.setAD_Org_ID(alloc.getAD_Org_ID());
+		restored.setM_ShipmentSchedule_ID(alloc.getM_ShipmentSchedule_ID());
+		restored.setVHU_ID(vhuId.getRepoId());
+		restored.setM_TU_HU_ID(alloc.getM_TU_HU_ID());
+		restored.setM_LU_HU_ID(alloc.getM_LU_HU_ID());
+		restored.setQtyPicked(qtyPicked);
+		restored.setIsAnonymousHuPickedOnTheFly(alloc.isAnonymousHuPickedOnTheFly());
+		if (isWholeRow)
+		{
+			// a unit of a box row is only a part of the row: its box and pallet counts and its weight are not the unit's
 			restored.setQtyTU(alloc.getQtyTU());
 			restored.setQtyLU(alloc.getQtyLU());
-			restored.setIsAnonymousHuPickedOnTheFly(alloc.isAnonymousHuPickedOnTheFly());
 			restored.setCatch_UOM_ID(alloc.getCatch_UOM_ID());
 			restored.setQtyDeliveredCatch(alloc.getQtyDeliveredCatch());
-			// M_InOutLine_ID stays null (un-shipped); IsActive defaults Y; Processed defaults N.
-			huShipmentScheduleDAO.saveQtyPicked(restored);
-
-			// The reverse reactivated the HU to Active; a picked row needs the HU to be Picked
-			// (retrieveNotShippedRecords keeps only Picked/Shipped HUs). Also re-stamp BPartner/Location
-			// from the schedule, exactly like addQtyPickedAndUpdateHU / tryMergeQtyPickedIntoExistingForVHU —
-			// every pick-creation path must leave the top-level HU with the delivery partner/location set.
-			final I_M_HU vhu = handlingUnitsDAO.getById(vhuId);
-			final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
-			final I_M_HU topLevelHU = husPair.getTopLevelHU();
-			setHUStatusToPicked(topLevelHU);
-			setHUPartnerAndLocationFromSched(topLevelHU, shipmentScheduleBL.getById(scheduleId));
-			handlingUnitsDAO.saveHU(topLevelHU);
-
-			Loggables.withLogger(logger, Level.INFO).addLog(
-					"restoreUnshippedQtyPickedIfMissing: re-created active QtyPicked_ID={} for shipmentScheduleId={} vhuId={} (reverse left no completed-job reopen to restore it)",
-					restored.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId, vhuId);
 		}
+		// M_InOutLine_ID stays null (un-shipped); IsActive defaults Y; Processed defaults N.
+		huShipmentScheduleDAO.saveQtyPicked(restored);
+
+		// The reverse reactivated the HU to Active; a picked row needs the HU to be Picked
+		// (retrieveNotShippedRecords keeps only Picked/Shipped HUs). Also re-stamp BPartner/Location
+		// from the schedule, exactly like addQtyPickedAndUpdateHU / tryMergeQtyPickedIntoExistingForVHU —
+		// every pick-creation path must leave the top-level HU with the delivery partner/location set.
+		final I_M_HU vhu = handlingUnitsDAO.getById(vhuId);
+		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
+		final I_M_HU topLevelHU = husPair.getTopLevelHU();
+		setHUStatusToPicked(topLevelHU);
+		setHUPartnerAndLocationFromSched(topLevelHU, shipmentScheduleBL.getById(scheduleId));
+		handlingUnitsDAO.saveHU(topLevelHU);
+
+		Loggables.withLogger(logger, Level.INFO).addLog(
+				"restoreUnshippedQtyPickedIfMissing: re-created active QtyPicked_ID={} for shipmentScheduleId={} vhuId={} (reverse left no completed-job reopen to restore it)",
+				restored.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId, vhuId);
 	}
 
 	private de.metas.inoutcandidate.model.I_M_ShipmentSchedule getShipmentSchedule(final AddQtyPickedRequest request)
@@ -1352,24 +1391,57 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 
 		final HuId tuId = HuId.ofRepoIdOrNull(qtyPicked.getM_TU_HU_ID());
-		if (tuId == null)
-		{
-			return ImmutableSet.of();
-		}
-		final I_M_HU box = handlingUnitsBL.getById(tuId);
-		if (handlingUnitsBL.isVirtual(box))
+		if (tuId == null || handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuId)))
 		{
 			return ImmutableSet.of();
 		}
 
-		// a box row stands for the box's units of the schedule's product
-		final ProductId productId = ProductId.ofRepoId(qtyPicked.getM_ShipmentSchedule().getM_Product_ID());
+		// a box row stands for the units of the schedule's product that the schedule picked into the box
+		final I_M_HU box = handlingUnitsBL.getById(tuId);
 		final IHUStorageFactory storageFactory = huContextFactory.createMutableHUContext(getContextAware(box)).getHUStorageFactory();
+		return retrieveBoxUnitsOfSchedule(box, qtyPicked, storageFactory).stream()
+				.map(vhu -> HuId.ofRepoId(vhu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return the virtual HUs (CUs) of the box that hold the schedule's product. If the schedule's picking job steps recorded the
+	 * units they picked, only those count: a box that several schedules picked into holds the units of all of them.
+	 */
+	private List<I_M_HU> retrieveBoxUnitsOfSchedule(
+			@NonNull final I_M_HU box,
+			@NonNull final I_M_ShipmentSchedule_QtyPicked anyRowOfSchedule,
+			@NonNull final IHUStorageFactory storageFactory)
+	{
+		final ProductId productId = ProductId.ofRepoId(anyRowOfSchedule.getM_ShipmentSchedule().getM_Product_ID());
+		final Set<HuId> unitIdsRecordedBySteps = retrieveUnitIdsRecordedByPickingJobSteps(ShipmentScheduleId.ofRepoId(anyRowOfSchedule.getM_ShipmentSchedule_ID()));
+		final boolean allUnitsCount = unitIdsRecordedBySteps.isEmpty() || unitIdsRecordedBySteps.contains(HuId.ofRepoId(box.getM_HU_ID()));
+
 		return handlingUnitsDAO.retrieveIncludedHUs(box)
 				.stream()
 				.filter(handlingUnitsBL::isVirtual)
-				.filter(vhu -> storageFactory.getStorage(vhu).getProductStorageOrNull(productId) != null)
-				.map(vhu -> HuId.ofRepoId(vhu.getM_HU_ID()))
+				.filter(vhu -> allUnitsCount || unitIdsRecordedBySteps.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
+				.filter(vhu -> {
+					final IHUProductStorage productStorage = storageFactory.getStorage(vhu).getProductStorageOrNull(productId);
+					return productStorage != null && !productStorage.isEmpty();
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ImmutableSet<HuId> retrieveUnitIdsRecordedByPickingJobSteps(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final IQuery<I_M_Picking_Job_Step> stepsOfSchedule = queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create();
+		return queryBL.createQueryBuilder(I_M_Picking_Job_Step_PickedHU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_M_Picking_Job_Step_ID, I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_Step_ID, stepsOfSchedule)
+				.create()
+				.listDistinctAsImmutableSet(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_Picked_HU_ID, Integer.class)
+				.stream()
+				.map(HuId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -1398,7 +1470,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		rowsWithUnit.forEach(row -> result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse)));
 		if (!boxRows.isEmpty())
 		{
-			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, retrieveUnitIdsPickedForScheduleIfBoxIsShared(box, boxRows.get(0)), huContext);
+			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, huContext);
 			if (rowsPickedWholeContent(boxRows, contentGroups))
 			{
 				result.addAll(createCandidatesPerContentGroup(boxRows, contentGroups, huContext, qtyTypeToUse));
@@ -1420,7 +1492,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final BoxKey box,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked anyBoxRow,
 			@NonNull final Set<HuId> unitIdsToSkip,
-			@Nullable final Set<HuId> onlyUnitIds,
 			@NonNull final IHUContext huContext)
 	{
 		final ProductId productId = ProductId.ofRepoId(anyBoxRow.getM_ShipmentSchedule().getM_Product_ID());
@@ -1429,11 +1500,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final Predicate<AttributeId> attributeSplitsShipmentLine = attributeSplitsShipmentLinePredicate(anyBoxRow);
 
 		final LinkedHashMap<AttributesKey, List<IHUProductStorage>> storagesByFingerprint = new LinkedHashMap<>();
-		handlingUnitsDAO.retrieveIncludedHUs(handlingUnitsBL.getById(box.getBoxId()))
+		retrieveBoxUnitsOfSchedule(handlingUnitsBL.getById(box.getBoxId()), anyBoxRow, storageFactory)
 				.stream()
-				.filter(handlingUnitsBL::isVirtual)
 				.filter(vhu -> !unitIdsToSkip.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
-				.filter(vhu -> onlyUnitIds == null || onlyUnitIds.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
 				.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, attributeSplitsShipmentLine))
 				.forEach(fingerprintAndStorage -> storagesByFingerprint
 						.computeIfAbsent(fingerprintAndStorage.getKey(), fingerprint -> new ArrayList<>())
@@ -1443,53 +1512,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * A box that another schedule of the same product also picked into holds the units of both schedules, so the box content
-	 * alone cannot tell which unit belongs to which schedule; the picking job records it (the units a step of the schedule picked).
-	 *
-	 * @return the units the schedule's picking job steps picked into the box; {@code null} if the box is not shared (all units count)
-	 * or a step recorded the box itself (all its units count)
-	 */
-	@Nullable
-	private Set<HuId> retrieveUnitIdsPickedForScheduleIfBoxIsShared(
-			@NonNull final BoxKey box,
-			@NonNull final I_M_ShipmentSchedule_QtyPicked anyBoxRow)
-	{
-		final ProductId productId = ProductId.ofRepoId(anyBoxRow.getM_ShipmentSchedule().getM_Product_ID());
-		final boolean isBoxShared = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, box.getBoxId())
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
-				.addNotEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, box.getShipmentScheduleId())
-				.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.class)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.anyMatch();
-		if (!isBoxShared)
-		{
-			return null;
-		}
-
-		final IQuery<I_M_Picking_Job_Step> stepsOfSchedule = queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
-				.addEqualsFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, box.getShipmentScheduleId())
-				.create();
-		final Set<HuId> pickedHuIds = queryBL.createQueryBuilder(I_M_Picking_Job_Step_PickedHU.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_M_Picking_Job_Step_ID, I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_Step_ID, stepsOfSchedule)
-				.create()
-				.listDistinctAsImmutableSet(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_Picked_HU_ID, Integer.class)
-				.stream()
-				.map(HuId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		return pickedHuIds.contains(box.getBoxId()) ? null : pickedHuIds;
-	}
-
 	private static boolean rowsPickedWholeContent(
 			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> boxRows,
 			@NonNull final List<BoxContentGroup> contentGroups)
 	{
-		if (contentGroups.isEmpty())
+		if (contentGroups.isEmpty() || boxRows.stream().anyMatch(row -> row.getQtyPicked().signum() < 0))
 		{
 			return false;
 		}
