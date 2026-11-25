@@ -51,6 +51,12 @@ public class MobileUIPickingUserProfileService
 		return getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired();
 	}
 
+	/** True if at least one of the (job's) lines needs a scanned CU label; pick-all books without one, so such a job cannot use it. */
+	public boolean isAnyLabelRequiredLine(@NonNull final Collection<PickingJobLine> lines)
+	{
+		return lines.stream().anyMatch(this::isLabelRequired);
+	}
+
 	@NonNull
 	public PickingJobAggregationType getAggregationType(@Nullable final BPartnerId customerId)
 	{

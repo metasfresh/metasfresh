@@ -56,8 +56,7 @@ public class PickingJobPickAllCommand
 	/** Pick-all books without a label scan, so one line in a label-required CU quantity entry mode refuses the whole job. */
 	private void assertNoLabelRequiredLine(final PickingJob pickingJob)
 	{
-		final boolean isAnyLabelRequiredLine = pickingJob.hasLine(configService::isLabelRequired);
-		if (isAnyLabelRequiredLine)
+		if (configService.isAnyLabelRequiredLine(pickingJob.getLines()))
 		{
 			throw new AdempiereException(MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED);
 		}

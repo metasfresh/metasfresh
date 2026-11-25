@@ -170,10 +170,17 @@ class JsonPickingJobConverterCommandLineOptionsTest
 			when(pickingJobRestService.getProfile().isAllowQuickPackAll()).thenReturn(allowed);
 		}
 
+		/** the rule itself is tested with {@code MobileUIPickingUserProfileService#isAnyLabelRequiredLine} */
+		private void anyLabelRequiredLine(final boolean required)
+		{
+			when(pickingJobRestService.isAnyLabelRequiredLine(any())).thenReturn(required);
+		}
+
 		@Test
 		void allowed_whenProfileAllowsAndNoLineNeedsALabel()
 		{
 			allowQuickPackAllInProfile(true);
+			anyLabelRequiredLine(false);
 			assertThat(convert(line(1, CUSTOMER_B)).isQuickPackAllAllowed()).isTrue();
 		}
 
@@ -181,6 +188,7 @@ class JsonPickingJobConverterCommandLineOptionsTest
 		void refused_whenOneLineNeedsALabel()
 		{
 			allowQuickPackAllInProfile(true);
+			anyLabelRequiredLine(true);
 			assertThat(convert(line(1, CUSTOMER_B), line(2, CUSTOMER_A)).isQuickPackAllAllowed()).isFalse();
 		}
 
@@ -188,6 +196,7 @@ class JsonPickingJobConverterCommandLineOptionsTest
 		void refused_whenProfileDoesNotAllow()
 		{
 			allowQuickPackAllInProfile(false);
+			anyLabelRequiredLine(false);
 			assertThat(convert(line(1, CUSTOMER_B)).isQuickPackAllAllowed()).isFalse();
 		}
 	}
