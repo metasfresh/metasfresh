@@ -75,3 +75,13 @@ export const DOCTYPE_AP_CREDIT_MEMO = 1000006;
  * IsSoTrx: Y (Sales side)
  */
 export const DOCTYPE_AR_CREDIT_MEMO = 1000004;
+
+// ============================================================================
+// INVENTORY DOCUMENT TYPES
+// ============================================================================
+
+/**
+ * Inventory (Inventur), one HU per inventory line
+ * DocBaseType: MMI, DocSubType: ISH
+ */
+export const DOCTYPE_INVENTORY = 1000023;
