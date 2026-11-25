@@ -407,3 +407,78 @@ Feature: Shipment line per box content
       | p_coo        | 2           | LOT3            |
       | pm_product95 | 1           |                 |
 
+  @Id:BOX_LOT_96
+  Scenario: Reversing the shipment of a box with two CUs of one lot and one CU each of two other lots reopens the whole picked quantity
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_AND_COMPLETE  | Y                                  |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lotA_96":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOTA"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lotB_96":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOTB"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lotC_96":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOTC"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_96         | 2022-12-12   | wh_box         |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_l_a96  | inv_96         | p_coo        | 0       | 10       | PCE          | asi_lotA_96               | p_coo_box_10CU          |
+      | inv_l_b96  | inv_96         | p_coo        | 0       | 10       | PCE          | asi_lotB_96               | p_coo_box_10CU          |
+      | inv_l_c96  | inv_96         | p_coo        | 0       | 10       | PCE          | asi_lotC_96               | p_coo_box_10CU          |
+    When the inventory identified by inv_96 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_l_a96          | hu_a96  |
+      | inv_l_b96          | hu_b96  |
+      | inv_l_c96          | hu_c96  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so_96      | true    | customer_box  | 2025-04-01  | wh_box         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_96_l1   | so_96      | p_coo        | 8          |
+    When the order identified by so_96 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_96      | so_96_l1       | N             |
+    When start picking job for sales order identified by so_96
+    And scan picking slot identified by slot_box
+    And set picking target as new TU identified by box_pi
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | p_coo                 | hu_a96     | 2         |
+      | p_coo                 | hu_a96     | 2         |
+      | p_coo                 | hu_b96     | 2         |
+      | p_coo                 | hu_c96     | 2         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_96                 | inout_96_1 | CO        |
+    And the shipment lines of inout_96_1 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer |
+      | p_coo        | 4           | LOTA            |
+      | p_coo        | 2           | LOTB            |
+      | p_coo        | 2           | LOTC            |
+    And all M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
+    # The reversal must give back every picked unit, also the two CUs of lot A that share one shipment line
+    When the shipment identified by inout_96_1 is reversed as inout_96_1_reversal
+    Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
+    # The reopened picks ship again with the right lots
+    When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_96                 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_96                 | inout_96_2 | CO        |
+    Then the shipment lines of inout_96_2 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer |
+      | p_coo        | 4           | LOTA            |
+      | p_coo        | 2           | LOTB            |
+      | p_coo        | 2           | LOTC            |

@@ -348,6 +348,46 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		}
 	}
 
+	/**
+	 * Asserts the sum of {@code QtyPicked} over the active rows of a shipment schedule: {@code all} rows, or only the {@code open} ones (not on a shipment line).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text)
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example <pre>
+	 * And open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_1 sum to 8
+	 * </pre>
+	 */
+	@And("^(open|all) M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by (.*) sum to (.*)$")
+	public void assertQtyPickedSum(
+			@NonNull final String openOrAll,
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String expectedSum) throws InterruptedException
+	{
+		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
+		final boolean onlyOpen = "open".equals(openOrAll);
+		final ImmutableList<I_M_ShipmentSchedule_QtyPicked> rows = retrieveRecordsOrdered(shipmentScheduleId)
+				.stream()
+				.filter(row -> !onlyOpen || row.getM_InOutLine_ID() <= 0)
+				.collect(ImmutableList.toImmutableList());
+		final BigDecimal actualSum = rows.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		final StringBuilder rowsInfo = new StringBuilder();
+		for (final I_M_ShipmentSchedule_QtyPicked row : rows)
+		{
+			rowsInfo.append("\n M_ShipmentSchedule_QtyPicked_ID=").append(row.getM_ShipmentSchedule_QtyPicked_ID())
+					.append(" QtyPicked=").append(row.getQtyPicked())
+					.append(" M_InOutLine_ID=").append(row.getM_InOutLine_ID())
+					.append(" VHU_ID=").append(row.getVHU_ID())
+					.append(" M_TU_HU_ID=").append(row.getM_TU_HU_ID());
+		}
+		assertThat(actualSum)
+				.as("sum of QtyPicked of the %s rows of %s:%s", openOrAll, shipmentScheduleIdentifier, rowsInfo)
+				.isEqualByComparingTo(expectedSum);
+	}
+
 	@And("^M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule (.*) can be located in specified order$")
 	public void locate_ordered_M_ShipmentSchedule_QtyPicked_records_by_M_ShipmentSchedule(
 			@NonNull final String shipmentScheduleIdentifier,
