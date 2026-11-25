@@ -44,7 +44,7 @@ const renderComponent = ({ onResult, resolveScannedBarcode, qtyMax = 3, ...props
           })
         }
         onResult={onResult}
-        nextTUActions={<button type="button">Next box</button>}
+        nextTUActions={<button type="button">Next TU</button>}
         {...props}
       />
     </Provider>
@@ -96,12 +96,12 @@ describe('ScanHUAndGetQtyComponent: Scan each CU loop', () => {
     expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();
   });
 
-  it('shows "Next box" next to "Close"; Close leaves the line', async () => {
+  it('shows "Next TU" next to "Close"; Close leaves the line', async () => {
     const onResult = jest.fn().mockResolvedValue();
     const onClose = jest.fn();
     renderComponent({ onResult, onClose });
     await act(async () => {});
-    expect(screen.getByText('Next box')).toBeInTheDocument();
+    expect(screen.getByText('Next TU')).toBeInTheDocument();
     await act(async () => {
       fireEvent.click(screen.getByTestId('scan-each-close-button'));
     });

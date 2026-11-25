@@ -241,7 +241,7 @@ const ScanHUAndGetQtyComponent = ({
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
 
-  // scan each CU: one label = one CU of 1 with that label; a refusal (e.g. the pack was already picked) is toasted
+  // scan each CU: one label = one CU of 1 with that label; a refusal (e.g. the CU was already picked) is toasted
   const bookScannedCU = async ({ resolvedBarcodeData }) =>
     await fireOnResult({
       qty: 1,

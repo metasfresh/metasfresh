@@ -31,7 +31,7 @@ const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P
 
 // noinspection JSUnusedLocalSymbols
 test('GRAI scan with a TU open (customer GRAI not required): the open TU is closed with its 5, the next TU carries the GRAI', async ({ page }) => {
-    allureMeta('Next box by GRAI');
+    allureMeta('Next TU by GRAI');
 
     const masterdata = await createMasterdata({
         formatName: uniqueFormatName(),
@@ -66,7 +66,7 @@ test('GRAI scan with a TU open (customer GRAI not required): the open TU is clos
 
 // noinspection JSUnusedLocalSymbols
 test('GRAI of a TU type without capacity for the product is refused; the open TU stays and takes the next booking', async ({ page }) => {
-    allureMeta('Next box by GRAI');
+    allureMeta('Next TU by GRAI');
 
     const masterdata = await createMasterdata({
         formatName: uniqueFormatName(),
@@ -98,8 +98,8 @@ test('GRAI of a TU type without capacity for the product is refused; the open TU
 });
 
 // noinspection JSUnusedLocalSymbols
-test('"Next box" opens a TU of the line\'s TU type in one tap (no "Gebinde" list); a GRAI scan after it opens one more TU, the button TU keeps no GRAI', async ({ page }) => {
-    allureMeta('Next box button');
+test('"Next TU" opens a TU of the line\'s TU type in one tap (no "Gebinde" list); a GRAI scan after it opens one more TU, the button TU keeps no GRAI', async ({ page }) => {
+    allureMeta('Next TU button');
 
     const masterdata = await createMasterdata({
         formatName: uniqueFormatName(),
@@ -151,7 +151,7 @@ test('"Next box" opens a TU of the line\'s TU type in one tap (no "Gebinde" list
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan once: customer GRAI required, no pick-time GRAI screen: first booking without a TU is refused, after "Next box" it is booked', async ({ page }) => {
+test('Scan once: customer GRAI required, no pick-time GRAI screen: first booking without a TU is refused, after "Next TU" it is booked', async ({ page }) => {
     allureMeta('No pick-time GRAI screen');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10, graiRequired: 'Y' }] });
@@ -166,7 +166,7 @@ test('Scan once: customer GRAI required, no pick-time GRAI screen: first booking
         await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
     });
 
-    await test.step('(ii) "Next box", then the booking goes into the TU, no GRAI screen', async () => {
+    await test.step('(ii) "Next TU", then the booking goes into the TU, no GRAI screen', async () => {
         await PickLineScanScreen.nextTU();
         await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.P1_20x4.tuName);   // the TU type of the line's packing
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 5 });
@@ -200,7 +200,7 @@ test('mixed job (customer GRAI required + customer not required): the GRAI custo
         await PickingJobScreen.waitForScreen();
     });
 
-    await test.step('line of the other customer: TU opened with "Next box"', async () => {
+    await test.step('line of the other customer: TU opened with "Next TU"', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
         await openLine({ index: 2 });
         await PickLineScanScreen.openTU();
@@ -254,7 +254,7 @@ const addGraiToTUsInHUManager = async ({ masterdata, tus }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('customer GRAI required, TU opened with "Next box": "Fertigstellen" is refused; after "GRAI scannen" in the HU Manager the job completes', async ({ page }) => {
+test('customer GRAI required, TU opened with "Next TU": "Fertigstellen" is refused; after "GRAI scannen" in the HU Manager the job completes', async ({ page }) => {
     allureMeta('GRAI customer, TU without GRAI');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 5, graiRequired: 'Y' }] });
@@ -305,7 +305,7 @@ const expectEveryPickedHUIsACUInATU = async ({ pickingJobId, tus, docStatus }) =
 };
 
 // noinspection JSUnusedLocalSymbols
-test('line with a TU packing "TU x 4 Stk" (customer GRAI required): first booking refused, "Next box" opens TU 1, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
+test('line with a TU packing "TU x 4 Stk" (customer GRAI required): first booking refused, "Next TU" opens TU 1, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
     allureMeta('Open TU first, TU packing line');
 
     const masterdata = await createMasterdata({
@@ -343,7 +343,7 @@ test('line with a TU packing "TU x 4 Stk" (customer GRAI required): first bookin
 });
 
 // noinspection JSUnusedLocalSymbols
-test('line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
+test('line with an unlimited-capacity packing that names a TU type: "Next TU" opens no "Gebinde" list, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
     allureMeta('Open TU first, unlimited capacity packing');
 
     const masterdata = await createMasterdata({
@@ -381,7 +381,7 @@ test('line with an unlimited-capacity packing that names a TU type: "Next box" o
 });
 
 // noinspection JSUnusedLocalSymbols
-test('line without a TU type: first booking refused, "Next box" opens the "Gebinde" list (again after a booking, no close screen), a GRAI scan opens the next TU', async ({ page }) => {
+test('line without a TU type: first booking refused, "Next TU" opens the "Gebinde" list (again after a booking, no close screen), a GRAI scan opens the next TU', async ({ page }) => {
     allureMeta('Open TU first, line without a TU type');
 
     const masterdata = await createMasterdata({
@@ -398,7 +398,7 @@ test('line without a TU type: first booking refused, "Next box" opens the "Gebin
     await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_TU });
     await PickGraiScreen.expectNotShown();
 
-    await test.step('"Next box" opens the TU list, the picker chooses the TU type', async () => {
+    await test.step('"Next TU" opens the TU list, the picker chooses the TU type', async () => {
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
@@ -411,7 +411,7 @@ test('line without a TU type: first booking refused, "Next box" opens the "Gebin
         await PickGraiScreen.expectNotShown();
     });
 
-    await test.step('"Next box" again: the list opens directly, the first TU closed without a close screen', async () => {
+    await test.step('"Next TU" again: the list opens directly, the first TU closed without a close screen', async () => {
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
@@ -448,7 +448,7 @@ const scanEachMasterdataOf = async ({ orders, packingInstructions }) =>
     await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, packingInstructions });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan each CU: line with a TU packing "TU x 4 Stk" (customer GRAI required): first scan refused, "Next box" opens TU 1, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
+test('Scan each CU: line with a TU packing "TU x 4 Stk" (customer GRAI required): first scan refused, "Next TU" opens TU 1, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
     allureMeta('Scan each CU open TU first, TU packing line');
 
     const masterdata = await scanEachMasterdataOf({ orders: [{ key: 'A', qty: 2, graiRequired: 'Y' }], packingInstructions: graiTuType('G1') });
@@ -480,7 +480,7 @@ test('Scan each CU: line with a TU packing "TU x 4 Stk" (customer GRAI required)
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan each CU: line with an unlimited-capacity packing that names a TU type: "Next box" opens no "Gebinde" list, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
+test('Scan each CU: line with an unlimited-capacity packing that names a TU type: "Next TU" opens no "Gebinde" list, a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
     allureMeta('Scan each CU open TU first, unlimited capacity packing');
 
     const masterdata = await scanEachMasterdataOf({
@@ -516,7 +516,7 @@ test('Scan each CU: line with an unlimited-capacity packing that names a TU type
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan each CU: line without a TU type: first scan refused, "Next box" opens the "Gebinde" list (again after a booking), a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
+test('Scan each CU: line without a TU type: first scan refused, "Next TU" opens the "Gebinde" list (again after a booking), a GRAI scan opens the next TU, "Fertigstellen" needs a GRAI on every TU', async ({ page }) => {
     allureMeta('Scan each CU open TU first, line without a TU type');
 
     const masterdata = await scanEachMasterdataOf({ orders: [{ key: 'A', qty: 3, graiRequired: 'Y', piItemProduct: null }], packingInstructions: graiTuType('G1') });
@@ -528,7 +528,7 @@ test('Scan each CU: line without a TU type: first scan refused, "Next box" opens
     await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 1 }), MSG_NO_OPEN_TU);
     await PickGraiScreen.expectNotShown();
 
-    await test.step('"Next box" opens the TU list, the picker chooses the TU type and scans the first pack', async () => {
+    await test.step('"Next TU" opens the TU list, the picker chooses the TU type and scans the first pack', async () => {
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
@@ -540,7 +540,7 @@ test('Scan each CU: line without a TU type: first scan refused, "Next box" opens
         await PickGraiScreen.expectNotShown();
     });
 
-    await test.step('"Next box" again: the list opens directly, the picker chooses the TU type and scans the second pack', async () => {
+    await test.step('"Next TU" again: the list opens directly, the picker chooses the TU type and scans the second pack', async () => {
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });

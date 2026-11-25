@@ -442,7 +442,8 @@ export const convertScannedCULabelToResolvedResult = ({
     isPackIdRequired: cuQtyEntryPolicy.packIdRequired,
   });
   if (errorKey) {
-    throw new UserMessageError(errorKey, errorDetails);
+    // the scanned label goes to the UI trace, so support can see later what was refused
+    throw new UserMessageError(errorKey, errorDetails, { scannedLabel: scannedBarcode });
   }
 
   return { lotNo, bestBeforeDate, packId, cuLabel, isTUToBePickedAsWhole: false };

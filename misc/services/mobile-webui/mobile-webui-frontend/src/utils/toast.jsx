@@ -16,7 +16,7 @@ export const toastErrorFromObj = (obj, toastId) => {
     // shall not happen
     console.error('toastErrorFromObj called without any error');
   } else if (obj instanceof UserMessageError) {
-    toastError({ messageKey: obj.messageKey, details: obj.details, toastId });
+    toastError({ messageKey: obj.messageKey, details: obj.details, context: obj.context, toastId });
   } else if (isError(obj) || obj instanceof ContextualError) {
     toastError({ axiosError: obj, context: obj?.context, toastId });
   } else if (typeof obj === 'object') {

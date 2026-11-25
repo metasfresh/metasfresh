@@ -16,7 +16,7 @@ restoreSysconfigsAfterEach(test);
  * Source: one pallet of 20 TUs of 4 pieces, so a count of 5 needs pieces from two source TUs.
  */
 // noinspection JSUnusedLocalSymbols
-test('TU opened with "Next box", label scanned, count 5 (needs two source TUs) books ONE CU of 5 in the TU', async ({ page }) => {
+test('TU opened with "Next TU", label scanned, count 5 (needs two source TUs) books ONE CU of 5 in the TU', async ({ page }) => {
     allureMeta('Scan once count');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
@@ -88,14 +88,14 @@ test('Scan once field starts empty (not 0) with the zero-as-initial-value settin
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan once: OK without an open TU is refused, nothing is booked; after "Next box" the same booking succeeds', async ({ page }) => {
+test('Scan once: OK without an open TU is refused, nothing is booked; after "Next TU" the same booking succeeds', async ({ page }) => {
     allureMeta('Scan once needs an open TU');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
 
-    // no "Next box", no GRAI scan
+    // no "Next TU", no GRAI scan
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(5);
     await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_TU });
@@ -336,7 +336,7 @@ test('on a line whose packing is a TU packing, a SECOND CU booking into the open
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Pallet target (Scan once): pallet + new TU: counts 3 and 2 book one CU each into the TU on the pallet; "Next box" + count 4 (a full TU) books one CU of 4 in a second TU on the same pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
+test('Pallet target (Scan once): pallet + new TU: counts 3 and 2 book one CU each into the TU on the pallet; "Next TU" + count 4 (a full TU) books one CU of 4 in a second TU on the same pallet; "Unpack" of the 3 frees only that CU', async ({ page }) => {
     allureMeta('Scan once pallet target');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }], pickTo: ['LU_TU', 'TU'] });
@@ -374,7 +374,7 @@ test('Pallet target (Scan once): pallet + new TU: counts 3 and 2 book one CU eac
         });
     });
 
-    await test.step('"Next box", count 4 (fills the TU of 4): one CU of 4 in a second TU on the same pallet, as without a pallet', async () => {
+    await test.step('"Next TU", count 4 (fills the TU of 4): one CU of 4 in a second TU on the same pallet, as without a pallet', async () => {
         await PickLineScanScreen.nextTU();
         await GetQuantityDialog.typeQtyEntered(4);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 1 });

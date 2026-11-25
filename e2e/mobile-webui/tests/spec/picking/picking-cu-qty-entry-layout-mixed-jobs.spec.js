@@ -139,7 +139,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         }
 
         // noinspection JSUnusedLocalSymbols
-        test(`real case: Once buyer with TUs by Next box and GRAI, Each buyer with GRAI TUs and a duplicate warning (${viewport.name})`, async ({ page: _page }) => {
+        test(`real case: Once buyer with TUs by Next TU and GRAI, Each buyer with GRAI TUs and a duplicate warning (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive real case');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
@@ -168,7 +168,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await layout('Once quantity block, TU opened by a GRAI scan');
             await book({ qty: 5, expectedQtyTarget: 6 });
             await PickLineScanScreen.nextTU();
-            await layout('Once quantity block, TU opened by Next box');
+            await layout('Once quantity block, TU opened by Next TU');
             await GetQuantityDialog.typeQtyEntered(6);
             await GetQuantityDialog.clickDoneStayOpen();
             await PickingJobScreen.waitForScreen();

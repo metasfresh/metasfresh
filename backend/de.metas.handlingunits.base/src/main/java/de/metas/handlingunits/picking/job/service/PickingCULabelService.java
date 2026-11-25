@@ -102,7 +102,11 @@ public class PickingCULabelService
 	{
 		final ScannableCodeFormatId id = formatId.orElseThrow(() -> userError(MSG_CU_LABEL_NO_FORMAT));
 		return scannableCodeFormatService.getById(id)
-				.orElseThrow(() -> userErrorWithDetails(MSG_CU_LABEL_NO_FORMAT, TranslatableStrings.constant("(format " + id.getRepoId() + " not found or inactive)")));
+				.orElseThrow(() -> {
+					// the id is for the log only: the user message stays fully translated
+					logger.warn("CU label refused: label format {} not found or inactive", id.getRepoId());
+					return userError(MSG_CU_LABEL_NO_FORMAT);
+				});
 	}
 
 	/** Checks the label data against the line. */
@@ -113,10 +117,12 @@ public class PickingCULabelService
 	{
 		if (labelData.getProductNo() == null)
 		{
+			logger.warn("CU label refused: the format reads no product number (no ProductCode part): {}, line {}", labelData, line.getId());
 			throw userError(MSG_CU_LABEL_FORMAT_MISMATCH);
 		}
 		if (!Objects.equals(labelData.getProductNo(), line.getProductNo()))
 		{
+			logger.warn("CU label refused: other product than the line's {}: {}, line {}", line.getProductNo(), labelData, line.getId());
 			throw userError(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductValueAndName().getName());
 		}
 
@@ -124,6 +130,7 @@ public class PickingCULabelService
 		final String packId = isPackIdRequired ? labelData.getPackId() : null;
 		if (isPackIdRequired && packId == null)
 		{
+			logger.warn("CU label refused: the label has no pack ID: {}, line {}", labelData, line.getId());
 			throw userError(MSG_CU_LABEL_NO_PACK_ID);
 		}
 

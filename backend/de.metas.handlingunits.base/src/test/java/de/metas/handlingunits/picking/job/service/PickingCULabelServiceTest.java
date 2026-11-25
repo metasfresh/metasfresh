@@ -38,7 +38,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -214,6 +216,67 @@ class PickingCULabelServiceTest
 		{
 			logger.detachAppender(logAppender);
 		}
+	}
+
+	/** Runs the code, expects a refusal, returns the formatted messages logged at WARN meanwhile. */
+	private static List<String> warningsLoggedBy(final Runnable refusedCall)
+	{
+		final Logger logger = (Logger)LoggerFactory.getLogger(PickingCULabelService.class);
+		final ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+		logAppender.start();
+		logger.addAppender(logAppender);
+		try
+		{
+			assertThatThrownBy(refusedCall::run).isInstanceOf(AdempiereException.class);
+			return logAppender.list.stream()
+					.filter(event -> event.getLevel() == Level.WARN)
+					.map(ILoggingEvent::getFormattedMessage)
+					.collect(Collectors.toList());
+		}
+		finally
+		{
+			logger.detachAppender(logAppender);
+		}
+	}
+
+	@Test
+	void labelOfAnotherProduct_logsTheDiscardedLabelData()
+	{
+		final List<String> warnings = warningsLoggedBy(() -> resolve(label(GTIN, "OTHER99", "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()));
+
+		assertThat(warnings).hasSize(1);
+		assertThat(warnings.get(0)).contains("OTHER99").contains(PRODUCT_NO).contains(LOT);
+	}
+
+	@Test
+	void labelDataWithoutProductNo_logsTheDiscardedLabelData()
+	{
+		final CULabelData noProduct = CULabelData.builder().lotNo(LOT).packId("7").build();
+
+		final List<String> warnings = warningsLoggedBy(() -> service.resolve(line(PRODUCT_NO), noProduct, CUQtyEntryMode.SCAN_EACH_CU.getPolicy()));
+
+		assertThat(warnings).hasSize(1);
+		assertThat(warnings.get(0)).contains(LOT).contains("no product");
+	}
+
+	@Test
+	void labelDataWithoutPackId_logsTheDiscardedLabelData()
+	{
+		final CULabelData noPackId = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).build();
+
+		final List<String> warnings = warningsLoggedBy(() -> service.resolve(line(PRODUCT_NO), noPackId, CUQtyEntryMode.SCAN_EACH_CU.getPolicy()));
+
+		assertThat(warnings).hasSize(1);
+		assertThat(warnings.get(0)).contains(PRODUCT_NO).contains(LOT).contains("no pack ID");
+	}
+
+	@Test
+	void formatNotFound_logsItsId()
+	{
+		final List<String> warnings = warningsLoggedBy(() -> resolve(label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, ScannableCodeFormatId.ofRepoId(999999)));
+
+		assertThat(warnings).hasSize(1);
+		assertThat(warnings.get(0)).contains("999999");
 	}
 
 	@Test

@@ -748,12 +748,12 @@ public class PickingJobService implements PickingSlotListener
 	/**
 	 * Closes the job's targets and every line's targets.
 	 * <p>
-	 * Lines whose customer uses a label-based CU quantity entry mode, or which hold a pack booked in such a mode: each line's closed HUs go to that line's
+	 * Lines whose customer uses a label-based CU quantity entry mode, or which hold a CU booked in such a mode: each line's closed HUs go to that line's
 	 * picking slot queue. In a job with line-level targets (product job) every customer's line has its own slot, and the slot the picker scanned
 	 * last belongs to another customer (an HU queued on two slots cannot be shipped). An existing HU that is the open target of two lines with
 	 * different slots would be queued on both; lines of different customers do not share a target.
 	 * <p>
-	 * A pack booked in a label-based mode keeps its line on its own slot after the customer was switched to Manual while the job is open: the close follows
+	 * A CU booked in a label-based mode keeps its line on its own slot after the customer was switched to Manual while the job is open: the close follows
 	 * what was booked (as the un-pick and the GRAI completion check do), not only the customer's current mode.
 	 * <p>
 	 * Manual lines (and all lines of a job without a label-based-mode line): all closed HUs go to the slot scanned last.
@@ -761,7 +761,7 @@ public class PickingJobService implements PickingSlotListener
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
 		final Predicate<PickingJobLine> isLabelRequired = line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired();
-		// only the lines the mode of their customer does not settle are checked for packs booked in a label-based mode (that check walks each picked CU up to its TU)
+		// only the lines the mode of their customer does not settle are checked for CUs booked in a label-based mode (that check walks each picked CU up to its TU)
 		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
 		final ImmutableSet<HuId> cusBookedLabelBased = pickingJob.hasLine(isToCheckForLabelBookings)
 				? huService.getCUBookingSpecification().filterBookedWithLabelScan(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))

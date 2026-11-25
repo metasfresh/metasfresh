@@ -75,7 +75,7 @@ UPDATE AD_Message SET ErrorCode='CU_NO_OPEN_TU', Updated=TO_TIMESTAMP('2026-11-1
 ;
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language,t.AD_Message_ID,t.MsgText,t.MsgTip,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546019 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
-UPDATE AD_Message_Trl SET MsgText='Please open a box first (scan a GRAI or ''Next box'').', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-18 23:10:29','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=546019
+UPDATE AD_Message_Trl SET MsgText='Please open a TU first (scan a GRAI or ''Next TU'').', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-18 23:10:29','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=546019
 ;
 UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-18 23:10:30','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=546019
 ;

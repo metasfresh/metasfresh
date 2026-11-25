@@ -13,7 +13,7 @@ import { toastErrorFromObj, toastNotification } from '../../../utils/toast';
 import { trl } from '../../../utils/translations';
 
 /**
- * Button "Next box" (picking, lines with a CU quantity entry mode that books into TUs).
+ * Button "Next TU" (picking, lines with a CU quantity entry mode that books into TUs).
  *
  * What it provides: one tap closes the line's open TU (if any) and opens the next TU of the line's TU type (TU), or leads to the
  * TU list when the line's packing names no TU type. Booking a CU needs an open TU, so without this button the picker would have to

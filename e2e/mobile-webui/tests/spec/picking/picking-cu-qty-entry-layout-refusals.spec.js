@@ -85,7 +85,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         for (const lang of languages) {
             const layout = layoutFor(lang);
 
-            // a line without TU type: "Next box" opens the TU list; customer GRAI required: no pick-time GRAI screen, "Fertigstellen" refused
+            // a line without TU type: "Next TU" opens the TU list; customer GRAI required: no pick-time GRAI screen, "Fertigstellen" refused
             // noinspection JSUnusedLocalSymbols
             test(`Each: line without TU type, GRAI required: TU list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
@@ -101,7 +101,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 await PickLineScanScreen.nextTU();
                 await SelectPickTargetTUScreen.waitForScreen();
-                await layout('Each "Gebinde" list opened by Next box (line without TU type)');
+                await layout('Each "Gebinde" list opened by Next TU (line without TU type)');
                 await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
                 await PickingJobLineScreen.waitForScreen();
                 await layout('Each line screen after the TU type was chosen');
@@ -143,7 +143,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 await PickLineScanScreen.nextTU();
                 await SelectPickTargetTUScreen.waitForScreen();
-                await layout('Once "Gebinde" list opened by Next box (line without TU type)');
+                await layout('Once "Gebinde" list opened by Next TU (line without TU type)');
                 await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
                 await PickingJobLineScreen.waitForScreen();
                 await layout('Once line screen after the TU type was chosen');

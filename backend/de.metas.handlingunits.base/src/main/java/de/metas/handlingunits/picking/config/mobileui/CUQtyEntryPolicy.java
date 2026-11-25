@@ -49,7 +49,7 @@ public final class CUQtyEntryPolicy
 	public boolean isPackIdRequired() {return isPackIdUsed;}
 
 	/**
-	 * @return true if a pick above the line's open quantity is refused whatever the profile's over-pick setting: one scan books one pack and the
+	 * @return true if a pick above the line's open quantity is refused whatever the profile's over-pick setting: one scan books one CU and the
 	 * scan loop has no over-pick confirmation prompt, so once the line is done a further scan must book nothing
 	 */
 	public boolean isOverPickAlwaysRefused() {return isPackIdUsed;}

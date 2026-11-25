@@ -1,6 +1,7 @@
 import { toast } from 'react-toastify';
 import { toastError, toastErrorFromObj } from '../../utils/toast';
 import { UserMessageError } from '../../utils/UserMessageError';
+import * as uiTrace from '../../utils/ui_trace';
 import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from '../../utils/toastLayout';
 
 jest.mock('../../utils/ui_trace', () => ({ trace: jest.fn() }));
@@ -40,5 +41,13 @@ describe('toastError', () => {
     const message = toastErrorSpy.mock.calls[0][0].props.message;
     expect(message).toMatch(/ part 3 does not fit$/);
     expect(toastErrorSpy.mock.calls[0][0].props.code).toBe('picking.cuLabel.formatMismatch');
+  });
+
+  it('traces the context of a UserMessageError (the scanned label of a refused scan)', () => {
+    jest.spyOn(toast, 'error').mockImplementation(() => undefined);
+
+    toastErrorFromObj(new UserMessageError('picking.cuLabel.formatMismatch', undefined, { scannedLabel: 'L123' }));
+
+    expect(uiTrace.trace).toHaveBeenCalledWith(expect.objectContaining({ context: { scannedLabel: 'L123' } }));
   });
 });

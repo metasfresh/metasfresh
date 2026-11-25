@@ -180,7 +180,7 @@ export const expectOnScreenWithoutScrolling = async (locator, description, viewp
 };
 
 /**
- * The phone sizes of the layout specs: the Pixel 5 preset of the config; the customer's handheld (Zebra TC22, 6.0 in, 1080x2160 physical px;
+ * The phone sizes of the layout specs: the Pixel 5 preset of the config; a typical picking handheld (Zebra TC22, 6.0 in, 1080x2160 physical px;
  * CSS size not measured: 360x720 @3 or 393x786 @2.75); the worst case = a Chrome with address and tool bars shown (360x640 @3).
  * Every layout spec runs 49 tests per size (about 80 minutes one after the other on one stack, in two languages), so a normal run (CI) uses only
  * the worst case: the narrowest and the lowest screen. `LAYOUT_ALL_SIZES=1` runs all sizes (before a change of the screens, or a new size).

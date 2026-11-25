@@ -56,8 +56,8 @@ export const PickLineScanScreen = {
         await expect(containerElement()).toHaveAttribute('data-cu-qty-entry-mode', expected);
     }),
 
-    /** Asserts that the "Weitere Kiste" / "Next box" button is not shown (Manual lines never show it). */
-    expectNextTUButtonHidden: async () => await step(`${NAME} - Expect Next box button hidden`, async () => {
+    /** Asserts that the "Weitere Kiste" / "Next TU" button is not shown (Manual lines never show it). */
+    expectNextTUButtonHidden: async () => await step(`${NAME} - Expect Next TU button hidden`, async () => {
         await PickLineScanScreen.waitForScreen();
         await expect(nextTUButton()).toHaveCount(0);
     }),
@@ -101,8 +101,8 @@ export const PickLineScanScreen = {
         await GetQuantityDialog.waitForDialog();
     }),
 
-    /** Taps "Weitere Kiste" / "Next box": opens the next TU of the line. */
-    nextTU: async () => await step(`${NAME} - Next box`, tapNextTU),
+    /** Taps "Weitere Kiste" / "Next TU": opens the next TU of the line. */
+    nextTU: async () => await step(`${NAME} - Next TU`, tapNextTU),
 
     /**
      * Opens the first TU of a line in CU quantity entry mode, before its first booking (same tap as nextTU).
@@ -124,8 +124,8 @@ export const PickLineScanScreen = {
         await expect(page.locator('tr:has(th:has-text("Current"))').first()).toContainText(caption, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    /** Asserts that "Weitere Kiste" / "Next box" sits in the quantity block's button row, next to OK. */
-    expectNextTUButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next box button in the quantity block`, async () => {
+    /** Asserts that "Weitere Kiste" / "Next TU" sits in the quantity block's button row, next to OK. */
+    expectNextTUButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next TU button in the quantity block`, async () => {
         await expect(page.locator('.get-qty-dialog').getByTestId('next-tu-button')).toBeVisible();
     }),
 

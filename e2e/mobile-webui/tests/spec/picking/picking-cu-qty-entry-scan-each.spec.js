@@ -16,7 +16,7 @@ restoreSysconfigsAfterEach(test);
  *
  * The label format of these specs has a pack-ID part (`buildCULabelFormat({ withPackId: true })`).
  *
- * Source: one pallet of 20 TUs of 4 pieces (80 pieces). Every case opens TU 1 first ("Next box"), except the cases that test the missing TU.
+ * Source: one pallet of 20 TUs of 4 pieces (80 pieces). Every case opens TU 1 first ("Next TU"), except the cases that test the missing TU.
  */
 
 const masterdataOf = async ({ orders = [{ key: 'A', qty: 3 }], ...rest } = {}) =>
@@ -303,7 +303,7 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan each CU: a label scan without an open TU is refused with the open-a-TU text, nothing is booked; after "Next box" the same scan books', async ({ page }) => {
+test('Scan each CU: a label scan without an open TU is refused with the open-a-TU text, nothing is booked; after "Next TU" the same scan books', async ({ page }) => {
     allureMeta('Scan each CU needs an open TU');
 
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2 }] });
@@ -319,7 +319,7 @@ test('Scan each CU: a label scan without an open TU is refused with the open-a-T
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan each CU: customer GRAI required: no pick-time GRAI screen; (i) first scan without a TU is refused, (ii) after "Next box" it books into the TU', async ({ page }) => {
+test('Scan each CU: customer GRAI required: no pick-time GRAI screen; (i) first scan without a TU is refused, (ii) after "Next TU" it books into the TU', async ({ page }) => {
     allureMeta('Scan each CU GRAI required customer');
 
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 2, graiRequired: 'Y' }] });
@@ -333,7 +333,7 @@ test('Scan each CU: customer GRAI required: no pick-time GRAI screen; (i) first 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan each CU: TU packing line: first scan refused without a TU; "Next box", then every picked HU is a CU inside a TU of a TU packing (no loose CU)', async ({ page }) => {
+test('Scan each CU: TU packing line: first scan refused without a TU; "Next TU", then every picked HU is a CU inside a TU of a TU packing (no loose CU)', async ({ page }) => {
     allureMeta('Scan each CU open TU first');
 
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });

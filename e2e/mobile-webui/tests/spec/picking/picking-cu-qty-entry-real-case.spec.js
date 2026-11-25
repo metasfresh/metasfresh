@@ -11,7 +11,7 @@ restoreSysconfigsAfterEach(test);
 /**
  * The real case, one mixed product job of two customers, source TUs of 4:
  *  - buyer A (`C_BPartner.GRAIRequired` N, profile Scan once + format without pack-ID part): 50 CU = 3, 5, 8 x 5 (alternating
- *    GRAI scan / "Next box"), 2; TU 1 opened by "Next box"; 11 TUs, 50 CU.
+ *    GRAI scan / "Next TU"), 2; TU 1 opened by "Next TU"; 11 TUs, 50 CU.
  *  - buyer B (GRAIRequired Y, record Scan each CU + format with pack-ID part): 6 CU, pack ID 3 scanned twice (one warning); 2 TUs,
  *    both opened by GRAI scan (TU 1 before the first label).
  * Expected: 13 TUs, 56 CU, 1 warning, `M_Picking_Job.DocStatus` CO.
@@ -49,7 +49,7 @@ test('real case, buyer A 50 CU in 11 TUs (Scan once), buyer B 6 CU in 2 TUs with
         await PickLineScanScreen.rescanCULabel(labelOf({ masterdata, lot }));
         await PickLineScanScreen.nextTU();                  // TU 2
         await book({ qty: 5, expectedQtyTarget: 42 });
-        for (let i = 0; i < 8; i++) {                        // TUs 3 - 10, alternating GRAI scan / "Next box"
+        for (let i = 0; i < 8; i++) {                        // TUs 3 - 10, alternating GRAI scan / "Next TU"
             if (i % 2 === 0) {
                 await PickLineScanScreen.rescanGrai(graiOfTU(3 + i));
             } else {

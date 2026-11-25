@@ -4,7 +4,7 @@
 // Flow of the app as built: with a source HU scanned ("Kommissionieren aus"), a tap on a line with nothing picked opens
 // its scan screen directly; a label scan opens the quantity block; after OK the picker stays on the line (the block
 // stays open, the open quantity drops) until the line is fully booked, then the app goes back to the job screen.
-// Every booking needs an open TU (a GRAI scan or "Next box").
+// Every booking needs an open TU (a GRAI scan or "Next TU").
 // Source: one pallet of 20 TUs of 4 pieces (80 pieces).
 import { allure } from 'allure-playwright';
 import { Backend } from './screens/Backend';
@@ -25,7 +25,7 @@ export const BEST_BEFORE = defaultBestBefore();
 export const SOURCE_QTY = 80; // 20 TUs x 4 pieces
 // GS1 AI 8003 GRAI form (AI + pad + company prefix 7613264 + asset type 00309 + check digit + first serial digit); same public test value as tests/spec/humanager/grai.spec.js
 export const GRAI_8003_PREFIX = '8003076132640030951';
-export const MSG_NO_OPEN_TU = "Please open a box first (scan a GRAI or 'Next box').";
+export const MSG_NO_OPEN_TU = "Please open a TU first (scan a GRAI or 'Next TU').";
 
 // The launcher list shows at most this many launchers (default 20). Leftovers of other runs on a shared DB (every
 // unpicked order of any product is a candidate) would push the launcher of a spec's fresh masterdata out of the list,

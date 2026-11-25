@@ -101,6 +101,12 @@ describe('PickingLineScanScreen: label-based mode label scan', () => {
       convertScannedCULabelToResolvedResult({ scannedBarcode, cuLabelFormat: format, expectedProductNo })
     ).toThrow(expect.objectContaining({ messageKey }));
   });
+
+  it('a refusal carries the scanned label as context, for the UI trace', () => {
+    expect(() =>
+      convertScannedCULabelToResolvedResult({ scannedBarcode: 'HU#1#{}', cuLabelFormat, expectedProductNo: 'PTST001' })
+    ).toThrow(expect.objectContaining({ context: { scannedLabel: 'HU#1#{}' } }));
+  });
 });
 
 describe('PickingLineScanScreen: pick-time GRAI capture', () => {

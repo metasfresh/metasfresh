@@ -123,7 +123,7 @@ describe('OpenNextTUButton component', () => {
 const store = () => createStore(combineReducers({ settings }));
 
 describe('next TU button placement', () => {
-  const nextTUActions = <button data-testid="next-tu-button">Next box</button>;
+  const nextTUActions = <button data-testid="next-tu-button">Next TU</button>;
 
   it('scan once quantity block: button sits in the action area, next to Abbrechen', () => {
     render(

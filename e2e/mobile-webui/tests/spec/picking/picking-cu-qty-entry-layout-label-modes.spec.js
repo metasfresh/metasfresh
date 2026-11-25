@@ -35,7 +35,7 @@ const TEXTS = {
         formatMismatch: 'does not match the label format',
         pickFromRequired: "Please scan 'Pick From' first.",
         noCapacity: 'has no capacity configured for this product',
-        nextTUBusy: 'A box is just being opened.',
+        nextTUBusy: 'A TU is just being opened.',
     },
     de_DE: {
         noOpenTU: 'Bitte öffnen Sie zuerst eine Kiste',
@@ -71,7 +71,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             });
             await startJob(masterdata, { qtyToDeliver: 12 });
 
-            await test.step('Scan once: field, lot, best-before, OK, Cancel and Next box are on the screen', async () => {
+            await test.step('Scan once: field, lot, best-before, OK, Cancel and Next TU are on the screen', async () => {
                 await openLine({ index: 1 });
                 await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata }));
@@ -81,7 +81,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await expectInsideScreen(dialog.getByTestId('bestBeforeDate'), 'Scan once best-before field', viewport);
                 await expectInsideScreen(dialog.getByTestId('done-button'), 'Scan once OK button', viewport);
                 await expectInsideScreen(dialog.getByTestId('cancel-button'), 'Scan once Cancel button', viewport);
-                await expectInsideScreen(dialog.getByTestId('next-tu-button'), 'Scan once Next box button', viewport);
+                await expectInsideScreen(dialog.getByTestId('next-tu-button'), 'Scan once Next TU button', viewport);
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
             });
@@ -127,7 +127,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 await openLine({ index: 1 });
                 await layout('Once scan screen, no TU open');
-                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Once scan screen: Next box button', viewport);
+                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Once scan screen: Next TU button', viewport);
 
                 await scanLabel(labelOf({ masterdata }));
                 await layout('Once quantity block, no TU open');
@@ -171,7 +171,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await startJob(masterdata, { qtyToDeliver: 3 });
                 await openScanEachLine({ index: 1, openTU: false });
                 await layout('Each scan screen, no TU open');
-                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Each scan screen: Next box button', viewport);
+                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Each scan screen: Next TU button', viewport);
                 await expectOnScreenWithoutScrolling(page.getByTestId('scan-each-close-button'), 'Each scan screen: Close button', viewport);
 
                 await PickLineScanScreen.scanCULabelRefused(pack(1), T.noOpenTU, {
@@ -261,7 +261,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await startJob(masterdata, { qtyToDeliver: 20 });
             await openLine({ index: 1 });
             await PickLineScanScreen.scanGrai(masterdata.packingInstructions.G1.grai);
-            await layout('GRAI scan opens a TU: "New box opened" toast and header "Current"');
+            await layout('GRAI scan opens a TU: "New TU opened" toast and header "Current"');
             await PickLineScanScreen.scanCULabelRefused(masterdata.packingInstructions.GN.grai, TEXTS.en_US.noCapacity, {
                 whileToastShown: async () => await layout('GRAI refusal no capacity (scan screen + toast)'),
             });
@@ -298,14 +298,14 @@ for (const viewport of PHONE_VIEWPORTS) {
         });
 
         // noinspection JSUnusedLocalSymbols
-        test(`Scan each CU scan screen: Next box and Close are visible without scrolling (${viewport.name})`, async ({ page: _page }) => {
+        test(`Scan each CU scan screen: Next TU and Close are visible without scrolling (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive quantity block');
 
             const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }] });
             await startJob(masterdata, { qtyToDeliver: 3 });
             await openScanEachLine({ index: 1, openTU: false });
 
-            await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Scan each Next box button', viewport);
+            await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Scan each Next TU button', viewport);
             await expectOnScreenWithoutScrolling(page.getByTestId('scan-each-close-button'), 'Scan each Close button', viewport);
         });
     });
