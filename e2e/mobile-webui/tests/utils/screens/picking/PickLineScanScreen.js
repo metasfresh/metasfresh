@@ -112,7 +112,7 @@ export const PickLineScanScreen = {
 
     openTU: async () => await step(`${NAME} - Open TU`, async () => {
         await tapNextTU();
-        await expect(page.locator('tr:has(th:has-text("Current"))').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('openTU-caption')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(nextTUButton()).toBeEnabled();
     }),
 
@@ -122,7 +122,7 @@ export const PickLineScanScreen = {
     }),
 
     expectOpenTUCaption: async (caption) => await step(`${NAME} - Expect open TU '${caption}'`, async () => {
-        await expect(page.locator('tr:has(th:has-text("Current"))').first()).toContainText(caption, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('openTU-caption')).toContainText(caption, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Asserts that "Weitere Kiste" / "Next TU" sits in the quantity block's button row, next to OK */

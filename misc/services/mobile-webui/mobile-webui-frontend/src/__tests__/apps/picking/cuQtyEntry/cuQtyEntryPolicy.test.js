@@ -1,5 +1,5 @@
 import { getCUQtyEntryPolicy, MANUAL_POLICY } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
-import { POLICY } from '../../../../testSupport/picking/testPolicies';
+import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 describe('getCUQtyEntryPolicy', () => {
   it('reads the policy the backend published on the line', () => {

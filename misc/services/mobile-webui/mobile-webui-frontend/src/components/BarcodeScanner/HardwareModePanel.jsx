@@ -23,6 +23,11 @@ const useHardwareConfigParams = () => {
 const isEditableElement = (element) =>
   !!element && (['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) || element.isContentEditable === true);
 
+// Next to a field the operator types into, the scanner input must not take the focus away from that field.
+// While the operator is not typing, it keeps the focus: in IME-style configs the OS commits the scanned text into the focused element.
+const isOperatorTypingElsewhere = (inputElement) =>
+  isEditableElement(document.activeElement) && document.activeElement !== inputElement;
+
 const HardwareModePanel = ({
   invisible,
   inputPlaceholderText,
@@ -54,7 +59,7 @@ const HardwareModePanel = ({
   // configs (readOnly + inputMode=none) which capture at window level and don't need focus.
   // Always skipped when `disabled` so the visible ManualModePanel input keeps its focus.
   useEffect(() => {
-    if (disabled || isCoexistingWithTypedInput) return;
+    if (disabled || (isCoexistingWithTypedInput && isOperatorTypingElsewhere(inputTextRef.current))) return;
     if (hardwareInputMode !== 'none' && !isHardwareInputReadOnly) {
       inputTextRef?.current?.focus();
     }
@@ -63,8 +68,9 @@ const HardwareModePanel = ({
   // Mount-time focus for DataWedge IME (inputMode=none) — establishes InputConnection once;
   // the window-level hook handles subsequent scans.
   useEffect(() => {
-    if (disabled || isCoexistingWithTypedInput) return;
-    if (hardwareInputMode === 'none') {
+    if (disabled || (isCoexistingWithTypedInput && isOperatorTypingElsewhere(inputTextRef.current))) return;
+    // next to a typed-in field only an IME config (editable input) needs the focus; a read-only input is read at window level
+    if (hardwareInputMode === 'none' && !(isCoexistingWithTypedInput && isHardwareInputReadOnly)) {
       inputTextRef?.current?.focus();
     }
   }, []);
@@ -161,7 +167,8 @@ const HardwareModePanel = ({
       // Check the LIVE `disabled` value via ref — the prop at schedule time may be stale 2s
       // later. If the user switched into MANUAL during the window, we must NOT yank focus
       // back from the visible manual input.
-      if (disabledRef.current || isCoexistingWithTypedInputRef.current) return;
+      if (disabledRef.current) return;
+      if (isCoexistingWithTypedInputRef.current && isOperatorTypingElsewhere(inputTextRef.current)) return;
       inputTextRef?.current?.focus();
     }, 2000);
   };

@@ -531,7 +531,7 @@ const GetQuantityDialog = ({
           </form>
         )}
         {/* outside the form: a text input of the scanner (manual entry) must not submit the quantity form on Enter */}
-        {!isCustomView() && labelRescan && <div className="label-rescan">{labelRescan}</div>}
+        {!isCustomView() && labelRescan && <div>{labelRescan}</div>}
       </Dialog>
     </div>
   );

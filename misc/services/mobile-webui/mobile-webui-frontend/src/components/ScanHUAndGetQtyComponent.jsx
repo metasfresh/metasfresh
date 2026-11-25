@@ -35,13 +35,13 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 // dep on `existingLuGrais` does not change identity when the prop is simply absent/not-yet-loaded.
 const EMPTY_LU_GRAIS = [];
 
-const HUScanActionButtons = ({ nextTUActions, isPackIdRequired, onCloseDialog }) => {
-  if (!nextTUActions && !isPackIdRequired) return null;
+const HUScanActionButtons = ({ nextTUActions, isOneCUPerScan, onCloseDialog }) => {
+  if (!nextTUActions && !isOneCUPerScan) return null;
 
   return (
     <div className="buttons is-centered mb-4">
       {nextTUActions}
-      {isPackIdRequired && (
+      {isOneCUPerScan && (
         <DialogButton
           captionKey="general.closeText"
           className="is-danger"
@@ -54,7 +54,7 @@ const HUScanActionButtons = ({ nextTUActions, isPackIdRequired, onCloseDialog })
 };
 HUScanActionButtons.propTypes = {
   nextTUActions: PropTypes.node,
-  isPackIdRequired: PropTypes.bool,
+  isOneCUPerScan: PropTypes.bool,
   onCloseDialog: PropTypes.func,
 };
 
@@ -102,8 +102,8 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const isScanOnce = cuQtyEntryPolicy.scanOnce;
-  // scan each CU: every label books one CU at once, the scan step stays (no quantity block)
-  const isPackIdRequired = cuQtyEntryPolicy.packIdRequired;
+  // every label books exactly one CU at once, the scan step stays (no quantity block); today that is the scan-each-CU mode, the one that requires a pack ID per label
+  const isOneCUPerScan = cuQtyEntryPolicy.packIdRequired;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [quantityBlockKey, setQuantityBlockKey] = useState(0);
   const [isProcessing, setProcessing] = useState(false);
@@ -249,7 +249,7 @@ const ScanHUAndGetQtyComponent = ({
 
     setResolvedBarcodeData(resolvedBarcodeDataNew);
 
-    if (isPackIdRequired) {
+    if (isOneCUPerScan) {
       await bookScannedCU({ resolvedBarcodeData: resolvedBarcodeDataNew });
       return;
     }
@@ -446,7 +446,7 @@ const ScanHUAndGetQtyComponent = ({
               would sit under the fold. The scanner needs no tap (hardware scan), the buttons do. */}
           <HUScanActionButtons
             nextTUActions={nextTUActions}
-            isPackIdRequired={isPackIdRequired}
+            isOneCUPerScan={isOneCUPerScan}
             onCloseDialog={onCloseDialog}
           />
           {useHUScanner ? (

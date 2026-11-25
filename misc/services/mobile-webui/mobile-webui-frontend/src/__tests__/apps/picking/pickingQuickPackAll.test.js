@@ -1,5 +1,5 @@
 import { hasLabelRequiredLine, isQuickPackAllAllowed } from '../../../utils/picking';
-import { POLICY } from '../../../testSupport/picking/testPolicies';
+import { POLICY } from '../../../__testSupport__/picking/testPolicies';
 
 const line = (mode) => ({ pickingLineId: 'l', cuQtyEntryPolicy: POLICY[mode] });
 

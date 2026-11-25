@@ -158,7 +158,7 @@ const translations = {
       tuPickingTarget: {
         New: 'Neues TU',
         Select: 'Select Target',
-        Current: 'Current',
+        Current: 'Offene Kiste',
         CloseTarget: 'Schließen',
       },
       graiScan: {

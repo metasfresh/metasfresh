@@ -272,14 +272,14 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
 
     const validLabel = buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 });
     await test.step('a label with a "]d2" prefix (a form the format does not read) is refused, nothing is booked', async () => {
-        // the refusal tells why: the first part of the format (constant "01") finds "]d"
-        await PickLineScanScreen.scanCULabelRefused(']d2' + validLabel, `${MSG_FORMAT_MISMATCH}. Nothing was booked. Expected constant '01' but got ']d'`);
+        // the refusal toast shows only the localized message; the parser reason (constant "01" finds "]d") goes to the UI trace
+        await PickLineScanScreen.scanCULabelRefused(']d2' + validLabel, `${MSG_FORMAT_MISMATCH}. Nothing was booked.`);
     });
     await test.step('a bare GTIN is refused, nothing is booked', async () => {
         await PickLineScanScreen.scanCULabelRefused(gtin, MSG_FORMAT_MISMATCH);
     });
     await test.step('a string of another shape is refused, nothing is booked', async () => {
-        await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', `${MSG_FORMAT_MISMATCH}. Nothing was booked. Expected constant '01' but got 'no'`);
+        await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', `${MSG_FORMAT_MISMATCH}. Nothing was booked.`);
     });
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 

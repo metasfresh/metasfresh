@@ -1,7 +1,9 @@
-import { POLICY } from '../../../../testSupport/picking/testPolicies';
+import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 import React from 'react';
 import { render } from '@testing-library/react';
 import { toast } from 'react-toastify';
+import counterpart from 'counterpart';
+import translations_de from '../../../../utils/translations_de';
 import { setupCounterpart } from '../../../../utils/translations';
 import { toastErrorFromObj } from '../../../../utils/toast';
 import {
@@ -196,8 +198,23 @@ describe('PickingLineScanScreen: re-entry hop', () => {
 describe('PickingLineScanScreen: the open TU is shown in the header', () => {
   it('a label-based-mode line with an open TU shows its caption', () => {
     expect(computeOpenTUHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual([
-      { caption: expect.any(String), value: 'Kiste 7' },
+      { caption: expect.any(String), value: 'Kiste 7', valueTestId: 'openTU-caption' },
     ]);
+  });
+
+  it('the caption of the entry is translated in German (no English text for German operators)', () => {
+    counterpart.registerTranslations('de', translations_de);
+    counterpart.setLocale('de');
+    try {
+      const [entry] = computeOpenTUHeaderEntries({
+        isLabelRequiredLine: true,
+        tuPickingTarget: { caption: 'Kiste 7' },
+      });
+      expect(entry.caption).not.toBe('Current');
+      expect(entry.caption).toBe('Offene Kiste');
+    } finally {
+      counterpart.setLocale('en');
+    }
   });
 
   it('no open TU: no entry', () => {

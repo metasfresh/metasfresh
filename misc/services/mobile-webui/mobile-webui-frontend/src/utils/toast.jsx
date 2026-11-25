@@ -33,8 +33,10 @@ export const toastError = ({ axiosError, messageKey, details, fallbackMessageKey
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
     code = extractErrorCodeFromAxiosError(axiosError);
   } else if (messageKey) {
-    message = details ? `${trl(messageKey)} ${details}` : trl(messageKey);
+    // the details are technical (parser reasons, not localized): they go to the UI trace for support, the user reads only the localized message
+    message = trl(messageKey);
     code = messageKey;
+    if (details) context = { ...context, details };
   } else if (plainMessage) {
     message = plainMessage;
   } else {

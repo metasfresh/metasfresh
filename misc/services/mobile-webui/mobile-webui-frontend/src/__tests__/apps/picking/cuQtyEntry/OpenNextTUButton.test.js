@@ -4,16 +4,14 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-import OpenNextTUButton, {
-  closeAndOpenNextTU,
-  useOpenNextTU,
-} from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
+import OpenNextTUButton from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
+import { closeAndOpenNextTU, useOpenNextTU } from '../../../../apps/picking/cuQtyEntry/useOpenNextTU';
 import * as pickingApi from '../../../../api/picking';
 import { toastErrorFromObj, toastNotification } from '../../../../utils/toast';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { reducer as settings } from '../../../../reducers/settings';
-import { POLICY } from '../../../../testSupport/picking/testPolicies';
+import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),

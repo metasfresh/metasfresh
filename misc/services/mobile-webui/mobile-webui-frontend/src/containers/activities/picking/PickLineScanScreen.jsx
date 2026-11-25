@@ -61,7 +61,8 @@ import {
   SCAN_TYPE_GRAI,
 } from '../../../apps/picking/cuQtyEntry/cuLabel';
 import { parseGraiFromRawInput } from '../../../utils/grai';
-import OpenNextTUButton, { useOpenNextTU } from '../../../apps/picking/cuQtyEntry/OpenNextTUButton';
+import OpenNextTUButton from '../../../apps/picking/cuQtyEntry/OpenNextTUButton';
+import { useOpenNextTU } from '../../../apps/picking/cuQtyEntry/useOpenNextTU';
 import { UserMessageError } from '../../../utils/UserMessageError';
 import { getCUQtyEntryPolicy, MANUAL_POLICY } from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { rememberCUEntry } from '../../../apps/picking/redux/PickingActions';
@@ -268,7 +269,13 @@ export default PickLineScanScreen;
 // @VisibleForTesting
 export const computeOpenTUHeaderEntries = ({ isLabelRequiredLine, tuPickingTarget }) =>
   isLabelRequiredLine && tuPickingTarget?.caption
-    ? [{ caption: trl('activities.picking.tuPickingTarget.Current'), value: tuPickingTarget.caption }]
+    ? [
+        {
+          caption: trl('activities.picking.tuPickingTarget.Current'),
+          value: tuPickingTarget.caption,
+          valueTestId: 'openTU-caption',
+        },
+      ]
     : [];
 
 // @VisibleForTesting

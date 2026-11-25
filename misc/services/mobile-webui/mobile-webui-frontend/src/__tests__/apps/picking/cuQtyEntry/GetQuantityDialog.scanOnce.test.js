@@ -7,7 +7,7 @@ import { combineReducers, createStore } from 'redux';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { putSettingsAction, reducer as settings } from '../../../../reducers/settings';
-import { POLICY } from '../../../../testSupport/picking/testPolicies';
+import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
