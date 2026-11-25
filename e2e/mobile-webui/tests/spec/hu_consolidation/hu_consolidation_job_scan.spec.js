@@ -1466,7 +1466,7 @@ test('Slot screen: a refused GRAI scan plays the error beep with the scanner\'s 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate message, nothing moves; a crate of another job with the same GRAI never blocks', async ({ page: _page }) => {
+test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate message, nothing moves; a crate of another job with the same GRAI never blocks; a GRAI only outside the job is not at the picking slot', async ({ page: _page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
     await allure.tag('F00248');
@@ -1538,6 +1538,25 @@ test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate 
             hus: { [targetLUQRCode]: { tus: [{ storages: { P2: '5 PCE' }, attributes: { GRAI: graiAlsoInOtherJob } }] } },
             pickingSlots: {
                 [slot2.qrCode]: { queue: [] },
+                [slot3.qrCode]: { queue: [{ hu: 'bp2Crate' }] },
+            },
+        });
+    });
+
+    await test.step('Open slot1 again, scan the GRAI that now only the crate of BP2\'s job carries (the slot2 crate is inside the pallet): not at the picking slot, nothing moves', async () => {
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });
+        await PickingSlotScreen.expectScannerVisible();
+        await expectErrorToast('GRAI carried only by a crate outside the job', async () => {
+            await PickingSlotScreen.scanGRAI({ graiString: graiAlsoInOtherJob });
+            await PickingSlotScreen.waitForScreen();
+        }, async ({ toast, textContent }) => {
+            expect(textContent).toContain('Die HU befindet sich nicht am Kommissionierplatz');
+            await ErrorToast.expectToastId(toast, SCANNER_ERROR_TOAST_ID);
+        });
+        await Backend.expect({
+            title: 'slot1 keeps its 2 crates, the crate of BP2\'s job is still in slot3',
+            pickingSlots: {
+                [slot1.qrCode]: { queue: [{ hu: 'slot1CrateA' }, { hu: 'slot1CrateB' }] },
                 [slot3.qrCode]: { queue: [{ hu: 'bp2Crate' }] },
             },
         });
