@@ -126,6 +126,14 @@ export const test = require('@playwright/test').test.extend({
   page: async ({ page }, use) => {
     global.currentPage = page;
     Object.keys(testContext).forEach(key => delete testContext[key]);
-    await use(page);
+    try {
+      await use(page);
+    } finally {
+      // Lazy require: Backend.js imports this config, a static import here would be circular. Not a dynamic
+      // import(): Playwright transpiles only require()d files, a native import() of Backend.js fails with
+      // "Cannot use import statement outside a module" unless the spec happened to load it already.
+      const { Backend } = require('./tests/utils/Backend');
+      await Backend.restoreSysconfigsChangedByTest();
+    }
   },
 });
