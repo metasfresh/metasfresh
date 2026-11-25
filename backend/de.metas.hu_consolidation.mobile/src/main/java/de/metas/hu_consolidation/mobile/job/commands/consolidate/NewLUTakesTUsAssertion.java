@@ -25,7 +25,7 @@ class NewLUTakesTUsAssertion
 	@NonNull private final HUTransformService huTransformService;
 
 	/**
-	 * Checks a crate for a new pallet of the given packing instructions, judged by {@link IHandlingUnitsBL#isTUTypeTakenByLUType} for the crate's partner.
+	 * Checks a crate for a new pallet of the given packing instructions, judged by {@link HUTransformService#isTUAttachableToNewLU}, i.e. for the partner the move resolves (the crate's own, else the one of the pallet it sits on).
 	 * A crate without real packing instructions is not checked.
 	 *
 	 * @throws AdempiereException with the operator message if the pallet type does not take the crate type
@@ -38,7 +38,7 @@ class NewLUTakesTUsAssertion
 			return;
 		}
 
-		if (!handlingUnitsBL.isTUTypeTakenByLUType(luPIId, tuPIId, IHandlingUnitsBL.extractBPartnerIdOrNull(tu)))
+		if (!huTransformService.isTUAttachableToNewLU(luPIId, tu))
 		{
 			throw palletTypeDoesNotTakeCrateType(luPIId, tuPIId);
 		}

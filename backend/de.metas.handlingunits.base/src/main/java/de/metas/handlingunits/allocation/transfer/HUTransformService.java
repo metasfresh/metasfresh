@@ -641,9 +641,9 @@ public class HUTransformService
 
 	/**
 	 * @param luPIItem the LU item via which the TUs shall be attached (e.g. the product-specific item the LU was created with);
-	 *                 {@code null} means that it's looked up; a product-specific item is used only if the LU already has one for the TU's PI,
-	 *                 or if the lookup without product finds no item for the TU's PI (for a partial move from an aggregate TU: the LU/TU producer's own lookup,
-	 *                 which also ignores partner-specific items).
+	 *                 {@code null} means that it's looked up. Whole TUs: the LU's item, else the item of the resolved partner, else a product-specific item.
+	 *                 Partial move from an aggregate TU: a product-specific item is used only if the LU/TU producer's own lookup (without partner and product) finds no item
+	 *                 for the TU's PI; it then wins over a partner-bound item, which is looked up only if there is no product-specific item either.
 	 */
 	private LUTUResult tuToExistingLU(
 			@NonNull final I_M_HU sourceTuHU,
@@ -775,12 +775,40 @@ public class HUTransformService
 	}
 
 	/**
+	 * @return {@code true} if the given TU can be put on a new LU of the given packing instructions, i.e. the LU PI has an item for the TU's (effective) PI,
+	 * for the partner {@link #tuToNewLU} resolves (the TU's own, else the one of the pallet the TU sits on); the same lookup as {@link #tuToNewLU}.
+	 * A TU without real packing instructions is not checked ({@code true}).
+	 */
+	public boolean isTUAttachableToNewLU(@NonNull final HuPackingInstructionsId luPIId, @NonNull final I_M_HU tu)
+	{
+		final HuPackingInstructionsId tuPIId = handlingUnitsBL.getEffectivePackingInstructionsId(tu);
+		if (!tuPIId.isRealPackingInstructions())
+		{
+			return true;
+		}
+		// same partner as tuToNewLU: the TU's own, else the one of the pallet it sits on
+		return handlingUnitsBL.isTUTypeTakenByLUType(luPIId, tuPIId, resolveBPartnerForLUItem(null, tu));
+	}
+
+	/**
 	 * @return {@code true} if the whole given TU can be attached to the given existing LU, i.e. the LU's PI has an item for the TU's (effective) PI:
-	 * the LU's item, the generic item or the LU partner's item without product, else a product-specific item; the same lookup as {@link #tuToExistingLU(I_M_HU, QtyTU, I_M_HU)}
+	 * the generic item or the LU partner's item without product, else the item of the partner resolved by {@link #resolveBPartnerForLUItem} (the TU's own, else the one of the pallet the TU sits on),
+	 * else a product-specific item; the same lookup as the whole-TU attach of {@link #tuToExistingLU(I_M_HU, QtyTU, I_M_HU)}
 	 */
 	public boolean isTUAttachableToExistingLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU lu)
 	{
-		return retrieveLUPIItemForTUOrNull(lu, handlingUnitsBL.getEffectivePI(tu), tu) != null;
+		final I_M_HU_PI tuPI = handlingUnitsBL.getEffectivePI(tu);
+		if (handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext) != null)
+		{
+			return true;
+		}
+		final BPartnerId bpartnerId = resolveBPartnerForLUItem(lu, tu);
+		if (bpartnerId != null
+				&& retrieveLUItemForTU(lu, handlingUnitsBL.getEffectivePackingInstructionsId(tu), bpartnerId).isPresent())
+		{
+			return true;
+		}
+		return retrieveLUPIItemForTUOrNull(lu, tuPI, tu) != null;
 	}
 
 	/**
@@ -806,7 +834,8 @@ public class HUTransformService
 	/**
 	 * The LU/TU producer looks up the LU item by itself, without partner and product (see {@link LUTUProducerDestination#getLUItemPI()}), so it finds no item if the LU PI
 	 * links the TU PI only via partner- or product-specific items. Only in that case, return a product-specific item (different products on the same LU are allowed);
-	 * otherwise {@code null}, so the producer's lookup is unchanged. A partner-specific item without product is not returned, so that case still fails as before.
+	 * otherwise {@code null}, so the producer's lookup is unchanged. A partner-specific item without product is not returned here; the caller then looks it up (only if this returns {@code null}),
+	 * so a product-specific item wins over a partner-specific one.
 	 * <p>
 	 * The check mirrors the producer's lookup, so it uses the LU PI's current version like the producer does; the product-specific item is taken from the LU's own PI version.
 	 */

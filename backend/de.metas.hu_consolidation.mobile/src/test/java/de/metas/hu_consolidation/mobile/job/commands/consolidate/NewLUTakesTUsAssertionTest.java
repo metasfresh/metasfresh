@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -69,7 +70,7 @@ class NewLUTakesTUsAssertionTest
 		@Test
 		void palletTypeTakesTheCrateType_ok()
 		{
-			when(handlingUnitsBL.isTUTypeTakenByLUType(PALLET_PI, CRATE_PI, CUSTOMER)).thenReturn(true);
+			when(huTransformService.isTUAttachableToNewLU(eq(PALLET_PI), any(I_M_HU.class))).thenReturn(true);
 
 			assertThatCode(() -> assertion.assertNewLUTakesTU(PALLET_PI, crate(CRATE_PI))).doesNotThrowAnyException();
 		}
@@ -77,7 +78,7 @@ class NewLUTakesTUsAssertionTest
 		@Test
 		void palletTypeDoesNotTakeTheCrateType_failsWithBothTypeNames()
 		{
-			when(handlingUnitsBL.isTUTypeTakenByLUType(PALLET_PI, CRATE_PI, CUSTOMER)).thenReturn(false);
+			when(huTransformService.isTUAttachableToNewLU(eq(PALLET_PI), any(I_M_HU.class))).thenReturn(false);
 
 			assertThatThrownBy(() -> assertion.assertNewLUTakesTU(PALLET_PI, crate(CRATE_PI)))
 					.isInstanceOf(AdempiereException.class)
@@ -91,7 +92,7 @@ class NewLUTakesTUsAssertionTest
 		{
 			assertThatCode(() -> assertion.assertNewLUTakesTU(PALLET_PI, crate(HuPackingInstructionsId.VIRTUAL))).doesNotThrowAnyException();
 
-			verify(handlingUnitsBL, never()).isTUTypeTakenByLUType(any(), any(), any());
+			verify(huTransformService, never()).isTUAttachableToNewLU(any(), any());
 		}
 	}
 
@@ -109,7 +110,7 @@ class NewLUTakesTUsAssertionTest
 			assertThatCode(() -> assertion.assertLUTakesTUs(pallet, ImmutableList.of(crate1, otherCrate, crate2))).doesNotThrowAnyException();
 
 			verify(huTransformService, times(2)).isTUAttachableToExistingLU(any(I_M_HU.class), any(I_M_HU.class));
-			verify(handlingUnitsBL, never()).isTUTypeTakenByLUType(any(), any(), any());
+			verify(huTransformService, never()).isTUAttachableToNewLU(any(), any());
 		}
 
 		/** e.g. the pallet type has only a product-specific item for the second crate type: the move onto the pallet decides, as it would attach it */
