@@ -12,6 +12,7 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateComm
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
 import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
+import de.metas.hu_consolidation.mobile.job.scan.GRAIScannedCodeResolver;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
@@ -48,6 +49,7 @@ public class HUConsolidationJobService
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
 	@NonNull private final HUConsolidationLabelPrinter labelPrinter;
 	@NonNull private final HUConsolidationScannedCodeResolvers scannedCodeResolvers;
+	@NonNull private final GRAIScannedCodeResolver graiResolver;
 
 	public HUConsolidationJob getJobById(final HUConsolidationJobId id)
 	{
@@ -191,6 +193,7 @@ public class HUConsolidationJobService
 				.jobRepository(jobRepository)
 				.huQRCodesService(huQRCodesService)
 				.pickingSlotService(pickingSlotService)
+				.graiResolver(graiResolver)
 				.request(request)
 				.build()
 				.execute();

@@ -1464,3 +1464,131 @@ test('Slot screen: a refused GRAI scan plays the error beep with the scanner\'s 
         });
     });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate message, nothing moves; a crate of another job with the same GRAI never blocks; a GRAI only outside the job is not at the picking slot, unless only a crate inside a pallet carries it', async ({ page: _page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan screen');
+    await allure.severity('critical');
+
+    // the slot screen finds a scanned GRAI among the crates of its job, as the scan screen does: two crates of the job with that GRAI -> the duplicate
+    // message; a crate with that GRAI outside the job is not looked at
+    const masterdata = await createJobScanMasterdata({
+        language: 'de_DE',
+        sysconfigs: { 'mobileui.frontend.barcodeScanner.scanDuplicatesIntervalMillis': '0' },
+        pickTo: ['TU', 'LU_TU'],
+        bpartners: { BP1: { graiRequired: 'Y' }, BP2: { graiRequired: 'Y' } },
+        pickingSlots: { slot1: {}, slot2: {}, slot3: {}, slot4: {} },
+        salesOrders: {
+            SO1: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
+            SO2: jobScanSalesOrder({ bpartner: 'BP1', product: 'P2', qty: 5, tu: 'TU2' }),
+            SO3: jobScanSalesOrder({ bpartner: 'BP1', product: 'P1', qty: 4, tu: 'TU1' }),
+            SO4: jobScanSalesOrder({ bpartner: 'BP2', product: 'P2', qty: 5, tu: 'TU2' }),
+            SO5: jobScanSalesOrder({ bpartner: 'BP2', product: 'P2', qty: 5, tu: 'TU2' }),
+        },
+    });
+    const { slot1, slot2, slot3, slot4 } = masterdata.pickingSlots;
+    const { SO1, SO2, SO3, SO4, SO5 } = masterdata.salesOrders;
+    const { PI_P1, PI_P2 } = masterdata.packingInstructions;
+    const serialBase = String(Date.now());
+    const graiDuplicate = graiWithSerial(PI_P1.grai, `${serialBase}1`);
+    const graiAlsoInOtherJob = graiWithSerial(PI_P2.grai, `${serialBase}2`);
+    const graiInOtherJobsPallet = graiWithSerial(PI_P2.grai, `${serialBase}3`);
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    // picking has no duplicate check without an LU, so the same GRAI is scanned for two crates of slot1, and for the slot2 crate and the crate of BP2's job
+    await pickOneGraiCrate({ documentNo: SO1.documentNo, slotQrCode: slot1.qrCode, grai: graiDuplicate, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+    await pickOneGraiCrate({ documentNo: SO3.documentNo, slotQrCode: slot1.qrCode, grai: graiDuplicate, huQrCode: masterdata.handlingUnits.HU1.qrCode });
+    await pickOneGraiCrate({ documentNo: SO2.documentNo, slotQrCode: slot2.qrCode, grai: graiAlsoInOtherJob, huQrCode: masterdata.handlingUnits.HU2.qrCode });
+    await pickOneGraiCrate({ documentNo: SO4.documentNo, slotQrCode: slot3.qrCode, grai: graiAlsoInOtherJob, huQrCode: masterdata.handlingUnits.HU2.qrCode });
+    // a crate inside a pallet is no crate of any job (only top-level HUs are)
+    await pickOnePallet({ documentNo: SO5.documentNo, slotQrCode: slot4.qrCode, luName: PI_P2.luName, crateGrai: graiInOtherJobsPallet, huQrCode: masterdata.handlingUnits.HU2.qrCode });
+
+    await test.step('Open the job of BP1, choose a pallet, open slot1 (holds the 2 crates with the same GRAI)', async () => {
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+        await HUConsolidationJobScreen.setTargetLU({ lu: PI_P1.luName });
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });
+        await PickingSlotScreen.expectScannerVisible();
+        await BarcodeScannerComponent.startRecordingBeepTones();
+    });
+
+    await test.step('Scan the GRAI that both crates of slot1 carry: the duplicate message in the scanner\'s message box, error beep', async () => {
+        await expectErrorToast('GRAI carried by 2 crates of slot1', async () => {
+            await PickingSlotScreen.scanGRAI({ graiString: graiDuplicate });
+            await PickingSlotScreen.waitForScreen();
+        }, async ({ toast, textContent }) => {
+            expect(textContent).toContain(AMBIGUOUS_MESSAGES.de_DE);
+            await ErrorToast.expectToastId(toast, SCANNER_ERROR_TOAST_ID);
+            await attachScreenshot('slot-screen-duplicate-GRAI-message');
+        });
+        const tones = await BarcodeScannerComponent.takeBeepTones();
+        expect(tones).toContain(ERROR_BEEP_HZ);
+        expect(tones).not.toContain(OK_BEEP_HZ);
+    });
+
+    await Backend.getPickingSlotCrates({ title: 'slot1 keeps its 2 crates', slotQrCode: slot1.qrCode, aliases: ['slot1CrateA', 'slot1CrateB'] });
+
+    await test.step('Open slot2: its crate carries a GRAI that a crate of BP2\'s job carries too; the scan moves the slot2 crate onto the pallet', async () => {
+        await PickingSlotScreen.goBack();
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot2.id });
+        await PickingSlotScreen.scanGRAIAndWaitConsolidated({ graiString: graiAlsoInOtherJob });
+        await attachScreenshot('slot-screen-GRAI-also-outside-job-crate-moved');
+        await PickingSlotScreen.goBack();
+        const targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
+        await Backend.expect({
+            title: 'the slot2 crate sits on the pallet; the crate of BP2\'s job is still in slot3; slot1 unchanged',
+            hus: { [targetLUQRCode]: { tus: [{ storages: { P2: '5 PCE' }, attributes: { GRAI: graiAlsoInOtherJob } }] } },
+            pickingSlots: {
+                [slot2.qrCode]: { queue: [] },
+                [slot3.qrCode]: { queue: [{ hu: 'bp2Crate' }] },
+            },
+        });
+    });
+
+    await test.step('Open slot1 again, scan the GRAI that now only the crate of BP2\'s job carries (the slot2 crate is inside the pallet): not at the picking slot, nothing moves', async () => {
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot1.id });
+        await PickingSlotScreen.expectScannerVisible();
+        await expectErrorToast('GRAI carried only by a crate outside the job', async () => {
+            await PickingSlotScreen.scanGRAI({ graiString: graiAlsoInOtherJob });
+            await PickingSlotScreen.waitForScreen();
+        }, async ({ toast, textContent }) => {
+            expect(textContent).toContain('Die HU befindet sich nicht am Kommissionierplatz');
+            await ErrorToast.expectToastId(toast, SCANNER_ERROR_TOAST_ID);
+            await attachScreenshot('slot-screen-GRAI-only-outside-job-not-at-slot');
+        });
+        await Backend.expect({
+            title: 'slot1 keeps its 2 crates, the crate of BP2\'s job is still in slot3',
+            pickingSlots: {
+                [slot1.qrCode]: { queue: [{ hu: 'slot1CrateA' }, { hu: 'slot1CrateB' }] },
+                [slot3.qrCode]: { queue: [{ hu: 'bp2Crate' }] },
+            },
+        });
+    });
+
+    await test.step('Still on slot1: scan the GRAI that only a crate inside the pallet of BP2\'s job carries: no HU found, nothing moves', async () => {
+        await expectErrorToast('GRAI carried only by a crate inside a pallet outside the job', async () => {
+            await PickingSlotScreen.scanGRAI({ graiString: graiInOtherJobsPallet });
+            await PickingSlotScreen.waitForScreen();
+        }, async ({ toast, textContent }) => {
+            expect(textContent).toContain('Keine HU für diesen QR-Code gefunden');
+            await ErrorToast.expectToastId(toast, SCANNER_ERROR_TOAST_ID);
+            await attachScreenshot('slot-screen-GRAI-only-in-pallet-outside-job-no-HU-found');
+        });
+        await Backend.expect({
+            title: 'slot1 keeps its 2 crates, the pallet of BP2\'s job is still in slot4',
+            pickingSlots: {
+                [slot1.qrCode]: { queue: [{ hu: 'slot1CrateA' }, { hu: 'slot1CrateB' }] },
+                [slot4.qrCode]: { queue: [{ hu: 'bp2Pallet' }] },
+            },
+        });
+        await Backend.expect({
+            title: 'the scanned GRAI is stored on the crate inside the pallet of BP2\'s job',
+            hus: { bp2Pallet: { tus: [{ attributes: { GRAI: graiInOtherJobsPallet } }] } },
+        });
+    });
+});
