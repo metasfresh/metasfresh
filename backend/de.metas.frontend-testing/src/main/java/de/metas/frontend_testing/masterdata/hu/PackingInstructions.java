@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class PackingInstructions
 {
 	@NonNull I_M_HU_PI tuPI;
@@ -22,6 +22,14 @@ public class PackingInstructions
 	@Nullable QtyTU qtyTUs;
 	
 	public boolean isInfiniteCapacity() {return qtyCUsPerTU == null;}
+
+	/**
+	 * @return the same TU packing, without the LU
+	 */
+	public PackingInstructions withoutLU()
+	{
+		return toBuilder().luPIItem(null).qtyTUs(null).build();
+	}
 
 	public BigDecimal getQtyCUsPerTUNotNull()
 	{

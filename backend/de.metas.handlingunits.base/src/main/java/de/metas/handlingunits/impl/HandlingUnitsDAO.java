@@ -40,6 +40,7 @@ import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.ParentLUPIsQuery;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.HuUnitType;
@@ -106,6 +107,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1069,6 +1071,71 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
 			@Nullable final BPartnerId bpartnerId)
 	{
+		return retrieveParentLUPIs(piItemIds, bpartnerId, false, null);
+	}
+
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProduct(
+			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ProductId productId)
+	{
+		return retrieveParentLUPIs(piItemIds, bpartnerId, true, productId);
+	}
+
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProducts(
+			@NonNull final Collection<ParentLUPIsQuery> queries,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final ImmutableSet<ParentLUPIsQuery> distinctQueries = ImmutableSet.copyOf(queries);
+		if (distinctQueries.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		else if (distinctQueries.size() == 1)
+		{
+			final ParentLUPIsQuery query = distinctQueries.iterator().next();
+			return retrieveParentLUPIsForProduct(query.getPiItemIds(), bpartnerId, query.getProductId());
+		}
+
+		final ImmutableSet<HuPackingInstructionsItemId> allPIItemIds = distinctQueries.stream()
+				.flatMap(query -> query.getPiItemIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+
+		// One walk without product filter. If it passes no product-specific item, every product filter is a no-op, so its result is the union.
+		final AtomicBoolean productSpecificItemFound = new AtomicBoolean(false);
+		final ImmutableSet<HuPackingInstructionsIdAndCaption> luPIsOfAnyProduct = retrieveParentLUPIs(allPIItemIds, bpartnerId, false, null, productSpecificItemFound);
+		if (!productSpecificItemFound.get())
+		{
+			return luPIsOfAnyProduct;
+		}
+
+		return distinctQueries.stream()
+				.flatMap(query -> retrieveParentLUPIsForProduct(query.getPiItemIds(), bpartnerId, query.getProductId()).stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable final BPartnerId bpartnerId,
+			final boolean isFilterByProduct,
+			@Nullable final ProductId productId)
+	{
+		return retrieveParentLUPIs(piItemIds, bpartnerId, isFilterByProduct, productId, null);
+	}
+
+	/**
+	 * @param isFilterByProduct        if {@code true}, every level only follows items without product and items for {@code productId} (see {@link #addProductFilter(IQueryBuilder, ProductId)})
+	 * @param productSpecificItemFound if not {@code null}, set to {@code true} when a followed parent item is product-specific (one extra query per level)
+	 */
+	private ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable final BPartnerId bpartnerId,
+			final boolean isFilterByProduct,
+			@Nullable final ProductId productId,
+			@Nullable final AtomicBoolean productSpecificItemFound)
+	{
 		if (piItemIds.isEmpty())
 		{
 			return ImmutableSet.of();
@@ -1083,10 +1150,22 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		{
 			final HashSet<HuPackingInstructionsVersionId> parentPIVersionIdsToCheck = new HashSet<>();
 
-			queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+			final IQueryBuilder<I_M_HU_PI_Item> parentItemsQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piIdsToCheck)
-					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId)
+					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
+			if (isFilterByProduct)
+			{
+				addProductFilter(parentItemsQueryBuilder, productId);
+			}
+			if (productSpecificItemFound != null
+					&& !productSpecificItemFound.get()
+					&& parentItemsQueryBuilder.copy().addNotNull(I_M_HU_PI_Item.COLUMNNAME_M_Product_ID).create().anyMatch())
+			{
+				productSpecificItemFound.set(true);
+			}
+
+			parentItemsQueryBuilder
 					.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
 					.addOnlyActiveRecordsFilter()
 					.create()

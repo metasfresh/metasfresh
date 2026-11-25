@@ -48,6 +48,12 @@ public class JsonCreateHURequest
 	@Nullable String externalBarcode;
 
 	/**
+	 * {@code true} = build a single TU of the {@code packingInstructions} without its LU (e.g. a TU whose TU packing is also on a pallet packing instruction).
+	 * Default: false
+	 */
+	@Nullable Boolean tuOnly;
+
+	/**
 	 * Additional products to stock onto the SAME HU created by this request, on top of {@link #product}/{@link #qty}.
 	 * Each entry is loaded onto the already-created HU (not into a separate one), so the resulting {@code M_HU}
 	 * ends up with one {@code M_HU_Storage} row per distinct product.
@@ -72,6 +78,9 @@ public class JsonCreateHURequest
 	 */
 	@JsonIgnore
 	public int getSplitOutTUsCountAfterQRCodes() {return splitOutTUsCountAfterQRCodes != null ? splitOutTUsCountAfterQRCodes : 0;}
+
+	@JsonIgnore
+	public boolean isTuOnly() {return tuOnly != null && tuOnly;}
 
 	@JsonIgnore
 	public boolean isSourceHU() { return sourceHU != null && sourceHU;}

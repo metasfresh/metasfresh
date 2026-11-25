@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.warehouse;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.NonNull;
@@ -109,6 +110,15 @@ public class JsonWarehouseRequest
 		@Nullable String y;
 		@Nullable String z;
 		@Nullable String x1;
+
+		/**
+		 * {@code true} = {@code M_Locator.IsAfterPickingLocator}: where picking-slot clearing puts the HUs it takes out of a slot.
+		 * Default: false
+		 */
+		@Nullable Boolean afterPickingLocator;
+
+		@JsonIgnore
+		public boolean isAfterPickingLocatorOrFalse() {return afterPickingLocator != null && afterPickingLocator;}
 		@Nullable Integer priorityNo;
 		@Nullable Boolean isGroundLocator;
 	}

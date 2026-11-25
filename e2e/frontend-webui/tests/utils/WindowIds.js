@@ -310,6 +310,13 @@ export const VIEW_INVALIDATE_ON_CHANGE_WINDOW_ID = 542178;
  */
 export const TEST_WINDOW_ID = 127;
 
+/**
+ * Physical Inventory window (Inventur)
+ * Table: M_Inventory
+ * Window ID: 168
+ */
+export const INVENTORY_WINDOW_ID = 168;
+
 // ============================================================================
 // MANUFACTURING WINDOWS
 // ============================================================================
