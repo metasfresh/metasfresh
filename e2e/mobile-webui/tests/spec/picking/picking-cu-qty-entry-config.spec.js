@@ -19,7 +19,7 @@ const createMasterdata = async ({ formatName, formatNameC }) => {
     return await createMasterdataRememberingSysconfigs({
         language: "en_US",
         request: {
-            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,
             login: { user: { language: "en_US" } },
             mobileConfig: {
                 picking: {
@@ -32,11 +32,7 @@ const createMasterdata = async ({ formatName, formatNameC }) => {
                     cuQtyEntryMode: MODE_SCAN_ONCE,
                     cuLabelFormatName: formatName,
                     customers: [
-                        // buyer A: no record at all (not listed)
-                        // buyer B: record with Scan each CU
                         { customer: "custB", cuQtyEntryMode: MODE_SCAN_EACH },
-                        // buyer C: a job-options record with an EMPTY mode (its own format only): the mode falls back to the profile's.
-                        // (a customer listed without any CU value gets no record at all, the same path as A)
                         { customer: "custC", cuLabelFormatName: formatNameC },
                     ],
                 }

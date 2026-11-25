@@ -22,14 +22,7 @@ import { allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, LA
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * Manual mode and shared screens (the regression surface of the CU quantity entry PR): every Manual screen and dialog that shares a
- * changed component (quantity dialog, scan step, button row, job screen) must look and behave , at each phone size.
- * Covered: over-pick confirmation, pallet target dialog, catch weight view, inline GRAI capture, Quick Pack All button, mode by profile / customer
- * record, on-screen keyboard, the shared product-code scan step and the HU Manager dialogs.
- * Same checker and sizes as picking-cu-qty-entry-layout-label-modes.spec.js (see there for the size list).
- */
-
+/** Manual mode and shared screens (the regression surface of the CU quantity entry PR) */
 
 const login = async (masterdata, application = 'picking') => {
     await LoginScreen.login(masterdata.login.user);
@@ -37,7 +30,7 @@ const login = async (masterdata, application = 'picking') => {
     await ApplicationsListScreen.startApplication(application);
 };
 
-/** Sales-order job of SO1 (launcher found by document no). */
+/** Sales-order job of SO1 (launcher found by document no) */
 const startSalesOrderJob = async (masterdata) => {
     await login(masterdata);
     await PickingJobsListScreen.waitForScreen();
@@ -47,7 +40,7 @@ const startSalesOrderJob = async (masterdata) => {
 
 const BP_LOCATION_ORDER = { warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00' };
 
-/** Masterdata of overPickingPrompt.spec.js (LU/TU picking, 4 CUs per TU, 20 TUs per LU). */
+/** Masterdata of overPickingPrompt.spec.js (LU/TU picking, 4 CUs per TU, 20 TUs per LU) */
 const createLuTuMasterdata = async ({ language, orderQtyCUs = 12 }) =>
     await createMasterdataRememberingSysconfigs({
         language,
@@ -65,7 +58,7 @@ const createLuTuMasterdata = async ({ language, orderQtyCUs = 12 }) =>
         },
     });
 
-/** Masterdata of picking_catchWeight.spec.js (catch weight product). */
+/** Masterdata of picking_catchWeight.spec.js (catch weight product) */
 const createCatchWeightMasterdata = async ({ language }) =>
     await createMasterdataRememberingSysconfigs({
         language,
@@ -89,7 +82,6 @@ const createCatchWeightMasterdata = async ({ language }) =>
         },
     });
 
-/** Masterdata of picking-grai-duplicate-within-lu.spec.js (GRAI required customer, 2 products on one LU). */
 const createGraiMasterdata = async ({ language }) =>
     await createMasterdataRememberingSysconfigs({
         language,
@@ -115,7 +107,7 @@ const buildDistinctGrais = (baseGrai, count) => {
     return Array.from({ length: count }, (_, i) => `${companyPrefix}.${assetType}.${String(i + 1).padStart(6, '0')}`);
 };
 
-/** Quick Pack All masterdata of pickAllButton.spec.js; `customers` = records of the mobile config. */
+/** Quick Pack All masterdata of pickAllButton.spec.js; `customers` = records of the mobile config */
 const createQuickPackMasterdata = async ({ cuQtyEntryMode, customers = [{ customer: 'customer1' }], aggregationType = 'sales_order', secondCustomer = false }) => {
     const orderLines = [{ product: 'P1', qty: 10 }, { product: 'P2', qty: 10 }];
     return await createMasterdataRememberingSysconfigs({
@@ -144,7 +136,6 @@ const createQuickPackMasterdata = async ({ cuQtyEntryMode, customers = [{ custom
         },
     });
 };
-
 
 for (const viewport of PHONE_VIEWPORTS) {
     test.describe(`manual screen ${viewport.name}`, () => {
@@ -211,8 +202,6 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Manual GRAI capture panel, nothing captured');
                 await PickGraiScreen.scanGraiBatch({ graiStrings: allGrais.slice(0, 10) });
                 await PickGraiScreen.expectGraiChipCount({ expectedCount: 10 });
-                // not layout-checked with the generic checker: the chips' remove button "x" is 20x20 px by the base design (GRAIScreen.scss .grai-chip-remove,
-                // not part of the feature); the panel's own controls are checked for reachability instead
                 await expectInsideScreen(page.locator('.grai-screen'), 'GRAI capture panel with 10 chips', { width: viewport.width, height: 100000 });
                 await expectReachable(page.getByTestId('grai-save-button'), 'GRAI Save button', viewport);
                 await PickGraiScreen.clickSave();
@@ -261,11 +250,10 @@ for (const viewport of PHONE_VIEWPORTS) {
             allureMeta('Responsive Manual screens');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
-            // product job with three customers: A has no record (profile default = not sent = Manual), B has an empty record, C has a record Manual
             const masterdata = await createMasterdata({
                 formatName: uniqueFormatName(),
                 orders: [{ key: 'A', qty: 4 }, { key: 'B', qty: 4 }, { key: 'C', qty: 4 }],
-                profileMode: MODE_MANUAL, // sent explicitly: the picking profile is shared by every test run on this DB
+                profileMode: MODE_MANUAL,
                 customers: [{ customer: 'custB' }, { customer: 'custC', cuQtyEntryMode: MODE_MANUAL }],
             });
             await login(masterdata);
@@ -300,8 +288,6 @@ for (const viewport of PHONE_VIEWPORTS) {
             }
             await dialog.locator('#qty-input').evaluate((el) => el.scrollIntoView({ block: 'center' }));
             await expectInsideScreen(dialog.locator('#qty-input'), `${label} quantity field with keyboard`, smaller);
-            // the generic overlap check is not used here: with the keyboard the table area scrolls inside the dialog (by design) and the generic
-            // checker would report a lot field scrolled out of that area as overlapping the buttons; the screenshot shows the clean state
             await saveScreenshot(`${viewport.width}x${keyboardHeight}-${label}-with-keyboard`);
         };
 
@@ -381,8 +367,6 @@ for (const viewport of PHONE_VIEWPORTS) {
             await layout('HU Manager change quantity dialog');
         });
 
-        // The quantity dialog of the HU Manager move (ReadQtyDialog) shares the dialog class with the picking quantity dialog: it must look .
-        // noinspection JSUnusedLocalSymbols
         test(`HU Manager move: number of TUs dialog of an aggregated TU (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive Manual screens');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);

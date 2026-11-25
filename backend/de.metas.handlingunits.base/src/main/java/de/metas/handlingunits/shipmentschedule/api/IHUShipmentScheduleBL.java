@@ -165,9 +165,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	void deleteByTopLevelHUsAndShipmentScheduleId(@NonNull Collection<I_M_HU> topLevelHUs, @NonNull ShipmentScheduleId shipmentScheduleId);
 
-	/**
-	 * Deletes the (not yet shipped) QtyPicked records of a CU that still sits inside a TU, so that other CUs of the same TU keep theirs.
-	 */
+	/** Deletes the not yet shipped QtyPicked records of a CU inside a TU, keeping those of the TU's other CUs. */
 	void deleteByVHUAndShipmentScheduleId(@NonNull HuId vhuId, @NonNull ShipmentScheduleId shipmentScheduleId);
 
 	WarehouseId getWarehouseId(@NonNull I_M_ShipmentSchedule schedule);

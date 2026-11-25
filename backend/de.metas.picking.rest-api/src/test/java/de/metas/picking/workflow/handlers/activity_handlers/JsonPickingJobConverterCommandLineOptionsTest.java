@@ -50,10 +50,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * The CU quantity entry mode / label format of a picking job line comes from the options of the line's OWN customer
- * ({@code PickingJobRestService.getPickingJobOptions(line customer)}), not from the job header's options.
- */
 class JsonPickingJobConverterCommandLineOptionsTest
 {
 	private static final BPartnerId HEADER_CUSTOMER = BPartnerId.ofRepoId(1);

@@ -62,13 +62,7 @@ public class ScannableCodeFormat
 		}
 	}
 
-	/**
-	 * The pack ID zone: the characters in front of (and including) the pack ID value, i.e. the constant marker plus the pack ID part itself.
-	 * It starts at the constant marker directly in front of the {@link ScannableCodeFormatPartType#PackId} part (or at that part itself).
-	 * A format without a pack ID part has no pack ID zone.
-	 * <p>
-	 * Positions are 1-based like {@link ScannableCodeFormatPart#getStartPosition()}; {@link PackIdZone#getEnd()} is the start position of the part after the zone.
-	 */
+	/** 1-based range of the pack ID part together with the constant marker in front of it; none if the format has no pack ID part. */
 	public Optional<PackIdZone> getPackIdZone()
 	{
 		return parts.stream()
@@ -77,10 +71,7 @@ public class ScannableCodeFormat
 				.map(this::zoneBeforePackIdPart);
 	}
 
-	/**
-	 * @return true if the code is too short to hold the pack ID zone while every part in front of the zone reads: the code was scanned right, it just
-	 * has no pack ID. A format with no pack ID zone: false.
-	 */
+	/** @return true if the code is too short to hold the pack ID although all parts in front of it read */
 	public boolean isEndingBeforePackId(@NonNull final ScannedCode scannedCode)
 	{
 		return getPackIdZone()
@@ -124,9 +115,7 @@ public class ScannableCodeFormat
 	@Value
 	public static class PackIdZone
 	{
-		/** 1-based start position of the zone */
 		int start;
-		/** 1-based start position of the part after the zone: a code shorter than this ends before the pack ID */
 		int end;
 	}
 }

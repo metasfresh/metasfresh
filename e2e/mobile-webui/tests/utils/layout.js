@@ -1,7 +1,3 @@
-// Layout soundness of the screen that is shown, measured in the browser: nothing sticks out of the screen sideways, no text is cut
-// off, no two controls overlap, every control is big enough to tap, and (a dialog covering the screen) every control of the dialog is on the
-// screen without scrolling. A normal screen of the app scrolls inside `.app-content` (the footer is fixed); a control that must be reachable
-// there is checked with `expectReachable`.
 import fs from 'fs';
 import path from 'path';
 import { expect } from '@playwright/test';
@@ -10,7 +6,7 @@ import { page } from './common';
 
 const MIN_TAP_SIZE = 36; // px; Bulma's default button is 40 px high
 
-/** Runs in the browser: returns a list of problem descriptions (empty = sound). `scope` = CSS selector of the area to measure. */
+/** Runs in the browser */
 const measureLayout = ({ scope, minTapSize }) => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -30,7 +26,6 @@ const measureLayout = ({ scope, minTapSize }) => {
         return r.width > 0 && r.height > 0;
     };
     const clippedByScroller = (el) => {
-        // inside a container that scrolls or clips sideways on purpose: its own box is what counts, not the content
         for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
             const ox = getComputedStyle(p).overflowX;
             if (ox === 'auto' || ox === 'scroll' || ox === 'hidden') return true;
@@ -43,8 +38,6 @@ const measureLayout = ({ scope, minTapSize }) => {
         issues.push(`page is wider than the screen (${document.documentElement.scrollWidth} > ${vw})`);
     }
 
-    // The app's own chrome (caption bar with its sliding title, fixed footer) and the job header table / job line buttons are base screens,
-    // not changed by the CU quantity entry modes: a long customer or slot name is cut there by the base layout (view-header.scss `td { overflow: hidden }`).
     const isLabelBasedScreen = (el) => !!el.closest('[data-cu-label-scan="true"]');
     const isBaseChrome = (el) => !!el.closest('.app-header, .app-footer') || (!!el.closest('.view-header') && !isLabelBasedScreen(el));
     const isLineButtonText = (el) => !!el.closest('button[id^="line-"]');
@@ -64,7 +57,7 @@ const measureLayout = ({ scope, minTapSize }) => {
     // 2. text is not cut off (an element that clips its content and has more than it shows)
     for (const el of all) {
         const style = getComputedStyle(el);
-        if (isLineButtonText(el) || style.textOverflow === 'ellipsis') continue; // ellipsis = the app's own, designed way to shorten a long value
+        if (isLineButtonText(el) || style.textOverflow === 'ellipsis') continue;
         const clipsX = style.overflowX !== 'visible' && style.overflowX !== 'auto' && style.overflowX !== 'scroll';
         if (clipsX && el.scrollWidth > el.clientWidth + 1 && (el.innerText || '').trim() !== '') {
             issues.push(`text cut off sideways: ${describe(el)} (content ${el.scrollWidth} px in ${el.clientWidth} px)`);
@@ -75,7 +68,6 @@ const measureLayout = ({ scope, minTapSize }) => {
         }
     }
 
-    // 2b. a plain button (dialog / scan step buttons) shows its whole caption: its text does not run over the button's edge
     for (const el of controls) {
         if (el.tagName === 'BUTTON' && !el.querySelector('.full-size-btn') && el.scrollWidth > el.clientWidth + 1) {
             issues.push(`button caption does not fit: ${describe(el)} (text ${el.scrollWidth} px in ${el.clientWidth} px)`);
@@ -126,12 +118,6 @@ const measureLayout = ({ scope, minTapSize }) => {
     return issues;
 };
 
-/**
- * Asserts that the screen shown (or, with `scope`, the dialog / area) is laid out soundly at this viewport.
- * @param {string} label what is shown, for the failure message
- * @param {{width: number, height: number}} viewport
- * @param {string} [scope] CSS selector; default: the dialog when one is open, else the whole app (`#root`)
- */
 export const expectLayoutSound = async (label, viewport, scope) => {
     const effectiveScope = scope ?? ((await page.locator('.prompt-dialog').count()) > 0 ? '.prompt-dialog' : '#root');
     let issues = await page.evaluate(measureLayout, { scope: effectiveScope, minTapSize: MIN_TAP_SIZE });
@@ -151,9 +137,8 @@ export const expectLayoutSound = async (label, viewport, scope) => {
     expect.soft(issues, `${label} at ${viewport.width}x${viewport.height}: layout problems`).toEqual([]);
 };
 
-/** Asserts that the control is reachable: after the screen's own scroll it lies on the screen and above the fixed footer. */
+/** Asserts that the control is reachable */
 export const expectReachable = async (locator, description, viewport) => {
-    // scroll the screen until the control is in the middle: it is then clear of the fixed footer (scrollIntoViewIfNeeded leaves a control that peeks out above the footer where it is)
     await locator.first().evaluate((el) => el.scrollIntoView({ block: 'center' }));
     const box = await locator.first().boundingBox();
     expect(box, `${description}: has a box`).not.toBeNull();
@@ -166,7 +151,7 @@ export const expectReachable = async (locator, description, viewport) => {
     expect(box.y + box.height, `${where} (bottom edge)`).toBeLessThanOrEqual(bottomLimit + 0.5);
 };
 
-/** Asserts that the control is on the screen as it opens, without any scrolling: inside the screen and above the fixed footer. */
+/** Asserts that the control is on the screen as it opens, without any scrolling */
 export const expectOnScreenWithoutScrolling = async (locator, description, viewport) => {
     await locator.first().waitFor({ state: 'visible' });
     const box = await locator.first().boundingBox();
@@ -179,13 +164,7 @@ export const expectOnScreenWithoutScrolling = async (locator, description, viewp
     expect(box.x + box.width, `${where} (right edge)`).toBeLessThanOrEqual(viewport.width + 0.5);
 };
 
-/**
- * The phone sizes of the layout specs: the Pixel 5 preset of the config; a typical picking handheld (Zebra TC22, 6.0 in, 1080x2160 physical px;
- * CSS size not measured: 360x720 @3 or 393x786 @2.75); the worst case = a Chrome with address and tool bars shown (360x640 @3).
- * Every layout spec runs 49 tests per size (about 80 minutes one after the other on one stack, in two languages), so a normal run (CI) uses only
- * the worst case: the narrowest and the lowest screen. `LAYOUT_ALL_SIZES=1` runs all sizes (before a change of the screens, or a new size).
- * Add a size here to cover it.
- */
+/** The phone sizes of the layout specs */
 const ALL_PHONE_VIEWPORTS = [
     { name: 'Pixel 5 393x727', width: 393, height: 727, deviceScaleFactor: 2.75 },
     { name: 'Zebra TC22 360x720', width: 360, height: 720, deviceScaleFactor: 3 },
@@ -194,10 +173,10 @@ const ALL_PHONE_VIEWPORTS = [
 ];
 export const PHONE_VIEWPORTS = process.env.LAYOUT_ALL_SIZES ? ALL_PHONE_VIEWPORTS : ALL_PHONE_VIEWPORTS.slice(-1);
 
-/** The session languages the layout specs run in (texts differ in length). */
+/** The session languages the layout specs run in (texts differ in length) */
 export const LAYOUT_LANGUAGES = ['en_US', 'de_DE'];
 
-/** Asserts that the element is completely inside the screen (its box lies within 0..width / 0..height). */
+/** Asserts that the element is completely inside the screen (its box lies within 0..width / 0..height) */
 export const expectInsideScreen = async (locator, description, { width, height }) => {
     await locator.first().waitFor({ state: 'visible' });
     const box = await locator.first().boundingBox();
@@ -208,7 +187,6 @@ export const expectInsideScreen = async (locator, description, { width, height }
     expect(box.y + box.height, `${description}: bottom edge, box ${JSON.stringify(box)}, screen ${width}x${height}`).toBeLessThanOrEqual(height + 0.5);
 };
 
-/** Saves a screenshot of the screen into the test's own output folder (never a fixed path of the machine). */
 export const saveScreenshot = async (name) => {
     await page.screenshot({ path: test.info().outputPath(`${name.replace(/[^a-zA-Z0-9]+/g, '-')}.png`) });
 };

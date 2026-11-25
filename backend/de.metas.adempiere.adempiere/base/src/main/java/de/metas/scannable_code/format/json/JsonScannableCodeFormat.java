@@ -12,9 +12,6 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.util.List;
 
-/**
- * The format as the mobile app gets it, including its pack ID zone ({@link ScannableCodeFormat#getPackIdZone()}).
- */
 @Value
 @Builder
 @Jacksonized
@@ -23,9 +20,7 @@ public class JsonScannableCodeFormat
 	@NonNull ScannableCodeFormatId id;
 	@NonNull String name;
 	@NonNull ImmutableList<JsonScannableCodeFormatPart> parts;
-	/** Start position of the pack ID zone (see {@link ScannableCodeFormat#getPackIdZone()}); null = the format has none. */
 	@Nullable Integer packIdZoneStart;
-	/** End position of the pack ID zone: a code shorter than this ends before the pack ID. Null = the format has no zone. */
 	@Nullable Integer packIdZoneEnd;
 
 	public static JsonScannableCodeFormat of(@NonNull final ScannableCodeFormat format)

@@ -222,11 +222,6 @@ export const Backend = {
         return responseBody;
     }),
 
-    /**
-     * Calls `POST /picking/job/{wfProcessId}/pickAll` (Quick Pack All) directly with the logged-in user's token, like a
-     * client that bypasses the app's button. Does NOT fail on an error answer: returns it for the test to assert.
-     * @returns {Promise<{status: number, body: object}>}
-     */
     postPickAll: async ({ wfProcessId }) => await test.step(`Backend: POST pickAll ${wfProcessId}`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.post(`${backendBaseUrl}/picking/job/${wfProcessId}/pickAll`, {

@@ -30,9 +30,6 @@ describe('cuLabel.selectCULabelFormat', () => {
   });
 });
 
-//
-// A label of the real shape (raw scanner form: AI digits, GS = \u001d, no symbology prefix):
-// GTIN 09506000134352, product value (7), best-before 261107, lot (9), pack ID 2
 const GS = '\u001d';
 const LABEL = `0109506000134352` + `91PTST001${GS}17261107` + `10LA0000001${GS}922`;
 const constant = (startPosition, endPosition, constantValue) => ({
@@ -146,7 +143,6 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     id: 8,
     name: 'CU label with pack ID',
     parts: [...markerParts, ...dataParts, constant(47, 48, '92'), { type: 'PACK_ID', startPosition: 49 }],
-    // the zone as the backend publishes it (`JsonScannableCodeFormat`): from the "92" marker to the start of the pack ID
     packIdZoneStart: 47,
     packIdZoneEnd: 49,
   };
@@ -175,7 +171,6 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     }
   });
 
-  // a format without a PackId part: the backend publishes no pack ID zone, so a cut-off label is a format mismatch
   it('no PackId part, no published zone: a cut-off label is a format mismatch', () => {
     const noZoneFormat = {
       ...packIdFormat,

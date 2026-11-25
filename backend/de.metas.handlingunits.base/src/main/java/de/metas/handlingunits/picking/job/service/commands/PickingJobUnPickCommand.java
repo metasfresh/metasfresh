@@ -176,9 +176,7 @@ public class PickingJobUnPickCommand
 
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
-		// A picked CU in a TU leaves it as a whole: no quantity moves, so nothing rewrites its QtyPicked rows; they keep pointing to
-		// the TU and the top-level lookup below would not find them. Decided by the booked data (the picked HU), not by the line's mode:
-		// a picked aggregated TU is not such a CU: it is split out and its rows are handled by the top-level lookup below.
+		// a picked CU in a TU leaves it as a whole: its QtyPicked rows still point to the TU, so the top-level lookup below would miss them
 		final ShipmentScheduleId shipmentScheduleId = step.getScheduleId().getShipmentScheduleId();
 		huIdAndQRCodeList.forEach(huIdAndQRCode -> deleteQtyPickedOfCUInTU(huIdAndQRCode.getHuId(), shipmentScheduleId));
 
@@ -295,12 +293,7 @@ public class PickingJobUnPickCommand
 		return reinitializeTUPickingTargetIfDestroyed(pickingJobWithLUTarget, targetLineId);
 	}
 
-	/**
-	 * Un-picking the last CU of the open TU empties it, and the HU framework destroys an emptied TU; a later pick into that target
-	 * would fail ("Illegal M_HU.HUStatus change from D to S"). As for the LU target below, the open TU becomes a new TU of the same TU
-	 * type, which also keeps the TU's GRAI: for the picker the TU stays open. Like the LU target, only the target of the un-picked
-	 * line (line-level jobs) or of the job is checked.
-	 */
+	/** Un-picking the last CU empties the open TU and the HU framework destroys it: replace it by a new TU of the same type so a later pick still has a target. */
 	@NonNull
 	private PickingJob reinitializeTUPickingTargetIfDestroyed(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId targetLineId)
 	{

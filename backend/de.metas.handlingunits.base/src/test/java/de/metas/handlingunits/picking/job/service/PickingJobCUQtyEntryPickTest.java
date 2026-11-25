@@ -105,10 +105,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
-/**
- * The label-based-mode pick ({@code SCAN_ONCE_ENTER_QTY}) through the real pick command path
- * ({@link PickingJobService#processStepEvent}): label read, CUs counted on TU lines, open-TU refusal, one CU of N.
- */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobCUQtyEntryPickTest
 {
@@ -173,7 +169,6 @@ class PickingJobCUQtyEntryPickTest
 				.build());
 	}
 
-	/** @param packId null = a label that ends before the pack ID */
 	private static ScannedCode eachLabel(final String lot, @Nullable final String packId)
 	{
 		return ScannedCode.ofString("01" + GTIN + "91" + PRODUCT_NO + GS + "17" + "261107" + "10" + lot + GS + "92" + (packId != null ? packId : ""));
@@ -204,7 +199,6 @@ class PickingJobCUQtyEntryPickTest
 				.build());
 	}
 
-	/** runs the action and returns the formatted messages the pick command logged meanwhile */
 	private static List<String> logOfPickCommand(final Runnable action)
 	{
 		final Logger logger = (Logger)LoggerFactory.getLogger(PickingJobPickCommand.class);
@@ -258,7 +252,6 @@ class PickingJobCUQtyEntryPickTest
 		return helper.pickingJobService.setTUPickingTarget(job, targetScope(job), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
 	}
 
-	/** the scope the pick command writes the target to: the line for line-level jobs, else the job (as the app sets it) */
 	@Nullable
 	private static PickingJobLineId targetScope(final PickingJob job)
 	{
@@ -287,7 +280,6 @@ class PickingJobCUQtyEntryPickTest
 				.build());
 	}
 
-	/** the source of a pick: a TU holding two pieces of 4 (the pick takes N across the pieces) */
 	private HUInfo sourceTU(final String qrCodeId)
 	{
 		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("4", productId));
@@ -346,7 +338,6 @@ class PickingJobCUQtyEntryPickTest
 				.orElseThrow(() -> new AssertionError("no CU of " + qty + " in TU " + tuId));
 	}
 
-	/** a label-based-mode line counts CUs even when its packing is a TU packing: the line's picking unit is CU and the quantities are in CUs (100 CU, not 25 TU) */
 	private void assertLabelBasedLineCountsCUs(final PickingJob job)
 	{
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
@@ -405,7 +396,6 @@ class PickingJobCUQtyEntryPickTest
 		return orderAndLineId;
 	}
 
-	/** A product job over one order of customer A and one of customer B (one line per customer), on slot A. */
 	private PickingJob createTwoCustomerProductJob(final String testId, final BPartnerLocationId customerB)
 	{
 		createPackageable("salesOrder-" + testId + "-A", helper.shipToBPLocationId);
@@ -558,10 +548,6 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class Completion
 	{
-		/**
-		 * Completion through the real {@link PickingJobService#complete} wiring: the customer's mode is resolved from its job options
-		 * (not passed as a flag). Scan-each-CU picks the CU itself, which sits in a TU without GRAI: the TU is the GRAI carrier, so completion is refused.
-		 */
 		@Test
 		void labelBasedMode_cuPickedInTUWithoutGrai_graiRequiredYes_isRefused()
 		{
@@ -576,11 +562,6 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
-		/**
-		 * A product job of customer A (GRAI required) and customer B (no GRAI), both booking in Scan once. Finding the CUs booked in a CU quantity
-		 * entry mode walks each CU up to its TU (several queries per CU), so the completion check does it only for the lines that need GRAI:
-		 * B's CUs are not looked up. A's TU has no GRAI, so completion is refused as usual.
-		 */
 		@Test
 		void graiCheck_looksUpBookedCUsOnlyOfLinesThatRequireGrai()
 		{
@@ -616,10 +597,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(lookedUp.getValue()).extracting(HUInfo::getId).as("only the CUs of the GRAI customer are looked up").containsExactlyElementsOf(cusOfA);
 		}
 
-		/**
-		 * The customer is switched to Manual while a job picked in Scan each CU is open: the check follows the picked HU (a CU in a TU), not the current mode,
-		 * so the TU without GRAI still refuses completion.
-		 */
 		@Test
 		void labelBasedModePick_thenModeSwitchedToManual_cuPickedInTUWithoutGrai_isStillRefused()
 		{
@@ -636,7 +613,6 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
-		/** The reverse switch: a job picked in Manual, then the customer is switched to a label-based mode: the TU is checked as picked, not looked up by the CU rule. */
 		@Test
 		void manualPick_thenModeSwitchedToLabelBasedMode_tuWithoutGrai_isRefused()
 		{
@@ -653,10 +629,6 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
-		/**
-		 * A CU inside a TU that was NOT booked in a CU quantity entry mode (Manual records the TU's QR code with such a CU) is checked as it is:
-		 * the CU has no GRAI snapshot, so the TU is not looked up. Only a CU booked with its own QR code is replaced by its TU.
-		 */
 		@Test
 		void cuInTU_notBookedWithOwnQRCode_isCheckedAsItIs_bookedWithOwnQRCode_viaItsTU()
 		{
@@ -670,10 +642,6 @@ class PickingJobCUQtyEntryPickTest
 					.as("CU booked with its own QR code: its TU is checked").extracting(snapshot -> snapshot.getHuId()).containsExactly(tuId);
 		}
 
-		/**
-		 * One QR code can be assigned to several HUs (a split HU shares the source's QR code). A customer that does not require GRAIs
-		 * must complete a job picked from such a HU: no QR code lookup may run, let alone throw.
-		 */
 		@Test
 		void pickedHUWithQRCodeSharedBySeveralHUs_graiNotRequired_completes()
 		{
@@ -681,7 +649,6 @@ class PickingJobCUQtyEntryPickTest
 			setCustomerGraiRequired(GRAIRequired.No);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-SHARED-N");
 			final PickingJob job = pickEach(openTUFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
-			// the QR code becomes shared after the pick (a split HU shares the source's QR code), so the pick itself is not what is under test
 			final HuId otherHuSharingTheQRCode = helper.createVHU(productId, "4");
 			final HUInfo pickedCU = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUInfos());
 			helper.huService.getHuQRCodesService().assign(pickedCU.getQrCode(), ImmutableSet.of(pickedCU.getId(), otherHuSharingTheQRCode));
@@ -689,7 +656,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThatCode(() -> helper.pickingJobService.complete(job)).doesNotThrowAnyException();
 		}
 
-		/** Same shared QR code, GRAI required: the check judges the GRAI (TU without GRAI is refused), not a QR code lookup failure. */
 		@Test
 		void pickedHUWithQRCodeSharedBySeveralHUs_graiRequiredYes_isRefusedForTheMissingGrai()
 		{
@@ -697,7 +663,6 @@ class PickingJobCUQtyEntryPickTest
 			setCustomerGraiRequired(GRAIRequired.Yes);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-SHARED-Y");
 			final PickingJob job = pickEach(openTUFromLinePacking(createJob(tuPiipId, true)), source, LOT_A, "1");
-			// the QR code becomes shared after the pick (a split HU shares the source's QR code), so the pick itself is not what is under test
 			final HuId otherHuSharingTheQRCode = helper.createVHU(productId, "4");
 			final HUInfo pickedCU = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUInfos());
 			helper.huService.getHuQRCodesService().assign(pickedCU.getQrCode(), ImmutableSet.of(pickedCU.getId(), otherHuSharingTheQRCode));
@@ -707,7 +672,6 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 		}
 
-		/** Manual mode: the picked HU is the TU itself (asserted below); the TU has no GRAI, so completion is refused. */
 		@Test
 		void manualMode_tuWithoutGrai_graiRequiredYes_isRefused()
 		{
@@ -726,7 +690,6 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class ScanOnce
 	{
-		/** Scan once, over-pick prompt off: a pick above the line's quantity is refused with the over-delivery message and, as in Scan each CU, without the technical parameters. */
 		@Test
 		void lineDone_furtherPick_refused_noParametersInTheMessage()
 		{
@@ -751,7 +714,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
 		}
 
-		/** TU line "TU x 4", Scan once, TU target from the line's packing, N=5: one TU on the line's PI with ONE CU of 5 carrying the label's lot and best-before. */
 		@Test
 		void tuLine_scanOnce_n5_oneTUOnLinePacking_oneCUOf5_withLotAndBestBefore()
 		{
@@ -774,7 +736,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedHUIds).as("the picked HU is the CU").containsExactly(HuId.ofRepoId(cus.get(0).getM_HU_ID()));
 		}
 
-		/** second pick of 3 into the open TU: a second CU of 3, no "Cannot pick TUs when TU pick target is set!". */
 		@Test
 		void secondPickIntoTheOpenTU_secondCUOf3()
 		{
@@ -791,7 +752,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).hasSize(2);
 		}
 
-		/** cuLabel of another product: HU_PRODUCT_NOT_MATCHING, nothing booked. */
 		@Test
 		void labelOfAnotherProduct_refused()
 		{
@@ -805,7 +765,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 		}
 
-		/** TU target set by a GRAI scan: booked into it, the GRAI stays on the TU. */
 		@Test
 		void tuTargetFromGRAIScan_bookedIntoIt_graiKept()
 		{
@@ -833,7 +792,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(grais.toSet()).as("GRAI kept on the TU").containsExactly(GRAI.parse(GRAI_CANONICAL));
 		}
 
-		/** Scan once with isPickWholeTU = true and an open TU: one CU of N into the TU, no whole TU taken. */
 		@Test
 		void isPickWholeTU_ignored_oneCUOfN()
 		{
@@ -852,7 +810,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("the source TU keeps the rest").isEqualByComparingTo("3");
 		}
 
-		/** label-based mode, open TU, PICK with cuLabel = null: refused as a contract violation (no user message), nothing booked. */
 		@Test
 		void labelBasedMode_noCuLabel_refused()
 		{
@@ -868,7 +825,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 		}
 
-		/** Scan once, lots A then B into one open TU: each CU keeps its lot AND the TU's lot is empty. */
 		@Test
 		void lotsAThenB_intoOneTU_eachCUKeepsItsLot_tuLotEmpty()
 		{
@@ -889,7 +845,6 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class OpenTURequired
 	{
-		/** unlimited-capacity line naming a TU PI, no TU target: refused CU_NO_OPEN_TU, nothing booked. */
 		@Test
 		void unlimitedCapacityLineNamingATuPI_noTarget_refused()
 		{
@@ -906,7 +861,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source untouched").isEqualByComparingTo("8");
 		}
 
-		/** virtual-packing line (no TU PI), no TU target: refused CU_NO_OPEN_TU (no loose CU). */
 		@Test
 		void virtualPackingLine_noTarget_refused()
 		{
@@ -920,7 +874,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");
 		}
 
-		/** Manual: no flag and no refusal: a TU line without a TU target is booked (the full TU, not a partial one). */
 		@Test
 		void manual_noTarget_notRefused_fullTU()
 		{
@@ -929,7 +882,7 @@ class PickingJobCUQtyEntryPickTest
 			PickingJob job = createJob(tuPiipId, true);
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickingUnit().isTU()).as("Manual: a TU packing line still counts TUs").isTrue();
 
-			job = pick(job, source, "1", null, false, null); // Manual on a TU line: 1 TU = 4 CUs
+			job = pick(job, source, "1", null, false, null);
 
 			final ImmutableSet<HuId> picked = CollectionUtils.singleElement(job.getLines()).getPickedHUIds();
 			assertThat(picked).hasSize(1);
@@ -938,7 +891,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(pickedHU)).isEqualByComparingTo("4");
 		}
 
-		/** Manual, virtual-packing line, no TU target, 5 from a TU holding two pieces of 4: the Manual result, one picked HU of 5 without CUs. */
 		@Test
 		void manual_fiveFromTwoPieces_noTarget_onePickedHUOf5()
 		{
@@ -955,7 +907,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOf(pickedId)).as("no CU split per source piece").isEmpty();
 		}
 
-		/** Manual, virtual-packing line, open TU, 5 from a TU holding two pieces of 4: the Manual result, one CU per source piece (4 + 1) in the TU. */
 		@Test
 		void manual_fiveFromTwoPieces_openTU_oneCUPerSourcePiece()
 		{
@@ -970,7 +921,6 @@ class PickingJobCUQtyEntryPickTest
 					.containsExactlyInAnyOrder(new BigDecimal("4"), new BigDecimal("1"));
 		}
 
-		/** Scan each CU, no TU target: refused CU_NO_OPEN_TU, nothing booked. */
 		@Test
 		void scanEachCU_noTarget_refused()
 		{
@@ -988,14 +938,13 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class ManualAndPallet
 	{
-		/** Manual (label-based-mode flags off), lots A then B into one open TU: the TU lot is overwritten. */
 		@Test
 		void manual_lotsAThenB_intoOneTU_lotOverwritten()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-L");
 			final HUInfo source2 = helper.createVHUInfo(productId, "100", "QR-L2");
-			PickingJob job = createJob(null, true); // virtual packing = a CU line, so Manual can book into an open TU
+			PickingJob job = createJob(null, true);
 			job = openTUFromLinePacking(job);
 
 			job = pick(job, source, "2", null, false, LOT_A);
@@ -1008,11 +957,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOf(tuId)).extracting(PickingJobCUQtyEntryPickTest.this::lotOf).as("the second lot is written on the whole TU").containsOnly(LOT_B);
 		}
 
-		/**
-		 * (y) Manual with a pallet (LU) and a TU target: a booking of 2 (TU capacity 4) books the TU on the pallet as the picked HU,
-		 * not a CU in a TU, so the un-pick's CU-in-TU delete does not apply; "Entpacken" leaves no QtyPicked row of the TU and nothing
-		 * picked (the Manual un-pick of a TU).
-		 */
 		@Test
 		void manual_palletAndTU_pickedHUIsTheTU_undoLeavesNothingPicked()
 		{
@@ -1020,7 +964,7 @@ class PickingJobCUQtyEntryPickTest
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-Y");
 			final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Y", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 			huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
-			PickingJob job = createJob(null, true); // virtual packing = a CU line
+			PickingJob job = createJob(null, true);
 			job = helper.pickingJobService.setLUPickingTarget(job, targetScope(job), LUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()), "LU-Y"));
 			job = openTUFromLinePacking(job);
 
@@ -1040,17 +984,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
 		}
 
-		/**
-		 * Manual, CU line, pallet (LU) target and no TU: the real pick (the LU_CU structure, as in the over-picking Playwright spec)
-		 * puts the booked CU directly on the pallet. It is not a CU in a TU, so the un-pick does not take the CU-in-TU path and runs exactly
-		 * the Manual code: the HU is not picked, the line has nothing picked, and the QtyPicked row of the CU is
-		 * left as it is (checked by running this test with the CU-in-TU delete removed from the un-pick: same result).
-		 * <p>
-		 * KNOWN BASE DEFECT: the un-pick of a CU picked directly onto an LU leaves its {@code M_ShipmentSchedule_QtyPicked} row, because the
-		 * row has {@code M_TU_HU_ID} = the CU at pick time ({@code HandlingUnitsBL.getTransportUnitHU} returns the CU itself, HandlingUnitsBL.java:846-851),
-		 * while the un-pick lookup requires {@code M_TU_HU_ID IS NULL} (HUShipmentScheduleDAO.java:87-92). It is pinned here only so that Manual
-		 * stays exactly as base; whoever fixes that defect must update the row assertions below.
-		 */
+		/** Pins a known base defect: un-picking a CU picked directly onto an LU leaves its QtyPicked row. */
 		@Test
 		void manual_cuPickedOntoPallet_unpick_restoresAsBase()
 		{
@@ -1058,7 +992,7 @@ class PickingJobCUQtyEntryPickTest
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LUCU");
 			final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-CU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 			huTestHelper.createHU_PI_Item_IncludedHU(luPI, huTestHelper.huDefVirtual, new BigDecimal("10"));
-			PickingJob job = createJob(null, true); // virtual packing = a CU line
+			PickingJob job = createJob(null, true);
 			job = helper.pickingJobService.setLUPickingTarget(job, targetScope(job), LUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()), "LU-CU"));
 
 			job = pick(job, source, "2", null, false, LOT_A);
@@ -1081,11 +1015,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
 		}
 
-		/**
-		 * A CU that sits directly on a pallet (LU), without a TU, is not a CU in a TU: the un-pick's CU-in-TU delete (and the
-		 * GRAI check on the TU) must not treat it as one. The tree is hand-built; the real pick's result is pinned by
-		 * {@code manual_cuPickedOntoPallet_unpick_restoresAsBase}.
-		 */
 		@Test
 		void cuDirectlyOnPallet_isNotACUInATU()
 		{
@@ -1105,10 +1034,6 @@ class PickingJobCUQtyEntryPickTest
 		}
 	}
 
-	/**
-	 * Label-based modes with a pallet (LU) target AND a new TU target: the booking works as without a pallet. The TU holds the booked CU,
-	 * the TU sits on the pallet, the picked HU is the CU (with its PackId in Scan each CU), and the un-pick of that CU removes only that CU.
-	 */
 	@Nested
 	class LabelBasedModeAndPallet
 	{
@@ -1136,7 +1061,6 @@ class PickingJobCUQtyEntryPickTest
 			return HuId.ofRepoId(pallet.getM_HU_ID());
 		}
 
-		/** Scan each CU, pallet + new TU, first scan: one CU of 1 with its PackId is booked, it is the picked HU and its TU sits on the pallet. */
 		@Test
 		void scanEachCU_palletAndTU_firstScan_oneCUOfOneBooked()
 		{
@@ -1157,7 +1081,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
 		}
 
-		/** Scan once, pallet + new TU, first booking of 3: the picked HU is the CU of 3, not the whole TU, and its TU sits on the pallet. */
 		@Test
 		void scanOnce_palletAndTU_firstBooking_pickedHUIsTheCU()
 		{
@@ -1177,14 +1100,12 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("3");
 		}
 
-		/** Scan once, pallet + new TU, first booking fills the TU (4 into a TU of 4): as without a pallet, the TU holds ONE CU of 4, sits on the pallet, the CU is the picked HU; undo removes it. */
 		@Test
 		void scanOnce_palletAndTU_firstBookingFillsTheTU_oneCUOf4_undo()
 		{
 			assertPalletAndTU_firstBookingOfQty_oneCU_undo("4", "QR-LU-ONCE-FULL");
 		}
 
-		/** Scan once, pallet + new TU, first booking above the TU capacity (5 into a TU of 4): as without a pallet, ONE CU of 5 in one TU on the pallet; undo removes it. */
 		@Test
 		void scanOnce_palletAndTU_firstBookingAboveTUCapacity_oneCUOf5_undo()
 		{
@@ -1220,7 +1141,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOf(tuId)).as("the CU left the TU").isEmpty();
 		}
 
-		/** Scan each CU, pallet + new TU, CUs 1 and 2 go into the same TU on the pallet; undo of CU 1 removes only that CU. */
 		@Test
 		void scanEachCU_palletAndTU_twoCUs_undoFirst_removesOnlyThatCU()
 		{
@@ -1253,7 +1173,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
 		}
 
-		/** Scan once, pallet + new TU, bookings of 3 then 2 into the same TU on the pallet; undo of the 3 removes only that CU. */
 		@Test
 		void scanOnce_palletAndTU_twoBookings_undoFirst_removesOnlyThatCU()
 		{
@@ -1284,7 +1203,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 3").isEqualByComparingTo("2");
 		}
 
-		/** Scan each CU, the pallet already exists (made by CU 1) and a second new TU is opened: CU 2 is the CU in the new TU on the same pallet. */
 		@Test
 		void scanEachCU_existingPalletAndSecondTU_cuInNewTUOnSamePallet()
 		{
@@ -1318,7 +1236,6 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class ScanEachCU
 	{
-		/** Scan each CU, lots A, A, B (own pack IDs) into one open TU: 3 CUs of 1, each with its own lot and PackId, the TU's lot empty. */
 		@Test
 		void scanEachCU_lotsAAB_threeCUsOfOne_ownLotAndPackId_tuLotEmpty()
 		{
@@ -1343,7 +1260,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).hasSize(3);
 		}
 
-		/** the server books qty 1 per label, whatever quantity the client sent. */
 		@Test
 		void scanEachCU_clientSendsQty3_oneCUOfOneBooked()
 		{
@@ -1360,7 +1276,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
 		}
 
-		/** the same (product, lot, pack ID) again in the job: PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, nothing booked. */
 		@Test
 		void repeatedLotAndPackId_refused_nothingBooked()
 		{
@@ -1376,7 +1291,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
 		}
 
-		/** the same pack ID on another lot is a different CU: booked. */
 		@Test
 		void samePackIdOnAnotherLot_booked()
 		{
@@ -1393,7 +1307,6 @@ class PickingJobCUQtyEntryPickTest
 					.containsExactlyInAnyOrder(tuple(LOT_A, "1"), tuple(LOT_B, "1"));
 		}
 
-		/** the same label in another job is booked: the lookup reads only the job's own picked HUs. */
 		@Test
 		void sameLabelInAnotherJob_booked()
 		{
@@ -1412,7 +1325,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("98");
 		}
 
-		/** the TU's first CU: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (TU and 2nd CU stay Picked, their QtyPicked rows stay, the line's picked qty drops by 1); the rescan books. */
 		@Test
 		void firstCUOfTheTU_duplicate_undo_rescan()
 		{
@@ -1451,10 +1363,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(countQtyPickedRowsOfTU(tuId)).as("QtyPicked rows of both CUs").isEqualTo(2);
 		}
 
-		/**
-		 * the line's quantity (2) is reached: a further scan books nothing, whether or not the profile allows over-pick with a confirmation prompt (the Scan each CU loop has no prompt).
-		 * The picker reaches this with a routine scan, so the refusal carries the existing over-delivery message without the technical parameters (a parameter dump makes the toast taller than the handheld screen).
-		 */
 		@ParameterizedTest(name = "isShowConfirmationPromptWhenOverPick={0}")
 		@ValueSource(booleans = { true, false })
 		void lineDone_furtherScan_refused_nothingBooked(final boolean isShowConfirmationPromptWhenOverPick)
@@ -1485,10 +1393,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source: only 2 taken").isEqualByComparingTo("98");
 		}
 
-		/**
-		 * Manual stays as before the CU quantity entry modes: with the over-pick prompt off, a pick above the line's quantity is refused with the
-		 * same over-delivery message, and its parameters are still appended to the message.
-		 */
 		@Test
 		void manual_overPickRefused_messageKeepsItsParameters()
 		{
@@ -1511,7 +1415,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
 		}
 
-		/** a line counted in kg is refused in Scan each CU (1 scan = 1 CU cannot be a kg quantity): the approved message, nothing booked. */
 		@Test
 		void kgLine_refusedWithApprovedMessage_nothingBooked()
 		{
@@ -1532,7 +1435,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(sourceStorage.getQuantity(kgProductId, huTestHelper.uomKg).toBigDecimal()).as("source untouched").isEqualByComparingTo("100");
 		}
 
-		/** the label carries no pack ID: PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID, nothing booked. */
 		@Test
 		void labelWithoutPackId_refused()
 		{
@@ -1549,7 +1451,6 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class Undo
 	{
-		/** undo of a CU in a TU with a scanned target (the CU is moved into it): TU and the 2nd CU stay Picked, the target takes the CU. */
 		@Test
 		void undoWithTargetScan_cuMovedIntoTarget()
 		{
@@ -1573,11 +1474,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
 		}
 
-		/**
-		 * (u) undo of the TU's ONLY CU: nothing stays picked and no QtyPicked row of the CU is left. The emptied TU is gone (in production
-		 * the HU framework destroys a TU whose last CU leaves it), so the line keeps an open TU of the same TU type, like an LU target
-		 * that an un-pick destroyed; the next CU is booked into a TU of that type.
-		 */
 		@Test
 		void undoOfTheTUsOnlyCU_lineKeepsAnOpenTUOfTheSameType()
 		{
@@ -1607,7 +1503,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
 		}
 
-		/** undo of the ONLY CU of a TU opened by a GRAI scan: the line's open TU keeps the GRAI, the next CU's TU carries it. */
 		@Test
 		void undoOfTheOnlyCUOfAGRAITU_openTUKeepsTheGRAI()
 		{
@@ -1633,11 +1528,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(grais.toSet()).as("the next CU's TU carries the GRAI").containsExactly(GRAI.parse(GRAI_CANONICAL));
 		}
 
-		/**
-		 * (v) The un-pick of a CU in a TU removes the CU's own QtyPicked rows from what was booked, not from the current profile: the same
-		 * picked CU un-picked after the profile was switched to Manual still leaves no QtyPicked row of that CU (else the line would count a
-		 * CU that is not picked); the other CU's row stays.
-		 */
 		@Test
 		void profileSwitchedToManualAfterBooking_unpickStillRemovesTheCUsRows()
 		{
@@ -1664,11 +1554,6 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class CloseTargets
 	{
-		/**
-		 * (x) A product job of two customers, each line in its own picking slot: when all targets are closed (on completion), the first
-		 * customer's still open TU is queued on its line's slot only, not also on the slot scanned last for the other customer (a TU in two
-		 * slot queues breaks the shipment: more than one slot found for the HU).
-		 */
 		@Test
 		void closingAllTargets_queuesEachLinesTUOnItsOwnLinesSlot()
 		{
@@ -1680,28 +1565,19 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(queuedSlotsOf(given.tuA)).as("customer A's TU is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
 		}
 
-		/**
-		 * (x4) Mode switched while the job is open: customer A's TU was booked in Scan once, then the customer is switched to Manual before all
-		 * targets are closed. The close follows how the TU was booked (the CU booked with its own QR code), not the customer's current mode,
-		 * so A's TU is still queued on A's slot only, not on the slot scanned last for customer B.
-		 */
 		@Test
 		void labelBasedModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheTUOnItsOwnLinesSlot()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final TUOfCustomerA given = pickIntoTUOfCustomerA_thenScanSlotB("x4", "3", label(PRODUCT_NO, LOT_A));
 
-			setProfile(CUQtyEntryMode.MANUAL); // an administrator switches the customer to Manual while the job is open
+			setProfile(CUQtyEntryMode.MANUAL);
 
 			helper.pickingJobService.closeLUAndTUPickingTargets(given.job);
 
 			assertThat(queuedSlotsOf(given.tuA)).as("customer A's TU, booked in Scan once, is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
 		}
 
-		/**
-		 * (x2) Manual: the same two-customer product job queues the TU on the slot scanned last (the per-line slot is only for the
-		 * label-based quantity entry modes).
-		 */
 		@Test
 		void manual_closingAllTargets_queuesTheTUOnTheLastScannedSlot()
 		{
@@ -1713,10 +1589,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(queuedSlotsOf(given.tuA)).as("Manual: the close queues the TU on the slot scanned last").contains(given.slotB);
 		}
 
-		/**
-		 * (x3) Mixed job: customer A uses a label-based mode (own job options row), customer B is Manual (the profile default). Closing all targets
-		 * queues A's TU on A's line slot only and B's TU on the slot scanned last; B's target is closed.
-		 */
 		@Test
 		void mixedJob_labelBasedModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
 		{
@@ -1745,7 +1617,7 @@ class PickingJobCUQtyEntryPickTest
 			job = pickOnLine(job, lineB.getId(), sourceB, "1", null);
 			final HuId tuB = job.getTuPickingTargetEffective(lineB.getId()).orElseThrow(() -> new AssertionError("no TU of B")).getTuIdNotNull();
 			final PickingSlotId slotC = createPickingSlot("SLOT-C");
-			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotC, "SLOT-C")); // the picker scans this slot last
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotC, "SLOT-C"));
 
 			final PickingJob jobClosed = helper.pickingJobService.closeLUAndTUPickingTargets(job);
 
@@ -1754,7 +1626,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(jobClosed.getTuPickingTargetEffective(lineB.getId())).as("Manual line's target closed").isEmpty();
 		}
 
-		/** The state before the close: customer A's line picked into a new TU on slot A, then the picker scanned customer B's slot (B). */
 		private final class TUOfCustomerA
 		{
 			private final PickingJob job;
@@ -1769,7 +1640,6 @@ class PickingJobCUQtyEntryPickTest
 			}
 		}
 
-		/** Picks in the profile's current mode; {@code testId} keeps the order numbers and the source QR code unique. */
 		private TUOfCustomerA pickIntoTUOfCustomerA_thenScanSlotB(final String testId, final String qty, @Nullable final ScannedCode cuLabel)
 		{
 			final HUInfo source = sourceTU("QR-" + testId.toUpperCase());
@@ -1779,12 +1649,11 @@ class PickingJobCUQtyEntryPickTest
 			job = pickOnLine(job, lineA.getId(), source, qty, cuLabel);
 			final HuId tuA = job.getTuPickingTargetEffective(lineA.getId()).orElseThrow(() -> new AssertionError("no TU")).getTuIdNotNull();
 			final PickingSlotId slotB = createPickingSlot("SLOT-B");
-			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B")); // the picker scans customer B's slot
+			job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
 			return new TUOfCustomerA(job, tuA, slotB);
 		}
 	}
 
-	/** The GRAI snapshots as the completion check sees them when every CU in a TU of {@code huIds} was booked with a label scan. */
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
 		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.filterCUsInTU(huIds));

@@ -309,9 +309,7 @@ public class HUQRCodesRepository
 		return huQrCodeAssignments;
 	}
 
-	/**
-	 * Like {@link #getHUAssignmentsByQRCode(Collection)}, but a QR code without an assignment is skipped instead of failing the call.
-	 */
+	/** Like {@link #getHUAssignmentsByQRCode(Collection)}, but skips a QR code without an assignment instead of failing. */
 	@NonNull
 	public List<HUQRCodeAssignment> getHUAssignmentsByQRCodeIfExist(@NonNull final Collection<HUQRCode> huQRCodes)
 	{

@@ -14,7 +14,7 @@ export const SelectPickTargetTUScreen = {
         await page.locator('.loading').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    /** Asserts the TU list screen is not on screen. */
+    /** Asserts the TU list screen is not on screen */
     expectNotShown: async () => await test.step(`${NAME} - Expect screen not shown`, async () => {
         await expect(containerElement()).toHaveCount(0);
     }),

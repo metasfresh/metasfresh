@@ -569,7 +569,6 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/** @return the HUs picked on the lines of that product */
 	public ImmutableSet<HuId> getPickedHuIdsOfProduct(@NonNull final ProductId productId)
 	{
 		return streamLines()
@@ -579,7 +578,6 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/** @return the lines that match the filter */
 	public ImmutableList<PickingJobLine> getLines(@NonNull final Predicate<PickingJobLine> lineFilter)
 	{
 		return streamLines().filter(lineFilter).collect(ImmutableList.toImmutableList());
@@ -590,7 +588,6 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return streamLines().anyMatch(lineFilter);
 	}
 
-	/** @return the HUs picked on the lines that match the filter */
 	public ImmutableSet<HUInfo> getPickedHUInfos(@NonNull final Predicate<PickingJobLine> lineFilter)
 	{
 		return streamLines()

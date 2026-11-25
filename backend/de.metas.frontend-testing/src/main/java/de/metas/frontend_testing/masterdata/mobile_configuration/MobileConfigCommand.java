@@ -82,11 +82,7 @@ public class MobileConfigCommand
 				.build().execute();
 	}
 
-	/**
-	 * Writes the CU quantity entry mode and CU label format of the profile and of its customers.
-	 * Every value is written on each run (absent = default mode / no format), so no state leaks from an earlier masterdata run.
-	 * Runs after {@link #updatePickingConfig()}, so the profile header and customer rows exist.
-	 */
+	/** Writes the CU quantity entry mode and CU label format of the profile and its customers; runs after {@link #updatePickingConfig()}. */
 	private void updatePickingCUQtyEntry()
 	{
 		final JsonMobileConfigRequest.Picking picking = request.getPicking();
@@ -100,10 +96,8 @@ public class MobileConfigCommand
 
 	private void updatePickingCUQtyEntryInTrx(@NonNull final JsonMobileConfigRequest.Picking picking)
 	{
-		// the rows of earlier runs' customers (replaced by MobileConfigPickingCommand above) are not referenced
 		mobilePickingConfigService.deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
 
-		// absent = the profile's mandatory mode: the profile writer stores CUQtyEntryMode.DEFAULT for an unset mode
 		final CUQtyEntryMode mode = CUQtyEntryMode.ofNullableCode(picking.getCuQtyEntryMode());
 		final ScannableCodeFormatId formatId = resolveFormatIdOrNull(picking.getCuLabelFormatName());
 		mobilePickingConfigService.update(profile -> profile.toBuilder()
@@ -126,16 +120,12 @@ public class MobileConfigCommand
 		}
 	}
 
-	/** Returns the format id, or null (= no format) when the name is absent. */
 	@Nullable
 	private ScannableCodeFormatId resolveFormatIdOrNull(@Nullable final String formatName)
 	{
 		return formatName != null ? resolveFormatId(formatName) : null;
 	}
 
-	/**
-	 * Resolves a CU label format by its name among the formats created by the masterdata (see {@link CustomQRCodeFormatCommand}).
-	 */
 	private ScannableCodeFormatId resolveFormatId(@NonNull final String formatName)
 	{
 		final ImmutableList<ScannableCodeFormat> matches = scannableCodeFormatService.getAll().toList()

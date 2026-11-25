@@ -26,7 +26,6 @@ export const toastErrorFromObj = (obj, toastId) => {
   }
 };
 
-/** @param details the reason, shown after the message of `messageKey` */
 export const toastError = ({ axiosError, messageKey, details, fallbackMessageKey, plainMessage, context, toastId }) => {
   let code;
   let message;

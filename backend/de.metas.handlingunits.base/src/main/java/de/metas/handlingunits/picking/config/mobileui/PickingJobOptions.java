@@ -90,15 +90,12 @@ public class PickingJobOptions
 
 	public Optional<PickingLineSortBy> getPickingLineSortBy() {return Optional.ofNullable(pickingLineSortBy);}
 
-	/** @return the mode; never null: {@link CUQtyEntryMode#DEFAULT} when none is set */
 	@NonNull
 	public CUQtyEntryMode getCUQtyEntryModeOrDefault() {return cuQtyEntryMode != null ? cuQtyEntryMode : CUQtyEntryMode.DEFAULT;}
 
-	/** @return what the effective mode means for a pick ({@link CUQtyEntryMode#DEFAULT} when none is set) */
 	@NonNull
 	public CUQtyEntryPolicy getCUQtyEntryPolicy() {return getCUQtyEntryModeOrDefault().getPolicy();}
 
-	/** @return the mode if one is set (a customer's options may leave it empty = use the profile's) */
 	public Optional<CUQtyEntryMode> getCUQtyEntryMode() {return Optional.ofNullable(cuQtyEntryMode);}
 
 	public Optional<ScannableCodeFormatId> getCULabelFormatId() {return Optional.ofNullable(cuLabelFormatId);}

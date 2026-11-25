@@ -1,6 +1,6 @@
 // GS1 helpers shared by the test-data generators (EAN-13 and GTIN-14).
 
-/** Random string of `length` decimal digits. */
+/** Random string of `length` decimal digits */
 export const randomDigits = (length) => {
     let digits = '';
     for (let i = 0; i < length; i++) {
@@ -9,7 +9,7 @@ export const randomDigits = (length) => {
     return digits;
 };
 
-/** GS1 mod-10 check digit of `digits` (weights 3, 1, 3, ... counted from the right; any length). */
+/** GS1 mod-10 check digit of `digits` (weights 3, 1, 3,  */
 export const computeGS1CheckDigit = (digits) => {
     let sum = 0;
     for (let i = 0; i < digits.length; i++) {

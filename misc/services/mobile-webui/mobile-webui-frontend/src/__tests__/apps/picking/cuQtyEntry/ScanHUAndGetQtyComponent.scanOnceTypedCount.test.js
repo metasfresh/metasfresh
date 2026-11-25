@@ -116,7 +116,6 @@ describe('ScanHUAndGetQtyComponent: scan once, the count field is typed into', (
     });
     const form = document.querySelector('form');
     const manualInput = screen.getByTestId('manual-entry-input');
-    // Enter in a text field of the form is an implicit click on OK: it would book the count with the label shown before the rescan
     expect(form.contains(manualInput)).toBe(false);
     expect(form.contains(screen.getByTestId('rescanCULabel-input'))).toBe(false);
   });

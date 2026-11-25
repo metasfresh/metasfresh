@@ -225,7 +225,7 @@ HardwareModePanel.propTypes = {
   inputPlaceholderText: PropTypes.string,
   isProcessing: PropTypes.bool,
   disabled: PropTypes.bool,
-  /** the scanner sits next to a field the operator types into: it never takes the focus and reads only scanner-speed bursts from that field */
+  /** the scanner sits next to a field the operator types into */
   isCoexistingWithTypedInput: PropTypes.bool,
   onBarcodeScanned: PropTypes.func.isRequired,
   testId: PropTypes.string,

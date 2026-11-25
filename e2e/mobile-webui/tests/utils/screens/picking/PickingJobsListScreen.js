@@ -26,13 +26,7 @@ const containerElement = () => page.locator('#WFLaunchersScreen');
 /** @returns {import('@playwright/test').Locator} */
 const jobScreenElement = () => page.locator('#WFProcessScreen');
 
-
-/**
- * Waits for a launcher that the test's own freshly created orders produce. The job candidates of new orders are
- * created asynchronously: a launcher list loaded before that stays empty and is not always refreshed by the app. So
- * if the launcher is still missing after a round, the picker re-opens the application (back to the applications list
- * and in again), which loads the list afresh, like a user pulling it again. Bounded: `rounds` rounds of `roundTimeout`.
- */
+/** Waits for a launcher that the test's own freshly created orders produce */
 const waitForLauncherWithReload = async (locator, { rounds = 4, roundTimeout = SLOW_ACTION_TIMEOUT } = {}) => {
     for (let round = 1; ; round++) {
         try {
@@ -197,7 +191,6 @@ export const PickingJobsListScreen = {
         await page.locator(ID_BACK_BUTTON).tap();
         await ApplicationsListScreen.waitForScreen();
     }),
-
 };
 
 /**
@@ -216,7 +209,6 @@ const resolveLauncherTapTarget = async ({ index, qtyToDeliver, productId, custom
         ? locateJobButtons({ qtyToDeliver, productId, customerLocationId })
         : locateJobButtons({ index });
     if (productId != null) {
-        // a launcher pinned by the test's own product: its job candidates are created asynchronously, wait for it and reload the list if needed
         await waitForLauncherWithReload(identified, { roundTimeout: settleTimeout });
     } else {
         await identified.waitFor({ state: 'visible', timeout: settleTimeout });
@@ -325,4 +317,3 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
         }
     }
 });
-

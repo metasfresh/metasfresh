@@ -145,15 +145,7 @@ public class PickingJobHUService
 		return huGraiService.getSnapshots(huIds);
 	}
 
-	/**
-	 * The GRAI snapshots of the picked HUs. A CU that was booked with a label scan ({@code cusBookedWithLabelScan}, see
-	 * {@link #filterBookedWithLabelScan(Collection)}) sits in a TU which carries the GRAI and a CU has no GRAI snapshot of its own,
-	 * so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
-	 *
-	 * Production callers use {@link #getGraiSnapshotsOfPicked(Collection)}.
-	 *
-	 * @param cusBookedWithLabelScan CUs in a TU only
-	 */
+	/** The GRAI snapshots of the picked HUs; a CU booked with a label scan is replaced by its TU, which carries the GRAI. */
 	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfTUs(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
@@ -161,10 +153,7 @@ public class PickingJobHUService
 		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithLabelScan));
 	}
 
-	/**
-	 * The GRAI snapshots of what was picked on the given lines: the one place that decides which picked HU carries the GRAI (see
-	 * {@link #getGraiSnapshotsOfTUs(Set, Set)}); callers do not need to know how a pick was booked.
-	 */
+	/** The GRAI snapshots of what was picked on the given lines. */
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfPicked(@NonNull final Collection<PickingJobLine> lines)
 	{
@@ -193,7 +182,6 @@ public class PickingJobHUService
 		return result.build();
 	}
 
-	/** @return true for a CU in a TU; false for a top-level CU, a CU directly on an LU and an aggregated TU */
 	public boolean isCUInTU(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.isVirtual(hu)
@@ -209,7 +197,6 @@ public class PickingJobHUService
 		return tu != null && handlingUnitsBL.isTransportUnit(tu) ? Optional.of(tu) : Optional.empty();
 	}
 
-	/** @return the picked CUs in a TU whose recorded QR code is their own, i.e. picked by scanning their label (a Manual pick never matches) */
 	@NonNull
 	public ImmutableSet<HuId> filterBookedWithLabelScan(@NonNull final Collection<HUInfo> pickedHUInfos)
 	{
@@ -252,7 +239,6 @@ public class PickingJobHUService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/** @return the id of the TU the HU is in; the HU's own id if it is not in a TU */
 	@NonNull
 	private HuId getTUIdOrSelf(@NonNull final I_M_HU hu)
 	{

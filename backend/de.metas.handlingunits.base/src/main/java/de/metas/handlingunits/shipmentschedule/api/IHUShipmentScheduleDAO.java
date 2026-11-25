@@ -40,7 +40,6 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 			@NonNull I_M_HU topLevelHU,
 			@NonNull ShipmentScheduleId shipmentScheduleId);
 
-	/** the QtyPicked records of the given VHU (a CU, also one inside a TU) for the given shipment schedule */
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveByVHUAndShipmentScheduleId(
 			@NonNull I_M_HU vhu,
 			@NonNull ShipmentScheduleId shipmentScheduleId);

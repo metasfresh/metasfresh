@@ -28,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** {@code JsonPickingJobLine.builderFrom}: unit and quantities of a line on a TU packing, per picking unit. */
 class JsonPickingJobLineTuPackingTest
 {
 	private static final HuPackingInstructionsItemId PI_ITEM_ID = HuPackingInstructionsItemId.ofRepoId(540001);
@@ -86,7 +85,6 @@ class JsonPickingJobLineTuPackingTest
 				.piItemId(PI_ITEM_ID);
 	}
 
-	/** a label-based-mode line on a TU packing counts CUs: the loader gives it picking unit CU, the JSON must then report uom = CU symbol and quantities in CUs (8 CU, not 2 TU) */
 	@Test
 	void labelBasedModeLineOnTuPacking_countsCUs()
 	{
@@ -103,7 +101,6 @@ class JsonPickingJobLineTuPackingTest
 		assertThat(json.getQtyRemainingToPick()).isEqualByComparingTo("8");
 	}
 
-	/** control: the same packing with picking unit TU (Manual) counts TUs: uom "TU", 2 TU */
 	@Test
 	void manualLineOnTuPacking_countsTUs()
 	{

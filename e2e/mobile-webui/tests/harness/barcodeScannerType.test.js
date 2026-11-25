@@ -2,19 +2,6 @@ import { test } from '../../playwright.config';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 
-/**
- * BarcodeScannerComponent.typeWhenScannerListens (the plain `type` loses this scan) against a minimal page (no app server): the scanner input is in the DOM before
- * the scanner listens.
- *
- * In the app, the scanner input (`#input-text`) is rendered by React's commit, but the window `keydown` listener
- * of useKeyboardBarcodeReader is added later, in a useEffect. A scan sent between the two is lost: no listener
- * sees the keys. CI trace of receiving_main_products_catchweight.spec.js ("TO a new LU, scanning 2 x GTIN codes",
- * 2026-11-21): the keys were sent 4 ms before the console line "Enabled keyboard barcode reader"; the dialog never
- * got the scan and the test timed out.
- *
- * The page below mirrors that order: input first, listener 300 ms later. The listener mirrors the reader: it
- * collects the keys, shows them in the input (as onReadInProgress does), and reports the code on Enter.
- */
 const PAGE_WITH_LATE_LISTENER = `
 <input id="input-text" data-testid="qrCode-input" />
 <script>

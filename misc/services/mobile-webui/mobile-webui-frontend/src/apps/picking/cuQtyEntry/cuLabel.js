@@ -2,12 +2,7 @@ import { parseGraiFromRawInput } from '../../../utils/grai';
 import { parseCustomQRCode } from '../../../utils/qrCode/parseCustomQRCode';
 import { BARCODE_TYPE_CUSTOM, isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 
-/**
- * Reads the scanned CU label of a picking line (CU quantity entry modes). Java counterpart: `PickingCULabelService`
- * (backend/de.metas.handlingunits.base/.../picking/job/service/PickingCULabelService.java) does the same checks again on the server
- * when the pick is booked; change them together. The format comes from the server with its pack ID zone
- * (`JsonScannableCodeFormat`, `ScannableCodeFormat.getPackIdZone()`).
- */
+/** Reads the scanned CU label of a picking line (CU quantity entry modes) */
 export const SCAN_TYPE_GRAI = 'GRAI';
 export const SCAN_TYPE_CU_LABEL = 'CU_LABEL';
 
@@ -18,14 +13,9 @@ const ERROR_noPackId = 'picking.cuLabel.noPackId';
 const PART_TYPE_IGNORE = 'IGNORE';
 const ERROR_differentProduct = 'activities.picking.qrcode.differentProduct';
 
-/**
- * On a line with a CU quantity entry mode, a scanned string is either a GRAI (opens a TU) or a CU label.
- *
- * @returns 'GRAI' when the string is a GRAI, else 'CU_LABEL'
- */
 export const routeScannedCode = (string) => (parseGraiFromRawInput(string) ? SCAN_TYPE_GRAI : SCAN_TYPE_CU_LABEL);
 
-/** @returns true when the parts in front of the zone read the label: it was scanned right, it just has no pack ID */
+/** @returns true when the parts in front of the zone read the label */
 const isPrefixReadable = ({ string, format, zoneStart }) => {
   // separators are ignored: the scanned code is trimmed, a trailing one is lost
   const partsBefore = (format.parts ?? []).filter(
@@ -38,24 +28,13 @@ const isPrefixReadable = ({ string, format, zoneStart }) => {
   return !!parsed && !parsed.error;
 };
 
-/**
- * @returns true when the label is too short to hold the pack ID zone while every part in front of the zone reads
- * (a label without counter). The backend decides where the zone is (`packIdZoneStart` / `packIdZoneEnd` of the format,
- * `ScannableCodeFormat.getPackIdZone()`); this checks the length against that zone and that the parts in front of it read.
- */
 const isEndingBeforePackId = ({ string, format }) =>
   format.packIdZoneStart != null &&
   format.packIdZoneEnd != null &&
   string.length < format.packIdZoneEnd &&
   isPrefixReadable({ string, format, zoneStart: format.packIdZoneStart });
 
-/**
- * Reads a CU label with the line's effective format only (no GS1, EAN13 or global QR code).
- *
- * @param isPackIdRequired Scan each CU: the label must carry a pack ID, else `picking.cuLabel.noPackId` (also for a label
- * that ends before the format's pack ID zone)
- * @returns {{productNo, lotNo, bestBeforeDate, packId}} or {errorKey (translation key), errorDetails (the reason, when known)}
- */
+/** Reads a CU label with the line's effective format only (no GS1, EAN13 or global QR code) */
 export const readCULabel = ({ string, format, isPackIdRequired = false }) => {
   if (!format) {
     return { errorKey: ERROR_noFormat };
@@ -66,7 +45,6 @@ export const readCULabel = ({ string, format, isPackIdRequired = false }) => {
     if (isPackIdRequired && isEndingBeforePackId({ string, format })) {
       return { errorKey: ERROR_noPackId };
     }
-    // the reason why the label does not fit the format (which part, what was expected) is shown with the message
     return { errorKey: ERROR_formatMismatch, errorDetails: parsed?.error };
   }
   if (isPackIdRequired && !parsed.packId) {
@@ -81,11 +59,7 @@ export const readCULabel = ({ string, format, isPackIdRequired = false }) => {
   };
 };
 
-/**
- * {@link readCULabel} plus the product check against the line's product.
- *
- * @returns {{productNo, lotNo, bestBeforeDate, packId, cuLabel}} (`cuLabel` = the raw label) or {errorKey}
- */
+/** {@link readCULabel} plus the product check against the line's product */
 export const resolveCULabel = ({
   string,
   format,
@@ -117,11 +91,6 @@ export const resolveCULabel = ({
   return { ...label, cuLabel: string };
 };
 
-/**
- * @param formats the activity's `customQRCodeFormats` (each carries `id` = `JsonScannableCodeFormat.id`)
- * @param id the line's `cuLabelFormatId` (null / undefined = no effective format)
- * @returns the format with that id, or undefined
- */
 export const selectCULabelFormat = (formats, id) => {
   if (id == null) {
     return undefined;

@@ -12,11 +12,6 @@ import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, openScanE
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * Layout of the Scan once, mixed-job and real-case screens of the CU quantity entry modes at the phone sizes (PHONE_VIEWPORTS): quantity block
- * states (count above the open quantity, smaller count, count over several source TUs, reopened block), a line closed short and reopened, a job
- * with Manual, Scan once and Scan each lines, and the real case of two buyers. Same checker as picking-cu-qty-entry-layout-label-modes.spec.js.
- */
 for (const viewport of PHONE_VIEWPORTS) {
     test.describe(`Scan once and mixed job screens ${viewport.name}`, () => {
         test.use({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: viewport.deviceScaleFactor });
@@ -60,7 +55,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobLineScreen.clickPickHUButton();
                 await GetQuantityDialog.waitForDialog();
                 await layout('Once quantity block reopened by "HU verpacken" (remembered count)');
-                await GetQuantityDialog.clickCancel();   // Cancel leaves either on the scan screen below the block (back leads to the line screen) or on the line screen itself
+                await GetQuantityDialog.clickCancel();
                 await GetQuantityDialog.waitToClose();
                 await page.locator('#PickLineScreen, #PickLineScanScreen').first().waitFor();
                 if (await page.locator('#PickLineScanScreen').count() > 0) {

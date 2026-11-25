@@ -16,17 +16,6 @@ import { createScanEachMasterdata, MSG_ALREADY_PICKED, openScanEachLine, packLab
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * Every screen, dialog and state the CU quantity entry modes add or change is walked through at each size and checked by
- * `expectLayoutSound` (utils/layout.js): nothing sticks out sideways, no text cut off, no overlapping controls, controls big enough to
- * tap, dialog controls on the screen without scrolling, refusal toasts fully on the screen. Screens that scroll (as all screens of the app
- * do) must have their primary controls reachable by that scroll.
- *
- * CU quantity entry on a phone-size screen: every control of the quantity block (Scan once), of the Scan each CU scan screen and of the
- * Manual quantity dialog is inside the visible screen, without scrolling. The Manual dialog keeps its layout.
- *
- * The sizes (PHONE_VIEWPORTS, utils/layout.js) are a parameter: one block of tests per size.
- */
 const TEXTS = {
     en_US: {
         noOpenTU: MSG_NO_OPEN_TU,
@@ -45,8 +34,7 @@ const TEXTS = {
     },
 };
 
-
-/** Like startJob, but the source HU ("Pick from") is not scanned: only the picking slot. */
+/** Like startJob, but the source HU ("Pick from") is not scanned */
 const startJobWithoutSourceHU = async (masterdata, { qtyToDeliver }) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -55,7 +43,6 @@ const startJobWithoutSourceHU = async (masterdata, { qtyToDeliver }) => {
     await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver, productId: masterdata.products.P1.id });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
 };
-
 
 for (const viewport of PHONE_VIEWPORTS) {
     test.describe(`screen ${viewport.name}`, () => {

@@ -10,13 +10,6 @@ import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, rest
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * @param {boolean} [allowQuickPackAll] profile switch of the Quick Pack All button
- * @param {string} [cuQtyEntryMode] profile CU quantity entry mode; omitted = not sent (Manual)
- * @param {object[]} [customers] customer records of the mobile config (`{ customer, cuQtyEntryMode }`)
- * @param {string} [aggregationType] 'sales_order' (one customer per job) or 'product' (one job per product, a line per customer)
- * @param {boolean} [secondCustomer] a second customer with an order of the same products (needs a 'customer2' record if it has a mode)
- */
 const createMasterdata = async ({
                                     allowQuickPackAll = true,
                                     cuQtyEntryMode,
@@ -32,7 +25,7 @@ const createMasterdata = async ({
     return await createMasterdataRememberingSysconfigs({
         language: 'en_US',
         request: {
-            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,
             login: { user: { language: 'en_US', workplace: "workplace1" } },
             mobileConfig: {
                 picking: {
@@ -132,7 +125,6 @@ test('Pick using Pick All button', async ({ page }) => {
             vhu3: { huStatus: 'E', storages: { P3: '10 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
         }
     });
-
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -154,14 +146,7 @@ test('Expect Pick All button hidden when feature is not active', async ({ page }
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
     await PickingJobScreen.expectPickAllButtonHidden();
-
 });
-
-
-//
-// CU quantity entry modes (SCAN_EACH_CU, SCAN_ONCE_ENTER_QTY): Quick Pack All would book every line without a label scan
-// (no duplicate check, no pack ID, no TU, no label lot / best-before), so the button is hidden and the call is refused.
-//
 
 const MSG_QUICK_PACK_ALL_NOT_ALLOWED = "Quick Pack is not allowed";
 const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
@@ -177,13 +162,11 @@ const openJob = async (masterdata, { productJob = false } = {}) => {
         // one job per product: P1 holds one line per customer (10 + 10)
         return await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 20, productId: masterdata.products.P1.id });
     }
-    // the launcher of freshly created orders can take a while to show up (the list is reloaded if it does not)
     await PickingJobsListScreen.waitForJobVisible({ documentNo: masterdata.salesOrders.SO1.documentNo, reloadIfMissing: true });
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     return await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 };
 
-/** The button is hidden, the direct call is refused with the new message, nothing is picked and the job stays open. */
 const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2', 'P3'] }) => {
     await PickingJobScreen.expectPickAllButtonHiddenAfterQtyAvailable();
 
@@ -260,7 +243,6 @@ test('control: the same mixed two-customer product job with Manual only shows th
     allure.story('Pick All button with CU quantity entry modes');
     allure.severity('normal');
 
-    // proves the data of the mixed-job case does show the button: its hiding there is the mode, not the setup
     const masterdata = await createMasterdata({
         allowQuickPackAll: true,
         aggregationType: 'product',

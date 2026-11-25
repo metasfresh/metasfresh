@@ -1658,15 +1658,7 @@ public class HUTransformService
 		return husToNewCUs(newCURequest).singleCU();
 	}
 
-	/**
-	 * Like {@link #husToNewCUs(HUsToNewCUsRequest)}, but always returns exactly ONE new standalone CU:
-	 * if the requested quantity had to be taken from more than one source piece, the other new CUs are merged into the first one
-	 * (so the result keeps the status, locator, partner and clearance that the split propagated from the source, like a single split CU).
-	 * The request's {@link ReservedHUsPolicy} is honored, i.e. reserved pieces are skipped or refused as in {@link #husToNewCUs(HUsToNewCUsRequest)}.
-	 * <p>
-	 * Like {@link #husToNewCUs(HUsToNewCUsRequest)}, the result may hold less than the requested quantity if the source HUs don't hold enough
-	 * (the caller has to check or to create the missing quantity). {@link HUsToNewCUsRequest#isKeepNewCUsUnderSameParent()} is not supported (the result is a standalone CU).
-	 */
+	/** Like {@link #husToNewCUs(HUsToNewCUsRequest)}, but returns exactly ONE new CU: if the quantity came from several source pieces, the other new CUs are merged into the first. */
 	public I_M_HU husToNewSingleCU(@NonNull final HUsToNewCUsRequest request)
 	{
 		Check.assume(!request.isKeepNewCUsUnderSameParent(), "keepNewCUsUnderSameParent is not supported, the result is a standalone CU: {}", request);

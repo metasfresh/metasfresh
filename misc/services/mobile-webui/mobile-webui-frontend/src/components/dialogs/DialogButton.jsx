@@ -47,7 +47,6 @@ DialogButton.propTypes = {
   caption: PropTypes.string,
   className: PropTypes.string,
   disabled: PropTypes.bool,
-  /** `button` for a button inside a form that must not submit it; absent = the browser default (submit in a form) */
   type: PropTypes.oneOf(['button', 'submit']),
   onClick: PropTypes.func.isRequired,
 };

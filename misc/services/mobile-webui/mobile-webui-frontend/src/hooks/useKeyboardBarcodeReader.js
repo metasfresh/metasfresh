@@ -12,11 +12,6 @@ export const useKeyboardBarcodeReader = ({
 }) => {
   // A person types slower than this; the instance's scanner speed (`rateMs`) can only lower it
   const typedInputScanRateMs = Math.min(TYPED_INPUT_MAX_SCAN_RATE_MS, rateMs);
-  // `isTypedInputTarget(target)` marks a field a person types into (e.g. a quantity field) that lives next
-  // to the scanner. Keystrokes from such a field are a scan only when they arrive at scanner speed
-  // (at most `typedInputScanRateMs` apart); slower keys are typing and are left alone (not buffered, not consumed).
-  // When the second key of a burst shows the first one was part of a scan, the first key's insertion into
-  // the field is undone.
   const isTypedInputTargetRef = useRef(isTypedInputTarget);
   useLayoutEffect(() => {
     isTypedInputTargetRef.current = isTypedInputTarget;
@@ -119,7 +114,6 @@ export const useKeyboardBarcodeReader = ({
           };
         }
       }
-      //
       // Printable characters
       else {
         const now = Date.now();
@@ -175,7 +169,6 @@ export const useKeyboardBarcodeReader = ({
   }, [rateMs, typedInputScanRateMs, minLength, disabled]);
 };
 
-// Sets the value through the native setter and fires an `input` event, so that React's controlled input notices.
 const restoreInputValue = (target, value) => {
   if (target.value === value) return;
   const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(target), 'value')?.set;

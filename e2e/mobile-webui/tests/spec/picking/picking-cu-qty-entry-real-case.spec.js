@@ -8,16 +8,7 @@ import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, openScanE
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * The real case, one mixed product job of two customers, source TUs of 4:
- *  - buyer A (`C_BPartner.GRAIRequired` N, profile Scan once + format without pack-ID part): 50 CU = 3, 5, 8 x 5 (alternating
- *    GRAI scan / "Next TU"), 2; TU 1 opened by "Next TU"; 11 TUs, 50 CU.
- *  - buyer B (GRAIRequired Y, record Scan each CU + format with pack-ID part): 6 CU, pack ID 3 scanned twice (one warning); 2 TUs,
- *    both opened by GRAI scan (TU 1 before the first label).
- * Expected: 13 TUs, 56 CU, 1 warning, `M_Picking_Job.DocStatus` CO.
- * GRAI TUs: one GRAI-mapped TU type with a capacity row for the test product; every GRAI TU gets a serial of its own.
- *
- */
+/** The real case, one mixed product job of two customers, source TUs of 4 */
 
 // noinspection JSUnusedLocalSymbols
 test('real case, buyer A 50 CU in 11 TUs (Scan once), buyer B 6 CU in 2 TUs with one duplicate warning (Scan each CU): 13 TUs, 56 CU, job completed', async ({ page }) => {
@@ -25,7 +16,6 @@ test('real case, buyer A 50 CU in 11 TUs (Scan once), buyer B 6 CU in 2 TUs with
 
     const onceFormat = uniqueFormatName();
     const packFormat = uniqueFormatName();
-    // profile = Scan once + format without pack-ID part (buyer A, no record); buyer B = record Scan each CU + the pack-ID format
     const masterdata = await createScanEachMasterdata({
         packFormatName: packFormat,
         profileMode: 'SCAN_ONCE_ENTER_QTY',

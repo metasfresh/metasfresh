@@ -113,10 +113,7 @@ public class PackToHUsProducer
 		@NonNull TableRecordReference documentRef;
 		boolean checkIfAlreadyPacked;
 		boolean createInventoryForMissingQty;
-		/**
-		 * CU quantity entry modes only: the source HU(s) are merged into ONE new CU of {@link #qtyPicked} before packing, the booked CU stays a separate HU
-		 * inside a partial TU (on a pallet or not), the booked CU is the picked HU and the 'already packed' shortcut is skipped.
-		 */
+		/** CU quantity entry modes only: the source HUs are merged into one new CU that is booked as the picked HU inside a partial TU. */
 		boolean isBookAsSingleCUInTU;
 		@NonNull @Builder.Default ImmutableSet<HuId> allowedReservedVhuIds = ImmutableSet.of();
 	}
@@ -194,8 +191,6 @@ public class PackToHUsProducer
 			pickFromHUs.add(pickFromHU);
 		}
 
-		//
-		// CU quantity entry: the booked quantity becomes ONE new CU, even if it was taken from several source pieces
 		final PickFromHUsList pickFromHUsToPack;
 		if (request.isBookAsSingleCUInTU())
 		{
@@ -208,9 +203,7 @@ public class PackToHUsProducer
 
 		//
 		// Case: the PickFrom HU can be considered already packed
-		// i.e. it's an HU with exactly required qty and same packing instructions.
-		// Skipped for CU quantity entry (isBookAsSingleCUInTU): a source TU holding exactly the booked quantity must not become the TU,
-		// else the picked HU would be the whole TU and not the booked CU.
+		// i.e. it's an HU with exactly required qty and same packing instructions
 		if (!request.isBookAsSingleCUInTU()
 				&& packToInfo.getLu() == null
 				&& packToInfo.getTu().isNewTU()
@@ -232,7 +225,6 @@ public class PackToHUsProducer
 			final I_M_HU tuRecord = handlingUnitsBL.getById(packToInfo.getTu().getTuIdNotNull());
 			final ImmutableSet<HuId> allowedReservedVhuIds = request.getAllowedReservedVhuIds();
 			final HUTransformService huTransformService = newHUTransformService(huContext, allowedReservedVhuIds);
-			// CU quantity entry: the source was already merged into ONE new CU of the booked quantity (reservations honoured there), so that CU goes into the TU as is
 			final I_M_HU cuRecord = request.isBookAsSingleCUInTU()
 					? pickFromHUsToPack.getSingleHU().toM_HU()
 					: huTransformService.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
@@ -249,7 +241,6 @@ public class PackToHUsProducer
 			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
 			if (luRecord == null)
 			{
-				// CU quantity entry: the booked CU is the picked HU, not the whole TU (same shape as the pallet case below)
 				return request.isBookAsSingleCUInTU()
 						? LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cuRecord)))
 						: LUTUResult.ofSingleTopLevelTU(tuRecord);
@@ -323,11 +314,7 @@ public class PackToHUsProducer
 		}
 	}
 
-	/**
-	 * Without CU quantity entry the TU made by the first booking is a full TU. For CU quantity entry the booked CU must be the picked HU,
-	 * so the result is the partial TU holding its single CU (as the open TU and the pallet cases). With a pallet (LU) target the TU
-	 * sits on the pallet: the pallet is kept as produced (incl. its pre-existing flag when the target was an existing pallet).
-	 */
+	/** For CU quantity entry the booked CU must be the picked HU, so the result is the partial TU holding its single CU. */
 	private LUTUResult toPartialTUWithItsSingleCU(@NonNull final LUTUResult producedResult)
 	{
 		if (!producedResult.isSingleFullTU() || producedResult.getSingleTU().isAggregate())
@@ -357,10 +344,7 @@ public class PackToHUsProducer
 		}
 	}
 
-	/**
-	 * Merges the source HUs into ONE new standalone CU of the given quantity and returns it as the only pick-from HU.
-	 * Reserved pieces are skipped / refused as in the open-TU branch.
-	 */
+	/** Merges the source HUs into ONE new standalone CU of the given quantity and returns it as the only pick-from HU. */
 	private PickFromHUsList consolidateToSingleCU(@NonNull final PackToHURequest request, @NonNull final PickFromHUsList pickFromHUs)
 	{
 		final IHUContext huContext = request.getHuContext();

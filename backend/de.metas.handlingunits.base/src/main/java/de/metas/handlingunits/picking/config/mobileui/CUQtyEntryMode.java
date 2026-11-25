@@ -12,12 +12,7 @@ import static org.compiere.model.X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_M
 import static org.compiere.model.X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_EACH_CU;
 import static org.compiere.model.X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY;
 
-/**
- * How the CU quantity is entered when picking (column {@code MobileUI_UserProfile_Picking.CUQtyEntryMode}).
- * <p>
- * The mobile app does not know the modes, only what {@link CUQtyEntryPolicy} says about them: adding a mode needs no change in
- * {@code misc/services/mobile-webui/mobile-webui-frontend/src/apps/picking/cuQtyEntry/cuQtyEntryPolicy.js}, but a new answer the screens need does (see {@link CUQtyEntryPolicy}).
- */
+/** How the CU quantity is entered when picking ({@code MobileUI_UserProfile_Picking.CUQtyEntryMode}). */
 @AllArgsConstructor
 @Getter
 public enum CUQtyEntryMode implements ReferenceListAwareEnum
@@ -32,7 +27,6 @@ public enum CUQtyEntryMode implements ReferenceListAwareEnum
 
 	private final String code;
 
-	/** what this mode means for a pick; ask it instead of comparing modes */
 	@NonNull private final CUQtyEntryPolicy policy;
 
 	@NonNull

@@ -79,11 +79,8 @@ public class JsonPickingJobLine
 	@Nullable String salesOrderDocumentNo;
 	int orderLineSeqNo;
 	@Nullable JsonWFProcessHeaderProperties additionalHeaderProperties;
-	/** How the CU quantity is entered on this line (code of {@code CUQtyEntryMode}); resolved for the line's customer. */
 	@NonNull String cuQtyEntryMode;
-	/** What {@link #cuQtyEntryMode} means for the screens (the single owner of the rules; the app only reads it). */
 	@NonNull JsonCUQtyEntryPolicy cuQtyEntryPolicy;
-	/** The effective CU label format of this line (customer, else profile); null = none. */
 	@Nullable ScannableCodeFormatId cuLabelFormatId;
 	/** The TU packing instructions the line's packing names; null = the packing names no TU PI (e.g. virtual). */
 	@Nullable HuPackingInstructionsId packingTuPIId;

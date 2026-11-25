@@ -1166,9 +1166,6 @@ public class HUTransformServiceTests
 		assertThat(huId2listenerFiredCounters.get(aggregateHU1.getM_HU_ID())).isEqualTo(1);
 	}
 
-	/**
-	 * CU quantity entry: 2 unreserved source pieces (4 + 4) are merged into ONE CU of the requested quantity (5).
-	 */
 	@Test
 	public void husToNewSingleCU_twoUnreservedPieces_oneCUOfTheSum()
 	{
@@ -1184,18 +1181,15 @@ public class HUTransformServiceTests
 				.qtyCU(Quantity.of(FIVE, data.helper.uomKg))
 				.build();
 
-		// invoke the method under test
 		final I_M_HU singleCU = huTransformService.husToNewSingleCU(request);
 
 		assertThat(singleCU).isTopLevelHU();
 		assertThat(singleCU).hasStorage(data.helper.pSaladProductId, Quantity.of(FIVE, data.helper.uomKg));
-		// the merged CU carries the status, locator and partner of the pieces it was merged from, as a single split CU does
 		assertThat(singleCU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 		assertThat(IHandlingUnitsBL.extractLocatorIdOrNull(singleCU)).isEqualTo(testsBase.getStandaloneCUMasterData().locatorId);
 		assertThat(singleCU.getC_BPartner_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerId.getRepoId());
 		assertThat(singleCU.getC_BPartner_Location_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerLocationId);
 
-		// the 3 kg left over (4 + 4 - 5) stay in the second source piece
 		assertThat(piece2).hasStorage(data.helper.pSaladProductId, Quantity.of(THREE, data.helper.uomKg));
 	}
 

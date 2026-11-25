@@ -10,14 +10,7 @@ import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMA
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * CU quantity entry, Scan each CU ("scan every CU label"): every scan books one CU of 1 into the open TU; a CU label needs a
- * pack ID; the same CU twice in one job is warned; a scan after the line is done is refused; "Unpack" frees a CU.
- *
- * The label format of these specs has a pack-ID part (`buildCULabelFormat({ withPackId: true })`).
- *
- * Source: one pallet of 20 TUs of 4 pieces (80 pieces). Every case opens TU 1 first ("Next TU"), except the cases that test the missing TU.
- */
+/** CU quantity entry, Scan each CU ("scan every CU label") */
 
 const masterdataOf = async ({ orders = [{ key: 'A', qty: 3 }], ...rest } = {}) =>
     await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, ...rest });
@@ -59,7 +52,6 @@ test('scan IDs 1 and 2 book one CU each into the open TU, a rescan of ID 1 is wa
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
         await Backend.expect({
-            // completing the job processes the bookings and puts the TUs on an LU: only CU, TU and processed are pinned
             pickings: { [pickingJobId]: { docStatus: 'Completed', shipmentSchedules: { P1: { qtyPicked: [
                 { qtyPicked: '1 PCE', vhu: 'vhu1', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: 'vhu2', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: 'vhu3', tu: 'tu1', processed: true },
             ] } } } },
@@ -118,8 +110,6 @@ test('a second lot on the same line books a CU with that lot; the first CU keeps
 test('the same CU in two jobs: job 1 picked it, job 2 books it without a warning (scope = the current job)', async ({ page }) => {
     allureMeta('Scan each CU two jobs');
 
-    // a product job holds every customer who ordered the product: job 1 = both orders; the picker picks customer A's line only
-    // and completes; customer B's still open order is offered again and becomes job 2 (same product, same lot, same CU)
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true }); // job 1 completes with customer B's line unpicked
     const lot = uniqueLot();
     const label = packLabelOf({ masterdata, lot, packId: 2 });
@@ -270,7 +260,6 @@ test('buyer B line (Scan each CU, pack-ID format): a label without counter (L0) 
 test('Scan each CU: a label the format rejects is refused and nothing is booked, not even by the product GTIN; the line goes on with a valid label', async ({ page }) => {
     allureMeta('Scan each CU rejects a label of another form');
 
-    // The product carries the GTIN printed on the label: if a rejected label fell back to the GTIN lookup, it would book the product.
     const gtin = uniqueGTIN();
     const masterdata = await masterdataOf({
         orders: [{ key: 'A', qty: 3 }],
@@ -344,7 +333,6 @@ test('Scan each CU: TU packing line: first scan refused without a TU; "Next TU",
     for (const packId of [1, 2, 3]) {
         await scanPack(packLabelOf({ masterdata, packId }));
     }
-    // each picked HU = a CU whose TU (`tuN`, qtyTUs 1 = a real TU, never the virtual packing) is a TU packing
     await Backend.expect({
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [1, 2, 3].map((n) => qtyPickedRow({ qty: 1, vhu: `vhu${n}`, tu: 'tu1' })) } } } },
         hus: { tu1: { qtyTUs: 1, storages: { P1: '3 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }, { qty: '1 PCE' }] } },
@@ -410,7 +398,6 @@ test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU int
     });
 });
 
-// A CU is one unit of the line UOM, so Scan each CU cannot book a quantity counted in kg: the scan is refused with the instruction to ask the administrator
 const MSG_EACH_ONLY_FOR_PIECES = "'Scan each CU' works only for lines counted in pieces. Please have your administrator set the CU quantity entry for this customer to 'Manual' or 'Scan once, enter quantity'.";
 
 // noinspection JSUnusedLocalSymbols

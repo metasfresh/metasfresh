@@ -242,7 +242,6 @@ export const useHeaderUpdate = ({
   qtyPicked,
   additionalHeaderProperties,
   rootDataAttributes,
-  // label-based CU quantity entry modes only: refresh the header while the screen stays mounted; Manual refreshes on url/caption only
   isLiveRefresh = false,
 }) => {
   const dispatch = useDispatch();

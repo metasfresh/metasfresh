@@ -8,13 +8,7 @@ import { allureMeta, BEST_BEFORE, book, createMasterdata, restoreSysconfigsAfter
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * CU quantity entry, Scan once: the pinned count and the navigation around it (re-entry via "HU verpacken").
- *
- * The field suggests the last typed count, capped by the line's open quantity; confirming books it again on the
- * last scanned lot without a new scan; a label scanned inside the open block replaces product / lot / best-before
- * for the next booking. A new line starts empty, also the next line of the same product.
- */
+/** CU quantity entry, Scan once */
 const BEST_BEFORE_B = '2026-12-01';
 
 // noinspection JSUnusedLocalSymbols
@@ -150,7 +144,7 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
         await PickingJobLineScreen.clickCloseButton();
         await PickingJobLineScreen.expectReOpenButtonVisible();
         await PickingJobLineScreen.goBack();
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '6 Stk' });   // the open 4 stay open: nothing picked, nothing rejected for them
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '6 Stk' });
         await PickingJobScreen.complete();
     });
 
@@ -184,7 +178,6 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
     await PickingJobLineScreen.clickPickHUButton();           // "HU verpacken": the block reopens, no new label scan
     await GetQuantityDialog.expectQtyEntered(4);              // MIN(last typed 6, open 4)
     await GetQuantityDialog.clickDoneStayOpen();              // books 4 into the kept TU: the line is done
-    // a finished line honours the setting PickLineScanScreen.gotoPickingJobOnClose (shipped N): the screen was entered from the line screen ("HU verpacken"), so it leads back there
     await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.goBack();
     await PickingJobScreen.waitForScreen();

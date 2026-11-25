@@ -78,7 +78,6 @@ public class HUTransformTestsBase
 		huStatusBL = Services.get(IHUStatusBL.class);
 	}
 
-	/** The partner / location / locator the CUs of {@link #createStandaloneSaladCU(BigDecimal)} carry. */
 	public static final class StandaloneCUMasterData
 	{
 		public final BPartnerId bpartnerId;
@@ -105,7 +104,6 @@ public class HUTransformTestsBase
 		return standaloneCUMasterData;
 	}
 
-	/** An ACTIVE standalone salad CU with a locator and a business partner + location, like a CU in stock. */
 	public final I_M_HU createStandaloneSaladCU(final BigDecimal qty)
 	{
 		final StandaloneCUMasterData masterData = getStandaloneCUMasterData();

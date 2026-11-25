@@ -282,11 +282,6 @@ export const PickingJobScreen = {
         await button.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
     }),
 
-    /**
-     * The button is shown only after the async qtyAvailable answer arrived, so "not there yet" proves nothing.
-     * Anchor on a line button (always present once the screen is loaded), wait until the qtyAvailable query is
-     * answered and painted, only then assert the button is absent.
-     */
     expectPickAllButtonHiddenAfterQtyAvailable: async () => await step(`${NAME} - Expect Pick All button to be hidden (after qtyAvailable was answered)`, async () => {
         await expect(locateLineButton({ index: 1 })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         await waitForNoInFlightXhr(page, { urlPattern: QTY_AVAILABLE_QUERY, timeout: SLOW_ACTION_TIMEOUT });
@@ -308,7 +303,7 @@ export const PickingJobScreen = {
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 
-    /** Presses "Fertigstellen" and confirms; the backend must refuse: error toast with the text, the job screen stays. */
+    /** Presses "Fertigstellen" and confirms; the backend must refuse */
     completeRefused: async ({ expectedError }) => await step(`${NAME} - Complete, expect refusal '${expectedError}'`, async () => {
         await waitForJobScreenToSettle();
         await expectErrorToast(

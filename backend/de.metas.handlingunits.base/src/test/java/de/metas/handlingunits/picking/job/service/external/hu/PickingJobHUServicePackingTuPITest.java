@@ -16,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** {@link PickingJobHUService#getPackingTuPIId}: the TU packing instructions a line's packing names (null = no TU PI, e.g. virtual packing). */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobHUServicePackingTuPITest
 {

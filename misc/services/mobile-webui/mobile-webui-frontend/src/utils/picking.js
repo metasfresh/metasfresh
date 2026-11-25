@@ -67,11 +67,7 @@ export const isCatchWeight = ({ line }) => {
   return !!line.catchWeightUOM;
 };
 
-/**
- * Scan once: the count the picker is offered for the next TU = the last typed count, capped by the open quantity.
- *
- * @returns null before the first typed value
- */
+/** Scan once */
 export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
   if (lastTypedQty == null) {
     return null;
@@ -80,10 +76,7 @@ export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
   return qtyOpen == null ? last : Math.min(last, qtyOpen);
 };
 
-/**
- * The count to remember after a booking. Confirming the offered suggestion (also a capped one) keeps the count the
- * picker typed; any other count is a newly typed one.
- */
+/** The count to remember after a booking */
 export const computeLastTypedQty = ({ storedLastTypedQty, suggestedQty, qtyBooked }) => {
   const booked = Number(qtyBooked);
   if (storedLastTypedQty != null && suggestedQty != null && booked === Number(suggestedQty)) {
@@ -92,13 +85,9 @@ export const computeLastTypedQty = ({ storedLastTypedQty, suggestedQty, qtyBooke
   return booked;
 };
 
-/** @returns true when the booking reaches (or exceeds) the open quantity, or when that quantity is unknown */
 export const isLineDoneAfterBooking = ({ qtyBooked, qtyOpen }) => qtyOpen == null || Number(qtyBooked) >= qtyOpen;
 
-/**
- * What the screen remembers after a scan once booking of a line: the last typed count and the label (with its lot and
- * best-before) the next booking uses.
- */
+/** What the screen remembers after a scan once booking of a line */
 export const computeCUEntryToRemember = ({
   storedLastTypedQty,
   suggestedQty,
@@ -111,9 +100,7 @@ export const computeCUEntryToRemember = ({
   label: { cuLabel, lotNo, bestBeforeDate },
 });
 
-/** @returns true if at least one of the lines enters CU quantities in a label-based mode (label scan); false for none / absent field */
 export const hasLabelRequiredLine = (lines) => (lines ?? []).some((line) => getCUQtyEntryPolicy(line).labelRequired);
 
-/** Quick Pack All books whole lines without a CU label, so it is offered only when no line has a label-based mode. */
 export const isQuickPackAllAllowed = ({ allowQuickPackAll, lines }) =>
   !!allowQuickPackAll && !hasLabelRequiredLine(lines);

@@ -38,7 +38,6 @@ class CustomerCUQtyEntryWriterTest
 		profile = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
 		profile.setName("test profile");
 		profile.setCUQtyEntryMode(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_MANUAL);
-		// options that differ from the defaults of a new job options row
 		profile.setIsAllowSkippingRejectedReason(true);
 		profile.setIsShowConfirmationPromptWhenOverPick(true);
 		profile.setPickingJobAggregationType("sales_order");
@@ -104,15 +103,13 @@ class CustomerCUQtyEntryWriterTest
 			assertThat(jobId).isGreaterThan(0);
 			final I_MobileUI_UserProfile_Picking_Job job = InterfaceWrapperHelper.load(jobId, I_MobileUI_UserProfile_Picking_Job.class);
 			assertThat(job.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY);
-			assertThat(ScannableCodeFormatId.ofRepoIdOrNull(job.getC_ScannableCode_Format_ID())).isNull(); // empty on the row = the profile's
-			// the new row must not change the customer's other options: they start as a copy of the profile's
+			assertThat(ScannableCodeFormatId.ofRepoIdOrNull(job.getC_ScannableCode_Format_ID())).isNull();
 			assertThat(job.isAllowSkippingRejectedReason()).isTrue();
 			assertThat(job.isShowConfirmationPromptWhenOverPick()).isTrue();
 			assertThat(job.getPickingJobAggregationType()).isEqualTo("sales_order");
 			assertThat(job.getCreateShipmentPolicy()).isEqualTo("CO");
 			assertThat(job.getName()).startsWith(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
 			assertThat(job.getAllowPickToStructure_TU()).isEqualTo("Y");
-			// the mode / format of the new row are what was asked; the effective values fall back to the profile
 			assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			assertThat(service.getPickingJobOptions(CUSTOMER_ID).getCULabelFormatId()).contains(PROFILE_FORMAT_ID);
 		}

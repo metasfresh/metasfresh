@@ -20,10 +20,6 @@ export const pickingReducer = ({ draftState, action }) => {
   }
 };
 
-/**
- * @returns the count and label remembered for this line, or null (nothing remembered, or the memory belongs to
- * another line)
- */
 export const getCUEntry = ({ activity, lineId }) => {
   const cuEntry = activity?.dataStored?.cuEntry;
   return cuEntry && cuEntry.lineId === lineId ? cuEntry : null;

@@ -142,7 +142,6 @@ public class PickingJobStepPickFromMap
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/** the picked HUs together with the QR code each pick was booked with */
 	@NonNull
 	public List<HUInfo> getPickedHUInfos()
 	{

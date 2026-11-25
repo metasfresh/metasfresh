@@ -1,24 +1,3 @@
-/**
- * Mobile UI picking configuration windows — "CU quantity entry" (CUQtyEntryMode) and the
- * scannable code format (C_ScannableCode_Format_ID), on BOTH configuration levels:
- *
- *   - picking profile  (MobileUI_UserProfile_Picking, window 541743 "Mobile UI Kommissionierprofil"):
- *     company default; CUQtyEntryMode is mandatory with default MANUAL.
- *   - per-customer picking job options (MobileUI_UserProfile_Picking_Job, window 541862
- *     "Mobile UI Kommissionieraufgabe Optionen", reached from the profile's customer tab):
- *     both fields optional (empty = the profile's value).
- *
- * Scope of this test, per window:
- *   1. the CUQtyEntryMode and C_ScannableCode_Format_ID fields are visible on the new record
- *      (first check: RED fails here while the AD migration is not applied);
- *   2. set CUQtyEntryMode = "Scan once, enter quantity" (SCAN_ONCE_ENTER_QTY) and a
- *      scannable code format, save, reload, assert both values (single view);
- *   3. assert both values in the grid (list view); for the picking profile the grid lists active
- *      rows only, so this check sets both values on the seed profile and restores them afterwards.
- *
- * The scannable code format is provisioned through the frontend-testing masterdata API
- * (`customQRCodeFormats`), never via the DB.
- */
 
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
@@ -43,8 +22,6 @@ const FIELD_FORMAT = 'C_ScannableCode_Format_ID';
 const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY'; // AD_Ref_List.Value
 
 const WINDOWS = [
-  // only ONE active picking profile may exist (unique index IDX_unique_UserProfilePicking):
-  // the test record is created inactive, before its first save
   { label: 'picking profile', windowId: 541743, expectedDefaultMode: 'MANUAL', createInactive: true },
   { label: 'customer picking job options', windowId: 541862, expectedDefaultMode: null },
 ];
@@ -62,10 +39,6 @@ async function gotoWindowList(page, windowId) {
   await page.waitForTimeout(500);
 }
 
-/**
- * Delete a test record through the WebUI REST API (with the browser session), so that no test
- * record is left behind in the shared DB (the picking profile list is also read by other specs).
- */
 async function deleteTestRecord(page, windowId, recordId) {
   try {
     const response = await page.request.delete(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}`, { timeout: 20000 });
@@ -118,16 +91,10 @@ save + reload, and show in the grid.
     const masterdata = await Backend.createMasterdata({
       request: {
         login: { user: {} },
-        // The grid check below needs the one active picking profile. A fresh DB has none until a
-        // picking config is written, so write one here instead of relying on an earlier spec.
-        // This resets the profile's other picking settings to defaults; every mobile picking spec writes its own.
         mobileConfig: { picking: { pickTo: ['LU_TU'] } },
         customQRCodeFormats: [
           {
             name: formatName,
-            // The mobile UI tries custom formats before all others. A format that matches any code
-            // would take over the HU QR codes of the next specs if it were left behind, so it only
-            // matches a code that starts with this run's own marker (no other label carries it).
             parts: [
               { startPosition: 1, endPosition: formatMarker.length, type: 'CONSTANT', constantValue: formatMarker },
               { startPosition: formatMarker.length + 1, endPosition: formatMarker.length + 7, type: 'PRODUCT_CODE' },
@@ -169,15 +136,11 @@ save + reload, and show in the grid.
           expect(keyOf(defaultMode) ?? null, `${label}: ${FIELD_MODE} must be empty by default`).toBeNull();
         }
 
-        // The record is first saved when its mandatory Name is set, and an inactive record is
-        // read-only afterwards: so set everything else first and the Name last.
         if (createInactive) {
           await BooleanWidget.setFalse('IsActive');
         }
         await ListWidget.setByValue(FIELD_MODE, MODE_SCAN_ONCE);
         await ListWidget.setValue(FIELD_FORMAT, formatName, { exactMatch: true });
-        // Setting the Name saves the record. Wait for that PATCH response before reading the save
-        // status: the status read must not overtake the save request, which can take seconds.
         const nameSaved = page.waitForResponse(
           (response) => response.request().method() === 'PATCH'
             && response.url().endsWith(`/window/${windowId}/${recordId}`)
@@ -206,10 +169,6 @@ save + reload, and show in the grid.
         // (grid cells are addressed by their field name, never by a localized column caption)
         const gridCell = (row, fieldName) => row.locator(`[data-cy="cell-${fieldName}"]`);
         if (createInactive) {
-          // The grid lists active rows only and only ONE active profile may exist (the test
-          // profile is inactive), so the grid check runs on the seed profile: set both values on
-          // it, assert them in its grid row, and restore its original values afterwards (also
-          // when an assertion fails).
           await page.locator('tbody tr').first().dblclick({ timeout: SLOW_ACTION_TIMEOUT });
           await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
           const seedId = page.url().split('/').pop();
@@ -231,7 +190,6 @@ save + reload, and show in the grid.
             await gotoWindowList(page, windowId);
             const row = page.locator('tbody tr').first();
             await expect(row, 'grid row of the seed profile').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-            // the saved value's caption: the caption the WebAPI returns in the session language (no hard-coded UI text)
             const seedModeSaved = await getFieldData(String(windowId), seedId, FIELD_MODE);
             expect(keyOf(seedModeSaved)).toBe(MODE_SCAN_ONCE);
             await expect(gridCell(row, FIELD_MODE), 'grid cell CUQtyEntryMode').toContainText(seedModeSaved.value.caption);
@@ -242,7 +200,6 @@ save + reload, and show in the grid.
             await expect(WidgetCommon.getFieldContainer(FIELD_MODE).locator('input').first()).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
             await ListWidget.setByValue(FIELD_MODE, seedMode);
             if (seedFormat === null) {
-              // the original format was empty: clear the lookup with its clear icon (nothing to clear when it was never set)
               const clearIcon = WidgetCommon.getFieldContainer(FIELD_FORMAT).locator('.meta-icon-close-alt');
               if ((await clearIcon.count()) > 0) {
                 await clearIcon.click();
@@ -284,7 +241,6 @@ save + reload, and show in the grid.
     }
   });
 
-  // Remove the generated format. afterEach also runs when the test times out, unlike the end of a `finally` block.
   test.afterEach(async ({ page }) => {
     await Backend.createMasterdata({ request: { customQRCodeFormats: [] } });
   });

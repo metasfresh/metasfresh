@@ -32,10 +32,6 @@ import javax.annotation.Nullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Quick Pack All ({@link PickingJobService#pickAll}, the entry behind {@code POST /picking/job/{id}/pickAll}) is refused
- * when ANY line of the job has an effective label-based CU quantity entry mode (customer value, else profile value; resolved per line).
- */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobPickAllCommandTest
 {
@@ -55,7 +51,6 @@ class PickingJobPickAllCommandTest
 		helper.createQRCode(vhuId, "QR-VHU1");
 	}
 
-	/** one line, effective mode SCAN_ONCE_ENTER_QTY from the profile */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	void profileLabelBasedMode_refused(final boolean allowQuickPackAll)
@@ -65,7 +60,6 @@ class PickingJobPickAllCommandTest
 		assertRefusedAndNothingPicked(job);
 	}
 
-	/** one line, profile MANUAL + customer record SCAN_EACH_CU: the customer wins */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	void customerLabelBasedMode_overProfileManual_refused(final boolean allowQuickPackAll)
@@ -76,7 +70,6 @@ class PickingJobPickAllCommandTest
 		assertRefusedAndNothingPicked(job);
 	}
 
-	/** product job, two lines of two customers: customer A MANUAL, customer B SCAN_EACH_CU (mixed = whole job refused) */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	void mixedProductJob_refused(final boolean allowQuickPackAll)
@@ -99,7 +92,6 @@ class PickingJobPickAllCommandTest
 		assertRefusedAndNothingPicked(job);
 	}
 
-	/** one line, MANUAL in profile and customer record, IsAllowQuickPackAll = Y:, every line picked and the job completed */
 	@Test
 	void manualOnly_pickedAndCompleted()
 	{
@@ -180,7 +172,6 @@ class PickingJobPickAllCommandTest
 						.build()));
 	}
 
-	/** pickAll reloads the job, so the picking slot (normally scanned in the app) must be persisted */
 	private PickingJob withSavedPickingSlot(final PickingJob job)
 	{
 		final PickingJob jobWithSlot = job.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));

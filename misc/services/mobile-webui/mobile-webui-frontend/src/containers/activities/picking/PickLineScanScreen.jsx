@@ -265,38 +265,23 @@ export default PickLineScanScreen;
 //
 //
 
-/**
- * The TU open on a label-based-mode line stays visible in the header (a toast alone is gone when the picker looks back).
- */
 // @VisibleForTesting
 export const computeOpenTUHeaderEntries = ({ isLabelRequiredLine, tuPickingTarget }) =>
   isLabelRequiredLine && tuPickingTarget?.caption
     ? [{ caption: trl('activities.picking.tuPickingTarget.Current'), value: tuPickingTarget.caption }]
     : [];
 
-/**
- * Caption and packing name of the quantity block follow the picking unit the line JSON reports (a label-based-mode line is
- * reported in CU, so it shows neither the TU caption nor the packing name).
- */
 // @VisibleForTesting
 export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
   pickingUnit === PICKING_UNIT_TU
     ? { qtyCaptionKey: 'general.QtyTU', packingItemName }
     : { qtyCaptionKey: 'general.Qty', packingItemName: null };
 
-/**
- * The `qrCode` param of the screen URL is the source HU when the picker comes back through the line screen's
- * "HU verpacken"; a line with a CU quantity entry mode reads labels only, so it never takes that param as a scan.
- */
 // @VisibleForTesting
 export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryPolicy = MANUAL_POLICY }) =>
   cuQtyEntryPolicy.labelRequired ? undefined : qrCode;
 
-/**
- * The HU the PICK event takes the CUs from (`huQRCode`). A line with a CU quantity entry mode takes them from the
- * source HU of the screen URL ("Kommissionieren aus", or the pick-on-the-fly code); the scanned CU label only gives
- * the attributes and travels as `cuLabel`. Manual: the scanned code is the source HU.
- */
+/** The HU the PICK event takes the CUs from (`huQRCode`) */
 // @VisibleForTesting
 export const computePickFromHUQRCode = ({ cuQtyEntryPolicy = MANUAL_POLICY, sourceHUQRCode, scannedBarcode }) => {
   if (!cuQtyEntryPolicy.labelRequired) return scannedBarcode;
@@ -304,25 +289,14 @@ export const computePickFromHUQRCode = ({ cuQtyEntryPolicy = MANUAL_POLICY, sour
   return sourceHUQRCode;
 };
 
-/**
- * The source HU of a label-based-mode pick: the `qrCode` of the screen URL, else the job's current "Kommissionieren aus" HU.
- * @returns the source HU QR code, or undefined when neither exists (e.g. "Scannen" without a source HU)
- */
+/** The source HU of a label-based-mode pick */
 // @VisibleForTesting
 export const computeSourceHUQRCode = ({ qrCode, activity }) => qrCode || activity?.dataStored?.pickFromHU?.code;
 
-/**
- * Only the hop back from the line screen ("HU verpacken") reopens the quantity block with the remembered label; every
- * other entry (e.g. the scan button, a line reopened after closing it) starts with the scan step.
- */
 // @VisibleForTesting
 export const computeRememberedCULabel = ({ isScanOnce, isResume, cuEntry }) =>
   isScanOnce && isResume ? cuEntry?.label : undefined;
 
-/**
- * The pick-time GRAI capture (after OK) belongs to the Manual path; in the CU quantity entry modes the picker opens
- * every TU beforehand (GRAI scan or "Weitere Kiste"), so it never shows there.
- */
 // @VisibleForTesting
 export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryPolicy = MANUAL_POLICY }) =>
   graiScanEnabled && tuPickingTarget == null && !cuQtyEntryPolicy.labelRequired;
@@ -350,7 +324,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
     customQRCodeFormats,
     readAttributes: getReadAttributesFromActivity({ activity }),
-    cuQtyEntryMode: line?.cuQtyEntryMode, // only shown as an attribute of the screen (tests); the screens ask the policy
+    cuQtyEntryMode: line?.cuQtyEntryMode,
     cuQtyEntryPolicy: getCUQtyEntryPolicy(line),
     cuLabelFormatId: line?.cuLabelFormatId,
     packingTuPIId: line?.packingTuPIId, // null when the line's packing names no TU
@@ -415,11 +389,6 @@ export const convertScannedBarcodeToResolvedResult = async ({
   });
 };
 
-/**
- * A line with a CU quantity entry mode reads the scanned string as a CU label with the line's format only.
- * Returns the label data for the quantity block (lot, best-before) and the raw label; refusals are thrown.
- * A scanned GRAI is accepted on every such line: `onGrai` (required) opens the TU from it.
- */
 // @VisibleForTesting
 export const convertScannedCULabelToResolvedResult = ({
   scannedBarcode,
@@ -579,7 +548,7 @@ export const usePostQtyPicked = ({
   lineId: lineIdParam = null,
   expectedProductNo,
   expectedGS1ProductCodes,
-  scanOnceMemory, // scan once only: the count typed last and the one offered (undefined = do not remember the entry)
+  scanOnceMemory,
   cuQtyEntryPolicy = MANUAL_POLICY,
   sourceHUQRCode,
   onClose,
@@ -587,8 +556,6 @@ export const usePostQtyPicked = ({
   const dispatch = useDispatch();
   const history = useMobileNavigation();
 
-  // NOT async: a product mismatch must throw synchronously at the call, so the catch-weight scanner's catch gives the error beep;
-  // a refusal found later (e.g. no source HU) is returned as a rejected promise, which the callers .catch into the toast
   return ({
     qty = 0,
     qtyRejected,

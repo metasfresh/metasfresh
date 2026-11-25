@@ -309,7 +309,7 @@ describe('PickingLineScanScreen: Manual product mismatch stays synchronous', () 
     let returned;
     expect(() => {
       returned = postQty({ qty: 1, scannedBarcode: 'x', productNo: 'OTHER', catchWeight: 5, isDone: false });
-      returned?.catch?.(() => {}); // a rejected promise would be the defect: keep it from crashing the run
+      returned?.catch?.(() => {});
     }).toThrow(expect.objectContaining({ messageKey: 'activities.picking.qrcode.differentProduct' }));
     expect(returned).toBeUndefined();
     expect(mockDispatch).not.toHaveBeenCalled();

@@ -123,7 +123,6 @@ class PickingJobCUQtyEntryOptionsTest
 		}
 	}
 
-	/** The repository loads the profile's and the customer job row's mode / format into the options. */
 	@Nested
 	class RepositoryLoad
 	{

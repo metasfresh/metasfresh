@@ -26,7 +26,7 @@ export const PickGraiScreen = {
         await containerElement().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    /** Asserts the pick-time GRAI capture panel is not on screen. */
+    /** Asserts the pick-time GRAI capture panel is not on screen */
     expectNotShown: async () => await test.step(`${NAME} - Expect screen not shown`, async () => {
         await expect(containerElement()).toHaveCount(0);
     }),

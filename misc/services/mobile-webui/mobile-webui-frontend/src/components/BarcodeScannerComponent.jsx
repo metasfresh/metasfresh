@@ -166,9 +166,8 @@ BarcodeScannerComponent.propTypes = {
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
-  /** the scanner sits next to a field the operator types into (it must not take the focus nor read typed keys) */
   isCoexistingWithTypedInput: PropTypes.bool,
-  /** the scan prompt shows a smaller icon: the scanner shares the screen with other fields */
+  /** the scan prompt shows a smaller icon */
   isCompact: PropTypes.bool,
 };
 

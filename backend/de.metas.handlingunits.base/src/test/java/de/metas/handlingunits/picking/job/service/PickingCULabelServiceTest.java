@@ -52,8 +52,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PickingCULabelServiceTest
 {
 	private static final String GS = "\u001d";
-	private static final String PRODUCT_NO = "PRD0001"; // 7 characters, as the real data shape
-	private static final String LOT = "LOT123456"; // 9 characters
+	private static final String PRODUCT_NO = "PRD0001";
+	private static final String LOT = "LOT123456";
 	private static final String GTIN = "04012345678901";
 
 	private static final AdMessageKey HU_PRODUCT_NOT_MATCHING = MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING;
@@ -77,7 +77,6 @@ class PickingCULabelServiceTest
 		uom.setUOMSymbol("Stk");
 		saveRecord(uom);
 
-		// the label's marker parts and data positions (pack ID part at 49, open end)
 		format = formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name("CU label")
 				.parts(ImmutableList.of(
@@ -189,7 +188,6 @@ class PickingCULabelServiceTest
 				.satisfies(ex -> {
 					final AdempiereException adempiereException = (AdempiereException)ex;
 					assertThat(adempiereException.getErrorCode()).isEqualTo(CU_LABEL_FORMAT_MISMATCH.toAD_Message());
-					// the explanation of the format parser (which part does not fit) follows the message of the key
 					assertThat(adempiereException.getMessage()).contains("01");
 				});
 	}
@@ -209,7 +207,6 @@ class PickingCULabelServiceTest
 			assertThat(logAppender.list).hasSize(1);
 			final ILoggingEvent event = logAppender.list.get(0);
 			assertThat(event.getLevel()).isEqualTo(Level.WARN);
-			// the scanned label and the explanation of the format parser (which part does not fit): the same details the picker gets in the toast
 			assertThat(event.getFormattedMessage()).contains(label).contains("Invalid constant marker");
 		}
 		finally
@@ -218,7 +215,6 @@ class PickingCULabelServiceTest
 		}
 	}
 
-	/** Runs the code, expects a refusal, returns the formatted messages logged at WARN meanwhile. */
 	private static List<String> warningsLoggedBy(final Runnable refusedCall)
 	{
 		final Logger logger = (Logger)LoggerFactory.getLogger(PickingCULabelService.class);
@@ -296,7 +292,6 @@ class PickingCULabelServiceTest
 	@Test
 	void onlyTheEffectiveFormatIsUsed()
 	{
-		// a second active format that would read the label
 		final ScannableCodeFormat other = formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name("Other")
 				.parts(ImmutableList.of(
@@ -306,7 +301,7 @@ class PickingCULabelServiceTest
 						part(19, 25, ScannableCodeFormatPartType.ProductCode)
 				))
 				.build());
-		final String otherOnly = "XX" + GTIN + "XX" + PRODUCT_NO; // `format` cannot read it, `other` can
+		final String otherOnly = "XX" + GTIN + "XX" + PRODUCT_NO;
 
 		final ResolvedCULabel resolved = resolve(otherOnly, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, other.getId());
 		assertThat(resolved).isNotNull();
@@ -363,9 +358,6 @@ class PickingCULabelServiceTest
 		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
 
-	/**
-	 * A format without a PackId part has no pack ID position: a "92" constant is just a constant, so a label ending before it is a format mismatch, not "no pack ID".
-	 */
 	@Test
 	void formatWithoutPackIdPart_labelEndingBeforeOrInsideAConstant_isAFormatMismatch()
 	{
@@ -449,7 +441,6 @@ class PickingCULabelServiceTest
 				assertThat(logAppender.list).hasSize(1);
 				final ILoggingEvent event = logAppender.list.get(0);
 				assertThat(event.getLevel()).isEqualTo(Level.WARN);
-				// the picker gets the specific "no pack ID" message; the parser explanation (why the format did not match) is only logged
 				assertThat(event.getFormattedMessage()).contains("Cannot extract part Ignored[46-46]");
 			}
 			finally

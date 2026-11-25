@@ -354,9 +354,8 @@ public class PickingJobPickCommand
 	}
 
 	/**
-	 * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty.
-	 * It applies when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}) or when the CU quantity entry
-	 * mode always refuses over-pick ({@link CUQtyEntryPolicy#isOverPickAlwaysRefused()}); otherwise the
+	  * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty,
+	  * but only when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}) or the CU quantity entry mode always refuses it. Otherwise the
 	 * server never hard-rejects (the mobile client in-flight guard protects there). A partial pick within the remaining qty
 	 * is never refused; neither is a FIRST pick (nothing yet picked on the line), so a flow that over-delivers by design on
 	 * the first pick (e.g. AlwaysSplitHU "pick more than available") is unaffected - only a REPEAT pick that would push an
@@ -371,8 +370,7 @@ public class PickingJobPickCommand
 	 * persists synchronously (M_Picking_Job_Step), so the reloaded job a sequential second request works from already
 	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
 	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
-	 * guard. The refusal has one message; in the label-based CU quantity entry modes the values are logged (warn) at the throw site
-	 * and not put into the message the picker sees, Manual keeps the parameters in the message as before. Must run inside {@link #executeInTrx()}.
+	  * guard. Must run inside {@link #executeInTrx()}.
 	 */
 	private void assertNotAboveOrderedQty()
 	{
@@ -403,8 +401,6 @@ public class PickingJobPickCommand
 				.setParameter("qtyOrdered", line.getQtyToPick())
 				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
 
-		// Manual keeps its message as before (parameters appended). In the label-based modes a routine scan of the picker (a CU into a
-		// finished line) lands here: the message stays short for the handheld, so the values of the discarded scan are logged here.
 		final boolean isParametersAppendedToMessage = !cuQtyEntryPolicy.isLabelRequired();
 		if (isParametersAppendedToMessage)
 		{

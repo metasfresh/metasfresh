@@ -24,12 +24,11 @@ import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 import { CUQtyEntryPolicyPropType } from '../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 
-/** The offered quantity when the dialog opens. */
+/** The offered quantity when the dialog opens */
 const computeInitialQtyInfo = ({ isScanOnce, qtyInitial, qtyTarget, useZeroAsInitialValue }) => {
   if (!isScanOnce) {
     return qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget);
   }
-  // scan once: the offered count of the next TU (last typed count, capped by the open qty); empty before the first one
   return qtyInitial != null
     ? qtyInfos.invalidOfNumber(qtyInitial)
     : qtyInfos.invalidOf({ qtyInputString: '', prevQtyInfo: null });
@@ -74,8 +73,6 @@ const GetQuantityDialog = ({
   const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
 
-  // scan once: the picker types how many CUs of the scanned label go into the TU; the field starts empty and a
-  // smaller count than the open qty is not a rejection
   const isScanOnce = !!cuQtyEntryPolicy?.scanOnce;
   // label-based modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
   const buttonType = isLabelMode ? 'button' : undefined;
@@ -133,7 +130,6 @@ const GetQuantityDialog = ({
       (!useCatchWeight || catchWeight?.isQtyValid));
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
-  // lot and best-before come from the label; the backend takes them from there, so an edit would be dropped
   const isLabelAttributeReadOnly = readOnly || isLabelMode;
 
   const getConfirmationPrompt = useCallback(
@@ -352,8 +348,6 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form
-            // label-based modes: the OK button's click (also the Enter key's implicit click) books once; a second,
-            // submit-triggered call would book the same quantity twice. Manual keeps the form submit.
             onSubmit={isLabelMode ? (event) => event.preventDefault() : () => onDialogYes({ isCloseTarget: false })}
           >
             <div className="table-container">

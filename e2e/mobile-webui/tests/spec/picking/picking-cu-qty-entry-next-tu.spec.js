@@ -16,14 +16,7 @@ import { createScanEachMasterdata, openScanEachLine, packLabelOf, scanPack } fro
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * CU quantity entry: opening the next TU, in Scan once and (the three TU packing cases at the end) in Scan each CU.
- *
- * The next TU comes from a GRAI scan (closes the open TU, opens a TU of the GRAI's TU type, GRAI on that TU) or from
- * "Weitere Kiste" (one tap, TU type of the line's packing; a line whose packing names no TU type gets the "Gebinde" list).
- * Every GRAI TU type below is a TU packing without a loading unit; every picked HU is a CU inside such a TU
- * (the `qtyTUs` expectation holds only for a real TU), never a loose CU.
- */
+/** CU quantity entry */
 const MSG_NO_CAPACITY = 'has no capacity configured for this product';
 const MSG_GRAI_COUNT = 'TUs have a GRAI';
 
@@ -209,7 +202,6 @@ test('mixed job (customer GRAI required + customer not required): the GRAI custo
         await PickingJobScreen.waitForScreen();
     });
 
-    // the GRAI customer's TU carries the scanned GRAI (a job that completes even when the GRAI is missing would also pass a bare docStatus check)
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
@@ -225,11 +217,7 @@ test('mixed job (customer GRAI required + customer not required): the GRAI custo
     await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
 });
 
-/**
- * "GRAI scannen" in the HU Manager for each given TU (alias of a picked TU, `tuN`): GS1 AI 8003 form (company prefix
- * 7613264, asset type 00309) with a serial of its own per TU. Then back to the picking application, in the job,
- * ready to complete.
- */
+/** "GRAI scannen" in the HU Manager for each given TU (alias of a picked TU, `tuN`) */
 const addGraiToTUsInHUManager = async ({ masterdata, tus }) => {
     const serialBase = Date.now();
     await PickingJobScreen.goBack();
@@ -282,11 +270,7 @@ test('customer GRAI required, TU opened with "Next TU": "Fertigstellen" is refus
     await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
 });
 
-/**
- * Expectation "every picked HU is a CU inside a TU of a TU packing, no loose CU": each booking's CU (`vhuN`) is listed
- * under its TU (`tuN`, the `tu` of the qtyPicked row), and every TU satisfies `qtyTUs: 1`, which holds only for a real
- * TU (never for a virtual packing), with the CU's quantity as its own storage (one CU per TU here).
- */
+/** Expectation "every picked HU is a CU inside a TU of a TU packing, no loose CU" */
 const expectEveryPickedHUIsACUInATU = async ({ pickingJobId, tus, docStatus }) => {
     await Backend.expect({
         pickings: {
@@ -334,7 +318,6 @@ test('line with a TU packing "TU x 4 Stk" (customer GRAI required): first bookin
     await PickGraiScreen.expectNotShown();
     await PickingJobScreen.waitForScreen();
 
-    // TU 1 was opened without GRAI: "Fertigstellen" is refused (customer GRAI required), and completes once every TU has a GRAI
     await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
     await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', tus: [{ qty: 4, grai: null }, { qty: 4, grai: grai }] });
     await addGraiToTUsInHUManager({ masterdata, tus: ['tu1'] });
@@ -349,7 +332,6 @@ test('line with an unlimited-capacity packing that names a TU type: "Next TU" op
     const masterdata = await createMasterdata({
         formatName: uniqueFormatName(),
         orders: [{ key: 'A', qty: 8, graiRequired: 'Y', piItemProduct: 'TU_INF' }],
-        // INF: no qtyCUsPerTU, the capacity row of this TU type is unlimited; G1: the GRAI mapped TU type of the next TU
         packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' }, ...graiTuType('G1') },
     });
     const grai = masterdata.packingInstructions.G1.grai;
@@ -372,7 +354,6 @@ test('line with an unlimited-capacity packing that names a TU type: "Next TU" op
     await PickGraiScreen.expectNotShown();
     await PickingJobScreen.waitForScreen();
 
-    // TU 1 was opened without GRAI: "Fertigstellen" is refused (customer GRAI required), and completes once every TU has a GRAI
     await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
     await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', tus: [{ qty: 4, grai: null }, { qty: 4, grai: grai }] });
     await addGraiToTUsInHUManager({ masterdata, tus: ['tu1'] });
@@ -424,7 +405,7 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
     await test.step('a GRAI scan opens the next TU', async () => {
         await PickLineScanScreen.rescanGrai(grai);
         await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
-        await GetQuantityDialog.clickDoneStayOpen();   // the line is done: the setting PickLineScanScreen.gotoPickingJobOnClose (shipped N) leads back to the line screen it was entered from
+        await GetQuantityDialog.clickDoneStayOpen();
         await PickGraiScreen.expectNotShown();
         await PickingJobLineScreen.waitForScreen();
         await PickingJobLineScreen.goBack();
@@ -440,10 +421,7 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
     });
 });
 
-/*
- * The same three line packings in Scan each CU: every CU scan books one CU of 1 into the open TU, so each TU below holds one CU of 1.
- * The last CU of a line finishes it and the app leaves the scan screen.
- */
+/** The same three line packings in Scan each CU */
 const scanEachMasterdataOf = async ({ orders, packingInstructions }) =>
     await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, packingInstructions });
 
@@ -471,7 +449,6 @@ test('Scan each CU: line with a TU packing "TU x 4 Stk" (customer GRAI required)
     await PickGraiScreen.expectNotShown();
     await PickingJobScreen.waitForScreen();
 
-    // TU 1 was opened without GRAI: "Fertigstellen" is refused (customer GRAI required), and completes once every TU has a GRAI
     await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
     await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', tus: [{ qty: 1, grai: null }, { qty: 1, grai: grai }] });
     await addGraiToTUsInHUManager({ masterdata, tus: ['tu1'] });
@@ -485,7 +462,6 @@ test('Scan each CU: line with an unlimited-capacity packing that names a TU type
 
     const masterdata = await scanEachMasterdataOf({
         orders: [{ key: 'A', qty: 2, graiRequired: 'Y', piItemProduct: 'TU_INF' }],
-        // INF: no qtyCUsPerTU, the capacity row of this TU type is unlimited; G1: the GRAI mapped TU type of the next TU
         packingInstructions: { INF: { tu: 'TU_INF', product: 'P1' }, ...graiTuType('G1') },
     });
     const grai = masterdata.packingInstructions.G1.grai;
@@ -507,7 +483,6 @@ test('Scan each CU: line with an unlimited-capacity packing that names a TU type
     await PickGraiScreen.expectNotShown();
     await PickingJobScreen.waitForScreen();
 
-    // TU 1 was opened without GRAI: "Fertigstellen" is refused (customer GRAI required), and completes once every TU has a GRAI
     await PickingJobScreen.completeRefused({ expectedError: MSG_GRAI_COUNT });
     await expectEveryPickedHUIsACUInATU({ pickingJobId, docStatus: 'Drafted', tus: [{ qty: 1, grai: null }, { qty: 1, grai: grai }] });
     await addGraiToTUsInHUManager({ masterdata, tus: ['tu1'] });

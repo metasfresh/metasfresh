@@ -37,13 +37,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-/**
- * Reads a CU label with the picking line's effective label format only (never the global format list).
- * <p>
- * Mobile app counterpart: {@code misc/services/mobile-webui/mobile-webui-frontend/src/apps/picking/cuQtyEntry/cuLabel.js} reads the label on the
- * handheld before the pick is sent (same checks: format, pack ID, product); change both together. The refusal texts are the AD_Messages
- * of the keys above; the app has its own translation keys for the same refusals.
- */
+/** Reads a CU label with the picking line's effective label format only. */
 @Service
 @RequiredArgsConstructor
 public class PickingCULabelService
@@ -68,9 +62,6 @@ public class PickingCULabelService
 				() -> new PickingCULabelService(ScannableCodeFormatService.newInstanceForUnitTesting()));
 	}
 
-	/**
-	 * @throws AdempiereException (user message) if there is no format, the label does not match it, has no pack ID (Scan each CU) or is of another product
-	 */
 	public ResolvedCULabel resolve(
 			@NonNull final PickingJobLine line,
 			@NonNull final ScannedCode label,
@@ -93,23 +84,17 @@ public class PickingCULabelService
 		throw userErrorWithDetails(MSG_CU_LABEL_FORMAT_MISMATCH, parsed.getExplanation());
 	}
 
-	/**
-	 * @throws AdempiereException (user message) with a reason of its own for "no format configured" and for "the configured format does not exist
-	 *                            or is inactive" (a configuration error)
-	 */
 	@NonNull
 	private ScannableCodeFormat getFormat(@NonNull final Optional<ScannableCodeFormatId> formatId)
 	{
 		final ScannableCodeFormatId id = formatId.orElseThrow(() -> userError(MSG_CU_LABEL_NO_FORMAT));
 		return scannableCodeFormatService.getById(id)
 				.orElseThrow(() -> {
-					// the id is for the log only: the user message stays fully translated
 					logger.warn("CU label refused: label format {} not found or inactive", id.getRepoId());
 					return userError(MSG_CU_LABEL_NO_FORMAT);
 				});
 	}
 
-	/** Checks the label data against the line. */
 	ResolvedCULabel resolve(
 			@NonNull final PickingJobLine line,
 			@NonNull final CULabelData labelData,
@@ -142,7 +127,6 @@ public class PickingCULabelService
 				.build();
 	}
 
-	/** The only place that reads the pack ID of a parsed label. */
 	public CULabelData toCULabelData(@NonNull final ParsedScannedCode parsed)
 	{
 		return CULabelData.builder()
@@ -153,10 +137,7 @@ public class PickingCULabelService
 				.build();
 	}
 
-	/**
-	 * @return true if one of the job's CURRENT picked HUs (any {@code HUStatus}, any step) of that product carries this lot and pack ID.
-	 * One HU query on the PackId attribute value over the picked HU ids; only the (few) HUs with that pack ID are checked for the lot.
-	 */
+	/** @return true if one of the job's picked HUs of that product carries this lot and pack ID */
 	public boolean isAlreadyPickedInJob(
 			@NonNull final PickingJob job,
 			@NonNull final ProductId productId,
@@ -200,7 +181,6 @@ public class PickingCULabelService
 		return new AdempiereException(messageKey, params).markAsUserValidationError();
 	}
 
-	/** The message of the key followed by the details, so the picker sees why (e.g. which part of the label does not fit the format). */
 	private static AdempiereException userErrorWithDetails(@NonNull final AdMessageKey messageKey, @NonNull final ITranslatableString details)
 	{
 		final String errorCode = Services.get(IMsgBL.class).getErrorCode(messageKey);

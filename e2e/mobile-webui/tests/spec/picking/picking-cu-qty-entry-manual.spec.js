@@ -13,17 +13,12 @@ import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, rest
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * Characterization of the Manual mode: these tests PASS before and after the CU quantity entry change.
- * The mobile config never sends `cuQtyEntryMode` / `cuLabelFormatName`, so the profile stays Manual.
- * A test format with the marker parts is active (created, not linked to the profile) as a precondition; that Manual
- * does not read labels with it is covered by jest, not here: no label is scanned in these tests.
- */
+/** Characterization of the Manual mode */
 const createMasterdata = async ({ pickTo }) => {
     return await createMasterdataRememberingSysconfigs({
         language: "en_US",
         request: {
-            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,
             login: { user: { language: "en_US" } },
             mobileConfig: {
                 picking: {
@@ -88,7 +83,7 @@ const openJob = async (masterdata, { withLU }) => {
     return { pickingJobId };
 };
 
-/** Opens the line on the scan screen and checks that Manual shows no CU-mode element. */
+/** Opens the line on the scan screen and checks that Manual shows no CU-mode element */
 const openLineScanScreen = async ({ index }) => {
     await PickingJobScreen.clickLineButton({ index });
     await PickingJobLineScreen.waitForScreen();
@@ -97,7 +92,7 @@ const openLineScanScreen = async ({ index }) => {
     await PickLineScanScreen.expectNextTUButtonHidden();
 };
 
-/** Scans the HU on the scan screen, answers the quantity dialog, and goes back to the job screen. */
+/** Scans the HU on the scan screen, answers the quantity dialog, and goes back to the job screen */
 const scanAndPick = async ({ qrCode, qtyEntered, expectQtyEntered, qtyNotFoundReason }) => {
     await PickLineScanScreen.typeQRCode(qrCode);
     await GetQuantityDialog.fillAndPressDone({ qtyEntered, expectQtyEntered, qtyNotFoundReason });
@@ -157,7 +152,6 @@ test('Manual profile, partial pick asks a reason, "New TU" behaves', async ({ pa
             expectQtyEntered: '10',
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
         });
-        // partial with a reason: the line is yellow and the 7 TU not found count as rejected (the next scan pre-fills 0)
         await PickingJobScreen.expectLineButton({ index: 2, color: 'yellow', qtyToPick: '10 TU', qtyPicked: '3 TU' });
         await openLineScanScreen({ index: 2 });
         await PickLineScanScreen.typeQRCode(masterdata.handlingUnits.HU2.qrCode);

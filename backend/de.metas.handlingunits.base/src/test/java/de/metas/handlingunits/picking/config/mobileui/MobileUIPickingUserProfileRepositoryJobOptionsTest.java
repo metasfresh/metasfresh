@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Writing of the picking job options rows (the options of a customer of the profile) by the repository. */
 class MobileUIPickingUserProfileRepositoryJobOptionsTest
 {
 	private static final ScannableCodeFormatId FORMAT_1 = ScannableCodeFormatId.ofRepoId(301);
@@ -81,7 +80,7 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 		final PickingJobOptionsId referenced = repository.createPickingJobOptions("E2E customer used", options);
 		repository.createPickingJobOptions("E2E customer unused", options);
 		final PickingJobOptionsId otherName = repository.createPickingJobOptions("Customer config unused", options);
-		final PickingJobOptionsId prefixInTheMiddle = repository.createPickingJobOptions("X E2E customer unused", options); // contains the prefix but does not start with it
+		final PickingJobOptionsId prefixInTheMiddle = repository.createPickingJobOptions("X E2E customer unused", options);
 
 		final I_MobileUI_UserProfile_Picking_BPartner customer = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_BPartner.class);
 		customer.setMobileUI_UserProfile_Picking_ID(profile.getMobileUI_UserProfile_Picking_ID());
@@ -127,7 +126,6 @@ class MobileUIPickingUserProfileRepositoryJobOptionsTest
 			assertThat(record.getName()).isEqualTo("E2E customer 1");
 			assertThat(record.getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_EACH_CU);
 			assertThat(record.getC_ScannableCode_Format_ID()).isEqualTo(FORMAT_2.getRepoId());
-			// the other options start as the profile's
 			assertThat(record.isAllowSkippingRejectedReason()).isTrue();
 			assertThat(record.isShowConfirmationPromptWhenOverPick()).isTrue();
 			assertThat(record.getPickingJobAggregationType()).isEqualTo("sales_order");

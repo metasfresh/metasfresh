@@ -557,14 +557,9 @@ class PickingJobGraiScanPickEndToEndTest
 
 	private static final String GRAI_COUNT_MISMATCH_KEY = "de.metas.handlingunits.picking.GRAICountMismatch";
 
-	/** Completion-time GRAI check ({@link PickingJobHUService#getGraiSnapshots}): which HU carries the GRAI of a picked HU. */
 	@Nested
 	class GetGraiSnapshots
 	{
-		/**
-		 * CU quantity entry modes: the picked HU of a label-based-mode line is the CU (virtual HU) inside the open TU.
-		 * The GRAI lives on the TU, so the completion-time GRAI check must read the TU: a TU without GRAI is refused.
-		 */
 		@Test
 		void labelBasedMode_pickedCUInsideTU_tuWithoutGrai_isRefused()
 		{
@@ -577,7 +572,6 @@ class PickingJobGraiScanPickEndToEndTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 		}
 
-		/** Same as above, but the TU carries its GRAI: accepted. */
 		@Test
 		void labelBasedMode_pickedCUInsideTU_tuWithGrai_isAccepted()
 		{
@@ -588,7 +582,6 @@ class PickingJobGraiScanPickEndToEndTest
 			graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId())).assertAllGraisAssigned();
 		}
 
-		/** Several CUs of the same TU are checked once, via their TU. */
 		@Test
 		void labelBasedMode_severalCUsInSameTU_tuCheckedOnce()
 		{
@@ -600,7 +593,6 @@ class PickingJobGraiScanPickEndToEndTest
 			assertThat(snapshots).hasSize(1);
 		}
 
-		/** A picked TU is checked as itself, in every mode. */
 		@Test
 		void pickedTUWithoutGrai_isRefused()
 		{
@@ -615,10 +607,6 @@ class PickingJobGraiScanPickEndToEndTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 		}
 
-		/**
-		 * Manual mode: a picked CU is NOT replaced by its TU (the CU has no GRAI snapshot of its own),
-		 * so a TU without GRAI is not refused through its CU.
-		 */
 		@Test
 		void manualMode_pickedCUInsideTU_isNotMappedToTU()
 		{
@@ -631,7 +619,6 @@ class PickingJobGraiScanPickEndToEndTest
 			snapshots.assertAllGraisAssigned();
 		}
 
-		/** YesWithDummyGRAIs + label-based mode: the TU of a picked CU gets the dummy GRAI at completion (the TU is the GRAI carrier). */
 		@Test
 		void labelBasedMode_dummyGRAIs_writtenOnTheTUOfThePickedCU()
 		{
@@ -667,14 +654,13 @@ class PickingJobGraiScanPickEndToEndTest
 
 	private TUWithCU createTUWithCU(final ProductId productId)
 	{
-		createGraiTuPI(productId, true); // TU PI WITH the GRAI slot
+		createGraiTuPI(productId, true);
 		final HuPackingInstructionsId tuPIId = helper.huService.resolveHuPackingInstructionsId(GRAI.parse(GRAI_CANONICAL));
 		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("5", productId));
 		final I_M_HU cu = CollectionUtils.singleElement(Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(tuId));
 		return new TUWithCU(tuId, HuId.ofRepoId(cu.getM_HU_ID()));
 	}
 
-	/** The GRAI snapshots as the completion check sees them when every CU in a TU of {@code huIds} was booked with a label scan. */
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
 		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.filterCUsInTU(huIds));

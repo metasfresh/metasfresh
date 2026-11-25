@@ -21,18 +21,10 @@ import { createScanEachMasterdata, MODE_SCAN_EACH, openScanEachLine, packLabelOf
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * Layout of the screens and refusals shared by Scan each CU and Scan once (TU list, label refusals, GRAI-required customers, pallet target,
- * quick pack all) and of the Scan each CU only states (pieces-only refusal, second lot, finished line, unpack, second job) at the phone sizes
- * (PHONE_VIEWPORTS), in English and German. Same checker as picking-cu-qty-entry-layout-label-modes.spec.js.
- */
 const MODES = [MODE_SCAN_EACH, MODE_SCAN_ONCE];
 const modeName = (mode) => (mode === MODE_SCAN_EACH ? 'Each' : 'Once');
 
-/**
- * Text of a refusal in the session language. Refusals of the backend whose German text is not pinned here (`de` undefined) are
- * asserted by their English text only; in German the test checks that a refusal toast is shown and judges its layout.
- */
+/** Text of a refusal in the session language */
 const txt = (lang, { en, de }) => (lang === 'en_US' ? en : de ?? '');
 const TEXT = {
     noFormat: { en: 'No label format set on the picking profile', de: 'Kein Etikettenformat im Kommissionierprofil' },
@@ -44,7 +36,7 @@ const TEXT = {
 
 const graiTuType = (key) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true } });
 
-/** Presses "Fertigstellen" on the job screen and confirms: the refusal toast is judged while shown. */
+/** Presses "Fertigstellen" on the job screen and confirms */
 const completeRefusedWithLayout = async (expectedText, whileToastShown) => {
     await expectErrorToast(
         'complete refusal',
@@ -61,7 +53,6 @@ const completeRefusedWithLayout = async (expectedText, whileToastShown) => {
     await PickingJobScreen.waitForScreen();
 };
 
-/** Opens the scan screen of line `index` in the mode; Each opens its first TU when asked, Once never (the caller decides). */
 const openModeLine = async (mode, index = 1) => {
     if (mode === MODE_SCAN_EACH) {
         await openScanEachLine({ index, openTU: false });
@@ -85,8 +76,6 @@ for (const viewport of PHONE_VIEWPORTS) {
         for (const lang of languages) {
             const layout = layoutFor(lang);
 
-            // a line without TU type: "Next TU" opens the TU list; customer GRAI required: no pick-time GRAI screen, "Fertigstellen" refused
-            // noinspection JSUnusedLocalSymbols
             test(`Each: line without TU type, GRAI required: TU list, "Fertigstellen" refused [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createScanEachMasterdata({
@@ -168,8 +157,6 @@ for (const viewport of PHONE_VIEWPORTS) {
                 const M = modeName(mode);
                 const germanToo = (wanted) => lang === 'en_US' || mode === wanted;
 
-                // no effective format
-                // noinspection JSUnusedLocalSymbols
                 if (germanToo(MODE_SCAN_EACH)) test(`${M}: no label format on the profile: refusal [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                     allureMeta('Responsive shared states');
                     const masterdata = await createMasterdata({
@@ -184,8 +171,6 @@ for (const viewport of PHONE_VIEWPORTS) {
                     await layout(`${M} scan screen after the refusal`);
                 });
 
-                // label of another product
-                // noinspection JSUnusedLocalSymbols
                 if (germanToo(MODE_SCAN_ONCE)) test(`${M}: label of another product: refusal [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                     allureMeta('Responsive shared states');
                     const masterdata = await masterdataOf(mode, {
@@ -203,8 +188,6 @@ for (const viewport of PHONE_VIEWPORTS) {
                 });
             }
 
-            // a line counted in kg
-            // noinspection JSUnusedLocalSymbols
             test(`Each: line counted in kg: "pieces only" refusal [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createScanEachMasterdata({
@@ -220,12 +203,9 @@ for (const viewport of PHONE_VIEWPORTS) {
             });
         }
 
-        // The remaining states have no own text; checked in English and German by the language loop below where a header or toast shows text.
         for (const lang of languages) {
             const layout = layoutFor(lang);
 
-            // second lot on the same line, scan after the line is done, unpack
-            // noinspection JSUnusedLocalSymbols
             test(`Each: second lot, finished line re-entered, unpack and rescan [${lang}] (${viewport.name})`, async ({ page: _page }) => {
                 allureMeta('Responsive shared states');
                 const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), language: lang, orders: [{ key: 'A', qty: 3 }] });
@@ -264,8 +244,6 @@ for (const viewport of PHONE_VIEWPORTS) {
                             });
         }
 
-        // the same CU in a second job
-        // noinspection JSUnusedLocalSymbols
         test(`Each: the same CU in a second job: job list, second job scan screen (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive shared states');
             const layout = layoutFor('en_US');
@@ -324,7 +302,6 @@ for (const viewport of PHONE_VIEWPORTS) {
             });
         }
 
-        // Quick Pack All is hidden for a job with a label-based-mode line (mixed job); the Manual-only job still shows it
         const buildMasterdata = async (customers) => await createMasterdataRememberingSysconfigs({
             language: 'en_US',
             request: {
@@ -360,7 +337,6 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobsListScreen.waitForScreen();
             await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 20, productId: masterdata.products.P1.id });
         };
-
 
         // noinspection JSUnusedLocalSymbols
         test(`mixed job (Manual + Scan once): job screen without Quick Pack All (${viewport.name})`, async ({ page: _page }) => {

@@ -82,8 +82,6 @@ const ScanHUAndGetQtyComponent = ({
   // scan each CU: every label books one CU at once, the scan step stays (no quantity block)
   const isPackIdRequired = cuQtyEntryPolicy.packIdRequired;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
-  // scan once: the quantity block stays open after a booking (and after a label rescan); a new key (also a new
-  // suggestion) gives it the new suggestion and the new label values
   const [quantityBlockKey, setQuantityBlockKey] = useState(0);
   const [isProcessing, setProcessing] = useState(false);
   // synchronous twin of isProcessing: state is only visible after the next render, so two taps handled
@@ -241,7 +239,6 @@ const ScanHUAndGetQtyComponent = ({
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
 
-  // scan each CU: one label = one CU of 1 with that label; a refusal (e.g. the CU was already picked) is toasted
   const bookScannedCU = async ({ resolvedBarcodeData }) =>
     await fireOnResult({
       qty: 1,
@@ -288,7 +285,6 @@ const ScanHUAndGetQtyComponent = ({
     }
   };
 
-  // a label scanned inside the quantity block replaces the remembered one; a scan that only opened a TU changes nothing
   const onCULabelRescanned = async (resolvedBarcodeDataNew) => {
     if (resolvedBarcodeDataNew?.isNextTUOpened) {
       return;
@@ -589,7 +585,6 @@ ScanHUAndGetQtyComponent.propTypes = {
   cuQtyEntryPolicy: CUQtyEntryPolicyPropType,
   isShowCloseTargetButton: PropTypes.bool,
   nextTUActions: PropTypes.node,
-  // scan once: the count offered for the next TU, and the label of the last booking of this line (re-entry)
   suggestedQty: PropTypes.number,
   rememberedCULabel: PropTypes.shape({
     cuLabel: PropTypes.string,

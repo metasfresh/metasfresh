@@ -1,8 +1,5 @@
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 
-// Manual keeps the global format list. A global HU QR code whose characters 29-34 happen to form a
-// valid yyMMdd date is read by a label format WITHOUT marker parts as a custom label (wrong), but WITH the
-// marker parts of a real CU label it stays a global HU QR code.
 const huQrCode = `HU#1#{"id":"abcdefghijklmnop261107xyz-30926","packingInfo":{"huUnitType":"V"}}`;
 
 const constant = (startPosition, endPosition, constantValue) => ({

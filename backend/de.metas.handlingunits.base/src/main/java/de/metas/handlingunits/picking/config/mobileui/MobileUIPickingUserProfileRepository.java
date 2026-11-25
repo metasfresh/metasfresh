@@ -467,10 +467,7 @@ public class MobileUIPickingUserProfileRepository
 		return GuavaCollectors.entry(pickingJobOptionsId, pickingJobOptions);
 	}
 
-	/**
-	 * Creates a new picking job options row (the options a customer of the profile can have) from all the given options.
-	 * Pick attributes and {@code completeJobAutomatically} are not stored on the row (they always fall back to the profile's).
-	 */
+	/** Creates a picking job options row from the given options (pick attributes and {@code completeJobAutomatically} are not stored on it). */
 	@NonNull
 	public PickingJobOptionsId createPickingJobOptions(@NonNull final String name, @NonNull final PickingJobOptions from)
 	{
@@ -501,7 +498,6 @@ public class MobileUIPickingUserProfileRepository
 		return PickingJobOptionsId.ofRepoId(record.getMobileUI_UserProfile_Picking_Job_ID());
 	}
 
-	/** Sets the CU quantity entry mode / CU label format of an existing picking job options row; null = empty (use the profile's). Other options are untouched. */
 	public void updatePickingJobOptionsCUQtyEntry(
 			@NonNull final PickingJobOptionsId id,
 			@Nullable final CUQtyEntryMode mode,
@@ -513,7 +509,6 @@ public class MobileUIPickingUserProfileRepository
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
-	/** Clears the CU label format on the profile(s) and on the picking job options rows that use one of the given formats (so those formats can be deleted). */
 	public void unlinkCULabelFormats(@NonNull final Collection<ScannableCodeFormatId> formatIds)
 	{
 		if (formatIds.isEmpty())
@@ -538,10 +533,7 @@ public class MobileUIPickingUserProfileRepository
 		}
 	}
 
-	/**
-	 * Deletes the picking job options rows whose name starts with the given prefix and that no customer row of any profile references.
-	 * Used by the masterdata test API ({@code de.metas.frontend-testing}) to remove the rows of earlier E2E runs.
-	 */
+	/** Deletes the picking job options rows with the given name prefix that no customer row references. */
 	public void deleteUnusedPickingJobOptions(@NonNull final String namePrefix)
 	{
 		final IQuery<I_MobileUI_UserProfile_Picking_BPartner> usedRefs = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)

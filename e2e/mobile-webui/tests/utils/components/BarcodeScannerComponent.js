@@ -84,19 +84,7 @@ export const BarcodeScannerComponent = {
         }, scannedCode);
     }),
 
-    /**
-     * Like {@link BarcodeScannerComponent.type}, but sends the code only once the scanner listens.
-     *
-     * The scanner input (`#input-text`) is in the DOM as soon as React commits it; the scanner's window
-     * `keydown` listener (useKeyboardBarcodeReader) is added later, in a useEffect. Keys sent in between reach
-     * no listener and the scan is lost (CI trace: keys sent 4 ms before "Enabled keyboard barcode reader").
-     *
-     * How it knows the scanner listens: while it collects a scan, the scanner shows the collected keys in its
-     * input (onReadInProgress). So the keys are sent without the final Enter; if the input then shows the code,
-     * the scanner got them and Enter ends the scan; if the input did not change, no listener saw them and the
-     * keys are sent again a little later. Only for a scanner that shows the scan in this input (the hardware
-     * scanner input of BarcodeScannerComponent): with any other listener the keys would be sent more than once.
-     */
+    /** Like {@link BarcodeScannerComponent.type}, but sends the code only once the scanner listens */
     typeWhenScannerListens: async ({ scannedCode, testId }) => await test.step(`${NAME} - Type scanned code once the scanner listens`, async () => {
         if (!scannedCode) {
             throw new Error("Invalid scannedCode provided. Must not be empty.");

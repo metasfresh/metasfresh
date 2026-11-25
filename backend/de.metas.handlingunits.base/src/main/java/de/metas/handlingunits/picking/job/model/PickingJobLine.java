@@ -268,7 +268,6 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/** the picked HUs together with the QR code each pick was booked with */
 	@NonNull
 	public List<HUInfo> getPickedHUInfos()
 	{

@@ -8,9 +8,6 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 
-/**
- * A CU label that was read with the picking line's effective format and checked against the line.
- */
 @Value
 @Builder
 public class ResolvedCULabel

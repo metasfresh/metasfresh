@@ -12,11 +12,7 @@ import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta, createMasterdataRememberingSysc
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * CU quantity entry: reading of the CU label on the Scan once line.
- * Scan once = one label scan, then the quantity block. Keyboard-wedge input: the raw label typed into the scan field.
- * Buyer A has no record: the line takes the profile's mode (Scan once) and the profile's format (without `PackId` part).
- */
+/** CU quantity entry */
 const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
 const LINE_QTY = 20;
 const BEST_BEFORE = defaultBestBefore();
@@ -24,17 +20,11 @@ const BEST_BEFORE = defaultBestBefore();
 const MSG_NO_FORMAT = 'No label format set on the picking profile';
 const MSG_DIFFERENT_PRODUCT = 'The scanned QR Product does not match';
 
-/**
- * @param {object} p
- * @param {string|null} p.profileFormatName format linked to the profile; null = no format linked
- * @param {object[]} p.formats formats to create (active in the DB)
- * @param {object} [p.p2] extra fields of product P2 (e.g. `gtin`)
- */
 const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
     return await createMasterdataRememberingSysconfigs({
         language: "en_US",
         request: {
-            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,   // leftover launchers of other runs must not push this spec's launcher out of the list
+            sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,
             login: { user: { language: "en_US" } },
             mobileConfig: {
                 picking: {
@@ -74,10 +64,6 @@ const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
     });
 };
 
-/**
- * Starts the picking job of the single line, scans the source HU ("Kommissionieren aus") and the picking slot,
- * and opens the line's scan screen: with a source HU known and nothing picked, the line tap goes there directly.
- */
 const openLineScanScreen = async (masterdata) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -91,10 +77,7 @@ const openLineScanScreen = async (masterdata) => {
     return { pickingJobId };
 };
 
-/**
- * Scan once: label scan (scan step) or rescan (inside the open quantity block), type the count, OK.
- * The picker stays on the line with the block open; `expectedQtyTarget` = open quantity after the booking.
- */
+/** Scan once */
 const bookWithLabel = async ({ label, qty, expectedQtyTarget, isRescan = false }) => {
     if (isRescan) {
         await PickLineScanScreen.rescanCULabel(label);
@@ -142,7 +125,6 @@ test('buyer A: Scan once reads the label with the profile format without PackId 
             }
         },
         hus: {
-            // the counter of L(1) is not stored: Scan once ignores the pack ID (the HU has no `PackId` attribute value)
             vhu1: { attributes: { 'Lot-Nummer': lot, 'PackId': null } },
             vhu2: { attributes: { 'Lot-Nummer': lot, 'PackId': null } },
         },

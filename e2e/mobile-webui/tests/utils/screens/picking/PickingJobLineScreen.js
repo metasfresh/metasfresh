@@ -27,7 +27,7 @@ export const PickingJobLineScreen = {
         await GetQuantityDialog.waitForDialog();
     }),
 
-    /** "HU verpacken" / "Pack HU": opens the line's scan screen (the quantity block opens by itself only when a label is remembered). */
+    /** "HU verpacken" / "Pack HU" */
     tapPickHUButton: async () => await test.step(`${NAME} - Tap Pick HU button`, async () => {
         await page.getByTestId(`PickHU-button`).tap();
     }),
@@ -36,12 +36,12 @@ export const PickingJobLineScreen = {
         await page.getByRole('button', { name: 'Scan' }).tap();
     }),
 
-    /** "Schließen" / "Close": closes the line short. */
+    /** "Schließen" / "Close" */
     clickCloseButton: async () => await test.step(`${NAME} - Click Close button`, async () => {
         await page.getByTestId('closeText-button').tap();
     }),
 
-    /** "Wieder öffnen" / "Re-open". */
+    /** "Wieder öffnen" / "Re-open" */
     clickReOpenButton: async () => await test.step(`${NAME} - Click Re-open button`, async () => {
         await page.getByTestId('reOpenText-button').tap();
     }),

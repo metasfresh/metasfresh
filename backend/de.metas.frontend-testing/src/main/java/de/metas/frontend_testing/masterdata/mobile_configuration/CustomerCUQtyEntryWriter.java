@@ -16,20 +16,10 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.stream.StreamSupport;
 
-/**
- * Writes the CU quantity entry mode and CU label format of one customer of the picking profile.
- * They are stored on the customer's picking job options row; a customer of a fresh masterdata run has none,
- * so it is created here and linked on the customer's row of the profile.
- * <p>
- * A customer's job options row replaces the profile's options as a whole (booleans have no "empty = profile" state), so a created row
- * starts as a copy of the profile's options: giving a customer a CU setting must not change its other options.
- * <p>
- * All persistence goes through {@link MobileUIPickingUserProfileService}.
- */
+/** Writes the CU quantity entry mode and CU label format of one customer of the picking profile. */
 @RequiredArgsConstructor
 final class CustomerCUQtyEntryWriter
 {
-	/** Name prefix of the rows created here; {@link MobileConfigCommand} deletes the ones that no customer references. */
 	static final String JOB_OPTIONS_NAME_PREFIX = "E2E customer ";
 
 	@NonNull private final MobileUIPickingUserProfileService profileService;

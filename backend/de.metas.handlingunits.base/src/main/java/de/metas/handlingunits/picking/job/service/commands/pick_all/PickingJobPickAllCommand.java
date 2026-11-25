@@ -53,11 +53,7 @@ public class PickingJobPickAllCommand
 		return pickingJobService.complete(pickingJobChanged);
 	}
 
-	/**
-	 * Pick-all books every line's open quantity without a label scan, which would bypass the pack-ID duplicate check, the TU-first rule
-	 * and the label's lot / best-before of the label-based CU quantity entry modes. The mode is resolved per line (customer value, else profile value);
-	 * one line in a label-based mode refuses the whole job. Independent of {@code IsAllowQuickPackAll}: a direct call is refused the same way.
-	 */
+	/** Pick-all books without a label scan, so one line in a label-based CU quantity entry mode refuses the whole job. */
 	private void assertNoLineUsesLabelBasedCUQtyEntryMode(final PickingJob pickingJob)
 	{
 		final boolean isAnyLineLabelBased = pickingJob.hasLine(line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired());

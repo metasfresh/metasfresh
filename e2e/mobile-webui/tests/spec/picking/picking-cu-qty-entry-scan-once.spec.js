@@ -7,14 +7,7 @@ import { allureMeta, BEST_BEFORE, createMasterdata, restoreSysconfigsAfterEach, 
 
 restoreSysconfigsAfterEach(test);
 
-/**
- * CU quantity entry, Scan once ("one label, type a count"): count, source, TU, over-pick, line done, pallet target.
- *
- * Flow of the app as built: with a source HU scanned ("Kommissionieren aus"), a tap on a line with nothing picked opens its scan screen
- * directly; a label scan opens the quantity block; after OK the picker stays on the line (the block stays open, open quantity drops)
- * until the line is fully booked, then the app goes back to the job screen. Every booking needs an open TU (`openTU()`), except the case that tests the missing TU.
- * Source: one pallet of 20 TUs of 4 pieces, so a count of 5 needs pieces from two source TUs.
- */
+/** CU quantity entry, Scan once ("one label, type a count") */
 // noinspection JSUnusedLocalSymbols
 test('TU opened with "Next TU", label scanned, count 5 (needs two source TUs) books ONE CU of 5 in the TU', async ({ page }) => {
     allureMeta('Scan once count');
@@ -101,7 +94,6 @@ test('Scan once: OK without an open TU is refused, nothing is booked; after "Nex
     await GetQuantityDialog.clickDoneRefused({ expectedError: MSG_NO_OPEN_TU });
 
     await GetQuantityDialog.expectQtyTarget(10);  // line still open 10
-    // 'no pick-time GRAI screen' is not asserted: no customer of this data requires a GRAI, so that screen cannot appear anyway
     await Backend.expect({
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } },
     });
@@ -143,7 +135,6 @@ test('the CUs come from the "Kommissionieren aus" HU; the source pallet drops by
             }
         },
         hus: {
-            // the source pallet is lowered by exactly the booked 5; with `anonymousPickHUsOnTheFly` N no other HU can have supplied them
             [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: `${SOURCE_QTY - 5} PCE` } },
         },
     });
@@ -184,9 +175,6 @@ test('open TU holding 3, count 5 (needs two source TUs) books ONE CU of 5 into i
             }
         },
         hus: {
-            // the open TU holds 8 = one CU of 3 and ONE CU of 5. No requirement orders the CUs inside a TU, and the
-            // backend's `cus` assertion sorts by M_HU_ID (the merged CU of 5 can carry the lower id), so each CU is
-            // asserted by its own content through its picking alias; 3 + 5 = the TU total leaves no room for a third CU
             tu1: { storages: { P1: '8 PCE' } },
             vhu1: { storages: { P1: '3 PCE' }, attributes: { 'Lot-Nummer': lot } },
             vhu2: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lot } },
@@ -209,8 +197,6 @@ test('a count smaller than the open quantity is not a rejection', async ({ page 
 
     await GetQuantityDialog.clickCancel();
     await PickingJobScreen.waitForScreen();
-    // the line button shows the picked quantity only (4); that nothing was rejected is proven above:
-    // no reject field in the dialog and the open quantity dropped to 6 (a booked rejection would have dropped it to 0)
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '4 Stk' });
 
     await Backend.expect({
@@ -262,7 +248,6 @@ test('the booking that reaches the open quantity finishes the line and goes back
 test('a count above the open quantity is blocked, on a Manual line and on a Scan once line', async ({ page }) => {
     allureMeta('Over-pick refused');
 
-    // profile Manual (mode not sent) with a Scan once customer record; both lines order 12 (Manual line counts 3 TUs of 4)
     const formatName = uniqueFormatName();
     const masterdata = await createMasterdata({
         formatName,
@@ -311,8 +296,6 @@ test('on a line whose packing is a TU packing, a SECOND CU booking into the open
     await scanLabel(labelOf({ masterdata }));
     await GetQuantityDialog.typeQtyEntered(1);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
-    // the first booking turns the new TU into a real TU; only a SECOND booking into it reaches the
-    // rule "Cannot pick TUs when TU pick target is set!" (PickingJobPickCommand: TU picking unit + existing TU target)
     await test.step('second booking into the existing TU: no "Cannot pick TUs when TU pick target is set!"', async () => {
         await GetQuantityDialog.typeQtyEntered(1);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
@@ -366,7 +349,6 @@ test('Pallet target (Scan once): pallet + new TU: counts 3 and 2 book one CU eac
                 }
             },
             hus: {
-                // the TU holds exactly the two booked CUs (vhu1 = the 3, vhu2 = the 2; the TU's CU list is not in booking order)
                 tu1: { storages: { P1: '5 PCE' } },
                 vhu1: { storages: { P1: '3 PCE' }, attributes: { 'Lot-Nummer': lot } },
                 vhu2: { storages: { P1: '2 PCE' } },
