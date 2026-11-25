@@ -70,7 +70,7 @@ const pallet = ({ product, qty, includedTUsCount, palletItemQty }) => ({
 });
 
 test.describe('Physical inventory: pallets use the product-specific pallet item', () => {
-  // the UI steps take about 20 s; completing (100 TUs on 4 pallets) can take up to INVENTORY_COMPLETE_TIMEOUT
+  // the UI steps take about 25 s; completing (100 TUs on 4 pallets) can take up to INVENTORY_COMPLETE_TIMEOUT (see there)
   test.describe.configure({ timeout: INVENTORY_COMPLETE_TIMEOUT + 60 * 1000 });
 
   test.beforeEach(() => {
