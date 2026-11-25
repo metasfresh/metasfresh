@@ -228,7 +228,7 @@ test('lots A, A, B: 3 CUs, the TU has no lot (mixed), PackId on no TU, the first
 });
 
 // noinspection JSUnusedLocalSymbols
-test('buyer B line (Scan each CU, pack-ID format): a label without counter (L0) is refused with the pack-ID text; buyer C line (effective format has no pack-ID part): every label is refused with the pack-ID text', async ({ page }) => {
+test('buyer B line (Scan each CU, pack-ID format): a label without counter (L0) is refused as a format mismatch; buyer C line (effective format has no pack-ID part): every label is refused with the pack-ID text', async ({ page }) => {
     allureMeta('Scan each CU needs a pack ID');
 
     const plainFormat = uniqueFormatName();

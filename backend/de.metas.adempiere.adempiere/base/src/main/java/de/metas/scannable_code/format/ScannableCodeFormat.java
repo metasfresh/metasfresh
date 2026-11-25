@@ -59,4 +59,5 @@ public class ScannableCodeFormat
 			return ExplainedOptional.emptyBecause(ex.getLocalizedMessage());
 		}
 	}
+
 }
