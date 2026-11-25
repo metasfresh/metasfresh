@@ -102,11 +102,13 @@ for (const viewport of PHONE_VIEWPORTS) {
         test(`Manual quantity dialog shows its labels and values uncut sideways (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive quantity block');
 
-            // the packing instruction name of the test masterdata is one long unbroken word, like a real article code
+            // a packing instruction name that is one long word without a space (like an article code), wider than any phone screen
+            const longTU = 'P1_CartonOf4CUsWithALongNameWithoutSpaces';
             const masterdata = await createMasterdata({
                 formatName: uniqueFormatName(),
-                orders: [{ key: 'A', qty: 12 }],
+                orders: [{ key: 'A', qty: 12, piItemProduct: longTU }],
                 customers: [{ customer: 'custA', cuQtyEntryMode: MODE_MANUAL }],
+                packingInstructions: { P1_20x4: { lu: 'LU', qtyTUsPerLU: 20, tu: longTU, product: 'P1', qtyCUsPerTU: 4 } },
             });
             await startJob(masterdata, { qtyToDeliver: 12 });
             await PickingJobScreen.clickLineButton({ index: 1 });
@@ -116,6 +118,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             const tableArea = dialog.locator('.table-container');
             const packingName = dialog.locator('#packing-name');
             await expect(packingName, 'the dialog shows the packing instruction name').toBeVisible();
+            await expect(packingName, 'the test needs a packing name with a long word without a space').toHaveText(/\S{40,}/);
 
             // the table area is scrolled sideways when its content is wider than it: the labels then sit off the left edge
             const measured = await tableArea.evaluate((area) => {
