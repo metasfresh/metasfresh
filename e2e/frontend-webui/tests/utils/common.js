@@ -25,11 +25,12 @@ export const rememberSysconfigsToRestore = ({ previousSysconfigs }) => {
     .forEach((previous) => sysconfigsToRestore.push(previous));
 };
 
-/** Returns the remembered values and forgets them, so a failing restore cannot leak into the next test. */
-export const takeSysconfigsToRestore = () => {
-  const result = sysconfigsToRestore;
+/** Returns the remembered values; they stay remembered until forgetSysconfigsToRestore, so a failed restore is retried. */
+export const getSysconfigsToRestore = () => [...sysconfigsToRestore];
+
+/** Forgets the remembered values; call only after the restore succeeded. */
+export const forgetSysconfigsToRestore = () => {
   sysconfigsToRestore = [];
-  return result;
 };
 
 /**

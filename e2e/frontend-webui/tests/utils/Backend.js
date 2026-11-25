@@ -1,5 +1,5 @@
 import { test, testContext } from '../../playwright.config';
-import { getPage, rememberSysconfigsToRestore, takeSysconfigsToRestore } from './common';
+import { getPage, rememberSysconfigsToRestore, getSysconfigsToRestore, forgetSysconfigsToRestore } from './common';
 import { WEBAPI_BASE_URL } from './WebAPIValidation';
 
 /**
@@ -122,7 +122,7 @@ export const Backend = {
    * AD_SysConfig reset reaches (see resetWebApiCaches).
    */
   restoreSysconfigsChangedByTest: async () => {
-    const previousSysconfigs = takeSysconfigsToRestore();
+    const previousSysconfigs = getSysconfigsToRestore();
     if (previousSysconfigs.length === 0) {
       return;
     }
@@ -134,8 +134,14 @@ export const Backend = {
         headers: { 'Content-Type': 'application/json' },
       });
       if (!response.ok()) {
-        throw new Error(`restoreSysconfigs failed: HTTP ${response.status()} ${response.statusText()}`);
+        // The rows stay remembered, so the next test's restore retries them instead of starting on a dirty DB.
+        throw new Error(
+          `restoreSysconfigs failed: HTTP ${response.status()} ${response.statusText()} ${await response.text()}; ` +
+            `not restored: ${JSON.stringify(previousSysconfigs)}`
+        );
       }
+      forgetSysconfigsToRestore();
+      // Both resets are needed: the AD_SysConfig one needs no login, the full one below does (401 before login).
       await resetWebApiSysConfigCache();
       // The full reset needs a logged-in webapi session (GET /cache/reset -> 401 otherwise). A test that
       // failed before login never opened a sysconfig-dependent cached view, so only that case is skipped.
