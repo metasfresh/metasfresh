@@ -1383,7 +1383,8 @@ test.describe('Pallet type that does not take the crate type, on the customer\'s
 /** Tones of the scanner beeps (utils/audio.js: OK 1000 Hz, error 100 Hz; BarcodeScannerComponent.jsx okBeepParams / errorBeepParams) */
 const OK_BEEP_HZ = 1000;
 const ERROR_BEEP_HZ = 100;
-const SCANNER_ERROR_TOAST_ID = 'BarcodeScannerComponentError';
+// the scanner gives every error toast its own id: 'BarcodeScannerComponentError-<seq>' (BarcodeScannerComponent.jsx showErrorToast)
+const SCANNER_ERROR_TOAST_ID = /^BarcodeScannerComponentError(-\d+)?$/;
 
 // noinspection JSUnusedLocalSymbols
 test('Slot screen: a refused GRAI scan plays the error beep with the scanner\'s one error message, an accepted scan the OK beep', async ({ page: _page }) => {
