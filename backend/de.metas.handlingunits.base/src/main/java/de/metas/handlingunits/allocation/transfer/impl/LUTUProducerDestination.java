@@ -436,7 +436,12 @@ public class LUTUProducerDestination
 	/**
 	 * Sets the product whose LU item {@link #getLUItemPI()} falls back to when the LU PI (or the existing LU's PI) has no item without product for the TU PI.
 	 * An item without product still comes first, also if there is an item for this product. Items of other products are never used.
+	 * Both lookups honour this producer's partner ({@link #getBPartnerId()}).
 	 * Has no effect if the LU item is set explicitly ({@link #setLUItemPI(I_M_HU_PI_Item)}).
+	 * <p>
+	 * Deliberately stricter than the HU editor's fallback when moving TUs onto an existing LU ({@code HUTransformService.tuToExistingLU}), which may use
+	 * another product's item and checks for an item without product regardless of the partner: here the picked product decides, so loose pieces
+	 * never go onto another product's item.
 	 */
 	public void setLUItemFallbackProductId(@Nullable final ProductId productId)
 	{
