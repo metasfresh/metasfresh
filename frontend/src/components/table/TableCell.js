@@ -15,6 +15,16 @@ import WidgetWrapper from '../../containers/WidgetWrapper';
 import WidgetTooltip from '../widget/WidgetTooltip';
 
 /**
+ * The grid's row data turns a date string that does not parse (e.g. the display text "20.11.2026")
+ * into an invalid moment (documentListHelper.parseDateToReadable), which drops the text. Its creation
+ * data still holds the text it was made from; the date picker needs it to open on the right month.
+ */
+const getRawCellValue = (value) =>
+  value && typeof value.creationData === 'function' && !value.isValid()
+    ? value.creationData().input
+    : value;
+
+/**
  * @file Class based component.
  * @module TableCell
  * @extends PureComponent
@@ -148,15 +158,47 @@ class TableCell extends PureComponent {
    * @param {object} e
    */
   onDoubleClick = (e) => {
-    const { property, isEditable, handleDoubleClick, isReadonly } = this.props;
+    if (this.props.isEditable) {
+      this.enterEditByPointer(e);
+    }
+  };
 
-    if (isEditable) {
-      handleDoubleClick({
-        event: e,
-        property,
-        focus: true,
-        readonly: isReadonly,
-      });
+  /**
+   * @method enterEditByPointer
+   * @summary Enters the edit mode of this cell because of a pointer action (click / double click)
+   *
+   * @param {object} e
+   */
+  enterEditByPointer = (e) => {
+    const { property, handleDoubleClick, isReadonly } = this.props;
+
+    handleDoubleClick({
+      event: e,
+      property,
+      focus: true,
+      readonly: isReadonly,
+      pointer: true,
+    });
+  };
+
+  /**
+   * @method onClick
+   * @summary A single pointer click on a static date cell enters its edit mode (and so opens its
+   * calendar); other cell types are entered by typing, double click or Enter as before (this handler
+   * is attached to date cells only). A click with Shift / Ctrl / Meta extends the row selection
+   * (Table.selectRange / selectMore) and does not edit.
+   *
+   * @param {object} e
+   */
+  onClick = (e) => {
+    const { isEditable, isEdited, isReadonly } = this.props;
+
+    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+      return;
+    }
+
+    if (isEditable && !isEdited && !isReadonly) {
+      this.enterEditByPointer(e);
     }
   };
 
@@ -245,9 +287,20 @@ class TableCell extends PureComponent {
       colIndex,
       updateRow,
       columnWidth,
+      isPointerEdit,
+      isDateCell,
+      tableCellData,
     } = this.props;
     const docId = `${this.props.docId}`;
-    const isOpenDatePicker = isEdited && item.widgetType === 'Date';
+    // a grid date cell opens its calendar only when the edit was entered by a pointer action
+    const isOpenDatePicker = isEdited && isDateCell && isPointerEdit;
+    const gridDateProps = isDateCell
+      ? {
+          isGridCell: true,
+          isPointerEdit,
+          gridCellValue: getRawCellValue(tableCellData?.value),
+        }
+      : null;
     const isDateField = checkIfDateField({ item });
     const style = cellExtended ? { height: extendLongText * 20 } : {};
     // An extended (multi-line) row makes the static value taller than one line. Hand that height
@@ -278,6 +331,7 @@ class TableCell extends PureComponent {
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
         ref={this.cellRef}
+        onClick={isDateCell ? this.onClick : undefined}
         onDoubleClick={this.onDoubleClick}
         onKeyDown={this.handleKeyDown}
         onContextMenu={this.handleRightClick}
@@ -342,6 +396,7 @@ class TableCell extends PureComponent {
                 updateRow,
                 isModal,
               }}
+              {...gridDateProps}
               suppressChange={isEdited}
               clearValue={this.clearWidgetValue}
               dateFormat={isDateField}
@@ -397,6 +452,8 @@ TableCell.propTypes = {
   onClickOutside: PropTypes.func,
   onCellChange: PropTypes.func,
   isEdited: PropTypes.bool,
+  isPointerEdit: PropTypes.bool,
+  isDateCell: PropTypes.bool,
   isGerman: PropTypes.bool,
   entity: PropTypes.any,
   mainTable: PropTypes.bool,

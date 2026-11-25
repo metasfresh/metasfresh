@@ -47,6 +47,7 @@ class DatePicker extends PureComponent {
     }
 
     if (isOpenDatePicker) {
+      // (a grid date cell only passes this when the edit was entered by a pointer action)
       setTimeout(() => this.picker.openCalendar(), 100);
     }
   }
@@ -65,17 +66,42 @@ class DatePicker extends PureComponent {
 
   handleDateChange = (dateObj) => {
     // console.log('handleDateChange', { dateObj });
+    // whether this change comes from typing into the input (set by the input's onChange); consumed
+    // on every change so that a later calendar pick is never taken for typing
+    const isTyped = this.isInputChangeInProgress;
+    this.isInputChangeInProgress = false;
+
     if (!dateObj) {
+      // Grid date cell: clearing the typed text is pending like any typing (Escape discards it)
+      if (this.props.isGridCell && isTyped) {
+        this.pendingTypedDate = null;
+        this.isTypedClearPending = true;
+        return;
+      }
       // console.log('handleDateChange - calling patch with null param');
       this.callPatchIfNeeded(null);
     } else {
       let dateAsMoment = this.convertToMoment(dateObj, true);
       // const dateAsMoment_BeforeSetTZ = dateAsMoment;
 
+      // Grid date cell: keep a typed date pending until the cell is left, so that Escape can discard it
+      if (this.props.isGridCell && isTyped) {
+        const typedAsMoment = this.setTimezone(dateAsMoment);
+        this.pendingTypedDate =
+          typedAsMoment && typedAsMoment.isValid() ? typedAsMoment : null;
+        this.isTypedClearPending = false;
+        return;
+      }
+
       // IMPORTANT: because the date is coming from TetheredDateTime/DateTime(react-datetime),
       // and because that component is returning a Moment using browser's timezone but with date/time correct for our timezone,
       // we have to simply change the timezone to our timezone preserving the time.
       dateAsMoment = this.setTimezone(dateAsMoment);
+
+      // Grid date cell: a calendar pick supersedes a typed date still pending in this edit
+      if (this.props.isGridCell) {
+        this.discardTypedDate();
+      }
 
       // console.log('handleDateChange - calling patch', {
       //   dateAsMoment: dateAsMoment.format(this.getMomentNormalizedFormat()),
@@ -90,6 +116,25 @@ class DatePicker extends PureComponent {
         // console.log('handleDateChange - not calling patch', { dateAsMoment });
       }
     }
+  };
+
+  /**
+   * Grid date cell: saves what was typed since the cell was entered: the typed moment
+   * (`pendingTypedDate`), or the clearing of the date (`isTypedClearPending`).
+   */
+  commitTypedDate = () => {
+    const { pendingTypedDate, isTypedClearPending } = this;
+    this.discardTypedDate();
+    if (pendingTypedDate) {
+      this.callPatchIfNeeded(pendingTypedDate);
+    } else if (isTypedClearPending) {
+      this.callPatchIfNeeded(null);
+    }
+  };
+
+  discardTypedDate = () => {
+    this.pendingTypedDate = null;
+    this.isTypedClearPending = false;
   };
 
   resetPickerSelectedDateAndInputValueToLastPatchedDate = () => {
@@ -145,6 +190,10 @@ class DatePicker extends PureComponent {
   handleBlur = (/*dateObj*/) => {
     // NOTE: for some reason `dateObj` is not always the up-to-date value of the date
     // for that reason we cannot use it and we relly entirely on the date we get on "handleDateChange".
+
+    // Grid date cell: a date typed into the input is only saved when the cell is left
+    // (Escape discards it, see handleKeydown).
+    this.commitTypedDate();
 
     //
     // Cover some corner cases when user is writing something into date/time field and then is TABing out
@@ -338,7 +387,12 @@ class DatePicker extends PureComponent {
   handleFocus = () => {
     this.setState({ datePatched: this.props.value });
 
-    this.openCalendarIfEditable();
+    // Grid date cell: entering the edit by keyboard must not pop the calendar up over the typing;
+    // a pointer action (click into the cell / the field / the calendar icon) opens it.
+    const { isGridCell, isPointerEdit } = this.props;
+    if (!isGridCell || isPointerEdit) {
+      this.openCalendarIfEditable();
+    }
   };
 
   // called by onClickOutsideHOC
@@ -348,13 +402,26 @@ class DatePicker extends PureComponent {
     // we have to narrow this down to the current date field.
     // For that reason we check the isCalendarOpen to see if it has the calendar open.
 
+    // (a grid date cell exists only while it is edited, and may have no calendar open)
     const { isCalendarOpen } = this.state;
-    if (isCalendarOpen) {
+    if (isCalendarOpen || this.props.isGridCell) {
       this.handleBlur();
     }
   };
 
   handleKeydown = (event) => {
+    // Grid date cell: Escape (discard the typing, restore the stored value) and Enter (save the typed
+    // date) belong to the grid's cell editing, so they must reach it.
+    if (this.props.isGridCell) {
+      if (event.key === 'Escape') {
+        this.discardTypedDate();
+        return;
+      }
+      if (event.key === 'Enter') {
+        this.commitTypedDate();
+        return;
+      }
+    }
     event.stopPropagation();
   };
 
@@ -398,14 +465,25 @@ class DatePicker extends PureComponent {
       this.openCalendarIfEditable();
     };
 
+    const { isGridCell } = this.props;
+    const onChange = (event) => {
+      // react-datetime reports the typed date asynchronously; remember it came from typing
+      this.isInputChangeInProgress = true;
+      props.onChange && props.onChange(event);
+    };
+
     return (
       <div className={className}>
         <input
           {...props}
-          className="form-control"
+          // the grid focuses its cell editor via this class (TableRow._editProperty)
+          className={
+            isGridCell ? 'form-control js-input-field' : 'form-control'
+          }
           ref={(input) => (this.inputElement = input)}
           value={dateString}
           onClick={onClick}
+          onChange={onChange}
         />
       </div>
     );
@@ -432,6 +510,24 @@ class DatePicker extends PureComponent {
     return valueAsString;
   };
 
+  /**
+   * The moment react-datetime opens on for a grid date cell. react-datetime compares its viewDate
+   * prop by reference and resets the calendar to it when the reference changes, so the moment is
+   * cached per `gridCellValue` (a string is parsed into a new moment on each call).
+   */
+  getGridViewDate = () => {
+    const { isGridCell, gridCellValue } = this.props;
+    if (!isGridCell || !gridCellValue) {
+      return null;
+    }
+    if (this.gridViewDateSource !== gridCellValue) {
+      const viewDate = this.convertToMoment(gridCellValue, false);
+      this.gridViewDateSource = gridCellValue;
+      this.gridViewDate = viewDate && viewDate.isValid() ? viewDate : null;
+    }
+    return this.gridViewDate;
+  };
+
   render() {
     const { dateFormat, timeFormat } = this.props;
     const { isCalendarOpen } = this.state;
@@ -451,11 +547,16 @@ class DatePicker extends PureComponent {
     //   props: this.props,
     // });
 
+    // Grid date cell: open the calendar on the month of the cell's stored value, also when the value
+    // does not parse into react-datetime's own selected date (it would fall back to today's month)
+    const gridViewDate = this.getGridViewDate();
+
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
           ref={(picker) => (this.picker = picker)}
           {...this.props}
+          {...(gridViewDate ? { viewDate: gridViewDate } : {})}
           value={valueNorm}
           closeOnSelect={true}
           closeOnTab={true}
@@ -490,6 +591,9 @@ class DatePicker extends PureComponent {
  * @prop {string} [field]
  * @prop {*} [value]
  * @prop {bool} [isOpenDatePicker]
+ * @prop {bool} [isGridCell] - set only by the grid (TableCell)
+ * @prop {bool} [isPointerEdit] - grid only: the cell's edit was entered by a pointer action
+ * @prop {*} [gridCellValue] - grid only: the cell's raw stored value
  * @prop {bool} [hasTimeZone]
  * @prop {bool|string} [dateFormat]
  * @prop {*} [timeZone]
@@ -502,6 +606,9 @@ DatePicker.propTypes = {
   field: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   isOpenDatePicker: PropTypes.bool,
+  isGridCell: PropTypes.bool,
+  isPointerEdit: PropTypes.bool,
+  gridCellValue: PropTypes.any,
   dateFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   timeFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   hasTimeZone: PropTypes.bool,
