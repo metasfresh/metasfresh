@@ -133,7 +133,7 @@ public class PickingJobHUService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
 
-	/** The GRAI snapshots of the given HUs as they are, without looking for a TU. Test convenience: the completion check uses {@link #getGraiSnapshotsOfTUs(Set, Set)}. */
+	/** The GRAI snapshots of the given HUs as they are, without looking for a TU. Test convenience: the completion check uses {@link #getGraiSnapshotsOfPicked(Collection)}. */
 	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
@@ -146,8 +146,11 @@ public class PickingJobHUService
 	 * {@link CUBookingSpecification#filterBookedWithLabelScan(Collection)}) sits in a TU which carries the GRAI and a CU has no GRAI snapshot of its own,
 	 * so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
 	 *
+	 * Production callers use {@link #getGraiSnapshotsOfPicked(Collection)}.
+	 *
 	 * @param cusBookedWithLabelScan CUs in a TU only
 	 */
+	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfTUs(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
 	{
