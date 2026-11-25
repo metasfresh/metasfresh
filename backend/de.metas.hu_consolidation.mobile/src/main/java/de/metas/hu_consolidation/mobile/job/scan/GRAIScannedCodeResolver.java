@@ -61,9 +61,7 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 			return Optional.empty();
 		}
 
-		final List<I_M_HU> crates = cratesQuery
-				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
-				.list(2);
+		final List<I_M_HU> crates = withGRAI(cratesQuery, grai).list(2);
 		if (crates.isEmpty())
 		{
 			return Optional.empty();
@@ -75,6 +73,19 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 
 		final HuId huId = HuId.ofRepoId(crates.get(0).getM_HU_ID());
 		return Optional.of(HUConsolidationScannedCrate.of(huId, queues.getPickingSlotId(huId)));
+	}
+
+	/**
+	 * @return {@code true} if at least one crate (an active top-level HU), in or outside any job, carries the GRAI
+	 */
+	public boolean isCarriedByAnyCrate(@NonNull final GRAI grai)
+	{
+		return withGRAI(HUConsolidationCrateQuery.allCrates(handlingUnitsDAO), grai).anyMatch();
+	}
+
+	private static IHUQueryBuilder withGRAI(@NonNull final IHUQueryBuilder query, @NonNull final GRAI grai)
+	{
+		return query.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString());
 	}
 
 	private static AdempiereException huNotFound(@NonNull final GRAI grai)

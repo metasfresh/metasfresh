@@ -26,10 +26,17 @@ final class HUConsolidationCrateQuery
 			return Optional.empty();
 		}
 
-		return Optional.of(handlingUnitsDAO
+		return Optional.of(allCrates(handlingUnitsDAO).addOnlyHUIds(huIds));
+	}
+
+	/**
+	 * @return the query over all crates, i.e. all active top-level HUs, in or outside any job
+	 */
+	static IHUQueryBuilder allCrates(@NonNull final IHandlingUnitsDAO handlingUnitsDAO)
+	{
+		return handlingUnitsDAO
 				.createHUQueryBuilder()
 				.setOnlyActiveHUs(true)
-				.setOnlyTopLevelHUs()
-				.addOnlyHUIds(huIds));
+				.setOnlyTopLevelHUs();
 	}
 }
