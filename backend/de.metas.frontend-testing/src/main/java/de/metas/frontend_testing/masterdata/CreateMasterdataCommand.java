@@ -899,7 +899,7 @@ public class CreateMasterdataCommand
 	private void ensureShipmentScheduleAttributeConfigs()
 	{
 		EnsureShipmentScheduleAttributeConfigCommand.builder()
-				.attributeValues(request.getShipmentScheduleAttributeConfigs())
+				.attributeCodes(request.getShipmentScheduleAttributeConfigs())
 				.build()
 				.execute();
 	}

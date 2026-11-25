@@ -123,9 +123,9 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateProductRequest> products;
 
 	/**
-	 * Attribute values (e.g. {@code ["Lot-Nummer", "HU_BestBeforeDate"]}) to make sure are active in
+	 * Attribute codes ({@code M_Attribute.Value}, e.g. {@code ["Lot-Nummer", "HU_BestBeforeDate"]}) to make sure are active in
 	 * {@code M_ShipmentSchedule_AttributeConfig} of the sales-order-line shipment schedule handler, so that shipment lines
-	 * are split by them. Existing active rows are left untouched (inactive ones too; a new row is inserted); the rows stay after the run. Applied BEFORE
+	 * are split by them. Existing active rows are left untouched (inactive ones too; a new row is inserted). The rows stay after the run and are global to the database: every later shipment there is split by these attributes. Applied BEFORE
 	 * {@code salesOrders}. See {@link de.metas.frontend_testing.masterdata.shipment_schedule.EnsureShipmentScheduleAttributeConfigCommand}.
 	 */
 	@Nullable List<String> shipmentScheduleAttributeConfigs;

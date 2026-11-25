@@ -243,6 +243,13 @@ test('pre-existing LU target: LU lot follows its TUs', async ({ page }) => {
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI2.tuName });
 
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 2, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
+    // lu1 is named here by the picking line; a new LU then carries the lot of its only TU
+    await Backend.expect({
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [
+            { qtyPicked: '2 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+        ] } } } },
+        hus: { lu1: { attributes: { [LOT_ATTRIBUTE]: 'L-A' } } }
+    });
     // a new box for the second pick: the LU then holds two TUs with different lots
     await PickingJobScreen.closeTargetTU();
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI2.tuName });

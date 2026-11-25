@@ -59,10 +59,6 @@ class PickedHUAttributesUpdater
 		lu.getTus().forEach(tu -> updateTUPickAttributes(tu, pickAttributes, serialNoPickingEnabled));
 
 		updateHUPickAttributes(lu.toHU(), pickAttributes, lu.isPreExistingLU(), serialNoPickingEnabled);
-		if (lu.isPreExistingLU())
-		{
-			recomputeLotAndBestBeforeFromChildrenIfNotSet(lu.toHU(), pickAttributes);
-		}
 	}
 
 	private void updateTUPickAttributes(@NonNull final TU tu, @NonNull final PickAttributes pickAttributes, final boolean serialNoPickingEnabled)
@@ -79,30 +75,6 @@ class PickedHUAttributesUpdater
 			}
 
 			updateHUPickAttributes(tu.toHU(), pickAttributes, true, serialNoPickingEnabled);
-			recomputeLotAndBestBeforeFromChildrenIfNotSet(tu.toHU(), pickAttributes);
-		}
-	}
-
-	/** For lot and best-before date, each one not set in {@code pickAttributes}: sets the value of {@code hu} from its children (the one common value, else null), only if the HU storage has that attribute. */
-	private void recomputeLotAndBestBeforeFromChildrenIfNotSet(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes)
-	{
-		final boolean recomputeLotNo = !pickAttributes.isSetLotNo();
-		final boolean recomputeBestBeforeDate = !pickAttributes.isSetBestBeforeDate();
-		if (!recomputeLotNo && !recomputeBestBeforeDate)
-		{
-			return;
-		}
-
-		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(hu);
-		huAttributes.setSaveOnChange(true);
-
-		if (recomputeBestBeforeDate && huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
-		{
-			setBestBeforeDateFromChildren(huAttributes);
-		}
-		if (recomputeLotNo && huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
-		{
-			setLotNoFromChildren(huAttributes);
 		}
 	}
 
@@ -113,7 +85,10 @@ class PickedHUAttributesUpdater
 
 	private void updateHUPickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean recomputeFromChildren, final boolean serialNoPickingEnabled)
 	{
-		if (!pickAttributes.isSetBestBeforeDate()
+		// With recomputeFromChildren, lot and best-before date are always recomputed from the children (even when the pick
+		// did not set them), so that the HU never keeps a value that does not match its content.
+		if (!recomputeFromChildren
+				&& !pickAttributes.isSetBestBeforeDate()
 				&& !pickAttributes.isSetProductionDate()
 				&& !pickAttributes.isSetLotNo()
 				&& !serialNoPickingEnabled)
@@ -124,16 +99,16 @@ class PickedHUAttributesUpdater
 		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(hu);
 		huAttributes.setSaveOnChange(true);
 
-		if (pickAttributes.isSetBestBeforeDate())
+		if (recomputeFromChildren)
 		{
-			if (recomputeFromChildren)
+			if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 			{
 				setBestBeforeDateFromChildren(huAttributes);
 			}
-			else
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, pickAttributes.getBestBeforeDate());
-			}
+		}
+		else if (pickAttributes.isSetBestBeforeDate())
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, pickAttributes.getBestBeforeDate());
 		}
 		if (pickAttributes.isSetProductionDate())
 		{
@@ -146,16 +121,16 @@ class PickedHUAttributesUpdater
 				huAttributes.setValue(AttributeConstants.ProductionDate, pickAttributes.getProductionDate());
 			}
 		}
-		if (pickAttributes.isSetLotNo())
+		if (recomputeFromChildren)
 		{
-			if (recomputeFromChildren)
+			if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 			{
 				setLotNoFromChildren(huAttributes);
 			}
-			else
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, pickAttributes.getLotNo());
-			}
+		}
+		else if (pickAttributes.isSetLotNo())
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, pickAttributes.getLotNo());
 		}
 		// SerialNo: only when the product opts in (serialNoPickingEnabled) AND the HU storage actually supports the attribute.
 		// A product flagged IsSerialNoPicked=Y whose picked HU lacks the SerialNo attribute is a config gap → no write, no error.

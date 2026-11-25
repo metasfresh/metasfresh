@@ -50,7 +50,7 @@ public class JsonInOutLineExpectation
 
 	/**
 	 * Expected attribute values of the line's attribute set instance (M_InOutLine.M_AttributeSetInstance_ID), keyed by
-	 * attribute value (e.g. {@code Lot-Nummer}). A {@code null} map value expects the attribute to have no value.
+	 * attribute code (e.g. {@code Lot-Nummer}). A {@code null} map value expects the attribute to have no value.
 	 * Value syntax: see {@link de.metas.frontend_testing.expectations.HUAttributeAssertions}.
 	 * When the map is null, no attribute assertion is performed on this line.
 	 */
