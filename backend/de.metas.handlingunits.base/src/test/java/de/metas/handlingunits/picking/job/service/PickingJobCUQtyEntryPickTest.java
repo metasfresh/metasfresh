@@ -1,5 +1,9 @@
 package de.metas.handlingunits.picking.job.service;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.slf4j.LoggerFactory;
 import de.metas.handlingunits.picking.job.service.external.hu.CUBookingSpecification;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
 import java.util.Set;
@@ -51,6 +55,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -198,6 +203,24 @@ class PickingJobCUQtyEntryPickTest
 						.cuLabelFormatId(format.getId())
 						.build())
 				.build());
+	}
+
+	/** runs the action and returns the formatted messages the pick command logged meanwhile */
+	private static List<String> logOfPickCommand(final Runnable action)
+	{
+		final Logger logger = (Logger)LoggerFactory.getLogger(PickingJobPickCommand.class);
+		final ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+		logAppender.start();
+		logger.addAppender(logAppender);
+		try
+		{
+			action.run();
+		}
+		finally
+		{
+			logger.detachAppender(logAppender);
+		}
+		return logAppender.list.stream().map(ILoggingEvent::getFormattedMessage).collect(java.util.stream.Collectors.toList());
 	}
 
 	private PickingJob createJob(@Nullable final HUPIItemProductId packingPiipId, final boolean isAllowAnyHU)
@@ -722,10 +745,12 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).as("line done: 2 of 2").isEqualByComparingTo("2");
 			final PickingJob jobWhenDone = job;
 
-			assertThatThrownBy(() -> pick(jobWhenDone, source, "1", label(PRODUCT_NO, LOT_A), false, null))
+			final List<String> log = logOfPickCommand(() -> assertThatThrownBy(() -> pick(jobWhenDone, source, "1", label(PRODUCT_NO, LOT_A), false, null))
 					.isInstanceOf(AdempiereException.class)
 					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PICK_OVERDELIVERY_BLOCKED.toAD_Message()))
-					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked"));
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked")));
+			assertThat(log).as("the discarded scan is logged with its values")
+					.anySatisfy(msg -> assertThat(msg).contains("Over-pick refused", "SCAN_ONCE_ENTER_QTY", "pickingJobId=" + jobWhenDone.getId().getRepoId(), "pickingJobLineId=", "qtyToPick=1", "qtyOrdered=2", "qtyAlreadyPicked=2"));
 			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
 		}
 
@@ -1450,11 +1475,13 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).as("line done: 2 of 2").isEqualByComparingTo("2");
 			final PickingJob jobWhenDone = job;
 
-			assertThatThrownBy(() -> pickEach(jobWhenDone, source, LOT_A, "3"))
+			final List<String> log = logOfPickCommand(() -> assertThatThrownBy(() -> pickEach(jobWhenDone, source, LOT_A, "3"))
 					.isInstanceOf(AdempiereException.class)
 					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PICK_OVERDELIVERY_BLOCKED.toAD_Message()))
 					.as("no technical parameters in the message the picker sees")
-					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked"));
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked")));
+			assertThat(log).as("the discarded scan is logged with its values")
+					.anySatisfy(msg -> assertThat(msg).contains("Over-pick refused", "SCAN_EACH_CU", "pickingJobId=" + jobWhenDone.getId().getRepoId(), "pickingJobLineId=", "qtyToPick=1", "qtyOrdered=2", "qtyAlreadyPicked=2"));
 
 			assertThat(cusOf(openTUId(job))).as("still 2 CUs").hasSize(2);
 			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");

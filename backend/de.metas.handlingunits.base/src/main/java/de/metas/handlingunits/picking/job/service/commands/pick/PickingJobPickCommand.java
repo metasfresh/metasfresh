@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.service.commands.pick;
 
+import de.metas.logging.LogManager;
+import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -102,6 +104,7 @@ import java.util.function.UnaryOperator;
 
 public class PickingJobPickCommand
 {
+	private static final Logger logger = LogManager.getLogger(PickingJobPickCommand.class);
 	private final static AdMessageKey HU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_CANNOT_BE_PICKED_ERROR_MSG");
 	private final static AdMessageKey TU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.TU_CANNOT_BE_PICKED_ERROR_MSG");
 	private final static AdMessageKey PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG");
@@ -368,8 +371,8 @@ public class PickingJobPickCommand
 	 * persists synchronously (M_Picking_Job_Step), so the reloaded job a sequential second request works from already
 	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
 	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
-	 * guard. The refusal has one message; in the label-based CU quantity entry modes the values go to the log only
-	 * (no parameter dump in the message the picker sees), Manual keeps the parameters in the message as before. Must run inside {@link #executeInTrx()}.
+	 * guard. The refusal has one message; in the label-based CU quantity entry modes the values are logged (warn) at the throw site
+	 * and not put into the message the picker sees, Manual keeps the parameters in the message as before. Must run inside {@link #executeInTrx()}.
 	 */
 	private void assertNotAboveOrderedQty()
 	{
@@ -401,8 +404,15 @@ public class PickingJobPickCommand
 				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
 
 		// Manual keeps its message as before (parameters appended). In the label-based modes a routine scan of the picker (a CU into a
-		// finished line) lands here: the values stay exception parameters (log / issue), not part of the text the picker reads.
-		throw cuQtyEntryPolicy.isLabelRequired() ? exception : exception.appendParametersToMessage();
+		// finished line) lands here: the message stays short for the handheld, so the values of the discarded scan are logged here.
+		final boolean isParametersAppendedToMessage = !cuQtyEntryPolicy.isLabelRequired();
+		if (isParametersAppendedToMessage)
+		{
+			throw exception.appendParametersToMessage();
+		}
+		logger.warn("Over-pick refused (CU quantity entry mode {}): pickingJobId={}, pickingJobLineId={}, qtyToPick={}, qtyOrdered={}, qtyAlreadyPicked={}",
+				pickingJobOptions.getCUQtyEntryModeOrDefault(), _pickingJob.getId().getRepoId(), getLineId().getRepoId(), qtyToPickCUs, line.getQtyToPick(), qtyAlreadyPicked);
+		throw exception;
 	}
 
 	public PickingJob execute()
