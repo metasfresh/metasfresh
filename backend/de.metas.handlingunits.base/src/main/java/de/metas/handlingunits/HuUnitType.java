@@ -33,7 +33,6 @@ public enum HuUnitType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
-	@JsonCreator
 	public static HuUnitType ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);

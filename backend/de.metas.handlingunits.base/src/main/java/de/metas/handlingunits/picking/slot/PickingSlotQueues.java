@@ -3,7 +3,9 @@ package de.metas.handlingunits.picking.slot;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.handlingunits.HuId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
@@ -40,6 +42,38 @@ public class PickingSlotQueues
 	public ImmutableCollection<PickingSlotQueue> getQueues()
 	{
 		return queuesById.values();
+	}
+
+	/**
+	 * @return the HUs of all queues
+	 */
+	public ImmutableSet<HuId> getHuIds()
+	{
+		return queuesById.values().stream()
+				.flatMap(queue -> queue.getHuIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return the size of that slot's own queue (an HU queued in two slots counts in both); 0 if the slot has no queue
+	 */
+	public int getCountHUs(@NonNull final PickingSlotId pickingSlotId)
+	{
+		final PickingSlotQueue queue = queuesById.get(pickingSlotId);
+		return queue != null ? queue.getCountHUs() : 0;
+	}
+
+	/**
+	 * @return the slot of the first queue that holds the HU (an HU queued in more than one slot keeps its first slot)
+	 * @throws AdempiereException if the HU is in no queue
+	 */
+	public PickingSlotId getPickingSlotId(@NonNull final HuId huId)
+	{
+		return queuesById.values().stream()
+				.filter(queue -> queue.containsHuId(huId))
+				.map(PickingSlotQueue::getPickingSlotId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("HU " + huId + " is not in any picking slot queue"));
 	}
 
 	public PickingSlotQueue getQueue(@NonNull final PickingSlotId pickingSlotId)

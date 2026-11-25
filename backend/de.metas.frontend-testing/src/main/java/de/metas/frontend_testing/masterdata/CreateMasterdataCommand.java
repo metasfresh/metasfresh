@@ -36,6 +36,8 @@ import de.metas.frontend_testing.masterdata.hu_package.PackageCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
+import de.metas.frontend_testing.masterdata.hu_label_config.CreateHULabelConfigCommand;
+import de.metas.frontend_testing.masterdata.hu_label_config.JsonHULabelConfigRequest;
 import de.metas.frontend_testing.masterdata.inventory.InventoryCreateCommand;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
@@ -186,6 +188,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
+		createHULabelConfigs();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		// Post-pass: needs every warehouse (the replenishment source is named by identifier) and the shippers
@@ -631,6 +634,22 @@ public class CreateMasterdataCommand
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build().execute();
+	}
+
+	private void createHULabelConfigs()
+	{
+		process(request.getHuLabelConfigs(), this::createHULabelConfig);
+	}
+
+	private Object createHULabelConfig(final String identifier, final JsonHULabelConfigRequest request)
+	{
+		CreateHULabelConfigCommand.builder()
+				.huLabelConfigRepository(services.huLabelConfigRepository)
+				.context(context)
+				.request(request)
+				.build()
+				.execute();
+		return identifier;
 	}
 
 	@Nullable

@@ -2,6 +2,7 @@ package de.metas.frontend_testing.expectations;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -31,10 +32,12 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllocQuery;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inventory.InventoryCandidateService;
@@ -60,6 +63,8 @@ import de.metas.pos.POSTerminalId;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlement;
 import de.metas.pos.invoice_settlement.card.POSInvoiceCardSettlementRepository;
 import de.metas.pos.returns.POSReturnRepository;
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxDAO;
@@ -91,14 +96,20 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderBOMLineId;
+import lombok.Value;
+import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -127,6 +138,8 @@ public class AssertExpectationsCommandServices
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final InventoryCandidateService inventoryCandidateService;
 	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	@NonNull private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	@NonNull private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -498,5 +511,71 @@ public class AssertExpectationsCommandServices
 	{
 		return posService.getCurrentCashJournal(posTerminalId)
 				.orElseThrow(() -> new AdempiereException("No open cash journal for POS terminal " + posTerminalId));
+	}
+
+	/**
+	 * @return one entry per active picked-qty record ({@code M_ShipmentSchedule_QtyPicked}) of the given LU ({@code M_LU_HU_ID});
+	 * {@code docStatus} is the {@code M_InOut.DocStatus} of the record's shipment line, or {@code null} if no shipment line exists yet.
+	 */
+	public List<ShipmentAllocation> getShipmentAllocationsByLU(@NonNull final HuId luId)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> allocs = new ArrayList<>();
+		// the query requires an explicit shipped / not-shipped selector, so we ask for both
+		for (final boolean alreadyShipped : new boolean[] { true, false })
+		{
+			allocs.addAll(shipmentScheduleAllocDAO.list(
+					I_M_ShipmentSchedule_QtyPicked.class,
+					ShipmentScheduleAllocQuery.builder().onlyLUIds(ImmutableSet.of(luId)).alreadyShipped(alreadyShipped).build()));
+		}
+
+		final Set<InOutLineId> inOutLineIds = allocs.stream()
+				.map(alloc -> InOutLineId.ofRepoIdOrNull(alloc.getM_InOutLine_ID()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		final Map<InOutLineId, I_M_InOutLine> linesById = inOutDAO.getLinesByIds(inOutLineIds, I_M_InOutLine.class).stream()
+				.collect(Collectors.toMap(line -> InOutLineId.ofRepoId(line.getM_InOutLine_ID()), line -> line));
+		final Set<InOutId> inOutIds = linesById.values().stream()
+				.map(line -> InOutId.ofRepoId(line.getM_InOut_ID()))
+				.collect(Collectors.toSet());
+		final Map<InOutId, I_M_InOut> inOutsById = inOutDAO.getByIds(inOutIds, I_M_InOut.class).stream()
+				.collect(Collectors.toMap(inout -> InOutId.ofRepoId(inout.getM_InOut_ID()), inout -> inout));
+
+		final ArrayList<ShipmentAllocation> result = new ArrayList<>();
+		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
+		{
+			final HuId tuId = HuId.ofRepoIdOrNull(alloc.getM_TU_HU_ID());
+			final InOutLineId lineId = InOutLineId.ofRepoIdOrNull(alloc.getM_InOutLine_ID());
+			final I_M_InOutLine line = lineId != null ? linesById.get(lineId) : null;
+			final I_M_InOut inout = line != null ? inOutsById.get(InOutId.ofRepoId(line.getM_InOut_ID())) : null;
+			result.add(new ShipmentAllocation(tuId, inout != null ? DocStatus.ofNullableCode(inout.getDocStatus()) : null));
+		}
+		return result;
+	}
+
+	@Value
+	public static class ShipmentAllocation
+	{
+		/** {@code M_ShipmentSchedule_QtyPicked.M_TU_HU_ID}; may be null */
+		@Nullable HuId tuId;
+		/** {@code M_InOut.DocStatus} of the shipment; null if no shipment line yet */
+		@Nullable DocStatus docStatus;
+
+		public boolean isShipmentCompleted() {return docStatus != null && docStatus.isCompleted();}
+	}
+
+	/**
+	 * @param processId if not {@code null}, only archives of this {@code AD_Archive.AD_Process_ID} are counted
+	 */
+	public int countArchivesOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
+	{
+		return archiveDAO.countArchives(TableRecordReference.of(I_M_HU.Table_Name, huId), processId);
+	}
+
+	/**
+	 * @return the number of {@code C_Printing_Queue} records of the HU's {@code AD_Archive} records (only of the given process, if set)
+	 */
+	public int countPrintingQueueRecordsOfHU(@NonNull final HuId huId, @Nullable final AdProcessId processId)
+	{
+		return printingDAO.countPrintingQueueItems(TableRecordReference.of(I_M_HU.Table_Name, huId), processId);
 	}
 }

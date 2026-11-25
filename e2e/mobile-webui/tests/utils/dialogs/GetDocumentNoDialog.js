@@ -11,7 +11,8 @@ export const GetDocumentNoDialog = {
     }),
 
     typeDocumentNo: async (documentNo) => await test.step(`${NAME} - Type Document No ${documentNo}`, async () => {
-        await page.type('#documentNo-input', documentNo);
+        // fill, not type: the input remembers the last document no (type would append to it)
+        await page.fill('#documentNo-input', documentNo);
     }),
 
     clickOKButton: async () => await test.step(`${NAME} - Click OK button`, async () => {

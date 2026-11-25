@@ -7,6 +7,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateByScanRequest;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateResponse;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;
@@ -147,6 +148,17 @@ public class HUConsolidationRestController
 				.wfProcess(workflowRestController.toJson(wfProcess))
 				.pickingSlotContent(pickingSlotContent)
 				.build();
+	}
+
+	@PostMapping("/job/{wfProcessId}/consolidateByScan")
+	public JsonWFProcess consolidateByScan(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@RequestBody @NonNull final JsonConsolidateByScanRequest request)
+	{
+		assertApplicationAccess();
+
+		final WFProcess wfProcess = mobileApplication.consolidateByScan(WFProcessId.ofString(wfProcessIdStr), request.getScannedCode(), getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
 	}
 
 	@GetMapping("/job/{wfProcessId}/pickingSlot/{pickingSlotId}")

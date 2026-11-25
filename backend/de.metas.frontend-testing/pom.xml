@@ -43,6 +43,13 @@
 		</dependency>
 
 		<dependency>
+			<!-- C_Printing_Queue of a printed label (HU expectation printingQueueCount) -->
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

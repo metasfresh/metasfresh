@@ -4,7 +4,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Label_Config;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
+import de.metas.report.PrintCopies;
+import de.metas.util.lang.SeqNo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +73,51 @@ class HULabelConfigRepositoryTest
 				.huUnitType(HuUnitType.LU)
 				.bpartnerId(bpartnerId)
 				.build();
+	}
+
+	@Test
+	void create_persistsTheConfigForOneHUUnitType_andItIsMatched()
+	{
+		final HULabelConfigRoute created = repository.create(HULabelConfigCreateRequest.builder()
+				.orgId(OrgId.MAIN)
+				.seqNo(SeqNo.ofInt(10))
+				.bpartnerId(CONSIGNEE)
+				.sourceDocType(HULabelSourceDocType.Picking)
+				.huUnitType(HuUnitType.LU)
+				.printFormatProcessId(CONSIGNEE_PROCESS)
+				.autoPrint(true)
+				.build());
+
+		assertThat(created.getAcceptHUUnitTypes()).containsExactly(HuUnitType.LU);
+		assertThat(created.getBpartnerId()).isEqualTo(CONSIGNEE);
+		assertThat(created.getSourceDocType()).isEqualTo(HULabelSourceDocType.Picking);
+		assertThat(created.getConfig().getPrintFormatProcessId()).isEqualTo(CONSIGNEE_PROCESS);
+		assertThat(created.getConfig().isAutoPrint()).isTrue();
+		assertThat(created.getConfig().getAutoPrintCopies()).isEqualTo(PrintCopies.ONE);
+
+		final ExplainedOptional<HULabelConfig> matched = repository.getFirstMatching(pickingLuQueryFor(CONSIGNEE));
+		assertThat(matched.isPresent()).isTrue();
+		assertThat(matched.get().getPrintFormatProcessId()).isEqualTo(CONSIGNEE_PROCESS);
+		assertThat(repository.getFirstMatching(pickingLuQueryFor(OTHER_CONSIGNEE)).isPresent()).isFalse();
+	}
+
+	@Test
+	void create_withoutBPartnerAndSourceDocType_matchesAny()
+	{
+		repository.create(HULabelConfigCreateRequest.builder()
+				.orgId(OrgId.MAIN)
+				.seqNo(SeqNo.ofInt(10))
+				.huUnitType(HuUnitType.VHU)
+				.printFormatProcessId(CATCHALL_PROCESS)
+				.build());
+
+		final HULabelConfigQuery query = HULabelConfigQuery.builder()
+				.sourceDocType(HULabelSourceDocType.Inventory)
+				.huUnitType(HuUnitType.VHU)
+				.bpartnerId(OTHER_CONSIGNEE)
+				.build();
+		assertThat(repository.getFirstMatching(query).isPresent()).isTrue();
+		assertThat(repository.getFirstMatching(pickingLuQueryFor(OTHER_CONSIGNEE)).isPresent()).isFalse();
 	}
 
 	@Nested

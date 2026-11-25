@@ -152,6 +152,11 @@ export const revealForCaptureIfEnabled = async (locator) => {
     await holdForCaptureIfEnabled();
 };
 
+/** Attaches a screenshot of the current page (at the test's viewport and device scale factor) to the test report. */
+export const attachScreenshot = async (name) => await test.step(`Screenshot ${name}`, async () => {
+    await test.info().attach(name, { body: await page.screenshot(), contentType: 'image/png' });
+});
+
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 
 /**

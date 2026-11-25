@@ -42,3 +42,9 @@ export const getPickingSlotContent = ({ wfProcessId, pickingSlotId }) => {
     .get(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/pickingSlot/${pickingSlotId}`)
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const consolidateByScan = ({ wfProcessId, scannedCode }) => {
+  return axios
+    .post(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/consolidateByScan`), { scannedCode })
+    .then((response) => unboxAxiosResponse(response));
+};
