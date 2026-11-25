@@ -93,6 +93,9 @@ class WidgetRenderer extends PureComponent {
       allowShowPassword,
       onBlurWidget,
       isOpenDatePicker,
+      isGridCell,
+      isPointerEdit,
+      gridCellValue,
       dateFormat,
       initialFocus,
       timeZone,
@@ -252,6 +255,9 @@ class WidgetRenderer extends PureComponent {
                 timeZone={timeZone}
                 value={widgetValue || widgetData[0].value}
                 isOpenDatePicker={isOpenDatePicker}
+                isGridCell={isGridCell}
+                isPointerEdit={isPointerEdit}
+                gridCellValue={gridCellValue}
                 patch={(date) =>
                   onPatch(
                     widgetField,
@@ -767,6 +773,9 @@ WidgetRenderer.propTypes = {
   defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   noLabel: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
+  isGridCell: PropTypes.bool,
+  isPointerEdit: PropTypes.bool,
+  gridCellValue: PropTypes.any,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
 

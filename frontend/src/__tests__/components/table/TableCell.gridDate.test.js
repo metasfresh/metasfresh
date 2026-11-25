@@ -1,0 +1,130 @@
+import React from 'react';
+import { shallow } from 'enzyme';
+import { omit } from 'lodash';
+import MomentTZ from 'moment-timezone';
+
+import tableCellProps from '../../../../test_setup/fixtures/table/table_cell.json';
+import TableCell from '../../../components/table/TableCell';
+import WidgetWrapper from '../../../containers/WidgetWrapper';
+
+/**
+ * Grid date cell, cell side: only a Date cell hands isGridCell / isPointerEdit /
+ * gridCellValue to its widget, and a pointer action (click / double click) enters its edit mode
+ * flagged as pointer-originated.
+ */
+const cellProps = (overrides) => ({
+  ...omit(tableCellProps, ['widgetData']),
+  tdValue: '20.11.2026',
+  isReadonly: false,
+  isEditable: true,
+  handleDoubleClick: jest.fn(),
+  ...overrides,
+});
+
+const widgetProps = (props) =>
+  shallow(<TableCell {...props} />)
+    .find(WidgetWrapper)
+    .props();
+
+describe('TableCell — grid date wiring', () => {
+  it('a Date cell passes isGridCell, isPointerEdit and the raw cell value to its widget', () => {
+    const props = widgetProps(
+      cellProps({
+        isEdited: true,
+        isDateCell: true,
+        isPointerEdit: false,
+        tableCellData: { value: '2026-11-20' },
+      })
+    );
+    expect(props.isGridCell).toBe(true);
+    expect(props.isPointerEdit).toBe(false);
+    expect(props.gridCellValue).toBe('2026-11-20');
+    expect(props.isOpenDatePicker).toBe(false); // keyboard entry: no auto-open
+  });
+
+  it('a Date cell entered by pointer asks its widget to open the calendar', () => {
+    const props = widgetProps(
+      cellProps({
+        isEdited: true,
+        isDateCell: true,
+        isPointerEdit: true,
+        tableCellData: { value: '2026-11-20' },
+      })
+    );
+    expect(props.isPointerEdit).toBe(true);
+    expect(props.isOpenDatePicker).toBe(true);
+  });
+
+  it('an unparseable moment cell value is handed over as its raw input text', () => {
+    const invalid = MomentTZ('not a date', 'DD.MM.YYYY', true);
+    expect(invalid.isValid()).toBe(false);
+    const props = widgetProps(
+      cellProps({
+        isEdited: true,
+        isDateCell: true,
+        tableCellData: { value: invalid },
+      })
+    );
+    expect(props.gridCellValue).toBe('not a date');
+  });
+
+  it('a non-Date cell gets none of the grid date props and never auto-opens', () => {
+    const props = widgetProps(
+      cellProps({
+        isEdited: true,
+        isDateCell: false,
+        isPointerEdit: true, // even if a stale pointer flag were set
+        tableCellData: { value: '2026-11-20' },
+      })
+    );
+    expect(props.isGridCell).toBeUndefined();
+    expect(props.isPointerEdit).toBeUndefined();
+    expect(props.gridCellValue).toBeUndefined();
+    expect(props.isOpenDatePicker).toBe(false);
+  });
+
+  it('a click on a static Date cell enters edit mode as a pointer edit', () => {
+    const handleDoubleClick = jest.fn();
+    const wrapper = shallow(
+      <TableCell
+        {...cellProps({ isDateCell: true, isEdited: false, handleDoubleClick })}
+      />
+    );
+    wrapper.find('td').simulate('click', {});
+    expect(handleDoubleClick).toHaveBeenCalledTimes(1);
+    expect(handleDoubleClick.mock.calls[0][0]).toMatchObject({
+      property: tableCellProps.property,
+      focus: true,
+      pointer: true,
+    });
+  });
+
+  it('a modifier-click on a Date cell only extends the selection (no edit)', () => {
+    const handleDoubleClick = jest.fn();
+    const wrapper = shallow(
+      <TableCell
+        {...cellProps({ isDateCell: true, isEdited: false, handleDoubleClick })}
+      />
+    );
+    wrapper.find('td').simulate('click', { shiftKey: true });
+    expect(handleDoubleClick).not.toHaveBeenCalled();
+  });
+
+  it('a single click on a non-Date cell does not edit it', () => {
+    const wrapper = shallow(
+      <TableCell {...cellProps({ isDateCell: false, isEdited: false })} />
+    );
+    expect(wrapper.find('td').prop('onClick')).toBeUndefined();
+  });
+
+  it('a double click on any cell enters edit mode as a pointer edit', () => {
+    const handleDoubleClick = jest.fn();
+    const wrapper = shallow(
+      <TableCell
+        {...cellProps({ isDateCell: false, isEdited: false, handleDoubleClick })}
+      />
+    );
+    wrapper.find('td').simulate('doubleClick', {});
+    expect(handleDoubleClick.mock.calls[0][0]).toMatchObject({ pointer: true });
+  });
+});
