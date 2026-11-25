@@ -156,6 +156,28 @@ public class CreatePackingInstructionsCommandTest
 			assertThat(itemProducts).hasSize(2);
 		}
 
+		/**
+		 * Two entries reusing one TU that both set {@code tuPackingMaterial} share the TU's one packing-material item,
+		 * like they share its material item: a second packing-material item would put the packing material twice on every HU built from the TU.
+		 */
+		@Test
+		public void tuReusedByAnotherEntry_sharesTheTUsPackingMaterialItem() throws Exception
+		{
+			createProduct("P1");
+			createProduct("P2");
+			createProduct("CRATE");
+
+			execute("PI_P1", "{\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4,\"tuPackingMaterial\":\"CRATE\"}");
+			execute("PI_P2", "{\"tu\":\"TU\",\"product\":\"P2\",\"qtyCUsPerTU\":4,\"tuPackingMaterial\":\"CRATE\"}");
+
+			final List<I_M_HU_PI_Item> packingMaterialItems = queryBL
+					.createQueryBuilder(I_M_HU_PI_Item.class)
+					.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial)
+					.create()
+					.list();
+			assertThat(packingMaterialItems).hasSize(1);
+		}
+
 		@Test
 		public void luProduct_bindsTheLUItemToThatProduct() throws Exception
 		{
