@@ -33,7 +33,7 @@ import java.util.Optional;
 
 /**
  * Repository Tables: M_Warehouse, M_Locator
- * Repository Cluster: HUWarehouseDAO, WarehouseDAO, WarehouseRepository
+ * Repository Cluster: HUWarehouseDAO, WarehouseDAO, WarehouseRepository, WarehouseLocatorMasterdataRepository
  */
 public interface IHUWarehouseDAO extends ISingletonService
 {

@@ -53,7 +53,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig, M_Locator
- * Repository Cluster: WarehouseRepository, WarehouseDAO, HUWarehouseDAO
+ * Repository Cluster: WarehouseRepository, WarehouseDAO, HUWarehouseDAO, WarehouseLocatorMasterdataRepository
  */
 @Repository
 public class WarehouseRepository
