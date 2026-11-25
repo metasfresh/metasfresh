@@ -470,6 +470,8 @@ public class AssertExpectationsCommandServices
 	{
 		return posService.getCurrentCashJournal(posTerminalId)
 				.orElseThrow(() -> new AdempiereException("No open cash journal for POS terminal " + posTerminalId));
+	}
+
 	/**
 	 * @return one entry per active picked-qty record ({@code M_ShipmentSchedule_QtyPicked}) of the given LU ({@code M_LU_HU_ID});
 	 * {@code docStatus} is the {@code M_InOut.DocStatus} of the record's shipment line, or {@code null} if no shipment line exists yet.
