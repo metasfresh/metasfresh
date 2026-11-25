@@ -4,6 +4,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.scannable_code.ScannedCode;
@@ -13,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -43,15 +45,36 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 	@NonNull
 	public HUConsolidationScannedCrate resolve(@NonNull final GRAI grai, @NonNull final PickingSlotQueues queues)
 	{
-		final IHUQueryBuilder cratesQuery = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, queues.getHuIds())
-				.orElseThrow(() -> huNotFound(grai))
-				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString());
+		return resolveIfAny(grai, queues).orElseThrow(() -> huNotFound(grai));
+	}
 
-		final HuId huId = HuId.ofRepoId(cratesQuery.firstOnlyNotNull(
-				() -> huNotFound(grai),
-				() -> new AdempiereException(MobileQRCodeMessages.HU_AMBIGUOUS).setParameter("grai", grai.toCanonicalString())
-		).getM_HU_ID());
-		return HUConsolidationScannedCrate.of(huId, queues.getPickingSlotId(huId));
+	/**
+	 * Like {@link #resolve(GRAI, PickingSlotQueues)}, but no matching crate gives empty instead of {@code HU_NOT_FOUND}.
+	 *
+	 * @throws AdempiereException {@code HU_AMBIGUOUS} if more than one crate matches
+	 */
+	public Optional<HUConsolidationScannedCrate> resolveIfAny(@NonNull final GRAI grai, @NonNull final PickingSlotQueues queues)
+	{
+		final IHUQueryBuilder cratesQuery = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, queues.getHuIds()).orElse(null);
+		if (cratesQuery == null)
+		{
+			return Optional.empty();
+		}
+
+		final List<I_M_HU> crates = cratesQuery
+				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
+				.list(2);
+		if (crates.isEmpty())
+		{
+			return Optional.empty();
+		}
+		if (crates.size() > 1)
+		{
+			throw new AdempiereException(MobileQRCodeMessages.HU_AMBIGUOUS).setParameter("grai", grai.toCanonicalString());
+		}
+
+		final HuId huId = HuId.ofRepoId(crates.get(0).getM_HU_ID());
+		return Optional.of(HUConsolidationScannedCrate.of(huId, queues.getPickingSlotId(huId)));
 	}
 
 	private static AdempiereException huNotFound(@NonNull final GRAI grai)

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.grai.GRAI;
@@ -19,6 +20,7 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.job.scan.GRAIScannedCodeResolver;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -26,6 +28,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -35,6 +38,7 @@ import java.util.Set;
 public class ConsolidateCommand
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -126,8 +130,7 @@ public class ConsolidateCommand
 		}
 		else if (grai != null)
 		{
-			// among the crates of this job, as the scan screen does: two crates of the job with this GRAI are refused as ambiguous, a HU outside the job is not looked at
-			effectiveHuId = graiResolver.resolve(grai, pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds())).getHuId();
+			effectiveHuId = getHuIdByGRAI(grai);
 		}
 		else
 		{
@@ -152,6 +155,29 @@ public class ConsolidateCommand
 		{
 			return fromPickingSlotQueue.getHuIds();
 		}
+	}
+
+	/**
+	 * Looks for the GRAI among the crates of this job first, as the scan screen does: two crates of the job with this GRAI are refused as ambiguous,
+	 * and a HU outside the job with the same GRAI does not block the crate of the job.
+	 * If no crate of the job carries it, an active top-level HU elsewhere that carries it is "not at the picking slot"; no such HU at all is "not found".
+	 */
+	@NonNull
+	private HuId getHuIdByGRAI(@NonNull final GRAI grai)
+	{
+		final HUConsolidationScannedCrate crateOfJob = graiResolver.resolveIfAny(grai, pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds())).orElse(null);
+		if (crateOfJob != null)
+		{
+			return crateOfJob.getHuId();
+		}
+
+		final boolean carriedByHUOutsideJob = handlingUnitsDAO.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
+				.anyMatch();
+		throw new AdempiereException(carriedByHUOutsideJob ? MobileQRCodeMessages.LU_NOT_AT_SLOT : MobileQRCodeMessages.HU_NOT_FOUND)
+				.setParameter("grai", grai.toCanonicalString());
 	}
 
 	private PickingSlotQueue getFromPickingSlotQueue()
