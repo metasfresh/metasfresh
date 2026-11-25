@@ -175,18 +175,21 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     }
   });
 
-  // the zone is whatever the backend published (packIdZoneStart / packIdZoneEnd); the label length is only checked against it
-  it('a label ending inside the gap after the zone start is a format mismatch, before the zone start it has no pack ID', () => {
-    const gapFormat = {
+  // a format without a PackId part: the backend publishes no pack ID zone, so a cut-off label is a format mismatch
+  it('no PackId part, no published zone: a cut-off label is a format mismatch', () => {
+    const noZoneFormat = {
       ...packIdFormat,
       parts: [...markerParts, ...dataParts, constant(47, 48, '92'), constant(52, 53, '93')],
+      packIdZoneStart: null,
+      packIdZoneEnd: null,
     };
-    expect(readCULabel({ string: LABEL.substring(0, 49), format: gapFormat, isPackIdRequired: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 49), format: noZoneFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
       errorDetails: expect.any(String),
     });
-    expect(readCULabel({ string: LABEL.substring(0, 46), format: gapFormat, isPackIdRequired: true })).toEqual({
-      errorKey: 'picking.cuLabel.noPackId',
+    expect(readCULabel({ string: LABEL.substring(0, 46), format: noZoneFormat, isPackIdRequired: true })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
     });
   });
 
