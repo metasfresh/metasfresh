@@ -4,6 +4,9 @@ import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, V
 import { INVENTORY_WINDOW_ID } from '../WindowIds';
 import { getFieldData } from '../WebAPIValidation';
 
+/** Completing builds the counted HUs synchronously: on a DB with many warehouses it takes up to about a minute. */
+export const INVENTORY_COMPLETE_TIMEOUT = 2 * 60 * 1000;
+
 /**
  * Page object for the desktop "Physical Inventory" window (168).
  *
@@ -11,9 +14,6 @@ import { getFieldData } from '../WebAPIValidation';
  * A line is created with the "Add new" button of the lines tab; it opens the line in a modal
  * (`.panel-modal`, closed with its "Done" button), whose fields are addressed the same way.
  */
-/** Completing builds the counted HUs synchronously: on a DB with many warehouses it takes up to about a minute. */
-export const INVENTORY_COMPLETE_TIMEOUT = 2 * 60 * 1000;
-
 export class InventoryPage {
   static #inventoryId = null;
 
