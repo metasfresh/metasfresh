@@ -213,6 +213,19 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 			@NonNull M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse);
 
 	/**
+	 * Creates shipment candidates for the active QtyPicked rows of one shipment schedule.
+	 * <p>
+	 * A box (non-virtual TU, rows without {@code VHU_ID}) whose content was picked in several steps is expanded to
+	 * one candidate per attribute combination of its content, so that the shipment gets one line per combination,
+	 * also when the picked quantities are equal. Every other row is handled as by
+	 * {@link #createCandidatesForQtyPicked}.
+	 */
+	List<ShipmentScheduleWithHU> createCandidatesForBoxPicks(
+			@NonNull List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords,
+			@NonNull IHUContext huContext,
+			@NonNull M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse);
+
+	/**
 	 * Retrieves all undelivered shipment schedule candidates for a list of top-level HUs,
 	 * expanding any mixed-origin TUs into per-COO candidates.
 	 * Each HU in the list must be a top-level HU.

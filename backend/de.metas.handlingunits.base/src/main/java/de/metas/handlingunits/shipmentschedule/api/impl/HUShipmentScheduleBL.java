@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -113,6 +114,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1330,6 +1332,230 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 					groupQtyPicked, huContext, attributeSourceVHU, groupStorageQty, qtyTypeToUse));
 		}
 		return result.build();
+	}
+
+	@Override
+	public List<ShipmentScheduleWithHU> createCandidatesForBoxPicks(
+			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords,
+			@NonNull final IHUContext huContext,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		// Box rows are collected per (shipment schedule, TU); every other row is its own entry.
+		final LinkedHashMap<Object, List<I_M_ShipmentSchedule_QtyPicked>> rowsByKey = new LinkedHashMap<>();
+		for (final I_M_ShipmentSchedule_QtyPicked row : qtyPickedRecords)
+		{
+			final Object key = isBoxPick(row)
+					? ImmutableList.of(row.getM_ShipmentSchedule_ID(), row.getM_TU_HU_ID())
+					: row;
+			rowsByKey.computeIfAbsent(key, k -> new ArrayList<>()).add(row);
+		}
+
+		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
+		for (final List<I_M_ShipmentSchedule_QtyPicked> rows : rowsByKey.values())
+		{
+			if (isBoxPick(rows.get(0)))
+			{
+				result.addAll(createCandidatesForBox(rows, huContext, qtyTypeToUse));
+			}
+			else
+			{
+				rows.forEach(row -> result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse)));
+			}
+		}
+		return result.build();
+	}
+
+	/**
+	 * A box row records a pick into a non-virtual TU and does not reference a single VHU.
+	 */
+	private boolean isBoxPick(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
+	{
+		final HuId tuId = HuId.ofRepoIdOrNull(row.getM_TU_HU_ID());
+		return tuId != null
+				&& HuId.ofRepoIdOrNull(row.getVHU_ID()) == null
+				&& !handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuId));
+	}
+
+	private List<ShipmentScheduleWithHU> createCandidatesForBox(
+			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> boxRows,
+			@NonNull final IHUContext huContext,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> rows = boxRows.stream()
+				.sorted(Comparator.comparingInt(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_QtyPicked_ID))
+				.collect(ImmutableList.toImmutableList());
+		final I_M_ShipmentSchedule_QtyPicked firstRow = rows.get(0);
+
+		final ProductId productId = ProductId.ofRepoId(firstRow.getM_ShipmentSchedule().getM_Product_ID());
+		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
+		final Predicate<AttributeId> attributeSplitsShipmentLine = attributeSplitsShipmentLinePredicate(firstRow);
+
+		// The box's content per attribute combination (first-seen order of the box's VHUs, which follows pick order).
+		final I_M_HU box = handlingUnitsBL.getById(HuId.ofRepoId(firstRow.getM_TU_HU_ID()));
+		final LinkedHashMap<AttributesKey, List<IHUProductStorage>> storagesByFingerprint = new LinkedHashMap<>();
+		handlingUnitsDAO.retrieveIncludedHUs(box)
+				.stream()
+				.filter(handlingUnitsBL::isVirtual)
+				.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, attributeSplitsShipmentLine))
+				.forEach(e -> storagesByFingerprint.computeIfAbsent(e.getKey(), k -> new ArrayList<>()).add(e.getValue()));
+
+		final BigDecimal contentQty = storagesByFingerprint.values().stream()
+				.flatMap(List::stream)
+				.map(s -> s.getQty().toBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		final BigDecimal pickedQty = rows.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		if (storagesByFingerprint.isEmpty() || contentQty.compareTo(pickedQty) != 0)
+		{
+			// The box content is not exactly what these rows picked (e.g. a box shared with another schedule): per row as before.
+			return rows.stream()
+					.flatMap(row -> createCandidatesForQtyPicked(row, huContext, qtyTypeToUse).stream())
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		final List<BoxContentGroup> groups = storagesByFingerprint.values().stream()
+				.map(BoxContentGroup::new)
+				.collect(ImmutableList.toImmutableList());
+
+		// Walk rows and groups together, consuming quantity: every overlap of a row part and a group is one candidate.
+		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
+		int groupIndex = 0;
+		for (final I_M_ShipmentSchedule_QtyPicked row : rows)
+		{
+			final List<BoxContentGroup> rowGroups = new ArrayList<>();
+			final List<BigDecimal> partQtys = new ArrayList<>();
+			final List<I_M_HU> wholeVhus = new ArrayList<>(); // null entry: the part is not the whole quantity of a single-VHU group
+			BigDecimal rowRemaining = row.getQtyPicked();
+			while (rowRemaining.signum() > 0)
+			{
+				final BoxContentGroup group = groups.get(groupIndex);
+				final BigDecimal part = rowRemaining.min(group.remainingQty());
+				rowGroups.add(group);
+				partQtys.add(part);
+				wholeVhus.add(group.wholeVhuOrNull(part));
+				rowRemaining = rowRemaining.subtract(part);
+				if (group.remainingQty().compareTo(part) == 0)
+				{
+					groupIndex++;
+				}
+				group.consume(part);
+			}
+			result.addAll(createCandidatesForBoxRow(row, rowGroups, partQtys, wholeVhus, huContext, qtyTypeToUse));
+		}
+		return result.build();
+	}
+
+	private List<ShipmentScheduleWithHU> createCandidatesForBoxRow(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked row,
+			@NonNull final List<BoxContentGroup> rowGroups,
+			@NonNull final List<BigDecimal> partQtys,
+			@NonNull final List<I_M_HU> wholeVhus,
+			@NonNull final IHUContext huContext,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		final ProductId productId = ProductId.ofRepoId(row.getM_ShipmentSchedule().getM_Product_ID());
+		final UomId catchUomId = UomId.ofRepoIdOrNull(row.getCatch_UOM_ID());
+		final List<Optional<Quantity>> catchWeightShares = partQtys.size() > 1
+				? splitCatchWeightByQty(row, partQtys.stream().map(q -> Quantity.of(q, rowGroups.get(0).uom())).collect(ImmutableList.toImmutableList()))
+				: ImmutableList.of(Optional.<Quantity>empty());
+
+		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
+		for (int i = 0; i < partQtys.size(); i++)
+		{
+			final BoxContentGroup group = rowGroups.get(i);
+			final BigDecimal partQty = partQtys.get(i);
+			final I_M_HU wholeVhu = wholeVhus.get(i);
+
+			final I_M_ShipmentSchedule_QtyPicked partRecord;
+			if (i == 0)
+			{
+				partRecord = row;
+				if (partQtys.size() > 1)
+				{
+					catchWeightShares.get(i).ifPresent(share -> row.setQtyDeliveredCatch(share.toBigDecimal()));
+				}
+			}
+			else
+			{
+				final Optional<Quantity> catchWeightShare = catchWeightShares.get(i);
+				final StockQtyAndUOMQty partStockAndCatchQty = catchWeightShare.isPresent()
+						? StockQtyAndUOMQtys.create(partQty, productId, catchWeightShare.get().toBigDecimal(), catchUomId)
+						: StockQtyAndUOMQtys.ofQtyInStockUOM(Quantity.of(partQty, group.uom()), productId);
+				partRecord = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(
+						row.getM_ShipmentSchedule(),
+						partStockAndCatchQty,
+						I_M_ShipmentSchedule_QtyPicked.class);
+				partRecord.setM_TU_HU_ID(row.getM_TU_HU_ID());
+				partRecord.setM_LU_HU_ID(row.getM_LU_HU_ID());
+			}
+			// VHU_ID only when the part is the whole quantity of a group that has exactly one VHU (plan B2 step 4;
+			// as the existing Case 2 in createCandidatesForQtyPicked): several VHUs of one combination cannot be told apart.
+			if (wholeVhu != null)
+			{
+				partRecord.setVHU_ID(wholeVhu.getM_HU_ID());
+			}
+			partRecord.setQtyPicked(partQty);
+			huShipmentScheduleDAO.saveQtyPicked(partRecord);
+
+			result.add(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
+					partRecord, huContext, group.firstVhu(), Quantity.of(partQty, group.uom()), qtyTypeToUse));
+		}
+		return result.build();
+	}
+
+	/**
+	 * The VHU storages of a box that share one attribute combination, with the quantity not yet handed out to rows.
+	 */
+	@VisibleForTesting
+	static final class BoxContentGroup
+	{
+		private final List<IHUProductStorage> storages;
+		private BigDecimal consumed = BigDecimal.ZERO;
+
+		BoxContentGroup(@NonNull final List<IHUProductStorage> storages)
+		{
+			this.storages = storages;
+		}
+
+		BigDecimal totalQty()
+		{
+			return storages.stream().map(s -> s.getQty().toBigDecimal()).reduce(BigDecimal.ZERO, BigDecimal::add);
+		}
+
+		BigDecimal remainingQty()
+		{
+			return totalQty().subtract(consumed);
+		}
+
+		I_C_UOM uom()
+		{
+			return storages.get(0).getQty().getUOM();
+		}
+
+		I_M_HU firstVhu()
+		{
+			return storages.get(0).getM_HU();
+		}
+
+		/**
+		 * @return the VHU only if this group has exactly one VHU and the next {@code partQty} are all of it, else null
+		 */
+		@Nullable
+		I_M_HU wholeVhuOrNull(@NonNull final BigDecimal partQty)
+		{
+			if (storages.size() != 1 || consumed.signum() != 0)
+			{
+				return null;
+			}
+			return storages.get(0).getQty().toBigDecimal().compareTo(partQty) == 0 ? storages.get(0).getM_HU() : null;
+		}
+
+		void consume(@NonNull final BigDecimal qty)
+		{
+			consumed = consumed.add(qty);
+		}
 	}
 
 	/**

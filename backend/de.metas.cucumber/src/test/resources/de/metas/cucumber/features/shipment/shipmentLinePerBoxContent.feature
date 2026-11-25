@@ -107,3 +107,145 @@ Feature: Shipment line per box content
       | M_Product_ID | MovementQty | attr.1000001 |
       | p_coo        | 2           | IT           |
       | p_coo        | 2           | DE           |
+
+  @Id:BOX_LOT_80
+  Scenario: Equal-quantity picks of two origins into one box that sits on a pallet ship as two lines
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_Products:
+      | Identifier   |
+      | pm_product80 |
+    And metasfresh contains M_HU_PackingMaterial:
+      | Identifier | M_Product_ID |
+      | pm80       | pm_product80 |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | lu80_pi    |
+      | box80_pi   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | lu80_pi_Version    | lu80_pi    | LU          | Y         |
+      | box80_pi_Version   | box80_pi   | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | OPT.Included_HU_PI_ID | OPT.M_HU_PackingMaterial_ID.Identifier |
+      | lu80_pi_item    | lu80_pi_Version    | 10  | HU       | box80_pi              | pm80                                   |
+      | box80_pi_item   | box80_pi_Version   |     | MI       |                       |                                        |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | p_coo_box80_10CU        | box80_pi_item   | p_coo        | 10  | 2021-01-01 |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_IT_80":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "IT"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_DE_80":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "DE"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_80         | 2022-12-12   | wh_box         |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_l_it80 | inv_80         | p_coo        | 0       | 10       | PCE          | asi_IT_80                 | p_coo_box80_10CU        |
+      | inv_l_de80 | inv_80         | p_coo        | 0       | 10       | PCE          | asi_DE_80                 | p_coo_box80_10CU        |
+    When the inventory identified by inv_80 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_l_it80         | hu_it80 |
+      | inv_l_de80         | hu_de80 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so_80      | true    | customer_box  | 2025-04-01  | wh_box         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_80_l1   | so_80      | p_coo        | 4          |
+    When the order identified by so_80 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_80      | so_80_l1       | N             |
+    # Two equal-quantity picks of different origins into the same new box (the box's packing instruction has a parent pallet)
+    When start picking job for sales order identified by so_80
+    And scan picking slot identified by slot_box
+    And set picking target as new TU identified by box80_pi
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | p_coo                 | hu_it80    | 2         |
+      | p_coo                 | hu_de80    | 2         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_80                 | inout_80   | CO        |
+    Then the shipment lines of inout_80 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.1000001 |
+      | p_coo        | 2           | IT           |
+      | p_coo        | 2           | DE           |
+
+  @Id:BOX_LOT_90
+  Scenario: One box with several CUs in each of three origin groups ships as three lines with the summed quantity and the right origin
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_IT_90":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "IT"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_DE_90":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "DE"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_FR_90":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "FR"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_90         | 2022-12-12   | wh_box         |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_l_it1  | inv_90         | p_coo        | 0       | 10       | PCE          | asi_IT_90                 | p_coo_box_10CU          |
+      | inv_l_it2  | inv_90         | p_coo        | 0       | 10       | PCE          | asi_IT_90                 | p_coo_box_10CU          |
+      | inv_l_de1  | inv_90         | p_coo        | 0       | 10       | PCE          | asi_DE_90                 | p_coo_box_10CU          |
+      | inv_l_de2  | inv_90         | p_coo        | 0       | 10       | PCE          | asi_DE_90                 | p_coo_box_10CU          |
+      | inv_l_fr1  | inv_90         | p_coo        | 0       | 10       | PCE          | asi_FR_90                 | p_coo_box_10CU          |
+      | inv_l_fr2  | inv_90         | p_coo        | 0       | 10       | PCE          | asi_FR_90                 | p_coo_box_10CU          |
+    When the inventory identified by inv_90 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_l_it1          | hu_it1  |
+      | inv_l_it2          | hu_it2  |
+      | inv_l_de1          | hu_de1  |
+      | inv_l_de2          | hu_de2  |
+      | inv_l_fr1          | hu_fr1  |
+      | inv_l_fr2          | hu_fr2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so_90      | true    | customer_box  | 2025-04-01  | wh_box         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_90_l1   | so_90      | p_coo        | 14         |
+    When the order identified by so_90 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_90      | so_90_l1       | N             |
+    # Six picks into the same new box: two CUs per origin, unequal quantities, origins interleaved
+    When start picking job for sales order identified by so_90
+    And scan picking slot identified by slot_box
+    And set picking target as new TU identified by box_pi
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | p_coo                 | hu_it1     | 2         |
+      | p_coo                 | hu_de1     | 1         |
+      | p_coo                 | hu_fr1     | 2         |
+      | p_coo                 | hu_it2     | 3         |
+      | p_coo                 | hu_de2     | 4         |
+      | p_coo                 | hu_fr2     | 2         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_90                 | inout_90   | CO        |
+    Then the shipment lines of inout_90 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.1000001 |
+      | p_coo        | 5           | IT           |
+      | p_coo        | 5           | DE           |
+      | p_coo        | 4           | FR           |

@@ -992,6 +992,8 @@ public class ShipmentScheduleWithHUService
 		//
 		// Iterate all QtyPicked records and create candidates from them
 
+		final IHUContext huContext = request.getHuContext();
+		final List<I_M_ShipmentSchedule_QtyPicked> activeQtyPickedRecords = new ArrayList<>();
 		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
 		{
 			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);
@@ -1002,11 +1004,9 @@ public class ShipmentScheduleWithHUService
 				Loggables.withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
 				continue;
 			}
-
-			//
-			final IHUContext huContext = request.getHuContext();
-			candidatesForPick.addAll(huShipmentScheduleBL.createCandidatesForQtyPicked(qtyPickedRecordHU, huContext, quantityType));
+			activeQtyPickedRecords.add(qtyPickedRecordHU);
 		}
+		candidatesForPick.addAll(huShipmentScheduleBL.createCandidatesForBoxPicks(activeQtyPickedRecords, huContext, quantityType));
 
 		return candidatesForPick;
 	}
@@ -1292,10 +1292,8 @@ public class ShipmentScheduleWithHUService
 	@NonNull
 	private List<ShipmentScheduleWithHU> getAlreadyPickedOnTheFlyButNotDelivered(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final IHUContext huContext)
 	{
-		return shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class)
-				.stream()
-				.flatMap(pickedLine -> huShipmentScheduleBL.createCandidatesForQtyPicked(pickedLine, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).stream())
-				.collect(ImmutableList.toImmutableList());
+		final List<I_M_ShipmentSchedule_QtyPicked> pickedLines = shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class);
+		return ImmutableList.copyOf(huShipmentScheduleBL.createCandidatesForBoxPicks(pickedLines, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
 	}
 
 	@NonNull
