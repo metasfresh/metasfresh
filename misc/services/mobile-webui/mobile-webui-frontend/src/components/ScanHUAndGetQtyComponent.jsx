@@ -102,8 +102,7 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const isScanOnce = cuQtyEntryPolicy.isScanOnce;
-  // every label books exactly one CU at once, the scan step stays (no quantity block); today that is the scan-each-CU mode, the one that requires a pack ID per label
-  const isOneCUPerScan = cuQtyEntryPolicy.isPackIdRequired;
+  const isOneCUPerScan = cuQtyEntryPolicy.isOneCUPerLabel;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [quantityBlockKey, setQuantityBlockKey] = useState(0);
   const [isProcessing, setProcessing] = useState(false);

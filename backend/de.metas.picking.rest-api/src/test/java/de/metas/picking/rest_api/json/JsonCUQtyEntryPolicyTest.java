@@ -8,22 +8,23 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** The mobile frontend reads these three property names: change them only together with the frontend. */
+/** The mobile frontend reads these property names: change them only together with the frontend. */
 class JsonCUQtyEntryPolicyTest
 {
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	@Test
-	void serializesTheThreePoliciesUnderTheNamesTheFrontendReads() throws Exception
+	void serializesThePolicyFlagsUnderTheNamesTheFrontendReads() throws Exception
 	{
 		final JsonCUQtyEntryPolicy policy = JsonCUQtyEntryPolicy.of(CUQtyEntryMode.SCAN_EACH_CU.getPolicy());
 
 		final JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(policy));
 
-		assertThat(json.fieldNames()).toIterable().containsExactlyInAnyOrder("isLabelRequired", "isPackIdRequired", "isScanOnce");
+		assertThat(json.fieldNames()).toIterable().containsExactlyInAnyOrder("isLabelRequired", "isPackIdRequired", "isScanOnce", "isOneCUPerLabel");
 		assertThat(json.get("isLabelRequired").asBoolean()).isTrue();
 		assertThat(json.get("isPackIdRequired").asBoolean()).isTrue();
 		assertThat(json.get("isScanOnce").asBoolean()).isFalse();
+		assertThat(json.get("isOneCUPerLabel").asBoolean()).isTrue();
 	}
 
 	@Test

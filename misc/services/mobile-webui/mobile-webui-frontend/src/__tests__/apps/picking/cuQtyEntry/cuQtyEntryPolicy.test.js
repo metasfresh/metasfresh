@@ -9,6 +9,6 @@ describe('getCUQtyEntryPolicy', () => {
 
   it.each([[undefined], [null], [{}], [{ cuQtyEntryPolicy: null }]])('%p: nothing required', (line) => {
     expect(getCUQtyEntryPolicy(line)).toBe(MANUAL_POLICY);
-    expect(MANUAL_POLICY).toEqual({ isLabelRequired: false, isPackIdRequired: false, isScanOnce: false });
+    expect(MANUAL_POLICY).toEqual({ isLabelRequired: false, isPackIdRequired: false, isScanOnce: false, isOneCUPerLabel: false });
   });
 });

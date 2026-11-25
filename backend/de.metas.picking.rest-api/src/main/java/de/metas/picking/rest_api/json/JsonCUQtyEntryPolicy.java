@@ -20,6 +20,7 @@ public class JsonCUQtyEntryPolicy
 	@JsonProperty("isLabelRequired") boolean isLabelRequired;
 	@JsonProperty("isPackIdRequired") boolean isPackIdRequired;
 	@JsonProperty("isScanOnce") boolean isScanOnce;
+	@JsonProperty("isOneCUPerLabel") boolean isOneCUPerLabel;
 
 	public static JsonCUQtyEntryPolicy of(@NonNull final CUQtyEntryPolicy policy)
 	{
@@ -27,6 +28,7 @@ public class JsonCUQtyEntryPolicy
 				.isLabelRequired(policy.isLabelRequired())
 				.isPackIdRequired(policy.isPackIdRequired())
 				.isScanOnce(policy.isScanOnce())
+				.isOneCUPerLabel(policy.isOneCUPerLabel())
 				.build();
 	}
 }
