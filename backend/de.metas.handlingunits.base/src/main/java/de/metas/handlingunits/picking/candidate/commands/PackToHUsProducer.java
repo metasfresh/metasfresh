@@ -10,6 +10,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
@@ -26,6 +27,7 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -49,6 +51,7 @@ import lombok.Value;
 import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
@@ -65,6 +68,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PackToHUsProducer
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IHUPIItemProductBL huPIItemProductBL;
@@ -448,6 +452,8 @@ public class PackToHUsProducer
 
 				//
 				// LU
+				// the picked qty can be loose pieces (e.g. a VHU) => no source TU tells the LU item; if the LU's PI has no item without product, use the picked product's item
+				lutuProducer.setLUItemFallbackProductId(tuCapacity.getProductId());
 				LUPickingTarget.apply(lu, new LUPickingTarget.CaseConsumer()
 				{
 					@Override
@@ -467,7 +473,16 @@ public class PackToHUsProducer
 					@Override
 					public void existingLU(final HuId luId, final HUQRCode qrCode)
 					{
-						lutuProducer.setLU(luId);
+						final I_M_HU lu = handlingUnitsBL.getById(luId);
+						lutuProducer.setLU(lu);
+						// same lookup as the HU editor: the product-specific item the LU already uses for the TU PI (kept for any product,
+						// so loose pieces of another product join it too), else the LU's item without product;
+						// if neither exists, the producer's own lookup (with the fallback product) applies
+						final I_M_HU_PI_Item luItemInUse = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, handlingUnitsBL.getPI(tuPackingInstructionsId), InterfaceWrapperHelper.getContextAware(lu));
+						if (luItemInUse != null)
+						{
+							lutuProducer.setLUItemPI(luItemInUse);
+						}
 						lutuProducer.setMaxLUs(0);
 						lutuProducer.setMaxTUsPerLUInfinite();
 					}
